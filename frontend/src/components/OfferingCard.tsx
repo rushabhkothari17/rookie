@@ -39,10 +39,13 @@ export default function OfferingCard({ product }: { product: any }) {
             className="mt-2 text-lg font-semibold text-slate-900"
             data-testid={`offering-name-${product.id}`}
           >
-            {product.name}
+            {product.card_title || product.name}
           </h3>
-          <p className="text-sm text-slate-600" data-testid={`offering-tagline-${product.id}`}>
-            {product.tagline}
+          <p
+            className="text-sm text-slate-600"
+            data-testid={`offering-tagline-${product.id}`}
+          >
+            {product.card_description || product.tagline}
           </p>
         </div>
         <div
