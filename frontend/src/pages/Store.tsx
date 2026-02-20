@@ -28,13 +28,18 @@ export default function Store() {
       const response = await api.get("/products");
       const productsData = response.data.products || [];
       setProducts(productsData);
-      const categorySet = new Set<string>(
-        productsData.map((p: any) => p.category),
+      const categorySet = new Set(
+        productsData.map((p: any) => displayCategory(p.category)),
       );
-      const list = Array.from(categorySet);
-      setCategories(list);
-      const categoryQuery = searchParams.get("category");
-      setActiveCategory(categoryQuery || list[0]);
+      const categoryList = Array.from(categorySet);
+      const ordered = CATEGORY_ORDER.filter((category) =>
+        categoryList.includes(category),
+      );
+      const finalList = ordered.length ? ordered : categoryList;
+      setCategories(finalList);
+      setActiveCategory(
+        categoryFromSlug(searchParams.get("category"), finalList),
+      );
     };
     load();
   }, [searchParams]);
