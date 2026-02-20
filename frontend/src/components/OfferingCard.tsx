@@ -50,7 +50,7 @@ export default function OfferingCard({ product }: { product: any }) {
         </div>
       </div>
       <ul className="mt-4 space-y-2 text-sm text-slate-500" data-testid={`offering-bullets-${product.id}`}>
-        {(product.bullets_included || []).slice(0, 3).map((item: string) => (
+        {(product.card_bullets || product.bullets_included || []).slice(0, 3).map((item: string) => (
           <li key={item}>• {item}</li>
         ))}
       </ul>
