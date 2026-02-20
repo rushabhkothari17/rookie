@@ -18,6 +18,7 @@ export default function Admin() {
   const [logs, setLogs] = useState<any[]>([]);
   const [currencyOverride, setCurrencyOverride] = useState({ email: "", currency: "USD" });
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>();
 
   const load = async () => {
@@ -71,6 +72,20 @@ export default function Admin() {
       load();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Update failed");
+    }
+  };
+
+  const handleOrderSave = async () => {
+    if (!selectedOrder) return;
+    try {
+      await api.put(`/admin/orders/${selectedOrder.id}`, {
+        manual_status: selectedOrder.manual_status || "",
+        internal_note: selectedOrder.internal_note || "",
+      });
+      toast.success("Order updated");
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Order update failed");
     }
   };
 
