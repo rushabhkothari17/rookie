@@ -5,6 +5,16 @@ import AppShell from "@/components/AppShell";
 import OfferingCard from "@/components/OfferingCard";
 import { CATEGORY_ORDER, categoryFromSlug, displayCategory } from "@/lib/categories";
 
+const CATEGORY_BLURBS: Record<string, string> = {
+  "Zoho Express Setup": "Fast-track your Zoho setup with expert-led implementation.",
+  "Audit & Optimize": "Identify friction, optimize usage, and unlock measurable gains.",
+  "Build & Automate": "Flexible delivery packs for automation builds and iterations.",
+  "Accounting on Zoho": "Monthly finance operations tailored to your transaction volume.",
+  "Ongoing Plans": "Retainers that keep support and delivery moving predictably.",
+  Migrations: "Structured migrations with clear pricing and next steps.",
+};
+
+
 export default function Store() {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<any[]>([]);
