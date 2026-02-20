@@ -59,13 +59,15 @@ export default function Store() {
         data-testid="store-hero"
       >
 
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-blue-200">Automate Accounts Storefront</p>
-          <h1 className="text-4xl font-semibold leading-tight">
-            Choose the exact Zoho service you need — with pricing clarity from day one.
+        <div className="space-y-4">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+            Automate Accounts Storefront
+          </p>
+          <h1 className="text-4xl font-semibold text-slate-900">
+            Premium Zoho delivery, scoped and priced for clarity.
           </h1>
-          <p className="text-sm text-blue-100">
-            Every offering is structured for fast deployment, transparent scope, and measurable outcomes.
+          <p className="text-base text-slate-600">
+            Choose a service tier, configure the scope, and move to a kickoff-ready plan in minutes.
           </p>
         </div>
       </section>
