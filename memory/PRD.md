@@ -33,6 +33,8 @@ Build a login-gated Automate Accounts e-store with authentication, currency rule
 - Customer portal: orders + subscriptions tables
 - Admin portal: customers/orders/subscriptions, catalog edit, currency override, order notes
 - Zoho sync logs with retry (MOCKED)
+- UI refresh: premium SaaS layout, horizontal category tabs, new product detail hero + sticky summary, Start Here label updated to Zoho Express Setup
+
 
 ## Prioritized Backlog
 ### P0
