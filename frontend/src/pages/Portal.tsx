@@ -53,7 +53,7 @@ export default function Portal() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => (
+            {oneTimeOrders.map((order) => (
               <TableRow key={order.id} data-testid={`portal-order-row-${order.id}`}>
                 <TableCell data-testid={`portal-order-number-${order.id}`}>{order.order_number}</TableCell>
                 <TableCell data-testid={`portal-order-date-${order.id}`}>{order.created_at?.slice(0, 10)}</TableCell>
