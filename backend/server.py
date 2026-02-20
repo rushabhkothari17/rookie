@@ -1549,6 +1549,10 @@ async def checkout_bank_transfer(
     payload: BankTransferCheckoutRequest,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    # Validate T&C acceptance
+    if not payload.terms_accepted:
+        raise HTTPException(status_code=400, detail="You must accept the Terms & Conditions to proceed")
+    
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
@@ -1575,9 +1579,59 @@ async def checkout_bank_transfer(
 
         product = subscription_items[0]["product"]
         subtotal = subscription_items[0]["pricing"]["subtotal"]
+        
+        # Get T&C and resolve
+        terms_id = payload.terms_id if payload.terms_id else product.get("terms_id")
+        if not terms_id:
+            default_terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+            terms_id = default_terms["id"] if default_terms else None
+        
+        rendered_terms_text = ""
+        if terms_id:
+            terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+            if terms:
+                address = await db.addresses.find_one({"user_id": user["id"]}, {"_id": 0})
+                rendered_terms_text = resolve_terms_tags(terms["content"], user, address, product["name"])
+        
         period_start = datetime.now(timezone.utc)
         period_end = period_start + timedelta(days=30)
         sub_id = make_id()
+        
+        # Try to create GoCardless customer/mandate
+        gocardless_redirect_url = None
+        gc_customer_id = customer.get("gocardless_customer_id")
+        
+        try:
+            import requests
+            gc_token = os.environ.get("GOCARDLESS_ACCESS_TOKEN")
+            if gc_token and not gc_customer_id:
+                # Create GoCardless customer
+                gc_response = requests.post(
+                    "https://api-sandbox.gocardless.com/customers",
+                    json={
+                        "customers": {
+                            "email": user["email"],
+                            "given_name": user.get("full_name", "").split()[0] if user.get("full_name") else "Customer",
+                            "family_name": user.get("full_name", "").split()[-1] if user.get("full_name") and len(user.get("full_name", "").split()) > 1 else "User",
+                            "company_name": user.get("company_name", ""),
+                        }
+                    },
+                    headers={
+                        "Authorization": f"Bearer {gc_token}",
+                        "GoCardless-Version": "2015-07-06",
+                        "Content-Type": "application/json"
+                    },
+                    timeout=10
+                )
+                if gc_response.status_code == 201:
+                    gc_customer_id = gc_response.json()["customers"]["id"]
+                    await db.customers.update_one(
+                        {"id": customer["id"]},
+                        {"$set": {"gocardless_customer_id": gc_customer_id}}
+                    )
+        except Exception as e:
+            print(f"GoCardless customer creation failed: {e}")
+        
         await db.subscriptions.insert_one(
             {
                 "id": sub_id,
@@ -1586,12 +1640,16 @@ async def checkout_bank_transfer(
                 "plan_name": product["name"],
                 "status": "pending_bank_setup",
                 "stripe_subscription_id": None,
+                "gocardless_customer_id": gc_customer_id,
                 "current_period_start": period_start.isoformat(),
                 "current_period_end": period_end.isoformat(),
                 "cancel_at_period_end": False,
                 "canceled_at": None,
                 "amount": subtotal,
                 "payment_method": "bank_transfer",
+                "terms_id_used": terms_id,
+                "rendered_terms_text": rendered_terms_text,
+                "terms_accepted_at": now_iso(),
             }
         )
         await db.zoho_sync_logs.insert_one(
@@ -1610,9 +1668,140 @@ async def checkout_bank_transfer(
             "message": "Subscription request created",
             "subscription_id": sub_id,
             "status": "pending_bank_setup",
+            "gocardless_customer_id": gc_customer_id,
+            "gocardless_redirect_url": gocardless_redirect_url,
         }
 
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
+    
+    # Apply promo code discount with product-level eligibility (no fee for bank transfer)
+    promo_code_data = None
+    discount_amount = 0.0
+    if payload.promo_code:
+        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper()}, {"_id": 0})
+        if promo and promo.get("enabled"):
+            now = datetime.now(timezone.utc).isoformat()
+            is_expired = promo.get("expiry_date") and promo["expiry_date"] < now
+            max_reached = promo.get("max_uses") and promo.get("usage_count", 0) >= promo["max_uses"]
+            applies_to = promo.get("applies_to", "both")
+            type_matches = applies_to == "both" or applies_to == "one-time"
+            
+            # Check product-level eligibility
+            product_eligible = True
+            applies_to_products = promo.get("applies_to_products", "all")
+            if applies_to_products == "selected":
+                eligible_product_ids = promo.get("product_ids", [])
+                cart_product_ids = [i["product"]["id"] for i in order_items]
+                if not all(pid in eligible_product_ids for pid in cart_product_ids):
+                    product_eligible = False
+            
+            if not is_expired and not max_reached and type_matches and product_eligible:
+                if promo["discount_type"] == "percent":
+                    discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
+                else:
+                    discount_amount = min(round_cents(promo["discount_value"]), subtotal)
+                promo_code_data = promo
+    
+    total = round_cents(subtotal - discount_amount)
+    
+    # Get T&C for the product and resolve tags
+    primary_product = order_items[0]["product"]
+    terms_id = payload.terms_id if payload.terms_id else primary_product.get("terms_id")
+    if not terms_id:
+        default_terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+        terms_id = default_terms["id"] if default_terms else None
+    
+    rendered_terms_text = ""
+    if terms_id:
+        terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+        if terms:
+            address = await db.addresses.find_one({"user_id": user["id"]}, {"_id": 0})
+            rendered_terms_text = resolve_terms_tags(terms["content"], user, address, primary_product["name"])
+    
+    order_id = make_id()
+    order_number = f"AA-{order_id.split('-')[0].upper()}"
+    order_doc = {
+        "id": order_id,
+        "order_number": order_number,
+        "customer_id": customer["id"],
+        "type": "one_time",
+        "status": "awaiting_bank_transfer",
+        "subtotal": round_cents(subtotal),
+        "discount_amount": discount_amount,
+        "promo_code": promo_code_data["code"] if promo_code_data else None,
+        "fee": 0.0,
+        "total": total,
+        "currency": customer.get("currency"),
+        "payment_method": "bank_transfer",
+        "terms_id_used": terms_id,
+        "rendered_terms_text": rendered_terms_text,
+        "terms_accepted_at": now_iso(),
+        "created_at": now_iso(),
+    }
+    await db.orders.insert_one(order_doc)
+    
+    # Increment promo code usage
+    if promo_code_data:
+        await db.promo_codes.update_one(
+            {"id": promo_code_data["id"]},
+            {"$inc": {"usage_count": 1}}
+        )
+
+    for item in order_items:
+        product = item["product"]
+        await db.order_items.insert_one(
+            {
+                "id": make_id(),
+                "order_id": order_id,
+                "product_id": product["id"],
+                "quantity": item["quantity"],
+                "metadata_json": item["inputs"],
+                "unit_price": item["pricing"]["subtotal"],
+                "line_total": item["pricing"]["subtotal"],
+            }
+        )
+
+    await db.invoices.insert_one(
+        {
+            "id": make_id(),
+            "order_id": order_id,
+            "subscription_id": None,
+            "stripe_invoice_id": None,
+            "zoho_books_invoice_id": None,
+            "amount_paid": 0.0,
+            "status": "unpaid",
+        }
+    )
+    await db.zoho_sync_logs.insert_one(
+        {
+            "id": make_id(),
+            "entity_type": "deal",
+            "entity_id": order_id,
+            "status": "Not Sent",
+            "last_error": None,
+            "attempts": 0,
+            "created_at": now_iso(),
+            "mocked": True,
+        }
+    )
+    
+    # Email T&C to customer (mocked)
+    if rendered_terms_text:
+        await db.email_outbox.insert_one({
+            "id": make_id(),
+            "to": user["email"],
+            "subject": f"Terms & Conditions for Order {order_number}",
+            "body": rendered_terms_text,
+            "type": "terms_and_conditions",
+            "status": "MOCKED",
+            "created_at": now_iso(),
+        })
+
+    return {
+        "message": "Bank transfer order created",
+        "order_id": order_id,
+        "order_number": order_number,
+    }
     
     # Apply promo code discount (no fee for bank transfer)
     promo_code_data = None
