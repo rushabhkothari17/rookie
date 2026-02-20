@@ -1801,6 +1801,7 @@ async def scope_request(
         "fee": 0.0,
         "total": round_cents(subtotal),
         "currency": customer.get("currency"),
+        "payment_method": "scope_request",
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
