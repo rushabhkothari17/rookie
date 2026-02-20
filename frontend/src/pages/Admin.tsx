@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +13,7 @@ import { toast } from "@/components/ui/sonner";
 
 export default function Admin() {
   const [customers, setCustomers] = useState<any[]>([]);
+  const [addresses, setAddresses] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -20,6 +23,7 @@ export default function Admin() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [calendarDate, setCalendarDate] = useState<Date | undefined>();
+  const [orderFilters, setOrderFilters] = useState({ email: "", product: "", startDate: "", endDate: "" });
 
   const load = async () => {
     const [custRes, orderRes, subRes, productRes, logRes] = await Promise.all([
@@ -30,6 +34,7 @@ export default function Admin() {
       api.get("/admin/sync-logs"),
     ]);
     setCustomers(custRes.data.customers || []);
+    setAddresses(custRes.data.addresses || []);
     setUsers(custRes.data.users || []);
     setOrders(orderRes.data.orders || []);
     setSubscriptions(subRes.data.subscriptions || []);
@@ -50,6 +55,20 @@ export default function Admin() {
       toast.success("Currency overridden");
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Override failed");
+    }
+  };
+
+  const handlePaymentMethodToggle = async (customerId: string, field: string, value: boolean) => {
+    try {
+      const customer = customers.find(c => c.id === customerId);
+      await api.put(`/admin/customers/${customerId}/payment-methods`, {
+        allow_bank_transfer: field === "allow_bank_transfer" ? value : customer?.allow_bank_transfer ?? true,
+        allow_card_payment: field === "allow_card_payment" ? value : customer?.allow_card_payment ?? false,
+      });
+      toast.success("Payment method updated");
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Update failed");
     }
   };
 
@@ -92,6 +111,10 @@ export default function Admin() {
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Order update failed");
     }
+  };
+
+  const getCustomerAddress = (customerId: string) => {
+    return addresses.find(a => a.customer_id === customerId);
   };
 
   return (
@@ -137,18 +160,55 @@ export default function Admin() {
             </div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 className="text-sm font-semibold text-slate-900">Customers</h3>
-            <div className="mt-3 space-y-2 text-sm text-slate-600" data-testid="admin-customer-list">
-              {customers.map((customer) => {
-                const user = users.find((u) => u.id === customer.user_id);
-                return (
-                  <div key={customer.id} className="flex justify-between" data-testid={`admin-customer-${customer.id}`}>
-                    <span data-testid={`admin-customer-name-${customer.id}`}>{user?.full_name || customer.company_name}</span>
-                    <span data-testid={`admin-customer-currency-${customer.id}`}>{customer.currency}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">Customers</h3>
+            <Table data-testid="admin-customer-table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>State/Province</TableHead>
+                  <TableHead>Country</TableHead>
+                  <TableHead>Bank Transfer</TableHead>
+                  <TableHead>Card Payment</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customers.map((customer) => {
+                  const user = users.find((u) => u.id === customer.user_id);
+                  const address = getCustomerAddress(customer.id);
+                  return (
+                    <TableRow key={customer.id} data-testid={`admin-customer-row-${customer.id}`}>
+                      <TableCell data-testid={`admin-customer-name-${customer.id}`}>
+                        {user?.full_name || customer.company_name}
+                      </TableCell>
+                      <TableCell data-testid={`admin-customer-email-${customer.id}`}>
+                        {user?.email || "—"}
+                      </TableCell>
+                      <TableCell data-testid={`admin-customer-region-${customer.id}`}>
+                        {address?.region || "—"}
+                      </TableCell>
+                      <TableCell data-testid={`admin-customer-country-${customer.id}`}>
+                        {address?.country || "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={customer.allow_bank_transfer ?? true}
+                          onCheckedChange={(checked) => handlePaymentMethodToggle(customer.id, "allow_bank_transfer", checked)}
+                          data-testid={`admin-customer-bank-toggle-${customer.id}`}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={customer.allow_card_payment ?? false}
+                          onCheckedChange={(checked) => handlePaymentMethodToggle(customer.id, "allow_card_payment", checked)}
+                          data-testid={`admin-customer-card-toggle-${customer.id}`}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
         </TabsContent>
 
