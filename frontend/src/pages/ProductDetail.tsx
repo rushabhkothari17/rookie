@@ -185,6 +185,7 @@ export default function ProductDetail() {
             <Button
               className="w-full bg-slate-900 hover:bg-slate-800"
               onClick={handleAddToCart}
+              disabled={requiresStripePrice}
               data-testid="product-add-to-cart"
             >
               <Plus size={16} className="mr-2" /> Add to cart
