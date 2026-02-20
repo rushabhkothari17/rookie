@@ -18,8 +18,10 @@ const CATEGORY_BLURBS: Record<string, string> = {
 export default function Store() {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>(CATEGORY_ORDER);
+  const [activeCategory, setActiveCategory] = useState<string | null>(
+    CATEGORY_ORDER[0],
+  );
 
   useEffect(() => {
     const load = async () => {
