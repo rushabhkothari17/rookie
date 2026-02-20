@@ -2024,6 +2024,7 @@ async def checkout_status(
                             "cancel_at_period_end": False,
                             "canceled_at": None,
                             "amount": order.get("total"),
+                            "payment_method": "card",
                         }
                     )
                     await db.email_outbox.insert_one(
