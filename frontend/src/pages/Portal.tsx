@@ -49,13 +49,13 @@ export default function Portal() {
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>{order.order_number}</TableCell>
-                <TableCell>{order.created_at?.slice(0, 10)}</TableCell>
-                <TableCell>${order.subtotal.toFixed(2)}</TableCell>
-                <TableCell>${order.fee.toFixed(2)}</TableCell>
-                <TableCell>${order.total.toFixed(2)}</TableCell>
-                <TableCell>{order.status}</TableCell>
+              <TableRow key={order.id} data-testid={`portal-order-row-${order.id}`}>
+                <TableCell data-testid={`portal-order-number-${order.id}`}>{order.order_number}</TableCell>
+                <TableCell data-testid={`portal-order-date-${order.id}`}>{order.created_at?.slice(0, 10)}</TableCell>
+                <TableCell data-testid={`portal-order-subtotal-${order.id}`}>${order.subtotal.toFixed(2)}</TableCell>
+                <TableCell data-testid={`portal-order-fee-${order.id}`}>${order.fee.toFixed(2)}</TableCell>
+                <TableCell data-testid={`portal-order-total-${order.id}`}>${order.total.toFixed(2)}</TableCell>
+                <TableCell data-testid={`portal-order-status-${order.id}`}>{order.status}</TableCell>
                 <TableCell>
                   <Dialog>
                     <DialogTrigger asChild>
@@ -69,7 +69,7 @@ export default function Portal() {
                       </DialogHeader>
                       <div className="space-y-2 text-sm text-slate-600" data-testid={`order-details-${order.id}`}>
                         {orderItems(order.id).map((item) => (
-                          <div key={item.id}>
+                          <div key={item.id} data-testid={`order-item-${item.id}`}>
                             {item.product_id} — ${item.line_total.toFixed(2)}
                           </div>
                         ))}
