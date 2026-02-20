@@ -455,11 +455,28 @@ export default function Cart() {
           </div>
 
           <div className="space-y-4">
-            <PriceSummary
-              subtotal={oneTimeSubtotal + subscriptionSubtotal}
-              fee={oneTimeFee + subscriptionFee}
-              total={oneTimeTotal + subscriptionTotal}
-            />
+            <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3" data-testid="cart-price-summary">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Subtotal</span>
+                <span className="text-slate-900">${totalSubtotal.toFixed(2)}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Discount ({promoApplied?.code})</span>
+                  <span>-${discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+              {showFee && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Processing fee (5%)</span>
+                  <span className="text-slate-900">${fee.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="border-t border-slate-200 pt-3 flex justify-between">
+                <span className="font-semibold text-slate-900">Total</span>
+                <span className="font-semibold text-slate-900">${total.toFixed(2)}</span>
+              </div>
+            </div>
             <div
               className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500"
               data-testid="cart-currency-note"
