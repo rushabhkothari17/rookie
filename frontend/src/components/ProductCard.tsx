@@ -20,7 +20,7 @@ export default function ProductCard({ product }: { product: any }) {
 
   return (
     <Card
-      className="transition-all hover:-translate-y-1 hover:shadow-lg"
+      className="transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:shadow-lg"
       data-testid={`product-card-${product.id}`}
     >
       <CardHeader className="space-y-2">
