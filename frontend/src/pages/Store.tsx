@@ -67,9 +67,9 @@ export default function Store() {
             Choose a service tier, configure the scope, and move to a kickoff-ready plan in minutes.
           </p>
         </div>
-      </section>
+        </section>
 
-      <section className="space-y-6" data-testid="category-section">
+        <section className="space-y-6" data-testid="category-section">
         <div
           className="flex flex-wrap items-end justify-between gap-4"
           data-testid="category-header"
