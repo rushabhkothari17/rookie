@@ -952,6 +952,11 @@ async def seed_products():
 async def startup_tasks():
     await seed_admin_user()
     await seed_products()
+    await db.products.update_many(
+        {"category": "Start Here"},
+        {"$set": {"category": "Zoho Express Setup"}},
+    )
+
 
 
 @api_router.get("/")
