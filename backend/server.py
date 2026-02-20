@@ -94,6 +94,25 @@ async def require_admin(user: Dict[str, Any] = Depends(get_current_user)):
     return user
 
 
+def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, Any], product_name: str) -> str:
+    """Resolve dynamic tags in T&C content"""
+    resolved = content
+    resolved = resolved.replace("{product_name}", product_name)
+    resolved = resolved.replace("{user_name}", user.get("full_name", ""))
+    resolved = resolved.replace("{company_name}", user.get("company_name", ""))
+    resolved = resolved.replace("{user_company_name}", user.get("company_name", ""))
+    resolved = resolved.replace("{user_job_title}", user.get("job_title", ""))
+    resolved = resolved.replace("{user_email}", user.get("email", ""))
+    resolved = resolved.replace("{user_phone}", user.get("phone", ""))
+    if address:
+        resolved = resolved.replace("{user_address_line1}", address.get("line1", ""))
+        resolved = resolved.replace("{user_city}", address.get("city", ""))
+        resolved = resolved.replace("{user_state}", address.get("region", ""))
+        resolved = resolved.replace("{user_postal}", address.get("postal", ""))
+        resolved = resolved.replace("{user_country}", address.get("country", ""))
+    return resolved
+
+
 class AddressInput(BaseModel):
     line1: str
     line2: Optional[str] = ""
