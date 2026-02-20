@@ -321,6 +321,103 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Scope Request Modal */}
+      <Dialog open={showScopeModal} onOpenChange={setShowScopeModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="scope-request-modal">
+          <DialogHeader>
+            <DialogTitle>Request Scope for {product?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-500">
+              Tell us about your project and we'll get back to you with a detailed scope, timeline, and quote.
+            </p>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Project Summary *</label>
+              <Textarea
+                placeholder="Describe your project in a few sentences..."
+                value={scopeForm.project_summary}
+                onChange={(e) => setScopeForm({ ...scopeForm, project_summary: e.target.value })}
+                data-testid="scope-project-summary"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Desired Outcomes *</label>
+              <Textarea
+                placeholder="What do you want to achieve with this project?"
+                value={scopeForm.desired_outcomes}
+                onChange={(e) => setScopeForm({ ...scopeForm, desired_outcomes: e.target.value })}
+                data-testid="scope-desired-outcomes"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Apps Involved *</label>
+              <Input
+                placeholder="e.g., Zoho CRM, Zoho Books, Zoho Desk..."
+                value={scopeForm.apps_involved}
+                onChange={(e) => setScopeForm({ ...scopeForm, apps_involved: e.target.value })}
+                data-testid="scope-apps-involved"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Timeline / Urgency *</label>
+              <Select
+                value={scopeForm.timeline_urgency}
+                onValueChange={(v) => setScopeForm({ ...scopeForm, timeline_urgency: v })}
+              >
+                <SelectTrigger data-testid="scope-timeline">
+                  <SelectValue placeholder="Select timeline" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asap">ASAP (within 2 weeks)</SelectItem>
+                  <SelectItem value="1-month">Within 1 month</SelectItem>
+                  <SelectItem value="2-3-months">2-3 months</SelectItem>
+                  <SelectItem value="flexible">Flexible / No rush</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Budget Range (optional)</label>
+              <Select
+                value={scopeForm.budget_range}
+                onValueChange={(v) => setScopeForm({ ...scopeForm, budget_range: v })}
+              >
+                <SelectTrigger data-testid="scope-budget">
+                  <SelectValue placeholder="Select budget range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under-5k">Under $5,000</SelectItem>
+                  <SelectItem value="5k-10k">$5,000 - $10,000</SelectItem>
+                  <SelectItem value="10k-25k">$10,000 - $25,000</SelectItem>
+                  <SelectItem value="25k-50k">$25,000 - $50,000</SelectItem>
+                  <SelectItem value="50k+">$50,000+</SelectItem>
+                  <SelectItem value="not-sure">Not sure yet</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Additional Notes (optional)</label>
+              <Textarea
+                placeholder="Anything else we should know?"
+                value={scopeForm.additional_notes}
+                onChange={(e) => setScopeForm({ ...scopeForm, additional_notes: e.target.value })}
+                data-testid="scope-additional-notes"
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={handleSubmitScopeForm}
+              disabled={submittingScope}
+              data-testid="scope-submit-button"
+            >
+              {submittingScope ? "Submitting..." : "Submit Scope Request"}
+            </Button>
+            <p className="text-xs text-slate-400 text-center">
+              Our team will review your request and email you within 1-2 business days.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
