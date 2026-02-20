@@ -23,7 +23,7 @@ export default function Cart() {
 
   useEffect(() => {
     loadPreview();
-  }, [items.length]);
+  }, [items]);
 
   const grouped = useMemo(() => {
     if (!preview?.items) return { oneTime: [], subscriptions: [], scope: [], external: [], inquiry: [] };
