@@ -72,38 +72,37 @@ export default function Store() {
         </div>
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-[240px_1fr]">
-        <div className="space-y-4">
-          <div className="text-xs uppercase tracking-[0.25em] text-slate-400">Categories</div>
-          <div className="space-y-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`w-full rounded-md px-4 py-2 text-left text-sm transition-colors ${
-                  activeCategory === category
-                    ? "bg-slate-900 text-white"
-                    : "bg-white text-slate-600 hover:bg-slate-100"
-                }`}
-                data-testid={`store-category-${category.replace(/\s+/g, "-").toLowerCase()}`}
-              >
-                {category}
-              </button>
-            ))}
+      <section className="space-y-6" data-testid="category-section">
+        <div
+          className="flex flex-wrap items-end justify-between gap-4"
+          data-testid="category-header"
+        >
+          <div>
+            <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
+              Category
+            </div>
+            <h2 className="text-3xl font-semibold text-slate-900">{activeCategory}</h2>
+            <p className="text-sm text-slate-500" data-testid="category-blurb">
+              {CATEGORY_BLURBS[activeCategory || ""] ||
+                "Curated offerings designed for fast, measurable delivery."}
+            </p>
           </div>
-        </div>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-slate-900">{activeCategory}</h2>
+          <div className="flex items-center gap-3">
             <div className="text-sm text-slate-500" data-testid="store-product-count">
               {filteredProducts.length} offerings
             </div>
+            <button
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600"
+              data-testid="store-compare-button"
+            >
+              Compare
+            </button>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {filteredProducts.map((product) => (
+            <OfferingCard key={product.id} product={product} />
+          ))}
         </div>
       </section>
     </div>
