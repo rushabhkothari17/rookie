@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "@/lib/api";
-import ProductCard from "@/components/ProductCard";
+import AppShell from "@/components/AppShell";
+import OfferingCard from "@/components/OfferingCard";
+import { CATEGORY_ORDER, categoryFromSlug, displayCategory } from "@/lib/categories";
 
 export default function Store() {
   const [searchParams] = useSearchParams();
