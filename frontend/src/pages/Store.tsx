@@ -14,7 +14,9 @@ export default function Store() {
       const response = await api.get("/products");
       const productsData = response.data.products || [];
       setProducts(productsData);
-      const categorySet = new Set(productsData.map((p: any) => p.category));
+      const categorySet = new Set<string>(
+        productsData.map((p: any) => p.category),
+      );
       const list = Array.from(categorySet);
       setCategories(list);
       const categoryQuery = searchParams.get("category");
