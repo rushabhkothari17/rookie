@@ -35,7 +35,6 @@ export default function Store() {
         categoryList.includes(category),
       );
       const finalList = ordered.length ? ordered : categoryList;
-      setCategories(finalList);
       setActiveCategory(
         categoryFromSlug(searchParams.get("category"), finalList),
       );
