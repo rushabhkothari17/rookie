@@ -46,7 +46,7 @@ export default function Store() {
         <div className="relative z-10 max-w-2xl space-y-4">
           <p className="text-xs uppercase tracking-[0.3em] text-blue-200">Automate Accounts Storefront</p>
           <h1 className="text-4xl font-semibold leading-tight">
-            Choose the exact Zoho service you need  with pricing clarity from day one.
+            Choose the exact Zoho service you need — with pricing clarity from day one.
           </h1>
           <p className="text-sm text-blue-100">
             Every offering is structured for fast deployment, transparent scope, and measurable outcomes.

@@ -221,7 +221,7 @@ export default function ProductDetail() {
 
       <div className="space-y-6">
         <Card className="p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-slate-900">Whats included</h3>
+          <h3 className="text-sm font-semibold text-slate-900">What's included</h3>
           <ul className="text-sm text-slate-600 space-y-2" data-testid="product-included">
             {product.bullets_included?.map((item: string) => (
               <li key={item}>• {item}</li>

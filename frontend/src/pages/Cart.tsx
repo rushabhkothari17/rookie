@@ -155,7 +155,7 @@ export default function Cart() {
             ))}
 
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-900">Scope n Pay Later</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Scope 'n Pay Later</h2>
               {grouped.scope.length === 0 ? (
                 <p className="text-sm text-slate-500">No scope requests yet.</p>
               ) : (
