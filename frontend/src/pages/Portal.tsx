@@ -26,6 +26,11 @@ export default function Portal() {
   const orderItems = (orderId: string) =>
     items.filter((item) => item.order_id === orderId);
 
+  const oneTimeOrders = orders.filter(
+    (order) => order.type !== "subscription_start",
+  );
+
+
   return (
     <div className="space-y-10" data-testid="portal-page">
       <div>
