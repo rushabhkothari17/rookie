@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 
 export default function Portal() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -40,6 +42,9 @@ export default function Portal() {
   return (
     <div className="space-y-10" data-testid="portal-page">
       <div>
+        <p className="text-sm text-slate-500" data-testid="portal-welcome">
+          Welcome, {user?.full_name || "Customer"}
+        </p>
         <h1 className="text-2xl font-semibold text-slate-900">Customer portal</h1>
         <p className="text-sm text-slate-500">Track orders and subscriptions in one place.</p>
       </div>
