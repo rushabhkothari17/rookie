@@ -1762,6 +1762,17 @@ async def update_me(
     payload: UpdateProfileRequest,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    # Get current address to check country
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    current_address = await db.addresses.find_one({"customer_id": customer["id"]}, {"_id": 0})
+    
+    # Block country changes for non-admins
+    if current_address and payload.address.country != current_address.get("country"):
+        raise HTTPException(status_code=403, detail="Country cannot be changed. Contact admin for assistance.")
+    
     await db.users.update_one(
         {"id": user["id"]},
         {
@@ -1772,17 +1783,11 @@ async def update_me(
             }
         },
     )
-    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
-    if not customer:
-        raise HTTPException(status_code=404, detail="Customer not found")
 
-    new_currency = currency_for_country(payload.address.country)
     update_fields = {
         "company_name": payload.company_name,
         "phone": payload.phone,
     }
-    if not customer.get("currency_locked"):
-        update_fields["currency"] = new_currency
     await db.customers.update_one({"id": customer["id"]}, {"$set": update_fields})
 
     await db.addresses.update_one(
@@ -1794,7 +1799,6 @@ async def update_me(
                 "city": payload.address.city,
                 "region": payload.address.region,
                 "postal": payload.address.postal,
-                "country": payload.address.country,
             }
         },
     )
