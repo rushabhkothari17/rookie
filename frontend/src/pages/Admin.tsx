@@ -117,9 +117,9 @@ export default function Admin() {
               {customers.map((customer) => {
                 const user = users.find((u) => u.id === customer.user_id);
                 return (
-                  <div key={customer.id} className="flex justify-between">
-                    <span>{user?.full_name || customer.company_name}</span>
-                    <span>{customer.currency}</span>
+                  <div key={customer.id} className="flex justify-between" data-testid={`admin-customer-${customer.id}`}>
+                    <span data-testid={`admin-customer-name-${customer.id}`}>{user?.full_name || customer.company_name}</span>
+                    <span data-testid={`admin-customer-currency-${customer.id}`}>{customer.currency}</span>
                   </div>
                 );
               })}
@@ -142,9 +142,9 @@ export default function Admin() {
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600" data-testid="admin-orders-list">
             {orders.map((order) => (
-              <div key={order.id} className="flex justify-between border-b border-slate-100 py-2">
-                <span>{order.order_number}</span>
-                <span>{order.status}</span>
+              <div key={order.id} className="flex justify-between border-b border-slate-100 py-2" data-testid={`admin-order-${order.id}`}>
+                <span data-testid={`admin-order-number-${order.id}`}>{order.order_number}</span>
+                <span data-testid={`admin-order-status-${order.id}`}>{order.status}</span>
               </div>
             ))}
           </div>
@@ -153,9 +153,9 @@ export default function Admin() {
         <TabsContent value="subscriptions" className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600" data-testid="admin-subscriptions-list">
             {subscriptions.map((sub) => (
-              <div key={sub.id} className="flex justify-between border-b border-slate-100 py-2">
-                <span>{sub.plan_name}</span>
-                <span>{sub.status}</span>
+              <div key={sub.id} className="flex justify-between border-b border-slate-100 py-2" data-testid={`admin-subscription-${sub.id}`}>
+                <span data-testid={`admin-subscription-name-${sub.id}`}>{sub.plan_name}</span>
+                <span data-testid={`admin-subscription-status-${sub.id}`}>{sub.status}</span>
               </div>
             ))}
           </div>
@@ -222,10 +222,10 @@ export default function Admin() {
         <TabsContent value="sync" className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600" data-testid="admin-sync-list">
             {logs.map((log) => (
-              <div key={log.id} className="flex items-center justify-between border-b border-slate-100 py-2">
+              <div key={log.id} className="flex items-center justify-between border-b border-slate-100 py-2" data-testid={`admin-sync-${log.id}`}>
                 <div>
-                  <div>{log.entity_type} — {log.status}</div>
-                  <div className="text-xs text-slate-400">Attempts: {log.attempts}</div>
+                  <div data-testid={`admin-sync-status-${log.id}`}>{log.entity_type} — {log.status}</div>
+                  <div className="text-xs text-slate-400" data-testid={`admin-sync-attempts-${log.id}`}>Attempts: {log.attempts}</div>
                 </div>
                 <Button
                   variant="outline"
