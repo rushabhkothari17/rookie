@@ -1669,7 +1669,12 @@ async def startup_tasks():
     )
     await db.products.update_many(
         {"category": "Ongoing Plans"},
-        {"$set": {"category": "Manages Services"}},
+        {"$set": {"category": "Managed Services"}},
+    )
+    # Fix "Manages Services" typo to "Managed Services"
+    await db.products.update_many(
+        {"category": "Manages Services"},
+        {"$set": {"category": "Managed Services"}},
     )
     await db.customers.update_many(
         {"allow_bank_transfer": {"$exists": False}},
@@ -1679,6 +1684,9 @@ async def startup_tasks():
         {"allow_card_payment": {"$exists": False}},
         {"$set": {"allow_card_payment": False}},
     )
+    # Remove duplicate Historical Accounting product
+    await db.products.delete_one({"id": "prod_accounting_cleanup"})
+    await db.order_items.delete_many({"product_id": "prod_accounting_cleanup"})
 
 
 
