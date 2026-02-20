@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import TopNav from "@/components/TopNav";
 import CategoryTabs from "@/components/CategoryTabs";
 
@@ -6,7 +7,7 @@ export default function AppShell({
   children,
 }: {
   activeCategory?: string | null;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="min-h-screen aa-bg" data-testid="app-shell">
