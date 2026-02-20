@@ -138,6 +138,10 @@ export default function ProductDetail() {
     );
   }, [pricing]);
 
+  const requiresStripePrice =
+    pricing?.is_subscription && !product?.stripe_price_id;
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center" data-testid="product-loading">
