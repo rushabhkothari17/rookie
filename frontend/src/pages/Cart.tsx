@@ -161,9 +161,9 @@ export default function Cart() {
               ) : (
                 <div className="space-y-3">
                   {grouped.scope.map((item: any) => (
-                    <div key={item.product.id} className="rounded-xl border border-slate-200 bg-white p-4">
-                      <div className="text-sm font-semibold text-slate-900">{item.product.name}</div>
-                      <div className="text-xs text-slate-500">Estimated ${item.pricing.subtotal.toFixed(2)}</div>
+                    <div key={item.product.id} className="rounded-xl border border-slate-200 bg-white p-4" data-testid={`cart-scope-item-${item.product.id}`}>
+                      <div className="text-sm font-semibold text-slate-900" data-testid={`cart-scope-name-${item.product.id}`}>{item.product.name}</div>
+                      <div className="text-xs text-slate-500" data-testid={`cart-scope-estimate-${item.product.id}`}>Estimated ${item.pricing.subtotal.toFixed(2)}</div>
                     </div>
                   ))}
                   <Button
@@ -185,8 +185,8 @@ export default function Cart() {
               ) : (
                 <div className="space-y-3">
                   {grouped.external.map((item: any) => (
-                    <div key={item.product.id} className="rounded-xl border border-slate-200 bg-white p-4">
-                      <div className="text-sm font-semibold text-slate-900">{item.product.name}</div>
+                    <div key={item.product.id} className="rounded-xl border border-slate-200 bg-white p-4" data-testid={`cart-external-item-${item.product.id}`}>
+                      <div className="text-sm font-semibold text-slate-900" data-testid={`cart-external-name-${item.product.id}`}>{item.product.name}</div>
                       <a
                         href={item.pricing.external_url}
                         target="_blank"
