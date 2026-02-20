@@ -18,6 +18,9 @@ export default function Cart() {
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState<any>(null);
   const [promoError, setPromoError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [termsContent, setTermsContent] = useState<any>(null);
 
   const allowBankTransfer = customer?.allow_bank_transfer ?? true;
   const allowCardPayment = customer?.allow_card_payment ?? false;
