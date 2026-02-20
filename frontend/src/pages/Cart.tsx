@@ -151,12 +151,23 @@ export default function Cart() {
 
   const showFee = paymentMethod === "card";
   const oneTimeSubtotal = grouped.oneTime.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
-  const oneTimeFee = showFee ? grouped.oneTime.reduce((sum: number, item: any) => sum + item.pricing.fee, 0) : 0;
-  const oneTimeTotal = oneTimeSubtotal + oneTimeFee;
-
   const subscriptionSubtotal = grouped.subscriptions.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
-  const subscriptionFee = showFee ? grouped.subscriptions.reduce((sum: number, item: any) => sum + item.pricing.fee, 0) : 0;
-  const subscriptionTotal = subscriptionSubtotal + subscriptionFee;
+  const totalSubtotal = oneTimeSubtotal + subscriptionSubtotal;
+  
+  // Calculate discount
+  let discountAmount = 0;
+  if (promoApplied) {
+    if (promoApplied.discount_type === "percent") {
+      discountAmount = Math.round(totalSubtotal * promoApplied.discount_value) / 100;
+    } else {
+      discountAmount = Math.min(promoApplied.discount_value, totalSubtotal);
+    }
+  }
+  
+  // Fee is calculated on discounted subtotal
+  const discountedSubtotal = totalSubtotal - discountAmount;
+  const fee = showFee ? Math.round(discountedSubtotal * 5) / 100 : 0;
+  const total = discountedSubtotal + fee;
 
   return (
     <div className="space-y-8" data-testid="cart-page">
