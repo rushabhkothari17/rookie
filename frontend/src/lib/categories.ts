@@ -42,7 +42,7 @@ export const categoryFromSlug = (slug: string | null, available: string[]) => {
     return "Migrate to Zoho";
   }
   if (normalized === "ongoing-plans") {
-    return "Manages Services";
+    return "Managed Services";
   }
   const fromSlug = Object.entries(CATEGORY_SLUGS).find(
     ([, value]) => value === normalized,
