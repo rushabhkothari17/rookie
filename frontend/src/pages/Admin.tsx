@@ -21,6 +21,7 @@ export default function Admin() {
   const [products, setProducts] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
+  const [terms, setTerms] = useState<any[]>([]);
   const [currencyOverride, setCurrencyOverride] = useState({ email: "", currency: "USD" });
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -31,12 +32,33 @@ export default function Admin() {
     discount_type: "percent",
     discount_value: 10,
     applies_to: "both",
+    applies_to_products: "all",
+    product_ids: [],
     expiry_date: "",
     max_uses: "",
     one_time_code: false,
     enabled: true,
   });
+  const [newTerms, setNewTerms] = useState({
+    title: "",
+    content: "",
+    is_default: false,
+    status: "active",
+  });
+  const [manualOrder, setManualOrder] = useState({
+    customer_email: "",
+    product_id: "",
+    quantity: 1,
+    inputs: {},
+    subtotal: 0,
+    discount: 0,
+    fee: 0,
+    status: "paid",
+    internal_note: "",
+  });
   const [showPromoDialog, setShowPromoDialog] = useState(false);
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
+  const [showManualOrderDialog, setShowManualOrderDialog] = useState(false);
 
   const load = async () => {
     const [custRes, orderRes, subRes, productRes, logRes, promoRes] = await Promise.all([
