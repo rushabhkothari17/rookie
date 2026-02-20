@@ -12,6 +12,8 @@ import Store from "@/pages/Store";
 import ProductDetail from "@/pages/ProductDetail";
 import Cart from "@/pages/Cart";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import BankTransferSuccess from "@/pages/BankTransferSuccess";
+
 import Portal from "@/pages/Portal";
 import Admin from "@/pages/Admin";
 
