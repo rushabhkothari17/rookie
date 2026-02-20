@@ -164,13 +164,8 @@ export default function Cart() {
                       disabled={
                         loading ||
                         currencyUnsupported ||
-                        (section.checkoutType === "subscription" 
-
-                          
-
-
-
-? subscriptionMissingPrice : false)
+                        (section.checkoutType === "subscription" &&
+                          subscriptionMissingPrice)
                       }
                       data-testid={`cart-checkout-${section.checkoutType}`}
                     >
