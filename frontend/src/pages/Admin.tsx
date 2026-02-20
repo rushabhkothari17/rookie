@@ -529,6 +529,59 @@ export default function Admin() {
           </div>
         </TabsContent>
 
+        <TabsContent value="terms" className="space-y-4">
+          <div className="flex justify-end">
+            <Dialog open={showTermsDialog} onOpenChange={setShowTermsDialog}>
+              <DialogTrigger asChild>
+                <Button>Create Terms & Conditions</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader><DialogTitle>Create Terms & Conditions</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Title</label>
+                    <Input placeholder="Default Terms & Conditions" value={newTerms.title} onChange={(e) => setNewTerms({ ...newTerms, title: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Content (supports dynamic tags)</label>
+                    <Textarea placeholder="{company_name} {product_name} - TEST" value={newTerms.content} onChange={(e) => setNewTerms({ ...newTerms, content: e.target.value })} rows={8} />
+                    <p className="text-xs text-slate-400">Available tags: {'{product_name}'}, {'{user_name}'}, {'{company_name}'}, {'{user_job_title}'}, {'{user_email}'}, {'{user_phone}'}, {'{user_address_line1}'}, {'{user_city}'}, {'{user_state}'}, {'{user_postal}'}, {'{user_country}'}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" checked={newTerms.is_default} onChange={(e) => setNewTerms({ ...newTerms, is_default: e.target.checked })} />
+                    <label className="text-sm">Set as default T&C</label>
+                  </div>
+                  <Button onClick={handleCreateTerms} className="w-full">Create</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50">
+                  <TableHead>Title</TableHead>
+                  <TableHead>Preview</TableHead>
+                  <TableHead>Default</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {terms.map((t: any) => (
+                  <TableRow key={t.id} className="border-b border-slate-100">
+                    <TableCell className="font-semibold">{t.title}</TableCell>
+                    <TableCell className="text-xs text-slate-500 max-w-xs truncate">{t.content}</TableCell>
+                    <TableCell>{t.is_default ? <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Default</span> : "—"}</TableCell>
+                    <TableCell><span className={`text-xs px-2 py-1 rounded ${t.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>{t.status}</span></TableCell>
+                    <TableCell className="text-xs">{new Date(t.created_at).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+
         <TabsContent value="catalog" className="space-y-4">
           <div className="flex items-center gap-3">
             <label className="text-sm text-slate-500">Filter:</label>
