@@ -1,7 +1,7 @@
 export const CATEGORY_ORDER = [
   "Zoho Express Setup",
   "Migrate to Zoho",
-  "Manages Services",
+  "Managed Services",
   "Build & Automate",
   "Accounting on Zoho",
   "Audit & Optimize",
@@ -10,7 +10,7 @@ export const CATEGORY_ORDER = [
 export const CATEGORY_SLUGS: Record<string, string> = {
   "Zoho Express Setup": "start-here",
   "Migrate to Zoho": "migrations",
-  "Manages Services": "ongoing-plans",
+  "Managed Services": "ongoing-plans",
   "Build & Automate": "build-automate",
   "Accounting on Zoho": "accounting-on-zoho",
   "Audit & Optimize": "audit-optimize",
@@ -19,8 +19,8 @@ export const CATEGORY_SLUGS: Record<string, string> = {
 export const displayCategory = (category: string) => {
   if (category === "Start Here") return "Zoho Express Setup";
   if (category === "Migrations") return "Migrate to Zoho";
-  if (category === "Ongoing Plans" || category === "Managed Services") {
-    return "Manages Services";
+  if (category === "Ongoing Plans" || category === "Manages Services") {
+    return "Managed Services";
   }
   return category;
 };
