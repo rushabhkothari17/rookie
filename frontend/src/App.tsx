@@ -45,10 +45,10 @@ const ProtectedRoute = ({
   return <>{children}</>;
 };
 
-const AuthedLayout = () => (
-  <div className="min-h-screen bg-slate-50">
+const BaseLayout = () => (
+  <div className="min-h-screen aa-bg" data-testid="base-layout">
     <TopNav />
-    <main className="aa-container py-8" data-testid="authed-layout">
+    <main className="aa-container py-10" data-testid="base-layout-main">
       <Outlet />
     </main>
   </div>
@@ -60,10 +60,7 @@ export default function App() {
       <CartProvider>
         <BrowserRouter>
           <Routes>
-            <Route
-              path="/"
-              element={<Navigate to="/store" replace />}
-            />
+            <Route path="/" element={<Navigate to="/store" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify" element={<VerifyEmail />} />
@@ -71,23 +68,25 @@ export default function App() {
               path="/"
               element={
                 <ProtectedRoute>
-                  <AuthedLayout />
+                  <Outlet />
                 </ProtectedRoute>
               }
             >
               <Route path="/store" element={<Store />} />
               <Route path="/product/:productId" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout/success" element={<CheckoutSuccess />} />
-              <Route path="/portal" element={<Portal />} />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <Admin />
-                  </ProtectedRoute>
-                }
-              />
+              <Route element={<BaseLayout />}>
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                <Route path="/portal" element={<Portal />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <Admin />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
