@@ -75,9 +75,20 @@ export default function TopNav() {
                 {user?.full_name?.split(" ")[0] || "Account"}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" data-testid="nav-user-menu">
-              <DropdownMenuItem data-testid="nav-user-email">
-                {user?.email}
+            <DropdownMenuContent align="end" className="w-56" data-testid="nav-user-menu">
+              <div className="px-3 py-2" data-testid="nav-user-info">
+                <div className="text-sm font-semibold text-slate-900" data-testid="nav-user-name">
+                  {user?.full_name}
+                </div>
+                <div className="text-xs text-slate-500" data-testid="nav-user-email">
+                  {user?.email}
+                </div>
+              </div>
+              <DropdownMenuItem asChild data-testid="nav-user-profile">
+                <Link to="/profile">My Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild data-testid="nav-user-portal">
+                <Link to="/portal">Portal</Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-600"
