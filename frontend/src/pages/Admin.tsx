@@ -175,7 +175,12 @@ export default function Admin() {
                     {order.status}
                   </div>
                 </div>
-                <Dialog>
+                <Dialog
+                  open={selectedOrder?.id === order.id}
+                  onOpenChange={(open) => {
+                    if (!open) setSelectedOrder(null);
+                  }}
+                >
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
