@@ -186,7 +186,7 @@ def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
     return [
         {
             "id": "prod_zoho_one_express",
-            "category": "Start Here",
+            "category": "Zoho Express Setup",
             "sku": "START-ZOHO-ONE-EXP",
             "name": "Zoho One Express Setup",
             "tagline": "Launch Zoho One with a clean, automation-ready foundation.",
@@ -222,7 +222,7 @@ def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
         },
         {
             "id": "prod_zoho_crm_express",
-            "category": "Start Here",
+            "category": "Zoho Express Setup",
             "sku": "START-ZOHO-CRM-EXP",
             "name": "Zoho CRM Express Setup",
             "tagline": "Go live fast with a CRM that fits your pipeline.",
@@ -247,7 +247,7 @@ def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
         },
         {
             "id": "prod_zoho_books_express",
-            "category": "Start Here",
+            "category": "Zoho Express Setup",
             "sku": "START-ZOHO-BOOKS-EXP",
             "name": "Zoho Books Express Setup",
             "tagline": "Stand up clean accounting without the spreadsheet chaos.",
@@ -271,7 +271,7 @@ def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
         },
         {
             "id": "prod_zoho_expense_setup",
-            "category": "Start Here",
+            "category": "Zoho Express Setup",
             "sku": "START-ZOHO-EXPENSE",
             "name": "Zoho Expense Setup",
             "tagline": "Put expense control on autopilot.",
@@ -290,7 +290,7 @@ def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
         },
         {
             "id": "prod_zoho_people_setup",
-            "category": "Start Here",
+            "category": "Zoho Express Setup",
             "sku": "START-ZOHO-PEOPLE",
             "name": "Zoho People Setup",
             "tagline": "Launch HR operations with structured policies.",
