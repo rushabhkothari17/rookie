@@ -1396,7 +1396,57 @@ async def apply_catalog_overrides():
             "id": "prod_accounting_cleanup",
             "category": "Accounting on Zoho",
             "sku": "ACC-HISTORICAL-CLEANUP",
-            "name": "Historical Accounting 
+            "name": "Historical Accounting & Data Cleanup",
+            "tagline": "Fix past periods, clean up messy books, and get reporting back on track.",
+            "description_long": "Fix past periods, clean up messy books, and get reporting back on track.",
+            "bullets_included": [
+                "Cleanup of miscategorized transactions",
+                "Catch-up bookkeeping for past periods",
+                "Transaction categorization & Reconciliations",
+            ],
+            "bullets_excluded": ["Ongoing monthly bookkeeping"],
+            "bullets_needed": ["Access to past period data", "Bank statements", "Chart of accounts"],
+            "next_steps": ["Data intake", "Cleanup plan", "Reconciliation and review"],
+            "faqs": ["Hour tiers can be adjusted in admin."],
+            "pricing_type": "tiered",
+            "base_price": None,
+            "is_subscription": False,
+            "pricing_rules": {
+                "variants": [
+                    {"id": "10", "label": "10 hours", "price": 900.0},
+                    {"id": "20", "label": "20 hours", "price": 1800.0},
+                    {"id": "30", "label": "30 hours", "price": 2700.0},
+                    {"id": "40", "label": "40 hours", "price": 3600.0},
+                    {"id": "50", "label": "50 hours", "price": 4500.0},
+                ]
+            },
+            "card_tag": "Project based",
+            "card_title": "Historical Accounting & Data Cleanup",
+            "card_description": "Fix past periods, clean up messy books, and get reporting back on track.",
+            "card_bullets": [
+                "Cleanup of miscategorized transactions",
+                "Catch-up bookkeeping for past periods",
+                "Transaction categorization & Reconciliations",
+            ],
+            "is_active": True,
+        },
+    ]
+
+    for product in new_products:
+        existing = await db.products.find_one({"sku": product["sku"]}, {"_id": 0})
+        if existing:
+            continue
+        product["price_inputs"] = build_price_inputs(product)
+        await db.products.insert_one(product)
+        await db.pricing_rules.insert_one(
+            {
+                "id": make_id(),
+                "product_id": product["id"],
+                "rule_json": product.get("pricing_rules", {}),
+            }
+        )
+
+
 @app.on_event("startup")
 async def startup_tasks():
     await seed_admin_user()
