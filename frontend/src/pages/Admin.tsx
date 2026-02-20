@@ -240,7 +240,12 @@ export default function Admin() {
                   <div className="text-sm font-semibold text-slate-900">{product.name}</div>
                   <div className="text-xs text-slate-500">{product.sku}</div>
                 </div>
-                <Dialog>
+                <Dialog
+                  open={selectedProduct?.id === product.id}
+                  onOpenChange={(open) => {
+                    if (!open) setSelectedProduct(null);
+                  }}
+                >
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
