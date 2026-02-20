@@ -17,9 +17,7 @@ const outcomeCopy = (product: any) => [
 
 export default function ProductHero({ product }: { product: any }) {
   const tags = [displayCategory(product.category)];
-  if (product.pricing_type === "calculator") tags.push("Calculator");
-  if (product.is_subscription) tags.push("Subscription");
-  if (!product.is_subscription && product.pricing_type !== "calculator") tags.push("One-time");
+  if (product.card_tag) tags.push(product.card_tag);
   if (product.pricing_rules?.bundle_free_items?.length) {
     tags.push("Includes 1 month support");
   }
