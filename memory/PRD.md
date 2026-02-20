@@ -7,64 +7,88 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - **Frontend**: React + TypeScript, TailwindCSS, Shadcn UI
 - **Backend**: FastAPI (Python)
 - **Database**: MongoDB
-- **Payments**: Stripe (Card), GoCardless (Bank Transfer - MOCKED)
+- **Payments**: Stripe (Card), GoCardless (Bank Transfer - ready for integration)
 - **Auth**: JWT with email verification
+
+## Recent P0 Fixes (Feb 20, 2026)
+
+### 1. Signup Validation ✅
+- All fields required EXCEPT Address Line 2
+- Added new required field: **Job Title**
+- Country determined at signup and locked thereafter
+
+### 2. Country Lock ✅
+- Profile page: Country field is read-only/disabled
+- Backend: Rejects any country change attempts (403 error) for non-admin users
+
+### 3. Promo Code System ✅
+- **Admin Panel**: Full promo code management
+  - Create/edit/toggle promo codes
+  - Fields: code, discount_type, discount_value, applies_to, expiry_date, max_uses, one_time_code, enabled
+  - Computed Status column: Active/Inactive
+- **Checkout**: Promo code input with Apply button
+- **Calculation**: Discount applied BEFORE fee → fee = 5% * (subtotal - discount)
+- **Persisted**: promo_code, discount_amount stored on Order
+
+### 4. View Details Behavior ✅
+- Opens in SAME tab (removed target=_blank)
+
+### 5. Naming Fix ✅
+- "Managed Services" everywhere (fixed "Manages Services" typo)
+
+### 6. Fixed-Scope Development ✅
+- Request Scope button opens modal
+- Form captures: project_summary, desired_outcomes, apps_involved, timeline_urgency, budget_range, additional_notes
+- Creates scope_request order and sends email to rushabh@automateaccounts.com (MOCKED)
+
+### 7. Duplicate Product Fix ✅
+- "Historical Accounting & Data Cleanup" now appears only once
+
+### 8. Admin Improvements ✅
+- **Catalog Tab**: Billing Type column (One-time/Subscription badges) + filter dropdown
+- **Orders Tab**: All required columns (Date, Amount paid, Fee, Customer name, Customer email, Payment method, Products) + date range/email filters
+
+### 9. Store Personalization ✅
+- Header shows "Hi, {firstName}" for logged-in users
+
+### 10. GoCardless Readiness ✅
+- Sandbox token stored: `sandbox_gZiP8udcwMBiBek0c9EIbBdi33tB7qIOzfHAE3AN`
+- Ready for future integration
 
 ## Core Features
 
-### 1. Authentication & Authorization ✅
-- User registration with email verification
+### Authentication & Authorization ✅
+- User registration with email verification + job title field
 - Login with JWT tokens
 - Auth-gated store access
 - Admin role with elevated permissions
 - **Admin Credentials**: admin@automateaccounts.local / ChangeMe123!
 
-### 2. Product Catalog ✅
-- 23 products across 6 categories
+### Product Catalog ✅
+- 22 products across 6 categories
 - Category tabs with horizontal pill navigation
 - Product detail pages with pricing breakdown
 - Price inputs (selectors, hour pickers, etc.)
 
-### 3. Payment Methods ✅
-- **Bank Transfer (GoCardless)** - Default, no fee, MOCKED
+### Payment Methods ✅
+- **Bank Transfer (GoCardless)** - Default, no fee
   - Creates order with status `awaiting_bank_transfer`
-  - Shows confirmation page with instructions
 - **Card Payment (Stripe)** - 5% processing fee
   - Only available if admin enables per customer
-  - Redirects to Stripe Checkout
 
-### 4. Admin Panel ✅
-- **Customers Tab**: View all customers, toggle payment methods (Bank Transfer/Card Payment)
-- **Orders Tab**: View all orders with filters (date, product, email)
-- **Subscriptions Tab**: Manage subscriptions
-- **Catalog Tab**: Edit product content
-- **Zoho Sync Logs Tab**: View sync history (mocked)
-
-### 5. Customer Portal ✅
-- Personalized welcome message ("Welcome, {Name}")
-- One-time orders table with payment method column
-- Subscriptions table with renewal dates
-- Order details with status tracking
-
-### 6. Store UI/UX ✅
-- Premium SaaS design with subtle gradients
-- Sticky header with blur effect
-- Horizontal category pill tabs
-- Modern card design (rounded-3xl, subtle shadow)
-- Product cards WITHOUT prices (prices only on detail page)
-- "View Details" opens in new tab
+### Promo Codes ✅
+- Percent or fixed discount
+- Apply to one-time, subscription, or both
+- Expiry date, max uses, one-time per customer options
+- Discount applied before fee calculation
 
 ## Category Structure
 1. Zoho Express Setup
-2. Migrate to Zoho (formerly "Migrations")
-3. Managed Services (formerly "Ongoing Plans")
+2. Migrate to Zoho
+3. Managed Services ← Fixed naming
 4. Build & Automate
 5. Accounting on Zoho
 6. Audit & Optimize
-
-## Hero Copy
-- **Title**: "One Partner, One Roadmap - We've Got Zoho Covered"
-- **Subtitle**: "All-in-one Zoho partner for setup, customization, migrations, training and ongoing support."
 
 ## Data Models
 
@@ -75,6 +99,7 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
   "email": "string",
   "password_hash": "string",
   "full_name": "string",
+  "job_title": "string",  // NEW - required
   "is_verified": "boolean",
   "is_admin": "boolean"
 }
@@ -89,8 +114,23 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
   "phone": "string",
   "currency": "USD|CAD",
   "allow_bank_transfer": "boolean (default: true)",
-  "allow_card_payment": "boolean (default: false)",
-  "stripe_customer_id": "string|null"
+  "allow_card_payment": "boolean (default: false)"
+}
+```
+
+### Promo Codes (NEW)
+```json
+{
+  "id": "string",
+  "code": "string (unique, uppercase)",
+  "discount_type": "percent|fixed",
+  "discount_value": "number",
+  "applies_to": "one-time|subscription|both",
+  "expiry_date": "string|null",
+  "max_uses": "number|null",
+  "one_time_code": "boolean",
+  "usage_count": "number",
+  "enabled": "boolean"
 }
 ```
 
@@ -100,73 +140,54 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
   "id": "string",
   "order_number": "string",
   "customer_id": "string",
-  "status": "pending|paid|awaiting_bank_transfer|cancelled",
+  "status": "pending|paid|awaiting_bank_transfer|cancelled|scope_pending",
   "subtotal": "number",
+  "discount_amount": "number",  // NEW
+  "promo_code": "string|null",  // NEW
   "fee": "number",
   "total": "number",
   "currency": "USD|CAD",
   "payment_method": "bank_transfer|card",
-  "type": "one_time|subscription_start|subscription_renewal"
+  "type": "one_time|subscription_start|subscription_renewal|scope_request"
 }
 ```
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - User registration
+- `POST /api/auth/register` - User registration (requires job_title)
 - `POST /api/auth/login` - User login
-- `GET /api/auth/verify/{token}` - Email verification
 
-### Products
-- `GET /api/products` - List all products
-- `GET /api/products/{id}` - Get product details
-- `POST /api/pricing/calc` - Calculate pricing
+### Promo Codes
+- `GET /api/admin/promo-codes` - List all promo codes (admin)
+- `POST /api/admin/promo-codes` - Create promo code (admin)
+- `PUT /api/admin/promo-codes/{id}` - Update promo code (admin)
+- `DELETE /api/admin/promo-codes/{id}` - Delete promo code (admin)
+- `POST /api/promo-codes/validate` - Validate promo code (user)
 
 ### Checkout
-- `POST /api/checkout/session` - Create Stripe checkout session
-- `POST /api/checkout/bank-transfer` - Create bank transfer order
+- `POST /api/checkout/session` - Create Stripe checkout (supports promo_code)
+- `POST /api/checkout/bank-transfer` - Create bank transfer order (supports promo_code)
 
-### Orders
-- `GET /api/orders` - List user's orders
-- `POST /api/orders/preview` - Preview cart pricing
-
-### Admin
-- `GET /api/admin/customers` - List customers with addresses
-- `PUT /api/admin/customers/{id}/payment-methods` - Update payment methods
-- `GET /api/admin/orders` - List all orders
-- `GET /api/admin/subscriptions` - List all subscriptions
-
-## Completed Work (Feb 20, 2026)
-- ✅ Full-stack application setup (React + FastAPI + MongoDB)
-- ✅ Authentication with JWT and email verification
-- ✅ Product catalog with 23 products across 6 categories
-- ✅ Modern UI/UX with premium SaaS design
-- ✅ Payment method selection (Bank Transfer / Card)
-- ✅ Admin panel with customer payment toggles
-- ✅ Portal with welcome personalization and payment columns
-- ✅ Bank transfer order flow (mocked)
-- ✅ Product cards without prices (only detail page)
-- ✅ Category tabs with correct order and naming
-- ✅ Store hero copy updated
+### Scope Request
+- `POST /api/orders/scope-request-form` - Submit scope request with form data
 
 ## Mocked Integrations
-- **GoCardless/Bank Transfer**: Creates order with status only, no real payment
+- **GoCardless/Bank Transfer**: Creates order with status only
 - **Zoho CRM & Books**: Creates log entries instead of API calls
+- **Email to rushabh@automateaccounts.com**: Creates email_outbox entry, not actually sent
 
 ## Pending/Future Work
-- [ ] Full Zoho CRM & Books integration
 - [ ] Real GoCardless integration
-- [ ] Subscription renewal order creation on webhook
-- [ ] My Profile page implementation
-- [ ] Admin order/subscription filtering
-- [ ] New products: Fixed-Scope Development, Historical Accounting & Data Cleanup
-- [ ] Enterprise pricing dropdown
+- [ ] Full Zoho CRM & Books integration
+- [ ] Real email sending for scope requests
+- [ ] Subscription renewal order creation on Stripe webhook
 
 ## Files Reference
 - `/app/backend/server.py` - Main backend API
-- `/app/frontend/src/App.tsx` - Main router
-- `/app/frontend/src/pages/Store.tsx` - Store page
-- `/app/frontend/src/pages/Portal.tsx` - Customer portal
-- `/app/frontend/src/pages/Admin.tsx` - Admin panel
-- `/app/frontend/src/pages/Cart.tsx` - Cart with payment selection
-- `/app/frontend/src/pages/BankTransferSuccess.tsx` - Bank transfer confirmation
+- `/app/frontend/src/pages/Admin.tsx` - Admin panel with promo codes
+- `/app/frontend/src/pages/Cart.tsx` - Cart with promo code input
+- `/app/frontend/src/pages/Signup.tsx` - Registration with job title
+- `/app/frontend/src/pages/Profile.tsx` - Profile with country locked
+- `/app/frontend/src/pages/ProductDetail.tsx` - Scope request modal
+- `/app/frontend/src/lib/categories.ts` - Category naming (Managed Services)
