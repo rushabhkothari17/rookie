@@ -150,6 +150,12 @@ class CheckoutSessionRequestBody(BaseModel):
     origin_url: str
 
 
+class BankTransferCheckoutRequest(BaseModel):
+    items: List[CartItemInput]
+    checkout_type: str
+
+
+
 class ScopeRequestBody(BaseModel):
     items: List[CartItemInput]
 
