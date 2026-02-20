@@ -17,6 +17,7 @@ export default function Signup() {
   const { register } = useAuth();
   const [form, setForm] = useState({
     full_name: "",
+    job_title: "",
     company_name: "",
     email: "",
     phone: "",
@@ -41,6 +42,7 @@ export default function Signup() {
     try {
       const response = await register({
         full_name: form.full_name,
+        job_title: form.job_title,
         company_name: form.company_name,
         email: form.email,
         phone: form.phone,
