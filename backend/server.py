@@ -172,6 +172,11 @@ class AdminProductUpdate(BaseModel):
     is_active: bool = True
 
 
+class AdminOrderUpdate(BaseModel):
+    manual_status: Optional[str] = None
+    internal_note: Optional[str] = None
+
+
 class CurrencyOverrideRequest(BaseModel):
     customer_email: str
     currency: str
