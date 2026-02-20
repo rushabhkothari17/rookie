@@ -37,10 +37,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(response.data.user);
       setCustomer(response.data.customer);
       setAddress(response.data.address);
-    } catch (error) {
-      setUser(null);
-      setCustomer(null);
-      setAddress(null);
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        setUser(null);
+        setCustomer(null);
+        setAddress(null);
+      }
     } finally {
       setLoading(false);
     }
