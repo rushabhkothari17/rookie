@@ -2118,6 +2118,10 @@ async def create_checkout_session(
     request: Request,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    # Validate T&C acceptance
+    if not payload.terms_accepted:
+        raise HTTPException(status_code=400, detail="You must accept the Terms & Conditions to proceed")
+    
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
@@ -2142,10 +2146,11 @@ async def create_checkout_session(
         if len(subscription_items) != 1:
             raise HTTPException(status_code=400, detail="Subscription checkout supports one plan at a time")
         product = subscription_items[0]["product"]
-        stripe_price_id = product.get("stripe_price_id")
-        # For subscriptions with dynamic pricing, we'll use price_data instead
-        if not stripe_price_id and not subscription_items[0]["pricing"].get("subtotal"):
-            raise HTTPException(status_code=400, detail="Subscription checkout requires pricing configuration")
+        subtotal = subscription_items[0]["pricing"]["subtotal"]
+        
+        # Validate subscription has pricing
+        if not subtotal or subtotal <= 0:
+            raise HTTPException(status_code=400, detail="Subscription requires valid pricing")
 
     if checkout_type == "one_time":
         for item in order_items:
@@ -2157,7 +2162,7 @@ async def create_checkout_session(
     # Calculate base subtotal
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
     
-    # Apply promo code discount
+    # Apply promo code discount with product-level eligibility check
     promo_code_data = None
     discount_amount = 0.0
     if payload.promo_code:
@@ -2171,7 +2176,16 @@ async def create_checkout_session(
                 (applies_to == "one-time" and checkout_type == "one_time") or \
                 (applies_to == "subscription" and checkout_type == "subscription")
             
-            if not is_expired and not max_reached and type_matches:
+            # Check product-level eligibility
+            product_eligible = True
+            applies_to_products = promo.get("applies_to_products", "all")
+            if applies_to_products == "selected":
+                eligible_product_ids = promo.get("product_ids", [])
+                cart_product_ids = [i["product"]["id"] for i in order_items]
+                if not all(pid in eligible_product_ids for pid in cart_product_ids):
+                    product_eligible = False
+            
+            if not is_expired and not max_reached and type_matches and product_eligible:
                 if promo["discount_type"] == "percent":
                     discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
                 else:  # fixed
@@ -2182,6 +2196,21 @@ async def create_checkout_session(
     discounted_subtotal = subtotal - discount_amount
     fee = round_cents(discounted_subtotal * 0.05)
     total = round_cents(discounted_subtotal + fee)
+    
+    # Get T&C for the product and resolve tags
+    primary_product = order_items[0]["product"]
+    terms_id = payload.terms_id if payload.terms_id else primary_product.get("terms_id")
+    if not terms_id:
+        # Get default
+        default_terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+        terms_id = default_terms["id"] if default_terms else None
+    
+    rendered_terms_text = ""
+    if terms_id:
+        terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+        if terms:
+            address = await db.addresses.find_one({"user_id": user["id"]}, {"_id": 0})
+            rendered_terms_text = resolve_terms_tags(terms["content"], user, address, primary_product["name"])
 
     order_id = make_id()
     order_number = f"AA-{order_id.split('-')[0].upper()}"
@@ -2198,6 +2227,9 @@ async def create_checkout_session(
         "total": total,
         "currency": customer.get("currency"),
         "payment_method": "card",
+        "terms_id_used": terms_id,
+        "rendered_terms_text": rendered_terms_text,
+        "terms_accepted_at": now_iso(),
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
@@ -2244,12 +2276,14 @@ async def create_checkout_session(
             )
         else:
             # Use price_data for dynamic subscription pricing
+            # Stripe expects monthly recurring for subscriptions
             checkout_request = CheckoutSessionRequest(
-                amount=float(total),
+                amount=float(discounted_subtotal),  # No fee for subscriptions until renewal
                 currency=customer.get("currency", "USD").lower(),
                 success_url=success_url,
                 cancel_url=cancel_url,
                 metadata=metadata,
+                mode="subscription"
             )
     else:
         checkout_request = CheckoutSessionRequest(
