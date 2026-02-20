@@ -998,6 +998,8 @@ async def register(payload: RegisterRequest):
             "phone": payload.phone,
             "currency": currency,
             "currency_locked": False,
+            "allow_bank_transfer": True,
+            "allow_card_payment": False,
             "stripe_customer_id": None,
             "zoho_crm_contact_id": None,
             "zoho_books_contact_id": None,
