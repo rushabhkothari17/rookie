@@ -73,6 +73,12 @@ export default function Admin() {
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Update failed");
     }
+
+  const handleTabChange = () => {
+    setSelectedProduct(null);
+    setSelectedOrder(null);
+  };
+
   };
 
   const handleOrderSave = async () => {
