@@ -157,9 +157,49 @@ export default function Admin() {
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600" data-testid="admin-orders-list">
             {orders.map((order) => (
-              <div key={order.id} className="flex justify-between border-b border-slate-100 py-2" data-testid={`admin-order-${order.id}`}>
-                <span data-testid={`admin-order-number-${order.id}`}>{order.order_number}</span>
-                <span data-testid={`admin-order-status-${order.id}`}>{order.status}</span>
+              <div key={order.id} className="flex items-center justify-between border-b border-slate-100 py-2" data-testid={`admin-order-${order.id}`}>
+                <div>
+                  <div data-testid={`admin-order-number-${order.id}`}>{order.order_number}</div>
+                  <div className="text-xs text-slate-400" data-testid={`admin-order-status-${order.id}`}>
+                    {order.status}
+                  </div>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedOrder(order)}
+                      data-testid={`admin-order-edit-${order.id}`}
+                    >
+                      Update
+                    </Button>
+                  </DialogTrigger>
+                  {selectedOrder && selectedOrder.id === order.id && (
+                    <DialogContent data-testid="admin-order-dialog">
+                      <DialogHeader>
+                        <DialogTitle>Update order</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-3">
+                        <Input
+                          placeholder="Manual status"
+                          value={selectedOrder.manual_status || ""}
+                          onChange={(e) => setSelectedOrder({ ...selectedOrder, manual_status: e.target.value })}
+                          data-testid="admin-order-status-input"
+                        />
+                        <Textarea
+                          placeholder="Internal note"
+                          value={selectedOrder.internal_note || ""}
+                          onChange={(e) => setSelectedOrder({ ...selectedOrder, internal_note: e.target.value })}
+                          data-testid="admin-order-note-input"
+                        />
+                        <Button onClick={handleOrderSave} data-testid="admin-order-save">
+                          Save update
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  )}
+                </Dialog>
               </div>
             ))}
           </div>
