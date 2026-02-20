@@ -45,7 +45,7 @@ def admin_token(api_client):
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
     )
     if response.status_code == 200:
-        return response.json().get("access_token")
+        return response.json().get("token")
     pytest.skip("Admin authentication failed")
 
 
@@ -88,7 +88,7 @@ def test_user_token(api_client):
         json={"email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD},
     )
     if login_response.status_code == 200:
-        return login_response.json().get("access_token")
+        return login_response.json().get("token")
     pytest.skip("Test user authentication failed")
 
 
