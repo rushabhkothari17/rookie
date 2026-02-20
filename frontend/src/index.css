@@ -63,3 +63,21 @@ h3,
     --radius: 0.5rem;
   }
 }
+
+.aa-bg {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(99, 102, 241, 0.18), transparent 55%),
+    radial-gradient(900px 500px at 95% 10%, rgba(16, 185, 129, 0.12), transparent 50%),
+    radial-gradient(700px 420px at 30% 105%, rgba(14, 165, 233, 0.12), transparent 55%),
+    linear-gradient(to bottom, #ffffff, #f8fafc);
+}
+
+.aa-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.aa-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
