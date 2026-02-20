@@ -1645,37 +1645,6 @@ async def admin_update_order(
         await db.orders.update_one({"id": order_id}, {"$set": update})
     return {"message": "Order updated"}
 
-                user = await db.users.find_one({"id": customer.get("user_id")}, {"_id": 0})
-                if user:
-                    email_target = user.get("email")
-
-    if webhook_response.event_type == "invoice.paid" and email_target:
-        await db.email_outbox.insert_one(
-            {
-                "id": make_id(),
-                "to": email_target,
-                "subject": "Subscription renewal paid",
-                "body": "Your subscription renewal has been paid successfully.",
-                "type": "subscription_renewal",
-                "status": "MOCKED",
-                "created_at": now_iso(),
-            }
-        )
-    if webhook_response.event_type == "payment_intent.payment_failed" and email_target:
-        await db.email_outbox.insert_one(
-            {
-                "id": make_id(),
-                "to": email_target,
-                "subject": "Payment failed",
-                "body": "Your payment failed. Please update your payment method.",
-                "type": "payment_failed",
-                "status": "MOCKED",
-                "created_at": now_iso(),
-            }
-        )
-
-    return {"status": "ok"}
-
 
 @api_router.get("/admin/customers")
 async def admin_customers(admin: Dict[str, Any] = Depends(require_admin)):
