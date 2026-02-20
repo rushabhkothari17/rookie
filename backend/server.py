@@ -1451,9 +1451,26 @@ async def apply_catalog_overrides():
 async def startup_tasks():
     await seed_admin_user()
     await seed_products()
+    await apply_catalog_overrides()
     await db.products.update_many(
         {"category": "Start Here"},
         {"$set": {"category": "Zoho Express Setup"}},
+    )
+    await db.products.update_many(
+        {"category": "Migrations"},
+        {"$set": {"category": "Migrate to Zoho"}},
+    )
+    await db.products.update_many(
+        {"category": "Ongoing Plans"},
+        {"$set": {"category": "Manages Services"}},
+    )
+    await db.customers.update_many(
+        {"allow_bank_transfer": {"$exists": False}},
+        {"$set": {"allow_bank_transfer": True}},
+    )
+    await db.customers.update_many(
+        {"allow_card_payment": {"$exists": False}},
+        {"$set": {"allow_card_payment": False}},
     )
 
 
