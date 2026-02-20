@@ -47,7 +47,7 @@ export default function CheckoutSuccess() {
       <div className="rounded-xl border border-slate-200 bg-white p-6" data-testid="checkout-next-steps">
         <div className="text-sm font-semibold text-slate-900">Next steps</div>
         <ul className="mt-2 text-xs text-slate-500 space-y-1">
-          <li data-testid="checkout-next-steps-1">Well send a confirmation email with intake instructions.</li>
+          <li data-testid="checkout-next-steps-1">We'll send a confirmation email with intake instructions.</li>
           <li data-testid="checkout-next-steps-2">A delivery lead will schedule your kickoff within 2 business days.</li>
           <li data-testid="checkout-next-steps-3">You can track status and invoices in the customer portal.</li>
         </ul>
