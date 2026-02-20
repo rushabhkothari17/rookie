@@ -113,5 +113,6 @@ export default function Store() {
         </div>
       </section>
     </div>
+    </AppShell>
   );
 }
