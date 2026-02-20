@@ -1629,6 +1629,7 @@ async def register(payload: RegisterRequest):
         "email": payload.email.lower(),
         "password_hash": hashed,
         "full_name": payload.full_name,
+        "job_title": payload.job_title,
         "company_name": payload.company_name,
         "phone": payload.phone,
         "is_verified": False,
