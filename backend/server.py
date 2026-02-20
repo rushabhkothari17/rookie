@@ -1386,6 +1386,67 @@ async def apply_catalog_overrides():
             "bullets_needed": ["Business goals", "Access to existing systems", "Stakeholder availability"],
             "next_steps": ["Scope workshop", "Milestone plan approval", "Delivery kickoff"],
             "faqs": ["Request scope to start the fixed-scope planning process."],
+            "pricing_type": "scope_request",
+            "base_price": 0.0,
+            "is_subscription": False,
+            "pricing_rules": {},
+            "stripe_price_id": None,
+            "is_active": True,
+            "card_tag": "Project based",
+            "card_title": "Fixed-Scope Development",
+            "card_description": "Fixed-scope custom builds with defined deliverables and timelines.",
+            "card_bullets": [
+                "Custom applications and tailored workflows",
+                "Integrate with existing business tools",
+                "Clear scope, milestones, timeline and budget and more",
+            ],
+        },
+        {
+            "id": "prod_historical_accounting",
+            "category": "Accounting on Zoho",
+            "sku": "ACC-HISTORICAL",
+            "name": "Historical Accounting & Data Cleanup",
+            "tagline": "Fix past periods, clean up messy books, and get reporting back on track.",
+            "description_long": "Fix past periods, clean up messy books, and get reporting back on track.",
+            "bullets_included": [
+                "Cleanup of miscategorized transactions",
+                "Catch-up bookkeeping for past periods",
+                "Transaction categorization & Reconciliations",
+            ],
+            "bullets_excluded": ["Ongoing monthly bookkeeping"],
+            "bullets_needed": ["Bank statements", "Existing accounting data access"],
+            "next_steps": ["Assessment", "Cleanup execution", "Final review"],
+            "faqs": ["One-time purchase for a bank of hours."],
+            "pricing_type": "calculator",
+            "base_price": None,
+            "is_subscription": False,
+            "pricing_rules": {
+                "calc_type": "hours_pack",
+                "min_hours": 10,
+                "max_hours": 100,
+                "step": 10,
+                "pay_now_rate": 75.0,
+                "scope_later_rate": 90.0,
+            },
+            "stripe_price_id": None,
+            "is_active": True,
+            "card_tag": "Project based",
+            "card_title": "Historical Accounting & Data Cleanup",
+            "card_description": "Fix past periods, clean up messy books, and get reporting back on track.",
+            "card_bullets": [
+                "Cleanup of miscategorized transactions",
+                "Catch-up bookkeeping for past periods",
+                "Transaction categorization & Reconciliations",
+            ],
+        },
+    ]
+
+    for product in new_products:
+        existing = await db.products.find_one({"id": product["id"]}, {"_id": 0})
+        if existing:
+            continue
+        product["price_inputs"] = build_price_inputs(product)
+        await db.products.insert_one(product)
 
 
 @api_router.post("/checkout/bank-transfer")
