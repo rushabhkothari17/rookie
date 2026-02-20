@@ -1596,25 +1596,25 @@ async def admin_update_product(
     payload: AdminProductUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    await db.products.update_one(
-        {"id": product_id},
-        {
-            "$set": {
-                "name": payload.name,
-                "tagline": payload.tagline,
-                "description_long": payload.description_long,
-                "bullets_included": payload.bullets_included,
-                "bullets_excluded": payload.bullets_excluded,
-                "bullets_needed": payload.bullets_needed,
-                "next_steps": payload.next_steps,
-                "faqs": payload.faqs,
-                "pricing_rules": payload.pricing_rules,
-                "stripe_price_id": payload.stripe_price_id,
-                "is_active": payload.is_active,
-                "price_inputs": build_price_inputs({"pricing_type": payload.pricing_rules.get("pricing_type", "calculator"), "pricing_rules": payload.pricing_rules}),
-            }
-        },
-    )
+    existing = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Product not found")
+    updated_product = {
+        **existing,
+        "name": payload.name,
+        "tagline": payload.tagline,
+        "description_long": payload.description_long,
+        "bullets_included": payload.bullets_included,
+        "bullets_excluded": payload.bullets_excluded,
+        "bullets_needed": payload.bullets_needed,
+        "next_steps": payload.next_steps,
+        "faqs": payload.faqs,
+        "pricing_rules": payload.pricing_rules,
+        "stripe_price_id": payload.stripe_price_id,
+        "is_active": payload.is_active,
+    }
+    updated_product["price_inputs"] = build_price_inputs(updated_product)
+    await db.products.update_one({"id": product_id}, {"$set": updated_product})
     return {"message": "Product updated"}
 
 
