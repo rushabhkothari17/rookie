@@ -85,6 +85,9 @@ export default function App() {
               <Route element={<BaseLayout />}>
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                <Route path="/checkout/bank-transfer" element={<BankTransferSuccess />} />
+                <Route path="/profile" element={<Profile />} />
+
                 <Route path="/portal" element={<Portal />} />
                 <Route
                   path="/admin"
