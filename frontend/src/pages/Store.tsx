@@ -52,7 +52,8 @@ export default function Store() {
   }, [products, activeCategory]);
 
   return (
-    <div className="space-y-12" data-testid="store-page">
+    <AppShell activeCategory={activeCategory}>
+      <div className="space-y-10" data-testid="store-page">
       <section
         className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 px-10 py-14 text-white"
         data-testid="store-hero"
