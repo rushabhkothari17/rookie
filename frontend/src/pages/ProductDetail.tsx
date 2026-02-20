@@ -236,6 +236,16 @@ export default function ProductDetail() {
                 ))}
               </ol>
             </SectionCard>
+            <SectionCard title="FAQs" testId="product-faqs">
+              <ul className="space-y-2" data-testid="product-faqs-list">
+                {(product.faqs || []).map((item: string) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </SectionCard>
+            <Link to="/store" className="text-sm text-slate-500" data-testid="product-back-link">
+              Back to store
+            </Link>
           </div>
 
           <div className="space-y-4">
