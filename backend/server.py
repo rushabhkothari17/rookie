@@ -948,6 +948,424 @@ async def seed_products():
             "id": "app_settings",
             "zoho_books_migration_url": "https://paymentprocess-873927405.development.catalystserverless.com/app/index.html",
         }
+
+
+async def apply_catalog_overrides():
+    updates = [
+        {
+            "sku": "START-ZOHO-ONE-EXP",
+            "updates": {
+                "category": "Zoho Express Setup",
+                "card_tag": "Project based",
+                "card_title": "Zoho One",
+                "card_description": "Unified Zoho rollout across core apps with a clean operating baseline.",
+                "card_bullets": [
+                    "Configure upto 10 zoho apps",
+                    "Core setup + permissions baseline",
+                    "50 automation credits and more",
+                ],
+                "bullets_included": [
+                    "Configure upto 10 zoho apps",
+                    "Core setup + permissions baseline",
+                    "50 automation credits and more",
+                ],
+            },
+        },
+        {
+            "sku": "START-ZOHO-CRM-EXP",
+            "updates": {
+                "category": "Zoho Express Setup",
+                "card_tag": "Project based",
+                "card_title": "Zoho CRM",
+                "card_description": "Sales pipeline foundations with clean automation and reporting.",
+                "card_bullets": [
+                    "Configure CRM + 2 other Zoho Apps",
+                    "Leads, Deals & Pipelines",
+                    "25 automation credits and more",
+                ],
+                "bullets_included": [
+                    "Configure CRM + 2 other Zoho Apps",
+                    "Leads, Deals & Pipelines",
+                    "25 automation credits and more",
+                ],
+            },
+        },
+        {
+            "sku": "START-ZOHO-BOOKS-EXP",
+            "updates": {
+                "category": "Zoho Express Setup",
+                "card_tag": "Project based",
+                "card_title": "Zoho Books",
+                "card_description": "Get a clean accounting system with customizable reports and automation capabilities.",
+                "description_long": "Get a clean accounting system with customizable reports and automation capabilities.",
+                "card_bullets": [
+                    "Organization & permission setup",
+                    "PDF Templates, emails & modules",
+                    "Inventory, Multi-currency & Projects and more",
+                ],
+                "bullets_included": [
+                    "Organization & permission setup",
+                    "PDF Templates, emails & modules",
+                    "Inventory, Multi-currency & Projects and more",
+                ],
+            },
+        },
+        {
+            "sku": "START-ZOHO-EXPENSE",
+            "updates": {
+                "category": "Zoho Express Setup",
+                "card_tag": "Project based",
+                "card_title": "Zoho Expense",
+                "card_description": "Policy-led expense workflows with fast reimbursements.",
+                "card_bullets": [
+                    "Organization & permission setup",
+                    "Policy setup & reimbursements",
+                    "Receipt capture and more",
+                ],
+                "bullets_included": [
+                    "Organization & permission setup",
+                    "Policy setup & reimbursements",
+                    "Receipt capture and more",
+                ],
+            },
+        },
+        {
+            "sku": "START-ZOHO-PEOPLE",
+            "updates": {
+                "category": "Zoho Express Setup",
+                "card_tag": "Project based",
+                "card_title": "Zoho People",
+                "card_description": "Structured HR operations with configurable policies.",
+                "card_bullets": [
+                    "Organization & Employees setup",
+                    "Leave & attendance policy",
+                    "Templates and more",
+                ],
+                "bullets_included": [
+                    "Organization & Employees setup",
+                    "Leave & attendance policy",
+                    "Templates and more",
+                ],
+            },
+        },
+        {
+            "sku": "AUDIT-HEALTH-START",
+            "updates": {
+                "category": "Audit & Optimize",
+                "card_tag": "Project based",
+                "card_bullets": [
+                    "Up to 3 Zoho apps",
+                    "Upto 10 creator/catalyst functions",
+                    "1 x 1.5hr discovery calls and more",
+                ],
+                "bullets_included": [
+                    "Up to 3 Zoho apps",
+                    "Upto 10 creator/catalyst functions",
+                    "1 x 1.5hr discovery calls and more",
+                ],
+            },
+        },
+        {
+            "sku": "AUDIT-HEALTH-PLUS",
+            "updates": {
+                "category": "Audit & Optimize",
+                "card_tag": "Project based",
+                "card_bullets": [
+                    "Up to 10 Zoho apps",
+                    "Upto 10 creator/catalyst functions",
+                    "3 x 1.5hr discovery calls and more",
+                ],
+                "bullets_included": [
+                    "Up to 10 Zoho apps",
+                    "Upto 10 creator/catalyst functions",
+                    "3 x 1.5hr discovery calls and more",
+                ],
+            },
+        },
+        {
+            "sku": "BUILD-HOURS-PACK",
+            "updates": {
+                "category": "Build & Automate",
+                "name": "On-Demand Build Hours Pack",
+                "tagline": "Prepaid bank of hours for custom software builds or Zoho developments.",
+                "description_long": "Prepaid bank of hours for custom software builds or Zoho developments.",
+                "card_tag": "One time",
+                "card_title": "On-Demand Build Hours Pack",
+                "card_description": "Prepaid bank of hours for custom software builds or Zoho developments.",
+                "card_bullets": [
+                    "Custom applications and tailored workflows",
+                    "Integrate with existing business tools",
+                    "Flexible, fast & cost effective and more",
+                ],
+                "bullets_included": [
+                    "Custom applications and tailored workflows",
+                    "Integrate with existing business tools",
+                    "Flexible, fast & cost effective and more",
+                ],
+            },
+        },
+        {
+            "sku": "ACC-BOOKKEEPING",
+            "updates": {
+                "category": "Accounting on Zoho",
+                "name": "Ongoing Bookkeeping",
+                "tagline": "Consistent, accurate bookkeeping inside Zoho Books",
+                "description_long": "Consistent, accurate bookkeeping inside Zoho Books",
+                "card_tag": "Subscription",
+                "card_title": "Ongoing Bookkeeping",
+                "card_description": "Consistent, accurate bookkeeping inside Zoho Books",
+                "card_bullets": [
+                    "Transaction categorization & Reconciliations",
+                    "Taxes, Inventory, Projects, Multi-currency",
+                    "Reports and more",
+                ],
+                "bullets_included": [
+                    "Transaction categorization & Reconciliations",
+                    "Taxes, Inventory, Projects, Multi-currency",
+                    "Reports and more",
+                ],
+            },
+        },
+        {
+            "sku": "ONGOING-SUPPORT",
+            "updates": {
+                "category": "Manages Services",
+                "card_tag": "Subscription",
+                "card_bullets": [
+                    "Unlimited support requests",
+                    "Dedicated Zoho expert",
+                    "24-hour SLA target and more",
+                ],
+                "bullets_included": [
+                    "Unlimited support requests",
+                    "Dedicated Zoho expert",
+                    "24-hour SLA target and more",
+                ],
+            },
+        },
+        {
+            "sku": "ONGOING-DEV",
+            "updates": {
+                "category": "Manages Services",
+                "tagline": "Continuous Zoho developments and improvements",
+                "description_long": "Continuous Zoho developments and improvements",
+                "card_tag": "Subscription",
+                "card_bullets": [
+                    "Unlimited development requests",
+                    "1 task at a time with clear start times",
+                    "Strategy, development, support and more",
+                ],
+                "bullets_included": [
+                    "Unlimited development requests",
+                    "1 task at a time with clear start times",
+                    "Strategy, development, support and more",
+                ],
+            },
+        },
+        {
+            "sku": "ONGOING-DEV-ENTERPRISE",
+            "updates": {
+                "category": "Manages Services",
+                "card_tag": "Subscription",
+                "card_bullets": [
+                    "Unlimited development requests",
+                    "Multiple tasks at a time with clear start times",
+                    "Strategy, development, support and more",
+                ],
+                "bullets_included": [
+                    "Unlimited development requests",
+                    "Multiple tasks at a time with clear start times",
+                    "Strategy, development, support and more",
+                ],
+                "pricing_type": "tiered",
+                "pricing_rules": {
+                    "variants": [
+                        {"id": "2", "label": "2 simultaneous tasks", "price": 13999.0},
+                        {"id": "3", "label": "3 simultaneous tasks", "price": 19999.0},
+                        {"id": "4", "label": "4 simultaneous tasks", "price": 24999.0},
+                        {"id": "5", "label": "5 simultaneous tasks", "price": 29999.0},
+                    ]
+                },
+                "is_subscription": True,
+            },
+        },
+        {
+            "sku": "MIG-BOOKS",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "tagline": "Clean & accurate transition to Zoho Books with minimum downtime",
+                "description_long": "Clean & accurate transition to Zoho Books with minimum downtime",
+                "card_bullets": [
+                    "Multi-year historical data transfer",
+                    "Invetory, Projects, Multi-currency",
+                    "Post-migration checks and support and more",
+                ],
+                "bullets_included": [
+                    "Multi-year historical data transfer",
+                    "Invetory, Projects, Multi-currency",
+                    "Post-migration checks and support and more",
+                ],
+            },
+        },
+        {
+            "sku": "MIG-MAIL",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "card_bullets": [
+                    "Mailbox and folder migration",
+                    "Calendar and contact transfer",
+                    "Minimal email disruption and more",
+                ],
+                "bullets_included": [
+                    "Mailbox and folder migration",
+                    "Calendar and contact transfer",
+                    "Minimal email disruption and more",
+                ],
+            },
+        },
+        {
+            "sku": "MIG-WORKDRIVE",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "tagline": "Move data into a structured Zoho workspace.",
+                "description_long": "Move data into a structured Zoho workspace.",
+                "card_bullets": [
+                    "Bulk document transfer",
+                    "Permissions mapping",
+                    "Folder hierarchy restructuring and more",
+                ],
+                "bullets_included": [
+                    "Bulk document transfer",
+                    "Permissions mapping",
+                    "Folder hierarchy restructuring and more",
+                ],
+            },
+        },
+        {
+            "sku": "MIG-CRM",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "tagline": "Clean, structured CRM data transition.",
+                "description_long": "Clean, structured CRM data transition.",
+                "card_bullets": [
+                    "Leads, contacts, accounts, deals",
+                    "Custom modules & unlimited records",
+                    "Notes and activity transfer and more",
+                ],
+                "bullets_included": [
+                    "Leads, contacts, accounts, deals",
+                    "Custom modules & unlimited records",
+                    "Notes and activity transfer and more",
+                ],
+            },
+        },
+        {
+            "sku": "MIG-FORMS",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "card_bullets": [
+                    "Form rebuild and optimization",
+                    "Field logic",
+                    "Data import and validation and more",
+                ],
+                "bullets_included": [
+                    "Form rebuild and optimization",
+                    "Field logic",
+                    "Data import and validation and more",
+                ],
+            },
+        },
+        {
+            "sku": "MIG-DESK",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "card_bullets": [
+                    "Ticket, contacts",
+                    "Knowledge base transfer",
+                    "Setup and more",
+                ],
+                "bullets_included": [
+                    "Ticket, contacts",
+                    "Knowledge base transfer",
+                    "Setup and more",
+                ],
+            },
+        },
+        {
+            "sku": "MIG-SIGN",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "card_bullets": [
+                    "Template recreation and setup",
+                    "Branding and email customization",
+                    "Data store in workdrive and more",
+                ],
+                "bullets_included": [
+                    "Template recreation and setup",
+                    "Branding and email customization",
+                    "Data store in workdrive and more",
+                ],
+            },
+        },
+        {
+            "sku": "MIG-PEOPLE",
+            "updates": {
+                "category": "Migrate to Zoho",
+                "card_tag": "Project based",
+                "card_bullets": [
+                    "People Setup",
+                    "Employee records",
+                    "Leave and attendance records and more",
+                ],
+                "bullets_included": [
+                    "People Setup",
+                    "Employee records",
+                    "Leave and attendance records and more",
+                ],
+            },
+        },
+    ]
+
+    for entry in updates:
+        existing = await db.products.find_one({"sku": entry["sku"]}, {"_id": 0})
+        if not existing:
+            continue
+        updated = {**existing, **entry["updates"]}
+        updated["price_inputs"] = build_price_inputs(updated)
+        await db.products.update_one({"sku": entry["sku"]}, {"$set": updated})
+        if "pricing_rules" in entry["updates"]:
+            await db.pricing_rules.update_one(
+                {"product_id": existing["id"]},
+                {"$set": {"rule_json": updated.get("pricing_rules", {})}},
+                upsert=True,
+            )
+
+    new_products = [
+        {
+            "id": "prod_fixed_scope_dev",
+            "category": "Build & Automate",
+            "sku": "BUILD-FIXED-SCOPE",
+            "name": "Fixed-Scope Development",
+            "tagline": "Fixed-scope custom builds with defined deliverables and timelines.",
+            "description_long": "Fixed-scope custom builds with a scope workshop, milestones, timeline, and approval gates before delivery.",
+            "bullets_included": [
+                "Custom applications and tailored workflows",
+                "Integrate with existing business tools",
+                "Clear scope, milestones, timeline and budget and more",
+            ],
+            "bullets_excluded": ["Ongoing retainer work", "Open-ended scope changes"],
+            "bullets_needed": ["Business goals", "Access to existing systems", "Stakeholder availability"],
+            "next_steps": [
+                "Scope workshop",
+                "Milestone plan     
+
         await db.settings.insert_one(settings)
     products = build_seed_products(settings["zoho_books_migration_url"])
     for product in products:
