@@ -2335,7 +2335,27 @@ async def admin_update_order(
 async def admin_customers(admin: Dict[str, Any] = Depends(require_admin)):
     customers = await db.customers.find({}, {"_id": 0}).to_list(500)
     users = await db.users.find({}, {"_id": 0, "id": 1, "email": 1, "full_name": 1}).to_list(500)
-    return {"customers": customers, "users": users}
+    addresses = await db.addresses.find({}, {"_id": 0}).to_list(500)
+    return {"customers": customers, "users": users, "addresses": addresses}
+
+
+@api_router.put("/admin/customers/{customer_id}/payment-methods")
+async def admin_update_customer_payment_methods(
+    customer_id: str,
+    payload: AdminCustomerPaymentUpdate,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    existing = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    await db.customers.update_one(
+        {"id": customer_id},
+        {"$set": {
+            "allow_bank_transfer": payload.allow_bank_transfer,
+            "allow_card_payment": payload.allow_card_payment,
+        }}
+    )
+    return {"message": "Payment methods updated"}
 
 
 @api_router.get("/admin/orders")
