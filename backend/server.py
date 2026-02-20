@@ -1376,24 +1376,27 @@ async def apply_catalog_overrides():
             ],
             "bullets_excluded": ["Ongoing retainer work", "Open-ended scope changes"],
             "bullets_needed": ["Business goals", "Access to existing systems", "Stakeholder availability"],
-            "next_steps": [
-                "Scope workshop",
-                "Milestone plan 
-
-        await db.settings.insert_one(settings)
-    products = build_seed_products(settings["zoho_books_migration_url"])
-    for product in products:
-        product["price_inputs"] = build_price_inputs(product)
-        await db.products.insert_one(product)
-        await db.pricing_rules.insert_one(
-            {
-                "id": make_id(),
-                "product_id": product["id"],
-                "rule_json": product.get("pricing_rules", {}),
-            }
-        )
-
-
+            "next_steps": ["Scope workshop", "Milestone plan approval", "Delivery kickoff"],
+            "faqs": ["Request scope to start the fixed-scope planning process."],
+            "pricing_type": "scope_request",
+            "base_price": 0.0,
+            "is_subscription": False,
+            "pricing_rules": {},
+            "card_tag": "Project based",
+            "card_title": "Fixed-Scope Development",
+            "card_description": "Fixed-scope custom builds with defined deliverables and timelines.",
+            "card_bullets": [
+                "Custom applications and tailored workflows",
+                "Integrate with existing business tools",
+                "Clear scope, milestones, timeline and budget and more",
+            ],
+            "is_active": True,
+        },
+        {
+            "id": "prod_accounting_cleanup",
+            "category": "Accounting on Zoho",
+            "sku": "ACC-HISTORICAL-CLEANUP",
+            "name": "Historical Accounting     
 @app.on_event("startup")
 async def startup_tasks():
     await seed_admin_user()
