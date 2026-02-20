@@ -53,11 +53,10 @@ export default function Store() {
     <AppShell activeCategory={activeCategory}>
       <div className="space-y-10" data-testid="store-page">
         <section
-        className="rounded-3xl bg-white/80 p-10 shadow-[0_30px_70px_rgba(15,23,42,0.08)] backdrop-blur"
-        data-testid="store-hero"
-      >
-
-        <div className="space-y-4">
+          className="rounded-3xl bg-white/80 p-10 shadow-[0_30px_70px_rgba(15,23,42,0.08)] backdrop-blur"
+          data-testid="store-hero"
+        >
+          <div className="space-y-4">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
             Automate Accounts Storefront
           </p>
