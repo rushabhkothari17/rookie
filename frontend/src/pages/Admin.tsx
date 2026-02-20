@@ -160,6 +160,8 @@ export default function Admin() {
         discount_type: newPromo.discount_type,
         discount_value: newPromo.discount_value,
         applies_to: newPromo.applies_to,
+        applies_to_products: newPromo.applies_to_products,
+        product_ids: newPromo.product_ids,
         expiry_date: newPromo.expiry_date || null,
         max_uses: newPromo.max_uses ? parseInt(newPromo.max_uses) : null,
         one_time_code: newPromo.one_time_code,
@@ -172,6 +174,8 @@ export default function Admin() {
         discount_type: "percent",
         discount_value: 10,
         applies_to: "both",
+        applies_to_products: "all",
+        product_ids: [],
         expiry_date: "",
         max_uses: "",
         one_time_code: false,
@@ -190,6 +194,40 @@ export default function Admin() {
       load();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Update failed");
+    }
+  };
+
+  const handleCreateTerms = async () => {
+    try {
+      await api.post("/admin/terms", newTerms);
+      toast.success("Terms created");
+      setShowTermsDialog(false);
+      setNewTerms({ title: "", content: "", is_default: false, status: "active" });
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to create terms");
+    }
+  };
+
+  const handleCreateManualOrder = async () => {
+    try {
+      await api.post("/admin/orders/manual", manualOrder);
+      toast.success("Manual order created");
+      setShowManualOrderDialog(false);
+      setManualOrder({
+        customer_email: "",
+        product_id: "",
+        quantity: 1,
+        inputs: {},
+        subtotal: 0,
+        discount: 0,
+        fee: 0,
+        status: "paid",
+        internal_note: "",
+      });
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to create manual order");
     }
   };
 
