@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +13,7 @@ export default function Cart() {
   const { customer } = useAuth();
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "card">("bank_transfer");
+  const [paymentMethod, setPaymentMethod] = useState<string>("bank_transfer");
 
   const allowBankTransfer = customer?.allow_bank_transfer ?? true;
   const allowCardPayment = customer?.allow_card_payment ?? false;
