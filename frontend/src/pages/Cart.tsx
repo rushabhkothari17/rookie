@@ -2,15 +2,31 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import PriceSummary from "@/components/PriceSummary";
 
 export default function Cart() {
   const navigate = useNavigate();
   const { items, removeItem, clear } = useCart();
+  const { customer } = useAuth();
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "card">("bank_transfer");
+
+  const allowBankTransfer = customer?.allow_bank_transfer ?? true;
+  const allowCardPayment = customer?.allow_card_payment ?? false;
+
+  useEffect(() => {
+    if (allowBankTransfer) {
+      setPaymentMethod("bank_transfer");
+    } else if (allowCardPayment) {
+      setPaymentMethod("card");
+    }
+  }, [allowBankTransfer, allowCardPayment]);
 
   const loadPreview = async () => {
     if (items.length === 0) {
@@ -47,16 +63,30 @@ export default function Cart() {
   const handleCheckout = async (groupItems: any[], checkoutType: string) => {
     setLoading(true);
     try {
-      const response = await api.post("/checkout/session", {
-        items: groupItems.map((item) => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-          inputs: item.inputs,
-        })),
-        checkout_type: checkoutType,
-        origin_url: window.location.origin,
-      });
-      window.location.href = response.data.url;
+      if (paymentMethod === "bank_transfer") {
+        const response = await api.post("/checkout/bank-transfer", {
+          items: groupItems.map((item) => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+            inputs: item.inputs,
+          })),
+          checkout_type: checkoutType,
+        });
+        toast.success("Order created successfully");
+        clear();
+        navigate(`/checkout/bank-transfer?order=${response.data.order_number || ""}`);
+      } else {
+        const response = await api.post("/checkout/session", {
+          items: groupItems.map((item) => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+            inputs: item.inputs,
+          })),
+          checkout_type: checkoutType,
+          origin_url: window.location.origin,
+        });
+        window.location.href = response.data.url;
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Checkout failed");
     } finally {
@@ -95,6 +125,15 @@ export default function Cart() {
   const currencyUnsupported =
     preview?.currency && !["USD", "CAD"].includes(preview.currency);
 
+  const showFee = paymentMethod === "card";
+  const oneTimeSubtotal = grouped.oneTime.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
+  const oneTimeFee = showFee ? grouped.oneTime.reduce((sum: number, item: any) => sum + item.pricing.fee, 0) : 0;
+  const oneTimeTotal = oneTimeSubtotal + oneTimeFee;
+
+  const subscriptionSubtotal = grouped.subscriptions.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
+  const subscriptionFee = showFee ? grouped.subscriptions.reduce((sum: number, item: any) => sum + item.pricing.fee, 0) : 0;
+  const subscriptionTotal = subscriptionSubtotal + subscriptionFee;
+
   return (
     <div className="space-y-8" data-testid="cart-page">
       <div className="flex items-center justify-between">
@@ -116,6 +155,38 @@ export default function Cart() {
       {preview && (
         <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
           <div className="space-y-6">
+            {/* Payment Method Selection */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6" data-testid="cart-payment-method">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Payment Method</h2>
+              <RadioGroup
+                value={paymentMethod}
+                onValueChange={(value) => setPaymentMethod(value as "bank_transfer" | "card")}
+                className="space-y-3"
+              >
+                {allowBankTransfer && (
+                  <div className="flex items-center space-x-3 rounded-lg border border-slate-200 p-4 cursor-pointer hover:bg-slate-50">
+                    <RadioGroupItem value="bank_transfer" id="bank_transfer" data-testid="payment-bank-radio" />
+                    <Label htmlFor="bank_transfer" className="flex-1 cursor-pointer">
+                      <div className="font-medium text-slate-900">Bank Transfer (GoCardless)</div>
+                      <div className="text-sm text-slate-500">No processing fee. We'll send bank transfer instructions.</div>
+                    </Label>
+                  </div>
+                )}
+                {allowCardPayment && (
+                  <div className="flex items-center space-x-3 rounded-lg border border-slate-200 p-4 cursor-pointer hover:bg-slate-50">
+                    <RadioGroupItem value="card" id="card" data-testid="payment-card-radio" />
+                    <Label htmlFor="card" className="flex-1 cursor-pointer">
+                      <div className="font-medium text-slate-900">Card Payment (Stripe)</div>
+                      <div className="text-sm text-slate-500">5% processing fee applies. Pay securely with credit/debit card.</div>
+                    </Label>
+                  </div>
+                )}
+              </RadioGroup>
+              {!allowBankTransfer && !allowCardPayment && (
+                <p className="text-sm text-amber-600">No payment methods available. Please contact support.</p>
+              )}
+            </div>
+
             {[
               { title: "One-time purchases", items: grouped.oneTime, checkoutType: "one_time" },
               { title: "Subscriptions", items: grouped.subscriptions, checkoutType: "subscription" },
@@ -151,12 +222,13 @@ export default function Cart() {
                             className="text-sm font-semibold text-slate-900"
                             data-testid={`cart-item-total-${item.product.id}`}
                           >
-                            ${item.pricing.total.toFixed(2)}
+                            ${(showFee ? item.pricing.total : item.pricing.subtotal).toFixed(2)}
                           </div>
                         </div>
                         <div className="mt-3 flex justify-between text-xs text-slate-500">
                           <span data-testid={`cart-item-subtotal-${item.product.id}`}>
                             Subtotal ${item.pricing.subtotal.toFixed(2)}
+                            {showFee && item.pricing.fee > 0 && ` + $${item.pricing.fee.toFixed(2)} fee`}
                           </span>
                           <button
                             className="text-red-600"
@@ -168,12 +240,20 @@ export default function Cart() {
                         </div>
                       </div>
                     ))}
-                    {section.checkoutType === "subscription" && subscriptionMissingPrice && (
+                    {section.checkoutType === "subscription" && subscriptionMissingPrice && paymentMethod === "card" && (
                       <div
                         className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700"
                         data-testid="cart-subscription-warning"
                       >
                         Subscription checkout is unavailable until a Stripe price ID is configured by admin.
+                      </div>
+                    )}
+                    {section.checkoutType === "subscription" && paymentMethod === "bank_transfer" && (
+                      <div
+                        className="rounded-md border border-blue-200 bg-blue-50 p-3 text-xs text-blue-700"
+                        data-testid="cart-subscription-bank-notice"
+                      >
+                        Subscriptions via bank transfer require direct debit setup. We'll contact you with next steps.
                       </div>
                     )}
                     <Button
@@ -182,11 +262,14 @@ export default function Cart() {
                       disabled={
                         loading ||
                         currencyUnsupported ||
-                        (section.checkoutType === "subscription" && subscriptionMissingPrice)
+                        (!allowBankTransfer && !allowCardPayment) ||
+                        (section.checkoutType === "subscription" && subscriptionMissingPrice && paymentMethod === "card")
                       }
                       data-testid={`cart-checkout-${section.checkoutType}`}
                     >
-                      Proceed to {section.checkoutType === "one_time" ? "checkout" : "subscription checkout"}
+                      {paymentMethod === "bank_transfer"
+                        ? `Create ${section.checkoutType === "one_time" ? "order" : "subscription request"}`
+                        : `Proceed to ${section.checkoutType === "one_time" ? "checkout" : "subscription checkout"}`}
                     </Button>
                   </div>
                 )}
@@ -284,15 +367,17 @@ export default function Cart() {
 
           <div className="space-y-4">
             <PriceSummary
-              subtotal={preview.summary.one_time.subtotal + preview.summary.subscription.subtotal}
-              fee={preview.summary.one_time.fee + preview.summary.subscription.fee}
-              total={preview.summary.one_time.total + preview.summary.subscription.total}
+              subtotal={oneTimeSubtotal + subscriptionSubtotal}
+              fee={oneTimeFee + subscriptionFee}
+              total={oneTimeTotal + subscriptionTotal}
             />
             <div
               className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500"
               data-testid="cart-currency-note"
             >
-              Prices are displayed as $ only. Final currency will be confirmed in Stripe Checkout.
+              {paymentMethod === "bank_transfer" 
+                ? "No processing fee for bank transfer orders."
+                : "Prices are displayed as $ only. Final currency will be confirmed in Stripe Checkout."}
             </div>
           </div>
         </div>
