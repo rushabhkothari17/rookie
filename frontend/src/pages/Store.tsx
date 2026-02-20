@@ -57,16 +57,16 @@ export default function Store() {
           data-testid="store-hero"
         >
           <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-            Automate Accounts Storefront
-          </p>
-          <h1 className="text-4xl font-semibold text-slate-900">
-            Premium Zoho delivery, scoped and priced for clarity.
-          </h1>
-          <p className="text-base text-slate-600">
-            Choose a service tier, configure the scope, and move to a kickoff-ready plan in minutes.
-          </p>
-        </div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+              Automate Accounts Storefront
+            </p>
+            <h1 className="text-4xl font-semibold text-slate-900">
+              Premium Zoho delivery, scoped and priced for clarity.
+            </h1>
+            <p className="text-base text-slate-600">
+              Choose a service tier, configure the scope, and move to a kickoff-ready plan in minutes.
+            </p>
+          </div>
         </section>
 
         <section className="space-y-6" data-testid="category-section">
