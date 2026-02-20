@@ -202,6 +202,8 @@ class PromoCodeCreate(BaseModel):
     discount_type: str  # "percent" or "fixed"
     discount_value: float
     applies_to: str  # "one-time", "subscription", "both"
+    applies_to_products: str = "all"  # "all" or "selected"
+    product_ids: List[str] = Field(default_factory=list)
     expiry_date: Optional[str] = None
     max_uses: Optional[int] = None
     one_time_code: bool = False
@@ -212,10 +214,37 @@ class PromoCodeUpdate(BaseModel):
     discount_type: Optional[str] = None
     discount_value: Optional[float] = None
     applies_to: Optional[str] = None
+    applies_to_products: Optional[str] = None
+    product_ids: Optional[List[str]] = None
     expiry_date: Optional[str] = None
     max_uses: Optional[int] = None
     one_time_code: Optional[bool] = None
     enabled: Optional[bool] = None
+
+
+class TermsCreate(BaseModel):
+    title: str
+    content: str
+    is_default: bool = False
+    status: str = "active"
+
+
+class TermsUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    status: Optional[str] = None
+
+
+class ManualOrderCreate(BaseModel):
+    customer_email: str
+    product_id: str
+    quantity: int = 1
+    inputs: Dict[str, Any] = Field(default_factory=dict)
+    subtotal: float
+    discount: float = 0.0
+    fee: float = 0.0
+    status: str = "paid"
+    internal_note: Optional[str] = ""
 
 
 class ApplyPromoRequest(BaseModel):
