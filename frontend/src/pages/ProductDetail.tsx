@@ -137,6 +137,39 @@ export default function ProductDetail() {
     navigate("/cart");
   };
 
+  const handleScopeRequest = () => {
+    // For Fixed-Scope Development, show modal
+    if (product?.sku === "BUILD-FIXED-SCOPE" || product?.pricing_type === "scope_request") {
+      setShowScopeModal(true);
+    } else {
+      // Regular scope request goes to cart
+      addItem({ product_id: product.id, quantity: 1, inputs });
+      toast.success("Added to cart");
+      navigate("/cart");
+    }
+  };
+
+  const handleSubmitScopeForm = async () => {
+    if (!scopeForm.project_summary || !scopeForm.desired_outcomes || !scopeForm.apps_involved || !scopeForm.timeline_urgency) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    setSubmittingScope(true);
+    try {
+      const response = await api.post("/orders/scope-request-form", {
+        items: [{ product_id: product.id, quantity: 1, inputs }],
+        form_data: scopeForm,
+      });
+      toast.success(`Scope request submitted! Order: ${response.data.order_number}`);
+      setShowScopeModal(false);
+      navigate("/portal");
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to submit scope request");
+    } finally {
+      setSubmittingScope(false);
+    }
+  };
+
   const requiresStripePrice =
     pricing?.is_subscription && !product?.stripe_price_id;
 
