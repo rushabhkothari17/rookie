@@ -59,7 +59,13 @@ export default function OfferingCard({ product }: { product: any }) {
         asChild
         data-testid={`offering-cta-${product.id}`}
       >
-        <Link to={`/product/${product.id}`}>View details</Link>
+        <a
+          href={`/product/${product.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View details
+        </a>
       </Button>
     </div>
   );
