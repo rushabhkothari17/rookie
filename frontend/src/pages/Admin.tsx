@@ -27,7 +27,18 @@ export default function Admin() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderFilters, setOrderFilters] = useState({ email: "", product: "", startDate: "", endDate: "" });
   const [catalogFilter, setCatalogFilter] = useState<string>("all");
-  const [newPromo, setNewPromo] = useState({
+  const [newPromo, setNewPromo] = useState<{
+    code: string;
+    discount_type: string;
+    discount_value: number;
+    applies_to: string;
+    applies_to_products: string;
+    product_ids: string[];
+    expiry_date: string;
+    max_uses: string;
+    one_time_code: boolean;
+    enabled: boolean;
+  }>({
     code: "",
     discount_type: "percent",
     discount_value: 10,
