@@ -156,7 +156,7 @@ export default function Cart() {
                     <Button
                       className="w-full bg-slate-900 hover:bg-slate-800"
                       onClick={() => handleCheckout(section.items, section.checkoutType)}
-                      disabled={loading}
+                      disabled={loading || currencyUnsupported}
                       data-testid={`cart-checkout-${section.checkoutType}`}
                     >
                       Proceed to {section.checkoutType === "one_time" ? "checkout" : "subscription checkout"}
