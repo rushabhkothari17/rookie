@@ -905,6 +905,8 @@ async def seed_admin_user():
             "phone": "",
             "currency": "USD",
             "currency_locked": True,
+            "allow_bank_transfer": True,
+            "allow_card_payment": True,
             "stripe_customer_id": None,
             "zoho_crm_contact_id": None,
             "zoho_books_contact_id": None,
