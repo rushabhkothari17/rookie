@@ -30,6 +30,14 @@ export default function StickyPurchaseSummary({
           <span data-testid="summary-total">${pricing.total.toFixed(2)}</span>
         </div>
       </div>
+      {warning && (
+        <div
+          className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700"
+          data-testid="summary-warning"
+        >
+          {warning}
+        </div>
+      )}
       {cta.href ? (
         <Button
           asChild
