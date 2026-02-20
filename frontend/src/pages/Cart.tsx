@@ -158,6 +158,14 @@ export default function Cart() {
                         </div>
                       </div>
                     ))}
+                    {section.checkoutType === "subscription" && subscriptionMissingPrice && (
+                      <div
+                        className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700"
+                        data-testid="cart-subscription-warning"
+                      >
+                        Subscription checkout is unavailable until a Stripe price ID is configured by admin.
+                      </div>
+                    )}
                     <Button
                       className="w-full bg-slate-900 hover:bg-slate-800"
                       onClick={() => handleCheckout(section.items, section.checkoutType)}
