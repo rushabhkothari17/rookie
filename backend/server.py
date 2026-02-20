@@ -150,12 +150,16 @@ class CheckoutSessionRequestBody(BaseModel):
     checkout_type: str
     origin_url: str
     promo_code: Optional[str] = None
+    terms_accepted: bool = False
+    terms_id: Optional[str] = None
 
 
 class BankTransferCheckoutRequest(BaseModel):
     items: List[CartItemInput]
     checkout_type: str
     promo_code: Optional[str] = None
+    terms_accepted: bool = False
+    terms_id: Optional[str] = None
 
 
 
