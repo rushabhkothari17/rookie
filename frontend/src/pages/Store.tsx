@@ -7,11 +7,11 @@ import { CATEGORY_ORDER, categoryFromSlug, displayCategory } from "@/lib/categor
 
 const CATEGORY_BLURBS: Record<string, string> = {
   "Zoho Express Setup": "Fast-track your Zoho setup with expert-led implementation.",
-  "Audit & Optimize": "Identify friction, optimize usage, and unlock measurable gains.",
-  "Build & Automate": "Flexible delivery packs for automation builds and iterations.",
+  "Migrate to Zoho": "Move critical systems with minimal downtime and clear milestones.",
+  "Manages Services": "Your long-term Zoho partner - managing enhancements, resolving issues, and scaling workflows as you evolve.",
+  "Build & Automate": "On-demand development hours to design, build, automate, and refine your Technology stack (Zoho & Non- Zoho).",
   "Accounting on Zoho": "Monthly finance operations tailored to your transaction volume.",
-  "Ongoing Plans": "Retainers that keep support and delivery moving predictably.",
-  Migrations: "Structured migrations with clear pricing and next steps.",
+  "Audit & Optimize": "Diagnose what's slowing you down - Refine, Streamline & Maximize",
 };
 
 
