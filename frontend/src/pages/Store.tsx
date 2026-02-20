@@ -101,8 +101,8 @@ export default function Store() {
             <OfferingCard key={product.id} product={product} />
           ))}
         </div>
-      </section>
-    </div>
+        </section>
+      </div>
     </AppShell>
   );
 }
