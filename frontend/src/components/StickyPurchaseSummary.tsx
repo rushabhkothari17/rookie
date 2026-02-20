@@ -4,10 +4,12 @@ export default function StickyPurchaseSummary({
   pricing,
   cta,
   disabled,
+  warning,
 }: {
   pricing: { subtotal: number; fee: number; total: number };
   cta: { label: string; onClick?: () => void; href?: string };
   disabled?: boolean;
+  warning?: string;
 }) {
   return (
     <div
