@@ -157,12 +157,13 @@ export default function Profile() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm text-slate-600">Country</label>
+            <label className="text-sm text-slate-600">Country (locked)</label>
             <Input
               value={form.country}
-              onChange={(e) => handleChange("country", e.target.value)}
+              readOnly
+              disabled
+              className="bg-slate-50 cursor-not-allowed"
               data-testid="profile-country-input"
-              required
             />
           </div>
         </div>
