@@ -766,6 +766,12 @@ def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str
             raise HTTPException(status_code=400, detail="Invalid option")
         subtotal = float(variant["price"])
         line_items.append({"label": f"{product['name']} — {variant['label']}", "amount": subtotal})
+    elif pricing_type == "scope_request":
+        is_scope_request = True
+        requires_checkout = False
+        subtotal = 0.0
+        line_items.append({"label": product["name"], "amount": subtotal})
+
     elif pricing_type == "calculator":
         calc_type = rules.get("calc_type")
         if calc_type == "health_check":
