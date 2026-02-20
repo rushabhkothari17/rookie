@@ -3,32 +3,13 @@ import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { displayCategory } from "@/lib/categories";
 
-const formatPriceLabel = (product: any) => {
-  if (product.base_price) {
-    return `$${product.base_price.toFixed(2)}`;
-  }
-  if (product.pricing_type === "tiered") {
-    const prices = (product.pricing_rules?.variants || []).map((v: any) => v.price);
-    if (prices.length) {
-      return `From $${Math.min(...prices).toFixed(2)}`;
-    }
-  }
-  return "Calculator";
-};
-
 const formatTag = (product: any) => {
-  const parts: string[] = [];
-  if (displayCategory(product.category) === "Zoho Express Setup") {
-    parts.push("Express");
+  if (product.card_tag) return product.card_tag;
+  if (product.is_subscription) return "Subscription";
+  if (product.pricing_type === "fixed" || product.pricing_type === "tiered") {
+    return "Project based";
   }
-  if (product.pricing_type === "calculator") {
-    parts.push("Calculator");
-  } else if (product.is_subscription) {
-    parts.push("Subscription");
-  } else {
-    parts.push("One-time");
-  }
-  return parts.join(" • ");
+  return "Project based";
 };
 
 export default function OfferingCard({ product }: { product: any }) {
