@@ -1386,6 +1386,138 @@ async def apply_catalog_overrides():
             "bullets_needed": ["Business goals", "Access to existing systems", "Stakeholder availability"],
             "next_steps": ["Scope workshop", "Milestone plan approval", "Delivery kickoff"],
             "faqs": ["Request scope to start the fixed-scope planning process."],
+
+
+@api_router.post("/checkout/bank-transfer")
+async def checkout_bank_transfer(
+    payload: BankTransferCheckoutRequest,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    if not customer.get("allow_bank_transfer", True):
+        raise HTTPException(status_code=403, detail="Bank transfer not enabled")
+
+    order_items = await build_order_items(payload.items)
+
+    if any(i["product"].get("sku") == "MIG-CRM" for i in order_items) and any(
+        i["product"].get("sku") == "START-ZOHO-CRM-EXP" for i in order_items
+    ):
+        raise HTTPException(status_code=400, detail="CRM data migration is included in CRM Express Setup")
+
+    checkout_type = payload.checkout_type
+    if checkout_type not in ["one_time", "subscription"]:
+        raise HTTPException(status_code=400, detail="Invalid checkout type")
+
+    if checkout_type == "subscription":
+        subscription_items = [i for i in order_items if i["pricing"].get("is_subscription")]
+        if len(subscription_items) != len(order_items):
+            raise HTTPException(status_code=400, detail="Subscription checkout must include only subscription items")
+        if len(subscription_items) != 1:
+            raise HTTPException(status_code=400, detail="Subscription checkout supports one plan at a time")
+
+        product = subscription_items[0]["product"]
+        subtotal = subscription_items[0]["pricing"]["subtotal"]
+        period_start = datetime.now(timezone.utc)
+        period_end = period_start + timedelta(days=30)
+        sub_id = make_id()
+        await db.subscriptions.insert_one(
+            {
+                "id": sub_id,
+                "order_id": None,
+                "customer_id": customer["id"],
+                "plan_name": product["name"],
+                "status": "pending_bank_setup",
+                "stripe_subscription_id": None,
+                "current_period_start": period_start.isoformat(),
+                "current_period_end": period_end.isoformat(),
+                "cancel_at_period_end": False,
+                "canceled_at": None,
+                "amount": subtotal,
+                "payment_method": "bank_transfer",
+            }
+        )
+        await db.zoho_sync_logs.insert_one(
+            {
+                "id": make_id(),
+                "entity_type": "subscription_request",
+                "entity_id": sub_id,
+                "status": "Not Sent",
+                "last_error": None,
+                "attempts": 0,
+                "created_at": now_iso(),
+                "mocked": True,
+            }
+        )
+        return {
+            "message": "Subscription request created",
+            "subscription_id": sub_id,
+            "status": "pending_bank_setup",
+        }
+
+    subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
+    order_id = make_id()
+    order_number = f"AA-{order_id.split('-')[0].upper()}"
+    order_doc = {
+        "id": order_id,
+        "order_number": order_number,
+        "customer_id": customer["id"],
+        "type": "one_time",
+        "status": "awaiting_bank_transfer",
+        "subtotal": round_cents(subtotal),
+        "fee": 0.0,
+        "total": round_cents(subtotal),
+        "currency": customer.get("currency"),
+        "payment_method": "bank_transfer",
+        "created_at": now_iso(),
+    }
+    await db.orders.insert_one(order_doc)
+
+    for item in order_items:
+        product = item["product"]
+        await db.order_items.insert_one(
+            {
+                "id": make_id(),
+                "order_id": order_id,
+                "product_id": product["id"],
+                "quantity": item["quantity"],
+                "metadata_json": item["inputs"],
+                "unit_price": item["pricing"]["subtotal"],
+                "line_total": item["pricing"]["subtotal"],
+            }
+        )
+
+    await db.invoices.insert_one(
+        {
+            "id": make_id(),
+            "order_id": order_id,
+            "subscription_id": None,
+            "stripe_invoice_id": None,
+            "zoho_books_invoice_id": None,
+            "amount_paid": 0.0,
+            "status": "unpaid",
+        }
+    )
+    await db.zoho_sync_logs.insert_one(
+        {
+            "id": make_id(),
+            "entity_type": "deal",
+            "entity_id": order_id,
+            "status": "Not Sent",
+            "last_error": None,
+            "attempts": 0,
+            "created_at": now_iso(),
+            "mocked": True,
+        }
+    )
+
+    return {
+        "message": "Bank transfer order created",
+        "order_id": order_id,
+        "order_number": order_number,
+    }
+
             "pricing_type": "scope_request",
             "base_price": 0.0,
             "is_subscription": False,
