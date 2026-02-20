@@ -740,6 +740,8 @@ def build_price_inputs(product: Dict[str, Any]) -> List[Dict[str, Any]]:
                 {"id": "employee_profiles", "label": "Employee profiles", "type": "number", "min": 0},
                 {"id": "templates", "label": "Templates", "type": "number", "min": 0},
             ]
+    if pricing_type == "scope_request":
+        return []
     return []
 
 
