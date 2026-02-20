@@ -191,18 +191,34 @@ export default function Admin() {
                         {address?.country || "—"}
                       </TableCell>
                       <TableCell>
-                        <Switch
-                          checked={customer.allow_bank_transfer ?? true}
-                          onCheckedChange={(checked) => handlePaymentMethodToggle(customer.id, "allow_bank_transfer", checked)}
+                        <button
+                          onClick={() => handlePaymentMethodToggle(customer.id, "allow_bank_transfer", !(customer.allow_bank_transfer ?? true))}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            (customer.allow_bank_transfer ?? true) ? "bg-slate-900" : "bg-slate-200"
+                          }`}
                           data-testid={`admin-customer-bank-toggle-${customer.id}`}
-                        />
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                              (customer.allow_bank_transfer ?? true) ? "translate-x-4" : "translate-x-0.5"
+                            }`}
+                          />
+                        </button>
                       </TableCell>
                       <TableCell>
-                        <Switch
-                          checked={customer.allow_card_payment ?? false}
-                          onCheckedChange={(checked) => handlePaymentMethodToggle(customer.id, "allow_card_payment", checked)}
+                        <button
+                          onClick={() => handlePaymentMethodToggle(customer.id, "allow_card_payment", !(customer.allow_card_payment ?? false))}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            (customer.allow_card_payment ?? false) ? "bg-slate-900" : "bg-slate-200"
+                          }`}
                           data-testid={`admin-customer-card-toggle-${customer.id}`}
-                        />
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                              (customer.allow_card_payment ?? false) ? "translate-x-4" : "translate-x-0.5"
+                            }`}
+                          />
+                        </button>
                       </TableCell>
                     </TableRow>
                   );
