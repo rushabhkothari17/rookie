@@ -40,6 +40,11 @@ export default function Cart() {
     );
   }, [preview]);
 
+  const subscriptionMissingPrice = grouped.subscriptions.some(
+    (item: any) => !item.product.stripe_price_id,
+  );
+
+
   const handleCheckout = async (groupItems: any[], checkoutType: string) => {
     setLoading(true);
     try {
