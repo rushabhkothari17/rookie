@@ -118,14 +118,14 @@ export default function Cart() {
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="text-sm font-semibold text-slate-900">
+                            <div className="text-sm font-semibold text-slate-900" data-testid={`cart-item-name-${item.product.id}`}>
                               {item.product.name}
                             </div>
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-slate-500" data-testid={`cart-item-tagline-${item.product.id}`}>
                               {item.product.tagline}
                             </div>
                           </div>
-                          <div className="text-sm font-semibold text-slate-900">
+                          <div className="text-sm font-semibold text-slate-900" data-testid={`cart-item-total-${item.product.id}`}>
                             ${item.pricing.total.toFixed(2)}
                           </div>
                         </div>
