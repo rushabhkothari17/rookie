@@ -102,7 +102,12 @@ export default function Admin() {
         <p className="text-sm text-slate-500">Manage customers, orders, and catalog content.</p>
       </div>
 
-      <Tabs defaultValue="customers" className="space-y-4" data-testid="admin-tabs">
+      <Tabs
+        defaultValue="customers"
+        className="space-y-4"
+        data-testid="admin-tabs"
+        onValueChange={handleTabChange}
+      >
         <TabsList>
           <TabsTrigger value="customers" data-testid="admin-tab-customers">Customers</TabsTrigger>
           <TabsTrigger value="orders" data-testid="admin-tab-orders">Orders</TabsTrigger>
