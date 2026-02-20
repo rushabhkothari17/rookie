@@ -37,7 +37,10 @@ const ProtectedRoute = ({
     );
   }
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const redirect = encodeURIComponent(
+      `${location.pathname}${location.search}`,
+    );
+    return <Navigate to={`/login?redirect=${redirect}`} replace />;
   }
   if (!user.is_verified) {
     return <Navigate to="/verify" replace />;
