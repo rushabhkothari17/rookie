@@ -79,7 +79,7 @@ export default function Cart() {
   }, [preview]);
 
   const subscriptionMissingPrice = grouped.subscriptions.some(
-    (item: any) => !item.product.stripe_price_id,
+    (item: any) => !item.product.stripe_price_id && !item.pricing.subtotal,
   );
 
   const handleCheckout = async (groupItems: any[], checkoutType: string) => {
@@ -93,6 +93,7 @@ export default function Cart() {
             inputs: item.inputs,
           })),
           checkout_type: checkoutType,
+          promo_code: promoApplied?.code || null,
         });
         toast.success("Order created successfully");
         clear();
@@ -106,6 +107,7 @@ export default function Cart() {
           })),
           checkout_type: checkoutType,
           origin_url: window.location.origin,
+          promo_code: promoApplied?.code || null,
         });
         window.location.href = response.data.url;
       }
