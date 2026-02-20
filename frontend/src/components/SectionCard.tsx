@@ -1,10 +1,12 @@
+import { ReactNode } from "react";
+
 export default function SectionCard({
   title,
   children,
   testId,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   testId: string;
 }) {
   return (
