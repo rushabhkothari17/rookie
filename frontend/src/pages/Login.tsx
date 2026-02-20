@@ -19,7 +19,8 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/store");
+      const redirect = searchParams.get("redirect");
+      navigate(redirect ? decodeURIComponent(redirect) : "/store");
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Login failed");
     } finally {
