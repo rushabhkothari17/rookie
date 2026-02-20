@@ -476,6 +476,39 @@ export default function Admin() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Product Eligibility</label>
+                    <Select value={newPromo.applies_to_products} onValueChange={(v) => setNewPromo({ ...newPromo, applies_to_products: v, product_ids: v === "all" ? [] : newPromo.product_ids })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Products (default)</SelectItem>
+                        <SelectItem value="selected">Selected Products Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {newPromo.applies_to_products === "selected" && (
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Select Products</label>
+                      <div className="max-h-40 overflow-y-auto border border-slate-200 rounded p-2 space-y-1">
+                        {products.map((p: any) => (
+                          <div key={p.id} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={newPromo.product_ids.includes(p.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setNewPromo({ ...newPromo, product_ids: [...newPromo.product_ids, p.id] });
+                                } else {
+                                  setNewPromo({ ...newPromo, product_ids: newPromo.product_ids.filter((id: string) => id !== p.id) });
+                                }
+                              }}
+                            />
+                            <label className="text-xs">{p.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-xs text-slate-500">Expiry Date (optional)</label>
