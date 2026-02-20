@@ -105,6 +105,7 @@ class AddressInput(BaseModel):
 
 class RegisterRequest(BaseModel):
     full_name: str
+    job_title: str
     company_name: str
     email: str
     phone: str
