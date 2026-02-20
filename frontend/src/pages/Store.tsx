@@ -46,7 +46,9 @@ export default function Store() {
 
   const filteredProducts = useMemo(() => {
     if (!activeCategory) return products;
-    return products.filter((product) => product.category === activeCategory);
+    return products.filter(
+      (product) => displayCategory(product.category) === activeCategory,
+    );
   }, [products, activeCategory]);
 
   return (
