@@ -535,6 +535,25 @@ export default function Cart() {
           </div>
         </div>
       )}
+
+      {/* Terms & Conditions Modal */}
+      {showTermsModal && termsContent && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-200">
+              <h2 className="text-xl font-semibold text-slate-900">{termsContent.title}</h2>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="prose prose-sm max-w-none">
+                <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans">{termsContent.content}</pre>
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-200">
+              <Button onClick={() => setShowTermsModal(false)} className="w-full">Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
