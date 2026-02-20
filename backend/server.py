@@ -2698,18 +2698,82 @@ async def stripe_webhook(request: Request):
                 if user:
                     email_target = user["email"]
 
-    if webhook_response.event_type == "invoice.paid" and email_target:
-        await db.email_outbox.insert_one(
-            {
-                "id": make_id(),
-                "to": email_target,
-                "subject": "Subscription renewal paid",
-                "body": "Your subscription renewal has been paid successfully.",
-                "type": "subscription_renewal",
-                "status": "MOCKED",
-                "created_at": now_iso(),
-            }
-        )
+    if webhook_response.event_type == "invoice.paid":
+        # Check if this is a renewal (not first payment)
+        stripe_invoice_id = webhook_response.metadata.get("stripe_invoice_id") or f"inv_{webhook_response.event_id}"
+        existing_renewal = await db.orders.find_one({"stripe_invoice_id": stripe_invoice_id}, {"_id": 0})
+        
+        if not existing_renewal and order_id:
+            # Find subscription from original order
+            original_order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+            if original_order and original_order.get("type") == "subscription_start":
+                subscription = await db.subscriptions.find_one(
+                    {"order_id": order_id, "status": "active"},
+                    {"_id": 0}
+                )
+                if subscription:
+                    # Create renewal order
+                    renewal_order_id = make_id()
+                    renewal_order_number = f"AA-{renewal_order_id.split('-')[0].upper()}"
+                    renewal_amount = subscription.get("amount", 0)
+                    renewal_fee = round_cents(renewal_amount * 0.05)
+                    renewal_total = round_cents(renewal_amount + renewal_fee)
+                    
+                    renewal_doc = {
+                        "id": renewal_order_id,
+                        "order_number": renewal_order_number,
+                        "customer_id": original_order["customer_id"],
+                        "type": "subscription_renewal",
+                        "status": "paid",
+                        "subtotal": renewal_amount,
+                        "discount_amount": 0.0,
+                        "fee": renewal_fee,
+                        "total": renewal_total,
+                        "currency": original_order.get("currency"),
+                        "payment_method": "card",
+                        "stripe_invoice_id": stripe_invoice_id,
+                        "subscription_id": subscription["id"],
+                        "created_at": now_iso(),
+                    }
+                    await db.orders.insert_one(renewal_doc)
+                    
+                    # Copy order items from original
+                    original_items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(100)
+                    for item in original_items:
+                        await db.order_items.insert_one({
+                            "id": make_id(),
+                            "order_id": renewal_order_id,
+                            "product_id": item["product_id"],
+                            "quantity": item["quantity"],
+                            "metadata_json": item["metadata_json"],
+                            "unit_price": item["unit_price"],
+                            "line_total": item["line_total"],
+                        })
+                    
+                    # Sync to Zoho (mocked)
+                    await db.zoho_sync_logs.insert_one({
+                        "id": make_id(),
+                        "entity_type": "subscription_renewal",
+                        "entity_id": renewal_order_id,
+                        "status": "Sent",
+                        "last_error": None,
+                        "attempts": 1,
+                        "created_at": now_iso(),
+                        "mocked": True,
+                    })
+        
+        if email_target:
+            await db.email_outbox.insert_one(
+                {
+                    "id": make_id(),
+                    "to": email_target,
+                    "subject": "Subscription renewal paid",
+                    "body": "Your subscription renewal has been paid successfully.",
+                    "type": "subscription_renewal",
+                    "status": "MOCKED",
+                    "created_at": now_iso(),
+                }
+            )
     if webhook_response.event_type == "payment_intent.payment_failed" and email_target:
         await db.email_outbox.insert_one(
             {
