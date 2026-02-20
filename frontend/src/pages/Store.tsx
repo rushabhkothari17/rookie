@@ -88,12 +88,6 @@ export default function Store() {
               <div className="text-sm text-slate-500" data-testid="store-product-count">
                 {filteredProducts.length} offerings
               </div>
-              <button
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600"
-                data-testid="store-compare-button"
-              >
-                Compare
-              </button>
             </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
