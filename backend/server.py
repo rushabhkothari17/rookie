@@ -1620,6 +1620,11 @@ async def stripe_webhook(request: Request):
         if order:
             customer = await db.customers.find_one({"id": order.get("customer_id")}, {"_id": 0})
             if customer:
+                user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0})
+                if user:
+                    email_target = user["email"]
+    
+    return {"status": "ok"}
 
 
 @api_router.put("/admin/orders/{order_id}")
