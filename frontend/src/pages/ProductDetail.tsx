@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ExternalLink, Plus } from "lucide-react";
 import api from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/ui/sonner";
 import { useCart } from "@/contexts/CartContext";
+import AppShell from "@/components/AppShell";
+import ProductHero from "@/components/ProductHero";
+import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
+import SectionCard from "@/components/SectionCard";
+import IncludedList from "@/components/IncludedList";
+import { displayCategory, slugFromCategory } from "@/lib/categories";
 
 const renderInputField = (
   field: any,
@@ -121,162 +124,147 @@ export default function ProductDetail() {
     navigate("/cart");
   };
 
-  const priceSummary = useMemo(() => {
-    if (!pricing) return null;
-    return (
-      <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-6">
-        <div className="text-sm text-slate-500" data-testid="product-price-subtotal">
-          Subtotal: ${pricing.subtotal.toFixed(2)}
-        </div>
-        <div className="text-sm text-slate-500" data-testid="product-price-fee">
-          Processing fee (5%): ${pricing.fee.toFixed(2)}
-        </div>
-        <div className="text-lg font-semibold text-slate-900" data-testid="product-price-total">
-          Total: ${pricing.total.toFixed(2)}
-        </div>
-      </div>
-    );
-  }, [pricing]);
-
   const requiresStripePrice =
     pricing?.is_subscription && !product?.stripe_price_id;
 
+  const ctaConfig = useMemo(() => {
+    if (!product || !pricing) {
+      return { label: "Add to cart" };
+    }
+    if (product.pricing_type === "external") {
+      return {
+        label: "Continue to migration checkout",
+        href: product.pricing_rules.external_url,
+      };
+    }
+    if (product.pricing_type === "inquiry") {
+      return {
+        label: "Contact sales",
+        href: "mailto:hello@automateaccounts.com",
+      };
+    }
+    if (pricing.is_scope_request) {
+      return { label: "Request scope", onClick: handleAddToCart };
+    }
+    return { label: "Add to cart", onClick: handleAddToCart };
+  }, [product, pricing]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center" data-testid="product-loading">
-        Loading...
-      </div>
+      <AppShell activeCategory={null}>
+        <div className="flex items-center justify-center py-20" data-testid="product-loading">
+          Loading...
+        </div>
+      </AppShell>
     );
   }
 
   if (!product) {
     return (
-      <div className="text-sm text-slate-600" data-testid="product-not-found">
-        Product not found
-      </div>
+      <AppShell activeCategory={null}>
+        <div className="text-sm text-slate-600" data-testid="product-not-found">
+          Product not found
+        </div>
+      </AppShell>
     );
   }
 
+  const categoryLabel = displayCategory(product.category);
+  const categorySlug = slugFromCategory(categoryLabel);
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr]" data-testid="product-detail">
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{product.category}</p>
-          <h1 className="text-3xl font-semibold text-slate-900" data-testid="product-name">{product.name}</h1>
-          <p className="text-sm text-slate-600" data-testid="product-tagline">{product.tagline}</p>
-          <p className="text-base text-slate-700" data-testid="product-description">{product.description_long}</p>
-        </div>
+    <AppShell activeCategory={categoryLabel}>
+      <div className="space-y-8" data-testid="product-detail">
+        <nav className="text-xs text-slate-500" data-testid="product-breadcrumbs">
+          <Link to="/store" className="hover:text-slate-700" data-testid="breadcrumb-home">
+            Home
+          </Link>
+          <span className="mx-2">/</span>
+          <Link
+            to={`/store?category=${categorySlug}`}
+            className="hover:text-slate-700"
+            data-testid="breadcrumb-category"
+          >
+            {categoryLabel}
+          </Link>
+          <span className="mx-2">/</span>
+          <span className="text-slate-700" data-testid="breadcrumb-product">
+            {product.name}
+          </span>
+        </nav>
 
-        <Card className="p-6 space-y-4" data-testid="product-input-card">
-          <h2 className="text-sm font-semibold text-slate-900">Configure pricing</h2>
-          <div className="space-y-3">
-            {product.price_inputs?.map((field: any) => (
-              <div key={field.id} className="space-y-2">
-                <label className="text-sm text-slate-600">{field.label}</label>
-                {renderInputField(field, inputs[field.id], (value) =>
-                  handleInputChange(field.id, value),
-                )}
-              </div>
-            ))}
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_0.9fr]">
+          <div className="space-y-8">
+            <ProductHero product={product} />
+
+            {product.price_inputs?.length > 0 && (
+              <SectionCard title="Configure pricing" testId="product-input-card">
+                <div className="space-y-3">
+                  {product.price_inputs?.map((field: any) => (
+                    <div key={field.id} className="space-y-2">
+                      <label className="text-sm text-slate-600">{field.label}</label>
+                      {renderInputField(field, inputs[field.id], (value) =>
+                        handleInputChange(field.id, value),
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
+
+            <SectionCard title="What's included" testId="product-included">
+              <IncludedList items={product.bullets_included || []} testId="product-included-list" />
+            </SectionCard>
+            <SectionCard title="Not included" testId="product-excluded">
+              <ul className="space-y-2" data-testid="product-excluded-list">
+                {(product.bullets_excluded || []).map((item: string) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </SectionCard>
+            <SectionCard title="What we need from you" testId="product-needed">
+              <ul className="space-y-2" data-testid="product-needed-list">
+                {(product.bullets_needed || []).map((item: string) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </SectionCard>
+            <SectionCard title="Next steps" testId="product-next-steps">
+              <ol className="space-y-2" data-testid="product-next-steps-list">
+                {(product.next_steps || []).map((item: string, index: number) => (
+                  <li key={item}>{index + 1}. {item}</li>
+                ))}
+              </ol>
+            </SectionCard>
           </div>
-          {priceSummary}
-          {requiresStripePrice && (
-            <div
-              className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700"
-              data-testid="product-stripe-warning"
-            >
-              Subscription checkout is unavailable until a Stripe price ID is configured by admin.
-            </div>
-          )}
-          {pricing?.requires_checkout && (
-            <Button
-              className="w-full bg-slate-900 hover:bg-slate-800"
-              onClick={handleAddToCart}
-              disabled={requiresStripePrice}
-              data-testid="product-add-to-cart"
-            >
-              <Plus size={16} className="mr-2" /> Add to cart
-            </Button>
-          )}
-          {pricing?.is_scope_request && (
-            <Button
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              onClick={handleAddToCart}
-              data-testid="product-scope-request"
-            >
-              Request scope
-            </Button>
-          )}
-          {product.pricing_type === "external" && (
-            <Button
-              className="w-full bg-slate-900 hover:bg-slate-800"
-              asChild
-              data-testid="product-external-link"
-            >
-              <a href={product.pricing_rules.external_url} target="_blank" rel="noreferrer">
-                Continue to migration checkout
-                <ExternalLink className="ml-2" size={16} />
-              </a>
-            </Button>
-          )}
-          {product.pricing_type === "inquiry" && (
-            <Button
-              className="w-full bg-slate-900 hover:bg-slate-800"
-              asChild
-              data-testid="product-inquiry-link"
-            >
-              <a href="mailto:hello@automateaccounts.com">Contact sales</a>
-            </Button>
-          )}
-        </Card>
-      </div>
 
-      <div className="space-y-6">
-        <Card className="p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-slate-900">What's included</h3>
-          <ul className="text-sm text-slate-600 space-y-2" data-testid="product-included">
-            {product.bullets_included?.map((item: string) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
-        </Card>
-        <Card className="p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-slate-900">Not included</h3>
-          <ul className="text-sm text-slate-600 space-y-2" data-testid="product-excluded">
-            {product.bullets_excluded?.map((item: string) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
-        </Card>
-        <Card className="p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-slate-900">What we need from you</h3>
-          <ul className="text-sm text-slate-600 space-y-2" data-testid="product-needed">
-            {product.bullets_needed?.map((item: string) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
-        </Card>
-        <Card className="p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-slate-900">Next steps</h3>
-          <ol className="text-sm text-slate-600 space-y-2" data-testid="product-next-steps">
-            {product.next_steps?.map((item: string, index: number) => (
-              <li key={item}>{index + 1}. {item}</li>
-            ))}
-          </ol>
-        </Card>
-        <Card className="p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-slate-900">FAQs</h3>
-          <ul className="text-sm text-slate-600 space-y-2" data-testid="product-faqs">
-            {product.faqs?.map((item: string) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
-        </Card>
-        <Link to="/store" className="text-sm text-blue-600" data-testid="product-back-link">
-          Back to store
-        </Link>
+          <div className="space-y-4">
+            {pricing ? (
+              <StickyPurchaseSummary
+                pricing={{
+                  subtotal: pricing.subtotal,
+                  fee: pricing.fee,
+                  total: pricing.total,
+                }}
+                cta={ctaConfig}
+                disabled={requiresStripePrice}
+                warning={
+                  requiresStripePrice
+                    ? "Subscription checkout is unavailable until a Stripe price ID is configured by admin."
+                    : undefined
+                }
+              />
+            ) : (
+              <div
+                className="rounded-3xl bg-white/80 p-6 text-sm text-slate-500"
+                data-testid="product-summary-loading"
+              >
+                Calculating pricing...
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
