@@ -1461,6 +1461,44 @@ async def checkout_status(
                     "status": "paid",
                 }
             )
+            if order.get("type") == "subscription_start":
+                existing_sub = await db.subscriptions.find_one({"order_id": order["id"]}, {"_id": 0})
+                if not existing_sub:
+                    items = await db.order_items.find({"order_id": order["id"]}, {"_id": 0}).to_list(5)
+                    product_name = "Subscription"
+                    if items:
+                        product = await db.products.find_one({"id": items[0]["product_id"]}, {"_id": 0})
+                        if product:
+                            product_name = product["name"]
+                    period_start = datetime.now(timezone.utc)
+                    period_end = period_start + timedelta(days=30)
+                    sub_id = make_id()
+                    await db.subscriptions.insert_one(
+                        {
+                            "id": sub_id,
+                            "order_id": order["id"],
+                            "customer_id": order["customer_id"],
+                            "plan_name": product_name,
+                            "status": "active",
+                            "stripe_subscription_id": None,
+                            "current_period_start": period_start.isoformat(),
+                            "current_period_end": period_end.isoformat(),
+                            "cancel_at_period_end": False,
+                            "canceled_at": None,
+                            "amount": order.get("total"),
+                        }
+                    )
+                    await db.email_outbox.insert_one(
+                        {
+                            "id": make_id(),
+                            "to": user["email"],
+                            "subject": "Subscription started",
+                            "body": f"Your subscription {product_name} is active.",
+                            "type": "subscription_started",
+                            "status": "MOCKED",
+                            "created_at": now_iso(),
+                        }
+                    )
             customer = await db.customers.find_one({"id": order["customer_id"]}, {"_id": 0})
             if customer and not customer.get("currency_locked"):
                 await db.customers.update_one(
