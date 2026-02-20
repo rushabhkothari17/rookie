@@ -2477,6 +2477,244 @@ async def admin_retry_sync(log_id: str, admin: Dict[str, Any] = Depends(require_
     return {"message": "Retry queued", "mocked": True}
 
 
+# ============ PROMO CODE ENDPOINTS ============
+
+@api_router.get("/admin/promo-codes")
+async def admin_list_promo_codes(admin: Dict[str, Any] = Depends(require_admin)):
+    codes = await db.promo_codes.find({}, {"_id": 0}).to_list(500)
+    # Add computed status
+    now = datetime.now(timezone.utc).isoformat()
+    for code in codes:
+        is_expired = code.get("expiry_date") and code["expiry_date"] < now
+        max_reached = code.get("max_uses") and code.get("usage_count", 0) >= code["max_uses"]
+        code["status"] = "Active" if code.get("enabled") and not is_expired and not max_reached else "Inactive"
+    return {"promo_codes": codes}
+
+
+@api_router.post("/admin/promo-codes")
+async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any] = Depends(require_admin)):
+    existing = await db.promo_codes.find_one({"code": payload.code.upper()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Promo code already exists")
+    
+    promo = {
+        "id": make_id(),
+        "code": payload.code.upper(),
+        "discount_type": payload.discount_type,
+        "discount_value": payload.discount_value,
+        "applies_to": payload.applies_to,
+        "expiry_date": payload.expiry_date,
+        "max_uses": payload.max_uses,
+        "one_time_code": payload.one_time_code,
+        "usage_count": 0,
+        "enabled": payload.enabled,
+        "created_at": now_iso(),
+    }
+    await db.promo_codes.insert_one(promo)
+    return {"message": "Promo code created", "promo_code": {k: v for k, v in promo.items() if k != "_id"}}
+
+
+@api_router.put("/admin/promo-codes/{code_id}")
+async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin: Dict[str, Any] = Depends(require_admin)):
+    existing = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Promo code not found")
+    
+    update_fields = {}
+    if payload.discount_type is not None:
+        update_fields["discount_type"] = payload.discount_type
+    if payload.discount_value is not None:
+        update_fields["discount_value"] = payload.discount_value
+    if payload.applies_to is not None:
+        update_fields["applies_to"] = payload.applies_to
+    if payload.expiry_date is not None:
+        update_fields["expiry_date"] = payload.expiry_date
+    if payload.max_uses is not None:
+        update_fields["max_uses"] = payload.max_uses
+    if payload.one_time_code is not None:
+        update_fields["one_time_code"] = payload.one_time_code
+    if payload.enabled is not None:
+        update_fields["enabled"] = payload.enabled
+    
+    if update_fields:
+        await db.promo_codes.update_one({"id": code_id}, {"$set": update_fields})
+    return {"message": "Promo code updated"}
+
+
+@api_router.delete("/admin/promo-codes/{code_id}")
+async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    result = await db.promo_codes.delete_one({"id": code_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Promo code not found")
+    return {"message": "Promo code deleted"}
+
+
+@api_router.post("/promo-codes/validate")
+async def validate_promo_code(payload: ApplyPromoRequest, user: Dict[str, Any] = Depends(get_current_user)):
+    code = await db.promo_codes.find_one({"code": payload.code.upper()}, {"_id": 0})
+    if not code:
+        raise HTTPException(status_code=404, detail="Invalid promo code")
+    
+    # Check if enabled
+    if not code.get("enabled"):
+        raise HTTPException(status_code=400, detail="Promo code is not active")
+    
+    # Check expiry
+    now = datetime.now(timezone.utc).isoformat()
+    if code.get("expiry_date") and code["expiry_date"] < now:
+        raise HTTPException(status_code=400, detail="Promo code has expired")
+    
+    # Check max uses
+    if code.get("max_uses") and code.get("usage_count", 0) >= code["max_uses"]:
+        raise HTTPException(status_code=400, detail="Promo code usage limit reached")
+    
+    # Check applies_to
+    checkout_type = payload.checkout_type
+    applies_to = code.get("applies_to", "both")
+    if applies_to == "one-time" and checkout_type == "subscription":
+        raise HTTPException(status_code=400, detail="Promo code only valid for one-time purchases")
+    if applies_to == "subscription" and checkout_type == "one_time":
+        raise HTTPException(status_code=400, detail="Promo code only valid for subscriptions")
+    
+    # Check one-time code usage per customer
+    if code.get("one_time_code"):
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+        if customer:
+            used = await db.orders.find_one({
+                "customer_id": customer["id"],
+                "promo_code": code["code"]
+            }, {"_id": 0})
+            if used:
+                raise HTTPException(status_code=400, detail="You have already used this promo code")
+    
+    return {
+        "valid": True,
+        "code": code["code"],
+        "discount_type": code["discount_type"],
+        "discount_value": code["discount_value"],
+    }
+
+
+# ============ SCOPE REQUEST WITH FORM ============
+
+@api_router.post("/orders/scope-request-form")
+async def create_scope_request_with_form(
+    payload: ScopeRequestWithForm,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Create order/deal
+    order_id = make_id()
+    order_number = f"AA-{order_id[:8].upper()}"
+    
+    order_items = []
+    for item in payload.items:
+        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        if not product:
+            continue
+        order_items.append({
+            "id": make_id(),
+            "order_id": order_id,
+            "product_id": item.product_id,
+            "quantity": item.quantity,
+            "inputs": item.inputs,
+            "unit_price": 0,
+            "subtotal": 0,
+        })
+    
+    order = {
+        "id": order_id,
+        "order_number": order_number,
+        "customer_id": customer["id"],
+        "type": "scope_request",
+        "status": "scope_pending",
+        "subtotal": 0,
+        "fee": 0,
+        "total": 0,
+        "currency": customer.get("currency", "USD"),
+        "payment_method": None,
+        "scope_form_data": {
+            "project_summary": payload.form_data.project_summary,
+            "desired_outcomes": payload.form_data.desired_outcomes,
+            "apps_involved": payload.form_data.apps_involved,
+            "timeline_urgency": payload.form_data.timeline_urgency,
+            "budget_range": payload.form_data.budget_range or "",
+            "additional_notes": payload.form_data.additional_notes or "",
+        },
+        "created_at": now_iso(),
+    }
+    await db.orders.insert_one(order)
+    
+    for item in order_items:
+        await db.order_items.insert_one(item)
+    
+    # Create Zoho sync log (mocked email)
+    product_names = []
+    for item in payload.items:
+        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        if product:
+            product_names.append(product.get("name", item.product_id))
+    
+    email_body = f"""
+New Scope Request from {user.get('full_name', 'Unknown')}
+
+Customer: {user.get('full_name', 'Unknown')}
+Email: {user.get('email', 'Unknown')}
+Company: {customer.get('company_name', 'Unknown')}
+
+Products: {', '.join(product_names)}
+
+PROJECT DETAILS:
+----------------
+Project Summary: {payload.form_data.project_summary}
+
+Desired Outcomes: {payload.form_data.desired_outcomes}
+
+Apps Involved: {payload.form_data.apps_involved}
+
+Timeline/Urgency: {payload.form_data.timeline_urgency}
+
+Budget Range: {payload.form_data.budget_range or 'Not specified'}
+
+Additional Notes: {payload.form_data.additional_notes or 'None'}
+
+Order/Deal ID: {order_number}
+"""
+    
+    await db.email_outbox.insert_one({
+        "id": make_id(),
+        "to": "rushabh@automateaccounts.com",
+        "subject": f"New Scope Request: {order_number} from {user.get('full_name', 'Customer')}",
+        "body": email_body,
+        "type": "scope_request",
+        "status": "MOCKED",
+        "created_at": now_iso(),
+    })
+    
+    await db.zoho_sync_logs.insert_one({
+        "id": make_id(),
+        "entity_type": "scope_request",
+        "entity_id": order_id,
+        "action": "create_deal",
+        "status": "Sent",
+        "last_error": None,
+        "attempts": 1,
+        "created_at": now_iso(),
+        "mocked": True,
+    })
+    
+    return {
+        "message": "Scope request submitted",
+        "order_id": order_id,
+        "order_number": order_number,
+        "email_sent_to": "rushabh@automateaccounts.com",
+        "email_delivery": "MOCKED",
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
