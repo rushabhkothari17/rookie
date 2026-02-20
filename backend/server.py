@@ -1892,6 +1892,7 @@ async def create_checkout_session(
         "fee": round_cents(fee),
         "total": total,
         "currency": customer.get("currency"),
+        "payment_method": "card",
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
