@@ -51,6 +51,11 @@ export default function TopNav() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
+          {user?.full_name && (
+            <span className="text-sm text-slate-500 hidden md:inline" data-testid="nav-welcome">
+              Hi, {user.full_name.split(" ")[0]}
+            </span>
+          )}
           <Link to="/cart" className="relative" data-testid="nav-cart-link">
             <Button variant="ghost" size="icon" data-testid="nav-cart-button">
               <ShoppingCart size={18} />
