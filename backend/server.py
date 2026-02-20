@@ -1364,7 +1364,7 @@ async def apply_catalog_overrides():
             "bullets_needed": ["Business goals", "Access to existing systems", "Stakeholder availability"],
             "next_steps": [
                 "Scope workshop",
-                "Milestone plan     
+                "Milestone plan 
 
         await db.settings.insert_one(settings)
     products = build_seed_products(settings["zoho_books_migration_url"])
