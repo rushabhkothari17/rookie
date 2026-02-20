@@ -38,6 +38,12 @@ export const categoryFromSlug = (slug: string | null, available: string[]) => {
   if (normalized === "start-here") {
     return "Zoho Express Setup";
   }
+  if (normalized === "migrations") {
+    return "Migrate to Zoho";
+  }
+  if (normalized === "ongoing-plans") {
+    return "Manages Services";
+  }
   const fromSlug = Object.entries(CATEGORY_SLUGS).find(
     ([, value]) => value === normalized,
   );
