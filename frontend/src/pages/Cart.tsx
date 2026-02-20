@@ -85,7 +85,26 @@ export default function Cart() {
     (item: any) => !item.product.stripe_price_id && !item.pricing.subtotal,
   );
 
+  const loadTerms = async () => {
+    if (items.length === 0) return;
+    try {
+      const productId = items[0].product_id;
+      const response = await api.get(`/terms/for-product/${productId}`);
+      setTermsContent(response.data);
+    } catch (error) {
+      console.error("Failed to load terms", error);
+    }
+  };
+
+  useEffect(() => {
+    loadTerms();
+  }, [items]);
+
   const handleCheckout = async (groupItems: any[], checkoutType: string) => {
+    if (!termsAccepted) {
+      toast.error("Please accept the Terms & Conditions to proceed");
+      return;
+    }
     setLoading(true);
     try {
       if (paymentMethod === "bank_transfer") {
@@ -97,6 +116,8 @@ export default function Cart() {
           })),
           checkout_type: checkoutType,
           promo_code: promoApplied?.code || null,
+          terms_accepted: termsAccepted,
+          terms_id: termsContent?.id || null,
         });
         toast.success("Order created successfully");
         clear();
@@ -111,6 +132,8 @@ export default function Cart() {
           checkout_type: checkoutType,
           origin_url: window.location.origin,
           promo_code: promoApplied?.code || null,
+          terms_accepted: termsAccepted,
+          terms_id: termsContent?.id || null,
         });
         window.location.href = response.data.url;
       }
