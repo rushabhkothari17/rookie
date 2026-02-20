@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import api from "@/lib/api";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +15,9 @@ export default function Cart() {
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>("bank_transfer");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoApplied, setPromoApplied] = useState<any>(null);
+  const [promoError, setPromoError] = useState("");
 
   const allowBankTransfer = customer?.allow_bank_transfer ?? true;
   const allowCardPayment = customer?.allow_card_payment ?? false;
@@ -38,6 +42,26 @@ export default function Cart() {
   useEffect(() => {
     loadPreview();
   }, [items]);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoError("");
+    try {
+      const checkoutType = grouped.subscriptions.length > 0 ? "subscription" : "one_time";
+      const response = await api.post("/promo-codes/validate", { code: promoCode, checkout_type: checkoutType });
+      setPromoApplied(response.data);
+      toast.success("Promo code applied!");
+    } catch (error: any) {
+      setPromoError(error.response?.data?.detail || "Invalid promo code");
+      setPromoApplied(null);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoApplied(null);
+    setPromoCode("");
+    setPromoError("");
+  };
 
   const grouped = useMemo(() => {
     if (!preview?.items) return { oneTime: [], subscriptions: [], scope: [], external: [], inquiry: [] };
