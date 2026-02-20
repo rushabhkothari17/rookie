@@ -1739,6 +1739,18 @@ async def startup_tasks():
     # Remove duplicate Historical Accounting product
     await db.products.delete_one({"id": "prod_accounting_cleanup"})
     await db.order_items.delete_many({"product_id": "prod_accounting_cleanup"})
+    
+    # Ensure default T&C exists
+    default_terms = await db.terms_and_conditions.find_one({"is_default": True}, {"_id": 0})
+    if not default_terms:
+        await db.terms_and_conditions.insert_one({
+            "id": make_id(),
+            "title": "Default Terms & Conditions",
+            "content": "{company_name} {product_name} - TEST",
+            "is_default": True,
+            "status": "active",
+            "created_at": now_iso(),
+        })
 
 
 
