@@ -1,23 +1,29 @@
 export const CATEGORY_ORDER = [
   "Zoho Express Setup",
-  "Audit & Optimize",
+  "Migrate to Zoho",
+  "Manages Services",
   "Build & Automate",
   "Accounting on Zoho",
-  "Ongoing Plans",
-  "Migrations",
+  "Audit & Optimize",
 ];
 
 export const CATEGORY_SLUGS: Record<string, string> = {
   "Zoho Express Setup": "start-here",
-  "Audit & Optimize": "audit-optimize",
+  "Migrate to Zoho": "migrations",
+  "Manages Services": "ongoing-plans",
   "Build & Automate": "build-automate",
   "Accounting on Zoho": "accounting-on-zoho",
-  "Ongoing Plans": "ongoing-plans",
-  Migrations: "migrations",
+  "Audit & Optimize": "audit-optimize",
 };
 
-export const displayCategory = (category: string) =>
-  category === "Start Here" ? "Zoho Express Setup" : category;
+export const displayCategory = (category: string) => {
+  if (category === "Start Here") return "Zoho Express Setup";
+  if (category === "Migrations") return "Migrate to Zoho";
+  if (category === "Ongoing Plans" || category === "Managed Services") {
+    return "Manages Services";
+  }
+  return category;
+};
 
 export const slugFromCategory = (category: string) => {
   const label = displayCategory(category);
