@@ -147,7 +147,7 @@ export default function Cart() {
                           </div>
                         </div>
                         <div className="mt-3 flex justify-between text-xs text-slate-500">
-                          <span>Subtotal ${item.pricing.subtotal.toFixed(2)}</span>
+                          <span data-testid={`cart-item-subtotal-${item.product.id}`}>Subtotal ${item.pricing.subtotal.toFixed(2)}</span>
                           <button
                             className="text-red-600"
                             onClick={() => removeItem(item.product.id)}
