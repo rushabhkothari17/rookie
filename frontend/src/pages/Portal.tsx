@@ -56,9 +56,11 @@ export default function Portal() {
             <TableRow>
               <TableHead>Order</TableHead>
               <TableHead>Date</TableHead>
+              <TableHead>Products</TableHead>
               <TableHead>Subtotal</TableHead>
               <TableHead>Fee</TableHead>
               <TableHead>Total</TableHead>
+              <TableHead>Payment</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Details</TableHead>
             </TableRow>
@@ -68,10 +70,20 @@ export default function Portal() {
               <TableRow key={order.id} data-testid={`portal-order-row-${order.id}`}>
                 <TableCell data-testid={`portal-order-number-${order.id}`}>{order.order_number}</TableCell>
                 <TableCell data-testid={`portal-order-date-${order.id}`}>{order.created_at?.slice(0, 10)}</TableCell>
+                <TableCell data-testid={`portal-order-products-${order.id}`}>
+                  {orderItems(order.id).map((item) => productMap[item.product_id]?.name || item.product_id).join(", ") || "—"}
+                </TableCell>
                 <TableCell data-testid={`portal-order-subtotal-${order.id}`}>${order.subtotal.toFixed(2)}</TableCell>
                 <TableCell data-testid={`portal-order-fee-${order.id}`}>${order.fee.toFixed(2)}</TableCell>
                 <TableCell data-testid={`portal-order-total-${order.id}`}>${order.total.toFixed(2)}</TableCell>
-                <TableCell data-testid={`portal-order-status-${order.id}`}>{order.status}</TableCell>
+                <TableCell data-testid={`portal-order-payment-${order.id}`}>
+                  {order.payment_method === "bank_transfer" ? "Bank Transfer" : order.payment_method === "card" ? "Card" : "—"}
+                </TableCell>
+                <TableCell data-testid={`portal-order-status-${order.id}`}>
+                  <span className={order.status === "awaiting_bank_transfer" ? "text-amber-600" : ""}>
+                    {order.status === "awaiting_bank_transfer" ? "Awaiting Bank Transfer" : order.status}
+                  </span>
+                </TableCell>
                 <TableCell>
                   <Dialog>
                     <DialogTrigger asChild>
