@@ -195,6 +195,46 @@ class CurrencyOverrideRequest(BaseModel):
     currency: str
 
 
+class PromoCodeCreate(BaseModel):
+    code: str
+    discount_type: str  # "percent" or "fixed"
+    discount_value: float
+    applies_to: str  # "one-time", "subscription", "both"
+    expiry_date: Optional[str] = None
+    max_uses: Optional[int] = None
+    one_time_code: bool = False
+    enabled: bool = True
+
+
+class PromoCodeUpdate(BaseModel):
+    discount_type: Optional[str] = None
+    discount_value: Optional[float] = None
+    applies_to: Optional[str] = None
+    expiry_date: Optional[str] = None
+    max_uses: Optional[int] = None
+    one_time_code: Optional[bool] = None
+    enabled: Optional[bool] = None
+
+
+class ApplyPromoRequest(BaseModel):
+    code: str
+    checkout_type: str  # "one_time" or "subscription"
+
+
+class ScopeRequestFormData(BaseModel):
+    project_summary: str
+    desired_outcomes: str
+    apps_involved: str
+    timeline_urgency: str
+    budget_range: Optional[str] = ""
+    additional_notes: Optional[str] = ""
+
+
+class ScopeRequestWithForm(BaseModel):
+    items: List[CartItemInput]
+    form_data: ScopeRequestFormData
+
+
 def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
     return [
         {
