@@ -58,15 +58,7 @@ export default function Store() {
         className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 px-10 py-14 text-white"
         data-testid="store-hero"
       >
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1642097972624-6ed84e4fe099?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwzfHx0ZWNobm9sb2d5JTIwbmV0d29yayUyMGJhY2tncm91bmQlMjBibHVlJTIwd2hpdGV8ZW58MHx8fHwxNzcxNTU1Nzg1fDA&ixlib=rb-4.1.0&q=85)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
+
         <div className="relative z-10 max-w-2xl space-y-4">
           <p className="text-xs uppercase tracking-[0.3em] text-blue-200">Automate Accounts Storefront</p>
           <h1 className="text-4xl font-semibold leading-tight">
