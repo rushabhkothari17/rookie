@@ -156,30 +156,56 @@ export default function Cart() {
             {/* Payment Method Selection */}
             <div className="rounded-xl border border-slate-200 bg-white p-6" data-testid="cart-payment-method">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Payment Method</h2>
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={(value) => setPaymentMethod(value as "bank_transfer" | "card")}
-                className="space-y-3"
-              >
+              <div className="space-y-3">
                 {allowBankTransfer && (
-                  <div className="flex items-center space-x-3 rounded-lg border border-slate-200 p-4 cursor-pointer hover:bg-slate-50">
-                    <RadioGroupItem value="bank_transfer" id="bank_transfer" data-testid="payment-bank-radio" />
-                    <Label htmlFor="bank_transfer" className="flex-1 cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("bank_transfer")}
+                    className={`w-full flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                      paymentMethod === "bank_transfer"
+                        ? "border-slate-900 bg-slate-50"
+                        : "border-slate-200 hover:bg-slate-50"
+                    }`}
+                    data-testid="payment-bank-option"
+                  >
+                    <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === "bank_transfer" ? "border-slate-900" : "border-slate-300"
+                    }`}>
+                      {paymentMethod === "bank_transfer" && (
+                        <div className="h-2 w-2 rounded-full bg-slate-900" />
+                      )}
+                    </div>
+                    <div className="flex-1">
                       <div className="font-medium text-slate-900">Bank Transfer (GoCardless)</div>
                       <div className="text-sm text-slate-500">No processing fee. We'll send bank transfer instructions.</div>
-                    </Label>
-                  </div>
+                    </div>
+                  </button>
                 )}
                 {allowCardPayment && (
-                  <div className="flex items-center space-x-3 rounded-lg border border-slate-200 p-4 cursor-pointer hover:bg-slate-50">
-                    <RadioGroupItem value="card" id="card" data-testid="payment-card-radio" />
-                    <Label htmlFor="card" className="flex-1 cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("card")}
+                    className={`w-full flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                      paymentMethod === "card"
+                        ? "border-slate-900 bg-slate-50"
+                        : "border-slate-200 hover:bg-slate-50"
+                    }`}
+                    data-testid="payment-card-option"
+                  >
+                    <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === "card" ? "border-slate-900" : "border-slate-300"
+                    }`}>
+                      {paymentMethod === "card" && (
+                        <div className="h-2 w-2 rounded-full bg-slate-900" />
+                      )}
+                    </div>
+                    <div className="flex-1">
                       <div className="font-medium text-slate-900">Card Payment (Stripe)</div>
                       <div className="text-sm text-slate-500">5% processing fee applies. Pay securely with credit/debit card.</div>
-                    </Label>
-                  </div>
+                    </div>
+                  </button>
                 )}
-              </RadioGroup>
+              </div>
               {!allowBankTransfer && !allowCardPayment && (
                 <p className="text-sm text-amber-600">No payment methods available. Please contact support.</p>
               )}
