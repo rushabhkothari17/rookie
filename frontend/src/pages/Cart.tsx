@@ -237,6 +237,34 @@ export default function Cart() {
               )}
             </div>
 
+            {/* Promo Code Section */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6" data-testid="cart-promo-section">
+              <h2 className="text-lg font-semibold text-slate-900 mb-3">Promo Code</h2>
+              {promoApplied ? (
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div>
+                    <span className="font-mono font-semibold text-green-700">{promoApplied.code}</span>
+                    <span className="ml-2 text-sm text-green-600">
+                      ({promoApplied.discount_type === "percent" ? `${promoApplied.discount_value}% off` : `$${promoApplied.discount_value} off`})
+                    </span>
+                  </div>
+                  <button onClick={handleRemovePromo} className="text-sm text-red-600 hover:text-red-700" data-testid="cart-promo-remove">Remove</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    className="flex-1"
+                    data-testid="cart-promo-input"
+                  />
+                  <Button onClick={handleApplyPromo} variant="outline" data-testid="cart-promo-apply">Apply</Button>
+                </div>
+              )}
+              {promoError && <p className="mt-2 text-sm text-red-600" data-testid="cart-promo-error">{promoError}</p>}
+            </div>
+
             {[
               { title: "One-time purchases", items: grouped.oneTime, checkoutType: "one_time" },
               { title: "Subscriptions", items: grouped.subscriptions, checkoutType: "subscription" },
