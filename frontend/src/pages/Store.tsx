@@ -64,7 +64,7 @@ export default function Store() {
               One Partner, One Roadmap - We’ve Got Zoho Covered
             </h1>
             <p className="text-base text-slate-600">
-              Choose a service tier, configure the scope, and move to a kickoff-ready plan in minutes.
+              All-in-one Zoho partner for setup, customization, migrations, training and ongoing support.
             </p>
           </div>
         </section>
