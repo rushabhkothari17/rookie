@@ -1396,7 +1396,7 @@ async def apply_catalog_overrides():
             "id": "prod_accounting_cleanup",
             "category": "Accounting on Zoho",
             "sku": "ACC-HISTORICAL-CLEANUP",
-            "name": "Historical Accounting     
+            "name": "Historical Accounting 
 @app.on_event("startup")
 async def startup_tasks():
     await seed_admin_user()
