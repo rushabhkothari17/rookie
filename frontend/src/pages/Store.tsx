@@ -70,37 +70,37 @@ export default function Store() {
         </section>
 
         <section className="space-y-6" data-testid="category-section">
-        <div
-          className="flex flex-wrap items-end justify-between gap-4"
-          data-testid="category-header"
-        >
-          <div>
-            <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-              Category
+          <div
+            className="flex flex-wrap items-end justify-between gap-4"
+            data-testid="category-header"
+          >
+            <div>
+              <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
+                Category
+              </div>
+              <h2 className="text-3xl font-semibold text-slate-900">{activeCategory}</h2>
+              <p className="text-sm text-slate-500" data-testid="category-blurb">
+                {CATEGORY_BLURBS[activeCategory || ""] ||
+                  "Curated offerings designed for fast, measurable delivery."}
+              </p>
             </div>
-            <h2 className="text-3xl font-semibold text-slate-900">{activeCategory}</h2>
-            <p className="text-sm text-slate-500" data-testid="category-blurb">
-              {CATEGORY_BLURBS[activeCategory || ""] ||
-                "Curated offerings designed for fast, measurable delivery."}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-slate-500" data-testid="store-product-count">
-              {filteredProducts.length} offerings
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-slate-500" data-testid="store-product-count">
+                {filteredProducts.length} offerings
+              </div>
+              <button
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600"
+                data-testid="store-compare-button"
+              >
+                Compare
+              </button>
             </div>
-            <button
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600"
-              data-testid="store-compare-button"
-            >
-              Compare
-            </button>
           </div>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filteredProducts.map((product) => (
-            <OfferingCard key={product.id} product={product} />
-          ))}
-        </div>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {filteredProducts.map((product) => (
+              <OfferingCard key={product.id} product={product} />
+            ))}
+          </div>
         </section>
       </div>
     </AppShell>
