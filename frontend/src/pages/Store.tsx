@@ -55,7 +55,7 @@ export default function Store() {
     <AppShell activeCategory={activeCategory}>
       <div className="space-y-10" data-testid="store-page">
       <section
-        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 px-10 py-14 text-white"
+        className="rounded-3xl bg-white/80 p-10 shadow-[0_30px_70px_rgba(15,23,42,0.08)] backdrop-blur"
         data-testid="store-hero"
       >
 
