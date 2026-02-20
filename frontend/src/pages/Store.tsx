@@ -30,7 +30,7 @@ export default function Store() {
       const categorySet = new Set<string>(
         productsData.map((p: any) => displayCategory(p.category)),
       );
-      const categoryList = Array.from(categorySet);
+      const categoryList = Array.from(categorySet) as string[];
       const ordered = CATEGORY_ORDER.filter((category) =>
         categoryList.includes(category),
       );
