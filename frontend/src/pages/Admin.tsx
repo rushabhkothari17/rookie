@@ -61,13 +61,14 @@ export default function Admin() {
   const [showManualOrderDialog, setShowManualOrderDialog] = useState(false);
 
   const load = async () => {
-    const [custRes, orderRes, subRes, productRes, logRes, promoRes] = await Promise.all([
+    const [custRes, orderRes, subRes, productRes, logRes, promoRes, termsRes] = await Promise.all([
       api.get("/admin/customers"),
       api.get("/admin/orders"),
       api.get("/admin/subscriptions"),
       api.get("/products"),
       api.get("/admin/sync-logs"),
       api.get("/admin/promo-codes").catch(() => ({ data: { promo_codes: [] } })),
+      api.get("/terms").catch(() => ({ data: { terms: [] } })),
     ]);
     setCustomers(custRes.data.customers || []);
     setAddresses(custRes.data.addresses || []);
@@ -78,6 +79,7 @@ export default function Admin() {
     setProducts(productRes.data.products || []);
     setLogs(logRes.data.logs || []);
     setPromoCodes(promoRes.data.promo_codes || []);
+    setTerms(termsRes.data.terms || []);
   };
 
   useEffect(() => {
