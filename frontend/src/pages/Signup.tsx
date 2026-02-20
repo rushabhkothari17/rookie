@@ -81,6 +81,10 @@ export default function Signup() {
             <Input value={form.full_name} onChange={(e) => handleChange("full_name", e.target.value)} data-testid="signup-fullname-input" required />
           </div>
           <div className="space-y-2">
+            <label className="text-sm text-slate-600">Job title</label>
+            <Input value={form.job_title} onChange={(e) => handleChange("job_title", e.target.value)} data-testid="signup-jobtitle-input" required />
+          </div>
+          <div className="space-y-2">
             <label className="text-sm text-slate-600">Company name</label>
             <Input value={form.company_name} onChange={(e) => handleChange("company_name", e.target.value)} data-testid="signup-company-input" required />
           </div>
@@ -92,7 +96,7 @@ export default function Signup() {
             <label className="text-sm text-slate-600">Phone</label>
             <Input value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} data-testid="signup-phone-input" required />
           </div>
-          <div className="space-y-2 sm:col-span-2">
+          <div className="space-y-2">
             <label className="text-sm text-slate-600">Password</label>
             <Input type="password" value={form.password} onChange={(e) => handleChange("password", e.target.value)} data-testid="signup-password-input" required />
           </div>
