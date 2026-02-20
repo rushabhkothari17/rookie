@@ -99,13 +99,13 @@ export default function Portal() {
           </TableHeader>
           <TableBody>
             {subscriptions.map((sub) => (
-              <TableRow key={sub.id}>
-                <TableCell>{sub.plan_name}</TableCell>
-                <TableCell>{sub.current_period_start?.slice(0, 10)}</TableCell>
-                <TableCell>{sub.current_period_end?.slice(0, 10)}</TableCell>
-                <TableCell>{sub.status}</TableCell>
-                <TableCell>${(sub.amount || 0).toFixed(2)}</TableCell>
-                <TableCell>
+              <TableRow key={sub.id} data-testid={`portal-subscription-row-${sub.id}`}>
+                <TableCell data-testid={`portal-subscription-plan-${sub.id}`}>{sub.plan_name}</TableCell>
+                <TableCell data-testid={`portal-subscription-start-${sub.id}`}>{sub.current_period_start?.slice(0, 10)}</TableCell>
+                <TableCell data-testid={`portal-subscription-renewal-${sub.id}`}>{sub.current_period_end?.slice(0, 10)}</TableCell>
+                <TableCell data-testid={`portal-subscription-status-${sub.id}`}>{sub.status}</TableCell>
+                <TableCell data-testid={`portal-subscription-amount-${sub.id}`}>${(sub.amount || 0).toFixed(2)}</TableCell>
+                <TableCell data-testid={`portal-subscription-cancel-date-${sub.id}`}>
                   {sub.cancel_at_period_end ? sub.current_period_end?.slice(0, 10) : "—"}
                 </TableCell>
                 <TableCell>
