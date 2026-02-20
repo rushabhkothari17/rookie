@@ -88,6 +88,9 @@ export default function Cart() {
     );
   }
 
+  const currencyUnsupported =
+    preview?.currency && !["USD", "CAD"].includes(preview.currency);
+
   return (
     <div className="space-y-8" data-testid="cart-page">
       <div className="flex items-center justify-between">
@@ -96,6 +99,15 @@ export default function Cart() {
           Clear cart
         </Button>
       </div>
+
+      {currencyUnsupported && (
+        <div
+          className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700"
+          data-testid="cart-currency-block"
+        >
+          Purchases are not supported in your region yet. Please contact admin for an override.
+        </div>
+      )}
 
       {preview && (
         <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
