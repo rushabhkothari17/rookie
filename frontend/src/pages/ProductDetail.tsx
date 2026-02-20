@@ -74,6 +74,16 @@ export default function ProductDetail() {
   const [inputs, setInputs] = useState<Record<string, any>>({});
   const [pricing, setPricing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showScopeModal, setShowScopeModal] = useState(false);
+  const [scopeForm, setScopeForm] = useState({
+    project_summary: "",
+    desired_outcomes: "",
+    apps_involved: "",
+    timeline_urgency: "",
+    budget_range: "",
+    additional_notes: "",
+  });
+  const [submittingScope, setSubmittingScope] = useState(false);
 
   useEffect(() => {
     const load = async () => {
