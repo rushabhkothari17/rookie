@@ -371,11 +371,32 @@ export default function Cart() {
                         Subscriptions via bank transfer require direct debit setup. We'll contact you with next steps.
                       </div>
                     )}
+                    {/* Terms & Conditions */}
+                    <div className="flex items-start gap-2 p-3 rounded-md border border-slate-200 bg-slate-50">
+                      <input
+                        type="checkbox"
+                        id="terms-checkbox"
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                        className="mt-1"
+                      />
+                      <label htmlFor="terms-checkbox" className="text-sm text-slate-700 flex-1">
+                        I accept the{" "}
+                        <button
+                          type="button"
+                          onClick={() => setShowTermsModal(true)}
+                          className="text-slate-900 underline font-medium"
+                        >
+                          Terms & Conditions
+                        </button>
+                      </label>
+                    </div>
                     <Button
                       className="w-full bg-slate-900 hover:bg-slate-800"
                       onClick={() => handleCheckout(section.items, section.checkoutType)}
                       disabled={
                         loading ||
+                        !termsAccepted ||
                         currencyUnsupported ||
                         (!allowBankTransfer && !allowCardPayment) ||
                         (section.checkoutType === "subscription" && subscriptionMissingPrice && paymentMethod === "card")
