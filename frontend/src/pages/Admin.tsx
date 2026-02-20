@@ -268,6 +268,7 @@ export default function Admin() {
           <TabsTrigger value="orders" data-testid="admin-tab-orders">Orders</TabsTrigger>
           <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="promo" data-testid="admin-tab-promo">Promo Codes</TabsTrigger>
+          <TabsTrigger value="terms" data-testid="admin-tab-terms">Terms</TabsTrigger>
           <TabsTrigger value="catalog" data-testid="admin-tab-catalog">Catalog</TabsTrigger>
           <TabsTrigger value="sync" data-testid="admin-tab-sync">Zoho sync logs</TabsTrigger>
         </TabsList>
