@@ -324,6 +324,68 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-4">
+          <div className="flex justify-end mb-3">
+            <Dialog open={showManualOrderDialog} onOpenChange={setShowManualOrderDialog}>
+              <DialogTrigger asChild>
+                <Button>Create Manual Order</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Create Manual/Offline Order</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Customer Email</label>
+                    <Input placeholder="customer@example.com" value={manualOrder.customer_email} onChange={(e) => setManualOrder({ ...manualOrder, customer_email: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Product</label>
+                    <Select value={manualOrder.product_id} onValueChange={(v) => setManualOrder({ ...manualOrder, product_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select product" /></SelectTrigger>
+                      <SelectContent>
+                        {products.map((p: any) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Quantity</label>
+                      <Input type="number" min="1" value={manualOrder.quantity} onChange={(e) => setManualOrder({ ...manualOrder, quantity: parseInt(e.target.value) || 1 })} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Subtotal</label>
+                      <Input type="number" step="0.01" value={manualOrder.subtotal} onChange={(e) => setManualOrder({ ...manualOrder, subtotal: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Discount</label>
+                      <Input type="number" step="0.01" value={manualOrder.discount} onChange={(e) => setManualOrder({ ...manualOrder, discount: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Fee</label>
+                      <Input type="number" step="0.01" value={manualOrder.fee} onChange={(e) => setManualOrder({ ...manualOrder, fee: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Status</label>
+                    <Select value={manualOrder.status} onValueChange={(v) => setManualOrder({ ...manualOrder, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="paid">Paid (Manual)</SelectItem>
+                        <SelectItem value="unpaid">Unpaid (Manual)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Internal Note</label>
+                    <Textarea placeholder="Optional internal note" value={manualOrder.internal_note} onChange={(e) => setManualOrder({ ...manualOrder, internal_note: e.target.value })} rows={3} />
+                  </div>
+                  <Button onClick={handleCreateManualOrder} className="w-full">Create Order</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">Filters</h3>
             <div className="flex flex-wrap items-end gap-3">
