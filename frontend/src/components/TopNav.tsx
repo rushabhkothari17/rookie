@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, LogOut, ShoppingCart, User } from "lucide-react";
+import { LogOut, ShoppingCart, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 
@@ -17,26 +15,13 @@ export default function TopNav() {
   const { user, logout } = useAuth();
   const { items } = useCart();
   const location = useLocation();
-  const [categories, setCategories] = useState<string[]>([]);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const response = await api.get("/categories");
-        setCategories(response.data.categories || []);
-      } catch (error) {
-        setCategories([]);
-      }
-    };
-    load();
-  }, []);
 
   const isActive = (path: string) =>
-    location.pathname.startsWith(path) ? "text-blue-600" : "text-slate-600";
+    location.pathname.startsWith(path) ? "text-slate-900" : "text-slate-500";
 
   return (
     <header
-      className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200"
+      className="sticky top-0 z-40 border-b border-slate-200/60 bg-white/80 backdrop-blur"
       data-testid="top-nav"
     >
       <div className="aa-container flex items-center justify-between py-4">
@@ -48,53 +33,19 @@ export default function TopNav() {
           >
             Automate Accounts
           </Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="gap-2 text-slate-600"
-                data-testid="nav-category-trigger"
-              >
-                Categories
-                <ChevronDown size={16} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-56"
-              align="start"
-              data-testid="nav-category-menu"
-            >
-              {categories.map((category) => (
-                <DropdownMenuItem
-                  key={category}
-                  asChild
-                  data-testid={`nav-category-${category
-                    .replace(/\s+/g, "-")
-                    .toLowerCase()}`}
-                >
-                  <Link to={`/store?category=${encodeURIComponent(category)}`}>
-                    {category}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Link
-            to="/portal"
-            className={`text-sm ${isActive("/portal")}`}
-            data-testid="nav-portal"
-          >
-            Portal
-          </Link>
-          {user?.is_admin && (
-            <Link
-              to="/admin"
-              className={`text-sm ${isActive("/admin")}`}
-              data-testid="nav-admin"
-            >
-              Admin
+          <nav className="flex items-center gap-4 text-sm" data-testid="nav-links">
+            <Link to="/store" className={isActive("/store")} data-testid="nav-store">
+              Store
             </Link>
-          )}
+            <Link to="/portal" className={isActive("/portal")} data-testid="nav-portal">
+              Portal
+            </Link>
+            {user?.is_admin && (
+              <Link to="/admin" className={isActive("/admin")} data-testid="nav-admin">
+                Admin
+              </Link>
+            )}
+          </nav>
         </div>
         <div className="flex items-center gap-4">
           <Link to="/cart" className="relative" data-testid="nav-cart-link">
@@ -103,7 +54,7 @@ export default function TopNav() {
             </Button>
             {items.length > 0 && (
               <Badge
-                className="absolute -top-2 -right-2 bg-blue-600 text-white"
+                className="absolute -top-2 -right-2 bg-slate-900 text-white"
                 data-testid="nav-cart-count"
               >
                 {items.length}
