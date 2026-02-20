@@ -20,7 +20,7 @@ const ProtectedRoute = ({
   children,
   requireAdmin = false,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   requireAdmin?: boolean;
 }) => {
   const { user, loading } = useAuth();
