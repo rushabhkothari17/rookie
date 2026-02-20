@@ -2040,8 +2040,9 @@ async def create_checkout_session(
             raise HTTPException(status_code=400, detail="Subscription checkout supports one plan at a time")
         product = subscription_items[0]["product"]
         stripe_price_id = product.get("stripe_price_id")
-        if not stripe_price_id:
-            raise HTTPException(status_code=400, detail="Subscription checkout requires a Stripe price ID")
+        # For subscriptions with dynamic pricing, we'll use price_data instead
+        if not stripe_price_id and not subscription_items[0]["pricing"].get("subtotal"):
+            raise HTTPException(status_code=400, detail="Subscription checkout requires pricing configuration")
 
     if checkout_type == "one_time":
         for item in order_items:
@@ -2050,9 +2051,34 @@ async def create_checkout_session(
             if item["pricing"].get("is_scope_request") or item["product"].get("pricing_type") in ["external", "inquiry"]:
                 raise HTTPException(status_code=400, detail="Checkout not supported for this item")
 
+    # Calculate base subtotal
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
-    fee = sum(i["pricing"]["fee"] for i in order_items)
-    total = round_cents(subtotal + fee)
+    
+    # Apply promo code discount
+    promo_code_data = None
+    discount_amount = 0.0
+    if payload.promo_code:
+        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper()}, {"_id": 0})
+        if promo and promo.get("enabled"):
+            now = datetime.now(timezone.utc).isoformat()
+            is_expired = promo.get("expiry_date") and promo["expiry_date"] < now
+            max_reached = promo.get("max_uses") and promo.get("usage_count", 0) >= promo["max_uses"]
+            applies_to = promo.get("applies_to", "both")
+            type_matches = applies_to == "both" or \
+                (applies_to == "one-time" and checkout_type == "one_time") or \
+                (applies_to == "subscription" and checkout_type == "subscription")
+            
+            if not is_expired and not max_reached and type_matches:
+                if promo["discount_type"] == "percent":
+                    discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
+                else:  # fixed
+                    discount_amount = min(round_cents(promo["discount_value"]), subtotal)
+                promo_code_data = promo
+    
+    # Calculate fee on discounted subtotal: fee = 5% * (subtotal - discount)
+    discounted_subtotal = subtotal - discount_amount
+    fee = round_cents(discounted_subtotal * 0.05)
+    total = round_cents(discounted_subtotal + fee)
 
     order_id = make_id()
     order_number = f"AA-{order_id.split('-')[0].upper()}"
@@ -2063,7 +2089,9 @@ async def create_checkout_session(
         "type": "subscription_start" if checkout_type == "subscription" else "one_time",
         "status": "pending",
         "subtotal": round_cents(subtotal),
-        "fee": round_cents(fee),
+        "discount_amount": discount_amount,
+        "promo_code": promo_code_data["code"] if promo_code_data else None,
+        "fee": fee,
         "total": total,
         "currency": customer.get("currency"),
         "payment_method": "card",
@@ -2096,17 +2124,30 @@ async def create_checkout_session(
         "order_number": order_number,
         "customer_id": customer["id"],
         "checkout_type": checkout_type,
+        "promo_code": promo_code_data["code"] if promo_code_data else "",
+        "discount_amount": str(discount_amount),
     }
 
     if checkout_type == "subscription":
         product = order_items[0]["product"]
-        checkout_request = CheckoutSessionRequest(
-            stripe_price_id=product["stripe_price_id"],
-            quantity=order_items[0]["quantity"],
-            success_url=success_url,
-            cancel_url=cancel_url,
-            metadata=metadata,
-        )
+        stripe_price_id = product.get("stripe_price_id")
+        if stripe_price_id:
+            checkout_request = CheckoutSessionRequest(
+                stripe_price_id=stripe_price_id,
+                quantity=order_items[0]["quantity"],
+                success_url=success_url,
+                cancel_url=cancel_url,
+                metadata=metadata,
+            )
+        else:
+            # Use price_data for dynamic subscription pricing
+            checkout_request = CheckoutSessionRequest(
+                amount=float(total),
+                currency=customer.get("currency", "USD").lower(),
+                success_url=success_url,
+                cancel_url=cancel_url,
+                metadata=metadata,
+            )
     else:
         checkout_request = CheckoutSessionRequest(
             amount=float(total),
