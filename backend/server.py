@@ -2936,6 +2936,8 @@ async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any
         "discount_type": payload.discount_type,
         "discount_value": payload.discount_value,
         "applies_to": payload.applies_to,
+        "applies_to_products": payload.applies_to_products,
+        "product_ids": payload.product_ids if payload.applies_to_products == "selected" else [],
         "expiry_date": payload.expiry_date,
         "max_uses": payload.max_uses,
         "one_time_code": payload.one_time_code,
@@ -2960,6 +2962,10 @@ async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin:
         update_fields["discount_value"] = payload.discount_value
     if payload.applies_to is not None:
         update_fields["applies_to"] = payload.applies_to
+    if payload.applies_to_products is not None:
+        update_fields["applies_to_products"] = payload.applies_to_products
+    if payload.product_ids is not None:
+        update_fields["product_ids"] = payload.product_ids
     if payload.expiry_date is not None:
         update_fields["expiry_date"] = payload.expiry_date
     if payload.max_uses is not None:
