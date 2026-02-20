@@ -1611,6 +1611,44 @@ async def stripe_webhook(request: Request):
             "created_at": now_iso(),
         }
     )
+
+    metadata = webhook_response.metadata or {}
+    order_id = metadata.get("order_id")
+    email_target = None
+    if order_id:
+        order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+        if order:
+            customer = await db.customers.find_one({"id": order.get("customer_id")}, {"_id": 0})
+            if customer:
+                user = await db.users.find_one({"id": customer.get("user_id")}, {"_id": 0})
+                if user:
+                    email_target = user.get("email")
+
+    if webhook_response.event_type == "invoice.paid" and email_target:
+        await db.email_outbox.insert_one(
+            {
+                "id": make_id(),
+                "to": email_target,
+                "subject": "Subscription renewal paid",
+                "body": "Your subscription renewal has been paid successfully.",
+                "type": "subscription_renewal",
+                "status": "MOCKED",
+                "created_at": now_iso(),
+            }
+        )
+    if webhook_response.event_type == "payment_intent.payment_failed" and email_target:
+        await db.email_outbox.insert_one(
+            {
+                "id": make_id(),
+                "to": email_target,
+                "subject": "Payment failed",
+                "body": "Your payment failed. Please update your payment method.",
+                "type": "payment_failed",
+                "status": "MOCKED",
+                "created_at": now_iso(),
+            }
+        )
+
     return {"status": "ok"}
 
 
