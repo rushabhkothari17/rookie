@@ -44,7 +44,6 @@ export default function Cart() {
     (item: any) => !item.product.stripe_price_id,
   );
 
-
   const handleCheckout = async (groupItems: any[], checkoutType: string) => {
     setLoading(true);
     try {
@@ -135,19 +134,30 @@ export default function Cart() {
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="text-sm font-semibold text-slate-900" data-testid={`cart-item-name-${item.product.id}`}>
+                            <div
+                              className="text-sm font-semibold text-slate-900"
+                              data-testid={`cart-item-name-${item.product.id}`}
+                            >
                               {item.product.name}
                             </div>
-                            <div className="text-xs text-slate-500" data-testid={`cart-item-tagline-${item.product.id}`}>
+                            <div
+                              className="text-xs text-slate-500"
+                              data-testid={`cart-item-tagline-${item.product.id}`}
+                            >
                               {item.product.tagline}
                             </div>
                           </div>
-                          <div className="text-sm font-semibold text-slate-900" data-testid={`cart-item-total-${item.product.id}`}>
+                          <div
+                            className="text-sm font-semibold text-slate-900"
+                            data-testid={`cart-item-total-${item.product.id}`}
+                          >
                             ${item.pricing.total.toFixed(2)}
                           </div>
                         </div>
                         <div className="mt-3 flex justify-between text-xs text-slate-500">
-                          <span data-testid={`cart-item-subtotal-${item.product.id}`}>Subtotal ${item.pricing.subtotal.toFixed(2)}</span>
+                          <span data-testid={`cart-item-subtotal-${item.product.id}`}>
+                            Subtotal ${item.pricing.subtotal.toFixed(2)}
+                          </span>
                           <button
                             className="text-red-600"
                             onClick={() => removeItem(item.product.id)}
@@ -172,8 +182,7 @@ export default function Cart() {
                       disabled={
                         loading ||
                         currencyUnsupported ||
-                        (section.checkoutType === "subscription" &&
-                          subscriptionMissingPrice)
+                        (section.checkoutType === "subscription" && subscriptionMissingPrice)
                       }
                       data-testid={`cart-checkout-${section.checkoutType}`}
                     >
@@ -191,9 +200,23 @@ export default function Cart() {
               ) : (
                 <div className="space-y-3">
                   {grouped.scope.map((item: any) => (
-                    <div key={item.product.id} className="rounded-xl border border-slate-200 bg-white p-4" data-testid={`cart-scope-item-${item.product.id}`}>
-                      <div className="text-sm font-semibold text-slate-900" data-testid={`cart-scope-name-${item.product.id}`}>{item.product.name}</div>
-                      <div className="text-xs text-slate-500" data-testid={`cart-scope-estimate-${item.product.id}`}>Estimated ${item.pricing.subtotal.toFixed(2)}</div>
+                    <div
+                      key={item.product.id}
+                      className="rounded-xl border border-slate-200 bg-white p-4"
+                      data-testid={`cart-scope-item-${item.product.id}`}
+                    >
+                      <div
+                        className="text-sm font-semibold text-slate-900"
+                        data-testid={`cart-scope-name-${item.product.id}`}
+                      >
+                        {item.product.name}
+                      </div>
+                      <div
+                        className="text-xs text-slate-500"
+                        data-testid={`cart-scope-estimate-${item.product.id}`}
+                      >
+                        Estimated ${item.pricing.subtotal.toFixed(2)}
+                      </div>
                     </div>
                   ))}
                   <Button
@@ -215,8 +238,17 @@ export default function Cart() {
               ) : (
                 <div className="space-y-3">
                   {grouped.external.map((item: any) => (
-                    <div key={item.product.id} className="rounded-xl border border-slate-200 bg-white p-4" data-testid={`cart-external-item-${item.product.id}`}>
-                      <div className="text-sm font-semibold text-slate-900" data-testid={`cart-external-name-${item.product.id}`}>{item.product.name}</div>
+                    <div
+                      key={item.product.id}
+                      className="rounded-xl border border-slate-200 bg-white p-4"
+                      data-testid={`cart-external-item-${item.product.id}`}
+                    >
+                      <div
+                        className="text-sm font-semibold text-slate-900"
+                        data-testid={`cart-external-name-${item.product.id}`}
+                      >
+                        {item.product.name}
+                      </div>
                       <a
                         href={item.pricing.external_url}
                         target="_blank"
@@ -232,12 +264,18 @@ export default function Cart() {
               )}
             </div>
 
-            {grouped.inquiry.length > 0    (
-                                            
-
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4">
-                <div className="text-sm font-semibold text-slate-900">Inquiry-only services</div>
-                <p className="text-xs text-slate-500">
+            {grouped.inquiry.length > 0 && (
+              <div
+                className="rounded-xl border border-dashed border-slate-300 bg-white p-4"
+                data-testid="cart-inquiry-block"
+              >
+                <div
+                  className="text-sm font-semibold text-slate-900"
+                  data-testid="cart-inquiry-title"
+                >
+                  Inquiry-only services
+                </div>
+                <p className="text-xs text-slate-500" data-testid="cart-inquiry-description">
                   These services require a consult. Contact sales to proceed.
                 </p>
               </div>
@@ -250,7 +288,10 @@ export default function Cart() {
               fee={preview.summary.one_time.fee + preview.summary.subscription.fee}
               total={preview.summary.one_time.total + preview.summary.subscription.total}
             />
-            <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500" data-testid="cart-currency-note">
+            <div
+              className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500"
+              data-testid="cart-currency-note"
+            >
               Prices are displayed as $ only. Final currency will be confirmed in Stripe Checkout.
             </div>
           </div>
