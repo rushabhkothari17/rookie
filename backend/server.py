@@ -1561,6 +1561,28 @@ async def checkout_bank_transfer(
         }
 
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
+    
+    # Apply promo code discount (no fee for bank transfer)
+    promo_code_data = None
+    discount_amount = 0.0
+    if payload.promo_code:
+        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper()}, {"_id": 0})
+        if promo and promo.get("enabled"):
+            now = datetime.now(timezone.utc).isoformat()
+            is_expired = promo.get("expiry_date") and promo["expiry_date"] < now
+            max_reached = promo.get("max_uses") and promo.get("usage_count", 0) >= promo["max_uses"]
+            applies_to = promo.get("applies_to", "both")
+            type_matches = applies_to == "both" or applies_to == "one-time"
+            
+            if not is_expired and not max_reached and type_matches:
+                if promo["discount_type"] == "percent":
+                    discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
+                else:
+                    discount_amount = min(round_cents(promo["discount_value"]), subtotal)
+                promo_code_data = promo
+    
+    total = round_cents(subtotal - discount_amount)
+    
     order_id = make_id()
     order_number = f"AA-{order_id.split('-')[0].upper()}"
     order_doc = {
@@ -1570,13 +1592,22 @@ async def checkout_bank_transfer(
         "type": "one_time",
         "status": "awaiting_bank_transfer",
         "subtotal": round_cents(subtotal),
+        "discount_amount": discount_amount,
+        "promo_code": promo_code_data["code"] if promo_code_data else None,
         "fee": 0.0,
-        "total": round_cents(subtotal),
+        "total": total,
         "currency": customer.get("currency"),
         "payment_method": "bank_transfer",
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
+    
+    # Increment promo code usage
+    if promo_code_data:
+        await db.promo_codes.update_one(
+            {"id": promo_code_data["id"]},
+            {"$inc": {"usage_count": 1}}
+        )
 
     for item in order_items:
         product = item["product"]
