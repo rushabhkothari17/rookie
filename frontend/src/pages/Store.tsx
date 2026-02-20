@@ -61,7 +61,7 @@ export default function Store() {
               Automate Accounts Storefront
             </p>
             <h1 className="text-4xl font-semibold text-slate-900">
-              Premium Zoho delivery, scoped and priced for clarity.
+              One Partner, One Roadmap - We’ve Got Zoho Covered
             </h1>
             <p className="text-base text-slate-600">
               Choose a service tier, configure the scope, and move to a kickoff-ready plan in minutes.
