@@ -181,6 +181,14 @@ export default function ProductDetail() {
             ))}
           </div>
           {priceSummary}
+          {requiresStripePrice && (
+            <div
+              className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700"
+              data-testid="product-stripe-warning"
+            >
+              Subscription checkout is unavailable until a Stripe price ID is configured by admin.
+            </div>
+          )}
           {pricing?.requires_checkout && (
             <Button
               className="w-full bg-slate-900 hover:bg-slate-800"
