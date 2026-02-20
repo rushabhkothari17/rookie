@@ -189,8 +189,8 @@ export default function ProductDetail() {
         href: "mailto:hello@automateaccounts.com",
       };
     }
-    if (pricing.is_scope_request) {
-      return { label: "Request scope", onClick: handleAddToCart };
+    if (pricing.is_scope_request || product.pricing_type === "scope_request") {
+      return { label: "Request scope", onClick: handleScopeRequest };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
   }, [product, pricing]);
