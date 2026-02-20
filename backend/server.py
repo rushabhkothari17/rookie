@@ -2861,6 +2861,208 @@ Order/Deal ID: {order_number}
     }
 
 
+# ============ TERMS & CONDITIONS ENDPOINTS ============
+
+@api_router.get("/terms")
+async def get_all_terms():
+    terms = await db.terms_and_conditions.find({}, {"_id": 0}).to_list(100)
+    return {"terms": terms}
+
+
+@api_router.get("/terms/default")
+async def get_default_terms():
+    default = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+    if not default:
+        raise HTTPException(status_code=404, detail="No default terms found")
+    return default
+
+
+@api_router.get("/terms/for-product/{product_id}")
+async def get_terms_for_product(product_id: str, user: Dict[str, Any] = Depends(get_current_user)):
+    # Check if product has specific T&C assigned
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    terms_id = product.get("terms_id")
+    if terms_id:
+        terms = await db.terms_and_conditions.find_one({"id": terms_id, "status": "active"}, {"_id": 0})
+    else:
+        # Use default T&C
+        terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+    
+    if not terms:
+        raise HTTPException(status_code=404, detail="No terms found for this product")
+    
+    # Get user and address for tag resolution
+    address = await db.addresses.find_one({"user_id": user["id"]}, {"_id": 0})
+    resolved_content = resolve_terms_tags(terms["content"], user, address, product["name"])
+    
+    return {
+        "id": terms["id"],
+        "title": terms["title"],
+        "content": resolved_content,
+        "raw_content": terms["content"],
+    }
+
+
+@api_router.post("/admin/terms")
+async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(require_admin)):
+    # If setting as default, unset other defaults
+    if payload.is_default:
+        await db.terms_and_conditions.update_many(
+            {"is_default": True},
+            {"$set": {"is_default": False}}
+        )
+    
+    terms_id = make_id()
+    terms_doc = {
+        "id": terms_id,
+        "title": payload.title,
+        "content": payload.content,
+        "is_default": payload.is_default,
+        "status": payload.status,
+        "created_at": now_iso(),
+    }
+    await db.terms_and_conditions.insert_one(terms_doc)
+    return {"message": "Terms created", "id": terms_id}
+
+
+@api_router.put("/admin/terms/{terms_id}")
+async def update_terms(
+    terms_id: str,
+    payload: TermsUpdate,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    existing = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Terms not found")
+    
+    update_data = {}
+    if payload.title is not None:
+        update_data["title"] = payload.title
+    if payload.content is not None:
+        update_data["content"] = payload.content
+    if payload.status is not None:
+        update_data["status"] = payload.status
+    
+    if update_data:
+        await db.terms_and_conditions.update_one({"id": terms_id}, {"$set": update_data})
+    
+    return {"message": "Terms updated"}
+
+
+@api_router.delete("/admin/terms/{terms_id}")
+async def delete_terms(terms_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    existing = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Terms not found")
+    
+    if existing.get("is_default"):
+        raise HTTPException(status_code=400, detail="Cannot delete default terms")
+    
+    await db.terms_and_conditions.delete_one({"id": terms_id})
+    # Remove from products
+    await db.products.update_many({"terms_id": terms_id}, {"$unset": {"terms_id": ""}})
+    return {"message": "Terms deleted"}
+
+
+@api_router.put("/admin/products/{product_id}/terms")
+async def assign_terms_to_product(
+    product_id: str,
+    terms_id: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    if terms_id:
+        terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+        if not terms:
+            raise HTTPException(status_code=404, detail="Terms not found")
+        await db.products.update_one({"id": product_id}, {"$set": {"terms_id": terms_id}})
+    else:
+        # Remove assignment (will use default)
+        await db.products.update_one({"id": product_id}, {"$unset": {"terms_id": ""}})
+    
+    return {"message": "Terms assignment updated"}
+
+
+# ============ MANUAL/OFFLINE ORDER ENDPOINTS ============
+
+@api_router.post("/admin/orders/manual")
+async def create_manual_order(
+    payload: ManualOrderCreate,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    # Find customer by email
+    user = await db.users.find_one({"email": payload.customer_email.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer record not found")
+    
+    # Verify product exists
+    product = await db.products.find_one({"id": payload.product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Create order
+    order_id = make_id()
+    order_number = f"AA-{order_id.split('-')[0].upper()}"
+    total = round_cents(payload.subtotal - payload.discount + payload.fee)
+    
+    order_doc = {
+        "id": order_id,
+        "order_number": order_number,
+        "customer_id": customer["id"],
+        "type": "manual",
+        "status": payload.status,
+        "subtotal": round_cents(payload.subtotal),
+        "discount_amount": round_cents(payload.discount),
+        "fee": round_cents(payload.fee),
+        "total": total,
+        "currency": customer.get("currency", "USD"),
+        "payment_method": "offline",
+        "internal_note": payload.internal_note or "",
+        "created_at": now_iso(),
+        "created_by_admin": admin["id"],
+    }
+    await db.orders.insert_one(order_doc)
+    
+    # Create order items
+    await db.order_items.insert_one({
+        "id": make_id(),
+        "order_id": order_id,
+        "product_id": payload.product_id,
+        "quantity": payload.quantity,
+        "metadata_json": payload.inputs,
+        "unit_price": round_cents(payload.subtotal / payload.quantity),
+        "line_total": round_cents(payload.subtotal),
+    })
+    
+    # Create Zoho sync logs (mocked)
+    await db.zoho_sync_logs.insert_one({
+        "id": make_id(),
+        "entity_type": "manual_order",
+        "entity_id": order_id,
+        "status": "Sent" if payload.status == "paid" else "Pending",
+        "last_error": None,
+        "attempts": 1,
+        "created_at": now_iso(),
+        "mocked": True,
+    })
+    
+    return {
+        "message": "Manual order created",
+        "order_id": order_id,
+        "order_number": order_number,
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
