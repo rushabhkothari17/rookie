@@ -948,6 +948,20 @@ async def seed_products():
             "id": "app_settings",
             "zoho_books_migration_url": "https://paymentprocess-873927405.development.catalystserverless.com/app/index.html",
         }
+        await db.settings.insert_one(settings)
+    products = build_seed_products(settings["zoho_books_migration_url"])
+    for product in products:
+        product["price_inputs"] = build_price_inputs(product)
+        await db.products.insert_one(product)
+        await db.pricing_rules.insert_one(
+            {
+                "id": make_id(),
+                "product_id": product["id"],
+                "rule_json": product.get("pricing_rules", {}),
+            }
+        )
+
+
 
 
 async def apply_catalog_overrides():
