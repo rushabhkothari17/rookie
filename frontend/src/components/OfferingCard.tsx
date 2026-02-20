@@ -48,12 +48,6 @@ export default function OfferingCard({ product }: { product: any }) {
             {product.card_description || product.tagline}
           </p>
         </div>
-        <div
-          className="text-base font-semibold text-slate-900"
-          data-testid={`offering-price-${product.id}`}
-        >
-          {formatPriceLabel(product)}
-        </div>
       </div>
       <ul className="mt-4 space-y-2 text-sm text-slate-500" data-testid={`offering-bullets-${product.id}`}>
         {(product.bullets_included || []).slice(0, 3).map((item: string) => (
