@@ -232,7 +232,9 @@ export default function Cart() {
               )}
             </div>
 
-            {grouped.inquiry.length > 0 && (
+            {grouped.inquiry.length > 0    (
+                                            
+
               <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4">
                 <div className="text-sm font-semibold text-slate-900">Inquiry-only services</div>
                 <p className="text-xs text-slate-500">
