@@ -177,6 +177,12 @@ class AdminProductUpdate(BaseModel):
     stripe_price_id: Optional[str] = None
     is_active: bool = True
 
+class AdminCustomerPaymentUpdate(BaseModel):
+    allow_bank_transfer: bool
+    allow_card_payment: bool
+
+
+
 
 class AdminOrderUpdate(BaseModel):
     manual_status: Optional[str] = None
