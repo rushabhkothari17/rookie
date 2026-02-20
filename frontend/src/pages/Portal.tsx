@@ -8,15 +8,22 @@ export default function Portal() {
   const [orders, setOrders] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [productMap, setProductMap] = useState<Record<string, any>>({});
 
   const load = async () => {
-    const [ordersRes, subsRes] = await Promise.all([
+    const [ordersRes, subsRes, productsRes] = await Promise.all([
       api.get("/orders"),
       api.get("/subscriptions"),
+      api.get("/products"),
     ]);
     setOrders(ordersRes.data.orders || []);
     setItems(ordersRes.data.items || []);
     setSubscriptions(subsRes.data.subscriptions || []);
+    const map: Record<string, any> = {};
+    (productsRes.data.products || []).forEach((product: any) => {
+      map[product.id] = product;
+    });
+    setProductMap(map);
   };
 
   useEffect(() => {
