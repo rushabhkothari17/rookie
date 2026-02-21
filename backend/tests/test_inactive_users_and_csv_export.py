@@ -156,16 +156,20 @@ class TestAdminToggleCustomerActive:
     """Test admin can activate/deactivate customers"""
 
     def test_activate_customer(self, admin_headers):
-        """PATCH /api/admin/customers/{id}/active?active=true"""
+        """PATCH /api/admin/customers/{id}/active?active=true - use a non-admin customer"""
         import pymongo
+        from datetime import datetime, timezone
         client = pymongo.MongoClient("mongodb://localhost:27017")
         db = client["test_database"]
-        # Find a customer that's not linked to the inactive test user
+        # Find a customer whose linked user is NOT an admin (role=customer)
+        admin_user = db.users.find_one({"email": "admin@automateaccounts.local"}, {"_id": 0, "id": 1})
+        admin_user_id = admin_user["id"] if admin_user else None
+
         customer = db.customers.find_one(
-            {"company_name": {"$ne": ""}},
+            {"user_id": {"$ne": admin_user_id}},
             {"_id": 0, "id": 1, "is_active": 1}
         )
-        assert customer, "No customers found"
+        assert customer, "No non-admin customers found"
         customer_id = customer["id"]
 
         resp = requests.patch(
@@ -182,7 +186,7 @@ class TestAdminToggleCustomerActive:
             f"{BASE_URL}/api/admin/customers/{customer_id}/active?active=true",
             headers=admin_headers
         )
-        assert resp2.status_code == 200
+        assert resp2.status_code == 200, f"Re-activate failed: {resp2.status_code}: {resp2.text}"
         data2 = resp2.json()
         assert data2.get("is_active") == True
         print(f"PASS: Customer re-activated: {data2}")
