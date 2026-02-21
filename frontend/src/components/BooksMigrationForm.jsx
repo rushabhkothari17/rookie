@@ -289,6 +289,21 @@ export default function BooksMigrationForm({ onChange, initialValues = {}, websi
         />
       </div>
 
+      {/* H: Company Name */}
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-slate-800">
+          Company Name
+        </label>
+        <input
+          data-testid="bm-company-name"
+          type="text"
+          value={companyName}
+          onChange={(e) => setCompanyName(e.target.value)}
+          placeholder="Your company name"
+          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-800"
+        />
+      </div>
+
       {/* Pricing preview */}
       <div className="bg-slate-900 text-white rounded-xl p-4 flex items-center justify-between" data-testid="bm-price-preview">
         <div>
