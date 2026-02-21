@@ -4518,6 +4518,10 @@ async def update_subscription(
         update_fields["start_date"] = payload.start_date
         changes["start_date"] = {"old": subscription.get("start_date"), "new": payload.start_date}
     
+    if payload.contract_end_date is not None:
+        update_fields["contract_end_date"] = payload.contract_end_date
+        changes["contract_end_date"] = {"old": subscription.get("contract_end_date"), "new": payload.contract_end_date}
+    
     if payload.amount is not None:
         update_fields["amount"] = payload.amount
         changes["amount"] = {"old": subscription.get("amount"), "new": payload.amount}
