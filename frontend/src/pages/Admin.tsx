@@ -472,12 +472,25 @@ export default function Admin() {
   };
   const getProductName = (productId: string) => products.find(p => p.id === productId)?.name || productId;
 
-  // Filter orders
+  // Filter orders (email is client-side; order# / status / product are server-side)
   const filteredOrders = orders.filter(order => {
     const user = getCustomerUser(order.customer_id);
     if (orderFilters.email && !user?.email?.toLowerCase().includes(orderFilters.email.toLowerCase())) return false;
     if (orderFilters.startDate && order.created_at < orderFilters.startDate) return false;
     if (orderFilters.endDate && order.created_at > orderFilters.endDate + "T23:59:59") return false;
+    return true;
+  });
+
+  // Filter subscriptions (client-side)
+  const filteredSubscriptions = subscriptions.filter(sub => {
+    const user = getCustomerUser(sub.customer_id);
+    if (subFilters.customer && !user?.full_name?.toLowerCase().includes(subFilters.customer.toLowerCase())) return false;
+    if (subFilters.email && !user?.email?.toLowerCase().includes(subFilters.email.toLowerCase())) return false;
+    if (subFilters.plan && !sub.plan_name?.toLowerCase().includes(subFilters.plan.toLowerCase())) return false;
+    if (subFilters.status && sub.status !== subFilters.status) return false;
+    if (subFilters.payment && sub.payment_method !== subFilters.payment) return false;
+    if (subFilters.renewalFrom && (sub.renewal_date || "") < subFilters.renewalFrom) return false;
+    if (subFilters.renewalTo && (sub.renewal_date || "") > subFilters.renewalTo) return false;
     return true;
   });
 
