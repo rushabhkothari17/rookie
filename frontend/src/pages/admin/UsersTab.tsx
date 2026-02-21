@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,53 +6,86 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
+import { AdminPagination } from "./shared/AdminPagination";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus } from "lucide-react";
 
 export function UsersTab() {
   const { user: authUser } = useAuth();
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PER_PAGE = 20;
+  const [searchFilter, setSearchFilter] = useState("");
+
+  // Dialogs
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newUser, setNewUser] = useState({ email: "", full_name: "", company_name: "", phone: "", password: "", role: "admin" });
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editUser, setEditUser] = useState<any>(null);
+  const [newUser, setNewUser] = useState({ email: "", full_name: "", password: "", role: "admin" });
+  const [editForm, setEditForm] = useState({ full_name: "", email: "", role: "admin" });
 
-  const load = async () => {
+  const load = useCallback(async (p = 1) => {
     try {
-      const res = await api.get("/admin/users");
+      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
+      if (searchFilter) params.append("search", searchFilter);
+      const res = await api.get(`/admin/users?${params}`);
       setAdminUsers(res.data.users || []);
+      setTotal(res.data.total || 0);
+      setTotalPages(res.data.total_pages || 1);
+      setPage(p);
     } catch { toast.error("Failed to load admin users"); }
-  };
+  }, [searchFilter]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(1); }, [searchFilter]);
 
   const handleCreate = async () => {
     try {
       await api.post("/admin/users", newUser);
       toast.success(`Admin user ${newUser.email} created`);
       setShowCreateDialog(false);
-      setNewUser({ email: "", full_name: "", company_name: "", phone: "", password: "", role: "admin" });
-      load();
+      setNewUser({ email: "", full_name: "", password: "", role: "admin" });
+      load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create user"); }
+  };
+
+  const openEdit = (u: any) => { setEditUser(u); setEditForm({ full_name: u.full_name || "", email: u.email || "", role: u.role || "admin" }); setShowEditDialog(true); };
+
+  const handleEdit = async () => {
+    if (!editUser) return;
+    try {
+      await api.put(`/admin/users/${editUser.id}`, editForm);
+      toast.success("User updated");
+      setShowEditDialog(false);
+      setEditUser(null);
+      load(page);
+    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update user"); }
   };
 
   const handleToggleActive = async (userId: string, currentActive: boolean) => {
     const newState = !currentActive;
-    if (!confirm(`${newState ? "Activate" : "Deactivate"} this user?${!newState ? " They will be unable to login." : ""}`)) return;
+    if (!confirm(`${newState ? "Activate" : "Deactivate"} this user?`)) return;
     try {
       await api.patch(`/admin/users/${userId}/active?active=${newState}`);
       toast.success(`User ${newState ? "activated" : "deactivated"}`);
-      load();
-    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update user status"); }
+      load(page);
+    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
   };
 
   return (
     <div className="space-y-4" data-testid="users-tab">
-      <AdminPageHeader
-        title="Admin Users"
-        subtitle="Only super admins can create admin users"
-        actions={
-          <Button size="sm" onClick={() => setShowCreateDialog(true)} data-testid="admin-create-user-btn"><Plus size={14} className="mr-1" />Create Admin User</Button>
-        }
-      />
+      <AdminPageHeader title="Admin Users" subtitle="Only super admins can manage admin users" actions={
+        <Button size="sm" onClick={() => setShowCreateDialog(true)} data-testid="admin-create-user-btn"><Plus size={14} className="mr-1" />Create Admin User</Button>
+      } />
+
+      {/* Filter */}
+      <div className="rounded-xl border border-slate-200 bg-white p-3">
+        <div className="flex gap-2 items-center">
+          <Input placeholder="Search email or name…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-52" data-testid="admin-users-search" />
+          <Button size="sm" variant="outline" onClick={() => setSearchFilter("")} className="h-8 text-xs">Clear</Button>
+        </div>
+      </div>
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <Table data-testid="admin-users-table" className="text-sm">
@@ -63,7 +96,6 @@ export function UsersTab() {
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead>Must Change PW</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -74,66 +106,62 @@ export function UsersTab() {
                 <TableRow key={u.id} data-testid={`admin-user-row-${u.id}`}>
                   <TableCell>{u.full_name}</TableCell>
                   <TableCell>{u.email}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-0.5 rounded text-xs ${u.role === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{u.role}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-user-status-${u.id}`}>
-                      {isActive ? "Active" : "Inactive"}
-                    </span>
-                  </TableCell>
+                  <TableCell><span className={`px-2 py-0.5 rounded text-xs ${u.role === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{u.role}</span></TableCell>
+                  <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-user-status-${u.id}`}>{isActive ? "Active" : "Inactive"}</span></TableCell>
                   <TableCell>{u.created_at?.slice(0, 10) || "—"}</TableCell>
-                  <TableCell>{u.must_change_password ? "Yes" : "No"}</TableCell>
                   <TableCell>
-                    {u.id !== authUser?.id && (
-                      <Button
-                        variant={isActive ? "destructive" : "outline"}
-                        size="sm" className="h-6 px-2 text-[11px]"
-                        onClick={() => handleToggleActive(u.id, isActive)}
-                        data-testid={`admin-user-toggle-active-${u.id}`}
-                      >{isActive ? "Deactivate" : "Activate"}</Button>
-                    )}
+                    <div className="flex gap-1">
+                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(u)} data-testid={`admin-user-edit-${u.id}`}>Edit</Button>
+                      {u.id !== authUser?.id && (
+                        <Button variant={isActive ? "destructive" : "outline"} size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleToggleActive(u.id, isActive)} data-testid={`admin-user-toggle-${u.id}`}>{isActive ? "Deactivate" : "Activate"}</Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               );
             })}
-            {adminUsers.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="text-center text-slate-400 py-4">No admin users found.</TableCell></TableRow>
-            )}
+            {adminUsers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-slate-400 py-4">No admin users found.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
+      <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={(p) => load(p)} />
 
-      {/* Create Admin User Dialog */}
+      {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-lg" data-testid="admin-create-user-dialog">
           <DialogHeader><DialogTitle>Create Admin User</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-slate-500">Full Name *</label>
-                <Input value={newUser.full_name} onChange={e => setNewUser({ ...newUser, full_name: e.target.value })} data-testid="admin-new-user-name" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-slate-500">Email *</label>
-                <Input type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} data-testid="admin-new-user-email" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-slate-500">Password *</label>
-                <Input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} data-testid="admin-new-user-password" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-slate-500">Role</label>
+              <div className="space-y-1"><label className="text-xs text-slate-500">Full Name *</label><Input value={newUser.full_name} onChange={e => setNewUser({ ...newUser, full_name: e.target.value })} data-testid="admin-new-user-name" /></div>
+              <div className="space-y-1"><label className="text-xs text-slate-500">Email *</label><Input type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} data-testid="admin-new-user-email" /></div>
+              <div className="space-y-1"><label className="text-xs text-slate-500">Password *</label><Input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} data-testid="admin-new-user-password" /></div>
+              <div className="space-y-1"><label className="text-xs text-slate-500">Role</label>
                 <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-new-user-role">
-                  <option value="admin">Admin</option>
-                  <option value="super_admin">Super Admin</option>
+                  <option value="admin">Admin</option><option value="super_admin">Super Admin</option>
                 </select>
               </div>
             </div>
             <p className="text-xs text-amber-600">User will be required to change password on first login.</p>
             <Button onClick={handleCreate} className="w-full" data-testid="admin-new-user-submit">Create Admin User</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) setEditUser(null); }}>
+        <DialogContent className="max-w-lg" data-testid="admin-edit-user-dialog">
+          <DialogHeader><DialogTitle>Edit User: {editUser?.email}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1"><label className="text-xs text-slate-500">Full Name</label><Input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} data-testid="admin-edit-user-name" /></div>
+              <div className="space-y-1"><label className="text-xs text-slate-500">Email</label><Input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} data-testid="admin-edit-user-email" /></div>
+              <div className="space-y-1"><label className="text-xs text-slate-500">Role</label>
+                <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-edit-user-role">
+                  <option value="admin">Admin</option><option value="super_admin">Super Admin</option>
+                </select>
+              </div>
+            </div>
+            <Button onClick={handleEdit} className="w-full" data-testid="admin-edit-user-save">Save Changes</Button>
           </div>
         </DialogContent>
       </Dialog>
