@@ -109,6 +109,14 @@ export default function Cart() {
       toast.error("Please accept the Terms & Conditions to proceed");
       return;
     }
+    if (!partnerTagResponse) {
+      toast.error("Please select whether you have tagged us as your Zoho Partner");
+      return;
+    }
+    if (partnerTagResponse === "Not yet" && !overrideCode.trim()) {
+      toast.error("An override code is required when you have not yet tagged us as your Zoho Partner");
+      return;
+    }
     setLoading(true);
     try {
       if (paymentMethod === "bank_transfer") {
@@ -123,6 +131,8 @@ export default function Cart() {
           terms_accepted: termsAccepted,
           terms_id: termsContent?.id || null,
           start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
+          partner_tag_response: partnerTagResponse,
+          override_code: partnerTagResponse === "Not yet" ? overrideCode.trim() : null,
         });
         
         // Check if GoCardless redirect is needed
@@ -149,6 +159,8 @@ export default function Cart() {
           terms_accepted: termsAccepted,
           terms_id: termsContent?.id || null,
           start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
+          partner_tag_response: partnerTagResponse,
+          override_code: partnerTagResponse === "Not yet" ? overrideCode.trim() : null,
         });
         window.location.href = response.data.url;
       }
