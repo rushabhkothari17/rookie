@@ -75,6 +75,9 @@ export default function ProductDetail() {
   const [pricing, setPricing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showScopeModal, setShowScopeModal] = useState(false);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [quoteForm, setQuoteForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
+  const [submittingQuote, setSubmittingQuote] = useState(false);
   const [scopeForm, setScopeForm] = useState({
     project_summary: "",
     desired_outcomes: "",
