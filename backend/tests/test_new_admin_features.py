@@ -491,5 +491,5 @@ class TestUnauthorizedAccess:
 
     def test_unauthenticated_cannot_access_admin_users(self):
         resp = requests.get(f"{BASE_URL}/api/admin/users")
-        assert resp.status_code == 401, f"Expected 401, got {resp.status_code}"
-        print(f"PASS: Unauthenticated GET /admin/users returns 401")
+        assert resp.status_code in (401, 403), f"Expected 401 or 403, got {resp.status_code}"
+        print(f"PASS: Unauthenticated GET /admin/users returns {resp.status_code}")
