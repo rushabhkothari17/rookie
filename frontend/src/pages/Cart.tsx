@@ -21,6 +21,7 @@ export default function Cart() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsContent, setTermsContent] = useState<any>(null);
+  const [subscriptionStartDate, setSubscriptionStartDate] = useState("");
 
   const allowBankTransfer = customer?.allow_bank_transfer ?? true;
   const allowCardPayment = customer?.allow_card_payment ?? false;
