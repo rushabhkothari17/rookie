@@ -575,6 +575,7 @@ export default function Admin() {
           <TabsTrigger value="terms" data-testid="admin-tab-terms">Terms</TabsTrigger>
           <TabsTrigger value="catalog" data-testid="admin-tab-catalog">Catalog</TabsTrigger>
           <TabsTrigger value="sync" data-testid="admin-tab-sync">Zoho sync logs</TabsTrigger>
+          {isSuperAdmin && <TabsTrigger value="users" data-testid="admin-tab-users" onClick={loadAdminUsers}>Users</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="customers" className="space-y-4">
