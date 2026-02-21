@@ -48,8 +48,11 @@ class TestScopeUnlockCartPrice:
         )
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
-        assert data.get("price") == 1500, f"Expected price=1500, got {data.get('price')}"
-        print(f"PASS: Scope article exists with price={data['price']}")
+        # Response is nested under 'article' key
+        article = data.get("article", data)
+        price = article.get("price")
+        assert price == 1500 or price == 1500.0, f"Expected price=1500, got {price}"
+        print(f"PASS: Scope article exists with price={price}")
 
     def test_validate_scope_id_returns_price(self, auth_headers):
         """Validate scope ID returns valid=true and price=1500."""
