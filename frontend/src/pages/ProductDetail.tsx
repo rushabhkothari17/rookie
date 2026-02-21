@@ -173,6 +173,30 @@ export default function ProductDetail() {
     }
   };
 
+  const isRFQ = product?.pricing_complexity === "REQUEST_FOR_QUOTE" || product?.pricing_complexity === "COMPLEX";
+
+  const handleSubmitQuote = async () => {
+    if (!quoteForm.name || !quoteForm.email) {
+      toast.error("Name and email are required");
+      return;
+    }
+    setSubmittingQuote(true);
+    try {
+      await api.post("/products/request-quote", {
+        product_id: product.id,
+        product_name: product.name,
+        ...quoteForm,
+      });
+      toast.success("Quote request submitted! We'll be in touch shortly.");
+      setShowQuoteModal(false);
+      setQuoteForm({ name: "", email: "", company: "", phone: "", message: "" });
+    } catch (e: any) {
+      toast.error(e?.response?.data?.detail || "Failed to submit quote request");
+    } finally {
+      setSubmittingQuote(false);
+    }
+  };
+
   const requiresStripePrice =
     pricing?.is_subscription && !product?.stripe_price_id;
 
