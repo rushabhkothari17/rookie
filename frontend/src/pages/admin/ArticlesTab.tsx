@@ -487,19 +487,40 @@ export function ArticlesTab() {
                 </label>
               </div>
               {form.visibility === "restricted" && (
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Select customers (hold Ctrl/Cmd to select multiple)</label>
-                  <select
-                    multiple
-                    className="w-full border border-slate-200 rounded p-2 text-sm h-32"
-                    value={form.restricted_to}
-                    onChange={(e) => setForm({ ...form, restricted_to: Array.from(e.target.selectedOptions, (o) => o.value) })}
-                    data-testid="article-restricted-to"
-                  >
-                    {customers.map((c: any) => (
-                      <option key={c.id} value={c.id}>{c.email || c.company_name || c.full_name || c.id}</option>
-                    ))}
-                  </select>
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-500">Search and add customers by email</label>
+                  <Input
+                    placeholder="Type email to search…"
+                    value={custVisSearch}
+                    onChange={e => setCustVisSearch(e.target.value)}
+                    className="h-9"
+                    data-testid="article-customer-search"
+                  />
+                  {custVisSearch && (
+                    <div className="border border-slate-200 rounded bg-white shadow-md max-h-40 overflow-y-auto">
+                      {customers.filter(c => c.email?.toLowerCase().includes(custVisSearch.toLowerCase()) || c.company_name?.toLowerCase().includes(custVisSearch.toLowerCase())).slice(0, 10).map((c: any) => (
+                        <div key={c.id} onClick={() => { if (!form.restricted_to.includes(c.id)) setForm({ ...form, restricted_to: [...form.restricted_to, c.id] }); setCustVisSearch(""); }} className={`px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm ${form.restricted_to.includes(c.id) ? "text-slate-300 cursor-not-allowed" : ""}`}>
+                          {c.email || c.company_name || c.id} {c.company_name && c.email ? `— ${c.company_name}` : ""}
+                          {form.restricted_to.includes(c.id) && " ✓"}
+                        </div>
+                      ))}
+                      {customers.filter(c => c.email?.toLowerCase().includes(custVisSearch.toLowerCase())).length === 0 && <div className="px-3 py-2 text-xs text-slate-400">No customers found</div>}
+                    </div>
+                  )}
+                  {/* Selected chips */}
+                  {form.restricted_to.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {form.restricted_to.map((custId: string) => {
+                        const c = customers.find((x: any) => x.id === custId);
+                        return (
+                          <span key={custId} className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-xs px-2 py-1 rounded-full">
+                            {c?.email || custId.slice(0, 8)}
+                            <button onClick={() => setForm({ ...form, restricted_to: form.restricted_to.filter((id: string) => id !== custId) })} className="text-slate-400 hover:text-red-500 font-bold">×</button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                   <p className="text-xs text-slate-400">{form.restricted_to.length} customer(s) selected</p>
                 </div>
               )}
