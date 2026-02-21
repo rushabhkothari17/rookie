@@ -2502,6 +2502,16 @@ async def startup_tasks():
         {"$set": {"is_active": True}}
     )
 
+    # Backfill partner_map and notes fields for existing customers
+    await db.customers.update_many(
+        {"partner_map": {"$exists": False}},
+        {"$set": {"partner_map": None}}
+    )
+    await db.customers.update_many(
+        {"notes": {"$exists": False}},
+        {"$set": {"notes": []}}
+    )
+
     # === NEW MIGRATIONS ===
 
     # 1. Seed categories collection from existing product category strings (with blurbs)
