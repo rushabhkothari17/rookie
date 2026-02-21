@@ -11,7 +11,7 @@ import PriceSummary from "@/components/PriceSummary";
 export default function Cart() {
   const navigate = useNavigate();
   const { items, removeItem, clear } = useCart();
-  const { customer } = useAuth();
+  const { customer, address } = useAuth();
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>("bank_transfer");
