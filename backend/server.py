@@ -2356,6 +2356,8 @@ async def get_me(user: Dict[str, Any] = Depends(get_current_user)):
             "phone": user["phone"],
             "is_verified": user.get("is_verified", False),
             "is_admin": user.get("is_admin", False),
+            "role": user.get("role", "customer"),
+            "must_change_password": user.get("must_change_password", False),
         },
         "customer": customer,
         "address": address,
