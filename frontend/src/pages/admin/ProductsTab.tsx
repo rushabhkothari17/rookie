@@ -69,7 +69,7 @@ export function ProductsTab() {
       const [prodRes, catRes, custRes, termsRes] = await Promise.all([
         api.get("/admin/products-all").catch(() => api.get("/products")),
         api.get("/admin/categories").catch(() => ({ data: { categories: [] } })),
-        api.get("/admin/customers").catch(() => ({ data: { customers: [] } })),
+        api.get("/admin/customers?per_page=1000").catch(() => ({ data: { customers: [], users: [] } })),
         api.get("/terms").catch(() => ({ data: { terms: [] } })),
       ]);
       setProducts(
@@ -78,7 +78,14 @@ export function ProductsTab() {
         )
       );
       setCategories(catRes.data.categories || []);
-      setCustomers(custRes.data.customers || []);
+      // Merge user email into customers for typeahead
+      const usersArr: any[] = custRes.data.users || [];
+      const userEmailMap: Record<string, string> = {};
+      usersArr.forEach((u: any) => { userEmailMap[u.id] = u.email || ""; });
+      const enrichedCustomers = (custRes.data.customers || []).map((c: any) => ({
+        ...c, email: userEmailMap[c.user_id] || "",
+      }));
+      setCustomers(enrichedCustomers);
       setTerms(termsRes.data.terms || []);
     } catch {
       toast.error("Failed to load products");
