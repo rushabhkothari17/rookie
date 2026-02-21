@@ -412,6 +412,29 @@ export default function Cart() {
                         Subscriptions via bank transfer require direct debit setup. We'll contact you with next steps.
                       </div>
                     )}
+                    {/* Subscription Start Date */}
+                    {section.checkoutType === "subscription" && (
+                      <div
+                        className="rounded-md border border-slate-200 bg-slate-50 p-3 space-y-1"
+                        data-testid="cart-subscription-start-date"
+                      >
+                        <label className="text-xs font-semibold text-slate-600 block">
+                          Subscription Start Date
+                        </label>
+                        <Input
+                          type="date"
+                          value={subscriptionStartDate}
+                          min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
+                          max={new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)}
+                          onChange={e => setSubscriptionStartDate(e.target.value)}
+                          className="text-sm"
+                          data-testid="cart-subscription-start-date-input"
+                        />
+                        <p className="text-xs text-slate-400">
+                          Leave empty to start today. Date can be up to 30 days in the future.
+                        </p>
+                      </div>
+                    )}
                     {/* Terms & Conditions */}
                     <div className="flex items-start gap-2 p-3 rounded-md border border-slate-200 bg-slate-50">
                       <input
