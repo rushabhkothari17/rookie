@@ -5357,6 +5357,48 @@ async def admin_list_quote_requests(admin: Dict[str, Any] = Depends(require_admi
     return {"quotes": quotes}
 
 
+@api_router.post("/admin/quote-requests")
+async def admin_create_quote_request(
+    payload: Dict[str, Any],
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    quote: Dict[str, Any] = {
+        "id": make_id(),
+        "product_id": payload.get("product_id", ""),
+        "product_name": payload.get("product_name", ""),
+        "name": payload.get("name", ""),
+        "email": payload.get("email", ""),
+        "company": payload.get("company"),
+        "phone": payload.get("phone"),
+        "message": payload.get("message"),
+        "user_id": payload.get("user_id", ""),
+        "created_at": payload.get("created_at") or now_iso(),
+        "status": payload.get("status", "pending"),
+        "created_by_admin": True,
+    }
+    await db.quote_requests.insert_one(quote)
+    quote.pop("_id", None)
+    return {"quote": quote}
+
+
+@api_router.put("/admin/quote-requests/{quote_id}")
+async def admin_update_quote_request(
+    quote_id: str,
+    payload: Dict[str, Any],
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    quote = await db.quote_requests.find_one({"id": quote_id})
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote request not found")
+    allowed = ["product_id", "product_name", "name", "email", "company", "phone", "message", "status", "user_id"]
+    update = {k: v for k, v in payload.items() if k in allowed}
+    if update:
+        await db.quote_requests.update_one({"id": quote_id}, {"$set": update})
+    quote.update(update)
+    quote.pop("_id", None)
+    return {"quote": quote}
+
+
 app.include_router(api_router)
 
 app.add_middleware(
