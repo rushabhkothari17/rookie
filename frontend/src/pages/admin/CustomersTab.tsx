@@ -107,7 +107,7 @@ export function CustomersTab() {
     try {
       await api.put(`/admin/customers/${selectedCustomer.id}`, {
         customer_data: { full_name: selectedCustomer.full_name, company_name: selectedCustomer.company_name, job_title: selectedCustomer.job_title, phone: selectedCustomer.phone },
-        address_data: { line1: selectedCustomer.line1 || "", line2: selectedCustomer.line2 || "", city: selectedCustomer.city || "", region: selectedCustomer.region || "", postal: selectedCustomer.postal || "" },
+        address_data: { line1: selectedCustomer.line1 || "", line2: selectedCustomer.line2 || "", city: selectedCustomer.city || "", region: selectedCustomer.region || "", postal: selectedCustomer.postal || "", country: selectedCustomer.country || "" },
       });
       toast.success("Customer updated"); setSelectedCustomer(null); load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
