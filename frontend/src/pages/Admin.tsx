@@ -898,6 +898,30 @@ export default function Admin() {
           </div>
         </TabsContent>
 
+        {/* Subscription Edit Dialog */}
+        <Dialog open={showSubEditDialog} onOpenChange={(open) => { setShowSubEditDialog(open); if (!open) setSelectedSubscription(null); }}>
+          <DialogContent data-testid="admin-sub-edit-dialog">
+            <DialogHeader><DialogTitle>Edit Subscription</DialogTitle></DialogHeader>
+            {selectedSubscription && (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Plan Name</label>
+                  <Input value={selectedSubscription.plan_name || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, plan_name: e.target.value })} data-testid="admin-sub-plan-input" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Amount</label>
+                  <Input type="number" step="0.01" value={selectedSubscription.amount || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, amount: parseFloat(e.target.value) || 0 })} data-testid="admin-sub-amount-input" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Renewal Date</label>
+                  <Input type="date" value={selectedSubscription.renewal_date?.slice(0, 10) || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, renewal_date: e.target.value })} data-testid="admin-sub-renewal-input" />
+                </div>
+                <Button onClick={handleSubscriptionEdit} className="w-full" data-testid="admin-sub-save">Save Changes</Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         <TabsContent value="promo" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-semibold text-slate-900">Promo Codes</h3>
