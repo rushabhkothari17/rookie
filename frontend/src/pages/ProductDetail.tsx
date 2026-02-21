@@ -217,17 +217,22 @@ export default function ProductDetail() {
     pricing?.is_subscription && !product?.stripe_price_id;
 
   const ctaConfig = useMemo(() => {
-    if (!product || !pricing) {
+    if (!product || (!pricing && product.sku !== "MIG-BOOKS")) {
       return { label: "Add to cart" };
+    }
+    if (product.sku === "MIG-BOOKS") {
+      return {
+        label: migBooksData.isComplete ? "Add to cart" : "Complete form to add to cart",
+        onClick: migBooksData.isComplete ? handleAddToCart : undefined,
+        disabled: !migBooksData.isComplete,
+      };
     }
     if (isRFQ) {
       return { label: "Request a Quote", onClick: () => setShowQuoteModal(true) };
     }
     if (product.pricing_type === "external") {
-      return {
-        label: "Continue to migration checkout",
-        href: product.pricing_rules.external_url,
-      };
+      // Legacy fallback: show as add to cart since external redirect is removed
+      return { label: "Add to cart", onClick: handleAddToCart };
     }
     if (product.pricing_type === "inquiry") {
       return {
@@ -235,11 +240,11 @@ export default function ProductDetail() {
         href: "mailto:hello@automateaccounts.com",
       };
     }
-    if (pricing.is_scope_request || product.pricing_type === "scope_request") {
+    if (pricing?.is_scope_request || product.pricing_type === "scope_request") {
       return { label: "Request scope", onClick: handleScopeRequest };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
-  }, [product, pricing, isRFQ]);
+  }, [product, pricing, isRFQ, migBooksData]);
 
   if (loading) {
     return (
