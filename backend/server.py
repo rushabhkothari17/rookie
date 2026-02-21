@@ -6090,7 +6090,7 @@ async def create_override_code(
 
     code_id = make_id()
     created_at = now_iso()
-    expires_at = payload.expires_at or (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat()
+    expires_at = payload.expires_at or (datetime.now(timezone.utc) + timedelta(hours=int(await SettingsService.get("override_code_expiry_hours", 48)))).isoformat()
 
     await db.override_codes.insert_one({
         "id": code_id,
