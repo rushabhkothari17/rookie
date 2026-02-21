@@ -188,3 +188,38 @@ class AuditService:
             next_cursor = AuditService._encode_cursor(last["occurred_at"], last["id"])
 
         return records, next_cursor
+
+
+
+# ---------------------------------------------------------------------------
+# Convenience helper — used across route handlers
+# ---------------------------------------------------------------------------
+
+async def create_audit_log(
+    entity_type: str,
+    entity_id: str,
+    action: str,
+    actor: str,
+    details: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Write to legacy audit_logs collection AND the comprehensive audit_trail."""
+    await db.audit_logs.insert_one({
+        "id": make_id(),
+        "entity_type": entity_type,
+        "entity_id": entity_id,
+        "action": action,
+        "actor": actor,
+        "details": details or {},
+        "created_at": now_iso(),
+    })
+    actor_type = "admin" if "admin" in (actor or "").lower() else "system"
+    await AuditService.log(
+        action=f"{entity_type.upper()}_{action.upper().replace(' ', '_')}",
+        description=f"{action} on {entity_type} {entity_id} by {actor}",
+        entity_type=entity_type.capitalize(),
+        entity_id=entity_id,
+        actor_type=actor_type,
+        actor_email=actor if "@" in (actor or "") else None,
+        source="api",
+        meta_json=details or {},
+    )
