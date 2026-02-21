@@ -55,7 +55,7 @@ class TestAuth:
     """Verify admin user returns role=super_admin"""
 
     def test_me_returns_super_admin_role(self, admin_headers):
-        resp = requests.get(f"{BASE_URL}/api/auth/me", headers=admin_headers)
+        resp = requests.get(f"{BASE_URL}/api/me", headers=admin_headers)
         assert resp.status_code == 200, f"GET /auth/me failed: {resp.text}"
         data = resp.json()
         assert data.get("role") == "super_admin", f"Expected super_admin, got: {data.get('role')}"
