@@ -105,10 +105,12 @@ export default function Admin() {
         page: page.toString(),
         per_page: "20",
         sort_by: "created_at",
-        sort_order: "desc",
+        sort_order: orderSortOrder,
         include_deleted: includeDeleted.toString(),
       });
       if (productFilter) params.append("product_filter", productFilter);
+      if (orderNumberFilter) params.append("order_number_filter", orderNumberFilter);
+      if (orderStatusFilter) params.append("status_filter", orderStatusFilter);
       
       const res = await api.get(`/admin/orders?${params.toString()}`);
       setOrders(res.data.orders || []);
