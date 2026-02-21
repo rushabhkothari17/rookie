@@ -64,6 +64,26 @@ Build a full-featured customer-facing portal for Automate Accounts (Zoho partner
   - Scope metadata (`_scope_unlock`) captured in `notes_json.product_intake`
   - Full Stripe checkout flow works with scope-unlocked price
 
+### Session 4 (P1 Audit Logs + P2 DB-backed Settings) — 2026-02-21
+- **P1 — Global Audit Log system**:
+  - `AuditService` in `backend/services/audit_service.py` with keyset pagination
+  - `audit_trail` MongoDB collection with composite indexes
+  - `/api/admin/audit-logs` endpoint with full filtering (actor, source, entity_type, action, severity, date range, free text)
+  - `LogsTab.tsx`: full-featured admin UI with filters, load-more pagination, detail dialog
+  - Audit logging on: settings changes (SETTINGS_KEY_UPDATE, SETTINGS_UPDATE), order status updates, webhooks
+- **P2 — DB-backed Settings**:
+  - `SettingsService` in `backend/services/settings_service.py` with in-memory cache (60s TTL)
+  - `app_settings` collection seeded on startup with 14 structured settings
+  - Categories: Payments, GoCardless, Email, Zoho, Branding, FeatureFlags
+  - `/api/admin/settings/structured` GET — grouped by category
+  - `/api/admin/settings/key/{key}` PUT — update single setting
+  - `SettingsTab.tsx` — complete `SystemConfigSection` rewrite:
+    - Bool fields → inline toggle
+    - Number fields → number input with badge
+    - Secret fields → password input with reveal toggle
+    - Click-to-edit pattern with Cancel button
+  - Legacy corrupt document filtered from structured settings response
+
 ---
 
 ## DB Collections
