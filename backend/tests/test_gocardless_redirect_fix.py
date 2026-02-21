@@ -350,15 +350,22 @@ class TestStripeCheckoutStillWorks:
 
     def test_stripe_checkout_with_product(self, admin_client):
         """Stripe checkout creates a session for card payment"""
-        # Get a product to use
+        # Get a product to use - API returns {"products": [...]}
         products_resp = admin_client.get(f"{BASE_URL}/api/products")
         if products_resp.status_code != 200:
             pytest.skip("Cannot get products")
         
-        products = products_resp.json()
-        active_products = [p for p in products if p.get("active", True) and not p.get("is_subscription", False)]
+        resp_data = products_resp.json()
+        if isinstance(resp_data, list):
+            products = resp_data
+        elif isinstance(resp_data, dict):
+            products = resp_data.get("products", [])
+        else:
+            products = []
+        
+        active_products = [p for p in products if isinstance(p, dict) and p.get("active", True) and not p.get("is_subscription", False)]
         if not active_products:
-            active_products = [p for p in products if p.get("active", True)]
+            active_products = [p for p in products if isinstance(p, dict) and p.get("active", True)]
         if not active_products:
             pytest.skip("No active products")
         
