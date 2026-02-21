@@ -90,4 +90,11 @@ async def admin_add_customer_note(
         raise HTTPException(status_code=404, detail="Customer not found")
     note = {"text": payload.get("text", ""), "timestamp": now_iso(), "actor": admin.get("email", "admin")}
     await db.customers.update_one({"id": customer_id}, {"$push": {"notes": note}})
+    await create_audit_log(
+        entity_type="customer",
+        entity_id=customer_id,
+        action="note_added",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"note_preview": payload.get("text", "")[:100]},
+    )
     return {"message": "Note added"}
