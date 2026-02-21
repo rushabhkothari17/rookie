@@ -233,7 +233,7 @@ export function CustomersTab() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 items-center flex-nowrap">
-                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
+                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const res = await api.get(`/admin/customers/${customer.id}/notes`); setCustomerNotes(res.data.notes || []); setViewNotesCustomer(customer); }} data-testid={`admin-customer-notes-${customer.id}`}>Notes</Button>
                       {user.id !== authUser?.id && (
                         <Button variant={isActive ? "destructive" : "outline"} size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleToggleActive(customer.id, isActive)} data-testid={`admin-customer-toggle-active-${customer.id}`}>{isActive ? "Deactivate" : "Activate"}</Button>
