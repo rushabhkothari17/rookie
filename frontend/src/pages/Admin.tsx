@@ -1505,86 +1505,15 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="catalog" className="space-y-4">
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-slate-500">Filter:</label>
-            <Select value={catalogFilter} onValueChange={setCatalogFilter}>
-              <SelectTrigger className="w-40" data-testid="admin-catalog-filter"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Products</SelectItem>
-                <SelectItem value="subscription">Subscriptions</SelectItem>
-                <SelectItem value="one-time">One-time</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="ml-auto">
-              <Button variant="outline" size="sm" onClick={() => downloadCsv("/api/admin/export/catalog", `catalog_${new Date().toISOString().slice(0,10)}.csv`)} data-testid="admin-catalog-export-csv">Export CSV</Button>
-            </div>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-            <Table data-testid="admin-catalog-table">
-              <TableHeader>
-                <TableRow className="bg-slate-50">
-                  <TableHead>Name</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Billing Type</TableHead>
-                  <TableHead>Terms Assigned</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => {
-                  const assignedTerms = terms.find((t: any) => t.id === product.terms_id);
-                  return (
-                    <TableRow key={product.id} className="border-b border-slate-100">
-                      <TableCell className="font-semibold">{product.name}</TableCell>
-                      <TableCell className="font-mono text-xs">{product.sku}</TableCell>
-                      <TableCell className="text-xs">{product.category}</TableCell>
-                      <TableCell>
-                        <span className={`text-xs px-2 py-1 rounded ${product.is_subscription ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
-                          {product.is_subscription ? "Subscription" : "One-time"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Select 
-                          value={product.terms_id || "default"} 
-                          onValueChange={(v) => handleAssignTermsToProduct(product.id, v === "default" ? null : v)}
-                        >
-                          <SelectTrigger className="w-48">
-                            <SelectValue placeholder="Default T&C" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="default">Default T&C</SelectItem>
-                            {terms.filter((t: any) => t.status === "active").map((t: any) => (
-                              <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Dialog open={selectedProduct?.id === product.id} onOpenChange={(open) => { if (!open) setSelectedProduct(null); }}>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedProduct(product)} data-testid={`admin-edit-${product.id}`}>Edit</Button>
-                          </DialogTrigger>
-                          {selectedProduct && selectedProduct.id === product.id && (
-                            <DialogContent className="max-h-[80vh] overflow-y-auto" data-testid="admin-product-dialog">
-                              <DialogHeader><DialogTitle>Edit {product.name}</DialogTitle></DialogHeader>
-                              <div className="space-y-3">
-                                <Input placeholder="Name" value={selectedProduct.name || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })} data-testid="admin-product-name" />
-                                <Input placeholder="Tagline" value={selectedProduct.tagline || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, tagline: e.target.value })} data-testid="admin-product-tagline" />
-                                <Textarea placeholder="Description" value={selectedProduct.description_long || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, description_long: e.target.value })} data-testid="admin-product-description" />
-                                <Input placeholder="Stripe Price ID" value={selectedProduct.stripe_price_id || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, stripe_price_id: e.target.value })} data-testid="admin-product-stripe" />
-                                <Button onClick={handleProductSave} data-testid="admin-product-save">Save changes</Button>
-                              </div>
-                            </DialogContent>
-                          )}
-                        </Dialog>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <ProductsTab />
+        </TabsContent>
+
+        <TabsContent value="categories" className="space-y-4">
+          <CategoriesTab />
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-4">
+          <SettingsTab />
         </TabsContent>
 
         <TabsContent value="sync" className="space-y-4">
