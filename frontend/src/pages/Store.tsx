@@ -93,11 +93,14 @@ export default function Store() {
             data-testid="category-header"
           >
             <div>
-              <div className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                Category
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-0.5 w-5 rounded-full bg-red-500" />
+                <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                  Category
+                </div>
               </div>
-              <h2 className="text-3xl font-semibold text-slate-900">{activeCategory}</h2>
-              <p className="text-sm text-slate-500" data-testid="category-blurb">
+              <h2 className="text-3xl font-bold text-slate-900">{activeCategory}</h2>
+              <p className="text-sm text-slate-500 mt-1" data-testid="category-blurb">
                 {categoryBlurbs[activeCategory || ""] ||
                   "Curated offerings designed for fast, measurable delivery."}
               </p>
