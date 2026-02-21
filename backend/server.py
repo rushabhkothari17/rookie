@@ -186,6 +186,116 @@ async def create_audit_log(entity_type: str, entity_id: str, action: str, actor:
     })
 
 
+async def validate_and_consume_partner_tag(
+    customer_id: str,
+    partner_tag_response: Optional[str],
+    override_code: Optional[str],
+    order_id: Optional[str] = None,
+) -> Optional[str]:
+    """
+    Validates partner tag response and override code (if needed).
+    Updates customer partner_map and marks override code as used.
+    Returns override_code_id if a code was consumed, else None.
+    Raises HTTPException on validation failure.
+    """
+    if not partner_tag_response or partner_tag_response not in VALID_PARTNER_TAG_RESPONSES:
+        raise HTTPException(
+            status_code=400,
+            detail="Please select whether you have tagged us as your Zoho Partner before proceeding."
+        )
+
+    override_code_id = None
+
+    if partner_tag_response == "Not yet":
+        if not override_code or not override_code.strip():
+            await create_audit_log(
+                entity_type="checkout", entity_id=customer_id,
+                action="checkout_blocked_no_override_code", actor="system",
+                details={"reason": "No override code provided", "partner_tag": partner_tag_response}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="An override code is required to proceed without tagging us as your Zoho Partner."
+            )
+
+        oc = await db.override_codes.find_one({"code": override_code.strip()}, {"_id": 0})
+        if not oc:
+            await create_audit_log(
+                entity_type="checkout", entity_id=customer_id,
+                action="checkout_blocked_invalid_override_code", actor="system",
+                details={"reason": "Override code not found", "code": override_code}
+            )
+            raise HTTPException(status_code=400, detail="Invalid override code.")
+
+        if oc.get("customer_id") != customer_id:
+            await create_audit_log(
+                entity_type="checkout", entity_id=customer_id,
+                action="checkout_blocked_override_code_mismatch", actor="system",
+                details={"reason": "Code not assigned to customer", "code": override_code}
+            )
+            raise HTTPException(status_code=400, detail="This override code is not valid for your account.")
+
+        # Auto-expire check
+        expires_at = oc.get("expires_at")
+        if expires_at:
+            try:
+                exp_dt = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+                if datetime.now(timezone.utc) > exp_dt:
+                    await create_audit_log(
+                        entity_type="override_code", entity_id=oc["id"],
+                        action="override_code_expired_at_checkout", actor="system",
+                        details={"customer_id": customer_id, "expires_at": expires_at}
+                    )
+                    raise HTTPException(status_code=400, detail="This override code has expired. Please contact admin for a new one.")
+            except HTTPException:
+                raise
+            except Exception:
+                pass
+
+        if oc.get("status") != "active":
+            raise HTTPException(status_code=400, detail="This override code is no longer active.")
+
+        override_code_id = oc["id"]
+
+    # Update customer partner_map to pending
+    pending_value = f"{partner_tag_response} - Pending Verification"
+    await db.customers.update_one(
+        {"id": customer_id},
+        {"$set": {"partner_map": pending_value}}
+    )
+    await create_audit_log(
+        entity_type="customer", entity_id=customer_id,
+        action="partner_map_updated", actor="system",
+        details={"partner_map": pending_value, "order_id": order_id, "trigger": "checkout"}
+    )
+
+    # Append note and mark code used if override code was used
+    if override_code_id and override_code:
+        note_text = f"Override code used: {override_code.strip()} at {now_iso()}"
+        if order_id:
+            note_text += f" for Order {order_id}"
+        await db.customers.update_one(
+            {"id": customer_id},
+            {"$push": {"notes": {"text": note_text, "timestamp": now_iso(), "actor": "system"}}}
+        )
+        await create_audit_log(
+            entity_type="customer", entity_id=customer_id,
+            action="customer_note_appended", actor="system",
+            details={"note": note_text, "override_code_id": override_code_id}
+        )
+        await db.override_codes.update_one(
+            {"id": override_code_id},
+            {"$set": {"status": "inactive", "used_at": now_iso(), "used_for_order_id": order_id}}
+        )
+        await create_audit_log(
+            entity_type="override_code", entity_id=override_code_id,
+            action="override_code_used", actor="system",
+            details={"customer_id": customer_id, "order_id": order_id, "code": override_code.strip()}
+        )
+
+    return override_code_id
+
+
 class AddressInput(BaseModel):
     line1: str
     line2: Optional[str] = ""
