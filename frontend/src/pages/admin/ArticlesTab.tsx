@@ -146,6 +146,13 @@ export function ArticlesTab() {
   const [savingEmail, setSavingEmail] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchFilter, setSearchFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PER_PAGE = 20;
 
   const [form, setForm] = useState({
     title: "",
@@ -158,20 +165,27 @@ export function ArticlesTab() {
   });
   const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (p = 1) => {
     setLoading(true);
     try {
-      const params = categoryFilter !== "all" ? `?category=${encodeURIComponent(categoryFilter)}` : "";
-      const res = await api.get(`/articles/admin/list${params}`);
+      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
+      if (categoryFilter !== "all") params.append("category", categoryFilter);
+      if (searchFilter) params.append("search", searchFilter);
+      if (startDate) params.append("created_from", startDate);
+      if (endDate) params.append("created_to", endDate);
+      const res = await api.get(`/articles/admin/list?${params}`);
       setArticles(res.data.articles || []);
+      setTotal(res.data.total || 0);
+      setTotalPages(res.data.total_pages || 1);
+      setPage(p);
     } catch {
       toast.error("Failed to load articles");
     } finally {
       setLoading(false);
     }
-  }, [categoryFilter]);
+  }, [categoryFilter, searchFilter, startDate, endDate]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(1); }, [categoryFilter, searchFilter, startDate, endDate]);
 
   const resetForm = () => setForm({ title: "", slug: "", category: "", price: "", content: "", visibility: "all", restricted_to: [] });
 
