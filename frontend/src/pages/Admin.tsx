@@ -548,6 +548,58 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="subscriptions" className="space-y-4">
+          <div className="flex justify-end mb-3">
+            <Dialog open={showManualSubDialog} onOpenChange={setShowManualSubDialog}>
+              <DialogTrigger asChild>
+                <Button>Create Manual Subscription</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Create Manual Subscription</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Customer Email</label>
+                    <Input placeholder="customer@example.com" value={manualSubscription.customer_email} onChange={(e) => setManualSubscription({ ...manualSubscription, customer_email: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Product</label>
+                    <Select value={manualSubscription.product_id} onValueChange={(v) => setManualSubscription({ ...manualSubscription, product_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select product" /></SelectTrigger>
+                      <SelectContent>
+                        {products.filter((p: any) => p.billing_type === "subscription").map((p: any) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Amount</label>
+                      <Input type="number" step="0.01" value={manualSubscription.amount} onChange={(e) => setManualSubscription({ ...manualSubscription, amount: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Renewal Date</label>
+                      <Input type="date" value={manualSubscription.renewal_date} onChange={(e) => setManualSubscription({ ...manualSubscription, renewal_date: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Status</label>
+                    <Select value={manualSubscription.status} onValueChange={(v) => setManualSubscription({ ...manualSubscription, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="unpaid">Unpaid</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Internal Note</label>
+                    <Textarea placeholder="Optional internal note" value={manualSubscription.internal_note} onChange={(e) => setManualSubscription({ ...manualSubscription, internal_note: e.target.value })} rows={3} />
+                  </div>
+                  <Button onClick={handleCreateManualSubscription} className="w-full">Create Subscription</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <Table data-testid="admin-subscriptions-table">
               <TableHeader>
@@ -559,6 +611,7 @@ export default function Admin() {
                   <TableHead>Renewal Date</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Payment</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
