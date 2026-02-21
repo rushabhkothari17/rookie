@@ -2556,9 +2556,16 @@ async def get_products(user: Optional[Dict[str, Any]] = Depends(optional_get_cur
 
 
 @api_router.get("/products/{product_id}")
-async def get_product(product_id: str):
+async def get_product(
+    product_id: str,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+):
     product = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    # Allow admins to preview inactive products
+    is_admin = user and (user.get("is_admin") or user.get("role") in ("admin", "super_admin"))
+    if not product.get("is_active", True) and not is_admin:
         raise HTTPException(status_code=404, detail="Product not found")
     return {"product": product}
 
