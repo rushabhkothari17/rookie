@@ -5638,7 +5638,60 @@ async def update_app_settings(
     if not update:
         return {"message": "Nothing to update"}
     await db.app_settings.update_one({}, {"$set": update}, upsert=True)
+    # Sync to structured settings service for new keys
+    for k, v in update.items():
+        await SettingsService.set(k, v, updated_by=admin.get("email", "admin"))
+    await AuditService.log(
+        action="SETTINGS_UPDATE",
+        description=f"Admin updated settings: {list(update.keys())}",
+        entity_type="Setting",
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        actor_role=admin.get("role"),
+        source="admin_ui",
+        after_json={k: "***" if "key" in k or "secret" in k or "token" in k else v for k, v in update.items()},
+    )
     return {"message": "Settings updated"}
+
+
+@api_router.get("/admin/settings/structured")
+async def get_structured_settings(admin: Dict[str, Any] = Depends(require_admin)):
+    """Return all settings grouped by category for the rich admin UI."""
+    items = await SettingsService.list_all(include_secrets=False)
+    # Group by category
+    grouped: Dict[str, list] = {}
+    for item in items:
+        cat = item.get("category", "General")
+        grouped.setdefault(cat, []).append(item)
+    return {"settings": grouped}
+
+
+@api_router.put("/admin/settings/key/{key}")
+async def update_setting_by_key(
+    key: str,
+    payload: Dict[str, Any],
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    """Update a single setting by key."""
+    value = payload.get("value")
+    if value is None:
+        raise HTTPException(status_code=400, detail="value is required")
+    # Get before value for audit
+    before_val = await SettingsService.get(key)
+    await SettingsService.set(key, value, updated_by=admin.get("email", "admin"))
+    is_secret = ("key" in key or "secret" in key or "token" in key or "password" in key)
+    await AuditService.log(
+        action="SETTINGS_KEY_UPDATE",
+        description=f"Setting '{key}' updated by {admin.get('email', 'admin')}",
+        entity_type="Setting",
+        entity_id=key,
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+        before_json={"value": "***" if is_secret else before_val},
+        after_json={"value": "***" if is_secret else value},
+    )
+    return {"message": f"Setting '{key}' updated"}
 
 
 @api_router.post("/admin/upload-logo")
