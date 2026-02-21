@@ -104,6 +104,14 @@ export function OrdersTab() {
 
   useEffect(() => { load(1); }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter]);
 
+  // customer search for edit dialog
+  const [custSearch, setCustSearch] = useState("");
+  const filteredCusts = customers.filter(c => {
+    const u = userMap[c.user_id];
+    const q = custSearch.toLowerCase();
+    return !q || u?.email?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q);
+  }).slice(0, 10);
+
   const handleEdit = async () => {
     if (!selectedOrder) return;
     try {
