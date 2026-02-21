@@ -633,6 +633,7 @@ export default function Admin() {
           <TabsTrigger value="categories" data-testid="admin-tab-categories">Categories</TabsTrigger>
           <TabsTrigger value="catalog" data-testid="admin-tab-catalog">Catalog</TabsTrigger>
           <TabsTrigger value="terms" data-testid="admin-tab-terms">Terms</TabsTrigger>
+          <TabsTrigger value="articles" data-testid="admin-tab-articles">Articles</TabsTrigger>
           <TabsTrigger value="promo" data-testid="admin-tab-promo">Promo Codes</TabsTrigger>
           <TabsTrigger value="settings" data-testid="admin-tab-settings">Settings</TabsTrigger>
           <TabsTrigger value="sync" data-testid="admin-tab-sync">Zoho sync logs</TabsTrigger>
