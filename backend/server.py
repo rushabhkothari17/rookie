@@ -4446,8 +4446,13 @@ async def admin_set_customer_active(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
+    # Prevent admin from deactivating their own account via customer record
+    linked_user = await db.users.find_one({"id": customer.get("user_id")}, {"_id": 0})
+    if linked_user and linked_user["id"] == admin["id"] and not active:
+        raise HTTPException(status_code=400, detail="You cannot deactivate your own account")
+    
     # Also update the linked user
-    user = await db.users.find_one({"id": customer.get("user_id")}, {"_id": 0})
+    user = linked_user
     old_state = user.get("is_active", True) if user else True
     
     await db.customers.update_one({"id": customer_id}, {"$set": {"is_active": active, "updated_at": now_iso()}})
