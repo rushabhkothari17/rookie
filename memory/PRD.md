@@ -177,7 +177,36 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - **Zoho CRM & Books**: Creates log entries instead of API calls
 - **Email to rushabh@automateaccounts.com**: Creates email_outbox entry, not actually sent
 
-## Admin Panel Enhanced Features (Feb 21, 2026) ✅
+## Admin Panel - Full Feature Update (Feb 21, 2026) ✅
+
+### Subscriptions Tab Overhaul
+- **Start Date vs Created Date**: Both shown separately. Start Date = `start_date` (backfilled from `current_period_start` for Stripe, `created_at` for manual). Created Date = `created_at` (read-only in edit modal).
+- **Cancellation Date**: Shown in table (`cancel_at_period_end` → `current_period_end`; fully cancelled → `canceled_at`)
+- **Subscription ID** (`subscription_number`): Shown in Admin table + Customer Portal (backfilled for legacy subs)
+- **Filters**: Customer Name/Company, Email, Plan, Status, Payment, Renewal From/To, Created From/To date range
+- **Sorting**: Sort by Created Date or Renewal Date (asc/desc)
+- **Renew button**: Disabled for `canceled_pending` status with descriptive tooltip
+- **Notes**: View Notes button per row; Edit modal has Notes field (appended with timestamp + actor to `notes[]` array)
+- **Status enum**: `ALLOWED_SUBSCRIPTION_STATUSES` = active/unpaid/paused/canceled_pending/cancelled/offline_manual
+- **Data migration**: `payment_method="manual"` → `"offline"`, all subs have `subscription_number`, `start_date`, `role` backfilled
+
+### Role Model: Super Admin vs Admin
+- `require_super_admin` dependency added
+- Users tab (admin panel) — visible only to `super_admin`
+- Create Admin User form (email, name, password, role) — super_admin only
+- `must_change_password=true` for newly created admin users
+- `role` field in `/me` response, AuthContext updated
+
+### Admin → Customers: Create Customer
+- Create Customer button in Customers tab
+- Form: Name, Company, Job Title, Email, Phone, Password, Address (line1-2, city, region, postal, country)
+- Country locked after creation
+- `mark_verified` option (checked by default)
+- Full audit log on creation
+
+### Customer Portal
+- Subscriptions table: Sub ID column, correct Start Date, Cancellation Date, friendly status labels
+- Cancel button hidden for already-cancelled/pending-cancel subscriptions
 
 ### Orders Tab Improvements
 - **Table layout**: compact `text-xs`, `overflow-x-auto` container, `min-w-[1100px]`, actions in single row (no-wrap)
