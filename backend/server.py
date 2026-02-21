@@ -3025,6 +3025,22 @@ async def create_checkout_session(
         # For subscriptions, use Stripe SDK directly to set mode="subscription"
         try:
             stripe_sdk.api_key = STRIPE_API_KEY
+            # Build subscription_data with optional start date
+            subscription_data: Dict[str, Any] = {"metadata": metadata}
+            requested_start_date = payload.start_date
+            if requested_start_date:
+                try:
+                    sd = datetime.fromisoformat(requested_start_date)
+                    if sd.tzinfo is None:
+                        sd = sd.replace(tzinfo=timezone.utc)
+                    if sd > datetime.now(timezone.utc):
+                        subscription_data["trial_end"] = int(sd.timestamp())
+                        subscription_data["trial_settings"] = {
+                            "end_behavior": {"missing_payment_method": "pause"}
+                        }
+                        metadata["start_date"] = requested_start_date
+                except Exception:
+                    pass
             session = stripe_sdk.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
@@ -3036,6 +3052,7 @@ async def create_checkout_session(
                 cancel_url=cancel_url,
                 metadata=metadata,
                 customer_email=user["email"],
+                subscription_data=subscription_data,
             )
             session_response = CheckoutSessionResponse(
                 session_id=session.id,
