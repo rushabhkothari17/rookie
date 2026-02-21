@@ -3342,22 +3342,63 @@ async def admin_update_product(
     existing = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Product not found")
-    updated_product = {
-        **existing,
+    update_fields: Dict[str, Any] = {
         "name": payload.name,
-        "tagline": payload.tagline,
-        "description_long": payload.description_long,
-        "bullets_included": payload.bullets_included,
-        "bullets_excluded": payload.bullets_excluded,
-        "bullets_needed": payload.bullets_needed,
-        "next_steps": payload.next_steps,
-        "faqs": payload.faqs,
-        "pricing_rules": payload.pricing_rules,
-        "stripe_price_id": payload.stripe_price_id,
         "is_active": payload.is_active,
     }
-    updated_product["price_inputs"] = build_price_inputs(updated_product)
-    await db.products.update_one({"id": product_id}, {"$set": updated_product})
+    # Optional new fields
+    if payload.short_description is not None:
+        update_fields["short_description"] = payload.short_description
+        update_fields["tagline"] = payload.short_description
+    if payload.tagline is not None and not payload.short_description:
+        update_fields["tagline"] = payload.tagline
+    if payload.description_long is not None:
+        update_fields["description_long"] = payload.description_long
+    if payload.bullets is not None:
+        update_fields["bullets"] = payload.bullets
+    if payload.bullets_included is not None:
+        update_fields["bullets_included"] = payload.bullets_included
+    if payload.bullets_excluded is not None:
+        update_fields["bullets_excluded"] = payload.bullets_excluded
+    if payload.bullets_needed is not None:
+        update_fields["bullets_needed"] = payload.bullets_needed
+    if payload.tag is not None:
+        update_fields["tag"] = payload.tag
+    if payload.category is not None:
+        update_fields["category"] = payload.category
+    if payload.outcome is not None:
+        update_fields["outcome"] = payload.outcome
+    if payload.automation_details is not None:
+        update_fields["automation_details"] = payload.automation_details
+    if payload.support_details is not None:
+        update_fields["support_details"] = payload.support_details
+    if payload.inclusions is not None:
+        update_fields["inclusions"] = payload.inclusions
+    if payload.exclusions is not None:
+        update_fields["exclusions"] = payload.exclusions
+    if payload.requirements is not None:
+        update_fields["requirements"] = payload.requirements
+    if payload.next_steps is not None:
+        update_fields["next_steps"] = payload.next_steps
+    if payload.faqs is not None:
+        update_fields["faqs"] = payload.faqs
+    if payload.terms_id is not None:
+        update_fields["terms_id"] = payload.terms_id
+    if payload.base_price is not None:
+        update_fields["base_price"] = payload.base_price
+    if payload.is_subscription is not None:
+        update_fields["is_subscription"] = payload.is_subscription
+    if payload.stripe_price_id is not None:
+        update_fields["stripe_price_id"] = payload.stripe_price_id
+    if payload.pricing_complexity is not None:
+        update_fields["pricing_complexity"] = payload.pricing_complexity
+    if payload.pricing_rules is not None:
+        update_fields["pricing_rules"] = payload.pricing_rules
+    if payload.visible_to_customers is not None:
+        update_fields["visible_to_customers"] = payload.visible_to_customers
+    merged = {**existing, **update_fields}
+    merged["price_inputs"] = build_price_inputs(merged)
+    await db.products.update_one({"id": product_id}, {"$set": merged})
     return {"message": "Product updated"}
 
 
