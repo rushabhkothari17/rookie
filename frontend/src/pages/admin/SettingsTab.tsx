@@ -116,7 +116,6 @@ function SystemConfigSection() {
           <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">{category}</h4>
           <div className="space-y-3">
             {items.map((item: any) => {
-              const currentVal = key in editVals ? editVals[item.key] : String(item.value_json ?? "");
               const isEditing = item.key in editVals;
               return (
                 <div key={item.key} className="flex items-start gap-3">
