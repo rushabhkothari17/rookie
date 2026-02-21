@@ -14,6 +14,7 @@ from emergentintegrations.payments.stripe.checkout import (
     CheckoutSessionResponse,
     CheckoutStatusResponse,
 )
+import stripe as stripe_sdk
 import os
 import uuid
 import jwt
