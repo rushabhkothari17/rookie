@@ -342,6 +342,23 @@ class PromoCodeUpdate(BaseModel):
     enabled: Optional[bool] = None
 
 
+class OverrideCodeCreate(BaseModel):
+    code: str
+    customer_id: str
+    expires_at: Optional[str] = None  # ISO string; defaults to created_at + 48h
+
+
+class OverrideCodeUpdate(BaseModel):
+    code: Optional[str] = None
+    customer_id: Optional[str] = None
+    status: Optional[str] = None  # "active" or "inactive"
+    expires_at: Optional[str] = None
+
+
+class CustomerPartnerMapUpdate(BaseModel):
+    partner_map: str  # final values: Yes / Pre-existing Customer / Not yet
+
+
 class TermsCreate(BaseModel):
     title: str
     content: str
