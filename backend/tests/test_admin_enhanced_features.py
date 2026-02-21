@@ -463,7 +463,7 @@ class TestSubscriptionAuditLogs:
 class TestAdminSubscriptionEdit:
     """Tests for PUT /admin/subscriptions/{id}"""
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def any_subscription(self, admin_headers):
         resp = requests.get(f"{BASE_URL}/api/admin/subscriptions", headers=admin_headers)
         subs = resp.json().get("subscriptions", [])
