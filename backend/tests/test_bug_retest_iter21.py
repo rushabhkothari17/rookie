@@ -123,23 +123,29 @@ class TestScopeUnlockCartPrice:
         )
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
-        print(f"Preview response: {data}")
 
-        # The item should NOT be in scope_request group
-        scope_items = data.get("scope_request", {}).get("items", [])
-        assert len(scope_items) == 0, f"Item should NOT be in scope_request after unlock, but got {scope_items}"
+        # Items are in flat 'items' list
+        items = data.get("items", [])
+        assert len(items) > 0, "Expected at least one item in response"
+        
+        item_pricing = items[0].get("pricing", {})
 
-        # The item SHOULD be in one_time group
-        one_time_items = data.get("one_time", {}).get("items", [])
-        assert len(one_time_items) > 0, "Item should be in one_time group after scope unlock"
-
-        subtotal = one_time_items[0].get("pricing", {}).get("subtotal", -1)
-        assert subtotal == 1500.0, f"Expected subtotal=1500 after scope unlock, got {subtotal}"
-
-        is_scope_request = one_time_items[0].get("pricing", {}).get("is_scope_request", True)
+        # The item should NOT be scope_request (is_scope_request must be False)
+        is_scope_request = item_pricing.get("is_scope_request", True)
         assert is_scope_request is False, f"Expected is_scope_request=False after unlock, got {is_scope_request}"
 
-        print(f"PASS: With scope_unlock, item is in one_time group with subtotal={subtotal}")
+        # The subtotal should be 1500
+        subtotal = item_pricing.get("subtotal", -1)
+        assert subtotal == 1500.0, f"Expected subtotal=1500 after scope unlock, got {subtotal}"
+
+        # Summary should show one_time count=1, scope_request count=0
+        summary = data.get("summary", {})
+        one_time_count = summary.get("one_time", {}).get("count", 0)
+        scope_count = summary.get("scope_request", {}).get("count", 0)
+        assert one_time_count == 1, f"Expected one_time count=1, got {one_time_count}"
+        assert scope_count == 0, f"Expected scope_request count=0, got {scope_count}"
+
+        print(f"PASS: With scope_unlock, item has is_scope_request=False, subtotal={subtotal}, one_time_count={one_time_count}")
 
     def test_order_preview_with_scope_unlock_totals_correct(self, auth_headers):
         """Verify the overall totals in order preview are correct with scope unlock."""
