@@ -244,7 +244,7 @@ export function ProductsTab() {
             {!loading && filtered.length === 0 && (
               <TableRow><TableCell colSpan={7} className="text-center text-slate-400">No products found.</TableCell></TableRow>
             )}
-            {filtered.map((product) => (
+            {paged.map((product) => (
               <TableRow key={product.id} data-testid={`admin-product-row-${product.id}`}>
                 <TableCell>
                   <div className="font-medium text-sm">{product.name}</div>
