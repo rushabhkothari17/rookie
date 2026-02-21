@@ -3420,6 +3420,65 @@ async def assign_terms_to_product(
 
 # ============ MANUAL/OFFLINE ORDER ENDPOINTS ============
 
+@api_router.post("/gocardless/complete-redirect")
+async def complete_gocardless_redirect(
+    payload: CompleteGoCardlessRedirect,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Complete GoCardless redirect flow and update order/subscription status"""
+    redirect_flow = complete_redirect_flow(payload.redirect_flow_id)
+    
+    if not redirect_flow:
+        raise HTTPException(status_code=400, detail="Failed to complete GoCardless redirect flow")
+    
+    mandate_id = redirect_flow.get("links", {}).get("mandate")
+    
+    if payload.order_id:
+        # Update order status
+        order = await db.orders.find_one({"id": payload.order_id}, {"_id": 0})
+        if order:
+            await db.orders.update_one(
+                {"id": payload.order_id},
+                {"$set": {
+                    "status": "awaiting_payment",
+                    "gocardless_mandate_id": mandate_id,
+                    "updated_at": now_iso(),
+                }}
+            )
+            await create_audit_log(
+                entity_type="order",
+                entity_id=payload.order_id,
+                action="mandate_setup_completed",
+                actor="customer",
+                details={"mandate_id": mandate_id}
+            )
+    
+    if payload.subscription_id:
+        # Update subscription status
+        subscription = await db.subscriptions.find_one({"id": payload.subscription_id}, {"_id": 0})
+        if subscription:
+            await db.subscriptions.update_one(
+                {"id": payload.subscription_id},
+                {"$set": {
+                    "status": "awaiting_payment",
+                    "gocardless_mandate_id": mandate_id,
+                    "updated_at": now_iso(),
+                }}
+            )
+            await create_audit_log(
+                entity_type="subscription",
+                entity_id=payload.subscription_id,
+                action="mandate_setup_completed",
+                actor="customer",
+                details={"mandate_id": mandate_id}
+            )
+    
+    return {
+        "message": "Direct Debit setup completed. Payment will be processed.",
+        "mandate_id": mandate_id,
+    }
+
+
 @api_router.post("/admin/orders/manual")
 async def create_manual_order(
     payload: ManualOrderCreate,
