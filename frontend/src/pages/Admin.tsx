@@ -1899,6 +1899,7 @@ export default function Admin() {
             </div>
           </TabsContent>
         )}
+        </div>{/* end content area */}
       </Tabs>
 
       {/* Sub Notes Dialog */}
