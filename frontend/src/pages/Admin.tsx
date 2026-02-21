@@ -13,6 +13,9 @@ import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Admin() {
+  const { user: authUser } = useAuth();
+  const isSuperAdmin = authUser?.role === "super_admin";
+  
   const [customers, setCustomers] = useState<any[]>([]);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
