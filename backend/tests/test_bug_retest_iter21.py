@@ -84,11 +84,18 @@ class TestScopeUnlockCartPrice:
         )
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
-        scope_items = data.get("scope_request", {}).get("items", [])
-        assert len(scope_items) > 0, "Expected item in scope_request group (no unlock)"
-        subtotal = scope_items[0].get("pricing", {}).get("subtotal", -1)
-        assert subtotal == 0.0, f"Expected subtotal=0 (no unlock), got {subtotal}"
-        print(f"PASS: Without scope_unlock, item is in scope_request with subtotal=0")
+        # Items are in flat 'items' list; check summary for scope_request count
+        items = data.get("items", [])
+        assert len(items) > 0, "Expected at least one item in response"
+        item_pricing = items[0].get("pricing", {})
+        assert item_pricing.get("is_scope_request") is True, (
+            f"Expected is_scope_request=True (no unlock), got {item_pricing.get('is_scope_request')}"
+        )
+        assert item_pricing.get("subtotal") == 0.0, f"Expected subtotal=0 (no unlock), got {item_pricing.get('subtotal')}"
+        # Also verify via summary
+        scope_count = data.get("summary", {}).get("scope_request", {}).get("count", 0)
+        assert scope_count > 0, f"Expected scope_request count>0 in summary, got {scope_count}"
+        print(f"PASS: Without scope_unlock, item is scope_request with subtotal=0")
 
     def test_order_preview_with_scope_unlock_returns_one_time_at_1500(self, auth_headers):
         """
