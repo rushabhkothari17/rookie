@@ -471,6 +471,62 @@ class ScopeRequestWithForm(BaseModel):
     form_data: ScopeRequestFormData
 
 
+class CategoryCreate(BaseModel):
+    name: str
+    is_active: bool = True
+
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class AdminProductCreate(BaseModel):
+    name: str
+    short_description: str = ""
+    description_long: str = ""
+    bullets: List[str] = Field(default_factory=list)
+    tag: Optional[str] = None
+    category: str = ""
+    outcome: Optional[str] = None
+    automation_details: Optional[str] = None
+    support_details: Optional[str] = None
+    inclusions: List[str] = Field(default_factory=list)
+    exclusions: List[str] = Field(default_factory=list)
+    requirements: List[str] = Field(default_factory=list)
+    next_steps: List[str] = Field(default_factory=list)
+    faqs: List[Dict[str, str]] = Field(default_factory=list)
+    terms_id: Optional[str] = None
+    base_price: float = 0.0
+    is_subscription: bool = False
+    stripe_price_id: Optional[str] = None
+    pricing_complexity: str = "SIMPLE"
+    is_active: bool = True
+    visible_to_customers: List[str] = Field(default_factory=list)
+
+
+class AppSettingsUpdate(BaseModel):
+    stripe_public_key: Optional[str] = None
+    stripe_secret_key: Optional[str] = None
+    gocardless_token: Optional[str] = None
+    resend_api_key: Optional[str] = None
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+    accent_color: Optional[str] = None
+    logo_url: Optional[str] = None
+    store_name: Optional[str] = None
+
+
+class QuoteRequest(BaseModel):
+    product_id: str
+    product_name: str
+    name: str
+    email: str
+    company: Optional[str] = None
+    phone: Optional[str] = None
+    message: Optional[str] = None
+
+
 def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
     return [
         {
