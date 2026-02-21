@@ -967,11 +967,11 @@ export default function Admin() {
         <TabsContent value="subscriptions" className="space-y-4">
           {/* Subscription Filters */}
           <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Filters</h3>
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">Filters & Sorting</h3>
             <div className="flex flex-wrap items-end gap-3">
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Customer Name</label>
-                <Input placeholder="Name" value={subFilters.customer} onChange={(e) => setSubFilters({ ...subFilters, customer: e.target.value })} className="w-36" data-testid="admin-sub-filter-customer" />
+                <Input placeholder="Name / Company" value={subFilters.customer} onChange={(e) => setSubFilters({ ...subFilters, customer: e.target.value })} className="w-36" data-testid="admin-sub-filter-customer" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Email</label>
@@ -989,6 +989,7 @@ export default function Admin() {
                     <SelectItem value="all">All</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="unpaid">Unpaid</SelectItem>
+                    <SelectItem value="offline_manual">Offline / Manual</SelectItem>
                     <SelectItem value="canceled_pending">Canceled Pending</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
@@ -1014,7 +1015,37 @@ export default function Admin() {
                 <label className="text-xs text-slate-500">Renewal To</label>
                 <Input type="date" value={subFilters.renewalTo} onChange={(e) => setSubFilters({ ...subFilters, renewalTo: e.target.value })} className="w-36" />
               </div>
-              <Button variant="outline" onClick={() => setSubFilters({ customer: "", email: "", plan: "", status: "", payment: "", renewalFrom: "", renewalTo: "" })} data-testid="admin-sub-clear-filters">Clear</Button>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Created From</label>
+                <Input type="date" value={subCreatedFrom} onChange={(e) => setSubCreatedFrom(e.target.value)} className="w-36" data-testid="admin-sub-created-from" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Created To</label>
+                <Input type="date" value={subCreatedTo} onChange={(e) => setSubCreatedTo(e.target.value)} className="w-36" data-testid="admin-sub-created-to" />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-end gap-3 mt-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Sort By</label>
+                <Select value={subSortField} onValueChange={(v: any) => setSubSortField(v)}>
+                  <SelectTrigger className="w-36" data-testid="admin-sub-sort-field"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="created_at">Created Date</SelectItem>
+                    <SelectItem value="renewal_date">Renewal Date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Direction</label>
+                <Select value={subSortOrder} onValueChange={(v: any) => setSubSortOrder(v)}>
+                  <SelectTrigger className="w-28" data-testid="admin-sub-sort-order"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Newest First</SelectItem>
+                    <SelectItem value="asc">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="outline" onClick={() => { setSubFilters({ customer: "", email: "", plan: "", status: "", payment: "", renewalFrom: "", renewalTo: "" }); setSubCreatedFrom(""); setSubCreatedTo(""); }} data-testid="admin-sub-clear-filters">Clear All</Button>
             </div>
           </div>
           <div className="flex justify-end">
