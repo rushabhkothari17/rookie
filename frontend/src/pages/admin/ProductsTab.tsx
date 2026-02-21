@@ -189,27 +189,38 @@ export function ProductsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          placeholder="Search products…"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="w-48"
-          data-testid="admin-products-search"
-        />
-        <Select value={catalogFilter} onValueChange={setCatalogFilter}>
-          <SelectTrigger className="w-44" data-testid="admin-catalog-filter"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Products</SelectItem>
-            <SelectItem value="active">Active Only</SelectItem>
-            <SelectItem value="inactive">Inactive Only</SelectItem>
-            <SelectItem value="subscription">Subscriptions</SelectItem>
-            <SelectItem value="one-time">One-time</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm" onClick={downloadCsv} data-testid="admin-catalog-export-csv">Export CSV</Button>
+      <AdminPageHeader title="Catalog" subtitle={`${filtered.length} products`} actions={
+        <>
+          <Button variant="outline" size="sm" onClick={downloadCsv} data-testid="admin-catalog-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
           <Button size="sm" onClick={openCreate} data-testid="admin-create-product-btn">+ New Product</Button>
+        </>
+      } />
+
+      {/* Filters */}
+      <div className="rounded-xl border border-slate-200 bg-white p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Input placeholder="Search products…" value={searchText} onChange={(e) => setSearchText(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-products-search" />
+          <Select value={catalogFilter} onValueChange={v => { setCatalogFilter(v); setPage(1); }}>
+            <SelectTrigger className="h-8 text-xs w-32" data-testid="admin-catalog-filter"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Billing</SelectItem>
+              <SelectItem value="subscription">Subscriptions</SelectItem>
+              <SelectItem value="one-time">One-time</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+          <select value={categoryFilter} onChange={e => { setCategoryFilter(e.target.value); setPage(1); }} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-catalog-category-filter">
+            <option value="all">All Categories</option>
+            {categories.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
+          </select>
+          <select value={complexityFilter} onChange={e => { setComplexityFilter(e.target.value); setPage(1); }} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-catalog-complexity-filter">
+            <option value="all">All Pricing</option>
+            <option value="SIMPLE">Simple</option>
+            <option value="COMPLEX">Complex</option>
+            <option value="REQUEST_FOR_QUOTE">RFQ</option>
+          </select>
+          <Button size="sm" variant="outline" onClick={() => { setSearchText(""); setCatalogFilter("all"); setCategoryFilter("all"); setComplexityFilter("all"); setPage(1); }} className="h-8 text-xs" data-testid="admin-catalog-clear-filters">Clear</Button>
         </div>
       </div>
 
