@@ -262,6 +262,24 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - **Stripe trial_end**: Added Yes/No radio (Start today / Future date). Future date enforces 3-day minimum. Backend validates + skips trial if no future date.
 - **GoCardless subtotal**: `subtotal` field made `Optional` in `CompleteGoCardlessRedirect` — endpoint now accepts requests without it (backend reads from DB).
 
+## GoCardless Redirect Flow Fix (Feb 21, 2026) ✅
+
+**Root Cause (3 issues fixed):**
+1. `gocardless_helper.py complete_redirect_flow` was sending empty `{}` body to GoCardless. Fixed to send `{"data": {"session_token": TOKEN}}` as required by GoCardless API.
+2. `CompleteGoCardlessRedirect` Pydantic model had no `session_token` field. Added `session_token: Optional[str] = None`.
+3. `GoCardlessCallback.tsx` wasn't extracting `session_token` from URL params or sending it to backend. Fixed to extract and send it.
+
+**Verified Tests (100% pass, 14/14):**
+- Full E2E flow confirmed: Login → Add product → Bank Transfer → Redirected to pay-sandbox.gocardless.com
+- GoCardless API now called with correct session_token body format
+- Error message improved: "The payment link may have expired or been used already. Please return to checkout and try again."
+
+## Stripe Future-Dated Subscriptions Fix (Feb 21, 2026) ✅
+
+- Frontend: Date picker has `min = 3 days from today`, `max = 30 days from today`
+- Backend: Raises 400 if `start_date ≤ 3 days in future`; uses `trial_end` for valid future dates
+- Verified: < 3 days → correct error, exactly 3 days → correct error, 5+ days → Stripe session created
+
 
 
 ### Quick Fixes
