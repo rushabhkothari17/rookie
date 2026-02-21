@@ -333,19 +333,18 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin Product-Terms Assignment API"
-    - "Admin Manual Subscription Creation API"
-    - "Admin Renew Now Button API"
-    - "Admin Audit Logs API"
-    - "Stripe Subscription Checkout API"
-    - "Terms & Conditions Display API"
-    - "GoCardless Payment Flow API"
-    - "Payment Error Handling API"
+    - "Admin Catalog Tab with Terms Assignment"
+    - "Admin Subscriptions - Manual Creation"
+    - "Admin Subscriptions - Renew Now Button"
+    - "Admin Orders - Subscription # Column"
+    - "Admin Orders - View Logs Modal"
+    - "Customer Cart - Terms & Conditions Enforcement"
+    - "Customer Cart - Terms Modal Display"
+    - "Customer Cart - Payment Method Selection"
   stuck_tasks: 
-    - "Stripe Subscription Checkout API"
-    - "GoCardless Payment Flow API"
+    - "ALL FRONTEND TASKS - Preview URL unavailable"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "blocked_by_infrastructure"
 
 agent_communication:
   - agent: "testing"
