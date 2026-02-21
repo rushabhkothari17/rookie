@@ -56,6 +56,15 @@ ALLOWED_ORDER_STATUSES = [
     "canceled_pending",
 ]
 
+ALLOWED_SUBSCRIPTION_STATUSES = [
+    "active",
+    "unpaid",
+    "paused",
+    "canceled_pending",
+    "cancelled",
+    "offline_manual",
+]
+
 
 def validate_order_status(status: str) -> bool:
     """Validate order status against allowed values"""
