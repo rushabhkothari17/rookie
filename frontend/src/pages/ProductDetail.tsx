@@ -16,6 +16,7 @@ import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
 import SectionCard from "@/components/SectionCard";
 import IncludedList from "@/components/IncludedList";
 import { displayCategory } from "@/lib/categories";
+import BooksMigrationForm, { calculateBooksMigrationPrice } from "@/components/BooksMigrationForm";
 
 const renderInputField = (
   field: any,
