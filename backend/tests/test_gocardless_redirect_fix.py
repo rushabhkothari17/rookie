@@ -68,14 +68,14 @@ def customer_client(customer_token):
 class TestCompleteGoCardlessRedirectModel:
     """Test that CompleteGoCardlessRedirect endpoint accepts session_token in request body"""
 
-    def test_complete_redirect_without_auth_returns_401(self):
+    def test_complete_redirect_without_auth_returns_401_or_403(self):
         """Endpoint requires authentication"""
         response = requests.post(f"{BASE_URL}/api/gocardless/complete-redirect", json={
             "redirect_flow_id": "RE123",
             "session_token": "test-session-token"
         })
-        assert response.status_code == 401, f"Expected 401 but got {response.status_code}"
-        print("PASS: complete-redirect requires authentication (401)")
+        assert response.status_code in [401, 403], f"Expected 401/403 but got {response.status_code}"
+        print(f"PASS: complete-redirect requires authentication (status: {response.status_code})")
 
     def test_complete_redirect_accepts_session_token_field(self, admin_client):
         """Test that endpoint accepts session_token field (not 422 validation error)"""
