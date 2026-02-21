@@ -2520,8 +2520,31 @@ async def get_categories():
 
 
 @api_router.get("/products")
-async def get_products():
-    products = await db.products.find({"is_active": True}, {"_id": 0}).to_list(1000)
+async def get_products(user: Optional[Dict[str, Any]] = Depends(optional_get_current_user)):
+    # Get inactive categories
+    inactive_cats = await db.categories.find({"is_active": False}, {"_id": 0, "name": 1}).to_list(500)
+    inactive_cat_names = {c["name"] for c in inactive_cats}
+
+    query: Dict[str, Any] = {"is_active": True}
+    if inactive_cat_names:
+        query["category"] = {"$nin": list(inactive_cat_names)}
+
+    all_products = await db.products.find(query, {"_id": 0}).to_list(1000)
+
+    # Filter by customer visibility
+    if user:
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+        customer_id = customer["id"] if customer else None
+    else:
+        customer_id = None
+
+    def is_visible(p: Dict) -> bool:
+        vis = p.get("visible_to_customers", [])
+        if not vis:
+            return True
+        return customer_id in vis if customer_id else False
+
+    products = [p for p in all_products if is_visible(p)]
     return {"products": products}
 
 
