@@ -172,6 +172,13 @@ async def admin_update_product(
     merged = {**existing, **update_fields}
     merged["price_inputs"] = build_price_inputs(merged)
     await db.products.update_one({"id": product_id}, {"$set": merged})
+    await create_audit_log(
+        entity_type="product",
+        entity_id=product_id,
+        action="updated",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"name": payload.name, "is_active": payload.is_active},
+    )
     return {"message": "Product updated"}
 
 
