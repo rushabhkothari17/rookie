@@ -105,27 +105,12 @@ def validate_order_status(status: str) -> bool:
     return status in ALLOWED_ORDER_STATUSES
 
 
-def now_iso():
-    return datetime.now(timezone.utc).isoformat()
-
-
-def make_id():
-    return str(uuid.uuid4())
-
-
-def round_cents(value: float) -> float:
-    return float(f"{value:.2f}")
-
-
-PREMIUM_MIGRATION_ITEMS = {"price_list", "multi_currency", "projects", "timesheet"}
-STANDARD_MIGRATION_SOURCES = {"quickbooks_online", "sage_50_online", "spreadsheet"}
-
-
-def round_to_nearest_99(amount: float) -> int:
-    """Round amount to nearest 'X99' value. Tie goes to high."""
-    low = int(amount / 100) * 100 - 1
-    high = low + 100
-    return high if abs(amount - high) <= abs(amount - low) else low
+# --- Utility functions now live in core/helpers.py and core/security.py ---
+# now_iso, make_id, round_cents, round_to_nearest_99, round_nearest_25,
+# currency_for_country, _deep_merge, _slugify  → imported at top
+# PREMIUM_MIGRATION_ITEMS, STANDARD_MIGRATION_SOURCES → imported at top
+# create_access_token, decode_token, get_current_user, require_admin,
+# require_super_admin, optional_get_current_user → imported at top
 
 
 def calculate_books_migration_price(inputs: Dict[str, Any]) -> Dict[str, Any]:
