@@ -96,6 +96,16 @@ export default function ProductDetail() {
     additional_notes: "",
   });
   const [submittingScope, setSubmittingScope] = useState(false);
+  const [contactEmail, setContactEmail] = useState("hello@automateaccounts.com");
+  const [websiteUrl, setWebsiteUrl] = useState("https://www.automateaccounts.com");
+
+  useEffect(() => {
+    api.get("/settings/public").then((res) => {
+      const s = res.data.settings || {};
+      if (s.contact_email) setContactEmail(s.contact_email);
+      if (s.website_url) setWebsiteUrl(s.website_url);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const load = async () => {
