@@ -655,7 +655,7 @@ class AutomateAccountsAPITester:
                 "quantity": 1,
                 "inputs": {}
             }],
-            "checkout_type": "card_payment",
+            "checkout_type": "one_time",
             "origin_url": "https://unruffled-allen-yzuzhj.preview.emergentagent.com",
             "terms_accepted": False
         }
