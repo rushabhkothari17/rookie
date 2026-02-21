@@ -2348,6 +2348,26 @@ async def startup_tasks():
                 {"$set": {"description": CATEGORY_BLURBS_SEED[cat_name]}}
             )
 
+    # Seed default app settings (brand colors) if not already customized
+    existing_settings = await db.app_settings.find_one({})
+    if not existing_settings:
+        await db.app_settings.insert_one({
+            "primary_color": "#0f172a",
+            "secondary_color": "#f8fafc",
+            "accent_color": "#dc2626",
+            "store_name": "Automate Accounts",
+            "logo_url": "",
+        })
+    else:
+        # Update test color placeholders to proper brand defaults
+        updates = {}
+        if existing_settings.get("primary_color") == "#123456":
+            updates["primary_color"] = "#0f172a"
+        if not existing_settings.get("accent_color"):
+            updates["accent_color"] = "#dc2626"
+        if updates:
+            await db.app_settings.update_one({}, {"$set": updates})
+
     # 2. Backfill pricing_complexity based on pricing_type for products missing it
     PRICING_TYPE_TO_COMPLEXITY = {
         "fixed": "SIMPLE",
