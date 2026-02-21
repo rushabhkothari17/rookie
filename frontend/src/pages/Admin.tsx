@@ -691,12 +691,14 @@ export default function Admin() {
                             }}
                             data-testid={`admin-customer-edit-${customer.id}`}
                           >Edit</Button>
-                          <Button
-                            variant={isActive ? "destructive" : "outline"}
-                            size="sm"
-                            onClick={() => handleToggleCustomerActive(customer.id, isActive)}
-                            data-testid={`admin-customer-toggle-active-${customer.id}`}
-                          >{isActive ? "Deactivate" : "Activate"}</Button>
+                          {user?.id !== authUser?.id && (
+                            <Button
+                              variant={isActive ? "destructive" : "outline"}
+                              size="sm"
+                              onClick={() => handleToggleCustomerActive(customer.id, isActive)}
+                              data-testid={`admin-customer-toggle-active-${customer.id}`}
+                            >{isActive ? "Deactivate" : "Activate"}</Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
