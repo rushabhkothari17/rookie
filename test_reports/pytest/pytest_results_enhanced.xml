@@ -1,494 +1,88 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="29" failures="0" skipped="0" tests="29" time="0.829" timestamp="2026-02-21T02:36:47.321801+00:00" hostname="agent-env-3e96afbb-0e10-4663-9986-67ba52f05e4f"><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_returns_expected_fields" time="0.001"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_sort_desc" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_sort_asc" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_sort_asc_vs_desc_differ" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_order_number_filter" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_status_filter_unpaid" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_status_filter_paid" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_product_filter" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_include_payment_date_field" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_pagination" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_update_order_status" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_update_order_payment_date" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_update_order_payment_method" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_add_note_via_new_note" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_invalid_status_rejected" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_completed_status_accepted" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_disputed_status_accepted" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestOrderAuditLogs" name="test_get_order_logs_returns_200" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestOrderAuditLogs" name="test_order_logs_have_expected_fields" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestOrderAuditLogs" name="test_note_added_creates_log_entry" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_subscription_returns_200" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_subscription_status_becomes_canceled_pending" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_subscription_creates_audit_log" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_nonexistent_subscription_returns_404" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestSubscriptionAuditLogs" name="test_get_subscription_logs" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionEdit" name="test_edit_subscription_plan_name" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionEdit" name="test_edit_subscription_payment_method" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionEdit" name="test_edit_subscription_status" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestSubscriptionCreatedDate" name="test_subscriptions_have_created_at" time="0.000"><error message="failed on setup with &quot;requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?&quot;">backend/tests/test_admin_enhanced_features.py:537: in admin_token
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
-/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
-    return request("post", url, data=data, json=json, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
-    return session.request(method=method, url=url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
-    prep = self.prepare_request(req)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
-    p.prepare(
-/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
-    self.prepare_url(url, params)
-/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
-    raise MissingSchema(
-E   requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="29" failures="0" skipped="0" tests="29" time="0.810" timestamp="2026-02-21T02:37:03.157213+00:00" hostname="agent-env-3e96afbb-0e10-4663-9986-67ba52f05e4f"><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_returns_expected_fields" time="0.523"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_sort_desc" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_sort_asc" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_sort_asc_vs_desc_differ" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_order_number_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_status_filter_unpaid" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_status_filter_paid" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_product_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_include_payment_date_field" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrdersGetWithFilters" name="test_orders_pagination" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_update_order_status" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_update_order_payment_date" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_update_order_payment_method" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_add_note_via_new_note" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_invalid_status_rejected" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_completed_status_accepted" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminOrderUpdate" name="test_disputed_status_accepted" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestOrderAuditLogs" name="test_get_order_logs_returns_200" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestOrderAuditLogs" name="test_order_logs_have_expected_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestOrderAuditLogs" name="test_note_added_creates_log_entry" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_subscription_returns_200" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_subscription_status_becomes_canceled_pending" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_subscription_creates_audit_log" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionCancel" name="test_cancel_nonexistent_subscription_returns_404" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestSubscriptionAuditLogs" name="test_get_subscription_logs" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionEdit" name="test_edit_subscription_plan_name" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionEdit" name="test_edit_subscription_payment_method" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestAdminSubscriptionEdit" name="test_edit_subscription_status" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_admin_enhanced_features.TestSubscriptionCreatedDate" name="test_subscriptions_have_created_at" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_admin_enhanced_features.py:552: in admin_token
+    return resp.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase></testsuite></testsuites>
