@@ -1530,7 +1530,7 @@ export default function Admin() {
                       <TableCell className="text-xs text-slate-500 max-w-xs truncate">{t.content}</TableCell>
                       <TableCell>
                         {linkedProducts.length === 0 ? (
-                          <span className="text-xs text-slate-400">None</span>
+                          <span className="text-xs text-slate-400">None assigned</span>
                         ) : (
                           <div className="space-y-0.5">
                             {linkedProducts.slice(0, 3).map((p: any) => (
