@@ -171,8 +171,7 @@ def calculate_books_migration_price(inputs: Dict[str, Any]) -> Dict[str, Any]:
     return {"subtotal": float(price), "line_items": line_items}
 
 
-def round_nearest_25(value: float) -> float:
-    return float(round(value / 25) * 25)
+# round_nearest_25 is imported from core.helpers above.
 
 
 def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, Any], product_name: str) -> str:
