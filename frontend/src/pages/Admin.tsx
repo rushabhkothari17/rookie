@@ -863,12 +863,15 @@ export default function Admin() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Select value={product.terms_id || ""} onValueChange={(v) => handleAssignTermsToProduct(product.id, v || null)}>
+                        <Select 
+                          value={product.terms_id || "default"} 
+                          onValueChange={(v) => handleAssignTermsToProduct(product.id, v === "default" ? null : v)}
+                        >
                           <SelectTrigger className="w-48">
                             <SelectValue placeholder="Default T&C" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Default T&C</SelectItem>
+                            <SelectItem value="default">Default T&C</SelectItem>
                             {terms.filter((t: any) => t.status === "active").map((t: any) => (
                               <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
                             ))}
