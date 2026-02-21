@@ -4484,7 +4484,7 @@ async def admin_create_admin_user(
         details={"email": payload.email, "role": payload.role, "full_name": payload.full_name}
     )
     
-    return {"message": f"Admin user created", "user_id": user_id, "email": payload.email}
+    return {"message": "Admin user created", "user_id": user_id, "email": payload.email}
 
 
 # ============ ADMIN: CREATE CUSTOMER ============
