@@ -1782,12 +1782,48 @@ async def checkout_bank_transfer(
     
     order_id = make_id()
     order_number = f"AA-{order_id.split('-')[0].upper()}"
+    
+    # Create GoCardless redirect flow for one-time payment
+    gocardless_redirect_url = None
+    gc_customer_id = customer.get("gocardless_customer_id")
+    redirect_flow_id = None
+    
+    if not gc_customer_id:
+        name_parts = user.get("full_name", "Customer User").split()
+        gc_customer = create_gocardless_customer(
+            email=user["email"],
+            given_name=name_parts[0],
+            family_name=name_parts[-1] if len(name_parts) > 1 else "User",
+            company_name=user.get("company_name", "")
+        )
+        if gc_customer:
+            gc_customer_id = gc_customer["id"]
+            await db.customers.update_one(
+                {"id": customer["id"]},
+                {"$set": {"gocardless_customer_id": gc_customer_id}}
+            )
+    
+    # Create redirect flow
+    if gc_customer_id:
+        session_token = make_id()
+        success_url = f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/gocardless/callback?session_token={session_token}&order_id={order_id}"
+        
+        redirect_flow = create_redirect_flow(
+            session_token=session_token,
+            success_redirect_url=success_url,
+            description=f"Payment for Order {order_number}"
+        )
+        
+        if redirect_flow:
+            redirect_flow_id = redirect_flow["id"]
+            gocardless_redirect_url = redirect_flow["redirect_url"]
+    
     order_doc = {
         "id": order_id,
         "order_number": order_number,
         "customer_id": customer["id"],
         "type": "one_time",
-        "status": "awaiting_bank_transfer",
+        "status": "pending_direct_debit_setup",
         "subtotal": round_cents(subtotal),
         "discount_amount": discount_amount,
         "promo_code": promo_code_data["code"] if promo_code_data else None,
@@ -1795,12 +1831,21 @@ async def checkout_bank_transfer(
         "total": total,
         "currency": customer.get("currency"),
         "payment_method": "bank_transfer",
+        "gocardless_redirect_flow_id": redirect_flow_id,
         "terms_id_used": terms_id,
         "rendered_terms_text": rendered_terms_text,
         "terms_accepted_at": now_iso(),
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
+    
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="created",
+        actor="customer",
+        details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer", "total": total}
+    )
     
     # Increment promo code usage
     if promo_code_data:
