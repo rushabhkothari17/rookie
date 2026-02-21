@@ -4159,11 +4159,17 @@ async def update_subscription(
         update_fields["renewal_date"] = payload.renewal_date
         changes["renewal_date"] = {"old": subscription.get("renewal_date"), "new": payload.renewal_date}
     
+    if payload.start_date is not None:
+        update_fields["start_date"] = payload.start_date
+        changes["start_date"] = {"old": subscription.get("start_date"), "new": payload.start_date}
+    
     if payload.amount is not None:
         update_fields["amount"] = payload.amount
         changes["amount"] = {"old": subscription.get("amount"), "new": payload.amount}
     
     if payload.status is not None:
+        if payload.status not in ALLOWED_SUBSCRIPTION_STATUSES:
+            raise HTTPException(status_code=400, detail=f"Invalid status '{payload.status}'. Allowed: {', '.join(ALLOWED_SUBSCRIPTION_STATUSES)}")
         update_fields["status"] = payload.status
         changes["status"] = {"old": subscription.get("status"), "new": payload.status}
     
@@ -4189,6 +4195,21 @@ async def update_subscription(
             action="updated",
             actor=f"admin:{admin['id']}",
             details={"changes": changes}
+        )
+    
+    if payload.new_note:
+        note_entry = {
+            "text": payload.new_note,
+            "timestamp": now_iso(),
+            "actor": f"admin:{admin['id']}"
+        }
+        await db.subscriptions.update_one({"id": subscription_id}, {"$push": {"notes": note_entry}})
+        await create_audit_log(
+            entity_type="subscription",
+            entity_id=subscription_id,
+            action="note_added",
+            actor=f"admin:{admin['id']}",
+            details={"note": payload.new_note}
         )
     
     return {"message": "Subscription updated"}
