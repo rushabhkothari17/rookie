@@ -1393,10 +1393,18 @@ def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str
         subtotal = float(variant["price"])
         line_items.append({"label": f"{product['name']} — {variant['label']}", "amount": subtotal})
     elif pricing_type == "scope_request":
-        is_scope_request = True
-        requires_checkout = False
-        subtotal = 0.0
-        line_items.append({"label": product["name"], "amount": subtotal})
+        # Check if scope has been unlocked via Scope ID
+        scope_unlock = inputs.get("_scope_unlock")
+        if scope_unlock and scope_unlock.get("price"):
+            subtotal = float(scope_unlock["price"])
+            is_scope_request = False
+            requires_checkout = True
+            line_items.append({"label": product["name"], "amount": subtotal})
+        else:
+            is_scope_request = True
+            requires_checkout = False
+            subtotal = 0.0
+            line_items.append({"label": product["name"], "amount": subtotal})
 
     elif pricing_type == "calculator":
         calc_type = rules.get("calc_type")
