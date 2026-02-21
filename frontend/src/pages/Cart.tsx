@@ -119,9 +119,18 @@ export default function Cart() {
           terms_accepted: termsAccepted,
           terms_id: termsContent?.id || null,
         });
-        toast.success("Order created successfully");
-        clear();
-        navigate(`/checkout/bank-transfer?order=${response.data.order_number || ""}`);
+        
+        // Check if GoCardless redirect is needed
+        if (response.data.gocardless_redirect_url) {
+          toast.success("Redirecting to Direct Debit setup...");
+          clear();
+          // Redirect to GoCardless
+          window.location.href = response.data.gocardless_redirect_url;
+        } else {
+          toast.success("Order created successfully");
+          clear();
+          navigate(`/checkout/bank-transfer?order=${response.data.order_number || ""}`);
+        }
       } else {
         const response = await api.post("/checkout/session", {
           items: groupItems.map((item) => ({
@@ -138,7 +147,8 @@ export default function Cart() {
         window.location.href = response.data.url;
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Checkout failed");
+      const errorMsg = error.response?.data?.detail || "Checkout failed";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
