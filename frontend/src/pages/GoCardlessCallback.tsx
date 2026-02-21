@@ -1,0 +1,81 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+export default function GoCardlessCallback() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
+
+  useEffect(() => {
+    const completeFlow = async () => {
+      const redirectFlowId = searchParams.get("redirect_flow_id");
+      const orderId = searchParams.get("order_id");
+      const subscriptionId = searchParams.get("subscription_id");
+
+      if (!redirectFlowId) {
+        setStatus("error");
+        setLoading(false);
+        toast.error("Invalid redirect flow");
+        return;
+      }
+
+      try {
+        await api.post("/gocardless/complete-redirect", {
+          redirect_flow_id: redirectFlowId,
+          order_id: orderId,
+          subscription_id: subscriptionId,
+        });
+
+        setStatus("success");
+        toast.success("Direct Debit setup completed successfully!");
+        
+        setTimeout(() => {
+          navigate("/portal");
+        }, 2000);
+      } catch (error: any) {
+        setStatus("error");
+        toast.error(error.response?.data?.detail || "Failed to complete setup");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    completeFlow();
+  }, [searchParams, navigate]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white p-4">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+        {loading && (
+          <>
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-slate-900 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">Processing Direct Debit Setup</h2>
+            <p className="text-sm text-slate-600">Please wait while we confirm your mandate...</p>
+          </>
+        )}
+
+        {status === "success" && !loading && (
+          <>
+            <div className="text-green-600 text-5xl mb-4">✓</div>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">Setup Complete!</h2>
+            <p className="text-sm text-slate-600 mb-4">Your Direct Debit mandate has been set up successfully. Payment will be processed shortly.</p>
+            <p className="text-xs text-slate-500">Redirecting to your portal...</p>
+          </>
+        )}
+
+        {status === "error" && !loading && (
+          <>
+            <div className="text-red-600 text-5xl mb-4">✗</div>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">Setup Failed</h2>
+            <p className="text-sm text-slate-600 mb-6">There was an error completing your Direct Debit setup.</p>
+            <Button onClick={() => navigate("/store")} className="w-full">Return to Store</Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
