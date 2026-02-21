@@ -2333,10 +2333,7 @@ async def startup_tasks():
             })
 
     # 2. Backfill pricing_complexity based on pricing_type for products missing it
-    // Orphan categories (in collection but no active products) — deactivated to keep storefront clean
-    // This migration is idempotent and safe to run on every startup
-    const activeProdCats = await db.products.distinct("category", {"is_active": True});
-        "fixed": "SIMPLE",
+    PRICING_TYPE_TO_COMPLEXITY = {
         "simple": "SIMPLE",
         "calculator": "COMPLEX",
         "tiered": "COMPLEX",
