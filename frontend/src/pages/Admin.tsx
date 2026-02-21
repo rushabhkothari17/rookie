@@ -1508,6 +1508,9 @@ export default function Admin() {
                 <SelectItem value="one-time">One-time</SelectItem>
               </SelectContent>
             </Select>
+            <div className="ml-auto">
+              <Button variant="outline" size="sm" onClick={() => downloadCsv("/api/admin/export/catalog", `catalog_${new Date().toISOString().slice(0,10)}.csv`)} data-testid="admin-catalog-export-csv">Export CSV</Button>
+            </div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <Table data-testid="admin-catalog-table">
