@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Eye, EyeOff, Upload } from "lucide-react";
+import { Eye, EyeOff, Upload, Save } from "lucide-react";
 
 interface Settings {
   stripe_public_key?: string;
@@ -66,6 +66,93 @@ function ColorInput({ label, value, onChange, testId }: {
           className="w-32 font-mono text-sm"
         />
       </div>
+    </div>
+  );
+}
+
+function SystemConfigSection() {
+  const [grouped, setGrouped] = useState<Record<string, any[]>>({});
+  const [editVals, setEditVals] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    api.get("/admin/settings/structured").then((res) => {
+      setGrouped(res.data.settings || {});
+    }).catch(() => {});
+  }, []);
+
+  const handleSaveKey = async (key: string) => {
+    setSaving((s) => ({ ...s, [key]: true }));
+    try {
+      await api.put(`/admin/settings/key/${key}`, { value: editVals[key] });
+      toast.success(`Setting '${key}' saved`);
+      setGrouped((prev) => {
+        const next = { ...prev };
+        Object.keys(next).forEach((cat) => {
+          next[cat] = next[cat].map((item) =>
+            item.key === key ? { ...item, value_json: editVals[key] } : item
+          );
+        });
+        return next;
+      });
+      setEditVals((e) => { const n = { ...e }; delete n[key]; return n; });
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Save failed");
+    } finally {
+      setSaving((s) => ({ ...s, [key]: false }));
+    }
+  };
+
+  if (!Object.keys(grouped).length) return null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-slate-900">System Configuration</h3>
+        <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">DB-backed, editable without code deploys</span>
+      </div>
+      {Object.entries(grouped).map(([category, items]) => (
+        <div key={category} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">{category}</h4>
+          <div className="space-y-3">
+            {items.map((item: any) => {
+              const currentVal = key in editVals ? editVals[item.key] : String(item.value_json ?? "");
+              const isEditing = item.key in editVals;
+              return (
+                <div key={item.key} className="flex items-start gap-3">
+                  <div className="flex-1 space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-slate-700">{item.key}</span>
+                      {item.is_secret && <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">secret</span>}
+                    </div>
+                    <p className="text-xs text-slate-400">{item.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        type={item.is_secret ? "password" : "text"}
+                        value={isEditing ? editVals[item.key] : String(item.value_json ?? "")}
+                        onChange={(e) => setEditVals((ev) => ({ ...ev, [item.key]: e.target.value }))}
+                        className="h-7 text-xs font-mono max-w-md"
+                        data-testid={`setting-input-${item.key}`}
+                      />
+                      {isEditing && (
+                        <Button
+                          size="sm"
+                          className="h-7 px-2 text-xs gap-1"
+                          onClick={() => handleSaveKey(item.key)}
+                          disabled={saving[item.key]}
+                          data-testid={`setting-save-${item.key}`}
+                        >
+                          <Save size={10} /> {saving[item.key] ? "…" : "Save"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -200,7 +287,7 @@ export function SettingsTab() {
       {/* Brand Colors */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
         <h3 className="text-sm font-semibold text-slate-900">Brand Colors</h3>
-        <p className="text-xs text-slate-400">These colors are applied to the storefront in real-time. Primary = navbars/headings. Accent = CTA buttons & highlights.</p>
+        <p className="text-xs text-slate-400">These colors are applied to the storefront in real-time. Primary = navbars/headings. Accent = CTA buttons &amp; highlights.</p>
         <div className="grid grid-cols-3 gap-4">
           <ColorInput label="Primary" value={settings.primary_color || ""} onChange={set("primary_color")} testId="admin-settings-primary-color" />
           <ColorInput label="Secondary" value={settings.secondary_color || ""} onChange={set("secondary_color")} testId="admin-settings-secondary-color" />
@@ -250,6 +337,11 @@ export function SettingsTab() {
       <Button onClick={handleSave} disabled={saving} data-testid="admin-settings-save-btn">
         {saving ? "Saving…" : "Save Settings"}
       </Button>
+
+      {/* System Configuration (DB-backed, categorized) */}
+      <div className="border-t border-slate-200 pt-6">
+        <SystemConfigSection />
+      </div>
     </div>
   );
 }
