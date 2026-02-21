@@ -56,10 +56,13 @@ class TestAuth:
 
     def test_me_returns_super_admin_role(self, admin_headers):
         resp = requests.get(f"{BASE_URL}/api/me", headers=admin_headers)
-        assert resp.status_code == 200, f"GET /auth/me failed: {resp.text}"
+        assert resp.status_code == 200, f"GET /me failed: {resp.text}"
         data = resp.json()
-        assert data.get("role") == "super_admin", f"Expected super_admin, got: {data.get('role')}"
-        print(f"PASS: /auth/me role={data['role']}")
+        # /me returns {user: {...}, customer: {...}, address: {...}}
+        user_obj = data.get("user", data)
+        role = user_obj.get("role") or data.get("role")
+        assert role == "super_admin", f"Expected super_admin role, got: {role}. Full user: {user_obj}"
+        print(f"PASS: /me role={role}")
 
 
 # ============ SUBSCRIPTIONS ============
