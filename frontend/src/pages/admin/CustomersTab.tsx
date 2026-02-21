@@ -261,12 +261,27 @@ export function CustomersTab() {
                 </div>
               ))}
               <hr />
-              {[["Address Line 1", "line1"], ["Line 2", "line2"], ["City", "city"], ["Region", "region"], ["Postal", "postal"]].map(([label, key]) => (
+              {[["Address Line 1", "line1"], ["Line 2", "line2"], ["City", "city"], ["Region / Province", "region"], ["Postal Code", "postal"]].map(([label, key]) => (
                 <div key={key} className="space-y-1">
                   <label className="text-xs text-slate-500">{label}</label>
                   <Input value={selectedCustomer[key] || ""} onChange={(e) => setSelectedCustomer({ ...selectedCustomer, [key]: e.target.value })} />
                 </div>
               ))}
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Country</label>
+                <select value={selectedCustomer.country || ""} onChange={e => setSelectedCustomer({ ...selectedCustomer, country: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-customer-country-select">
+                  <option value="">Select country…</option>
+                  <option value="AU">Australia</option>
+                  <option value="CA">Canada</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="US">United States</option>
+                  <option value="NZ">New Zealand</option>
+                  <option value="IN">India</option>
+                  <option value="SG">Singapore</option>
+                  <option value="ZA">South Africa</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
               <Button onClick={handleCustomerEdit} className="w-full" data-testid="admin-customer-save-btn">Save Changes</Button>
             </div>
           )}
