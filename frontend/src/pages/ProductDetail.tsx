@@ -121,6 +121,10 @@ export default function ProductDetail() {
 
   const fetchPricing = async (nextInputs: Record<string, any>) => {
     if (!product) return;
+    if (product.sku === "MIG-BOOKS") {
+      // MIG-BOOKS uses client-side pricing calculator
+      return;
+    }
     const response = await api.post("/pricing/calc", {
       product_id: product.id,
       inputs: nextInputs,
