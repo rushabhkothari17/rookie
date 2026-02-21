@@ -67,9 +67,22 @@ export default function Admin() {
     status: "paid",
     internal_note: "",
   });
+  const [manualSubscription, setManualSubscription] = useState({
+    customer_email: "",
+    product_id: "",
+    quantity: 1,
+    amount: 0,
+    renewal_date: "",
+    status: "active",
+    internal_note: "",
+  });
   const [showPromoDialog, setShowPromoDialog] = useState(false);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [showManualOrderDialog, setShowManualOrderDialog] = useState(false);
+  const [showManualSubDialog, setShowManualSubDialog] = useState(false);
+  const [selectedOrderLogs, setSelectedOrderLogs] = useState<any[]>([]);
+  const [selectedSubLogs, setSelectedSubLogs] = useState<any[]>([]);
+  const [showLogsDialog, setShowLogsDialog] = useState(false);
 
   const load = async () => {
     const [custRes, orderRes, subRes, productRes, logRes, promoRes, termsRes] = await Promise.all([
