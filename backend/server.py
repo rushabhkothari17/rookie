@@ -114,6 +114,19 @@ def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, An
     return resolved
 
 
+async def create_audit_log(entity_type: str, entity_id: str, action: str, actor: str, details: Dict[str, Any] = None):
+    """Create an audit log entry"""
+    await db.audit_logs.insert_one({
+        "id": make_id(),
+        "entity_type": entity_type,
+        "entity_id": entity_id,
+        "action": action,
+        "actor": actor,
+        "details": details or {},
+        "created_at": now_iso(),
+    })
+
+
 class AddressInput(BaseModel):
     line1: str
     line2: Optional[str] = ""
