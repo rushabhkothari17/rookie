@@ -325,6 +325,7 @@ export default function ProductDetail() {
                 <BooksMigrationForm
                   onChange={setMigBooksData}
                   initialValues={{}}
+                  websiteUrl={websiteUrl}
                 />
               </SectionCard>
             )}
