@@ -76,6 +76,13 @@ async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin:
             update[field] = val
     if update:
         await db.promo_codes.update_one({"id": code_id}, {"$set": update})
+    await create_audit_log(
+        entity_type="promo_code",
+        entity_id=code_id,
+        action="updated",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"changes": update},
+    )
     return {"message": "Promo code updated"}
 
 
@@ -85,4 +92,11 @@ async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(
     if not existing:
         raise HTTPException(status_code=404, detail="Promo code not found")
     await db.promo_codes.delete_one({"id": code_id})
+    await create_audit_log(
+        entity_type="promo_code",
+        entity_id=code_id,
+        action="deleted",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"code": existing.get("code")},
+    )
     return {"message": "Promo code deleted"}
