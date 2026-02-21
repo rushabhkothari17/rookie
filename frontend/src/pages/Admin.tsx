@@ -189,6 +189,10 @@ export default function Admin() {
     setOrderPage(1);
   }, [productFilter, includeDeleted, orderSortOrder, orderNumberFilter, orderStatusFilter]);
 
+  useEffect(() => {
+    loadSubscriptions();
+  }, [subSortField, subSortOrder, subCreatedFrom, subCreatedTo]);
+
   const handleCurrencyOverride = async () => {
     try {
       await api.post("/admin/currency-override", {
