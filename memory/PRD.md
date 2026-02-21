@@ -41,6 +41,7 @@ Build a full-featured customer-facing portal for Automate Accounts (Zoho partner
 - **Notes JSON Capture (System Critical)**:
   - `build_checkout_notes_json` now includes `payment_method` in `payment` section
   - `scope_request` orders also save `notes_json` with product_intake
+  - `scope_request_form` orders save `notes_json` with product_intake + scope_form fields (added in iteration 22)
   - Admin "View Notes" dialog updated to pretty-print `notes_json` as "Intake Data" section
   - `_scope_unlock` metadata captured in `product_intake` when scope ID is used
   - `CartItemInput` Pydantic model now has `price_override` field
