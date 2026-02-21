@@ -4009,15 +4009,42 @@ async def admin_retry_sync(log_id: str, admin: Dict[str, Any] = Depends(require_
 # ============ PROMO CODE ENDPOINTS ============
 
 @api_router.get("/admin/promo-codes")
-async def admin_list_promo_codes(admin: Dict[str, Any] = Depends(require_admin)):
-    codes = await db.promo_codes.find({}, {"_id": 0}).to_list(500)
-    # Add computed status
+async def admin_list_promo_codes(
+    page: int = 1,
+    per_page: int = 20,
+    search: Optional[str] = None,
+    applies_to: Optional[str] = None,
+    status: Optional[str] = None,
+    created_from: Optional[str] = None,
+    created_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    query: Dict[str, Any] = {}
+    if search:
+        query["code"] = {"$regex": search, "$options": "i"}
+    if applies_to:
+        query["applies_to"] = applies_to
+    if created_from:
+        query.setdefault("created_at", {})["$gte"] = created_from
+    if created_to:
+        query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
     now = datetime.now(timezone.utc).isoformat()
-    for code in codes:
+    all_codes = await db.promo_codes.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    for code in all_codes:
         is_expired = code.get("expiry_date") and code["expiry_date"] < now
         max_reached = code.get("max_uses") and code.get("usage_count", 0) >= code["max_uses"]
         code["status"] = "Active" if code.get("enabled") and not is_expired and not max_reached else "Inactive"
-    return {"promo_codes": codes}
+    if status:
+        all_codes = [c for c in all_codes if c["status"].lower() == status.lower()]
+    total = len(all_codes)
+    skip = (page - 1) * per_page
+    return {
+        "promo_codes": all_codes[skip: skip + per_page],
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.post("/admin/promo-codes")
