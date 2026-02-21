@@ -179,6 +179,12 @@ class SettingsService:
                 })
 
     @staticmethod
+    async def cleanup_obsolete() -> None:
+        """Remove settings keys that are no longer used."""
+        for key in _OBSOLETE_KEYS:
+            await db.app_settings.delete_one({"key": key})
+
+    @staticmethod
     async def _load_all() -> Dict[str, Any]:
         global _cache, _cache_ts
         if not _cache_expired():
