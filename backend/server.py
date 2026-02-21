@@ -1944,6 +1944,8 @@ async def checkout_bank_transfer(
                 "terms_id_used": terms_id,
                 "rendered_terms_text": rendered_terms_text,
                 "terms_accepted_at": now_iso(),
+                "start_date": requested_start or period_start.isoformat(),
+                "contract_end_date": contract_end.isoformat(),
             }
         )
         
