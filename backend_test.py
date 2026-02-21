@@ -652,7 +652,7 @@ class AutomateAccountsAPITester:
             "terms_accepted": True
         }
         
-        success1, error_response = self.run_test("Test Invalid Product Checkout", "POST", "checkout/session", 400, invalid_checkout_data, headers=headers)
+        success1, error_response = self.run_test("Test Invalid Product Checkout", "POST", "checkout/session", 404, invalid_checkout_data, headers=headers)
         
         if success1:
             error_detail = error_response.get("detail", "")
