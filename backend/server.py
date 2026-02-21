@@ -87,6 +87,59 @@ def round_cents(value: float) -> float:
     return float(f"{value:.2f}")
 
 
+PREMIUM_MIGRATION_ITEMS = {"price_list", "multi_currency", "projects", "timesheet"}
+STANDARD_MIGRATION_SOURCES = {"quickbooks_online", "sage_50_online", "spreadsheet"}
+
+
+def round_to_nearest_99(amount: float) -> int:
+    """Round amount to nearest 'X99' value. Tie goes to high."""
+    low = int(amount / 100) * 100 - 1
+    high = low + 100
+    return high if abs(amount - high) <= abs(amount - low) else low
+
+
+def calculate_books_migration_price(inputs: Dict[str, Any]) -> Dict[str, Any]:
+    years_raw = str(inputs.get("years", "1")).replace("+YTD", "").replace("Y", "").strip()
+    try:
+        years = max(1, int(years_raw))
+    except ValueError:
+        years = 1
+    data_types = inputs.get("data_types", [])
+    if isinstance(data_types, str):
+        data_types = [d.strip() for d in data_types.split(",") if d.strip()]
+    has_premium = any(d in PREMIUM_MIGRATION_ITEMS for d in data_types)
+    source_system = inputs.get("source_system", "quickbooks_online")
+
+    base = 999.0
+    if years > 1:
+        extra = years - 1
+        up_to_5 = min(extra, 4)   # years 2-5 → +350 each
+        over_5 = max(0, extra - 4) # years 6+ → +300 each
+        base += up_to_5 * 350.0 + over_5 * 300.0
+    if has_premium:
+        base *= 1.5
+    if source_system not in STANDARD_MIGRATION_SOURCES:
+        base *= 1.2
+
+    price = round_to_nearest_99(base)
+    line_items = [
+        {"label": f"Migration ({years}Y + YTD)", "amount": 999.0},
+    ]
+    if years > 1:
+        extra = years - 1
+        up_to_5 = min(extra, 4)
+        over_5 = max(0, extra - 4)
+        if up_to_5:
+            line_items.append({"label": f"+{up_to_5} additional year(s) × $350", "amount": up_to_5 * 350.0})
+        if over_5:
+            line_items.append({"label": f"+{over_5} additional year(s) × $300", "amount": over_5 * 300.0})
+    if has_premium:
+        line_items.append({"label": "Premium features (1.5× multiplier)", "amount": 0})
+    if source_system not in STANDARD_MIGRATION_SOURCES:
+        line_items.append({"label": "Source system complexity (1.2× multiplier)", "amount": 0})
+    return {"subtotal": float(price), "line_items": line_items}
+
+
 def round_nearest_25(value: float) -> float:
     return float(round(value / 25) * 25)
 
