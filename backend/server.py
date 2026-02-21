@@ -2159,6 +2159,58 @@ async def startup_tasks():
             "status": "active",
             "created_at": now_iso(),
         })
+    
+    # Migrate payment_method="manual" → "offline" for subscriptions (canonical value)
+    await db.subscriptions.update_many(
+        {"payment_method": "manual"},
+        {"$set": {"payment_method": "offline"}}
+    )
+    
+    # Migrate any subscription with status not in ALLOWED_SUBSCRIPTION_STATUSES
+    invalid_status_subs = await db.subscriptions.find(
+        {"status": {"$nin": ALLOWED_SUBSCRIPTION_STATUSES}}, {"_id": 0, "id": 1, "status": 1}
+    ).to_list(500)
+    for sub in invalid_status_subs:
+        old_status = sub.get("status", "unknown")
+        await db.subscriptions.update_one(
+            {"id": sub["id"]},
+            {"$set": {"status": "active", "_migrated_status": old_status}}
+        )
+        await create_audit_log(
+            entity_type="subscription",
+            entity_id=sub["id"],
+            action="status_migrated",
+            actor="system",
+            details={"old_status": old_status, "new_status": "active", "reason": "canonical status migration"}
+        )
+    
+    # Backfill subscription_number for any subscriptions missing it
+    subs_missing_number = await db.subscriptions.find(
+        {"subscription_number": {"$exists": False}}, {"_id": 0, "id": 1}
+    ).to_list(500)
+    for sub in subs_missing_number:
+        sub_num = f"SUB-{sub['id'].split('-')[0].upper()}"
+        await db.subscriptions.update_one({"id": sub["id"]}, {"$set": {"subscription_number": sub_num}})
+    
+    # Backfill start_date for subscriptions missing it
+    await db.subscriptions.update_many(
+        {"start_date": {"$exists": False}, "current_period_start": {"$exists": True}},
+        [{"$set": {"start_date": "$current_period_start"}}]
+    )
+    await db.subscriptions.update_many(
+        {"start_date": {"$exists": False}},
+        [{"$set": {"start_date": "$created_at"}}]
+    )
+    
+    # Backfill role field for admin users (set existing admins to super_admin)
+    await db.users.update_many(
+        {"is_admin": True, "role": {"$exists": False}},
+        {"$set": {"role": "super_admin"}}
+    )
+    await db.users.update_many(
+        {"is_admin": False, "role": {"$exists": False}},
+        {"$set": {"role": "customer"}}
+    )
 
 
 
