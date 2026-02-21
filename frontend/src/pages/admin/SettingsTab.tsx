@@ -200,7 +200,7 @@ export function SettingsTab() {
       {/* Brand Colors */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
         <h3 className="text-sm font-semibold text-slate-900">Brand Colors</h3>
-        <p className="text-xs text-slate-400">These are stored for reference. Apply them to the storefront theme.</p>
+        <p className="text-xs text-slate-400">These colors are applied to the storefront in real-time. Primary = navbars/headings. Accent = CTA buttons & highlights.</p>
         <div className="grid grid-cols-3 gap-4">
           <ColorInput label="Primary" value={settings.primary_color || ""} onChange={set("primary_color")} testId="admin-settings-primary-color" />
           <ColorInput label="Secondary" value={settings.secondary_color || ""} onChange={set("secondary_color")} testId="admin-settings-secondary-color" />
