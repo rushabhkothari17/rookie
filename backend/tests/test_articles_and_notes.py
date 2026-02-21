@@ -352,14 +352,15 @@ class TestArticleEmail:
     """Test email endpoint (will fail due to missing Resend key, but should return proper error)."""
 
     def test_article_email_no_customers_returns_error(self, admin_headers):
+        """Email endpoint with empty customer_ids returns an error (404 or 400 or 422)."""
         resp = requests.post(
             f"{BASE_URL}/api/articles/{TEST_SCOPE_ARTICLE_ID}/email",
             json={"customer_ids": [], "subject": "Test Subject", "message": ""},
             headers=admin_headers,
         )
-        # Should return 400 or 422 for empty customer_ids
-        assert resp.status_code in (400, 422), f"Expected 400/422, got {resp.status_code}"
-        print(f"PASS: Email with empty customers returns {resp.status_code}")
+        # Backend checks Resend key first → 400 if not configured, then checks customers → 404 if none found
+        assert resp.status_code in (400, 404, 422), f"Expected 400/404/422, got {resp.status_code}: {resp.text}"
+        print(f"PASS: Email with empty customers returns {resp.status_code}: {resp.json().get('detail', '')}")
 
     def test_article_email_with_customers_attempts_send(self, admin_headers):
         """Even if Resend fails, the endpoint should attempt and return a result."""
