@@ -5606,12 +5606,23 @@ async def get_public_settings():
     settings = await db.app_settings.find_one({}, {"_id": 0})
     if not settings:
         return {"settings": {}}
+    # Zoho URLs from structured settings (SettingsService)
+    zoho_keys = [
+        "zoho_reseller_signup_us", "zoho_reseller_signup_ca",
+        "zoho_partner_tag_us", "zoho_partner_tag_ca",
+        "zoho_access_instructions_url",
+    ]
+    branding_keys = ["website_url", "contact_email"]
+    extra: Dict[str, Any] = {}
+    for k in zoho_keys + branding_keys:
+        extra[k] = await SettingsService.get(k, "")
     return {"settings": {
         "primary_color": settings.get("primary_color"),
         "secondary_color": settings.get("secondary_color"),
         "accent_color": settings.get("accent_color"),
         "logo_url": settings.get("logo_url"),
         "store_name": settings.get("store_name"),
+        **extra,
     }}
 
 
