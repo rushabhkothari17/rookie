@@ -237,6 +237,9 @@ class OrderPreviewRequest(BaseModel):
     items: List[CartItemInput]
 
 
+VALID_PARTNER_TAG_RESPONSES = ["Yes", "Pre-existing Customer", "Not yet"]
+
+
 class CheckoutSessionRequestBody(BaseModel):
     items: List[CartItemInput]
     checkout_type: str
@@ -245,6 +248,8 @@ class CheckoutSessionRequestBody(BaseModel):
     terms_accepted: bool = False
     terms_id: Optional[str] = None
     start_date: Optional[str] = None  # YYYY-MM-DD for subscription start
+    partner_tag_response: Optional[str] = None  # "Yes", "Pre-existing Customer", "Not yet"
+    override_code: Optional[str] = None
 
 
 class BankTransferCheckoutRequest(BaseModel):
@@ -254,6 +259,8 @@ class BankTransferCheckoutRequest(BaseModel):
     terms_accepted: bool = False
     terms_id: Optional[str] = None
     start_date: Optional[str] = None  # YYYY-MM-DD for subscription start
+    partner_tag_response: Optional[str] = None  # "Yes", "Pre-existing Customer", "Not yet"
+    override_code: Optional[str] = None
 
 
 
