@@ -895,7 +895,8 @@ export default function Admin() {
                       </Dialog>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
