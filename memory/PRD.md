@@ -177,7 +177,31 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - **Zoho CRM & Books**: Creates log entries instead of API calls
 - **Email to rushabh@automateaccounts.com**: Creates email_outbox entry, not actually sent
 
-## Admin Panel - Full Feature Update (Feb 21, 2026) ✅
+## Inactive Users/Customers + CSV Export (Feb 21, 2026) ✅
+
+### Inactive Users/Customers
+- `is_active` field added to users (startup migration backfills `True` for all)
+- Login rejects inactive users with `403: Account is inactive`
+- `get_current_user` also rejects → existing tokens stop working immediately  
+- `PATCH /admin/users/{id}/active?active=false` — super_admin only; self-deactivation blocked
+- `PATCH /admin/customers/{id}/active?active=false` — any admin; cascades to linked user; self-lockout protection at both backend and frontend level
+- Status badge (Active/Inactive) shown in Customers + Users tabs
+- Deactivate/Activate button per row — hidden on own account row
+- All toggles audit-logged with actor + before/after
+
+### CSV Exports
+- `GET /api/admin/export/orders` — all DB fields + enriched customer email/name; same filters as list
+- `GET /api/admin/export/customers` — all DB fields + address + user fields merged
+- `GET /api/admin/export/subscriptions` — all DB fields + enriched customer info; same filters
+- `GET /api/admin/export/catalog` — all DB product fields
+- Export CSV buttons on all 4 tabs (Orders, Customers, Subscriptions, Catalog)
+- Downloads via `fetch + Bearer token + Blob` using `aa_token` localStorage key
+- Filenames include date: `orders_2026-02-21.csv`
+
+### Next: Product Admin (COMPLEX vs SIMPLE pricing)
+- Fields: title, short_description, tag, outcome, automation, support, bullets (3), FAQs, terms_id, billing_type, pricing_type (SIMPLE/COMPLEX)
+- SIMPLE: fixed price/stripe_price_id, add-to-cart enabled
+- COMPLEX: contact-us flow, `allow_checkout=false` by default
 
 ### Subscriptions Tab Overhaul
 - **Start Date vs Created Date**: Both shown separately. Start Date = `start_date` (backfilled from `current_period_start` for Stripe, `created_at` for manual). Created Date = `created_at` (read-only in edit modal).
