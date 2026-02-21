@@ -2317,6 +2317,43 @@ async def startup_tasks():
         {"$set": {"is_active": True}}
     )
 
+    # === NEW MIGRATIONS ===
+
+    # 1. Seed categories collection from existing product category strings
+    all_prods = await db.products.find({}, {"_id": 0, "category": 1}).to_list(2000)
+    existing_prod_cats = {p["category"] for p in all_prods if p.get("category")}
+    for cat_name in existing_prod_cats:
+        existing_cat = await db.categories.find_one({"name": cat_name})
+        if not existing_cat:
+            await db.categories.insert_one({
+                "id": make_id(),
+                "name": cat_name,
+                "is_active": True,
+                "created_at": now_iso(),
+            })
+
+    # 2. Backfill pricing_complexity based on pricing_type for products missing it
+    PRICING_TYPE_TO_COMPLEXITY = {
+        "fixed": "SIMPLE",
+        "simple": "SIMPLE",
+        "calculator": "COMPLEX",
+        "tiered": "COMPLEX",
+        "hours": "COMPLEX",
+        "external": "REQUEST_FOR_QUOTE",
+        "scope_request": "REQUEST_FOR_QUOTE",
+        "inquiry": "REQUEST_FOR_QUOTE",
+    }
+    products_missing_complexity = await db.products.find(
+        {"pricing_complexity": {"$exists": False}}, {"_id": 0, "id": 1, "pricing_type": 1}
+    ).to_list(2000)
+    for prod in products_missing_complexity:
+        p_type = prod.get("pricing_type", "fixed")
+        complexity = PRICING_TYPE_TO_COMPLEXITY.get(p_type, "SIMPLE")
+        await db.products.update_one(
+            {"id": prod["id"]},
+            {"$set": {"pricing_complexity": complexity}}
+        )
+
 
 
 @api_router.get("/")
