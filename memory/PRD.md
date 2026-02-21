@@ -75,6 +75,16 @@ Build a full-featured customer-facing portal for Automate Accounts (Zoho partner
   - All "Del" text → "Delete" throughout admin panel
   - Tested by testing agent: **100% pass rate** on all 14 feature categories
 
+### Session 6 (Admin Bug Fixes + Catalog Visibility Typeahead) — 2026-02-21
+- **CustomersTab**: Fixed table font size from `text-xs` to `text-sm` (recurring issue resolved)
+- **SubscriptionsTab**: Fixed table font size from default to `text-sm` (consistency fix)
+- **ProductForm/ProductsTab**: Replaced checkbox list for customer visibility with email typeahead (search → chip UI), ProductsTab now enriches customers with email before passing to ProductForm
+- **Quote Requests product filter**: Verified working (backend regex on `product_name`, frontend sends `?product=` param)
+- **Customer edit**: Country and Region/Province confirmed editable (backend + frontend both support it)
+- **Order editing**: Customer email typeahead, status, product, payment, dates, subscription ID — all confirmed working
+- **Subscription editing**: Customer email typeahead confirmed working
+- **Article visibility**: Email typeahead confirmed working
+
 ### Session 4 (P1 Audit Logs + P2 DB-backed Settings) — 2026-02-21
 - **P1 — Global Audit Log system**:
   - `AuditService` in `backend/services/audit_service.py` with keyset pagination
