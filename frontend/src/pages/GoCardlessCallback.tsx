@@ -65,9 +65,9 @@ export default function GoCardlessCallback() {
         {status === "success" && !loading && (
           <>
             <div className="text-green-600 text-5xl mb-4">✓</div>
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">Setup Complete!</h2>
-            <p className="text-sm text-slate-600 mb-4">Your Direct Debit mandate has been set up successfully. Payment will be processed shortly.</p>
-            <p className="text-xs text-slate-500">Redirecting to your portal...</p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">Payment Initiated!</h2>
+            <p className="text-sm text-slate-600 mb-4">Your Direct Debit mandate has been set up and payment has been initiated. It will be processed shortly.</p>
+            <p className="text-xs text-slate-500">Redirecting to confirmation page...</p>
           </>
         )}
 
