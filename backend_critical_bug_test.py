@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 class CriticalBugFixTester:
-    def __init__(self, base_url="https://promo-checkout-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://checkout-flow-fix-6.preview.emergentagent.com"):
         self.base_url = base_url
         self.admin_token = None
         self.user_token = None
@@ -178,7 +178,7 @@ class CriticalBugFixTester:
         checkout_data = {
             "items": [{"product_id": product["id"], "quantity": 1, "inputs": {}}],
             "checkout_type": "subscription",
-            "origin_url": "https://promo-checkout-1.preview.emergentagent.com",
+            "origin_url": "https://checkout-flow-fix-6.preview.emergentagent.com",
             "terms_accepted": True
         }
         
@@ -445,7 +445,7 @@ class CriticalBugFixTester:
 def main():
     """Main test runner"""
     print("🔥 CRITICAL BUG FIXES TESTING")
-    print("Backend URL: https://promo-checkout-1.preview.emergentagent.com/api")
+    print("Backend URL: https://checkout-flow-fix-6.preview.emergentagent.com/api")
     print("Admin Credentials: admin@automateaccounts.local / ChangeMe123!")
     print("="*80)
     
