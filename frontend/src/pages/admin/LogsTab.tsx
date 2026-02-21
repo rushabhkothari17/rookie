@@ -140,20 +140,20 @@ export function LogsTab() {
           <FilterInput label="Actor (name/email)" value={filters.actor} onChange={setF("actor")} />
           <div className="space-y-0.5">
             <label className="text-[10px] uppercase tracking-wide font-medium text-slate-500">Source</label>
-            <Select value={filters.source} onValueChange={setF("source")}>
+            <Select value={filters.source || "__all__"} onValueChange={(v) => setF("source")(v === "__all__" ? "" : v)}>
               <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="All sources" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All sources</SelectItem>
+                <SelectItem value="__all__">All sources</SelectItem>
                 {SOURCES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-0.5">
             <label className="text-[10px] uppercase tracking-wide font-medium text-slate-500">Entity type</label>
-            <Select value={filters.entity_type} onValueChange={setF("entity_type")}>
+            <Select value={filters.entity_type || "__all__"} onValueChange={(v) => setF("entity_type")(v === "__all__" ? "" : v)}>
               <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="All types" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="__all__">All types</SelectItem>
                 {ENTITY_TYPES.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
               </SelectContent>
             </Select>
