@@ -150,7 +150,7 @@ export function QuoteRequestsTab() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
-        <Table data-testid="admin-quotes-table" className="text-xs">
+        <Table data-testid="admin-quotes-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead className="cursor-pointer select-none" onClick={() => setSortOrder(o => o === "desc" ? "asc" : "desc")}>

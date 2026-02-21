@@ -182,7 +182,7 @@ export function PromoCodesTab() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        <Table data-testid="admin-promo-table" className="text-xs">
+        <Table data-testid="admin-promo-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead>Code</TableHead>
