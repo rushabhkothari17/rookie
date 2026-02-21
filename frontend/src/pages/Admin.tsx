@@ -1688,6 +1688,10 @@ export default function Admin() {
           </div>
         </TabsContent>
 
+        <TabsContent value="articles" className="space-y-4">
+          <ArticlesTab customers={customers} />
+        </TabsContent>
+
         <TabsContent value="catalog" className="space-y-4">
           <ProductsTab />
         </TabsContent>
