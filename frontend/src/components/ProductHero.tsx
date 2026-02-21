@@ -1,19 +1,19 @@
 import { displayCategory } from "@/lib/categories";
 
-const outcomeCopy = (product: any) => [
-  {
-    title: "Outcome",
-    body: product.tagline || "Clear delivery milestones aligned to your goals.",
-  },
-  {
-    title: "Automation",
-    body: "Workflow credits and automation clarity baked in from day one.",
-  },
-  {
-    title: "Support",
-    body: "Dedicated delivery lead with structured check-ins.",
-  },
-];
+const outcomeCopy = (product: any) => {
+  const items = [];
+  const outcome = product.outcome || product.tagline;
+  if (outcome) items.push({ title: "Outcome", body: outcome });
+  if (product.automation_details) items.push({ title: "Automation", body: product.automation_details });
+  if (product.support_details) items.push({ title: "Support", body: product.support_details });
+  // Legacy fallback for seeded products without new fields
+  if (items.length === 0) {
+    items.push({ title: "Outcome", body: product.tagline || "Clear delivery milestones aligned to your goals." });
+    items.push({ title: "Automation", body: "Workflow credits and automation clarity baked in from day one." });
+    items.push({ title: "Support", body: "Dedicated delivery lead with structured check-ins." });
+  }
+  return items;
+};
 
 export default function ProductHero({ product }: { product: any }) {
   const tags = [displayCategory(product.category)];
