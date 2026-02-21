@@ -834,44 +834,68 @@ export default function Admin() {
 
         {/* Order Edit Dialog (outside table to avoid nesting issues) */}
         <Dialog open={showOrderEditDialog} onOpenChange={(open) => { setShowOrderEditDialog(open); if (!open) setSelectedOrder(null); }}>
-          <DialogContent data-testid="admin-order-edit-dialog">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-order-edit-dialog">
             <DialogHeader><DialogTitle>Edit Order {selectedOrder?.order_number}</DialogTitle></DialogHeader>
             {selectedOrder && (
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Status</label>
-                  <Select value={selectedOrder.status || ""} onValueChange={(v) => setSelectedOrder({ ...selectedOrder, status: v })}>
-                    <SelectTrigger data-testid="admin-order-status-select"><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <label className="text-xs text-slate-500">Customer</label>
+                  <Select value={selectedOrder.customer_id || ""} onValueChange={(v) => setSelectedOrder({ ...selectedOrder, customer_id: v })}>
+                    <SelectTrigger data-testid="admin-order-customer-select"><SelectValue placeholder="Select customer" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="unpaid">Unpaid</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="awaiting_bank_transfer">Awaiting Bank Transfer</SelectItem>
-                      <SelectItem value="pending_payment">Pending Payment</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                      <SelectItem value="refunded">Refunded</SelectItem>
-                      <SelectItem value="disputed">Disputed</SelectItem>
+                      {customers.map((c: any) => {
+                        const u = users.find((u: any) => u.id === c.user_id);
+                        return <SelectItem key={c.id} value={c.id}>{u?.full_name || c.id} ({u?.email})</SelectItem>;
+                      })}
                     </SelectContent>
                   </Select>
+                  {selectedOrder.customer_id && (
+                    <p className="text-xs text-slate-400 mt-1">Email: {users.find((u: any) => u.id === customers.find((c: any) => c.id === selectedOrder.customer_id)?.user_id)?.email || "—"}</p>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Order Date</label>
+                    <Input type="date" value={selectedOrder.order_date_edit || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, order_date_edit: e.target.value })} data-testid="admin-order-date-input" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Payment Date</label>
+                    <Input type="date" value={selectedOrder.payment_date?.slice(0, 10) || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, payment_date: e.target.value })} data-testid="admin-order-payment-date" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Status</label>
+                    <Select value={selectedOrder.status || ""} onValueChange={(v) => setSelectedOrder({ ...selectedOrder, status: v })}>
+                      <SelectTrigger data-testid="admin-order-status-select"><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="unpaid">Unpaid</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="pending_payment">Pending Payment</SelectItem>
+                        <SelectItem value="awaiting_bank_transfer">Awaiting Bank Transfer</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectItem value="refunded">Refunded</SelectItem>
+                        <SelectItem value="disputed">Disputed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Payment Method</label>
+                    <Select value={selectedOrder.payment_method || ""} onValueChange={(v) => setSelectedOrder({ ...selectedOrder, payment_method: v })}>
+                      <SelectTrigger data-testid="admin-order-payment-select"><SelectValue placeholder="Select method" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="card">Card</SelectItem>
+                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                        <SelectItem value="offline">Offline / Manual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Payment Method</label>
-                  <Select value={selectedOrder.payment_method || ""} onValueChange={(v) => setSelectedOrder({ ...selectedOrder, payment_method: v })}>
-                    <SelectTrigger data-testid="admin-order-payment-select"><SelectValue placeholder="Select method" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="card">Card</SelectItem>
-                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                      <SelectItem value="offline">Offline / Manual</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Payment Date</label>
-                  <Input type="date" value={selectedOrder.payment_date?.slice(0, 10) || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, payment_date: e.target.value })} data-testid="admin-order-payment-date" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Internal Note</label>
-                  <Textarea placeholder="Internal note" value={selectedOrder.internal_note || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, internal_note: e.target.value })} data-testid="admin-order-note-input" rows={3} />
+                  <label className="text-xs text-slate-500">Add Note (appended to history)</label>
+                  <Textarea placeholder="Add a note..." value={selectedOrder.new_note || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, new_note: e.target.value })} data-testid="admin-order-note-input" rows={2} />
                 </div>
                 <Button onClick={handleOrderEdit} className="w-full" data-testid="admin-order-save">Save Changes</Button>
               </div>
