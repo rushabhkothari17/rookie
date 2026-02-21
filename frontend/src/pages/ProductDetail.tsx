@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import AppShell from "@/components/AppShell";
 import ProductHero from "@/components/ProductHero";
 import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
