@@ -623,9 +623,15 @@ export default function Admin() {
                       <TableCell className="text-xs">{user?.email || "—"}</TableCell>
                       <TableCell>{sub.plan_name}</TableCell>
                       <TableCell><span className={`text-xs px-2 py-1 rounded ${sub.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>{sub.status}</span></TableCell>
-                      <TableCell className="text-xs">{sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
+                      <TableCell className="text-xs">{sub.renewal_date?.slice(0, 10) || sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
                       <TableCell>${sub.amount?.toFixed(2) || "—"}</TableCell>
                       <TableCell>{sub.payment_method || "card"}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {sub.is_manual && <Button size="sm" variant="outline" onClick={() => handleRenewNow(sub.id)}>Renew Now</Button>}
+                          <Button size="sm" variant="ghost" onClick={() => handleViewSubLogs(sub.id)}>View Logs</Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
