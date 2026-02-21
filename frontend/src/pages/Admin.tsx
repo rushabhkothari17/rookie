@@ -1186,6 +1186,7 @@ export default function Admin() {
                   <TableHead className="w-36">Plan</TableHead>
                   <TableHead className="w-28">Status</TableHead>
                   <TableHead className="w-24">Start Date</TableHead>
+                  <TableHead className="w-28">Contract End</TableHead>
                   <TableHead className="w-24">Created</TableHead>
                   <TableHead className="w-24">Renewal</TableHead>
                   <TableHead className="w-24">Cancel Date</TableHead>
