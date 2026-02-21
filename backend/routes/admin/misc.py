@@ -9,6 +9,7 @@ from core.security import require_admin
 from core.helpers import now_iso
 from db.session import db
 from models import CurrencyOverrideRequest, CustomerPartnerMapUpdate
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["admin-misc"])
 
