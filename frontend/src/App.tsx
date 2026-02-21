@@ -96,8 +96,6 @@ export default function App() {
                 <Route path="/checkout/bank-transfer" element={<BankTransferSuccess />} />
                 <Route path="/gocardless/callback" element={<ErrorBoundary><GoCardlessCallback /></ErrorBoundary>} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/articles" element={<Articles />} />
-                <Route path="/articles/:articleId" element={<ArticleView />} />
 
                 <Route path="/portal" element={<Portal />} />
                 <Route
