@@ -1873,7 +1873,20 @@ async def checkout_bank_transfer(
                 rendered_terms_text = resolve_terms_tags(terms["content"], user, address, product["name"])
         
         period_start = datetime.now(timezone.utc)
+        # If start_date provided and in the future, use it as period start
+        requested_start = None
+        if payload.start_date:
+            try:
+                sd = datetime.fromisoformat(payload.start_date)
+                if sd.tzinfo is None:
+                    sd = sd.replace(tzinfo=timezone.utc)
+                if sd > datetime.now(timezone.utc):
+                    period_start = sd
+                    requested_start = payload.start_date
+            except Exception:
+                pass
         period_end = period_start + timedelta(days=30)
+        contract_end = period_start + timedelta(days=365)
         sub_id = make_id()
         
         # Create GoCardless customer and redirect flow
