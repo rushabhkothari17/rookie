@@ -121,6 +121,8 @@ async def get_current_user(
     user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
     return user
 
 
