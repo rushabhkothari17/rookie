@@ -95,6 +95,13 @@ async def admin_create_product(
     product["price_inputs"] = build_price_inputs(product)
     await db.products.insert_one(product)
     product.pop("_id", None)
+    await create_audit_log(
+        entity_type="product",
+        entity_id=product_id,
+        action="created",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"name": payload.name, "category": payload.category, "is_subscription": payload.is_subscription},
+    )
     return {"product": product}
 
 
