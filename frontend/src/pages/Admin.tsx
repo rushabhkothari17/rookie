@@ -541,7 +541,7 @@ export default function Admin() {
   // Filter subscriptions (client-side)
   const filteredSubscriptions = subscriptions.filter(sub => {
     const user = getCustomerUser(sub.customer_id);
-    if (subFilters.customer && !user?.full_name?.toLowerCase().includes(subFilters.customer.toLowerCase())) return false;
+    if (subFilters.customer && !user?.full_name?.toLowerCase().includes(subFilters.customer.toLowerCase()) && !user?.company_name?.toLowerCase().includes(subFilters.customer.toLowerCase())) return false;
     if (subFilters.email && !user?.email?.toLowerCase().includes(subFilters.email.toLowerCase())) return false;
     if (subFilters.plan && !sub.plan_name?.toLowerCase().includes(subFilters.plan.toLowerCase())) return false;
     if (subFilters.status && sub.status !== subFilters.status) return false;
