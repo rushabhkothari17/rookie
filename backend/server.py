@@ -5632,7 +5632,7 @@ async def update_customer(
     if user_updates:
         await db.users.update_one({"id": user["id"]}, {"$set": user_updates})
     
-    # Update address fields (country is NOT editable)
+    # Update address fields
     address = await db.addresses.find_one({"customer_id": customer_id}, {"_id": 0})
     if address:
         address_updates = {}
