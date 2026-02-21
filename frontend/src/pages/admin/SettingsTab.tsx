@@ -362,50 +362,10 @@ export function SettingsTab() {
       {/* Brand Colors */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
         <h3 className="text-sm font-semibold text-slate-900">Brand Colors</h3>
-        <p className="text-xs text-slate-400">These colors are applied to the storefront in real-time. Primary = navbars/headings. Accent = CTA buttons &amp; highlights.</p>
-        <div className="grid grid-cols-3 gap-4">
+        <p className="text-xs text-slate-400">Applied to the storefront in real-time. Primary = navbars/headings. Accent = CTA buttons &amp; highlights.</p>
+        <div className="grid grid-cols-2 gap-4">
           <ColorInput label="Primary" value={settings.primary_color || ""} onChange={set("primary_color")} testId="admin-settings-primary-color" />
-          <ColorInput label="Secondary" value={settings.secondary_color || ""} onChange={set("secondary_color")} testId="admin-settings-secondary-color" />
           <ColorInput label="Accent" value={settings.accent_color || ""} onChange={set("accent_color")} testId="admin-settings-accent-color" />
-        </div>
-      </div>
-
-      {/* API Keys */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-slate-900">API Keys</h3>
-        <p className="text-xs text-slate-400">Secrets are masked after saving. To update, type a new value.</p>
-        <div className="grid gap-4">
-          <div>
-            <label className="text-xs text-slate-600">Stripe Public Key</label>
-            <Input
-              value={settings.stripe_public_key || ""}
-              onChange={(e) => set("stripe_public_key")(e.target.value)}
-              placeholder="pk_live_…"
-              className="mt-1 font-mono text-sm"
-              data-testid="admin-settings-stripe-pk"
-            />
-          </div>
-          <SecretInput
-            label="Stripe Secret Key"
-            value={settings.stripe_secret_key || ""}
-            onChange={set("stripe_secret_key")}
-            placeholder="sk_live_…"
-            testId="admin-settings-stripe-sk"
-          />
-          <SecretInput
-            label="GoCardless Access Token"
-            value={settings.gocardless_token || ""}
-            onChange={set("gocardless_token")}
-            placeholder="live_…"
-            testId="admin-settings-gocardless"
-          />
-          <SecretInput
-            label="Resend API Key"
-            value={settings.resend_api_key || ""}
-            onChange={set("resend_api_key")}
-            placeholder="re_…"
-            testId="admin-settings-resend"
-          />
         </div>
       </div>
 
