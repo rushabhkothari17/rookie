@@ -334,6 +334,44 @@ export default function ProductDetail() {
               </SectionCard>
             )}
 
+            {/* Scope ID Unlock — for RFQ products only */}
+            {isRFQ && product.sku !== "MIG-BOOKS" && (
+              <SectionCard title="Unlock with Scope ID" testId="scope-id-card">
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-500">
+                    If you have received a finalized scope document, enter the Scope ID below to unlock pricing and proceed to checkout.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={scopeId}
+                      onChange={(e) => { setScopeId(e.target.value); setScopeUnlock(null); setScopeError(""); }}
+                      placeholder="Enter Scope ID"
+                      className="flex-1 font-mono text-sm"
+                      data-testid="scope-id-input"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={handleValidateScopeId}
+                      disabled={scopeValidating || !scopeId.trim()}
+                      data-testid="scope-id-validate-btn"
+                    >
+                      {scopeValidating ? "Checking…" : "Validate"}
+                    </Button>
+                  </div>
+                  {scopeError && (
+                    <p className="text-sm text-red-600" data-testid="scope-id-error">{scopeError}</p>
+                  )}
+                  {scopeUnlock && (
+                    <div className="rounded-lg bg-green-50 border border-green-200 p-3 space-y-1" data-testid="scope-id-success">
+                      <p className="text-sm font-semibold text-green-800">Scope unlocked</p>
+                      <p className="text-xs text-green-700">{scopeUnlock.title}</p>
+                      <p className="text-sm font-bold text-green-800">${scopeUnlock.price}</p>
+                    </div>
+                  )}
+                </div>
+              </SectionCard>
+            )}
+
             <SectionCard title="What's included" testId="product-included">
               <IncludedList items={product.inclusions || product.bullets_included || []} testId="product-included-list" />
             </SectionCard>
