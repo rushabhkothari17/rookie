@@ -92,6 +92,12 @@ export default function Admin() {
   const [orderTotalPages, setOrderTotalPages] = useState(1);
   const [productFilter, setProductFilter] = useState("");
   const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [orderSortOrder, setOrderSortOrder] = useState<"desc" | "asc">("desc");
+  const [orderNumberFilter, setOrderNumberFilter] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("");
+  const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [selectedOrderNotes, setSelectedOrderNotes] = useState<any[]>([]);
+  const [subFilters, setSubFilters] = useState({ customer: "", email: "", plan: "", status: "", payment: "", renewalFrom: "", renewalTo: "" });
 
   const loadOrders = async (page = 1) => {
     try {
