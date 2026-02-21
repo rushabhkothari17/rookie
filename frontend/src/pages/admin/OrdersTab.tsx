@@ -271,7 +271,7 @@ export function OrdersTab() {
                       {order.status === "unpaid" && (
                         <Button size="sm" variant="secondary" className="h-6 px-2 text-[11px]" onClick={() => handleAutoCharge(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
                       )}
-                      <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleDelete(order.id)} data-testid={`admin-order-delete-${order.id}`}>Del</Button>
+                      <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleDelete(order.id)} data-testid={`admin-order-delete-${order.id}`}>Delete</Button>
                     </div>
                   </TableCell>
                 </TableRow>
