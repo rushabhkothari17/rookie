@@ -3,7 +3,6 @@ from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from pathlib import Path
@@ -31,20 +30,48 @@ from gocardless_helper import create_gocardless_customer, create_redirect_flow, 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
-mongo_url = os.environ["MONGO_URL"]
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ["DB_NAME"]]
-
-JWT_SECRET = os.environ["JWT_SECRET"]
-STRIPE_API_KEY = os.environ["STRIPE_API_KEY"]
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+# ---------------------------------------------------------------------------
+# Infrastructure imports from new modules
+# ---------------------------------------------------------------------------
+from db.session import db, client                          # MongoDB connection
+from core.config import JWT_SECRET, STRIPE_API_KEY, ADMIN_EMAIL, ADMIN_PASSWORD  # env config
+from core.helpers import (                                 # pure utils
+    now_iso, make_id, round_cents, round_to_nearest_99,
+    round_nearest_25, currency_for_country, _deep_merge, _slugify,
+)
+from core.security import (                               # auth + deps
+    security, pwd_context,
+    create_access_token, decode_token,
+    get_current_user, require_admin, require_super_admin, optional_get_current_user,
+)
+from core.constants import (                             # hardcoded constants
+    ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES,
+    SERVICE_FEE_RATE, PREMIUM_MIGRATION_ITEMS, STANDARD_MIGRATION_SOURCES,
+    PARTNER_TAG_RESPONSES, ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES,
+)
+from services.audit_service import AuditService, ensure_audit_indexes
+from middleware.request_id import RequestIDMiddleware
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
-security = HTTPBearer()
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ---------------------------------------------------------------------------
+# Middleware
+# ---------------------------------------------------------------------------
+app.add_middleware(RequestIDMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ---------------------------------------------------------------------------
+# Include new route modules
+# ---------------------------------------------------------------------------
+from routes.admin.logs import router as audit_logs_router
+app.include_router(audit_logs_router)
 
 
 # Order status enum
