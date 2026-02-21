@@ -365,6 +365,46 @@ export default function ProductDetail() {
         </div>
       </div>
 
+      {/* Quote Request Modal */}
+      <Dialog open={showQuoteModal} onOpenChange={setShowQuoteModal}>
+        <DialogContent className="max-w-md" data-testid="quote-request-modal">
+          <DialogHeader>
+            <DialogTitle>Request a Quote — {product?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-slate-500">
+              Fill in your details and we'll get back to you with a custom quote.
+            </p>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Your Name *</label>
+              <Input value={quoteForm.name} onChange={(e) => setQuoteForm({ ...quoteForm, name: e.target.value })} placeholder="Full name" data-testid="quote-name" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Email *</label>
+              <Input type="email" value={quoteForm.email} onChange={(e) => setQuoteForm({ ...quoteForm, email: e.target.value })} placeholder="your@email.com" data-testid="quote-email" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Company</label>
+              <Input value={quoteForm.company} onChange={(e) => setQuoteForm({ ...quoteForm, company: e.target.value })} placeholder="Company name" data-testid="quote-company" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Phone</label>
+              <Input value={quoteForm.phone} onChange={(e) => setQuoteForm({ ...quoteForm, phone: e.target.value })} placeholder="+1 (555) 000-0000" data-testid="quote-phone" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Message</label>
+              <Textarea value={quoteForm.message} onChange={(e) => setQuoteForm({ ...quoteForm, message: e.target.value })} placeholder="Tell us about your requirements…" rows={3} data-testid="quote-message" />
+            </div>
+            <Button className="w-full" onClick={handleSubmitQuote} disabled={submittingQuote} data-testid="quote-submit-button">
+              {submittingQuote ? "Submitting…" : "Submit Quote Request"}
+            </Button>
+            <p className="text-xs text-slate-400 text-center">
+              We'll respond within 1-2 business days.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Scope Request Modal */}
       <Dialog open={showScopeModal} onOpenChange={setShowScopeModal}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="scope-request-modal">
