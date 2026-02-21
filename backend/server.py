@@ -3052,9 +3052,52 @@ async def admin_update_customer_payment_methods(
 
 
 @api_router.get("/admin/orders")
-async def admin_orders(admin: Dict[str, Any] = Depends(require_admin)):
-    orders = await db.orders.find({}, {"_id": 0}).to_list(500)
-    return {"orders": orders}
+async def admin_orders(
+    page: int = 1,
+    per_page: int = 20,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+    include_deleted: bool = False,
+    product_filter: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Get paginated orders list"""
+    skip = (page - 1) * per_page
+    
+    # Build query
+    query = {}
+    if not include_deleted:
+        query["deleted_at"] = {"$exists": False}
+    
+    # Get orders
+    sort_direction = -1 if sort_order == "desc" else 1
+    orders = await db.orders.find(query, {"_id": 0}).sort(sort_by, sort_direction).skip(skip).limit(per_page).to_list(per_page)
+    
+    # Get order items for product filtering
+    if product_filter:
+        order_ids = [o["id"] for o in orders]
+        items = await db.order_items.find({"order_id": {"$in": order_ids}}, {"_id": 0}).to_list(1000)
+        products = await db.products.find({}, {"_id": 0}).to_list(1000)
+        
+        # Filter orders by product name
+        product_ids_matching = [p["id"] for p in products if product_filter.lower() in p.get("name", "").lower()]
+        matching_order_ids = [i["order_id"] for i in items if i["product_id"] in product_ids_matching]
+        orders = [o for o in orders if o["id"] in matching_order_ids]
+    
+    # Get items for all orders
+    all_order_ids = [o["id"] for o in orders]
+    items = await db.order_items.find({"order_id": {"$in": all_order_ids}}, {"_id": 0}).to_list(1000)
+    
+    total_count = await db.orders.count_documents(query)
+    
+    return {
+        "orders": orders,
+        "items": items,
+        "page": page,
+        "per_page": per_page,
+        "total": total_count,
+        "total_pages": (total_count + per_page - 1) // per_page
+    }
 
 
 @api_router.get("/admin/subscriptions")
