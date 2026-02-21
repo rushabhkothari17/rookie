@@ -3280,7 +3280,7 @@ async def create_checkout_session(
         "partner_tag_response": payload.partner_tag_response,
         "override_code_id": None,
         "partner_tag_timestamp": now_iso(),
-        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"]),
+        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="card"),
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
