@@ -149,8 +149,9 @@ export default function Admin() {
   }, []);
 
   useEffect(() => {
-    loadOrders(orderPage);
-  }, [productFilter, includeDeleted]);
+    loadOrders(1);
+    setOrderPage(1);
+  }, [productFilter, includeDeleted, orderSortOrder, orderNumberFilter, orderStatusFilter]);
 
   const handleCurrencyOverride = async () => {
     try {
