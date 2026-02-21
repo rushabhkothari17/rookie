@@ -1650,7 +1650,7 @@ export default function Admin() {
                     );
                   })}
                   {adminUsers.length === 0 && (
-                    <TableRow><TableCell colSpan={5} className="text-center text-slate-400 py-4">No admin users loaded. Click the Users tab again to load.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center text-slate-400 py-4">No admin users loaded. Click the Users tab again to load.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
