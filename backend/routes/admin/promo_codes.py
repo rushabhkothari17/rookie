@@ -9,6 +9,7 @@ from core.helpers import make_id, now_iso
 from core.security import require_admin
 from db.session import db
 from models import PromoCodeCreate, PromoCodeUpdate
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["admin-promo-codes"])
 
@@ -53,6 +54,13 @@ async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any
         "enabled": payload.enabled, "usage_count": 0, "created_at": now_iso(),
     }
     await db.promo_codes.insert_one(doc)
+    await create_audit_log(
+        entity_type="promo_code",
+        entity_id=code_id,
+        action="created",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"code": payload.code.upper(), "discount_type": payload.discount_type, "discount_value": payload.discount_value, "applies_to": payload.applies_to},
+    )
     return {"message": "Promo code created", "id": code_id}
 
 
