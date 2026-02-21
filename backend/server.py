@@ -242,13 +242,37 @@ async def create_audit_log(entity_type: str, entity_id: str, action: str, actor:
     })
 
 
-def build_checkout_notes_json(order_items: list, payload, user_id: str, customer_id: str) -> dict:
+def _deep_merge(base: dict, override: dict) -> dict:
+    """Deep-merge override into base. Override values win on conflict."""
+    result = dict(base)
+    for k, v in override.items():
+        if k in result and isinstance(result[k], dict) and isinstance(v, dict):
+            result[k] = _deep_merge(result[k], v)
+        else:
+            result[k] = v
+    return result
+
+
+def build_checkout_notes_json(
+    order_items: list,
+    payload,
+    user_id: str,
+    customer_id: str,
+    payment_method: str = "unknown",
+) -> dict:
     """Build JSON blob capturing all checkout inputs for order/subscription notes."""
-    return {
-        "product_intake": {
-            item["product"]["id"]: item.get("inputs", {})
-            for item in order_items
-        },
+    product_intake = {}
+    scope_unlocks = {}
+    for item in order_items:
+        pid = item["product"]["id"]
+        raw_inputs = dict(item.get("inputs") or {})
+        # Extract scope unlock metadata if present
+        if "_scope_unlock" in raw_inputs:
+            scope_unlocks[pid] = raw_inputs.pop("_scope_unlock")
+        product_intake[pid] = raw_inputs
+
+    blob: dict = {
+        "product_intake": product_intake,
         "checkout_intake": {
             "zoho_subscription_type": getattr(payload, "zoho_subscription_type", None),
             "current_zoho_product": getattr(payload, "current_zoho_product", None),
@@ -256,6 +280,10 @@ def build_checkout_notes_json(order_items: list, payload, user_id: str, customer
             "partner_tag_response": getattr(payload, "partner_tag_response", None),
             "promo_code": getattr(payload, "promo_code", None),
             "terms_accepted": getattr(payload, "terms_accepted", False),
+            "override_code_used": bool(getattr(payload, "override_code", None)),
+        },
+        "payment": {
+            "method": payment_method,
         },
         "system_metadata": {
             "user_id": user_id,
@@ -263,6 +291,9 @@ def build_checkout_notes_json(order_items: list, payload, user_id: str, customer
             "timestamp": now_iso(),
         },
     }
+    if scope_unlocks:
+        blob["scope_unlocks"] = scope_unlocks
+    return blob
 
 
 async def validate_and_consume_partner_tag(
