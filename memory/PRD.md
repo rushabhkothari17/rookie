@@ -274,7 +274,30 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - GoCardless API now called with correct session_token body format
 - Error message improved: "The payment link may have expired or been used already. Please return to checkout and try again."
 
-## Stripe Future-Dated Subscriptions Fix (Feb 21, 2026) ✅
+## Zoho Partner Tagging Purchase Gate (Feb 21, 2026) ✅
+
+**Features implemented:**
+- Mandatory dropdown "Have you tagged us as your Zoho Partner?" (Yes / Pre-existing Customer / Not yet) in Cart checkout, with clickable US DC and CA DC partner tag links
+- If "Not yet" → override code input required (backend-enforced, not just frontend)
+- Backend validates at `/api/checkout/bank-transfer` and `/api/checkout/session` for both Stripe and GoCardless
+- Override codes are customer-specific, expire after 48h, reject if expired/inactive/wrong customer
+- Customer `partner_map` field set to `{response} - Pending Verification` on every checkout attempt
+- Override code usage appended to customer `notes` with timestamp
+- All events in audit_logs
+
+**Admin features:**
+- "Override Codes" tab: create (with duplicate check), edit (code/customer/status/expires_at), deactivate
+- "Customers" table: Partner Map column (color-coded) with inline edit, filter dropdown, Notes button/modal
+
+**Data fields added:**
+- `orders`: `partner_tag_response`, `override_code_id`, `partner_tag_timestamp`
+- `subscriptions`: `partner_tag_response`, `override_code_id`, `partner_tag_timestamp`
+- `customers`: `partner_map`, `notes[]`
+- New collection: `override_codes`
+
+**Testing: 23/23 backend tests pass, 100% frontend flows verified**
+
+
 
 - Frontend: Date picker has `min = 3 days from today`, `max = 30 days from today`
 - Backend: Raises 400 if `start_date ≤ 3 days in future`; uses `trial_end` for valid future dates
