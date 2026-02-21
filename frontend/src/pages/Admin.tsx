@@ -388,13 +388,17 @@ export default function Admin() {
     if (!selectedOrder) return;
     try {
       await api.put(`/admin/orders/${selectedOrder.id}`, {
+        customer_id: selectedOrder.customer_id,
         status: selectedOrder.status,
         payment_method: selectedOrder.payment_method,
-        payment_date: selectedOrder.payment_date,
+        order_date: selectedOrder.order_date_edit || undefined,
+        payment_date: selectedOrder.payment_date || undefined,
         internal_note: selectedOrder.internal_note,
+        new_note: selectedOrder.new_note || undefined,
       });
       toast.success("Order updated");
       setShowOrderEditDialog(false);
+      setSelectedOrder(null);
       loadOrders(orderPage);
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to update order");
