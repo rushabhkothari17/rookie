@@ -245,36 +245,62 @@ export function SubscriptionsTab() {
       <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={(p) => load(p)} />
 
       {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) setSelectedSub(null); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) { setSelectedSub(null); setCustSearch(""); } }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-sub-edit-dialog">
           <DialogHeader><DialogTitle>Edit Subscription</DialogTitle></DialogHeader>
           {selectedSub && (
-            <div className="space-y-3">
-              {[["Renewal Date", "renewal_date", "date"], ["Start Date", "start_date", "date"], ["Contract End", "contract_end_date", "date"], ["Amount", "amount", "number"], ["Plan Name", "plan_name", "text"]].map(([label, key, type]) => (
-                <div key={key as string} className="space-y-1">
-                  <label className="text-xs text-slate-500">{label as string}</label>
-                  <Input type={type as string} value={selectedSub[key as string] || ""} onChange={e => setSelectedSub({ ...selectedSub, [key as string]: type === "number" ? parseFloat(e.target.value) || 0 : e.target.value })} />
+            <div className="space-y-3 py-2">
+              {/* Customer selector */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Customer (search by email)</label>
+                <Input placeholder="Type email to search…" value={custSearch} onChange={e => setCustSearch(e.target.value)} className="h-9" data-testid="admin-sub-customer-search" />
+                {custSearch && filteredCusts.length > 0 && (
+                  <div className="border border-slate-200 rounded bg-white shadow-md max-h-36 overflow-y-auto">
+                    {filteredCusts.map((c: any) => {
+                      const u = custUserMap[c.user_id];
+                      return <div key={c.id} onClick={() => { setSelectedSub({ ...selectedSub, customer_id: c.id }); setCustSearch(u?.email || ""); }} className="px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm">{u?.email} {c.company_name ? `— ${c.company_name}` : ""}</div>;
+                    })}
+                  </div>
+                )}
+                {selectedSub.customer_id && (
+                  <p className="text-xs text-green-600">Current: {customerEmails[selectedSub.customer_id] || selectedSub.customer_id?.slice(0, 8)}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[["Renewal Date", "renewal_date", "date"], ["Start Date", "start_date", "date"], ["Contract End", "contract_end_date", "date"]].map(([label, key, type]) => (
+                  <div key={key as string} className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">{label as string}</label>
+                    <Input type={type as string} value={(selectedSub[key as string] || "").slice(0, 10)} onChange={e => setSelectedSub({ ...selectedSub, [key as string]: e.target.value })} />
+                  </div>
+                ))}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Amount ($)</label>
+                  <Input type="number" step="0.01" value={selectedSub.amount ?? ""} onChange={e => setSelectedSub({ ...selectedSub, amount: parseFloat(e.target.value) || 0 })} />
                 </div>
-              ))}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Plan Name</label>
+                  <Input value={selectedSub.plan_name || ""} onChange={e => setSelectedSub({ ...selectedSub, plan_name: e.target.value })} />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Status</label>
-                  <select value={selectedSub.status} onChange={e => setSelectedSub({ ...selectedSub, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
+                  <select value={selectedSub.status} onChange={e => setSelectedSub({ ...selectedSub, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-sub-status-select">
                     {SUB_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Payment Method</label>
-                  <select value={selectedSub.payment_method} onChange={e => setSelectedSub({ ...selectedSub, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Method</label>
+                  <select value={selectedSub.payment_method} onChange={e => setSelectedSub({ ...selectedSub, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-sub-payment-select">
                     {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Add Note</label>
-                <Textarea placeholder="Add a note..." value={selectedSub.new_note || ""} onChange={e => setSelectedSub({ ...selectedSub, new_note: e.target.value })} rows={2} />
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Add Note</label>
+                <Textarea placeholder="Add a note…" value={selectedSub.new_note || ""} onChange={e => setSelectedSub({ ...selectedSub, new_note: e.target.value })} rows={2} />
               </div>
-              <Button onClick={handleEdit} className="w-full">Save Changes</Button>
+              <Button onClick={handleEdit} className="w-full" data-testid="admin-sub-edit-save">Save Changes</Button>
             </div>
           )}
         </DialogContent>
