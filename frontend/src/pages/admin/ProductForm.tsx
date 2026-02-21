@@ -277,37 +277,61 @@ export function ProductForm({
           <label className="text-xs text-slate-600">
             Visible to specific customers only — leave empty for all customers
           </label>
-          <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border border-slate-200 rounded-lg p-2" data-testid="pf-visibility-list">
-            {customers.length === 0 ? (
-              <p className="text-xs text-slate-400 p-1">No customers found</p>
-            ) : (
-              customers.map((c) => (
-                <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.visible_to_customers.includes(c.id)}
-                    onChange={() => toggleCustomer(c.id)}
-                    className="w-4 h-4 rounded"
-                    data-testid={`pf-vis-${c.id}`}
-                  />
-                  {c.company_name || `Customer ${c.id.slice(0, 8)}`}
-                </label>
-              ))
+          {/* Typeahead search */}
+          <div className="mt-2 relative">
+            <Input
+              placeholder="Search customer by email…"
+              value={visSearch}
+              onChange={(e) => setVisSearch(e.target.value)}
+              className="h-9 text-sm"
+              data-testid="pf-vis-search"
+            />
+            {filteredVisCustomers.length > 0 && (
+              <div className="absolute z-10 w-full border border-slate-200 rounded bg-white shadow-md max-h-40 overflow-y-auto mt-1">
+                {filteredVisCustomers.map((c) => (
+                  <div
+                    key={c.id}
+                    onClick={() => addVisibleCustomer(c.id)}
+                    className="px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm"
+                    data-testid={`pf-vis-option-${c.id}`}
+                  >
+                    <span className="font-medium">{c.email || c.company_name || c.id.slice(0, 8)}</span>
+                    {c.company_name && c.email && <span className="text-slate-400"> — {c.company_name}</span>}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
+          {/* Selected chips */}
           {form.visible_to_customers.length > 0 && (
-            <div className="mt-2 flex items-center gap-2">
-              <span className="text-xs text-blue-600 font-medium">
-                {form.visible_to_customers.length} customer(s) selected
-              </span>
+            <div className="mt-2 flex flex-wrap gap-1" data-testid="pf-visibility-list">
+              {form.visible_to_customers.map((custId) => {
+                const c = customers.find((x) => x.id === custId);
+                return (
+                  <span key={custId} className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-xs px-2 py-1 rounded-full">
+                    {c?.email || c?.company_name || custId.slice(0, 8)}
+                    <button
+                      type="button"
+                      onClick={() => removeVisibleCustomer(custId)}
+                      className="text-slate-400 hover:text-red-500 font-bold"
+                      data-testid={`pf-vis-remove-${custId}`}
+                    >×</button>
+                  </span>
+                );
+              })}
               <button
                 type="button"
                 onClick={() => s("visible_to_customers")([])}
-                className="text-xs text-slate-400 hover:text-red-500 underline"
+                className="text-xs text-slate-400 hover:text-red-500 underline ml-1"
               >
-                Clear (show to all)
+                Clear all
               </button>
             </div>
+          )}
+          {form.visible_to_customers.length > 0 && (
+            <p className="text-xs text-blue-600 font-medium mt-1">
+              {form.visible_to_customers.length} customer(s) selected — product hidden from all others
+            </p>
           )}
         </div>
       </div>
