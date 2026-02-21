@@ -445,6 +445,7 @@ class OrderDelete(BaseModel):
 
 class CompleteGoCardlessRedirect(BaseModel):
     redirect_flow_id: str
+    session_token: Optional[str] = None
     order_id: Optional[str] = None
     subscription_id: Optional[str] = None
     inputs: Dict[str, Any] = Field(default_factory=dict)
