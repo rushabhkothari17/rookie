@@ -5251,6 +5251,9 @@ async def admin_update_category(
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
     update = {k: v for k, v in payload.dict().items() if v is not None}
+    # Allow explicit empty string for description
+    if payload.description is not None:
+        update["description"] = payload.description
     if update:
         await db.categories.update_one({"id": cat_id}, {"$set": update})
     cat.update(update)
@@ -5265,6 +5268,12 @@ async def admin_delete_category(
     cat = await db.categories.find_one({"id": cat_id})
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
+    product_count = await db.products.count_documents({"category": cat["name"]})
+    if product_count > 0:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot delete: {product_count} product(s) are linked to this category. Reassign or deactivate them first."
+        )
     await db.categories.delete_one({"id": cat_id})
     return {"message": "Category deleted"}
 
