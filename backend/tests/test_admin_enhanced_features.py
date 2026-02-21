@@ -304,7 +304,7 @@ class TestAdminOrderUpdate:
 class TestOrderAuditLogs:
     """Tests for GET /admin/orders/{id}/logs"""
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def order_with_log(self, admin_headers):
         """Get an order and ensure it has a log (by updating it)"""
         resp = requests.get(
