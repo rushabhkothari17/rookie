@@ -399,11 +399,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Critical Bug Fixes - Stripe Subscription Mode & GoCardless Error Handling"
+    - "Cart Error Handling - No React Crash"
+    - "GoCardless Callback - Error Boundary Protection"
+    - "Error Boundary Fallback UI"
   stuck_tasks: 
-    - "ALL FRONTEND TASKS - Preview URL unavailable"
+    - "ALL ADMIN FRONTEND TASKS - Preview URL unavailable (old URL)"
   test_all: false
-  test_priority: "critical_bugs_fixed"
+  test_priority: "error_handling_complete"
 
 agent_communication:
   - agent: "testing"
