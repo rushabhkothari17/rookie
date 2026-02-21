@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 
@@ -147,7 +147,7 @@ export function CategoriesTab() {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <Label>Name</Label>
+              <Label>Name</label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -161,7 +161,7 @@ export function CategoriesTab() {
                 onCheckedChange={(v) => setForm({ ...form, is_active: v })}
                 data-testid="admin-category-active-switch"
               />
-              <Label>Active (visible on storefront)</Label>
+              <Label>Active (visible on storefront)</label>
             </div>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>

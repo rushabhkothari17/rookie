@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Plus } from "lucide-react";
@@ -49,7 +49,7 @@ function DynamicStringList({ label, items, onChange, placeholder, testId }: {
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
   return (
     <div>
-      <Label className="text-xs text-slate-600">{label}</Label>
+      <label className="text-xs text-slate-600">{label}</label>
       <div className="space-y-2 mt-1">
         {items.map((item, i) => (
           <div key={i} className="flex gap-2 items-center">
@@ -73,7 +73,7 @@ function FAQList({ faqs, onChange }: { faqs: FAQ[]; onChange: (v: FAQ[]) => void
   const remove = (i: number) => onChange(faqs.filter((_, j) => j !== i));
   return (
     <div>
-      <Label className="text-xs text-slate-600">FAQs</Label>
+      <label className="text-xs text-slate-600">FAQs</label>
       <div className="space-y-3 mt-1">
         {faqs.map((faq, i) => (
           <div key={i} className="border border-slate-200 rounded-lg p-3 space-y-2 relative">
@@ -131,16 +131,16 @@ export function ProductForm({
       <div className="space-y-3 border-b border-slate-100 pb-4">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Basic Info</h4>
         <div>
-          <Label className="text-xs text-slate-600">Name *</Label>
+          <label className="text-xs text-slate-600">Name *</label>
           <Input value={form.name} onChange={(e) => s("name")(e.target.value)} placeholder="Product name" className="mt-1" data-testid="pf-name" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs text-slate-600">Tag</Label>
+            <label className="text-xs text-slate-600">Tag</label>
             <Input value={form.tag} onChange={(e) => s("tag")(e.target.value)} placeholder="e.g. Popular" className="mt-1" data-testid="pf-tag" />
           </div>
           <div>
-            <Label className="text-xs text-slate-600">Category</Label>
+            <label className="text-xs text-slate-600">Category</label>
             <Select value={form.category} onValueChange={s("category")}>
               <SelectTrigger className="mt-1" data-testid="pf-category"><SelectValue placeholder="Select category" /></SelectTrigger>
               <SelectContent>
@@ -150,11 +150,11 @@ export function ProductForm({
           </div>
         </div>
         <div>
-          <Label className="text-xs text-slate-600">Short Description</Label>
+          <label className="text-xs text-slate-600">Short Description</label>
           <Input value={form.short_description} onChange={(e) => s("short_description")(e.target.value)} placeholder="One-line description" className="mt-1" data-testid="pf-short-desc" />
         </div>
         <div>
-          <Label className="text-xs text-slate-600">Detail Page Description</Label>
+          <label className="text-xs text-slate-600">Detail Page Description</label>
           <Textarea value={form.description_long} onChange={(e) => s("description_long")(e.target.value)} placeholder="Full description for the product detail page" rows={3} className="mt-1" data-testid="pf-long-desc" />
         </div>
       </div>
@@ -171,15 +171,15 @@ export function ProductForm({
       <div className="space-y-3 border-b border-slate-100 pb-4">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Outcome & Details</h4>
         <div>
-          <Label className="text-xs text-slate-600">Outcome</Label>
+          <label className="text-xs text-slate-600">Outcome</label>
           <Textarea value={form.outcome} onChange={(e) => s("outcome")(e.target.value)} placeholder="What the customer will achieve" rows={2} className="mt-1" data-testid="pf-outcome" />
         </div>
         <div>
-          <Label className="text-xs text-slate-600">Automation Details</Label>
+          <label className="text-xs text-slate-600">Automation Details</label>
           <Textarea value={form.automation_details} onChange={(e) => s("automation_details")(e.target.value)} rows={2} className="mt-1" data-testid="pf-automation" />
         </div>
         <div>
-          <Label className="text-xs text-slate-600">Support Details</Label>
+          <label className="text-xs text-slate-600">Support Details</label>
           <Textarea value={form.support_details} onChange={(e) => s("support_details")(e.target.value)} rows={2} className="mt-1" data-testid="pf-support" />
         </div>
       </div>
@@ -203,11 +203,11 @@ export function ProductForm({
         <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Pricing</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs text-slate-600">Base Price</Label>
+            <label className="text-xs text-slate-600">Base Price</label>
             <Input type="number" value={form.base_price} onChange={(e) => s("base_price")(parseFloat(e.target.value) || 0)} className="mt-1" data-testid="pf-price" />
           </div>
           <div>
-            <Label className="text-xs text-slate-600">Pricing Complexity</Label>
+            <label className="text-xs text-slate-600">Pricing Complexity</label>
             <Select value={form.pricing_complexity} onValueChange={s("pricing_complexity")}>
               <SelectTrigger className="mt-1" data-testid="pf-complexity"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -220,16 +220,16 @@ export function ProductForm({
         </div>
         <div className="flex items-center gap-3">
           <Switch checked={form.is_subscription} onCheckedChange={s("is_subscription")} data-testid="pf-subscription" />
-          <Label className="text-sm">Subscription (recurring billing)</Label>
+          <label className="text-sm">Subscription (recurring billing)</label>
         </div>
         {form.is_subscription && (
           <div>
-            <Label className="text-xs text-slate-600">Stripe Price ID</Label>
+            <label className="text-xs text-slate-600">Stripe Price ID</label>
             <Input value={form.stripe_price_id} onChange={(e) => s("stripe_price_id")(e.target.value)} placeholder="price_…" className="mt-1 font-mono text-sm" data-testid="pf-stripe-price-id" />
           </div>
         )}
         <div>
-          <Label className="text-xs text-slate-600">Terms & Conditions</Label>
+          <label className="text-xs text-slate-600">Terms & Conditions</label>
           <Select value={form.terms_id || "default"} onValueChange={(v) => s("terms_id")(v === "default" ? "" : v)}>
             <SelectTrigger className="mt-1" data-testid="pf-terms"><SelectValue placeholder="Default T&C" /></SelectTrigger>
             <SelectContent>
@@ -245,12 +245,12 @@ export function ProductForm({
         <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Visibility</h4>
         <div className="flex items-center gap-3">
           <Switch checked={form.is_active} onCheckedChange={s("is_active")} data-testid="pf-active" />
-          <Label className="text-sm">Active (visible on storefront)</Label>
+          <label className="text-sm">Active (visible on storefront)</label>
         </div>
         <div>
-          <Label className="text-xs text-slate-600">
+          <label className="text-xs text-slate-600">
             Restrict to specific customers (leave empty = visible to all)
-          </Label>
+          </label>
           <div className="mt-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2 space-y-1" data-testid="pf-visibility-list">
             {customers.length === 0 && <p className="text-xs text-slate-400">No customers found</p>}
             {customers.map((c) => (
