@@ -283,6 +283,16 @@ async def delete_article(
         "details": {"title": article.get("title")},
         "created_at": now,
     })
+    await AuditService.log(
+        action="ARTICLE_DELETED",
+        description=f"Article '{article.get('title')}' deleted",
+        entity_type="Article",
+        entity_id=article_id,
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+        before_json={"title": article.get("title"), "category": article.get("category")},
+    )
     return {"message": "Article deleted"}
 
 
