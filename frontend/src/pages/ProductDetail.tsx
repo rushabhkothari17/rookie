@@ -204,6 +204,9 @@ export default function ProductDetail() {
     if (!product || !pricing) {
       return { label: "Add to cart" };
     }
+    if (isRFQ) {
+      return { label: "Request a Quote", onClick: () => setShowQuoteModal(true) };
+    }
     if (product.pricing_type === "external") {
       return {
         label: "Continue to migration checkout",
@@ -220,7 +223,7 @@ export default function ProductDetail() {
       return { label: "Request scope", onClick: handleScopeRequest };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
-  }, [product, pricing]);
+  }, [product, pricing, isRFQ]);
 
   if (loading) {
     return (
