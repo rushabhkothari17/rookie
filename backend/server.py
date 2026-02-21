@@ -5603,7 +5603,7 @@ async def update_customer(
     address_data: AddressUpdate,
     admin: Dict[str, Any] = Depends(require_admin)
 ):
-    """Update customer details (country is locked)"""
+    """Update customer details"""
     customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
