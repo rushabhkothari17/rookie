@@ -141,6 +141,15 @@ async def delete_bank_transaction(
     result = await db.bank_transactions.delete_one({"id": txn_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
+    await AuditService.log(
+        action="BANK_TXN_DELETED",
+        description=f"Bank transaction {txn_id} deleted",
+        entity_type="BankTransaction",
+        entity_id=txn_id,
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+    )
     return {"message": "Deleted"}
 
 
