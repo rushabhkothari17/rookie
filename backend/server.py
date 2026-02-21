@@ -3096,6 +3096,18 @@ async def scope_request(
         "total": round_cents(subtotal),
         "currency": customer.get("currency"),
         "payment_method": "scope_request",
+        "notes_json": {
+            "product_intake": {
+                item["product"]["id"]: item.get("inputs", {})
+                for item in scope_items
+            },
+            "payment": {"method": "scope_request"},
+            "system_metadata": {
+                "user_id": user["id"],
+                "customer_id": customer["id"],
+                "timestamp": now_iso(),
+            },
+        },
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
