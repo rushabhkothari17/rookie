@@ -349,6 +349,91 @@ export default function Admin() {
     }
   };
 
+  const handleCustomerEdit = async () => {
+    if (!selectedCustomer) return;
+    try {
+      const address = addresses.find(a => a.customer_id === selectedCustomer.id);
+      await api.put(`/admin/customers/${selectedCustomer.id}`, {
+        customer_data: {
+          full_name: selectedCustomer.full_name,
+          company_name: selectedCustomer.company_name,
+          job_title: selectedCustomer.job_title,
+          phone: selectedCustomer.phone,
+        },
+        address_data: address ? {
+          line1: address.line1,
+          line2: address.line2,
+          city: address.city,
+          region: address.region,
+          postal: address.postal,
+        } : {}
+      });
+      toast.success("Customer updated");
+      setShowCustomerDialog(false);
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to update customer");
+    }
+  };
+
+  const handleOrderEdit = async () => {
+    if (!selectedOrder) return;
+    try {
+      await api.put(`/admin/orders/${selectedOrder.id}`, {
+        status: selectedOrder.status,
+        payment_method: selectedOrder.payment_method,
+        payment_date: selectedOrder.payment_date,
+        internal_note: selectedOrder.internal_note,
+      });
+      toast.success("Order updated");
+      setShowOrderEditDialog(false);
+      loadOrders(orderPage);
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to update order");
+    }
+  };
+
+  const handleOrderDelete = async (orderId: string) => {
+    if (!confirm("Are you sure you want to delete this order?")) return;
+    try {
+      await api.delete(`/admin/orders/${orderId}`, { data: { reason: "Deleted by admin" } });
+      toast.success("Order deleted");
+      loadOrders(orderPage);
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to delete order");
+    }
+  };
+
+  const handleAutoCharge = async (orderId: string) => {
+    try {
+      const res = await api.post(`/admin/orders/${orderId}/auto-charge`);
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+      loadOrders(orderPage);
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Auto-charge failed");
+    }
+  };
+
+  const handleSubscriptionEdit = async () => {
+    if (!selectedSubscription) return;
+    try {
+      await api.put(`/admin/subscriptions/${selectedSubscription.id}`, {
+        renewal_date: selectedSubscription.renewal_date,
+        amount: selectedSubscription.amount,
+        plan_name: selectedSubscription.plan_name,
+      });
+      toast.success("Subscription updated");
+      setShowSubEditDialog(false);
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to update subscription");
+    }
+  };
+
   const getCustomerAddress = (customerId: string) => addresses.find(a => a.customer_id === customerId);
   const getCustomerUser = (customerId: string) => {
     const customer = customers.find(c => c.id === customerId);
