@@ -1438,8 +1438,14 @@ def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str
             line_items.append({"label": "Employee docs", "amount": employee_docs * 5.0})
             line_items.append({"label": "Employee profiles", "amount": employee_profiles * 50.0})
             line_items.append({"label": "Templates", "amount": templates * 50.0})
+        elif calc_type == "books_migration":
+            bm = calculate_books_migration_price(inputs)
+            subtotal = bm["subtotal"]
+            line_items = bm["line_items"]
         else:
             subtotal = 0.0
+    else:
+        subtotal = 0.0
 
     fee = round_cents(subtotal * 0.05) if requires_checkout and not is_scope_request else 0.0
     total = round_cents(subtotal + fee)
