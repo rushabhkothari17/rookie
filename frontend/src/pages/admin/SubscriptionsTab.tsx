@@ -49,6 +49,19 @@ export function SubscriptionsTab() {
   // Customer email lookup (loaded with each page)
   const [customerEmails, setCustomerEmails] = useState<Record<string, string>>({});
 
+  // Customer list for edit dialog typeahead
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [custUsers, setCustUsers] = useState<any[]>([]);
+  const [custSearch, setCustSearch] = useState("");
+
+  const custUserMap: Record<string, any> = {};
+  custUsers.forEach(u => { custUserMap[u.id] = u; });
+  const filteredCusts = customers.filter(c => {
+    const u = custUserMap[c.user_id];
+    const q = custSearch.toLowerCase();
+    return !q || u?.email?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q);
+  }).slice(0, 10);
+
   const load = useCallback(async (p = 1) => {
     try {
       const params = new URLSearchParams({
