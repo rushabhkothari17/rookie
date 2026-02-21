@@ -2869,9 +2869,18 @@ async def stripe_webhook(request: Request):
                         "payment_method": "card",
                         "stripe_invoice_id": stripe_invoice_id,
                         "subscription_id": subscription["id"],
+                        "subscription_number": subscription.get("subscription_number", ""),
                         "created_at": now_iso(),
                     }
                     await db.orders.insert_one(renewal_doc)
+                    
+                    await create_audit_log(
+                        entity_type="order",
+                        entity_id=renewal_order_id,
+                        action="created_renewal",
+                        actor="stripe_webhook",
+                        details={"subscription_id": subscription["id"], "stripe_invoice_id": stripe_invoice_id, "amount": renewal_total}
+                    )
                     
                     # Copy order items from original
                     original_items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(100)
