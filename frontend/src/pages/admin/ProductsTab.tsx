@@ -53,11 +53,15 @@ export function ProductsTab() {
   const [terms, setTerms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [catalogFilter, setCatalogFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [complexityFilter, setComplexityFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [editProduct, setEditProduct] = useState<any>(null);
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 20;
 
   const load = async () => {
     setLoading(true);
