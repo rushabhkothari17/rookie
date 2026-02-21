@@ -1327,7 +1327,7 @@ def build_price_inputs(product: Dict[str, Any]) -> List[Dict[str, Any]]:
     return []
 
 
-def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str, Any]:
+def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any], fee_rate: float = SERVICE_FEE_RATE) -> Dict[str, Any]:
     pricing_type = product.get("pricing_type")
     rules = product.get("pricing_rules", {})
     subtotal = 0.0
