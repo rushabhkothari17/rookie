@@ -126,11 +126,11 @@ Build a full-featured customer-facing portal for Automate Accounts (Zoho partner
 ### P1 — Upcoming
 - **`server.py` Refactor**: Extract route groups into `routes/` (auth, products, orders, subscriptions, etc.) — server.py is 6500+ lines
 - Full Zoho CRM & Books Integration (data sync)
-- Email integration for Quote Requests (use Resend)
+- Email integration for Quote Requests (use Resend + admin_notification_email setting)
 
 ### P2 — Future
 - PostgreSQL migration (user-deferred)
-- Scope-request form endpoint (`/api/orders/scope-request-form`) notes_json capture (currently missing)
+- Scope-request form endpoint (`/api/orders/scope-request-form`) notes_json capture
 
 ---
 
