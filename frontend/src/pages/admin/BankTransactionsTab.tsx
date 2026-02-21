@@ -145,7 +145,7 @@ export function BankTransactionsTab() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-auto">
-        <Table data-testid="bt-table" className="text-xs min-w-[900px]">
+        <Table data-testid="bt-table" className="min-w-[900px]">
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead>Date</TableHead>

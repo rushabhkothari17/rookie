@@ -227,7 +227,7 @@ export function OrdersTab() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
-        <Table data-testid="admin-orders-table" className="text-xs min-w-[1100px]">
+        <Table data-testid="admin-orders-table" className="min-w-[1100px]">
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => setSortOrder(o => o === "desc" ? "asc" : "desc")}>
