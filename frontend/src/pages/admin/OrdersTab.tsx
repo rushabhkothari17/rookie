@@ -296,40 +296,37 @@ export function OrdersTab() {
       <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={(p) => load(p)} />
 
       {/* Edit Order Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) setSelectedOrder(null); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-order-edit-dialog">
+      <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) { setSelectedOrder(null); setCustSearch(""); } }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="admin-order-edit-dialog">
           <DialogHeader><DialogTitle>Edit Order {selectedOrder?.order_number}</DialogTitle></DialogHeader>
           {selectedOrder && (
-            <div className="space-y-3">
+            <div className="space-y-4 py-2">
+              {/* Customer selector — email typeahead */}
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Customer</label>
-                <select value={selectedOrder.customer_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, customer_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-order-customer-select">
-                  <option value="">Select customer</option>
-                  {customers.map((c: any) => {
-                    const u = userMap[c.user_id];
-                    return <option key={c.id} value={c.id}>{u?.full_name || c.id} ({u?.email})</option>;
-                  })}
-                </select>
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Customer (search by email)</label>
+                <Input placeholder="Type email to search…" value={custSearch} onChange={e => setCustSearch(e.target.value)} className="h-9" data-testid="admin-order-customer-search" />
+                {custSearch && filteredCusts.length > 0 && (
+                  <div className="border border-slate-200 rounded bg-white shadow-md max-h-36 overflow-y-auto z-10">
+                    {filteredCusts.map((c: any) => {
+                      const u = userMap[c.user_id];
+                      return <div key={c.id} onClick={() => { setSelectedOrder({ ...selectedOrder, customer_id: c.id }); setCustSearch(u?.email || ""); }} className="px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm">{u?.email} {c.company_name ? `— ${c.company_name}` : ""}</div>;
+                    })}
+                  </div>
+                )}
+                {selectedOrder.customer_id && (() => { const u = getCustomerUser(selectedOrder.customer_id); return u ? <p className="text-xs text-green-600">Selected: {u.email} — {u.full_name}</p> : null; })()}
               </div>
+
               <div className="grid grid-cols-2 gap-3">
+                {/* Status */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Order Date</label>
-                  <Input type="date" value={selectedOrder.order_date_edit || ""} onChange={e => setSelectedOrder({ ...selectedOrder, order_date_edit: e.target.value })} data-testid="admin-order-date-input" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Payment Date</label>
-                  <Input type="date" value={selectedOrder.payment_date?.slice(0, 10) || ""} onChange={e => setSelectedOrder({ ...selectedOrder, payment_date: e.target.value })} data-testid="admin-order-payment-date" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Status</label>
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
                   <select value={selectedOrder.status || ""} onChange={e => setSelectedOrder({ ...selectedOrder, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-order-status-select">
                     {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
+                {/* Payment Method */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Payment Method</label>
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Method</label>
                   <select value={selectedOrder.payment_method || ""} onChange={e => setSelectedOrder({ ...selectedOrder, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-order-payment-select">
                     <option value="card">Card</option>
                     <option value="bank_transfer">Bank Transfer</option>
@@ -337,10 +334,51 @@ export function OrdersTab() {
                     <option value="gocardless">GoCardless</option>
                   </select>
                 </div>
+                {/* Order Date */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Order Date</label>
+                  <Input type="date" value={selectedOrder.order_date_edit || ""} onChange={e => setSelectedOrder({ ...selectedOrder, order_date_edit: e.target.value })} data-testid="admin-order-date-input" />
+                </div>
+                {/* Pay Date */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Date</label>
+                  <Input type="date" value={selectedOrder.payment_date?.slice(0, 10) || ""} onChange={e => setSelectedOrder({ ...selectedOrder, payment_date: e.target.value })} data-testid="admin-order-payment-date" />
+                </div>
+                {/* Subtotal */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Subtotal ($)</label>
+                  <Input type="number" step="0.01" value={selectedOrder.subtotal ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, subtotal: parseFloat(e.target.value) || 0 })} data-testid="admin-order-subtotal-input" />
+                </div>
+                {/* Fee */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Fee ($)</label>
+                  <Input type="number" step="0.01" value={selectedOrder.fee ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, fee: parseFloat(e.target.value) || 0 })} data-testid="admin-order-fee-input" />
+                </div>
+                {/* Total */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Total ($)</label>
+                  <Input type="number" step="0.01" value={selectedOrder.total ?? ""} onChange={e => setSelectedOrder({ ...selectedOrder, total: parseFloat(e.target.value) || 0 })} data-testid="admin-order-total-input" />
+                </div>
+                {/* Subscription ID */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Subscription ID / #</label>
+                  <Input value={selectedOrder.subscription_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, subscription_id: e.target.value })} placeholder="Leave blank to unlink" data-testid="admin-order-subscription-input" />
+                </div>
               </div>
+
+              {/* Product change */}
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Add Note</label>
-                <Textarea placeholder="Add a note..." value={selectedOrder.new_note || ""} onChange={e => setSelectedOrder({ ...selectedOrder, new_note: e.target.value })} rows={2} data-testid="admin-order-note-input" />
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Change Product (updates first line item)</label>
+                <select value={selectedOrder.edit_product_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, edit_product_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-order-product-select">
+                  <option value="">— Keep current product —</option>
+                  {products.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+
+              {/* Note */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Add Note</label>
+                <Textarea placeholder="Add a note…" value={selectedOrder.new_note || ""} onChange={e => setSelectedOrder({ ...selectedOrder, new_note: e.target.value })} rows={2} data-testid="admin-order-note-input" />
               </div>
               <Button onClick={handleEdit} className="w-full" data-testid="admin-order-save">Save Changes</Button>
             </div>
