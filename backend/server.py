@@ -39,6 +39,25 @@ security = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+# Order status enum
+ALLOWED_ORDER_STATUSES = [
+    "pending",
+    "pending_direct_debit_setup",
+    "pending_payment",
+    "awaiting_bank_transfer",
+    "paid",
+    "unpaid",
+    "completed",
+    "cancelled",
+    "refunded",
+]
+
+
+def validate_order_status(status: str) -> bool:
+    """Validate order status against allowed values"""
+    return status in ALLOWED_ORDER_STATUSES
+
+
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
