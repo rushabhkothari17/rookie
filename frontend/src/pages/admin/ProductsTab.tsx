@@ -9,19 +9,26 @@ import { toast } from "@/components/ui/sonner";
 import { ProductForm, ProductFormData, EMPTY_FORM } from "./ProductForm";
 
 function productToForm(p: any): ProductFormData {
+  // bullets: prefer new 'bullets' field, fall back to bullets_included (max 3)
+  const bullets: string[] = p.bullets?.filter((b: string) => b)?.length
+    ? [...p.bullets]
+    : [...(p.bullets_included || []).slice(0, 3)];
+  while (bullets.length < 3) bullets.push("");
+
   return {
     name: p.name || "",
     short_description: p.short_description || p.tagline || "",
     description_long: p.description_long || "",
-    bullets: p.bullets?.length ? p.bullets : ["", "", ""],
+    bullets,
     tag: p.tag || "",
     category: p.category || "",
-    outcome: p.outcome || "",
+    outcome: p.outcome || p.tagline || "",
     automation_details: p.automation_details || "",
     support_details: p.support_details || "",
-    inclusions: p.inclusions || [],
-    exclusions: p.exclusions || [],
-    requirements: p.requirements || [],
+    // Prefer new fields, fall back to legacy bullet fields
+    inclusions: p.inclusions?.length ? p.inclusions : (p.bullets_included || []),
+    exclusions: p.exclusions?.length ? p.exclusions : (p.bullets_excluded || []),
+    requirements: p.requirements?.length ? p.requirements : (p.bullets_needed || []),
     next_steps: p.next_steps || [],
     faqs: Array.isArray(p.faqs)
       ? p.faqs.map((f: any) => typeof f === "string" ? { question: f, answer: "" } : f)
