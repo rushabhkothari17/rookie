@@ -3112,6 +3112,14 @@ async def create_checkout_session(
     if customer.get("currency") not in ["USD", "CAD"]:
         raise HTTPException(status_code=400, detail="Purchases not supported in your region yet")
 
+    # Validate Zoho account context questions
+    if not payload.zoho_subscription_type:
+        raise HTTPException(status_code=400, detail="Please select your current Zoho subscription type.")
+    if not payload.current_zoho_product:
+        raise HTTPException(status_code=400, detail="Please select your current Zoho product.")
+    if not payload.zoho_account_access:
+        raise HTTPException(status_code=400, detail="Please indicate whether you have provided Zoho account access.")
+
     # Validate Zoho Partner Tag (fail fast before building order)
     await validate_and_consume_partner_tag(
         customer_id=customer["id"],
