@@ -132,6 +132,9 @@ export default function Portal() {
               const cancelDate = sub.cancel_at_period_end
                 ? (sub.current_period_end?.slice(0, 10) || sub.canceled_at?.slice(0, 10) || "—")
                 : (sub.canceled_at?.slice(0, 10) || "—");
+              // Cancel button only visible after contract end date (or if no contract end date)
+              const contractEnd = sub.contract_end_date ? new Date(sub.contract_end_date) : null;
+              const contractExpired = !contractEnd || contractEnd < new Date();
               return (
                 <TableRow key={sub.id} data-testid={`portal-subscription-row-${sub.id}`}>
                   <TableCell className="font-mono text-xs" data-testid={`portal-subscription-id-${sub.id}`}>{sub.subscription_number || sub.id?.slice(0, 8)}</TableCell>
@@ -148,7 +151,7 @@ export default function Portal() {
                   <TableCell data-testid={`portal-subscription-amount-${sub.id}`}>${(sub.amount || 0).toFixed(2)}</TableCell>
                   <TableCell data-testid={`portal-subscription-cancel-date-${sub.id}`}>{cancelDate}</TableCell>
                   <TableCell>
-                    {sub.status !== "cancelled" && sub.status !== "canceled_pending" && (
+                    {sub.status !== "cancelled" && sub.status !== "canceled_pending" && contractExpired && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -157,6 +160,11 @@ export default function Portal() {
                       >
                         Cancel
                       </Button>
+                    )}
+                    {sub.status !== "cancelled" && sub.status !== "canceled_pending" && !contractExpired && (
+                      <span className="text-xs text-slate-400" data-testid={`subscription-contract-active-${sub.id}`}>
+                        Contract active until {sub.contract_end_date?.slice(0, 10)}
+                      </span>
                     )}
                   </TableCell>
                 </TableRow>
