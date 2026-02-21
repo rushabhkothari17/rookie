@@ -156,19 +156,27 @@ class TestBankTransferCheckout:
 
     def test_bank_transfer_with_product_returns_gocardless_url(self, admin_client):
         """Test that bank transfer checkout with a valid product returns gocardless_redirect_url"""
-        # First, get products list
+        # First, get products list - API returns {"products": [...]}
         products_resp = admin_client.get(f"{BASE_URL}/api/products")
         assert products_resp.status_code == 200, f"Failed to get products: {products_resp.text}"
         
-        products = products_resp.json()
+        resp_data = products_resp.json()
+        # Handle both list and dict response formats
+        if isinstance(resp_data, list):
+            products = resp_data
+        elif isinstance(resp_data, dict):
+            products = resp_data.get("products", [])
+        else:
+            products = []
+        
         if not products:
             pytest.skip("No products available for testing")
         
         # Find a one-time product (not subscription)
-        one_time_products = [p for p in products if not p.get("is_subscription", False) and p.get("active", True)]
+        one_time_products = [p for p in products if isinstance(p, dict) and not p.get("is_subscription", False) and p.get("active", True)]
         if not one_time_products:
             # Use any active product
-            one_time_products = [p for p in products if p.get("active", True)]
+            one_time_products = [p for p in products if isinstance(p, dict) and p.get("active", True)]
         
         if not one_time_products:
             pytest.skip("No active products available")
