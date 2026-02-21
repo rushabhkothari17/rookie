@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ProductsTab } from "./admin/ProductsTab";
 import { CategoriesTab } from "./admin/CategoriesTab";
 import { SettingsTab } from "./admin/SettingsTab";
+import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
 
 export default function Admin() {
   const { user: authUser } = useAuth();
