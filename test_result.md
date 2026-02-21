@@ -101,3 +101,139 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test Automate Accounts E-Store - ALL P0 Functions with focus on admin functionality, subscription management, checkout flows, and error handling"
+
+backend:
+  - task: "Admin Product-Terms Assignment API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test admin catalog endpoint with terms assignment functionality"
+
+  - task: "Admin Manual Subscription Creation API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test manual subscription creation endpoint"
+
+  - task: "Admin Renew Now Button API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test subscription renewal functionality"
+
+  - task: "Admin Audit Logs API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test audit log retrieval for orders and subscriptions"
+
+  - task: "Stripe Subscription Checkout API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test Stripe checkout process without errors"
+
+  - task: "Terms & Conditions Display API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test terms retrieval and dynamic tag resolution"
+
+  - task: "GoCardless Payment Flow API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "CRITICAL - End-to-end GoCardless payment completion and order status update"
+
+  - task: "Payment Error Handling API"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test specific error messages for payment failures"
+
+frontend:
+  - task: "Admin Catalog Tab with Terms Assignment"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Admin.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Frontend testing not required per instructions - focus on backend only"
+
+metadata:
+  created_by: "testing_agent"
+  version: "2.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Admin Product-Terms Assignment API"
+    - "Admin Manual Subscription Creation API"
+    - "Admin Renew Now Button API"
+    - "Admin Audit Logs API"
+    - "Stripe Subscription Checkout API"
+    - "Terms & Conditions Display API"
+    - "GoCardless Payment Flow API"
+    - "Payment Error Handling API"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "Starting comprehensive P0 testing for Automate Accounts E-Store focusing on admin functionality, subscription management, checkout flows, and GoCardless payment completion. Will test against https://unruffled-allen-yzuzhj.preview.emergentagent.com/api as specified in review request."
