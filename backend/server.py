@@ -271,6 +271,35 @@ class ManualOrderCreate(BaseModel):
     internal_note: Optional[str] = ""
 
 
+class ManualSubscriptionCreate(BaseModel):
+    customer_email: str
+    product_id: str
+    quantity: int = 1
+    inputs: Dict[str, Any] = Field(default_factory=dict)
+    amount: float
+    renewal_date: str
+    status: str = "active"
+    internal_note: Optional[str] = ""
+
+
+class SubscriptionUpdate(BaseModel):
+    renewal_date: Optional[str] = None
+    amount: Optional[float] = None
+    status: Optional[str] = None
+
+
+class CompleteGoCardlessRedirect(BaseModel):
+    redirect_flow_id: str
+    order_id: Optional[str] = None
+    subscription_id: Optional[str] = None
+    inputs: Dict[str, Any] = Field(default_factory=dict)
+    subtotal: float
+    discount: float = 0.0
+    fee: float = 0.0
+    status: str = "paid"
+    internal_note: Optional[str] = ""
+
+
 class ApplyPromoRequest(BaseModel):
     code: str
     checkout_type: str  # "one_time" or "subscription"
