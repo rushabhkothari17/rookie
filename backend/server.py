@@ -5081,6 +5081,195 @@ async def auto_charge_order(
 
 
 
+
+
+# ============ APP SETTINGS ============
+
+@api_router.get("/settings/public")
+async def get_public_settings():
+    settings = await db.app_settings.find_one({}, {"_id": 0})
+    if not settings:
+        return {"settings": {}}
+    return {"settings": {
+        "primary_color": settings.get("primary_color"),
+        "secondary_color": settings.get("secondary_color"),
+        "accent_color": settings.get("accent_color"),
+        "logo_url": settings.get("logo_url"),
+        "store_name": settings.get("store_name"),
+    }}
+
+
+@api_router.get("/admin/settings")
+async def get_app_settings(admin: Dict[str, Any] = Depends(require_admin)):
+    settings = await db.app_settings.find_one({}, {"_id": 0})
+    if not settings:
+        return {"settings": {}}
+    masked = {**settings}
+    for key in ["stripe_secret_key", "gocardless_token", "resend_api_key"]:
+        if masked.get(key) and not masked[key].startswith("••"):
+            masked[key] = "••••••••" + masked[key][-4:]
+    return {"settings": masked}
+
+
+@api_router.put("/admin/settings")
+async def update_app_settings(
+    payload: AppSettingsUpdate,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    update = {k: v for k, v in payload.dict().items() if v is not None}
+    for key in ["stripe_secret_key", "gocardless_token", "resend_api_key"]:
+        if key in update and update[key].startswith("••"):
+            del update[key]
+    if not update:
+        return {"message": "Nothing to update"}
+    await db.app_settings.update_one({}, {"$set": update}, upsert=True)
+    return {"message": "Settings updated"}
+
+
+@api_router.post("/admin/upload-logo")
+async def upload_logo(
+    file: UploadFile = File(...),
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    contents = await file.read()
+    b64 = base64.b64encode(contents).decode()
+    content_type = file.content_type or "image/png"
+    data_url = f"data:{content_type};base64,{b64}"
+    await db.app_settings.update_one({}, {"$set": {"logo_url": data_url}}, upsert=True)
+    return {"logo_url": data_url}
+
+
+# ============ CATEGORIES ADMIN CRUD ============
+
+@api_router.get("/admin/categories")
+async def admin_list_categories(admin: Dict[str, Any] = Depends(require_admin)):
+    cats = await db.categories.find({}, {"_id": 0}).sort("name", 1).to_list(500)
+    return {"categories": cats}
+
+
+@api_router.post("/admin/categories")
+async def admin_create_category(
+    payload: CategoryCreate,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    existing = await db.categories.find_one({"name": payload.name})
+    if existing:
+        raise HTTPException(status_code=409, detail="Category already exists")
+    cat = {
+        "id": make_id(),
+        "name": payload.name,
+        "is_active": payload.is_active,
+        "created_at": now_iso(),
+    }
+    await db.categories.insert_one(cat)
+    cat.pop("_id", None)
+    return {"category": cat}
+
+
+@api_router.put("/admin/categories/{cat_id}")
+async def admin_update_category(
+    cat_id: str,
+    payload: CategoryUpdate,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    cat = await db.categories.find_one({"id": cat_id}, {"_id": 0})
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    update = {k: v for k, v in payload.dict().items() if v is not None}
+    if update:
+        await db.categories.update_one({"id": cat_id}, {"$set": update})
+    cat.update(update)
+    return {"category": cat}
+
+
+@api_router.delete("/admin/categories/{cat_id}")
+async def admin_delete_category(
+    cat_id: str,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    cat = await db.categories.find_one({"id": cat_id})
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    await db.categories.delete_one({"id": cat_id})
+    return {"message": "Category deleted"}
+
+
+# ============ PRODUCTS ADMIN CREATE ============
+
+@api_router.post("/admin/products")
+async def admin_create_product(
+    payload: AdminProductCreate,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    product_id = make_id()
+    sku = f"CUSTOM-{product_id[:8].upper()}"
+    product: Dict[str, Any] = {
+        "id": product_id,
+        "sku": sku,
+        "name": payload.name,
+        "short_description": payload.short_description,
+        "tagline": payload.short_description,
+        "description_long": payload.description_long,
+        "bullets": payload.bullets,
+        "tag": payload.tag,
+        "category": payload.category,
+        "outcome": payload.outcome,
+        "automation_details": payload.automation_details,
+        "support_details": payload.support_details,
+        "inclusions": payload.inclusions,
+        "exclusions": payload.exclusions,
+        "requirements": payload.requirements,
+        "next_steps": payload.next_steps,
+        "faqs": payload.faqs,
+        "terms_id": payload.terms_id,
+        "base_price": payload.base_price,
+        "is_subscription": payload.is_subscription,
+        "stripe_price_id": payload.stripe_price_id,
+        "pricing_complexity": payload.pricing_complexity,
+        "is_active": payload.is_active,
+        "visible_to_customers": payload.visible_to_customers,
+        "pricing_type": "simple",
+        "pricing_rules": {},
+        "created_at": now_iso(),
+        "is_custom": True,
+    }
+    product["price_inputs"] = build_price_inputs(product)
+    await db.products.insert_one(product)
+    product.pop("_id", None)
+    return {"product": product}
+
+
+# ============ QUOTE REQUEST ============
+
+@api_router.post("/products/request-quote")
+async def request_quote(
+    payload: QuoteRequest,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    quote: Dict[str, Any] = {
+        "id": make_id(),
+        "product_id": payload.product_id,
+        "product_name": payload.product_name,
+        "name": payload.name,
+        "email": payload.email,
+        "company": payload.company,
+        "phone": payload.phone,
+        "message": payload.message,
+        "user_id": user["id"],
+        "created_at": now_iso(),
+        "status": "pending",
+    }
+    await db.quote_requests.insert_one(quote)
+    quote.pop("_id", None)
+    return {"message": "Quote request submitted. We will be in touch shortly.", "quote_id": quote["id"]}
+
+
+@api_router.get("/admin/quote-requests")
+async def admin_list_quote_requests(admin: Dict[str, Any] = Depends(require_admin)):
+    quotes = await db.quote_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return {"quotes": quotes}
+
+
 app.include_router(api_router)
 
 app.add_middleware(
