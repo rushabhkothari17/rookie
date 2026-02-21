@@ -4094,6 +4094,46 @@ async def update_subscription(
     return {"message": "Subscription updated"}
 
 
+@api_router.post("/admin/subscriptions/{subscription_id}/cancel")
+async def admin_cancel_subscription(
+    subscription_id: str,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Admin: Cancel a subscription with audit log"""
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    old_status = subscription.get("status")
+    cancelled_at = now_iso()
+    
+    await db.subscriptions.update_one(
+        {"id": subscription_id},
+        {"$set": {
+            "cancel_at_period_end": True,
+            "status": "canceled_pending",
+            "canceled_at": cancelled_at,
+            "updated_at": cancelled_at
+        }}
+    )
+    
+    await create_audit_log(
+        entity_type="subscription",
+        entity_id=subscription_id,
+        action="cancelled",
+        actor=f"admin:{admin['id']}",
+        details={
+            "changes": {
+                "status": {"old": old_status, "new": "canceled_pending"}
+            },
+            "cancelled_at": cancelled_at,
+            "note": "Cancelled by admin"
+        }
+    )
+    
+    return {"message": "Subscription cancellation scheduled", "cancelled_at": cancelled_at}
+
+
 @api_router.get("/admin/orders/{order_id}/logs")
 async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(require_admin)):
     """Get audit logs for an order"""
