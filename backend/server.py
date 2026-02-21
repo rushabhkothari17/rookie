@@ -2496,6 +2496,7 @@ async def checkout_bank_transfer(
 
 @app.on_event("startup")
 async def startup_tasks():
+    await ensure_audit_indexes()
     await seed_admin_user()
     await seed_products()
     await apply_catalog_overrides()
