@@ -160,13 +160,13 @@ export function ProductsTab() {
   });
 
   const complexityBadge = (c?: string) => {
-    if (!c) return null;
+    const complexity = c || "SIMPLE";
     const map: Record<string, string> = {
       SIMPLE: "bg-green-100 text-green-700",
       COMPLEX: "bg-orange-100 text-orange-700",
       REQUEST_FOR_QUOTE: "bg-blue-100 text-blue-700",
     };
-    return <span className={`text-xs px-2 py-0.5 rounded font-medium ${map[c] || "bg-slate-100 text-slate-600"}`}>{c}</span>;
+    return <span className={`text-xs px-2 py-0.5 rounded font-medium ${map[complexity] || "bg-slate-100 text-slate-600"}`}>{complexity}</span>;
   };
 
   return (
