@@ -147,6 +147,21 @@ export default function ProductDetail() {
     setInputs((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleValidateScopeId = async () => {
+    if (!scopeId.trim()) return;
+    setScopeValidating(true);
+    setScopeError("");
+    setScopeUnlock(null);
+    try {
+      const res = await api.get(`/articles/${scopeId.trim()}/validate-scope`);
+      setScopeUnlock(res.data);
+    } catch (e: any) {
+      setScopeError(e.response?.data?.detail || "Invalid Scope ID");
+    } finally {
+      setScopeValidating(false);
+    }
+  };
+
   const handleAddToCart = () => {
     if (product.sku === "MIG-BOOKS") {
       if (!migBooksData.isComplete) {
