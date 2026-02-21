@@ -630,6 +630,7 @@ class AddressUpdate(BaseModel):
     city: Optional[str] = None
     region: Optional[str] = None
     postal: Optional[str] = None
+    country: Optional[str] = None
 
 
 class OrderUpdate(BaseModel):
@@ -643,6 +644,8 @@ class OrderUpdate(BaseModel):
     total: Optional[float] = None
     internal_note: Optional[str] = None
     new_note: Optional[str] = None
+    subscription_id: Optional[str] = None
+    product_id: Optional[str] = None
 
 
 class OrderDelete(BaseModel):
