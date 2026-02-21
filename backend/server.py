@@ -335,12 +335,14 @@ class ManualSubscriptionCreate(BaseModel):
 
 class SubscriptionUpdate(BaseModel):
     renewal_date: Optional[str] = None
+    start_date: Optional[str] = None
     amount: Optional[float] = None
     status: Optional[str] = None
     plan_name: Optional[str] = None
     product_id: Optional[str] = None
     customer_id: Optional[str] = None
     payment_method: Optional[str] = None
+    new_note: Optional[str] = None
 
 
 class CustomerUpdate(BaseModel):
