@@ -28,6 +28,26 @@ export default function Cart() {
   const [zohoSubscriptionType, setZohoSubscriptionType] = useState("");
   const [currentZohoProduct, setCurrentZohoProduct] = useState("");
   const [zohoAccountAccess, setZohoAccountAccess] = useState("");
+  const [zohoUrls, setZohoUrls] = useState({
+    reseller_signup_us: "https://store.zoho.com/ResellerCustomerSignUp.do?id=0752790261568b40e0d2ffef44a3f4e428bbcca5aa8fba3305f9e276702456a3",
+    reseller_signup_ca: "https://store.zohocloud.ca/ResellerCustomerSignUp.do?id=341bc9b2ab087c30e176e7c0385e3caaa331989c27aa00d0f3a0521dfb926960",
+    partner_tag_us: "https://store.zoho.com/html/store/tagyourpartner.html?partnerid=zkms01370000000123731ce9bbb964daefb3ac6c1ff255b5fa6f",
+    partner_tag_ca: "https://store.zohocloud.ca/html/store/tagyourpartner.html?partnerid=zkms0135000000008003432a39b432f137718e6225e74e34fc66",
+    access_instructions_url: "https://www.automateaccounts.com",
+  });
+
+  useEffect(() => {
+    api.get("/settings/public").then((res) => {
+      const s = res.data.settings || {};
+      setZohoUrls((prev) => ({
+        reseller_signup_us: s.zoho_reseller_signup_us || prev.reseller_signup_us,
+        reseller_signup_ca: s.zoho_reseller_signup_ca || prev.reseller_signup_ca,
+        partner_tag_us: s.zoho_partner_tag_us || prev.partner_tag_us,
+        partner_tag_ca: s.zoho_partner_tag_ca || prev.partner_tag_ca,
+        access_instructions_url: s.zoho_access_instructions_url || prev.access_instructions_url,
+      }));
+    }).catch(() => {});
+  }, []);
 
   const allowBankTransfer = customer?.allow_bank_transfer ?? true;
   const allowCardPayment = customer?.allow_card_payment ?? false;
