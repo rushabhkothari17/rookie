@@ -251,26 +251,8 @@ export default function ProductDetail() {
   return (
     <AppShell activeCategory={categoryLabel}>
       <div className="space-y-8" data-testid="product-detail">
-        <nav className="text-xs text-slate-500" data-testid="product-breadcrumbs">
-          <Link to="/store" className="hover:text-slate-700" data-testid="breadcrumb-home">
-            Home
-          </Link>
-          <span className="mx-2">/</span>
-          <Link
-            to={`/store?category=${categorySlug}`}
-            className="hover:text-slate-700"
-            data-testid="breadcrumb-category"
-          >
-            {categoryLabel}
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-slate-700" data-testid="breadcrumb-product">
-            {product.name}
-          </span>
-        </nav>
-
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_0.9fr]">
-          <div className="space-y-8">
+        <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
+          <div className="space-y-6">
             <ProductHero product={product} />
 
             {product.price_inputs?.length > 0 && (
@@ -291,53 +273,64 @@ export default function ProductDetail() {
             <SectionCard title="What's included" testId="product-included">
               <IncludedList items={product.inclusions || product.bullets_included || []} testId="product-included-list" />
             </SectionCard>
+
             {(product.exclusions || product.bullets_excluded || []).length > 0 && (
-            <SectionCard title="Not included" testId="product-excluded">
-              <ul className="space-y-2" data-testid="product-excluded-list">
-                {(product.exclusions || product.bullets_excluded || []).map((item: string) => (
-                  <li key={item}>• {item}</li>
-                ))}
-              </ul>
-            </SectionCard>
+              <SectionCard title="Not included" testId="product-excluded">
+                <IncludedList
+                  items={product.exclusions || product.bullets_excluded || []}
+                  testId="product-excluded-list"
+                  variant="excluded"
+                />
+              </SectionCard>
             )}
+
             {(product.requirements || product.bullets_needed || []).length > 0 && (
-            <SectionCard title="What we need from you" testId="product-needed">
-              <ul className="space-y-2" data-testid="product-needed-list">
-                {(product.requirements || product.bullets_needed || []).map((item: string) => (
-                  <li key={item}>• {item}</li>
-                ))}
-              </ul>
-            </SectionCard>
+              <SectionCard title="What we need from you" testId="product-needed">
+                <ul className="space-y-2.5" data-testid="product-needed-list">
+                  {(product.requirements || product.bullets_needed || []).map((item: string) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
+                      <span className="leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </SectionCard>
             )}
+
             {(product.next_steps || []).length > 0 && (
-            <SectionCard title="Next steps" testId="product-next-steps">
-              <ol className="space-y-2" data-testid="product-next-steps-list">
-                {(product.next_steps || []).map((item: string, index: number) => (
-                  <li key={item}>{index + 1}. {item}</li>
-                ))}
-              </ol>
-            </SectionCard>
+              <SectionCard title="Next steps" testId="product-next-steps">
+                <ol className="space-y-3" data-testid="product-next-steps-list">
+                  {(product.next_steps || []).map((item: string, index: number) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                        {index + 1}
+                      </span>
+                      <span className="pt-0.5 leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ol>
+              </SectionCard>
             )}
+
             {(product.faqs || []).length > 0 && (
-            <SectionCard title="FAQs" testId="product-faqs">
-              <div className="space-y-4" data-testid="product-faqs-list">
-                {(product.faqs || []).map((item: any, i: number) => (
-                  typeof item === "string"
-                    ? <p key={i} className="text-sm text-slate-600">• {item}</p>
-                    : <div key={i}>
-                        <p className="text-sm font-medium text-slate-800">{item.question}</p>
-                        <p className="text-sm text-slate-500 mt-1">{item.answer}</p>
+              <SectionCard title="FAQs" testId="product-faqs">
+                <div className="space-y-5" data-testid="product-faqs-list">
+                  {(product.faqs || []).map((item: any, i: number) =>
+                    typeof item === "string" ? (
+                      <p key={i} className="leading-relaxed">• {item}</p>
+                    ) : (
+                      <div key={i} className="space-y-1">
+                        <p className="font-semibold text-slate-800">{item.question}</p>
+                        <p className="text-slate-500 leading-relaxed">{item.answer}</p>
                       </div>
-                ))}
-              </div>
-            </SectionCard>
+                    )
+                  )}
+                </div>
+              </SectionCard>
             )}
-            <Link to="/store" className="text-sm text-slate-500" data-testid="product-back-link">
-              Back to store
-            </Link>
           </div>
 
-          <div className="space-y-4">
+          <div>
             {pricing ? (
               <StickyPurchaseSummary
                 pricing={{
@@ -355,7 +348,7 @@ export default function ProductDetail() {
               />
             ) : (
               <div
-                className="rounded-3xl bg-white/80 p-6 text-sm text-slate-500"
+                className="rounded-3xl border border-slate-100 bg-white p-6 text-sm text-slate-400"
                 data-testid="product-summary-loading"
               >
                 Calculating pricing...
