@@ -7,6 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { ProductForm, ProductFormData, EMPTY_FORM } from "./ProductForm";
+import { AdminPageHeader } from "./shared/AdminPageHeader";
+import { AdminPagination } from "./shared/AdminPagination";
+import { Download } from "lucide-react";
 
 function productToForm(p: any): ProductFormData {
   // bullets: prefer new 'bullets' field, fall back to bullets_included (max 3)
