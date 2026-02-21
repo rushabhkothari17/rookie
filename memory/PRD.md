@@ -242,6 +242,16 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - `ProductDetail.tsx` shows "Request a Quote" modal for COMPLEX/REQUEST_FOR_QUOTE
 - `ProductHero.tsx` uses actual `outcome`, `automation_details`, `support_details` fields
 
+### Bug Fixes Round 1 (Feb 2026)
+- Seeded categories collection from existing product categories via startup migration
+- `CategoryTabs.tsx` now fetches from `GET /api/categories` dynamically (new categories appear automatically)
+- `Store.tsx` `finalList` now includes new categories beyond CATEGORY_ORDER
+- `productToForm` maps legacy fields: `bullets_included→inclusions`, `bullets_excluded→exclusions`, `bullets_needed→requirements`
+- Startup migration backfills `pricing_complexity` based on `pricing_type` (calculator→COMPLEX, scope_request→REQUEST_FOR_QUOTE, etc.)
+- Inactive products blocked from storefront and product detail page (404 for all users)
+- `QuoteRequestsTab.tsx` added showing date, product, contact, company, phone, message, status
+- Customer visibility checkbox list shows company names with "X selected / Clear" control
+
 ### Next: Product Admin (COMPLEX vs SIMPLE pricing)
 - Fields: title, short_description, tag, outcome, automation, support, bullets (3), FAQs, terms_id, billing_type, pricing_type (SIMPLE/COMPLEX)
 - SIMPLE: fixed price/stripe_price_id, add-to-cart enabled
