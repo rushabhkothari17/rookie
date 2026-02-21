@@ -1,0 +1,57 @@
+{
+  "summary": "Iteration 16: 5 bug fix verification. All 10 test scenarios passed. Backend 7/8 tests pass (1 skip - subscription number SUB-1ED7919B not found in DB, but SUB-1ED79108 with same contract_end_date confirmed working). All UI changes verified via Playwright and backend via pytest + curl.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/subscriptions",
+        "issue": "Subscription number referenced in context as 'SUB-1ED7919B' but actual DB has 'SUB-1ED79108'. Contract end date 2026-01-15 is correct and Cancel button shows as expected. Likely a typo in context note."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter16_bugfixes.py",
+    "/app/test_reports/pytest/pytest_results_iter16.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "CategoryTabs.tsx: Active tab correctly uses bg-slate-900 (dark navy) not red. ✅",
+    "OfferingCard.tsx: 'View details' text is text-slate-700 (dark slate) not red. ✅",
+    "SectionCard.tsx: Has pb-8 bottom padding so sections don't appear to be touching. ✅",
+    "ProductDetail.tsx: Uses flex flex-col gap-6 for section column, clear visible gaps between Configure Pricing, What's Included, Not Included, etc. ✅",
+    "Admin.tsx: Cancel button logic correctly uses IIFE checking contractEnd < new Date(). SUB-70126F2E (contract end 2027-02-21) shows 'Contract active', subscription with past contract end (2026-01-15) shows Cancel button. ✅",
+    "Cart.tsx: futureStartEnabled state with radio buttons (Start today / Future start date). Min date = 3 days from today (2026-02-24 on Feb 21 2026), max = 30 days. ✅",
+    "Backend CompleteGoCardlessRedirect model: subtotal is Optional[float] = None. POST without subtotal returns 400 (business error) not 422 (validation error). ✅",
+    "Red accent decorators (thin line before 'AUTOMATE ACCOUNTS STOREFRONT', red dots on offering card bullets, red left border in SectionCard headers) remain as small accents. ✅",
+    "No red on large interactive elements: tabs are dark navy/white, buttons are slate-900, View details is slate-700. ✅"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter16_bugfixes.py"
+  ],
+  "success_rate": {
+    "backend": "87.5% (7 passed, 1 skipped due to subscription number mismatch in context)",
+    "frontend": "100% (10/10 scenarios verified)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123!",
+  "seed_data_creation": "None - used existing subscriptions. Added prod_bookkeeping to cart for subscription start date testing (cart cleared after test).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 5 bug fixes from iteration 16 are verified and working: (1) Active category tab is bg-slate-900 dark navy; (2) View details is text-slate-700; (3) Section cards have pb-8 + flex gap-6, visible spacing; (4) Admin cancel button shows 'Contract active' for future contract end (SUB-70126F2E, 2027-02-21) and Cancel for past contract end (first sub in list has 2026-01-15); (5) Cart has radio buttons for subscription start date (Start today/Future start date) with min=3 days; (6) GoCardless complete-redirect accepts requests without subtotal field (returns 400 not 422). Note: subscription number in context was 'SUB-1ED7919B' but actual DB shows 'SUB-1ED79108' - likely a typo, same contract_end_date logic applies.",
+  "verified_scenarios": {
+    "category_tab_dark_navy": "PASS - 'Zoho Express Setup' active tab has bg-slate-900 (dark navy), not red",
+    "view_details_slate_color": "PASS - 'View details' has text-slate-700 (dark slate), not red",
+    "product_detail_sections_gap": "PASS - flex flex-col gap-6 + pb-8 on SectionCards, clear visible spacing",
+    "admin_cancel_hidden_future_contract": "PASS - SUB-70126F2E (2027-02-21) shows 'Contract active' not Cancel button",
+    "admin_cancel_shown_past_contract": "PASS - Subscription with contract_end 2026-01-15 shows Cancel button",
+    "cart_start_date_radio_buttons": "PASS - 'Start today' and 'Future start date' radio buttons present",
+    "cart_future_date_min_3_days": "PASS - Date input min=2026-02-24 (3 days from today Feb 21 2026)",
+    "gocardless_subtotal_optional": "PASS - POST without subtotal returns 400 (not 422 validation error)",
+    "red_accents_still_present": "PASS - Red line decorator, bullet dots, section card borders remain",
+    "minimal_red_on_interactive_elements": "PASS - Tabs dark navy, buttons slate-900, no red on large interactive UI"
+  }
+}
