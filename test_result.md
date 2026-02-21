@@ -107,99 +107,123 @@ user_problem_statement: "Test Automate Accounts E-Store - ALL P0 Functions with 
 backend:
   - task: "Admin Product-Terms Assignment API"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test admin catalog endpoint with terms assignment functionality"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Admin can access products list, terms list, and successfully assign terms to products via PUT /admin/products/{id}/terms endpoint"
 
   - task: "Admin Manual Subscription Creation API"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test manual subscription creation endpoint"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Manual subscription creation works via POST /admin/subscriptions/manual. Subscription appears in admin list with correct fields and payment_method=manual"
 
   - task: "Admin Renew Now Button API"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test subscription renewal functionality"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Renew Now button works via POST /subscriptions/{id}/renew-now. Creates renewal order with subscription_id field populated in orders table"
 
   - task: "Admin Audit Logs API"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test audit log retrieval for orders and subscriptions"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Audit logs accessible via GET /admin/orders/{id}/logs and GET /admin/subscriptions/{id}/logs. All logs contain required fields: action, actor, created_at (timestamp), details"
 
   - task: "Stripe Subscription Checkout API"
     implemented: true
-    working: "NA"
+    working: false
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test Stripe checkout process without errors"
+      - working: false
+        agent: "testing"
+        comment: "❌ FAILED - Stripe checkout fails due to invalid price ID in test environment. API correctly validates card payment enabled status and creates checkout session request, but Stripe API returns error for non-existent price ID 'price_1T32LIDREjel7cEDHCFUzUxz'. This is expected in test environment with mock price IDs."
 
   - task: "Terms & Conditions Display API"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test terms retrieval and dynamic tag resolution"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Terms display works via GET /terms and GET /terms/for-product/{id} endpoints. Dynamic tags (company_name, product_name, user_name, etc.) are properly resolved in T&C content using resolve_terms_tags function"
 
   - task: "GoCardless Payment Flow API"
     implemented: true
-    working: "NA"
+    working: false
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "CRITICAL - End-to-end GoCardless payment completion and order status update"
+      - working: false
+        agent: "testing"
+        comment: "❌ PARTIALLY WORKING - GoCardless redirect flow creation works correctly via POST /checkout/bank-transfer, generates valid redirect URLs to GoCardless sandbox. However, completion via POST /gocardless/complete-redirect fails when trying to complete the redirect flow with GoCardless API. The API structure is correct but external integration fails in test environment."
 
   - task: "Payment Error Handling API"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test specific error messages for payment failures"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Error handling works correctly. Returns specific error messages: 'Product not found' for invalid products, 'You must accept the Terms & Conditions to proceed' for terms not accepted. No generic error messages observed."
 
 frontend:
   - task: "Admin Catalog Tab with Terms Assignment"
