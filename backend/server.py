@@ -5070,13 +5070,29 @@ async def admin_cancel_subscription(
 # ============ ADMIN: USER MANAGEMENT (SUPER ADMIN ONLY) ============
 
 @api_router.get("/admin/users")
-async def admin_list_users(admin: Dict[str, Any] = Depends(require_super_admin)):
+async def admin_list_users(
+    page: int = 1,
+    per_page: int = 20,
+    search: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_super_admin)
+):
     """Super admin only: List all admin/super_admin users"""
-    users = await db.users.find(
-        {"role": {"$in": ["admin", "super_admin"]}},
-        {"_id": 0, "password_hash": 0}
-    ).to_list(500)
-    return {"users": users}
+    query: Dict[str, Any] = {"role": {"$in": ["admin", "super_admin"]}}
+    if search:
+        query["$or"] = [
+            {"email": {"$regex": search, "$options": "i"}},
+            {"full_name": {"$regex": search, "$options": "i"}},
+        ]
+    total = await db.users.count_documents(query)
+    skip = (page - 1) * per_page
+    users = await db.users.find(query, {"_id": 0, "password_hash": 0}).skip(skip).limit(per_page).to_list(per_page)
+    return {
+        "users": users,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.post("/admin/users")
