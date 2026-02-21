@@ -2646,14 +2646,30 @@ async def create_checkout_session(
     if checkout_type == "subscription":
         product = order_items[0]["product"]
         stripe_price_id = product.get("stripe_price_id")
-        # For subscriptions, we must use stripe_price_id (validated above)
-        checkout_request = CheckoutSessionRequest(
-            stripe_price_id=stripe_price_id,
-            quantity=order_items[0]["quantity"],
-            success_url=success_url,
-            cancel_url=cancel_url,
-            metadata=metadata,
-        )
+        # For subscriptions, use Stripe SDK directly to set mode="subscription"
+        try:
+            stripe_sdk.api_key = STRIPE_API_KEY
+            session = stripe_sdk.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price': stripe_price_id,
+                    'quantity': order_items[0]["quantity"],
+                }],
+                mode='subscription',
+                success_url=success_url,
+                cancel_url=cancel_url,
+                metadata=metadata,
+                customer_email=user["email"],
+            )
+            session_response = CheckoutSessionResponse(
+                session_id=session.id,
+                url=session.url
+            )
+        except stripe_sdk.error.StripeError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Stripe subscription checkout error: {str(e)}"
+            )
     else:
         checkout_request = CheckoutSessionRequest(
             amount=float(total),
@@ -2662,22 +2678,22 @@ async def create_checkout_session(
             cancel_url=cancel_url,
             metadata=metadata,
         )
-
-    try:
-        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
-    except Exception as e:
-        error_msg = str(e)
-        if "price" in error_msg.lower():
-            raise HTTPException(status_code=400, detail=f"Stripe Price configuration error: {error_msg}")
-        elif "currency" in error_msg.lower():
-            raise HTTPException(status_code=400, detail=f"Currency mismatch: {error_msg}")
-        else:
-            raise HTTPException(status_code=500, detail=f"Checkout session creation failed: {error_msg}")
+        
+        try:
+            session_response: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+        except Exception as e:
+            error_msg = str(e)
+            if "price" in error_msg.lower():
+                raise HTTPException(status_code=400, detail=f"Stripe Price configuration error: {error_msg}")
+            elif "currency" in error_msg.lower():
+                raise HTTPException(status_code=400, detail=f"Currency mismatch: {error_msg}")
+            else:
+                raise HTTPException(status_code=500, detail=f"Checkout session creation failed: {error_msg}")
 
     await db.payment_transactions.insert_one(
         {
             "id": make_id(),
-            "session_id": session.session_id,
+            "session_id": session_response.session_id,
             "payment_status": "initiated",
             "amount": float(total),
             "currency": customer.get("currency"),
@@ -2689,7 +2705,7 @@ async def create_checkout_session(
         }
     )
 
-    return {"url": session.url, "session_id": session.session_id, "order_id": order_id}
+    return {"url": session_response.url, "session_id": session_response.session_id, "order_id": order_id}
 
 
 @api_router.get("/checkout/status/{session_id}")
