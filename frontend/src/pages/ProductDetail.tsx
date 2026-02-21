@@ -143,7 +143,15 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
-    addItem({ product_id: product.id, quantity: 1, inputs });
+    if (product.sku === "MIG-BOOKS") {
+      if (!migBooksData.isComplete) {
+        toast.error("Please complete the required fields to get your price");
+        return;
+      }
+      addItem({ product_id: product.id, quantity: 1, inputs: migBooksData.inputs, price_override: migBooksData.price });
+    } else {
+      addItem({ product_id: product.id, quantity: 1, inputs });
+    }
     toast.success("Added to cart");
     navigate("/cart");
   };
