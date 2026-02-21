@@ -340,6 +340,7 @@ export default function ProductDetail() {
                   total: pricing.total,
                 }}
                 cta={ctaConfig}
+                currency={customer?.currency}
                 disabled={requiresStripePrice}
                 warning={
                   requiresStripePrice
