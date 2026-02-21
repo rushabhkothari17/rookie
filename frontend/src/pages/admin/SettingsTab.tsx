@@ -71,85 +71,158 @@ function ColorInput({ label, value, onChange, testId }: {
   );
 }
 
-function SystemConfigSection() {
-  const [grouped, setGrouped] = useState<Record<string, any[]>>({});
-  const [editVals, setEditVals] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState<Record<string, boolean>>({});
+function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, newVal: any) => void }) {
+  const [editVal, setEditVal] = useState<string>("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
 
-  useEffect(() => {
-    api.get("/admin/settings/structured").then((res) => {
-      setGrouped(res.data.settings || {});
-    }).catch(() => {});
-  }, []);
+  const isBool = item.value_type === "bool";
+  const isNumber = item.value_type === "number";
+  const isSecret = item.is_secret || item.value_type === "secret";
 
-  const handleSaveKey = async (key: string) => {
-    setSaving((s) => ({ ...s, [key]: true }));
+  const displayVal = String(item.value_json ?? "");
+
+  const startEdit = () => {
+    setEditVal(displayVal);
+    setIsEditing(true);
+  };
+  const cancelEdit = () => { setIsEditing(false); setShowSecret(false); };
+
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      await api.put(`/admin/settings/key/${key}`, { value: editVals[key] });
-      toast.success(`Setting '${key}' saved`);
-      setGrouped((prev) => {
-        const next = { ...prev };
-        Object.keys(next).forEach((cat) => {
-          next[cat] = next[cat].map((item) =>
-            item.key === key ? { ...item, value_json: editVals[key] } : item
-          );
-        });
-        return next;
-      });
-      setEditVals((e) => { const n = { ...e }; delete n[key]; return n; });
+      let valueToSave: any = editVal;
+      if (isBool) valueToSave = editVal === "true";
+      if (isNumber) valueToSave = parseFloat(editVal);
+      await api.put(`/admin/settings/key/${item.key}`, { value: valueToSave });
+      toast.success(`'${item.key}' saved`);
+      onSaved(item.key, valueToSave);
+      setIsEditing(false);
+      setShowSecret(false);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Save failed");
     } finally {
-      setSaving((s) => ({ ...s, [key]: false }));
+      setSaving(false);
     }
   };
 
+  const handleBoolToggle = async (checked: boolean) => {
+    setSaving(true);
+    try {
+      await api.put(`/admin/settings/key/${item.key}`, { value: checked });
+      toast.success(`'${item.key}' updated`);
+      onSaved(item.key, checked);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-start gap-3 py-2 border-b border-slate-100 last:border-0">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-xs font-mono font-medium text-slate-700">{item.key}</span>
+          {isSecret && <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">secret</span>}
+          {isNumber && <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">number</span>}
+        </div>
+        {item.description && <p className="text-xs text-slate-400 mb-1">{item.description}</p>}
+
+        {isBool ? (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={item.value_json === true || item.value_json === "true"}
+              onCheckedChange={handleBoolToggle}
+              disabled={saving}
+              data-testid={`setting-toggle-${item.key}`}
+            />
+            <span className="text-xs text-slate-500">{item.value_json ? "Enabled" : "Disabled"}</span>
+          </div>
+        ) : isEditing ? (
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Input
+                type={isSecret && !showSecret ? "password" : isNumber ? "number" : "text"}
+                value={editVal}
+                onChange={(e) => setEditVal(e.target.value)}
+                className="h-7 text-xs font-mono w-72 pr-7"
+                autoFocus
+                data-testid={`setting-input-${item.key}`}
+              />
+              {isSecret && (
+                <button
+                  type="button"
+                  onClick={() => setShowSecret(!showSecret)}
+                  className="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600"
+                >
+                  {showSecret ? <EyeOff size={12} /> : <Eye size={12} />}
+                </button>
+              )}
+            </div>
+            <Button size="sm" className="h-7 px-2 text-xs gap-1" onClick={handleSave} disabled={saving} data-testid={`setting-save-${item.key}`}>
+              <Save size={10} /> {saving ? "…" : "Save"}
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={cancelEdit} disabled={saving}>
+              <X size={10} />
+            </Button>
+          </div>
+        ) : (
+          <button
+            onClick={startEdit}
+            className="text-left text-xs font-mono text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 max-w-md w-full truncate transition-colors"
+            data-testid={`setting-display-${item.key}`}
+          >
+            {isSecret ? "••••••••" : displayVal || <span className="text-slate-300 italic">not set</span>}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SystemConfigSection() {
+  const [grouped, setGrouped] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(true);
+
+  const loadSettings = () => {
+    setLoading(true);
+    api.get("/admin/settings/structured").then((res) => {
+      setGrouped(res.data.settings || {});
+    }).catch(() => toast.error("Failed to load system config")).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadSettings(); }, []);
+
+  const handleSaved = (key: string, newVal: any) => {
+    setGrouped((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((cat) => {
+        next[cat] = next[cat].map((item) =>
+          item.key === key ? { ...item, value_json: newVal } : item
+        );
+      });
+      return next;
+    });
+  };
+
+  if (loading) return <div className="text-xs text-slate-400 py-4">Loading system config…</div>;
   if (!Object.keys(grouped).length) return null;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <h3 className="text-sm font-semibold text-slate-900">System Configuration</h3>
-        <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">DB-backed, editable without code deploys</span>
+        <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">DB-backed · click a value to edit</span>
       </div>
       {Object.entries(grouped).map(([category, items]) => (
-        <div key={category} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">{category}</h4>
-          <div className="space-y-3">
-            {items.map((item: any) => {
-              const isEditing = item.key in editVals;
-              return (
-                <div key={item.key} className="flex items-start gap-3">
-                  <div className="flex-1 space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-slate-700">{item.key}</span>
-                      {item.is_secret && <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">secret</span>}
-                    </div>
-                    <p className="text-xs text-slate-400">{item.description}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Input
-                        type={item.is_secret ? "password" : "text"}
-                        value={isEditing ? editVals[item.key] : String(item.value_json ?? "")}
-                        onChange={(e) => setEditVals((ev) => ({ ...ev, [item.key]: e.target.value }))}
-                        className="h-7 text-xs font-mono max-w-md"
-                        data-testid={`setting-input-${item.key}`}
-                      />
-                      {isEditing && (
-                        <Button
-                          size="sm"
-                          className="h-7 px-2 text-xs gap-1"
-                          onClick={() => handleSaveKey(item.key)}
-                          disabled={saving[item.key]}
-                          data-testid={`setting-save-${item.key}`}
-                        >
-                          <Save size={10} /> {saving[item.key] ? "…" : "Save"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        <div key={category} className="rounded-xl border border-slate-200 bg-white p-5">
+          <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">{category}</h4>
+          <div>
+            {items.map((item: any) => (
+              <SettingRow key={item.key} item={item} onSaved={handleSaved} />
+            ))}
           </div>
         </div>
       ))}
