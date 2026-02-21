@@ -90,7 +90,7 @@ def complete_redirect_flow(redirect_flow_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def create_payment(amount: float, currency: str, mandate_id: str, description: str, metadata: Dict[str, Any] = None) -> Optional[Dict[str, Any]]:
+def create_payment(amount: float, currency: str, mandate_id: str, description: str, metadata: Dict[str, Any] = None, charge_date: str = None) -> Optional[Dict[str, Any]]:
     """Create a GoCardless payment"""
     token = get_gocardless_token()
     if not token:
@@ -100,19 +100,21 @@ def create_payment(amount: float, currency: str, mandate_id: str, description: s
     amount_in_minor_units = int(amount * 100)
     
     try:
+        payment_data = {
+            "amount": amount_in_minor_units,
+            "currency": currency.upper(),
+            "links": {
+                "mandate": mandate_id
+            },
+            "description": description,
+            "metadata": metadata or {}
+        }
+        if charge_date:
+            payment_data["charge_date"] = charge_date  # YYYY-MM-DD format
+
         response = requests.post(
             f"{GOCARDLESS_API_URL}/payments",
-            json={
-                "payments": {
-                    "amount": amount_in_minor_units,
-                    "currency": currency.upper(),
-                    "links": {
-                        "mandate": mandate_id
-                    },
-                    "description": description,
-                    "metadata": metadata or {}
-                }
-            },
+            json={"payments": payment_data},
             headers={
                 "Authorization": f"Bearer {token}",
                 "GoCardless-Version": "2015-07-06",
