@@ -588,7 +588,10 @@ export default function Admin() {
             </div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">Customers</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-semibold text-slate-900">Customers</h3>
+              <Button size="sm" onClick={() => setShowCreateCustomerDialog(true)} data-testid="admin-create-customer-btn">+ Create Customer</Button>
+            </div>
             <Table data-testid="admin-customer-table">
               <TableHeader>
                 <TableRow>
