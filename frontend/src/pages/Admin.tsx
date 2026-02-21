@@ -1799,21 +1799,33 @@ export default function Admin() {
 
       {/* Sub Notes Dialog */}
       <Dialog open={showSubNotesDialog} onOpenChange={setShowSubNotesDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Subscription Notes</DialogTitle></DialogHeader>
-          <div className="max-h-[50vh] overflow-y-auto space-y-2">
-            {selectedSubNotes.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-4">No notes yet. Add one via Edit Subscription.</p>
-            ) : (
-              selectedSubNotes.map((note: any, i: number) => (
-                <div key={i} className="border border-slate-200 rounded p-3">
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-xs text-slate-500 font-medium">{note.actor}</span>
-                    <span className="text-xs text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+          <div className="max-h-[70vh] overflow-y-auto space-y-4">
+            {selectedSubNotesJson && (
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Intake Data (JSON)</p>
+                <pre className="text-xs bg-slate-50 border border-slate-200 rounded p-3 overflow-x-auto whitespace-pre-wrap break-words">
+                  {JSON.stringify(selectedSubNotesJson, null, 2)}
+                </pre>
+              </div>
+            )}
+            {selectedSubNotes.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Admin Notes</p>
+                {selectedSubNotes.map((note: any, i: number) => (
+                  <div key={i} className="border border-slate-200 rounded p-3">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-xs text-slate-500 font-medium">{note.actor}</span>
+                      <span className="text-xs text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+                    </div>
+                    <p className="text-sm text-slate-800">{note.text}</p>
                   </div>
-                  <p className="text-sm text-slate-800">{note.text}</p>
-                </div>
-              ))
+                ))}
+              </div>
+            )}
+            {!selectedSubNotesJson && selectedSubNotes.length === 0 && (
+              <p className="text-sm text-slate-500 text-center py-4">No notes yet. Add one via Edit Subscription.</p>
             )}
           </div>
         </DialogContent>
@@ -1821,21 +1833,33 @@ export default function Admin() {
 
       {/* Notes Dialog */}
       <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Order Notes</DialogTitle></DialogHeader>
-          <div className="max-h-[50vh] overflow-y-auto space-y-2">
-            {selectedOrderNotes.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-4">No notes yet. Add one via Edit Order.</p>
-            ) : (
-              selectedOrderNotes.map((note: any, i: number) => (
-                <div key={i} className="border border-slate-200 rounded p-3">
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-xs text-slate-500 font-medium">{note.actor}</span>
-                    <span className="text-xs text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+          <div className="max-h-[70vh] overflow-y-auto space-y-4">
+            {selectedOrderNotesJson && (
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Intake Data (JSON)</p>
+                <pre className="text-xs bg-slate-50 border border-slate-200 rounded p-3 overflow-x-auto whitespace-pre-wrap break-words">
+                  {JSON.stringify(selectedOrderNotesJson, null, 2)}
+                </pre>
+              </div>
+            )}
+            {selectedOrderNotes.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Admin Notes</p>
+                {selectedOrderNotes.map((note: any, i: number) => (
+                  <div key={i} className="border border-slate-200 rounded p-3">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-xs text-slate-500 font-medium">{note.actor}</span>
+                      <span className="text-xs text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+                    </div>
+                    <p className="text-sm text-slate-800">{note.text}</p>
                   </div>
-                  <p className="text-sm text-slate-800">{note.text}</p>
-                </div>
-              ))
+                ))}
+              </div>
+            )}
+            {!selectedOrderNotesJson && selectedOrderNotes.length === 0 && (
+              <p className="text-sm text-slate-500 text-center py-4">No notes yet. Add one via Edit Order.</p>
             )}
           </div>
         </DialogContent>
