@@ -167,7 +167,7 @@ backend:
 
   - task: "Stripe Subscription Checkout API"
     implemented: true
-    working: false
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -179,6 +179,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ FAILED - Stripe checkout fails due to invalid price ID in test environment. API correctly validates card payment enabled status and creates checkout session request, but Stripe API returns error for non-existent price ID 'price_1T32LIDREjel7cEDHCFUzUxz'. This is expected in test environment with mock price IDs."
+      - working: true
+        agent: "testing"
+        comment: "✅ CRITICAL BUG FIX VERIFIED - Stripe subscription checkout now works correctly with mode='subscription'. Tested with prod_bookkeeping (Ongoing Bookkeeping) product. Session created successfully with session ID and Stripe checkout URL. The critical bug 'You specified payment mode but passed a recurring price' is FIXED. Backend properly uses stripe_sdk.checkout.Session.create() with mode='subscription' for subscription products."
 
   - task: "Terms & Conditions Display API"
     implemented: true
