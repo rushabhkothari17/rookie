@@ -416,24 +416,50 @@ export default function Cart() {
                     {/* Subscription Start Date */}
                     {section.checkoutType === "subscription" && (
                       <div
-                        className="rounded-md border border-slate-200 bg-slate-50 p-3 space-y-1"
+                        className="rounded-md border border-slate-200 bg-slate-50 p-3 space-y-3"
                         data-testid="cart-subscription-start-date"
                       >
                         <label className="text-xs font-semibold text-slate-600 block">
                           Subscription Start Date
                         </label>
-                        <Input
-                          type="date"
-                          value={subscriptionStartDate}
-                          min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
-                          max={new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)}
-                          onChange={e => setSubscriptionStartDate(e.target.value)}
-                          className="text-sm"
-                          data-testid="cart-subscription-start-date-input"
-                        />
-                        <p className="text-xs text-slate-400">
-                          Leave empty to start today. Date can be up to 30 days in the future.
-                        </p>
+                        <div className="flex gap-4">
+                          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="futureStart"
+                              checked={!futureStartEnabled}
+                              onChange={() => { setFutureStartEnabled(false); setSubscriptionStartDate(""); }}
+                              data-testid="cart-start-today"
+                            />
+                            Start today
+                          </label>
+                          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="futureStart"
+                              checked={futureStartEnabled}
+                              onChange={() => setFutureStartEnabled(true)}
+                              data-testid="cart-start-future"
+                            />
+                            Future start date
+                          </label>
+                        </div>
+                        {futureStartEnabled && (
+                          <div className="space-y-1">
+                            <Input
+                              type="date"
+                              value={subscriptionStartDate}
+                              min={new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10)}
+                              max={new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)}
+                              onChange={e => setSubscriptionStartDate(e.target.value)}
+                              className="text-sm"
+                              data-testid="cart-subscription-start-date-input"
+                            />
+                            <p className="text-xs text-slate-400">
+                              Future start date must be at least 3 days from today (max 30 days).
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                     {/* Terms & Conditions */}
