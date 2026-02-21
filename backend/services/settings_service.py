@@ -28,45 +28,13 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "description": "Percentage service fee applied to all orders (0.05 = 5%).",
         "is_secret": False,
     },
+    # ---- Operations ----
     {
-        "key": "stripe_publishable_key",
-        "value_json": "",
-        "value_type": "secret",
-        "category": "Payments",
-        "description": "Stripe publishable key (pk_...).",
-        "is_secret": True,
-    },
-    {
-        "key": "stripe_secret_key",
-        "value_json": "",
-        "value_type": "secret",
-        "category": "Payments",
-        "description": "Stripe secret key (sk_...).",
-        "is_secret": True,
-    },
-    {
-        "key": "stripe_webhook_secret",
-        "value_json": "",
-        "value_type": "secret",
-        "category": "Payments",
-        "description": "Stripe webhook signing secret.",
-        "is_secret": True,
-    },
-    # ---- GoCardless ----
-    {
-        "key": "gocardless_access_token",
-        "value_json": "",
-        "value_type": "secret",
-        "category": "GoCardless",
-        "description": "GoCardless access token.",
-        "is_secret": True,
-    },
-    {
-        "key": "gocardless_environment",
-        "value_json": "sandbox",
-        "value_type": "string",
-        "category": "GoCardless",
-        "description": "GoCardless environment: 'sandbox' or 'live'.",
+        "key": "override_code_expiry_hours",
+        "value_json": 48,
+        "value_type": "number",
+        "category": "Operations",
+        "description": "Default expiry in hours for newly generated override codes.",
         "is_secret": False,
     },
     # ---- Email ----
@@ -96,36 +64,60 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
     },
     # ---- Zoho ----
     {
-        "key": "zoho_partner_link_aus",
-        "value_json": "https://www.zoho.com/au/crm/partnerprogram/partner-details.html?source=AutomateAccounts",
+        "key": "zoho_reseller_signup_us",
+        "value_json": "https://store.zoho.com/ResellerCustomerSignUp.do?id=0752790261568b40e0d2ffef44a3f4e428bbcca5aa8fba3305f9e276702456a3",
         "value_type": "string",
         "category": "Zoho",
-        "description": "Zoho partner program signup link for Australia.",
+        "description": "Zoho Reseller Customer Signup link shown at checkout (US data center).",
         "is_secret": False,
     },
     {
-        "key": "zoho_partner_link_nz",
-        "value_json": "https://www.zoho.com/nz/crm/partnerprogram/partner-details.html?source=AutomateAccounts",
+        "key": "zoho_reseller_signup_ca",
+        "value_json": "https://store.zohocloud.ca/ResellerCustomerSignUp.do?id=341bc9b2ab087c30e176e7c0385e3caaa331989c27aa00d0f3a0521dfb926960",
         "value_type": "string",
         "category": "Zoho",
-        "description": "Zoho partner program signup link for New Zealand.",
+        "description": "Zoho Reseller Customer Signup link shown at checkout (Canada data center).",
         "is_secret": False,
     },
     {
-        "key": "zoho_partner_link_global",
-        "value_json": "https://www.zoho.com/crm/partnerprogram/partner-details.html?source=AutomateAccounts",
+        "key": "zoho_partner_tag_us",
+        "value_json": "https://store.zoho.com/html/store/tagyourpartner.html?partnerid=zkms01370000000123731ce9bbb964daefb3ac6c1ff255b5fa6f",
         "value_type": "string",
         "category": "Zoho",
-        "description": "Zoho partner program signup link (global / other countries).",
+        "description": "Partner tagging link shown at checkout (US data center).",
+        "is_secret": False,
+    },
+    {
+        "key": "zoho_partner_tag_ca",
+        "value_json": "https://store.zohocloud.ca/html/store/tagyourpartner.html?partnerid=zkms0135000000008003432a39b432f137718e6225e74e34fc66",
+        "value_type": "string",
+        "category": "Zoho",
+        "description": "Partner tagging link shown at checkout (Canada data center).",
+        "is_secret": False,
+    },
+    {
+        "key": "zoho_access_instructions_url",
+        "value_json": "https://www.automateaccounts.com",
+        "value_type": "string",
+        "category": "Zoho",
+        "description": "URL explaining how customers should provide Zoho account access.",
         "is_secret": False,
     },
     # ---- Branding ----
     {
-        "key": "logo_url",
-        "value_json": "",
+        "key": "website_url",
+        "value_json": "https://www.automateaccounts.com",
         "value_type": "string",
         "category": "Branding",
-        "description": "Custom logo URL shown in the store.",
+        "description": "Main website URL used in storefront links.",
+        "is_secret": False,
+    },
+    {
+        "key": "contact_email",
+        "value_json": "hello@automateaccounts.com",
+        "value_type": "string",
+        "category": "Branding",
+        "description": "Contact / sales email shown on product inquiry pages.",
         "is_secret": False,
     },
     # ---- Feature Flags ----
@@ -137,6 +129,14 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "description": "Require Zoho partner tagging step at checkout.",
         "is_secret": False,
     },
+]
+
+# Keys that existed in earlier versions and are now obsolete / managed elsewhere
+_OBSOLETE_KEYS = [
+    "stripe_publishable_key", "stripe_secret_key", "stripe_webhook_secret",
+    "gocardless_access_token", "gocardless_environment",
+    "logo_url",  # managed by legacy flat app_settings document
+    "zoho_partner_link_aus", "zoho_partner_link_nz", "zoho_partner_link_global",
 ]
 
 
