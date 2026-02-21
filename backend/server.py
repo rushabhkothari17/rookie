@@ -5232,6 +5232,7 @@ async def admin_create_category(
     cat = {
         "id": make_id(),
         "name": payload.name,
+        "description": payload.description,
         "is_active": payload.is_active,
         "created_at": now_iso(),
     }
