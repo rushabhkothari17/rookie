@@ -115,6 +115,7 @@ export default function Admin() {
   const [orderStatusFilter, setOrderStatusFilter] = useState("");
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [selectedOrderNotes, setSelectedOrderNotes] = useState<any[]>([]);
+  const [selectedOrderNotesJson, setSelectedOrderNotesJson] = useState<any>(null);
   const [subFilters, setSubFilters] = useState({ customer: "", email: "", plan: "", status: "", payment: "", renewalFrom: "", renewalTo: "" });
   const [subSortField, setSubSortField] = useState<"created_at" | "renewal_date">("created_at");
   const [subSortOrder, setSubSortOrder] = useState<"desc" | "asc">("desc");
@@ -122,6 +123,7 @@ export default function Admin() {
   const [subCreatedTo, setSubCreatedTo] = useState("");
   const [showSubNotesDialog, setShowSubNotesDialog] = useState(false);
   const [selectedSubNotes, setSelectedSubNotes] = useState<any[]>([]);
+  const [selectedSubNotesJson, setSelectedSubNotesJson] = useState<any>(null);
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [showCreateAdminDialog, setShowCreateAdminDialog] = useState(false);
   const [newAdminUser, setNewAdminUser] = useState({ email: "", full_name: "", company_name: "", phone: "", password: "", role: "admin" });
