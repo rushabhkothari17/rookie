@@ -957,13 +957,14 @@ export default function Admin() {
             </Dialog>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-            <Table data-testid="admin-subscriptions-table">
+            <Table data-testid="admin-subscriptions-table" className="text-xs">
               <TableHeader>
                 <TableRow className="bg-slate-50">
                   <TableHead>Customer</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Plan</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
                   <TableHead>Renewal Date</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Payment</TableHead>
@@ -971,22 +972,30 @@ export default function Admin() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {subscriptions.map((sub) => {
+                {filteredSubscriptions.map((sub) => {
                   const user = getCustomerUser(sub.customer_id);
                   return (
                     <TableRow key={sub.id} data-testid={`admin-subscription-${sub.id}`} className="border-b border-slate-100">
                       <TableCell>{user?.full_name || "—"}</TableCell>
-                      <TableCell className="text-xs">{user?.email || "—"}</TableCell>
+                      <TableCell>{user?.email || "—"}</TableCell>
                       <TableCell>{sub.plan_name}</TableCell>
-                      <TableCell><span className={`text-xs px-2 py-1 rounded ${sub.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>{sub.status}</span></TableCell>
-                      <TableCell className="text-xs">{sub.renewal_date?.slice(0, 10) || sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
+                      <TableCell>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${sub.status === "active" ? "bg-green-100 text-green-700" : sub.status === "canceled_pending" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
+                          {sub.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">{sub.created_at?.slice(0, 10) || "—"}</TableCell>
+                      <TableCell className="whitespace-nowrap">{sub.renewal_date?.slice(0, 10) || sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
                       <TableCell>${sub.amount?.toFixed(2) || "—"}</TableCell>
                       <TableCell>{sub.payment_method || "card"}</TableCell>
                       <TableCell>
-                        <div className="flex gap-2 flex-wrap">
-                          {sub.is_manual && <Button size="sm" variant="outline" onClick={() => handleRenewNow(sub.id)} data-testid={`admin-sub-renew-${sub.id}`}>Renew</Button>}
-                          <Button size="sm" variant="outline" onClick={() => { setSelectedSubscription(sub); setShowSubEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleViewSubLogs(sub.id)} data-testid={`admin-sub-logs-${sub.id}`}>Logs</Button>
+                        <div className="flex gap-1 flex-nowrap">
+                          {sub.is_manual && <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => handleRenewNow(sub.id)} data-testid={`admin-sub-renew-${sub.id}`}>Renew</Button>}
+                          <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSubscription(sub); setShowSubEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
+                          {sub.status !== "canceled_pending" && sub.status !== "cancelled" && (
+                            <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleAdminCancelSubscription(sub.id)} data-testid={`admin-sub-cancel-${sub.id}`}>Cancel</Button>
+                          )}
+                          <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => handleViewSubLogs(sub.id)} data-testid={`admin-sub-logs-${sub.id}`}>Logs</Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -999,21 +1008,60 @@ export default function Admin() {
 
         {/* Subscription Edit Dialog */}
         <Dialog open={showSubEditDialog} onOpenChange={(open) => { setShowSubEditDialog(open); if (!open) setSelectedSubscription(null); }}>
-          <DialogContent data-testid="admin-sub-edit-dialog">
+          <DialogContent className="max-w-lg" data-testid="admin-sub-edit-dialog">
             <DialogHeader><DialogTitle>Edit Subscription</DialogTitle></DialogHeader>
             {selectedSubscription && (
               <div className="space-y-3">
                 <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Customer</label>
+                  <Select value={selectedSubscription.customer_id || ""} onValueChange={(v) => setSelectedSubscription({ ...selectedSubscription, customer_id: v })}>
+                    <SelectTrigger data-testid="admin-sub-customer-select"><SelectValue placeholder="Select customer" /></SelectTrigger>
+                    <SelectContent>
+                      {customers.map((c: any) => {
+                        const u = users.find((u: any) => u.id === c.user_id);
+                        return <SelectItem key={c.id} value={c.id}>{u?.full_name || c.id} ({u?.email})</SelectItem>;
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
                   <label className="text-xs text-slate-500">Plan Name</label>
                   <Input value={selectedSubscription.plan_name || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, plan_name: e.target.value })} data-testid="admin-sub-plan-input" />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Amount</label>
-                  <Input type="number" step="0.01" value={selectedSubscription.amount || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, amount: parseFloat(e.target.value) || 0 })} data-testid="admin-sub-amount-input" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Amount</label>
+                    <Input type="number" step="0.01" value={selectedSubscription.amount || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, amount: parseFloat(e.target.value) || 0 })} data-testid="admin-sub-amount-input" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Renewal Date</label>
+                    <Input type="date" value={selectedSubscription.renewal_date?.slice(0, 10) || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, renewal_date: e.target.value })} data-testid="admin-sub-renewal-input" />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500">Renewal Date</label>
-                  <Input type="date" value={selectedSubscription.renewal_date?.slice(0, 10) || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, renewal_date: e.target.value })} data-testid="admin-sub-renewal-input" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Status</label>
+                    <Select value={selectedSubscription.status || ""} onValueChange={(v) => setSelectedSubscription({ ...selectedSubscription, status: v })}>
+                      <SelectTrigger data-testid="admin-sub-status-select"><SelectValue placeholder="Status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="unpaid">Unpaid</SelectItem>
+                        <SelectItem value="canceled_pending">Canceled Pending</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Payment Method</label>
+                    <Select value={selectedSubscription.payment_method || "card"} onValueChange={(v) => setSelectedSubscription({ ...selectedSubscription, payment_method: v })}>
+                      <SelectTrigger data-testid="admin-sub-payment-select"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="card">Card</SelectItem>
+                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                        <SelectItem value="offline">Offline / Manual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <Button onClick={handleSubscriptionEdit} className="w-full" data-testid="admin-sub-save">Save Changes</Button>
               </div>
