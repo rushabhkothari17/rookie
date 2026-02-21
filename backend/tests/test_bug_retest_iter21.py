@@ -170,10 +170,14 @@ class TestScopeUnlockCartPrice:
         )
         assert resp.status_code == 200
         data = resp.json()
-        one_time = data.get("one_time", {})
-        subtotal = one_time.get("subtotal", -1)
+        # Check summary.one_time subtotal
+        one_time_summary = data.get("summary", {}).get("one_time", {})
+        subtotal = one_time_summary.get("subtotal", -1)
         assert subtotal == 1500.0, f"Expected one_time subtotal=1500, got {subtotal}"
-        print(f"PASS: Order preview one_time subtotal={subtotal}")
+        # Fee should be 5% = 75.0
+        fee = one_time_summary.get("fee", -1)
+        assert fee == 75.0, f"Expected one_time fee=75.0, got {fee}"
+        print(f"PASS: Order preview one_time subtotal={subtotal}, fee={fee}")
 
 
 # ─────────────────────────────────────────────────────────────
