@@ -413,6 +413,9 @@ class CheckoutSessionRequestBody(BaseModel):
     start_date: Optional[str] = None  # YYYY-MM-DD for subscription start
     partner_tag_response: Optional[str] = None  # "Yes", "Pre-existing Customer", "Not yet"
     override_code: Optional[str] = None
+    zoho_subscription_type: Optional[str] = None
+    current_zoho_product: Optional[str] = None
+    zoho_account_access: Optional[str] = None
 
 
 class BankTransferCheckoutRequest(BaseModel):
@@ -424,6 +427,9 @@ class BankTransferCheckoutRequest(BaseModel):
     start_date: Optional[str] = None  # YYYY-MM-DD for subscription start
     partner_tag_response: Optional[str] = None  # "Yes", "Pre-existing Customer", "Not yet"
     override_code: Optional[str] = None
+    zoho_subscription_type: Optional[str] = None
+    current_zoho_product: Optional[str] = None
+    zoho_account_access: Optional[str] = None
 
 
 
