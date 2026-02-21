@@ -1112,7 +1112,13 @@ export default function Admin() {
               <Button variant="outline" onClick={() => { setSubFilters({ customer: "", email: "", plan: "", status: "", payment: "", renewalFrom: "", renewalTo: "" }); setSubCreatedFrom(""); setSubCreatedTo(""); }} data-testid="admin-sub-clear-filters">Clear All</Button>
             </div>
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => {
+              const params = new URLSearchParams({ sort_by: subSortField, sort_order: subSortOrder });
+              if (subCreatedFrom) params.append("created_from", subCreatedFrom);
+              if (subCreatedTo) params.append("created_to", subCreatedTo);
+              downloadCsv(`/api/admin/export/subscriptions?${params.toString()}`, `subscriptions_${new Date().toISOString().slice(0,10)}.csv`);
+            }} data-testid="admin-subscriptions-export-csv">Export CSV</Button>
             <Dialog open={showManualSubDialog} onOpenChange={setShowManualSubDialog}>
               <DialogTrigger asChild>
                 <Button>Create Manual Subscription</Button>
