@@ -14,6 +14,7 @@ from core.helpers import make_id, now_iso, _slugify
 from core.security import get_current_user, require_admin
 from db.session import db
 from models import ArticleCreate, ArticleEmailRequest, ArticleUpdate
+from services.audit_service import AuditService
 from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["articles"])
