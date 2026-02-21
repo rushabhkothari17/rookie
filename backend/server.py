@@ -5634,7 +5634,7 @@ async def get_app_settings(admin: Dict[str, Any] = Depends(require_admin)):
     if not settings:
         return {"settings": {}}
     masked = {**settings}
-    for key in ["stripe_secret_key", "gocardless_token", "resend_api_key"]:
+    for key in ["resend_api_key"]:
         if masked.get(key) and not masked[key].startswith("••"):
             masked[key] = "••••••••" + masked[key][-4:]
     return {"settings": masked}
