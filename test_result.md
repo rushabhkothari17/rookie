@@ -354,18 +354,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin Catalog Tab with Terms Assignment"
-    - "Admin Subscriptions - Manual Creation"
-    - "Admin Subscriptions - Renew Now Button"
-    - "Admin Orders - Subscription # Column"
-    - "Admin Orders - View Logs Modal"
-    - "Customer Cart - Terms & Conditions Enforcement"
-    - "Customer Cart - Terms Modal Display"
-    - "Customer Cart - Payment Method Selection"
+    - "Critical Bug Fixes - Stripe Subscription Mode & GoCardless Error Handling"
   stuck_tasks: 
     - "ALL FRONTEND TASKS - Preview URL unavailable"
   test_all: false
-  test_priority: "blocked_by_infrastructure"
+  test_priority: "critical_bugs_fixed"
 
 agent_communication:
   - agent: "testing"
