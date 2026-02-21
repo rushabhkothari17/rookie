@@ -884,9 +884,10 @@ export default function Admin() {
                       <TableCell>${sub.amount?.toFixed(2) || "—"}</TableCell>
                       <TableCell>{sub.payment_method || "card"}</TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          {sub.is_manual && <Button size="sm" variant="outline" onClick={() => handleRenewNow(sub.id)}>Renew Now</Button>}
-                          <Button size="sm" variant="ghost" onClick={() => handleViewSubLogs(sub.id)}>View Logs</Button>
+                        <div className="flex gap-2 flex-wrap">
+                          {sub.is_manual && <Button size="sm" variant="outline" onClick={() => handleRenewNow(sub.id)} data-testid={`admin-sub-renew-${sub.id}`}>Renew</Button>}
+                          <Button size="sm" variant="outline" onClick={() => { setSelectedSubscription(sub); setShowSubEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
+                          <Button size="sm" variant="ghost" onClick={() => handleViewSubLogs(sub.id)} data-testid={`admin-sub-logs-${sub.id}`}>Logs</Button>
                         </div>
                       </TableCell>
                     </TableRow>
