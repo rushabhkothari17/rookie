@@ -621,23 +621,127 @@ export default function Admin() {
         <p className="text-sm text-slate-500">Manage customers, orders, promo codes, and catalog content.</p>
       </div>
 
-      <Tabs defaultValue="customers" className="space-y-4" data-testid="admin-tabs" onValueChange={handleTabChange}>
-        <TabsList>
-          {isSuperAdmin && <TabsTrigger value="users" data-testid="admin-tab-users" onClick={loadAdminUsers}>Users</TabsTrigger>}
-          <TabsTrigger value="customers" data-testid="admin-tab-customers">Customers</TabsTrigger>
-          <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions">Subscriptions</TabsTrigger>
-          <TabsTrigger value="orders" data-testid="admin-tab-orders">Orders</TabsTrigger>
-          <TabsTrigger value="quotes" data-testid="admin-tab-quotes">Quote Requests</TabsTrigger>
-          <TabsTrigger value="bank-transactions" data-testid="admin-tab-bank-transactions">Bank Transactions</TabsTrigger>
-          <TabsTrigger value="override-codes" data-testid="admin-tab-override-codes">Override Codes</TabsTrigger>
-          <TabsTrigger value="categories" data-testid="admin-tab-categories">Categories</TabsTrigger>
-          <TabsTrigger value="catalog" data-testid="admin-tab-catalog">Catalog</TabsTrigger>
-          <TabsTrigger value="terms" data-testid="admin-tab-terms">Terms</TabsTrigger>
-          <TabsTrigger value="articles" data-testid="admin-tab-articles">Articles</TabsTrigger>
-          <TabsTrigger value="promo" data-testid="admin-tab-promo">Promo Codes</TabsTrigger>
-          <TabsTrigger value="settings" data-testid="admin-tab-settings">Settings</TabsTrigger>
-          <TabsTrigger value="sync" data-testid="admin-tab-sync">Zoho sync logs</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="customers" className="flex gap-0" data-testid="admin-tabs" onValueChange={handleTabChange}>
+        {/* Left Sidebar Navigation */}
+        <div className="w-52 shrink-0 border-r border-slate-200 pr-0 mr-6 min-h-[60vh]">
+          <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
+            {/* People */}
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">People</p>
+            {isSuperAdmin && (
+              <TabsTrigger
+                value="users"
+                data-testid="admin-tab-users"
+                onClick={loadAdminUsers}
+                className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Users
+              </TabsTrigger>
+            )}
+            <TabsTrigger
+              value="customers"
+              data-testid="admin-tab-customers"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Customers
+            </TabsTrigger>
+
+            {/* Commerce */}
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
+            <TabsTrigger
+              value="subscriptions"
+              data-testid="admin-tab-subscriptions"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Subscriptions
+            </TabsTrigger>
+            <TabsTrigger
+              value="orders"
+              data-testid="admin-tab-orders"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Orders
+            </TabsTrigger>
+            <TabsTrigger
+              value="quotes"
+              data-testid="admin-tab-quotes"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Quote Requests
+            </TabsTrigger>
+            <TabsTrigger
+              value="bank-transactions"
+              data-testid="admin-tab-bank-transactions"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Bank Transactions
+            </TabsTrigger>
+
+            {/* Content */}
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
+            <TabsTrigger
+              value="articles"
+              data-testid="admin-tab-articles"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Articles
+            </TabsTrigger>
+            <TabsTrigger
+              value="categories"
+              data-testid="admin-tab-categories"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Categories
+            </TabsTrigger>
+            <TabsTrigger
+              value="catalog"
+              data-testid="admin-tab-catalog"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Catalog
+            </TabsTrigger>
+            <TabsTrigger
+              value="terms"
+              data-testid="admin-tab-terms"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Terms
+            </TabsTrigger>
+
+            {/* Settings */}
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
+            <TabsTrigger
+              value="override-codes"
+              data-testid="admin-tab-override-codes"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Override Codes
+            </TabsTrigger>
+            <TabsTrigger
+              value="promo"
+              data-testid="admin-tab-promo"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Promo Codes
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              data-testid="admin-tab-settings"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Settings
+            </TabsTrigger>
+            <TabsTrigger
+              value="sync"
+              data-testid="admin-tab-sync"
+              className="w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Zoho Sync Logs
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 min-w-0">
 
         <TabsContent value="customers" className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4">
