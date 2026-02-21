@@ -175,7 +175,7 @@ export function CustomersTab() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
-        <Table data-testid="admin-customer-table" className="text-xs min-w-[1000px]">
+        <Table data-testid="admin-customer-table" className="text-sm min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>State/Province</TableHead>
