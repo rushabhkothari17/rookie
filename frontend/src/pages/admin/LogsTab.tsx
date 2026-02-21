@@ -19,11 +19,8 @@ const ENTITY_TYPES = [
   "Order", "Subscription", "Customer", "Product", "Article",
   "Setting", "Payment", "User", "OverrideCode", "PromoCode",
 ];
-const SUCCESS_OPTS = [
-  { label: "All", value: "" },
-  { label: "Success", value: "true" },
-  { label: "Failure", value: "false" },
-];
+// SUCCESS_OPTS removed - now using inline SelectItems with "__all__" for empty string workaround
+
 
 function FilterInput({
   label, value, onChange, placeholder,
