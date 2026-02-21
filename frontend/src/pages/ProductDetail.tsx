@@ -169,6 +169,18 @@ export default function ProductDetail() {
         return;
       }
       addItem({ product_id: product.id, quantity: 1, inputs: migBooksData.inputs, price_override: migBooksData.price });
+    } else if (scopeUnlock) {
+      // Add to cart with scope-unlocked price
+      const scopeInputs = {
+        ...inputs,
+        _scope_unlock: {
+          scope_id: scopeUnlock.article_id,
+          article_title: scopeUnlock.title,
+          category: scopeUnlock.category,
+          price: scopeUnlock.price,
+        },
+      };
+      addItem({ product_id: product.id, quantity: 1, inputs: scopeInputs, price_override: scopeUnlock.price });
     } else {
       addItem({ product_id: product.id, quantity: 1, inputs });
     }
