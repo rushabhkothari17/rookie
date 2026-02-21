@@ -904,7 +904,59 @@ export default function Admin() {
         </Dialog>
 
         <TabsContent value="subscriptions" className="space-y-4">
-          <div className="flex justify-end mb-3">
+          {/* Subscription Filters */}
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">Filters</h3>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Customer Name</label>
+                <Input placeholder="Name" value={subFilters.customer} onChange={(e) => setSubFilters({ ...subFilters, customer: e.target.value })} className="w-36" data-testid="admin-sub-filter-customer" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Email</label>
+                <Input placeholder="Email" value={subFilters.email} onChange={(e) => setSubFilters({ ...subFilters, email: e.target.value })} className="w-44" data-testid="admin-sub-filter-email" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Plan</label>
+                <Input placeholder="Plan name" value={subFilters.plan} onChange={(e) => setSubFilters({ ...subFilters, plan: e.target.value })} className="w-36" data-testid="admin-sub-filter-plan" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Status</label>
+                <Select value={subFilters.status || "all"} onValueChange={(v) => setSubFilters({ ...subFilters, status: v === "all" ? "" : v })}>
+                  <SelectTrigger className="w-36" data-testid="admin-sub-filter-status"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="unpaid">Unpaid</SelectItem>
+                    <SelectItem value="canceled_pending">Canceled Pending</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Payment</label>
+                <Select value={subFilters.payment || "all"} onValueChange={(v) => setSubFilters({ ...subFilters, payment: v === "all" ? "" : v })}>
+                  <SelectTrigger className="w-32" data-testid="admin-sub-filter-payment"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="offline">Offline</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Renewal From</label>
+                <Input type="date" value={subFilters.renewalFrom} onChange={(e) => setSubFilters({ ...subFilters, renewalFrom: e.target.value })} className="w-36" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Renewal To</label>
+                <Input type="date" value={subFilters.renewalTo} onChange={(e) => setSubFilters({ ...subFilters, renewalTo: e.target.value })} className="w-36" />
+              </div>
+              <Button variant="outline" onClick={() => setSubFilters({ customer: "", email: "", plan: "", status: "", payment: "", renewalFrom: "", renewalTo: "" })} data-testid="admin-sub-clear-filters">Clear</Button>
+            </div>
+          </div>
+          <div className="flex justify-end">
             <Dialog open={showManualSubDialog} onOpenChange={setShowManualSubDialog}>
               <DialogTrigger asChild>
                 <Button>Create Manual Subscription</Button>
