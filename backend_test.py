@@ -565,7 +565,7 @@ class AutomateAccountsAPITester:
                 "quantity": 1,
                 "inputs": {}
             }],
-            "checkout_type": "bank_transfer",
+            "checkout_type": "one_time",
             "terms_accepted": True
         }
         
