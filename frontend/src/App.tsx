@@ -15,6 +15,8 @@ import Cart from "@/pages/Cart";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import BankTransferSuccess from "@/pages/BankTransferSuccess";
 import GoCardlessCallback from "@/pages/GoCardlessCallback";
+import Articles from "@/pages/Articles";
+import ArticleView from "@/pages/ArticleView";
 
 import Portal from "@/pages/Portal";
 import Admin from "@/pages/Admin";
