@@ -643,7 +643,7 @@ export default function Cart() {
                         </a>{" "}
                         or{" "}
                         <a
-                          href="https://store.zohocloud.ca/html/store/tagyourpartner.html?partnerid=zkms0135000000008003432a39b432f137718e6225e74e34fc66"
+                          href={zohoUrls.partner_tag_ca}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 underline font-medium"
