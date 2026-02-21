@@ -3034,12 +3034,17 @@ async def create_checkout_session(
                     sd = datetime.fromisoformat(requested_start_date)
                     if sd.tzinfo is None:
                         sd = sd.replace(tzinfo=timezone.utc)
-                    if sd > datetime.now(timezone.utc):
+                    min_future = datetime.now(timezone.utc) + timedelta(days=3)
+                    if sd > min_future:
                         subscription_data["trial_end"] = int(sd.timestamp())
                         subscription_data["trial_settings"] = {
                             "end_behavior": {"missing_payment_method": "pause"}
                         }
                         metadata["start_date"] = requested_start_date
+                    elif sd > datetime.now(timezone.utc):
+                        raise HTTPException(status_code=400, detail="Subscription start date must be at least 3 days in the future")
+                except HTTPException:
+                    raise
                 except Exception:
                     pass
             session = stripe_sdk.checkout.Session.create(
