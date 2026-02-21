@@ -455,6 +455,38 @@ class AutomateAccountsAPITester:
             return False
             
         headers = {"Authorization": f"Bearer {self.token}"}
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # First enable card payment for test user
+        # Get current user info
+        success_user, user_response = self.run_test("Get Current User for Card Payment", "GET", "me", 200, headers=headers)
+        if not success_user:
+            return False
+            
+        # Get customer info  
+        success_customer, customer_response = self.run_test("Get Customer for Payment Methods", "GET", "admin/customers", 200, headers=admin_headers)
+        if not success_customer:
+            return False
+            
+        # Find test customer by email
+        test_customer = None
+        for customer in customer_response.get("customers", []):
+            if customer.get("email") == user_response.get("email"):
+                test_customer = customer
+                break
+                
+        if not test_customer:
+            print("❌ Test customer not found in admin list")
+            return False
+            
+        # Enable card payment for test customer
+        payment_update_data = {
+            "allow_bank_transfer": True,
+            "allow_card_payment": True
+        }
+        success_enable, _ = self.run_test("Enable Card Payment", "PUT", f"admin/customers/{test_customer['id']}/payment-methods", 200, payment_update_data, headers=admin_headers)
+        if not success_enable:
+            return False
         
         # Get subscription product (like "Ongoing Bookkeeping")
         success1, products_response = self.run_test("Get Products for Stripe Checkout", "GET", "products", 200, headers=headers)
