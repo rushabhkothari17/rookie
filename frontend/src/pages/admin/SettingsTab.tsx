@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Eye, EyeOff, Upload, Save } from "lucide-react";
+import { Eye, EyeOff, Upload, Save, X } from "lucide-react";
 
 interface Settings {
   stripe_public_key?: string;
