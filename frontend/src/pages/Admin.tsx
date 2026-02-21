@@ -255,6 +255,66 @@ export default function Admin() {
     }
   };
 
+  const handleCreateManualSubscription = async () => {
+    try {
+      await api.post("/admin/subscriptions/manual", manualSubscription);
+      toast.success("Manual subscription created");
+      setShowManualSubDialog(false);
+      setManualSubscription({
+        customer_email: "",
+        product_id: "",
+        quantity: 1,
+        amount: 0,
+        renewal_date: "",
+        status: "active",
+        internal_note: "",
+      });
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to create manual subscription");
+    }
+  };
+
+  const handleRenewNow = async (subscriptionId: string) => {
+    try {
+      await api.post(`/subscriptions/${subscriptionId}/renew-now`);
+      toast.success("Renewal order created");
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to renew");
+    }
+  };
+
+  const handleViewOrderLogs = async (orderId: string) => {
+    try {
+      const response = await api.get(`/admin/orders/${orderId}/logs`);
+      setSelectedOrderLogs(response.data.logs || []);
+      setShowLogsDialog(true);
+    } catch (error: any) {
+      toast.error("Failed to load logs");
+    }
+  };
+
+  const handleViewSubLogs = async (subId: string) => {
+    try {
+      const response = await api.get(`/admin/subscriptions/${subId}/logs`);
+      setSelectedSubLogs(response.data.logs || []);
+      setShowLogsDialog(true);
+    } catch (error: any) {
+      toast.error("Failed to load logs");
+    }
+  };
+
+  const handleAssignTermsToProduct = async (productId: string, termsId: string | null) => {
+    try {
+      await api.put(`/admin/products/${productId}/terms`, null, { params: { terms_id: termsId } });
+      toast.success("Terms assignment updated");
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to assign terms");
+    }
+  };
+
   const getCustomerAddress = (customerId: string) => addresses.find(a => a.customer_id === customerId);
   const getCustomerUser = (customerId: string) => {
     const customer = customers.find(c => c.id === customerId);
