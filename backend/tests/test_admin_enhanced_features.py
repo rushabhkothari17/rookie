@@ -381,49 +381,54 @@ class TestOrderAuditLogs:
 class TestAdminSubscriptionCancel:
     """Tests for POST /admin/subscriptions/{id}/cancel"""
 
-    @pytest.fixture
-    def active_subscription_id(self, admin_headers):
+    def test_cancel_subscription_full_flow(self, admin_headers):
+        """Cancel an active subscription and verify status + audit log"""
+        # Get an active subscription
         resp = requests.get(f"{BASE_URL}/api/admin/subscriptions", headers=admin_headers)
-        if resp.status_code == 200:
-            subs = resp.json().get("subscriptions", [])
-            active = [s for s in subs if s.get("status") == "active"]
-            if active:
-                return active[0]["id"]
-        pytest.skip("No active subscriptions available")
-
-    def test_cancel_subscription_returns_200(self, admin_headers, active_subscription_id):
-        """Cancel endpoint returns 200"""
-        resp = requests.post(
-            f"{BASE_URL}/api/admin/subscriptions/{active_subscription_id}/cancel",
+        assert resp.status_code == 200
+        subs = resp.json().get("subscriptions", [])
+        active_subs = [s for s in subs if s.get("status") == "active"]
+        if not active_subs:
+            pytest.skip("No active subscriptions available")
+        
+        sub_id = active_subs[0]["id"]
+        
+        # Cancel the subscription
+        cancel_resp = requests.post(
+            f"{BASE_URL}/api/admin/subscriptions/{sub_id}/cancel",
             headers=admin_headers
         )
-        assert resp.status_code == 200, f"Cancel failed: {resp.text}"
-        data = resp.json()
+        assert cancel_resp.status_code == 200, f"Cancel failed: {cancel_resp.text}"
+        data = cancel_resp.json()
         assert "message" in data
         assert "cancelled_at" in data
-        print(f"PASS: POST /admin/subscriptions/{active_subscription_id}/cancel returns 200")
-
-    def test_cancel_subscription_status_becomes_canceled_pending(self, admin_headers, active_subscription_id):
-        """After cancel, sub status should be canceled_pending"""
-        resp = requests.get(f"{BASE_URL}/api/admin/subscriptions", headers=admin_headers)
-        subs = resp.json()["subscriptions"]
-        sub = next((s for s in subs if s["id"] == active_subscription_id), None)
-        if sub:
-            assert sub["status"] == "canceled_pending", \
-                f"Expected canceled_pending but got {sub['status']}"
-            print(f"PASS: Status is canceled_pending after cancel")
-
-    def test_cancel_subscription_creates_audit_log(self, admin_headers, active_subscription_id):
-        """Cancel should create an audit log"""
-        resp = requests.get(
-            f"{BASE_URL}/api/admin/subscriptions/{active_subscription_id}/logs",
+        print(f"PASS: Cancel returned 200 with message and cancelled_at")
+        
+        # Verify status changed to canceled_pending
+        subs_after = requests.get(f"{BASE_URL}/api/admin/subscriptions", headers=admin_headers).json()["subscriptions"]
+        sub_after = next((s for s in subs_after if s["id"] == sub_id), None)
+        assert sub_after is not None, "Subscription not found after cancel"
+        assert sub_after["status"] == "canceled_pending", \
+            f"Expected canceled_pending but got {sub_after['status']}"
+        print(f"PASS: Status is canceled_pending after cancel")
+        
+        # Verify audit log created
+        log_resp = requests.get(
+            f"{BASE_URL}/api/admin/subscriptions/{sub_id}/logs",
             headers=admin_headers
         )
-        assert resp.status_code == 200
-        logs = resp.json()["logs"]
+        assert log_resp.status_code == 200
+        logs = log_resp.json()["logs"]
         cancel_logs = [l for l in logs if l.get("action") == "cancelled"]
         assert len(cancel_logs) > 0, f"Expected cancelled audit log, got: {[l['action'] for l in logs]}"
         print(f"PASS: Audit log created for subscription cancellation")
+        
+        # Restore to active for other tests
+        requests.put(
+            f"{BASE_URL}/api/admin/subscriptions/{sub_id}",
+            json={"status": "active"},
+            headers=admin_headers
+        )
 
     def test_cancel_nonexistent_subscription_returns_404(self, admin_headers):
         """Cancel non-existent subscription should return 404"""
