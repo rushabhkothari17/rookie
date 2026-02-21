@@ -1,0 +1,85 @@
+{
+  "summary": "Tested all new admin features: inactive users (login blocking, activate/deactivate via Users/Customers tabs), CSV export for all 4 tabs. Fixed critical CSV export bug (wrong localStorage key). All 21 backend tests PASS. All frontend features verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "CSV Export - All tabs",
+        "issue": "FIXED: downloadCsv() used localStorage.getItem('token') but app stores token under key 'aa_token'. All 4 CSV exports returned 401 before fix. Fixed in Admin.tsx line 551.",
+        "affected_selectors": ["admin-customers-export-csv", "admin-orders-export-csv", "admin-subscriptions-export-csv", "admin-catalog-export-csv"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_inactive_users_and_csv_export.py",
+    "/app/test_reports/pytest/pytest_results_iter10.xml"
+  ],
+  "action_items": [
+    "HIGH: Admin user (admin@automateaccounts.local) has a linked customer record in Customers tab WITH a 'Deactivate' button. If admin clicks it, they deactivate their own account. The Customers tab lacks the same self-guard that exists in Users tab (u.id !== authUser?.id). MITIGATION: Add a guard in handleToggleCustomerActive or in the render to check if the customer's user_id === authUser?.id and hide/disable Deactivate button for that row.",
+    "LOW: The inactive test user inactive.test@automateaccounts.local has role='admin' (appears in Users tab). This is correct for testing but worth noting it's an admin-role inactive user."
+  ],
+  "critical_code_review_comments": [
+    "FIXED: downloadCsv() in Admin.tsx used localStorage.getItem('token') but all auth code uses key 'aa_token' (set by setAuthToken() in api.ts). This caused 401 on all CSV export fetches. Fixed to use 'aa_token'.",
+    "DESIGN BUG: PATCH /api/admin/customers/{id}/active can be used to deactivate the admin's own customer record (and linked user account), since there is no guard. The backend endpoint doesn't check if the customer being deactivated belongs to the requesting admin. Combined with the fact that admin@automateaccounts.local has a customer record (id=0be90bfa-57e4-4c94-b5c5-88b59601c260), this creates a self-lockout risk. The frontend Users tab has a self-guard (u.id !== authUser?.id) but the Customers tab does not."
+  ],
+  "passed_tests": [
+    "Backend: POST /api/auth/login with inactive user returns 403 with 'Account is inactive' message",
+    "Backend: PATCH /api/admin/users/{id}/active?active=true reactivates user",
+    "Backend: Login works after reactivation",
+    "Backend: PATCH /api/admin/users/{id}/active?active=false re-deactivates user",
+    "Backend: Login blocked again after re-deactivation",
+    "Backend: Admin (super_admin) can still login after other user operations",
+    "Backend: GET /api/admin/users returns 200 with users array",
+    "Backend: PATCH /api/admin/customers/{id}/active deactivate+reactivate works",
+    "Backend: PATCH /api/admin/customers/nonexistent-id returns 404",
+    "Backend: PATCH /api/admin/users/nonexistent-id returns 404",
+    "Backend: GET /api/admin/export/customers returns 200 with text/csv",
+    "Backend: Customers CSV includes is_active column",
+    "Backend: GET /api/admin/export/orders returns 200 with text/csv",
+    "Backend: GET /api/admin/export/orders with filters returns 200",
+    "Backend: GET /api/admin/export/subscriptions returns 200 with text/csv",
+    "Backend: GET /api/admin/export/catalog returns 200 with text/csv",
+    "Backend: All CSV endpoints require auth (401 without token)",
+    "Backend: GET /api/admin/export/subscriptions with sort filters returns 200",
+    "Backend: GET /api/me returns correct admin data",
+    "Frontend: Customers tab - Status column header present",
+    "Frontend: Customers tab - Active/Inactive badge per customer (28 badges)",
+    "Frontend: Customers tab - Deactivate/Activate button per row (28 buttons)",
+    "Frontend: Customers tab - Export CSV button (data-testid=admin-customers-export-csv) present",
+    "Frontend: Orders tab - Export CSV button (data-testid=admin-orders-export-csv) present",
+    "Frontend: Subscriptions tab - Export CSV button (data-testid=admin-subscriptions-export-csv) present",
+    "Frontend: Catalog tab - Export CSV button (data-testid=admin-catalog-export-csv) in filter row",
+    "Frontend: Users tab - Status column present",
+    "Frontend: Users tab - Active/Inactive badges visible (Active x4, Inactive x1)",
+    "Frontend: Users tab - Deactivate/Activate buttons for non-self users (4 buttons visible)",
+    "Frontend: Users tab - admin@automateaccounts.local row has NO Deactivate button (self-guard working)",
+    "Frontend: CSV export customers_2026-02-21.csv download triggered successfully (after fix)",
+    "Frontend: CSV export orders_2026-02-21.csv download triggered successfully (after fix)",
+    "Frontend: CSV export subscriptions_2026-02-21.csv download triggered successfully (after fix)",
+    "Frontend: CSV export catalog_2026-02-21.csv download triggered successfully (after fix)"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/Admin.tsx (line 551: localStorage.getItem('token') -> localStorage.getItem('aa_token'))"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21 tests passed)",
+    "frontend": "100% (all features working after CSV fix)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "inactive_user_email": "inactive.test@automateaccounts.local",
+    "inactive_user_password": "Pass123!"
+  },
+  "seed_data_creation": "No new seed data created. inactive.test@automateaccounts.local was activated/deactivated during testing - restored to inactive state at end of tests.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "CSV export bug fixed: Admin.tsx downloadCsv() now uses 'aa_token' key. All CSV downloads work. Remaining concern: admin@automateaccounts.local has a customer record (id=0be90bfa-57e4-4c94-b5c5-88b59601c260) in the Customers tab with a Deactivate button - no self-guard. Users tab has self-guard but Customers tab does not. Backend: PATCH /api/admin/customers/{id}/active endpoint has no guard against deactivating the requester's own account. Test IDs to use: admin-customers-export-csv, admin-orders-export-csv, admin-subscriptions-export-csv, admin-catalog-export-csv, admin-customer-toggle-active-{id}, admin-user-toggle-active-{id}, admin-customer-status-{id}, admin-user-status-{id}.",
+  "mocked_api_notes": "Zoho CRM sync, GoCardless payment confirmation, Email sending are MOCKED",
+  "rca_of_issues": "CSV Export Bug RCA: The downloadCsv() function in Admin.tsx used localStorage.getItem('token') but the application stores the JWT under localStorage key 'aa_token' (see api.ts setAuthToken function). This caused all CSV fetch requests to send 'Authorization: Bearer null', resulting in 401 responses from the backend. Fix: changed the key to 'aa_token'. Self-lockout Risk: The admin user has a customer record in the database, and the PATCH /admin/customers/{id}/active endpoint has no guard to prevent an admin from deactivating their own customer record (which also deactivates the linked user account via the cascade update). This was discovered when backend tests accidentally deactivated admin's customer."
+}
