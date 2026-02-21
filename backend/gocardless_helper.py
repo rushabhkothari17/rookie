@@ -66,16 +66,18 @@ def create_redirect_flow(session_token: str, success_redirect_url: str, descript
         print(f"GoCardless redirect flow creation failed: {e}")
     return None
 
-def complete_redirect_flow(redirect_flow_id: str) -> Optional[Dict[str, Any]]:
+def complete_redirect_flow(redirect_flow_id: str, session_token: str = "") -> Optional[Dict[str, Any]]:
     """Complete a GoCardless redirect flow after user returns"""
     token = get_gocardless_token()
     if not token:
+        print("GoCardless: no access token configured")
         return None
     
     try:
+        body = {"data": {"session_token": session_token}} if session_token else {}
         response = requests.post(
             f"{GOCARDLESS_API_URL}/redirect_flows/{redirect_flow_id}/actions/complete",
-            json={},
+            json=body,
             headers={
                 "Authorization": f"Bearer {token}",
                 "GoCardless-Version": "2015-07-06",
@@ -83,6 +85,7 @@ def complete_redirect_flow(redirect_flow_id: str) -> Optional[Dict[str, Any]]:
             },
             timeout=10
         )
+        print(f"GoCardless complete redirect flow status: {response.status_code}, body: {response.text[:500]}")
         if response.status_code == 200:
             return response.json()["redirect_flows"]
     except Exception as e:
