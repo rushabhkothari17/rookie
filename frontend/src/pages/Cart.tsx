@@ -147,7 +147,35 @@ export default function Cart() {
         window.location.href = response.data.url;
       }
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || "Checkout failed";
+      // Safe error message extraction
+      let errorMsg = "Checkout failed. Please try again.";
+      
+      if (error.response?.data) {
+        const data = error.response.data;
+        
+        // Handle string detail
+        if (typeof data.detail === 'string') {
+          errorMsg = data.detail;
+        }
+        // Handle Pydantic validation errors (array of objects)
+        else if (Array.isArray(data.detail)) {
+          const messages = data.detail.map((err: any) => {
+            if (typeof err === 'string') return err;
+            if (err.msg) return `${err.loc?.join('.') || 'Field'}: ${err.msg}`;
+            return JSON.stringify(err);
+          });
+          errorMsg = messages.join('; ');
+        }
+        // Handle object detail
+        else if (typeof data.detail === 'object') {
+          errorMsg = data.detail.message || data.detail.msg || JSON.stringify(data.detail);
+        }
+        // Fallback to generic message if exists
+        else if (data.message) {
+          errorMsg = data.message;
+        }
+      }
+      
       toast.error(errorMsg);
     } finally {
       setLoading(false);
