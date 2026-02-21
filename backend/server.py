@@ -71,8 +71,47 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Include new route modules
 # ---------------------------------------------------------------------------
+from routes.auth import router as auth_router
+from routes.store import router as store_router
+from routes.checkout import router as checkout_router
+from routes.gocardless import router as gocardless_router
+from routes.webhooks import router as webhooks_router
 from routes.admin.logs import router as audit_logs_router
+from routes.admin.misc import router as admin_misc_router
+from routes.admin.promo_codes import router as admin_promo_codes_router
+from routes.admin.terms import router as admin_terms_router
+from routes.admin.customers import router as admin_customers_router
+from routes.admin.orders import router as admin_orders_router
+from routes.admin.subscriptions import router as admin_subscriptions_router
+from routes.admin.users import router as admin_users_router
+from routes.admin.catalog import router as admin_catalog_router
+from routes.admin.quote_requests import router as admin_quote_requests_router
+from routes.admin.bank_transactions import router as admin_bank_transactions_router
+from routes.admin.override_codes import router as admin_override_codes_router
+from routes.admin.exports import router as admin_exports_router
+from routes.admin.settings import router as admin_settings_router
+from routes.articles import router as articles_router
+
+app.include_router(auth_router)
+app.include_router(store_router)
+app.include_router(checkout_router)
+app.include_router(gocardless_router)
+app.include_router(webhooks_router)
 app.include_router(audit_logs_router)
+app.include_router(admin_misc_router)
+app.include_router(admin_promo_codes_router)
+app.include_router(admin_terms_router)
+app.include_router(admin_customers_router)
+app.include_router(admin_orders_router)
+app.include_router(admin_subscriptions_router)
+app.include_router(admin_users_router)
+app.include_router(admin_catalog_router)
+app.include_router(admin_quote_requests_router)
+app.include_router(admin_bank_transactions_router)
+app.include_router(admin_override_codes_router)
+app.include_router(admin_exports_router)
+app.include_router(admin_settings_router)
+app.include_router(articles_router)
 
 
 # Order status enum — imported from core.constants (ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES)
