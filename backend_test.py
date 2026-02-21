@@ -515,8 +515,16 @@ class AutomateAccountsAPITester:
             return False
             
         # Test getting resolved terms (should resolve dynamic tags)
-        terms_id = terms_response["terms"][0]["id"]
-        success2, resolved_terms = self.run_test("Get Resolved Terms", "GET", f"terms/{terms_id}/resolved", 200, headers=headers)
+        if terms_response.get("terms"):
+            # Get a product to test with
+            success_prod, products = self.run_test("Get Products for Terms", "GET", "products", 200, headers=headers)
+            if success_prod and products.get("products"):
+                product_id = products["products"][0]["id"]
+                success2, resolved_terms = self.run_test("Get Resolved Terms", "GET", f"terms/for-product/{product_id}", 200, headers=headers)
+            else:
+                success2 = False
+        else:
+            success2 = False
         
         if success2:
             # Check if dynamic tags are resolved
