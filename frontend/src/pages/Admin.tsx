@@ -1319,12 +1319,29 @@ export default function Admin() {
         </Dialog>
 
         <TabsContent value="promo" className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap items-center gap-3">
             <h3 className="text-sm font-semibold text-slate-900">Promo Codes</h3>
-            <Dialog open={showPromoDialog} onOpenChange={setShowPromoDialog}>
-              <DialogTrigger asChild>
-                <Button data-testid="admin-promo-create">Create Promo Code</Button>
-              </DialogTrigger>
+            <Input
+              placeholder="Filter by code…"
+              className="w-44 ml-0"
+              value={promoCodeFilter}
+              onChange={(e) => setPromoCodeFilter(e.target.value)}
+              data-testid="admin-promo-code-filter"
+            />
+            <Select value={promoStatusFilter} onValueChange={setPromoStatusFilter}>
+              <SelectTrigger className="w-36" data-testid="admin-promo-status-filter"><SelectValue placeholder="All statuses" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Expired">Expired</SelectItem>
+                <SelectItem value="Exhausted">Exhausted</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="ml-auto">
+              <Dialog open={showPromoDialog} onOpenChange={setShowPromoDialog}>
+                <DialogTrigger asChild>
+                  <Button data-testid="admin-promo-create">Create Promo Code</Button>
+                </DialogTrigger>
               <DialogContent data-testid="admin-promo-dialog">
                 <DialogHeader><DialogTitle>Create Promo Code</DialogTitle></DialogHeader>
                 <div className="space-y-3">
