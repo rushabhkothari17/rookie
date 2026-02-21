@@ -2321,7 +2321,15 @@ async def startup_tasks():
 
     # === NEW MIGRATIONS ===
 
-    # 1. Seed categories collection from existing product category strings
+    # 1. Seed categories collection from existing product category strings (with blurbs)
+    CATEGORY_BLURBS_SEED = {
+        "Zoho Express Setup": "Fast-track your Zoho setup with expert-led implementation.",
+        "Migrate to Zoho": "Move critical systems with minimal downtime and clear milestones.",
+        "Managed Services": "Your long-term Zoho partner - managing enhancements, resolving issues, and scaling workflows as you evolve.",
+        "Build & Automate": "On-demand development hours to design, build, automate, and refine your Technology stack (Zoho & Non-Zoho).",
+        "Accounting on Zoho": "Monthly finance operations tailored to your transaction volume.",
+        "Audit & Optimize": "Diagnose what's slowing you down - Refine, Streamline & Maximize",
+    }
     all_prods = await db.products.find({}, {"_id": 0, "category": 1}).to_list(2000)
     existing_prod_cats = {p["category"] for p in all_prods if p.get("category")}
     for cat_name in existing_prod_cats:
@@ -2330,9 +2338,15 @@ async def startup_tasks():
             await db.categories.insert_one({
                 "id": make_id(),
                 "name": cat_name,
+                "description": CATEGORY_BLURBS_SEED.get(cat_name, ""),
                 "is_active": True,
                 "created_at": now_iso(),
             })
+        elif "description" not in existing_cat and cat_name in CATEGORY_BLURBS_SEED:
+            await db.categories.update_one(
+                {"name": cat_name},
+                {"$set": {"description": CATEGORY_BLURBS_SEED[cat_name]}}
+            )
 
     # 2. Backfill pricing_complexity based on pricing_type for products missing it
     PRICING_TYPE_TO_COMPLEXITY = {
