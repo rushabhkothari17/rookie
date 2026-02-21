@@ -900,6 +900,32 @@ export default function Admin() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Logs Dialog */}
+      <Dialog open={showLogsDialog} onOpenChange={setShowLogsDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>Audit Logs</DialogTitle></DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto space-y-2">
+            {(selectedOrderLogs.length > 0 ? selectedOrderLogs : selectedSubLogs).map((log: any) => (
+              <div key={log.id} className="border border-slate-200 rounded p-3">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-semibold text-slate-900">{log.action}</span>
+                  <span className="text-xs text-slate-500">{new Date(log.created_at).toLocaleString()}</span>
+                </div>
+                <div className="text-xs text-slate-600">Actor: {log.actor}</div>
+                {log.details && Object.keys(log.details).length > 0 && (
+                  <pre className="text-xs text-slate-500 mt-2 bg-slate-50 p-2 rounded overflow-x-auto">
+                    {JSON.stringify(log.details, null, 2)}
+                  </pre>
+                )}
+              </div>
+            ))}
+            {(selectedOrderLogs.length === 0 && selectedSubLogs.length === 0) && (
+              <p className="text-sm text-slate-500 text-center py-4">No logs found</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
