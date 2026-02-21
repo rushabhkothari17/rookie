@@ -339,7 +339,7 @@ export default function ProductDetail() {
               <SectionCard title="Unlock with Scope ID" testId="scope-id-card">
                 <div className="space-y-3">
                   <p className="text-sm text-slate-500">
-                    If you have received a finalized scope document, enter the Scope ID below to unlock pricing and proceed to checkout.
+                    If you have received a finalized scope document, enter the Scope ID below to unlock pricing and proceed to checkout. Otherwise, submit an enquiry to proceed.
                   </p>
                   <div className="flex gap-2">
                     <Input
