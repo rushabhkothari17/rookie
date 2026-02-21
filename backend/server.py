@@ -2181,6 +2181,7 @@ async def checkout_bank_transfer(
                 "partner_tag_response": payload.partner_tag_response,
                 "override_code_id": None,  # updated below after override code lookup
                 "partner_tag_timestamp": now_iso(),
+                "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"]),
             }
         )
         
