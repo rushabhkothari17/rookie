@@ -167,6 +167,9 @@ export default function Cart() {
           start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
           partner_tag_response: partnerTagResponse,
           override_code: partnerTagResponse === "Not yet" ? overrideCode.trim() : null,
+          zoho_subscription_type: zohoSubscriptionType,
+          current_zoho_product: currentZohoProduct,
+          zoho_account_access: zohoAccountAccess,
         });
         window.location.href = response.data.url;
       }
