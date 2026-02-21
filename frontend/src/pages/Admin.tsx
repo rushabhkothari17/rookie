@@ -518,12 +518,94 @@ export default function Admin() {
                           <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${(customer.allow_card_payment ?? false) ? "translate-x-4" : "translate-x-0.5"}`} />
                         </button>
                       </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            const user = getCustomerUser(customer.id);
+                            const address = getCustomerAddress(customer.id);
+                            setSelectedCustomer({
+                              ...customer,
+                              ...user,
+                              ...address
+                            });
+                            setShowCustomerDialog(true);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
           </div>
+          
+          {/* Customer Edit Dialog */}
+          <Dialog open={showCustomerDialog} onOpenChange={setShowCustomerDialog}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
+              {selectedCustomer && (
+                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Full Name</label>
+                      <Input value={selectedCustomer.full_name || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, full_name: e.target.value})} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Company Name</label>
+                      <Input value={selectedCustomer.company_name || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, company_name: e.target.value})} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Job Title</label>
+                      <Input value={selectedCustomer.job_title || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, job_title: e.target.value})} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Phone</label>
+                      <Input value={selectedCustomer.phone || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, phone: e.target.value})} />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Email (Read-only)</label>
+                    <Input value={selectedCustomer.email || ""} disabled className="bg-slate-100" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Address Line 1</label>
+                    <Input value={selectedCustomer.line1 || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, line1: e.target.value})} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Address Line 2</label>
+                    <Input value={selectedCustomer.line2 || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, line2: e.target.value})} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">City</label>
+                      <Input value={selectedCustomer.city || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, city: e.target.value})} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">State/Province</label>
+                      <Input value={selectedCustomer.region || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, region: e.target.value})} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Postal Code</label>
+                      <Input value={selectedCustomer.postal || ""} onChange={(e) => setSelectedCustomer({...selectedCustomer, postal: e.target.value})} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Country (Locked)</label>
+                      <Input value={selectedCustomer.country || ""} disabled className="bg-slate-100" />
+                    </div>
+                  </div>
+                  <Button onClick={handleCustomerEdit} className="w-full">Save Changes</Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-4">
