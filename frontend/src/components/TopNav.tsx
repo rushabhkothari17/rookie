@@ -25,6 +25,9 @@ export default function TopNav() {
       const s = res.data?.settings || {};
       if (s.logo_url) setLogoUrl(s.logo_url);
       if (s.store_name) setStoreName(s.store_name);
+      const root = document.documentElement;
+      if (s.primary_color) root.style.setProperty("--aa-primary", s.primary_color);
+      if (s.accent_color) root.style.setProperty("--aa-accent", s.accent_color);
     }).catch(() => {});
   }, []);
 
