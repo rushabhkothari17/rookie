@@ -164,19 +164,21 @@ export function LogsTab() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <div className="space-y-0.5">
             <label className="text-[10px] uppercase tracking-wide font-medium text-slate-500">Success</label>
-            <Select value={filters.success} onValueChange={setF("success")}>
+            <Select value={filters.success || "__all__"} onValueChange={(v) => setF("success")(v === "__all__" ? "" : v)}>
               <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
               <SelectContent>
-                {SUCCESS_OPTS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                <SelectItem value="__all__">All</SelectItem>
+                <SelectItem value="true">Success</SelectItem>
+                <SelectItem value="false">Failure</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-0.5">
             <label className="text-[10px] uppercase tracking-wide font-medium text-slate-500">Severity</label>
-            <Select value={filters.severity} onValueChange={setF("severity")}>
+            <Select value={filters.severity || "__all__"} onValueChange={(v) => setF("severity")(v === "__all__" ? "" : v)}>
               <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All</SelectItem>
+                <SelectItem value="__all__">All</SelectItem>
                 <SelectItem value="info">Info</SelectItem>
                 <SelectItem value="warn">Warn</SelectItem>
                 <SelectItem value="error">Error</SelectItem>
