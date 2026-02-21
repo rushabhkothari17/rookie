@@ -1234,9 +1234,15 @@ export default function Admin() {
                           )}
                           <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSubscription({ ...sub, new_note: "" }); setShowSubEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
                           <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => handleViewSubNotes(sub)} data-testid={`admin-sub-notes-${sub.id}`}>Notes{sub.notes?.length ? ` (${sub.notes.length})` : ""}</Button>
-                          {sub.status !== "canceled_pending" && sub.status !== "cancelled" && (
-                            <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleAdminCancelSubscription(sub.id)} data-testid={`admin-sub-cancel-${sub.id}`}>Cancel</Button>
-                          )}
+                          {sub.status !== "canceled_pending" && sub.status !== "cancelled" && (() => {
+                              const contractEnd = sub.contract_end_date ? new Date(sub.contract_end_date) : null;
+                              const contractExpired = !contractEnd || contractEnd < new Date();
+                              return contractExpired ? (
+                                <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleAdminCancelSubscription(sub.id)} data-testid={`admin-sub-cancel-${sub.id}`}>Cancel</Button>
+                              ) : (
+                                <span className="text-[10px] text-slate-400" title={`Contract ends ${sub.contract_end_date?.slice(0,10)}`}>Contract active</span>
+                              );
+                            })()}
                           <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => handleViewSubLogs(sub.id)} data-testid={`admin-sub-logs-${sub.id}`}>Logs</Button>
                         </div>
                       </TableCell>
