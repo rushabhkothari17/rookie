@@ -32,7 +32,9 @@ export default function TopNav() {
   }, []);
 
   const isActive = (path: string) =>
-    location.pathname.startsWith(path) ? "text-slate-900" : "text-slate-500";
+    location.pathname.startsWith(path)
+      ? "font-semibold text-slate-900"
+      : "text-slate-500 hover:text-slate-800 transition-colors";
 
   return (
     <header
