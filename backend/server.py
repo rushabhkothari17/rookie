@@ -114,31 +114,7 @@ app.include_router(admin_settings_router)
 app.include_router(articles_router)
 
 
-# Order status enum — imported from core.constants (ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES)
-ALLOWED_ORDER_STATUSES = [
-    "pending",
-    "pending_direct_debit_setup",
-    "pending_payment",
-    "awaiting_bank_transfer",
-    "paid",
-    "unpaid",
-    "completed",
-    "cancelled",
-    "refunded",
-    "disputed",
-    "scope_pending",
-    "canceled_pending",
-]
-
-ALLOWED_SUBSCRIPTION_STATUSES = [
-    "active",
-    "unpaid",
-    "paused",
-    "canceled_pending",
-    "cancelled",
-    "offline_manual",
-]
-
+# ALLOWED_ORDER_STATUSES and ALLOWED_SUBSCRIPTION_STATUSES are imported from core.constants above.
 
 def validate_order_status(status: str) -> bool:
     """Validate order status against allowed values"""
