@@ -80,6 +80,16 @@ async def register(payload: RegisterRequest):
         "status": "MOCKED",
         "created_at": now_iso(),
     })
+    await AuditService.log(
+        action="USER_REGISTERED",
+        description=f"New user registered: {payload.email}",
+        entity_type="User",
+        entity_id=user_id,
+        actor_type="user",
+        actor_email=payload.email.lower(),
+        source="customer_ui",
+        meta_json={"company_name": payload.company_name, "country": payload.address.country},
+    )
     return {
         "message": "Verification required",
         "verification_code": verification_code,
