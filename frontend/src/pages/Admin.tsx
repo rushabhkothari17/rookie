@@ -1634,6 +1634,115 @@ export default function Admin() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Create Admin User Dialog (super_admin only) */}
+      <Dialog open={showCreateAdminDialog} onOpenChange={setShowCreateAdminDialog}>
+        <DialogContent className="max-w-lg" data-testid="admin-create-user-dialog">
+          <DialogHeader><DialogTitle>Create Admin User</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Full Name *</label>
+                <Input value={newAdminUser.full_name} onChange={(e) => setNewAdminUser({ ...newAdminUser, full_name: e.target.value })} data-testid="admin-new-user-name" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Email *</label>
+                <Input type="email" value={newAdminUser.email} onChange={(e) => setNewAdminUser({ ...newAdminUser, email: e.target.value })} data-testid="admin-new-user-email" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Password *</label>
+                <Input type="password" value={newAdminUser.password} onChange={(e) => setNewAdminUser({ ...newAdminUser, password: e.target.value })} data-testid="admin-new-user-password" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Role</label>
+                <Select value={newAdminUser.role} onValueChange={(v) => setNewAdminUser({ ...newAdminUser, role: v })}>
+                  <SelectTrigger data-testid="admin-new-user-role"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <p className="text-xs text-amber-600">User will be required to change password on first login.</p>
+            <Button onClick={handleCreateAdminUser} className="w-full" data-testid="admin-new-user-submit">Create Admin User</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Customer Dialog */}
+      <Dialog open={showCreateCustomerDialog} onOpenChange={setShowCreateCustomerDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="admin-create-customer-dialog">
+          <DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Full Name *</label>
+                <Input value={newCustomer.full_name} onChange={(e) => setNewCustomer({ ...newCustomer, full_name: e.target.value })} data-testid="admin-new-customer-name" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Company Name</label>
+                <Input value={newCustomer.company_name} onChange={(e) => setNewCustomer({ ...newCustomer, company_name: e.target.value })} data-testid="admin-new-customer-company" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Email *</label>
+                <Input type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} data-testid="admin-new-customer-email" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Job Title</label>
+                <Input value={newCustomer.job_title} onChange={(e) => setNewCustomer({ ...newCustomer, job_title: e.target.value })} data-testid="admin-new-customer-job" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Phone</label>
+                <Input value={newCustomer.phone} onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })} data-testid="admin-new-customer-phone" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Password * (user must change on login)</label>
+                <Input type="password" value={newCustomer.password} onChange={(e) => setNewCustomer({ ...newCustomer, password: e.target.value })} data-testid="admin-new-customer-password" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Address Line 1 *</label>
+              <Input value={newCustomer.line1} onChange={(e) => setNewCustomer({ ...newCustomer, line1: e.target.value })} data-testid="admin-new-customer-line1" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Address Line 2</label>
+              <Input value={newCustomer.line2} onChange={(e) => setNewCustomer({ ...newCustomer, line2: e.target.value })} data-testid="admin-new-customer-line2" />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">City *</label>
+                <Input value={newCustomer.city} onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })} data-testid="admin-new-customer-city" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">State/Province *</label>
+                <Input value={newCustomer.region} onChange={(e) => setNewCustomer({ ...newCustomer, region: e.target.value })} data-testid="admin-new-customer-region" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Postal Code *</label>
+                <Input value={newCustomer.postal} onChange={(e) => setNewCustomer({ ...newCustomer, postal: e.target.value })} data-testid="admin-new-customer-postal" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Country * (locked after creation)</label>
+                <Input value={newCustomer.country} onChange={(e) => setNewCustomer({ ...newCustomer, country: e.target.value.toUpperCase() })} placeholder="GB / US / CA" maxLength={2} data-testid="admin-new-customer-country" />
+              </div>
+              <div className="flex items-end gap-2 pb-1">
+                <input type="checkbox" checked={newCustomer.mark_verified} onChange={(e) => setNewCustomer({ ...newCustomer, mark_verified: e.target.checked })} id="markVerified" data-testid="admin-new-customer-verified" />
+                <label htmlFor="markVerified" className="text-xs text-slate-600">Mark email as verified</label>
+              </div>
+            </div>
+            <Button onClick={handleCreateCustomer} className="w-full" data-testid="admin-new-customer-submit">Create Customer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
