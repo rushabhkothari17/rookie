@@ -120,6 +120,16 @@ async def update_bank_transaction(
         )
 
     updated = await db.bank_transactions.find_one({"id": txn_id}, {"_id": 0})
+    await AuditService.log(
+        action="BANK_TXN_UPDATED",
+        description=f"Bank transaction {txn_id} updated",
+        entity_type="BankTransaction",
+        entity_id=txn_id,
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+        after_json=updates,
+    )
     return {"transaction": updated}
 
 
