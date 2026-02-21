@@ -23,7 +23,7 @@ function SecretInput({ label, value, onChange, placeholder, testId }: {
   const [show, setShow] = useState(false);
   return (
     <div>
-      <Label className="text-xs text-slate-600">{label}</Label>
+      <label className="text-xs text-slate-600">{label}</label>
       <div className="relative mt-1">
         <Input
           type={show ? "text" : "password"}
@@ -50,7 +50,7 @@ function ColorInput({ label, value, onChange, testId }: {
 }) {
   return (
     <div>
-      <Label className="text-xs text-slate-600">{label}</Label>
+      <label className="text-xs text-slate-600">{label}</label>
       <div className="flex items-center gap-2 mt-1">
         <input
           type="color"
@@ -145,7 +145,7 @@ export function SettingsTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
         <h3 className="text-sm font-semibold text-slate-900">Store Information</h3>
         <div>
-          <Label className="text-xs text-slate-600">Store Name</Label>
+          <label className="text-xs text-slate-600">Store Name</label>
           <Input
             value={settings.store_name || ""}
             onChange={(e) => set("store_name")(e.target.value)}
@@ -214,7 +214,7 @@ export function SettingsTab() {
         <p className="text-xs text-slate-400">Secrets are masked after saving. To update, type a new value.</p>
         <div className="grid gap-4">
           <div>
-            <Label className="text-xs text-slate-600">Stripe Public Key</Label>
+            <label className="text-xs text-slate-600">Stripe Public Key</label>
             <Input
               value={settings.stripe_public_key || ""}
               onChange={(e) => set("stripe_public_key")(e.target.value)}
