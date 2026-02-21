@@ -3005,25 +3005,6 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
-@api_router.put("/admin/orders/{order_id}")
-async def admin_update_order(
-    order_id: str,
-    payload: AdminOrderUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
-):
-    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    update: Dict[str, Any] = {}
-    if payload.manual_status is not None:
-        update["manual_status"] = payload.manual_status
-    if payload.internal_note is not None:
-        update["internal_note"] = payload.internal_note
-    if update:
-        await db.orders.update_one({"id": order_id}, {"$set": update})
-    return {"message": "Order updated"}
-
-
 @api_router.get("/admin/customers")
 async def admin_customers(admin: Dict[str, Any] = Depends(require_admin)):
     customers = await db.customers.find({}, {"_id": 0}).to_list(500)

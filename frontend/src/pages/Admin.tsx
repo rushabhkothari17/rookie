@@ -352,7 +352,6 @@ export default function Admin() {
   const handleCustomerEdit = async () => {
     if (!selectedCustomer) return;
     try {
-      const address = addresses.find(a => a.customer_id === selectedCustomer.id);
       await api.put(`/admin/customers/${selectedCustomer.id}`, {
         customer_data: {
           full_name: selectedCustomer.full_name,
@@ -360,13 +359,13 @@ export default function Admin() {
           job_title: selectedCustomer.job_title,
           phone: selectedCustomer.phone,
         },
-        address_data: address ? {
-          line1: address.line1,
-          line2: address.line2,
-          city: address.city,
-          region: address.region,
-          postal: address.postal,
-        } : {}
+        address_data: {
+          line1: selectedCustomer.line1 || "",
+          line2: selectedCustomer.line2 || "",
+          city: selectedCustomer.city || "",
+          region: selectedCustomer.region || "",
+          postal: selectedCustomer.postal || "",
+        }
       });
       toast.success("Customer updated");
       setShowCustomerDialog(false);
