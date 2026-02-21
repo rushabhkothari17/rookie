@@ -4411,6 +4411,7 @@ async def create_manual_subscription(
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
         "is_manual": True,
+        "contract_end_date": (datetime.fromisoformat((payload.start_date or now_iso()).replace("Z", "+00:00")).replace(tzinfo=timezone.utc) + timedelta(days=365)).isoformat(),
     }
     await db.subscriptions.insert_one(sub_doc)
     
