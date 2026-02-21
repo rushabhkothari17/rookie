@@ -1,0 +1,74 @@
+{
+  "summary": "Iteration 13 testing of new bug fixes and features: category deletion protection, category description field, admin quote request CRUD, promo code filters (status/code/date), terms products linked column, catalog preview link, processing fee hidden, store category blurbs from API. Backend: 18/19 tests passed. Frontend: All 16 UI scenarios passed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/admin/products-all (and /api/products)",
+        "issue": "All 28 seeded products are missing terms_id field in MongoDB documents. The GET /api/admin/products-all returns all DB fields (no projection filtering), but existing products were seeded without terms_id. This causes Terms tab 'Products Linked' column to show 'None' for all terms. New products created via admin UI will have terms_id. Fix: DB migration to add terms_id: null to all existing products, OR accept that Products Linked only shows data for products assigned terms via admin UI."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Terms tab - Products Linked column",
+        "issue": "Shows 'None' for all terms because no existing products have terms_id in MongoDB. Feature is correctly implemented in frontend (products.filter(p => p.terms_id === t.id)), but data is absent. Admin would need to manually assign terms to each product via Catalog > Edit > Terms selector.",
+        "affected_selectors": ["terms-products-linked-column"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Product detail page (Zoho One Express Setup)",
+        "issues": ["OUTCOME field still shows '11' - stale test data from previous iterations (noted in iteration 12 as well)"]
+      },
+      {
+        "screen": "Admin panel (dev mode)",
+        "issues": ["ResizeObserver loop errors trigger React dev error overlay during navigation. These are harmless browser warnings in dev mode only, not a production issue."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter13_fixes.py",
+    "/app/test_reports/pytest/pytest_results_iter13.xml"
+  ],
+  "action_items": [
+    "OPTIONAL: Add DB migration to backfill terms_id: null on all products that lack the field, so Terms Products Linked column can show data once terms are assigned via admin UI.",
+    "OPTIONAL: Clean up orphan test categories (Enterprise, Test, Test Category, test, test2) from previous test iterations."
+  ],
+  "critical_code_review_comments": [
+    "Terms Products Linked: The feature is correct in code, but the UX expects admin to manually assign terms to products via Catalog > Edit. No documentation or inline hint about this workflow. Consider adding a tooltip or info text.",
+    "Promo status filter uses capitalized values ('Active', 'Expired', 'Exhausted') in filter options matching the promo.status field - this is correct and consistent.",
+    "Category delete protection is implemented at two levels: (1) client-side: product_count > 0 shows toast error without API call; (2) server-side: DELETE /admin/categories/{id} returns 409 if products linked. Good defensive implementation.",
+    "StickyPurchaseSummary.tsx correctly shows ONLY 'Total' (no subtotal, no processing fee breakdown). The fee is accepted as part of total calculation but not displayed to customer - correct as per requirements."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter13_fixes.py"
+  ],
+  "success_rate": {
+    "backend": "95% (18/19 tests passed - 1 minor data-only issue with terms_id not in legacy products)",
+    "frontend": "100% (all 16 UI scenarios verified)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123! (is super_admin - sees Users tab first)",
+  "seed_data_creation": "Created test promo code TEST13ITER, test quote requests (TEST_John Doe Iter13, TEST_Min Iter13, Test UI Quote User), test category TEST_UI13_Cat (deleted during test). Backend test data remains in DB.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 16 new features/fixes verified: (1) Tab order: Users(super_admin), Customers, Subscriptions, Orders, Quote Requests, Categories, Catalog, Terms, Promo Codes, Settings, Zoho sync logs - CORRECT; (2) Category delete protection: client-side check + 409 from API - WORKING; (3) Category description: create/edit/view in table - WORKING; (4) Quote Requests: full CRUD via admin - WORKING; (5) Promo filters: code/status/date created - WORKING; (6) Terms Products Linked: column present but shows 'None' (data issue - no products assigned terms in DB); (7) Catalog preview link: correct /product/{id} format, opens in new tab; (8) Processing fee hidden on product detail page - only Total shown; (9) Store category blurbs loaded from /api/categories endpoint. Minor: all existing products lack terms_id in MongoDB, need admin to assign terms manually. Stale test data: OUTCOME: '11' on Zoho One Express Setup product.",
+  "mocked_apis": [
+    "Email sending for quote requests (stores to DB only - MOCKED)"
+  ],
+  "verified_features": {
+    "tab_order": "Users(super_admin first), Customers, Subscriptions, Orders, Quote Requests, Categories, Catalog, Terms, Promo Codes, Settings, Zoho sync logs",
+    "category_deletion_protection": "Client-side check + API 409 for categories with products",
+    "category_description": "Create/edit/view description in admin categories table",
+    "quote_requests_crud": "New Quote Request dialog with all fields (product, customer, name, email, company, phone, message, status)",
+    "promo_filters": "Code filter, Status filter (All/Active/Expired/Exhausted), Date Created column",
+    "terms_products_linked": "Column present, shows product names for linked terms (shows None for unassigned)",
+    "catalog_preview_link": "Preview link in each row - /product/{id} format, target=_blank",
+    "processing_fee_hidden": "Product detail page shows only Total, no fee/subtotal breakdown",
+    "store_category_blurbs": "Store loads category blurbs from /api/categories endpoint with fallback",
+    "api_category_blurbs": "GET /api/categories returns category_blurbs dict",
+    "api_admin_product_count": "GET /api/admin/categories returns product_count per category"
+  }
+}
