@@ -229,6 +229,13 @@ async def admin_create_category(
     }
     await db.categories.insert_one(cat)
     cat.pop("_id", None)
+    await create_audit_log(
+        entity_type="category",
+        entity_id=cat["id"],
+        action="created",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"name": payload.name},
+    )
     return {"category": cat}
 
 
