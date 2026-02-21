@@ -5,11 +5,11 @@ import AppShell from "@/components/AppShell";
 import OfferingCard from "@/components/OfferingCard";
 import { CATEGORY_ORDER, categoryFromSlug, displayCategory } from "@/lib/categories";
 
-const CATEGORY_BLURBS: Record<string, string> = {
+const FALLBACK_BLURBS: Record<string, string> = {
   "Zoho Express Setup": "Fast-track your Zoho setup with expert-led implementation.",
   "Migrate to Zoho": "Move critical systems with minimal downtime and clear milestones.",
   "Managed Services": "Your long-term Zoho partner - managing enhancements, resolving issues, and scaling workflows as you evolve.",
-  "Build & Automate": "On-demand development hours to design, build, automate, and refine your Technology stack (Zoho & Non- Zoho).",
+  "Build & Automate": "On-demand development hours to design, build, automate, and refine your Technology stack.",
   "Accounting on Zoho": "Monthly finance operations tailored to your transaction volume.",
   "Audit & Optimize": "Diagnose what's slowing you down - Refine, Streamline & Maximize",
 };
@@ -18,6 +18,7 @@ const CATEGORY_BLURBS: Record<string, string> = {
 export default function Store() {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<any[]>([]);
+  const [categoryBlurbs, setCategoryBlurbs] = useState<Record<string, string>>(FALLBACK_BLURBS);
   const [activeCategory, setActiveCategory] = useState<string | null>(
     CATEGORY_ORDER[0],
   );
@@ -34,7 +35,6 @@ export default function Store() {
       const ordered = CATEGORY_ORDER.filter((category) =>
         categoryList.includes(category),
       );
-      // Include ALL categories: CATEGORY_ORDER first, then any new custom ones
       const finalList = [
         ...ordered,
         ...categoryList.filter((c) => !ordered.includes(c)),
@@ -42,6 +42,15 @@ export default function Store() {
       setActiveCategory(
         categoryFromSlug(searchParams.get("category"), finalList),
       );
+      // Fetch category blurbs from API
+      try {
+        const catRes = await api.get("/categories");
+        if (catRes.data.category_blurbs) {
+          setCategoryBlurbs((prev) => ({ ...prev, ...catRes.data.category_blurbs }));
+        }
+      } catch {
+        // fallback blurbs already set
+      }
     };
     load();
   }, [searchParams]);
