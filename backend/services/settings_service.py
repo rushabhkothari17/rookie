@@ -207,9 +207,11 @@ class SettingsService:
     async def list_all(include_secrets: bool = False) -> List[Dict[str, Any]]:
         """Return all settings. Mask secrets unless include_secrets=True."""
         docs = await db.app_settings.find({}, {"_id": 0}).sort("category", 1).to_list(500)
-        # Migrate docs that don't yet have the structured fields
+        # Only include structured setting documents (must have a non-empty key)
         result = []
         for d in docs:
+            if not d.get("key"):
+                continue
             entry: Dict[str, Any] = {
                 "id": d.get("id", ""),
                 "key": d.get("key", ""),
