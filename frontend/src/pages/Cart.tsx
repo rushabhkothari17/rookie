@@ -476,6 +476,71 @@ export default function Cart() {
                         )}
                       </div>
                     )}
+                    {/* Zoho Partner Tag — mandatory before checkout */}
+                    <div
+                      className="rounded-md border border-blue-200 bg-blue-50 p-4 space-y-3"
+                      data-testid="partner-tag-section"
+                    >
+                      <label className="text-sm font-semibold text-slate-700 block">
+                        Have you tagged us as your Zoho Partner? <span className="text-red-500">*</span>
+                      </label>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        You can tag us as your Zoho Partner by clicking{" "}
+                        <a
+                          href="https://store.zoho.com/html/store/tagyourpartner.html?partnerid=zkms01370000000123731ce9bbb964daefb3ac6c1ff255b5fa6f"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline font-medium"
+                          data-testid="partner-tag-us-link"
+                        >
+                          here (US DC)
+                        </a>{" "}
+                        or{" "}
+                        <a
+                          href="https://store.zohocloud.ca/html/store/tagyourpartner.html?partnerid=zkms0135000000008003432a39b432f137718e6225e74e34fc66"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline font-medium"
+                          data-testid="partner-tag-ca-link"
+                        >
+                          here (CA DC)
+                        </a>
+                        . If the US DC link doesn't work, try the CA DC link and vice versa. You must be logged in to your Zoho account before tagging us.{" "}
+                        <span className="text-red-600 font-medium">
+                          Misrepresenting or false responses may lead to cancellation of service.
+                        </span>
+                      </p>
+                      <select
+                        data-testid="partner-tag-dropdown"
+                        value={partnerTagResponse}
+                        onChange={(e) => { setPartnerTagResponse(e.target.value); setOverrideCode(""); }}
+                        className={`w-full h-10 border rounded-md px-3 text-sm bg-white text-slate-800 ${
+                          !partnerTagResponse ? "border-red-300" : "border-slate-300"
+                        }`}
+                      >
+                        <option value="">-- Select an option --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="Pre-existing Customer">Pre-existing Customer</option>
+                        <option value="Not yet">Not yet</option>
+                      </select>
+                      {partnerTagResponse === "Not yet" && (
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-600 block">
+                            Override Code <span className="text-red-500">*</span>
+                          </label>
+                          <Input
+                            data-testid="override-code-checkout-input"
+                            value={overrideCode}
+                            onChange={(e) => setOverrideCode(e.target.value)}
+                            placeholder="Enter override code provided by admin"
+                            className={`text-sm ${!overrideCode.trim() ? "border-red-300" : "border-slate-300"}`}
+                          />
+                          <p className="text-xs text-slate-500">
+                            Contact admin to receive a valid override code for your account.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                     {/* Terms & Conditions */}
                     <div className="flex items-start gap-2 p-3 rounded-md border border-slate-200 bg-slate-50">
                       <input
