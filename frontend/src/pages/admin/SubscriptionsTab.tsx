@@ -99,6 +99,7 @@ export function SubscriptionsTab() {
   useEffect(() => {
     load(1);
     api.get("/products").then(r => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
   }, [email, status, payment, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
 
   const sortHeader = (field: string, label: string) => (
