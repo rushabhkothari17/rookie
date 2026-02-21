@@ -1,160 +1,120 @@
-# Product Requirements Document — Automate Accounts Customer Portal
+# Product Requirements Document — Automate Accounts Admin Portal
 
 ## Original Problem Statement
-Build a full-featured customer-facing portal for Automate Accounts (Zoho partner), enabling customers to browse products, place orders, manage subscriptions, and handle payments via Stripe and GoCardless. Admin panel for managing all entities.
+Build a full-featured admin panel for "Automate Accounts" — a Zoho automation consultancy. The platform provides:
+- Customer-facing product store with complex pricing (fixed, tiered, calculator, scope request)
+- Admin panel for managing customers, orders, subscriptions, products, users, financials, and content
+- Integrations: Stripe (card payments), GoCardless (Direct Debit), Resend (email)
 
 ## Architecture
-- **Frontend**: React + TypeScript + TailwindCSS + Shadcn UI (port 3000)
-- **Backend**: FastAPI + Python + MongoDB (port 8001)
-- **Payments**: Stripe (card), GoCardless (direct debit)
-- **Email**: Resend (API key in admin settings)
-- **Rich Text**: TipTap (articles editor)
 
-## Core User Personas
-1. **Customer**: browses store, purchases products/subscriptions, views articles
-2. **Admin**: manages products, categories, orders, subscriptions, customers, articles, codes
-
----
+```
+/app/
+├── backend/
+│   ├── core/
+│   │   ├── config.py       # env vars: JWT_SECRET, STRIPE_API_KEY, ADMIN credentials
+│   │   ├── constants.py    # ALLOWED_ORDER/SUBSCRIPTION_STATUSES, ARTICLE_CATEGORIES, etc.
+│   │   ├── helpers.py      # make_id, now_iso, round_cents, _slugify, currency_for_country
+│   │   └── security.py     # pwd_context, JWT helpers, get_current_user, require_admin, require_super_admin
+│   ├── db/
+│   │   └── session.py      # MongoDB connection (db, client)
+│   ├── middleware/
+│   │   ├── audit.py        # audit middleware
+│   │   └── request_id.py   # RequestID middleware
+│   ├── models/
+│   │   └── models.py       # Pydantic request/response models (in /app/backend/models.py)
+│   ├── routes/
+│   │   ├── auth.py          # Auth + profile endpoints
+│   │   ├── store.py         # Store (products, categories, orders, subscriptions)
+│   │   ├── checkout.py      # Stripe + bank transfer checkout
+│   │   ├── gocardless.py    # GoCardless redirect flow
+│   │   ├── webhooks.py      # Stripe webhooks
+│   │   ├── articles.py      # Articles CRUD + email
+│   │   └── admin/
+│   │       ├── logs.py          # Audit logs
+│   │       ├── misc.py          # currency-override, sync-logs, partner-map, notes
+│   │       ├── promo_codes.py   # Promo codes admin
+│   │       ├── terms.py         # Terms & Conditions admin
+│   │       ├── customers.py     # Customer management
+│   │       ├── orders.py        # Order management
+│   │       ├── subscriptions.py # Subscription management
+│   │       ├── users.py         # Admin user management
+│   │       ├── catalog.py       # Products + Categories CRUD
+│   │       ├── quote_requests.py # Quote requests
+│   │       ├── bank_transactions.py # Bank transactions
+│   │       ├── override_codes.py   # Override codes
+│   │       ├── exports.py       # CSV exports for all entities
+│   │       └── settings.py      # App settings
+│   ├── services/
+│   │   ├── audit_service.py    # AuditService class + create_audit_log helper
+│   │   ├── pricing_service.py  # build_price_inputs, calculate_price, calculate_books_migration_price
+│   │   └── settings_service.py # SettingsService (key-value store with MongoDB)
+│   └── server.py               # FastAPI app setup, middleware, all router includes, startup tasks
+└── frontend/
+    └── src/
+        └── pages/
+            └── admin/
+                └── tabs/   # CustomersTab, OrdersTab, SubscriptionsTab, etc.
+```
 
 ## What's Been Implemented
 
-### Session 1 (Initial)
-- Auth (register, login, verify email)
-- Store with categories, product catalog
-- Cart with Stripe checkout and GoCardless direct debit
-- Admin panel: Users, Customers, Subscriptions, Orders, Categories, Catalog, Settings, Bank Transactions
-- Quote Requests flow
-- Promo codes
-- Terms & Conditions management
-- Bank Transactions tab
-- Zoho sync logs
+### Phase 1: Admin Panel UI (Completed)
+- Full admin panel with 14 tabs: Users, Customers, Subscriptions, Orders, Quote Requests, Bank Transactions, Articles, Categories, Catalog, Terms, Override Codes, Promo Codes, Settings, Logs
+- Server-side pagination, filtering, sorting across all admin tables
+- CSV export for all major entities
+- Searchable email typeahead in product edit form (visible_to_customers)
+- Consistent `text-sm` font sizing across all admin tables
 
-### Session 2 (Partner Tagging + Migrate-to-Books)
-- **Zoho Partner Tagging Gate** at checkout: mandatory dropdown, override codes admin (single-use, 48h expiry)
-- **Override Codes admin tab**: generate/view/expire codes per customer
-- **In-App Migrate to Zoho Books page** (`ProductDetail.tsx`): intake form + complex pricing calculator
-- **Global Checkout Questions**: Zoho subscription type, product, account access
-- **Centralized Notes JSON**: `build_checkout_notes_json` saves all inputs to `order.notes_json` / `subscription.notes_json`
-- **Admin "View Notes" fix**: dialog now shows `notes_json` as pretty-printed JSON + admin text notes
+### Phase 2: UI Bug Fixes (Completed)
+- Fixed inconsistent font sizes in CustomersTab.tsx, SubscriptionsTab.tsx
+- Implemented searchable email typeahead for product visibility (ProductForm.tsx)
+- All UI issues verified by testing agent (100% pass rate)
 
-### Session 3 (Articles Module + Scope ID Unlock + Notes Fix) — 2026-02-21
-- **Notes JSON Capture (System Critical)**:
-  - `build_checkout_notes_json` now includes `payment_method` in `payment` section
-  - `scope_request` orders also save `notes_json` with product_intake
-  - `scope_request_form` orders save `notes_json` with product_intake + scope_form fields (added in iteration 22)
-  - Admin "View Notes" dialog updated to pretty-print `notes_json` as "Intake Data" section
-  - `_scope_unlock` metadata captured in `product_intake` when scope ID is used
-  - `CartItemInput` Pydantic model now has `price_override` field
-- **Articles Module**:
-  - Backend: Full CRUD for `articles` collection with `article_logs`
-  - 8 categories: Scope-Draft, Scope-Final Lost, Scope-Final Won, Blog, Help, Guide, SOP, Other
-  - Price field mandatory for Scope-Final categories
-  - Visibility: All or restricted to specific customers
-  - Article email via Resend (API key from admin settings)
-  - Admin tab "Articles" (between Terms and Promo Codes)
-  - TipTap rich text editor with inline base64 image upload
-  - Customer-facing `/articles` page with category filters
-  - Customer-facing `/articles/:slug` article view
-  - "Articles" nav link in TopNav (between Store and Admin)
-- **Scope ID Unlock**:
-  - Scope ID input on RFQ product detail pages
-  - Validates article by ID: must be Scope-Final category with price
-  - On valid: unlocks "Add to cart" with article price, shows success panel
-  - On invalid: shows error message
-  - Scope metadata (`_scope_unlock`) captured in `notes_json.product_intake`
-  - Full Stripe checkout flow works with scope-unlocked price
+### Phase 3: Backend Refactoring (Completed — Feb 2026)
+- Migrated all endpoints from monolithic server.py into 20 route modules
+- Modular structure: routes/, services/, models/, core/, db/, middleware/
+- All 61 backend tests pass (100% pass rate)
+- server.py cleaned up: removed duplicate constants, all new routers wired
+- The old api_router still remains in server.py as a safety fallback for any edge cases
 
-### Session 5 (Admin Panel UX + Consistency Enhancement — COMPLETE) — 2026-02-21
-- **Backend**: Pagination (20/page), filtering, sorting for 11 modules; CSV export endpoints for 9 modules; edit endpoints for Users/Terms/PromoCodes
-- **Frontend — Full Refactor**:
-  - Rewrote `Admin.tsx` as slim ~80-line container with 14 modular tab components
-  - All tabs have: `AdminPageHeader`, filter bar with Clear button, pagination, sortable table headers
-  - **New/Fully Rewritten Tabs**: OrdersTab (fee badge, all filters), QuoteRequestsTab (email typeahead customer search), BankTransactionsTab (Notes as modal not column, Delete text), TermsTab (Edit button, CSV), PromoCodesTab (Edit button, CSV, expiry filter), UsersTab (Edit button, pagination), OverrideCodesTab (converted from JSX/dark to TSX/white, email display, CSV), CategoriesTab (filters, CSV), ProductsTab/CatalogTab (category + complexity filters, pagination)
-  - **ArticlesTab**: pagination, date range filter, search, CSV, visibility bug fixed (customers now show email)
-  - **BooksMigrationForm**: Added "Company Name" field (saved in notes_json)
-  - All "Del" text → "Delete" throughout admin panel
-  - Tested by testing agent: **100% pass rate** on all 14 feature categories
+## Tech Stack
+- Frontend: React + TypeScript, Tailwind CSS, Shadcn/UI
+- Backend: FastAPI (Python), Motor (async MongoDB)
+- Database: MongoDB
+- Auth: JWT tokens
+- Payments: Stripe (card), GoCardless (Direct Debit)
+- Email: Resend
 
-### Session 6 (Admin Bug Fixes + Catalog Visibility Typeahead) — 2026-02-21
-- **CustomersTab**: Fixed table font size from `text-xs` to `text-sm` (recurring issue resolved)
-- **SubscriptionsTab**: Fixed table font size from default to `text-sm` (consistency fix)
-- **ProductForm/ProductsTab**: Replaced checkbox list for customer visibility with email typeahead (search → chip UI), ProductsTab now enriches customers with email before passing to ProductForm
-- **Quote Requests product filter**: Verified working (backend regex on `product_name`, frontend sends `?product=` param)
-- **Customer edit**: Country and Region/Province confirmed editable (backend + frontend both support it)
-- **Order editing**: Customer email typeahead, status, product, payment, dates, subscription ID — all confirmed working
-- **Subscription editing**: Customer email typeahead confirmed working
-- **Article visibility**: Email typeahead confirmed working
+## 3rd Party Integrations
+- **Stripe**: Checkout sessions, webhook events, payment intents
+- **GoCardless**: Redirect flow for Direct Debit mandates, payment creation
+- **Resend**: Article email delivery
 
-### Session 4 (P1 Audit Logs + P2 DB-backed Settings) — 2026-02-21
-- **P1 — Global Audit Log system**:
-  - `AuditService` in `backend/services/audit_service.py` with keyset pagination
-  - `audit_trail` MongoDB collection with composite indexes
-  - `/api/admin/audit-logs` endpoint with full filtering (actor, source, entity_type, action, severity, date range, free text)
-  - `LogsTab.tsx`: full-featured admin UI with filters, load-more pagination, detail dialog
-  - Audit logging on: settings changes (SETTINGS_KEY_UPDATE, SETTINGS_UPDATE), order status updates, webhooks
-- **P2 — DB-backed Settings (complete)**:
-  - `SettingsService` in `backend/services/settings_service.py` with in-memory cache (60s TTL) + startup cleanup of obsolete keys
-  - `app_settings` collection seeded with 12 structured settings across 6 categories
-  - **Categories**: Payments (`service_fee_rate`), Operations (`override_code_expiry_hours`), Email (resend + sender + admin email), Zoho (5 checkout URLs), Branding (`website_url`, `contact_email`), FeatureFlags (`partner_tagging_enabled`)
-  - **Removed dead settings**: stripe_publishable/secret/webhook keys, gocardless_access_token/environment, logo_url (duplicate), zoho_partner_link_aus/nz/global (wrong URLs, unused)
-  - `/api/settings/public` extended to return all Zoho + branding fields (unauthenticated)
-  - `/api/admin/settings/structured` GET — grouped by category (clean, no dead keys)
-  - `/api/admin/settings/key/{key}` PUT — update single setting
-  - **Wired to codebase**: `service_fee_rate` used in `calculate_price()`, order create, webhook renewal; `resend_api_key` via SettingsService; `override_code_expiry_hours` for override code generation
-  - **Cart.tsx**: loads 5 Zoho URLs from `/api/settings/public` (no more hardcoded)
-  - **ProductDetail.tsx**: loads `contact_email` + `website_url` from settings; passes `website_url` to `BooksMigrationForm`
-  - **SettingsTab.tsx** cleaned up: removed API Keys section, removed Secondary color (unused), clean 2-column Brand Colors layout
+## Admin Credentials (test)
+- Email: admin@automateaccounts.local
+- Password: ChangeMe123!
 
----
-
-## DB Collections
-- `users`, `customers`, `addresses`, `products`, `categories`
-- `orders` (+ `notes_json`, `partner_tag_response`, `override_code_id`)
-- `subscriptions` (+ `notes_json`, `partner_tag_response`, `override_code_id`)
-- `override_codes` — code, customer_id, expires_at, status, used_at
-- `articles` — id, title, slug, category, price, content, visibility, restricted_to, created_at, updated_at, deleted_at
-- `article_logs` — id, article_id, action, actor, details, created_at
-- `app_settings`, `terms`, `promo_codes`, `quote_requests`, `zoho_sync_logs`
-
----
-
-## Key API Endpoints
-
-### Articles
-- `GET /api/articles/admin/list` — admin list (no content)
-- `GET /api/articles/public` — customer-visible list (no content)
-- `GET /api/articles/{id}` — single article with content
-- `GET /api/articles/{id}/validate-scope` — validate scope ID for RFQ unlock
-- `GET /api/articles/{id}/logs` — admin timeline
-- `POST /api/articles` — create (admin)
-- `PUT /api/articles/{id}` — update (admin)
-- `DELETE /api/articles/{id}` — soft delete (admin)
-- `POST /api/articles/{id}/email` — send article link via Resend
-
----
-
-## Test Credentials
-- Admin: `admin@automateaccounts.local` / `ChangeMe123!`
-- GoCardless test bank (Canada): Institution `0003`, Transit `00006`, Account `1234567`
-
----
+## Known Issues / Technical Debt
+- server.py still contains old `api_router` and all its endpoint definitions as fallback (~6000 lines). These should be removed in a future cleanup step after full production validation.
+- HTML hydration warning in admin dropdowns: `<span>` inside `<select>/<option>` (non-blocking)
+- `create_audit_log` is defined both in server.py (local) and services/audit_service.py — the one in server.py should be removed once the api_router cleanup is done
 
 ## Prioritized Backlog
 
-### P0 — Next
-- **Audit Log Instrumentation**: Log key mutations (order create/update, subscription, customer, product, article, promo codes, override codes) — currently only settings + webhook + order status are instrumented
+### P0 — Must Have
+- Remove old api_router endpoint definitions from server.py (final cleanup)
 
-### P1 — Upcoming
-- **`server.py` Refactor**: Extract route groups into `routes/` (auth, products, orders, subscriptions, etc.) — server.py is 6500+ lines
-- Full Zoho CRM & Books Integration (data sync)
-- Email integration for Quote Requests (use Resend + admin_notification_email setting)
+### P1 — High Value
+- Audit Log Instrumentation: instrument all routes to use AuditService for comprehensive logging
+- Production monitoring + error alerting
 
-### P2 — Future
-- PostgreSQL migration (user-deferred)
-- Scope-request form endpoint (`/api/orders/scope-request-form`) notes_json capture
+### P2 — Nice to Have
+- Zoho CRM & Books integration (sync customers, orders)
+- Email notifications for Quote Requests submitted
+- PostgreSQL migration (if scale requires it)
 
----
-
-## Known Issues / Notes
-- `scope-request-form` endpoint does not include `notes_json` (different from `/orders/scope-request`)
-- GoCardless payment flow: previously broken, fixed once, needs ongoing monitoring
+## Test Reports
+- `/app/test_reports/iteration_5.json` — UI bug fix verification (100% pass)
+- `/app/test_reports/iteration_28.json` — Backend refactor regression test (61/61 pass, 100%)
+- `/app/backend/tests/test_refactored_routes.py` — Pytest suite for all new route modules
