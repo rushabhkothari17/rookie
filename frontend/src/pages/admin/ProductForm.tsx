@@ -217,8 +217,16 @@ export function ProductForm({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Switch checked={form.is_subscription} onCheckedChange={s("is_subscription")} data-testid="pf-subscription" />
-          <label className="text-sm">Subscription (recurring billing)</label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.is_subscription}
+              onChange={(e) => s("is_subscription")(e.target.checked)}
+              className="w-4 h-4 rounded"
+              data-testid="pf-subscription"
+            />
+            <span className="text-sm">Subscription (recurring billing)</span>
+          </label>
         </div>
         {form.is_subscription && (
           <div>
