@@ -40,10 +40,14 @@ export default function TopNav() {
         <div className="flex items-center gap-6">
           <Link
             to="/store"
-            className="text-lg font-semibold tracking-tight text-slate-900"
+            className="flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900"
             data-testid="nav-logo"
           >
-            Automate Accounts
+            {logoUrl ? (
+              <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" data-testid="nav-logo-img" />
+            ) : (
+              storeName
+            )}
           </Link>
           <nav className="flex items-center gap-4 text-sm" data-testid="nav-links">
             <Link to="/store" className={isActive("/store")} data-testid="nav-store">
