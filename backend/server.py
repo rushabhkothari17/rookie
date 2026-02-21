@@ -239,6 +239,29 @@ async def create_audit_log(entity_type: str, entity_id: str, action: str, actor:
     })
 
 
+def build_checkout_notes_json(order_items: list, payload, user_id: str, customer_id: str) -> dict:
+    """Build JSON blob capturing all checkout inputs for order/subscription notes."""
+    return {
+        "product_intake": {
+            item["product"]["id"]: item.get("inputs", {})
+            for item in order_items
+        },
+        "checkout_intake": {
+            "zoho_subscription_type": getattr(payload, "zoho_subscription_type", None),
+            "current_zoho_product": getattr(payload, "current_zoho_product", None),
+            "zoho_account_access": getattr(payload, "zoho_account_access", None),
+            "partner_tag_response": getattr(payload, "partner_tag_response", None),
+            "promo_code": getattr(payload, "promo_code", None),
+            "terms_accepted": getattr(payload, "terms_accepted", False),
+        },
+        "system_metadata": {
+            "user_id": user_id,
+            "customer_id": customer_id,
+            "timestamp": now_iso(),
+        },
+    }
+
+
 async def validate_and_consume_partner_tag(
     customer_id: str,
     partner_tag_response: Optional[str],
