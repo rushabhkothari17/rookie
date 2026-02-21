@@ -3544,11 +3544,209 @@ async def create_manual_order(
         "mocked": True,
     })
     
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="created_manual",
+        actor=f"admin:{admin['id']}",
+        details={"status": payload.status, "total": total, "payment_method": "offline"}
+    )
+    
     return {
         "message": "Manual order created",
         "order_id": order_id,
         "order_number": order_number,
     }
+
+
+@api_router.post("/admin/subscriptions/manual")
+async def create_manual_subscription(
+    payload: ManualSubscriptionCreate,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Create a manual subscription (no Stripe/GoCardless)"""
+    user = await db.users.find_one({"email": payload.customer_email.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer record not found")
+    
+    product = await db.products.find_one({"id": payload.product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    sub_id = make_id()
+    sub_number = f"SUB-{sub_id.split('-')[0].upper()}"
+    
+    # Parse renewal date
+    from datetime import datetime
+    try:
+        renewal_date_dt = datetime.fromisoformat(payload.renewal_date.replace('Z', '+00:00'))
+    except:
+        renewal_date_dt = datetime.now(timezone.utc) + timedelta(days=30)
+    
+    sub_doc = {
+        "id": sub_id,
+        "subscription_number": sub_number,
+        "customer_id": customer["id"],
+        "plan_name": product["name"],
+        "product_id": product["id"],
+        "status": payload.status,
+        "payment_method": "manual",
+        "amount": payload.amount,
+        "renewal_date": renewal_date_dt.isoformat(),
+        "cancel_at_period_end": False,
+        "canceled_at": None,
+        "internal_note": payload.internal_note or "",
+        "created_at": now_iso(),
+        "created_by_admin": admin["id"],
+        "is_manual": True,
+    }
+    await db.subscriptions.insert_one(sub_doc)
+    
+    await create_audit_log(
+        entity_type="subscription",
+        entity_id=sub_id,
+        action="created_manual",
+        actor=f"admin:{admin['id']}",
+        details={"status": payload.status, "amount": payload.amount, "renewal_date": renewal_date_dt.isoformat()}
+    )
+    
+    return {
+        "message": "Manual subscription created",
+        "subscription_id": sub_id,
+        "subscription_number": sub_number,
+    }
+
+
+@api_router.post("/subscriptions/{subscription_id}/renew-now")
+async def renew_subscription_now(
+    subscription_id: str,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Create a renewal order for a manual subscription"""
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    # Create renewal order
+    order_id = make_id()
+    order_number = f"AA-{order_id.split('-')[0].upper()}"
+    
+    order_doc = {
+        "id": order_id,
+        "order_number": order_number,
+        "customer_id": subscription["customer_id"],
+        "subscription_id": subscription_id,
+        "subscription_number": subscription.get("subscription_number", ""),
+        "type": "subscription_renewal",
+        "status": "unpaid",
+        "subtotal": subscription["amount"],
+        "discount_amount": 0.0,
+        "fee": 0.0,
+        "total": subscription["amount"],
+        "currency": "USD",
+        "payment_method": subscription.get("payment_method", "manual"),
+        "created_at": now_iso(),
+        "created_by_admin": admin["id"],
+    }
+    await db.orders.insert_one(order_doc)
+    
+    # Update subscription renewal date
+    from datetime import datetime
+    current_renewal = datetime.fromisoformat(subscription["renewal_date"].replace('Z', '+00:00'))
+    next_renewal = current_renewal + timedelta(days=30)
+    
+    await db.subscriptions.update_one(
+        {"id": subscription_id},
+        {"$set": {"renewal_date": next_renewal.isoformat(), "updated_at": now_iso()}}
+    )
+    
+    await create_audit_log(
+        entity_type="subscription",
+        entity_id=subscription_id,
+        action="renewed",
+        actor=f"admin:{admin['id']}",
+        details={"order_id": order_id, "order_number": order_number, "amount": subscription["amount"]}
+    )
+    
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="created_renewal",
+        actor=f"admin:{admin['id']}",
+        details={"subscription_id": subscription_id, "status": "unpaid"}
+    )
+    
+    return {
+        "message": "Renewal order created",
+        "order_id": order_id,
+        "order_number": order_number,
+        "next_renewal_date": next_renewal.isoformat(),
+    }
+
+
+@api_router.put("/admin/subscriptions/{subscription_id}")
+async def update_subscription(
+    subscription_id: str,
+    payload: SubscriptionUpdate,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Update subscription renewal date or amount"""
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    update_fields = {}
+    changes = {}
+    
+    if payload.renewal_date is not None:
+        update_fields["renewal_date"] = payload.renewal_date
+        changes["renewal_date"] = {"old": subscription.get("renewal_date"), "new": payload.renewal_date}
+    
+    if payload.amount is not None:
+        update_fields["amount"] = payload.amount
+        changes["amount"] = {"old": subscription.get("amount"), "new": payload.amount}
+    
+    if payload.status is not None:
+        update_fields["status"] = payload.status
+        changes["status"] = {"old": subscription.get("status"), "new": payload.status}
+    
+    if update_fields:
+        update_fields["updated_at"] = now_iso()
+        await db.subscriptions.update_one({"id": subscription_id}, {"$set": update_fields})
+        
+        await create_audit_log(
+            entity_type="subscription",
+            entity_id=subscription_id,
+            action="updated",
+            actor=f"admin:{admin['id']}",
+            details={"changes": changes}
+        )
+    
+    return {"message": "Subscription updated"}
+
+
+@api_router.get("/admin/orders/{order_id}/logs")
+async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    """Get audit logs for an order"""
+    logs = await db.audit_logs.find(
+        {"entity_type": "order", "entity_id": order_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return {"logs": logs}
+
+
+@api_router.get("/admin/subscriptions/{subscription_id}/logs")
+async def get_subscription_logs(subscription_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    """Get audit logs for a subscription"""
+    logs = await db.audit_logs.find(
+        {"entity_type": "subscription", "entity_id": subscription_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return {"logs": logs}
 
 
 app.include_router(api_router)
