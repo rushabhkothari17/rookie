@@ -150,7 +150,7 @@ export default function BooksMigrationForm({ onChange, initialValues = {}, websi
           <p className="text-sm text-slate-700">
             Please follow{" "}
             <a
-              href="https://www.automateaccounts.com"
+              href={websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline font-medium"
