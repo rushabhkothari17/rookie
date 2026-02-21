@@ -15,7 +15,7 @@ ADMIN_PASSWORD = "ChangeMe123!"
 @pytest.fixture(scope="module")
 def admin_token():
     """Get admin auth token"""
-    resp = requests.post(f"{BASE_URL}/api/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+    resp = requests.post(f"{BASE_URL}/api/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
     assert resp.status_code == 200, f"Admin login failed: {resp.text}"
     return resp.json().get("token")
 
