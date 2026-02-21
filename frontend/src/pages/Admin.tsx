@@ -522,6 +522,50 @@ export default function Admin() {
     }
   };
 
+  const handleToggleUserActive = async (userId: string, currentActive: boolean) => {
+    const newState = !currentActive;
+    if (!confirm(`${newState ? "Activate" : "Deactivate"} this user? ${newState ? "" : "They will be unable to login."}`)) return;
+    try {
+      await api.patch(`/admin/users/${userId}/active?active=${newState}`);
+      toast.success(`User ${newState ? "activated" : "deactivated"}`);
+      loadAdminUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to update user status");
+    }
+  };
+
+  const handleToggleCustomerActive = async (customerId: string, currentActive: boolean) => {
+    const newState = !currentActive;
+    if (!confirm(`${newState ? "Activate" : "Deactivate"} this customer? ${newState ? "" : "Their account will be unable to login."}`)) return;
+    try {
+      await api.patch(`/admin/customers/${customerId}/active?active=${newState}`);
+      toast.success(`Customer ${newState ? "activated" : "deactivated"}`);
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to update customer status");
+    }
+  };
+
+  const downloadCsv = async (endpoint: string, filename: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const baseUrl = process.env.REACT_APP_BACKEND_URL || "";
+      const resp = await fetch(`${baseUrl}${endpoint}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!resp.ok) throw new Error("Export failed");
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("CSV export failed");
+    }
+  };
+
   const getCustomerAddress = (customerId: string) => addresses.find(a => a.customer_id === customerId);
   const getCustomerUser = (customerId: string) => {
     const customer = customers.find(c => c.id === customerId);
