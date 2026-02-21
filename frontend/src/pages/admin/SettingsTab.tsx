@@ -131,13 +131,21 @@ function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, newVa
 
         {isBool ? (
           <div className="flex items-center gap-2">
-            <Switch
-              checked={item.value_json === true || item.value_json === "true"}
-              onCheckedChange={handleBoolToggle}
+            <button
+              role="switch"
+              aria-checked={item.value_json === true || item.value_json === "true"}
+              onClick={() => handleBoolToggle(!(item.value_json === true || item.value_json === "true"))}
               disabled={saving}
               data-testid={`setting-toggle-${item.key}`}
-            />
-            <span className="text-xs text-slate-500">{item.value_json ? "Enabled" : "Disabled"}</span>
+              className={`relative inline-flex h-5 w-9 items-center rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:opacity-50 ${
+                (item.value_json === true || item.value_json === "true") ? "bg-primary" : "bg-input"
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                (item.value_json === true || item.value_json === "true") ? "translate-x-4" : "translate-x-0"
+              }`} />
+            </button>
+            <span className="text-xs text-slate-500">{(item.value_json === true || item.value_json === "true") ? "Enabled" : "Disabled"}</span>
           </div>
         ) : isEditing ? (
           <div className="flex items-center gap-2">
