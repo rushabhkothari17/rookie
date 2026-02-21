@@ -448,7 +448,7 @@ class CompleteGoCardlessRedirect(BaseModel):
     order_id: Optional[str] = None
     subscription_id: Optional[str] = None
     inputs: Dict[str, Any] = Field(default_factory=dict)
-    subtotal: float
+    subtotal: Optional[float] = None  # looked up from order/subscription if not provided
     discount: float = 0.0
     fee: float = 0.0
     status: str = "paid"
