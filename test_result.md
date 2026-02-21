@@ -228,7 +228,7 @@ backend:
 frontend:
   - task: "Admin Catalog Tab with Terms Assignment"
     implemented: true
-    working: "NA"
+    working: "blocked"
     file: "frontend/src/pages/Admin.tsx"
     stuck_count: 0
     priority: "high"
@@ -237,6 +237,93 @@ frontend:
       - working: "NA"
         agent: "testing"
         comment: "Frontend testing not required per instructions - focus on backend only"
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - External preview URL (https://unruffled-allen-yzuzhj.preview.emergentagent.com) shows 'Preview Unavailable!!!' error. Services are running internally (frontend on :3000, backend on :8001), but external preview infrastructure is down. Code review confirms implementation is present: Catalog tab at line 356, Terms Assigned column at line 848, Terms dropdown with Select component at lines 866-876 using handleAssignTermsToProduct function."
+
+  - task: "Admin Subscriptions - Manual Creation"
+    implemented: true
+    working: "blocked"
+    file: "frontend/src/pages/Admin.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - Cannot test due to preview URL unavailable. Code review confirms: 'Create Manual Subscription' button exists at line 558, modal dialog at lines 561-606 with form fields for customer email, product selection, amount, renewal date, status, and internal note."
+
+  - task: "Admin Subscriptions - Renew Now Button"
+    implemented: true
+    working: "blocked"
+    file: "frontend/src/pages/Admin.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - Cannot test due to preview URL unavailable. Code review confirms: 'Renew Now' button implemented at line 636, conditionally shown for manual subscriptions (sub.is_manual), calls handleRenewNow function at line 278 which POSTs to /subscriptions/{id}/renew-now endpoint."
+
+  - task: "Admin Orders - Subscription # Column"
+    implemented: true
+    working: "blocked"
+    file: "frontend/src/pages/Admin.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - Cannot test due to preview URL unavailable. Code review confirms: Orders table at lines 492-551, 'Subscription #' column header at line 500, displays order.subscription_number or order.subscription_id at line 521."
+
+  - task: "Admin Orders - View Logs Modal"
+    implemented: true
+    working: "blocked"
+    file: "frontend/src/pages/Admin.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - Cannot test due to preview URL unavailable. Code review confirms: 'View Logs' button at line 529, handleViewOrderLogs function at line 288 fetches logs from /admin/orders/{id}/logs, Logs Dialog modal at lines 922-945 displays logs with action, timestamp (created_at), actor, and details fields."
+
+  - task: "Customer Cart - Terms & Conditions Enforcement"
+    implemented: true
+    working: "blocked"
+    file: "frontend/src/pages/Cart.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - Cannot test due to preview URL unavailable. Code review confirms: T&C checkbox at lines 386-392 (id='terms-checkbox'), termsAccepted state at line 21, enforcement at lines 104-107 shows toast error 'Please accept the Terms & Conditions to proceed' if not accepted, checkout button disabled when !termsAccepted at lines 408-409."
+
+  - task: "Customer Cart - Terms Modal Display"
+    implemented: true
+    working: "blocked"
+    file: "frontend/src/pages/Cart.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - Cannot test due to preview URL unavailable. Code review confirms: 'View Terms' button at lines 395-401, setShowTermsModal(true) on click, terms modal at lines 550-566 displays termsContent.title and termsContent.content with resolved tags, loadTerms function at line 88 fetches from /terms/for-product/{id} endpoint."
+
+  - task: "Customer Cart - Payment Method Selection"
+    implemented: true
+    working: "blocked"
+    file: "frontend/src/pages/Cart.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "blocked"
+        agent: "testing"
+        comment: "⛔ BLOCKED - Cannot test due to preview URL unavailable. Code review confirms: Payment method section at lines 230-285, Bank Transfer option at lines 233-256 (data-testid='payment-bank-option'), Card Payment option at lines 257-280 (data-testid='payment-card-option'), paymentMethod state at line 17, both options functional with radio button styling and descriptive text."
 
 metadata:
   created_by: "testing_agent"
