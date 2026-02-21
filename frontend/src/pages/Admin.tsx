@@ -137,10 +137,24 @@ export default function Admin() {
     }
   };
 
+  const loadSubscriptions = async () => {
+    try {
+      const params = new URLSearchParams({
+        sort_by: subSortField,
+        sort_order: subSortOrder,
+      });
+      if (subCreatedFrom) params.append("created_from", subCreatedFrom);
+      if (subCreatedTo) params.append("created_to", subCreatedTo);
+      const res = await api.get(`/admin/subscriptions?${params.toString()}`);
+      setSubscriptions(res.data.subscriptions || []);
+    } catch {
+      toast.error("Failed to load subscriptions");
+    }
+  };
+
   const load = async () => {
-    const [custRes, subRes, productRes, logRes, promoRes, termsRes] = await Promise.all([
+    const [custRes, productRes, logRes, promoRes, termsRes] = await Promise.all([
       api.get("/admin/customers"),
-      api.get("/admin/subscriptions"),
       api.get("/products"),
       api.get("/admin/sync-logs"),
       api.get("/admin/promo-codes").catch(() => ({ data: { promo_codes: [] } })),
@@ -149,14 +163,21 @@ export default function Admin() {
     setCustomers(custRes.data.customers || []);
     setAddresses(custRes.data.addresses || []);
     setUsers(custRes.data.users || []);
-    setSubscriptions(subRes.data.subscriptions || []);
     setProducts(productRes.data.products || []);
     setLogs(logRes.data.logs || []);
     setPromoCodes(promoRes.data.promo_codes || []);
     setTerms(termsRes.data.terms || []);
     
-    // Load orders separately with pagination
-    await loadOrders(1);
+    await Promise.all([loadOrders(1), loadSubscriptions()]);
+  };
+
+  const loadAdminUsers = async () => {
+    try {
+      const res = await api.get("/admin/users");
+      setAdminUsers(res.data.users || []);
+    } catch {
+      toast.error("Failed to load admin users (super admin required)");
+    }
   };
 
   useEffect(() => {
