@@ -95,6 +95,7 @@ export default function BooksMigrationForm({ onChange, initialValues = {}, websi
   const [dataTypes, setDataTypes] = useState(initialValues.data_types || []);
   const [otherData, setOtherData] = useState(initialValues.other_data || "");
   const [otherInfo, setOtherInfo] = useState(initialValues.other_info || "");
+  const [companyName, setCompanyName] = useState(initialValues.company_name || "");
 
   const sourceLabel = SOURCE_SYSTEMS.find((s) => s.id === sourceSystem)?.label || "";
 
@@ -106,13 +107,14 @@ export default function BooksMigrationForm({ onChange, initialValues = {}, websi
     data_types: dataTypes,
     other_data: otherData,
     other_info: otherInfo,
+    company_name: companyName,
   };
 
   const price = calculateBooksMigrationPrice(currentValues);
 
   useEffect(() => {
     onChange({ inputs: currentValues, price, isComplete: isFormComplete() });
-  }, [sourceSystem, accessConfirmed, zohoProducts, years, dataTypes, otherData, otherInfo]);
+  }, [sourceSystem, accessConfirmed, zohoProducts, years, dataTypes, otherData, otherInfo, companyName]);
 
   function isFormComplete() {
     return !!sourceSystem && !!accessConfirmed && dataTypes.length > 0;
