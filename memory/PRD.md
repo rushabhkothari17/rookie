@@ -177,7 +177,29 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - **Zoho CRM & Books**: Creates log entries instead of API calls
 - **Email to rushabh@automateaccounts.com**: Creates email_outbox entry, not actually sent
 
-## Admin Panel Features (Completed Feb 2026)
+## Admin Panel Enhanced Features (Feb 21, 2026) ✅
+
+### Orders Tab Improvements
+- **Table layout**: compact `text-xs`, `overflow-x-auto` container, `min-w-[1100px]`, actions in single row (no-wrap)
+- **Date sorting**: Date column header toggles asc/desc sort (default: newest first)
+- **Payment Date column**: Visible in table, editable in Edit dialog
+- **Filters added**: Order # (contains), Status (dropdown), Product Name — alongside existing date/email filters
+- **Edit Order dialog**: Customer selector (auto-shows email), Order Date, Payment Date, Status (9 options incl. completed/disputed), Payment Method, Add Note (appended to notes array)
+- **View Notes button**: Shows notes history with timestamp + actor. Count badge when notes exist.
+- **Notes stored as**: `order.notes[]` = `{text, timestamp, actor}` array, appended via `$push`
+
+### Subscriptions Tab Improvements
+- **Created Date column**: Shows `created_at` (backfilled for legacy records)
+- **Filters panel**: Customer Name, Email, Plan, Status, Payment Method, Renewal From/To date range
+- **Edit Subscription**: Customer selector, Plan, Amount, Renewal Date, Status dropdown, Payment Method
+- **Cancel button**: Visible for non-cancelled subs, requires confirmation, sets `canceled_pending`, creates audit log
+- **Admin cancel endpoint**: `POST /api/admin/subscriptions/{id}/cancel`
+
+### Backend Additions
+- `disputed`, `scope_pending`, `canceled_pending` added to `ALLOWED_ORDER_STATUSES`
+- `new_note` field on `OrderUpdate` → appends to `notes` array + creates `note_added` audit log
+- `customer_id`, `payment_method` added to `SubscriptionUpdate`
+- `order_number_filter`, `status_filter` query params on `GET /admin/orders`
 
 ### P0 Admin CRUD (Feb 2026) ✅
 - **Customer Edit**: Full dialog with Name, Company, Job Title, Phone, Address fields. Country locked.
