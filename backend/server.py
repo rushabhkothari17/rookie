@@ -3339,6 +3339,9 @@ async def checkout_status(
                             "canceled_at": None,
                             "amount": order.get("total"),
                             "payment_method": "card",
+                            "partner_tag_response": order.get("partner_tag_response"),
+                            "override_code_id": order.get("override_code_id"),
+                            "partner_tag_timestamp": order.get("partner_tag_timestamp"),
                         }
                     )
                     await db.email_outbox.insert_one(
