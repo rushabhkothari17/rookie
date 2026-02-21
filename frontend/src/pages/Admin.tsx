@@ -1100,42 +1100,61 @@ export default function Admin() {
               </DialogContent>
             </Dialog>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-            <Table data-testid="admin-subscriptions-table" className="text-xs">
+          <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
+            <Table data-testid="admin-subscriptions-table" className="text-xs min-w-[1400px]">
               <TableHeader>
                 <TableRow className="bg-slate-50">
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Renewal Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="w-28">Sub ID</TableHead>
+                  <TableHead className="w-32">Customer</TableHead>
+                  <TableHead className="w-36">Email</TableHead>
+                  <TableHead className="w-36">Plan</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="w-24">Start Date</TableHead>
+                  <TableHead className="w-24">Created</TableHead>
+                  <TableHead className="w-24">Renewal</TableHead>
+                  <TableHead className="w-24">Cancel Date</TableHead>
+                  <TableHead className="w-20">Amount</TableHead>
+                  <TableHead className="w-20">Payment</TableHead>
+                  <TableHead className="w-56">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredSubscriptions.map((sub) => {
                   const user = getCustomerUser(sub.customer_id);
+                  const cancelDate = sub.cancel_at_period_end
+                    ? (sub.current_period_end?.slice(0, 10) || sub.canceled_at?.slice(0, 10) || "—")
+                    : (sub.canceled_at?.slice(0, 10) || "—");
+                  const startDate = sub.start_date?.slice(0, 10) || sub.current_period_start?.slice(0, 10) || sub.created_at?.slice(0, 10) || "—";
                   return (
                     <TableRow key={sub.id} data-testid={`admin-subscription-${sub.id}`} className="border-b border-slate-100">
-                      <TableCell>{user?.full_name || "—"}</TableCell>
-                      <TableCell>{user?.email || "—"}</TableCell>
-                      <TableCell>{sub.plan_name}</TableCell>
+                      <TableCell className="font-mono text-[10px]">{sub.subscription_number || sub.id?.slice(0, 8)}</TableCell>
+                      <TableCell className="max-w-[128px] truncate" title={user?.full_name}>{user?.full_name || "—"}</TableCell>
+                      <TableCell className="max-w-[144px] truncate" title={user?.email}>{user?.email || "—"}</TableCell>
+                      <TableCell className="max-w-[144px] truncate" title={sub.plan_name}>{sub.plan_name}</TableCell>
                       <TableCell>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${sub.status === "active" ? "bg-green-100 text-green-700" : sub.status === "canceled_pending" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
-                          {sub.status}
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${sub.status === "active" ? "bg-green-100 text-green-700" : sub.status === "canceled_pending" ? "bg-amber-100 text-amber-700" : sub.status === "offline_manual" ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>
+                          {sub.status === "offline_manual" ? "Offline/Manual" : sub.status}
                         </span>
                       </TableCell>
+                      <TableCell className="whitespace-nowrap">{startDate}</TableCell>
                       <TableCell className="whitespace-nowrap">{sub.created_at?.slice(0, 10) || "—"}</TableCell>
                       <TableCell className="whitespace-nowrap">{sub.renewal_date?.slice(0, 10) || sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
+                      <TableCell className="whitespace-nowrap text-amber-600">{cancelDate}</TableCell>
                       <TableCell>${sub.amount?.toFixed(2) || "—"}</TableCell>
                       <TableCell>{sub.payment_method || "card"}</TableCell>
                       <TableCell>
                         <div className="flex gap-1 flex-nowrap">
-                          {sub.is_manual && <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => handleRenewNow(sub.id)} data-testid={`admin-sub-renew-${sub.id}`}>Renew</Button>}
-                          <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSubscription(sub); setShowSubEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
+                          {sub.is_manual && (
+                            <Button
+                              size="sm" variant="outline" className="h-6 px-2 text-[11px]"
+                              disabled={sub.status === "canceled_pending"}
+                              title={sub.status === "canceled_pending" ? "Renew disabled while cancellation is pending" : undefined}
+                              onClick={() => handleRenewNow(sub.id)}
+                              data-testid={`admin-sub-renew-${sub.id}`}
+                            >Renew</Button>
+                          )}
+                          <Button size="sm" variant="outline" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSubscription({ ...sub, new_note: "" }); setShowSubEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
+                          <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => handleViewSubNotes(sub)} data-testid={`admin-sub-notes-${sub.id}`}>Notes{sub.notes?.length ? ` (${sub.notes.length})` : ""}</Button>
                           {sub.status !== "canceled_pending" && sub.status !== "cancelled" && (
                             <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleAdminCancelSubscription(sub.id)} data-testid={`admin-sub-cancel-${sub.id}`}>Cancel</Button>
                           )}
@@ -1152,7 +1171,7 @@ export default function Admin() {
 
         {/* Subscription Edit Dialog */}
         <Dialog open={showSubEditDialog} onOpenChange={(open) => { setShowSubEditDialog(open); if (!open) setSelectedSubscription(null); }}>
-          <DialogContent className="max-w-lg" data-testid="admin-sub-edit-dialog">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-sub-edit-dialog">
             <DialogHeader><DialogTitle>Edit Subscription</DialogTitle></DialogHeader>
             {selectedSubscription && (
               <div className="space-y-3">
@@ -1184,12 +1203,23 @@ export default function Admin() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Start Date (editable)</label>
+                    <Input type="date" value={selectedSubscription.start_date?.slice(0, 10) || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, start_date: e.target.value })} data-testid="admin-sub-start-input" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Created Date (read-only)</label>
+                    <Input type="date" value={selectedSubscription.created_at?.slice(0, 10) || ""} readOnly disabled className="bg-slate-50 cursor-not-allowed" data-testid="admin-sub-created-display" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
                     <label className="text-xs text-slate-500">Status</label>
                     <Select value={selectedSubscription.status || ""} onValueChange={(v) => setSelectedSubscription({ ...selectedSubscription, status: v })}>
                       <SelectTrigger data-testid="admin-sub-status-select"><SelectValue placeholder="Status" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="active">Active</SelectItem>
                         <SelectItem value="unpaid">Unpaid</SelectItem>
+                        <SelectItem value="offline_manual">Offline / Manual</SelectItem>
                         <SelectItem value="canceled_pending">Canceled Pending</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
@@ -1206,6 +1236,10 @@ export default function Admin() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Add Note (logged with timestamp)</label>
+                  <Textarea placeholder="Add a note..." value={selectedSubscription.new_note || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, new_note: e.target.value })} rows={2} data-testid="admin-sub-note-input" />
                 </div>
                 <Button onClick={handleSubscriptionEdit} className="w-full" data-testid="admin-sub-save">Save Changes</Button>
               </div>
