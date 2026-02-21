@@ -13,6 +13,7 @@ from core.helpers import make_id, now_iso
 from core.security import require_admin
 from db.session import db
 from models import BankTransactionCreate, BankTransactionUpdate
+from services.audit_service import AuditService
 
 router = APIRouter(prefix="/api", tags=["admin-bank-transactions"])
 
