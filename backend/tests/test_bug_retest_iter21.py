@@ -56,15 +56,15 @@ class TestScopeUnlockCartPrice:
 
     def test_validate_scope_id_returns_price(self, auth_headers):
         """Validate scope ID returns valid=true and price=1500."""
-        resp = requests.post(
-            f"{BASE_URL}/api/articles/validate-scope",
-            json={"scope_id": TEST_SCOPE_ARTICLE_ID, "product_id": RFQ_PRODUCT_ID},
+        # Endpoint is GET /api/articles/{article_id}/validate-scope
+        resp = requests.get(
+            f"{BASE_URL}/api/articles/{TEST_SCOPE_ARTICLE_ID}/validate-scope",
             headers=auth_headers,
         )
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
         assert data.get("valid") is True, f"Expected valid=True, got {data.get('valid')}"
-        assert data.get("price") == 1500, f"Expected price=1500, got {data.get('price')}"
+        assert data.get("price") == 1500 or data.get("price") == 1500.0, f"Expected price=1500, got {data.get('price')}"
         print(f"PASS: validate-scope returns valid=True, price={data.get('price')}")
 
     def test_order_preview_without_scope_unlock_returns_scope_request(self, auth_headers):
