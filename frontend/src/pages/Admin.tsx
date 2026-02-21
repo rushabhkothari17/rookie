@@ -1427,6 +1427,7 @@ export default function Admin() {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <Table data-testid="admin-promo-table">
@@ -1437,18 +1438,24 @@ export default function Admin() {
                   <TableHead>Applies To</TableHead>
                   <TableHead>Expiry</TableHead>
                   <TableHead>Usage</TableHead>
+                  <TableHead>Date Created</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Enabled</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {promoCodes.map((promo) => (
+                {promoCodes.filter((promo) => {
+                  const matchCode = !promoCodeFilter || promo.code?.toLowerCase().includes(promoCodeFilter.toLowerCase());
+                  const matchStatus = promoStatusFilter === "all" || promo.status === promoStatusFilter;
+                  return matchCode && matchStatus;
+                }).map((promo) => (
                   <TableRow key={promo.id} data-testid={`admin-promo-row-${promo.id}`} className="border-b border-slate-100">
                     <TableCell className="font-mono font-semibold">{promo.code}</TableCell>
                     <TableCell>{promo.discount_type === "percent" ? `${promo.discount_value}%` : `$${promo.discount_value}`}</TableCell>
                     <TableCell className="capitalize">{promo.applies_to}</TableCell>
                     <TableCell className="text-xs">{promo.expiry_date?.slice(0, 10) || "—"}</TableCell>
                     <TableCell>{promo.usage_count}{promo.max_uses ? ` / ${promo.max_uses}` : ""}</TableCell>
+                    <TableCell className="text-xs">{promo.created_at ? new Date(promo.created_at).toLocaleDateString("en-AU") : "—"}</TableCell>
                     <TableCell><span className={`text-xs px-2 py-1 rounded ${promo.status === "Active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>{promo.status}</span></TableCell>
                     <TableCell>
                       <button onClick={() => handleTogglePromo(promo.id, !promo.enabled)} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${promo.enabled ? "bg-slate-900" : "bg-slate-200"}`} data-testid={`admin-promo-toggle-${promo.id}`}>
