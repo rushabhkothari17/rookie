@@ -173,7 +173,7 @@ export default function ProductDetail() {
     }
   };
 
-  const isRFQ = product?.pricing_complexity === "REQUEST_FOR_QUOTE" || product?.pricing_complexity === "COMPLEX";
+  const isRFQ = product?.pricing_complexity === "REQUEST_FOR_QUOTE" || (product?.pricing_complexity === "COMPLEX" && (!pricing || pricing.total === 0));
 
   const handleSubmitQuote = async () => {
     if (!quoteForm.name || !quoteForm.email) {
