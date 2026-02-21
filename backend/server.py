@@ -3442,45 +3442,106 @@ async def complete_gocardless_redirect(
     
     mandate_id = redirect_flow.get("links", {}).get("mandate")
     
+    # Create payment immediately after mandate setup
+    payment_id = None
+    
     if payload.order_id:
-        # Update order status
+        # Get order details and create payment
         order = await db.orders.find_one({"id": payload.order_id}, {"_id": 0})
-        if order:
-            await db.orders.update_one(
-                {"id": payload.order_id},
-                {"$set": {
-                    "status": "awaiting_payment",
-                    "gocardless_mandate_id": mandate_id,
-                    "updated_at": now_iso(),
-                }}
+        if order and mandate_id:
+            # Create GoCardless payment
+            payment = create_payment(
+                amount=order["total"],
+                currency=order.get("currency", "USD"),
+                mandate_id=mandate_id,
+                description=f"Payment for Order {order['order_number']}",
+                metadata={"order_id": order["id"], "order_number": order["order_number"]}
             )
-            await create_audit_log(
-                entity_type="order",
-                entity_id=payload.order_id,
-                action="mandate_setup_completed",
-                actor="customer",
-                details={"mandate_id": mandate_id}
-            )
+            
+            if payment:
+                payment_id = payment["id"]
+                # Payment created successfully - update order to pending_payment
+                await db.orders.update_one(
+                    {"id": payload.order_id},
+                    {"$set": {
+                        "status": "pending_payment",
+                        "gocardless_mandate_id": mandate_id,
+                        "gocardless_payment_id": payment_id,
+                        "updated_at": now_iso(),
+                    }}
+                )
+                
+                await create_audit_log(
+                    entity_type="order",
+                    entity_id=payload.order_id,
+                    action="payment_initiated",
+                    actor="customer",
+                    details={"mandate_id": mandate_id, "payment_id": payment_id}
+                )
+                
+                # Check payment status immediately (in sandbox it might be instant)
+                payment_status = get_payment_status(payment_id)
+                if payment_status and payment_status.get("status") in ["confirmed", "paid_out"]:
+                    # Payment is already confirmed
+                    await db.orders.update_one(
+                        {"id": payload.order_id},
+                        {"$set": {"status": "paid", "updated_at": now_iso()}}
+                    )
+                    await create_audit_log(
+                        entity_type="order",
+                        entity_id=payload.order_id,
+                        action="payment_confirmed",
+                        actor="gocardless",
+                        details={"payment_status": payment_status.get("status")}
+                    )
     
     if payload.subscription_id:
         # Update subscription status
         subscription = await db.subscriptions.find_one({"id": payload.subscription_id}, {"_id": 0})
-        if subscription:
-            await db.subscriptions.update_one(
-                {"id": payload.subscription_id},
-                {"$set": {
-                    "status": "awaiting_payment",
-                    "gocardless_mandate_id": mandate_id,
-                    "updated_at": now_iso(),
-                }}
+        if subscription and mandate_id:
+            # Create first payment for subscription
+            payment = create_payment(
+                amount=subscription["amount"],
+                currency="USD",
+                mandate_id=mandate_id,
+                description=f"Subscription Payment - {subscription['plan_name']}",
+                metadata={"subscription_id": subscription["id"]}
             )
-            await create_audit_log(
-                entity_type="subscription",
-                entity_id=payload.subscription_id,
-                action="mandate_setup_completed",
-                actor="customer",
-                details={"mandate_id": mandate_id}
-            )
+            
+            if payment:
+                payment_id = payment["id"]
+                await db.subscriptions.update_one(
+                    {"id": payload.subscription_id},
+                    {"$set": {
+                        "status": "pending_payment",
+                        "gocardless_mandate_id": mandate_id,
+                        "gocardless_payment_id": payment_id,
+                        "updated_at": now_iso(),
+                    }}
+                )
+                
+                await create_audit_log(
+                    entity_type="subscription",
+                    entity_id=payload.subscription_id,
+                    action="payment_initiated",
+                    actor="customer",
+                    details={"mandate_id": mandate_id, "payment_id": payment_id}
+                )
+                
+                # Check if payment is already confirmed
+                payment_status = get_payment_status(payment_id)
+                if payment_status and payment_status.get("status") in ["confirmed", "paid_out"]:
+                    await db.subscriptions.update_one(
+                        {"id": payload.subscription_id},
+                        {"$set": {"status": "active", "updated_at": now_iso()}}
+                    )
+                    await create_audit_log(
+                        entity_type="subscription",
+                        entity_id=payload.subscription_id,
+                        action="payment_confirmed",
+                        actor="gocardless",
+                        details={"payment_status": payment_status.get("status")}
+                    )
     
     return {
         "message": "Direct Debit setup completed. Payment will be processed.",
