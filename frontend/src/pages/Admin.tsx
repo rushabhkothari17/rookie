@@ -721,35 +721,68 @@ export default function Admin() {
             <div className="flex flex-wrap items-end gap-3">
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Start Date</label>
-                <Input type="date" value={orderFilters.startDate} onChange={(e) => setOrderFilters({ ...orderFilters, startDate: e.target.value })} data-testid="admin-orders-start-date" className="w-40" />
+                <Input type="date" value={orderFilters.startDate} onChange={(e) => setOrderFilters({ ...orderFilters, startDate: e.target.value })} data-testid="admin-orders-start-date" className="w-36" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">End Date</label>
-                <Input type="date" value={orderFilters.endDate} onChange={(e) => setOrderFilters({ ...orderFilters, endDate: e.target.value })} data-testid="admin-orders-end-date" className="w-40" />
+                <Input type="date" value={orderFilters.endDate} onChange={(e) => setOrderFilters({ ...orderFilters, endDate: e.target.value })} data-testid="admin-orders-end-date" className="w-36" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Customer Email</label>
-                <Input placeholder="Filter by email" value={orderFilters.email} onChange={(e) => setOrderFilters({ ...orderFilters, email: e.target.value })} data-testid="admin-orders-email-filter" className="w-48" />
+                <Input placeholder="Filter by email" value={orderFilters.email} onChange={(e) => setOrderFilters({ ...orderFilters, email: e.target.value })} data-testid="admin-orders-email-filter" className="w-44" />
               </div>
-              <Button variant="outline" onClick={() => setOrderFilters({ email: "", product: "", startDate: "", endDate: "" })} data-testid="admin-orders-clear-filters">Clear</Button>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Order #</label>
+                <Input placeholder="AA-..." value={orderNumberFilter} onChange={(e) => setOrderNumberFilter(e.target.value)} data-testid="admin-orders-number-filter" className="w-32" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Status</label>
+                <Select value={orderStatusFilter || "all"} onValueChange={(v) => setOrderStatusFilter(v === "all" ? "" : v)}>
+                  <SelectTrigger className="w-40" data-testid="admin-orders-status-filter"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="unpaid">Unpaid</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="awaiting_bank_transfer">Awaiting Bank Transfer</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                    <SelectItem value="disputed">Disputed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Product</label>
+                <Input placeholder="Product name" value={productFilter} onChange={(e) => setProductFilter(e.target.value)} data-testid="admin-orders-product-filter" className="w-40" />
+              </div>
+              <Button variant="outline" onClick={() => {
+                setOrderFilters({ email: "", product: "", startDate: "", endDate: "" });
+                setOrderNumberFilter("");
+                setOrderStatusFilter("");
+                setProductFilter("");
+              }} data-testid="admin-orders-clear-filters">Clear</Button>
             </div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-            <Table data-testid="admin-orders-table">
+          <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
+            <Table data-testid="admin-orders-table" className="text-xs min-w-[1100px]">
               <TableHeader>
                 <TableRow className="bg-slate-50">
-                  <TableHead>Date</TableHead>
-                  <TableHead>Order #</TableHead>
-                  <TableHead>Customer Name</TableHead>
-                  <TableHead>Customer Email</TableHead>
-                  <TableHead>Product(s)</TableHead>
-                  <TableHead>Subscription #</TableHead>
-                  <TableHead>Subtotal</TableHead>
-                  <TableHead>Fee</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="w-28 cursor-pointer select-none" onClick={() => setOrderSortOrder(o => o === "desc" ? "asc" : "desc")}>
+                    Date {orderSortOrder === "desc" ? "↓" : "↑"}
+                  </TableHead>
+                  <TableHead className="w-28">Order #</TableHead>
+                  <TableHead className="w-36">Customer</TableHead>
+                  <TableHead className="w-40">Email</TableHead>
+                  <TableHead className="w-40">Product(s)</TableHead>
+                  <TableHead className="w-24">Sub #</TableHead>
+                  <TableHead className="w-20">Subtotal</TableHead>
+                  <TableHead className="w-16">Fee</TableHead>
+                  <TableHead className="w-20">Total</TableHead>
+                  <TableHead className="w-24">Pay Date</TableHead>
+                  <TableHead className="w-20">Method</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="w-48">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -759,30 +792,27 @@ export default function Admin() {
                   const productNames = items.map(i => getProductName(i.product_id)).join(", ") || "—";
                   return (
                     <TableRow key={order.id} data-testid={`admin-order-row-${order.id}`} className="border-b border-slate-100">
-                      <TableCell className="text-xs">{order.created_at?.slice(0, 10)}</TableCell>
-                      <TableCell className="font-mono text-xs">{order.order_number}</TableCell>
-                      <TableCell>{user?.full_name || "—"}</TableCell>
-                      <TableCell className="text-xs">{user?.email || "—"}</TableCell>
-                      <TableCell className="max-w-[200px] truncate text-xs" title={productNames}>{productNames}</TableCell>
-                      <TableCell className="font-mono text-xs">{order.subscription_number || order.subscription_id || "—"}</TableCell>
+                      <TableCell className="whitespace-nowrap">{order.created_at?.slice(0, 10)}</TableCell>
+                      <TableCell className="font-mono">{order.order_number}</TableCell>
+                      <TableCell className="max-w-[144px] truncate" title={user?.full_name}>{user?.full_name || "—"}</TableCell>
+                      <TableCell className="max-w-[160px] truncate" title={user?.email}>{user?.email || "—"}</TableCell>
+                      <TableCell className="max-w-[160px] truncate" title={productNames}>{productNames}</TableCell>
+                      <TableCell className="font-mono">{order.subscription_number || order.subscription_id?.slice(0, 8) || "—"}</TableCell>
                       <TableCell>${order.subtotal?.toFixed(2)}</TableCell>
                       <TableCell>${order.fee?.toFixed(2)}</TableCell>
                       <TableCell className="font-semibold">${order.total?.toFixed(2)}</TableCell>
-                      <TableCell><span className={`text-xs px-2 py-1 rounded ${order.payment_method === "bank_transfer" ? "bg-blue-100 text-blue-700" : order.payment_method === "offline" ? "bg-gray-100 text-gray-700" : "bg-green-100 text-green-700"}`}>{order.payment_method === "bank_transfer" ? "Bank" : order.payment_method === "offline" ? "Manual" : "Card"}</span></TableCell>
-                      <TableCell><span className={`text-xs px-2 py-1 rounded ${order.status === "paid" ? "bg-green-100 text-green-700" : order.status === "unpaid" ? "bg-red-100 text-red-700" : order.status === "awaiting_bank_transfer" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>{order.status}</span></TableCell>
+                      <TableCell className="whitespace-nowrap">{order.payment_date?.slice(0, 10) || "—"}</TableCell>
+                      <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] ${order.payment_method === "bank_transfer" ? "bg-blue-100 text-blue-700" : order.payment_method === "offline" ? "bg-gray-100 text-gray-700" : "bg-green-100 text-green-700"}`}>{order.payment_method === "bank_transfer" ? "Bank" : order.payment_method === "offline" ? "Manual" : "Card"}</span></TableCell>
+                      <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] ${order.status === "paid" || order.status === "completed" ? "bg-green-100 text-green-700" : order.status === "unpaid" ? "bg-red-100 text-red-700" : order.status === "awaiting_bank_transfer" ? "bg-amber-100 text-amber-700" : order.status === "cancelled" || order.status === "refunded" ? "bg-slate-100 text-slate-500" : "bg-slate-100 text-slate-600"}`}>{order.status}</span></TableCell>
                       <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewOrderLogs(order.id)} data-testid={`admin-order-logs-${order.id}`}>Logs</Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => { setSelectedOrder(order); setShowOrderEditDialog(true); }}
-                            data-testid={`admin-order-edit-${order.id}`}
-                          >Edit</Button>
+                        <div className="flex gap-1 flex-nowrap items-center">
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleViewOrderLogs(order.id)} data-testid={`admin-order-logs-${order.id}`}>Logs</Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleViewOrderNotes(order)} data-testid={`admin-order-notes-${order.id}`}>Notes{order.notes?.length ? ` (${order.notes.length})` : ""}</Button>
+                          <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedOrder({ ...order, order_date_edit: order.created_at?.slice(0, 10) }); setShowOrderEditDialog(true); }} data-testid={`admin-order-edit-${order.id}`}>Edit</Button>
                           {order.status === "unpaid" && (
-                            <Button size="sm" variant="secondary" onClick={() => handleAutoCharge(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
+                            <Button size="sm" variant="secondary" className="h-6 px-2 text-[11px]" onClick={() => handleAutoCharge(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
                           )}
-                          <Button size="sm" variant="destructive" onClick={() => handleOrderDelete(order.id)} data-testid={`admin-order-delete-${order.id}`}>Del</Button>
+                          <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleOrderDelete(order.id)} data-testid={`admin-order-delete-${order.id}`}>Del</Button>
                         </div>
                       </TableCell>
                     </TableRow>
