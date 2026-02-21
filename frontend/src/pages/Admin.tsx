@@ -83,6 +83,15 @@ export default function Admin() {
   const [selectedOrderLogs, setSelectedOrderLogs] = useState<any[]>([]);
   const [selectedSubLogs, setSelectedSubLogs] = useState<any[]>([]);
   const [showLogsDialog, setShowLogsDialog] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [selectedSubscription, setSelectedSubscription] = useState<any>(null);
+  const [showCustomerDialog, setShowCustomerDialog] = useState(false);
+  const [showSubEditDialog, setShowSubEditDialog] = useState(false);
+  const [showOrderEditDialog, setShowOrderEditDialog] = useState(false);
+  const [orderPage, setOrderPage] = useState(1);
+  const [orderTotalPages, setOrderTotalPages] = useState(1);
+  const [productFilter, setProductFilter] = useState("");
+  const [includeDeleted, setIncludeDeleted] = useState(false);
 
   const load = async () => {
     const [custRes, orderRes, subRes, productRes, logRes, promoRes, termsRes] = await Promise.all([
