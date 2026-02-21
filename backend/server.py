@@ -5215,6 +5215,9 @@ async def upload_logo(
 @api_router.get("/admin/categories")
 async def admin_list_categories(admin: Dict[str, Any] = Depends(require_admin)):
     cats = await db.categories.find({}, {"_id": 0}).sort("name", 1).to_list(500)
+    # Attach product count for each category
+    for cat in cats:
+        cat["product_count"] = await db.products.count_documents({"category": cat["name"]})
     return {"categories": cats}
 
 
