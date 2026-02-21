@@ -199,7 +199,7 @@ export function SubscriptionsTab() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
-        <Table className="text-xs min-w-[900px]" data-testid="admin-subs-table">
+        <Table className="min-w-[900px]" data-testid="admin-subs-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
               {sortHeader("created_at", "Created")}
