@@ -6214,19 +6214,43 @@ async def export_bank_transactions(
 
 @api_router.get("/admin/override-codes")
 async def list_override_codes(
+    page: int = 1,
+    per_page: int = 20,
     status: Optional[str] = None,
     customer_id: Optional[str] = None,
+    customer_email: Optional[str] = None,
+    created_from: Optional[str] = None,
+    created_to: Optional[str] = None,
+    expires_from: Optional[str] = None,
+    expires_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     query: Dict[str, Any] = {}
     if customer_id:
         query["customer_id"] = customer_id
-    codes = await db.override_codes.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    if created_from:
+        query.setdefault("created_at", {})["$gte"] = created_from
+    if created_to:
+        query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+    if expires_from:
+        query.setdefault("expires_at", {})["$gte"] = expires_from
+    if expires_to:
+        query.setdefault("expires_at", {})["$lte"] = expires_to + "T23:59:59"
 
+    codes = await db.override_codes.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
     now = datetime.now(timezone.utc)
+
+    # Enrich with customer email
+    customer_ids_all = list({r["customer_id"] for r in codes if r.get("customer_id")})
+    customers_map = {c["id"]: c for c in await db.customers.find({"id": {"$in": customer_ids_all}}, {"_id": 0, "id": 1, "user_id": 1}).to_list(5000)}
+    user_ids = list({c.get("user_id", "") for c in customers_map.values()})
+    users_map = {u["id"]: u for u in await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "email": 1, "full_name": 1}).to_list(5000)}
+
     results = []
     for oc in codes:
-        # Compute effective status: auto-expired if now > expires_at and still "active"
+        cid = oc.get("customer_id", "")
+        cust = customers_map.get(cid, {})
+        user = users_map.get(cust.get("user_id", ""), {})
         effective_status = oc.get("status", "active")
         expires_at = oc.get("expires_at")
         if effective_status == "active" and expires_at:
@@ -6236,24 +6260,22 @@ async def list_override_codes(
                     effective_status = "expired"
             except Exception:
                 pass
-        results.append({**oc, "effective_status": effective_status})
+        results.append({**oc, "effective_status": effective_status, "customer_email": user.get("email", ""), "customer_name": user.get("full_name", "")})
 
     if status:
         results = [r for r in results if r["effective_status"] == status]
+    if customer_email:
+        results = [r for r in results if customer_email.lower() in r["customer_email"].lower()]
 
-    # Enrich with customer info
-    customer_ids = list({r["customer_id"] for r in results if r.get("customer_id")})
-    customers = await db.customers.find({"id": {"$in": customer_ids}}, {"_id": 0, "id": 1}).to_list(500)
-    users = await db.users.find({}, {"_id": 0, "id": 1, "email": 1, "full_name": 1}).to_list(500)
-    cust_map = {c["id"]: c for c in customers}
-    for r in results:
-        cid = r.get("customer_id")
-        cust = cust_map.get(cid, {})
-        user = next((u for u in users if u["id"] == cust.get("user_id", "")), {})
-        r["customer_email"] = user.get("email", "")
-        r["customer_name"] = user.get("full_name", "")
-
-    return {"override_codes": results}
+    total = len(results)
+    skip = (page - 1) * per_page
+    return {
+        "override_codes": results[skip: skip + per_page],
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.post("/admin/override-codes")
