@@ -3623,7 +3623,7 @@ async def stripe_webhook(request: Request):
                     renewal_order_id = make_id()
                     renewal_order_number = f"AA-{renewal_order_id.split('-')[0].upper()}"
                     renewal_amount = subscription.get("amount", 0)
-                    renewal_fee = round_cents(renewal_amount * 0.05)
+                    renewal_fee = round_cents(renewal_amount * float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE)))
                     renewal_total = round_cents(renewal_amount + renewal_fee)
                     
                     renewal_doc = {
