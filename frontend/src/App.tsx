@@ -89,6 +89,7 @@ export default function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout/success" element={<CheckoutSuccess />} />
                 <Route path="/checkout/bank-transfer" element={<BankTransferSuccess />} />
+                <Route path="/gocardless/callback" element={<GoCardlessCallback />} />
                 <Route path="/profile" element={<Profile />} />
 
                 <Route path="/portal" element={<Portal />} />
