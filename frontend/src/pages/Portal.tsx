@@ -138,7 +138,13 @@ export default function Portal() {
                   <TableCell data-testid={`portal-subscription-plan-${sub.id}`}>{sub.plan_name}</TableCell>
                   <TableCell data-testid={`portal-subscription-start-${sub.id}`}>{startDate}</TableCell>
                   <TableCell data-testid={`portal-subscription-renewal-${sub.id}`}>{sub.renewal_date?.slice(0, 10) || sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
-                  <TableCell data-testid={`portal-subscription-status-${sub.id}`}>{sub.status}</TableCell>
+                  <TableCell data-testid={`portal-subscription-status-${sub.id}`}>
+                    {sub.status === "canceled_pending" ? "Cancellation Pending"
+                      : sub.status === "active" ? "Active"
+                      : sub.status === "offline_manual" ? "Offline / Manual"
+                      : sub.status === "cancelled" ? "Cancelled"
+                      : sub.status}
+                  </TableCell>
                   <TableCell data-testid={`portal-subscription-amount-${sub.id}`}>${(sub.amount || 0).toFixed(2)}</TableCell>
                   <TableCell data-testid={`portal-subscription-cancel-date-${sub.id}`}>{cancelDate}</TableCell>
                   <TableCell>
