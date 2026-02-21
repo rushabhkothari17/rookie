@@ -360,7 +360,18 @@ export default function ProductDetail() {
           </div>
 
           <div>
-            {pricing ? (
+            {product.sku === "MIG-BOOKS" ? (
+              <StickyPurchaseSummary
+                pricing={{
+                  subtotal: migBooksData.price,
+                  fee: 0,
+                  total: migBooksData.price,
+                }}
+                cta={ctaConfig}
+                currency={customer?.currency}
+                disabled={false}
+              />
+            ) : pricing ? (
               <StickyPurchaseSummary
                 pricing={{
                   subtotal: pricing.subtotal,
