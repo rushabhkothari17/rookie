@@ -1,0 +1,60 @@
+{
+  "summary": "Iteration 15: Full backend + frontend testing of 8 new feature areas. All 12 required test scenarios passed. Backend 17/17 tests pass. Bank Transactions full CRUD verified end-to-end. Subscription Contract End Date column confirmed. COMPLEX pricing 'Add to Cart' logic correct. TEST_CatalogProduct bullets showing. Cart subscription start date picker functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Cart page - Subscription Start Date",
+        "issues": [
+          "Uses native HTML date input (browser default picker) rather than shadcn calendar component. Functional but slightly inconsistent with rest of UI. Minor cosmetic issue only."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter15_features.py",
+    "/app/test_reports/pytest/pytest_results_iter15.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ProductDetail.tsx isRFQ logic: `isRFQ = pricing_complexity === 'REQUEST_FOR_QUOTE' || (pricing_complexity === 'COMPLEX' && (!pricing || pricing.total === 0))` - correctly handles COMPLEX+priced products showing Add to Cart. ✅",
+    "OfferingCard.tsx bullets: `product.card_bullets || product.bullets || product.bullets_included` - fallback chain works correctly. ✅",
+    "StickyPurchaseSummary.tsx: CTA button bg-slate-900 (dark navy) confirmed. Currency prop correctly passed from useAuth().customer.currency. ✅",
+    "BankTransactionsTab.tsx: Full CRUD with modal, filters, logs, export CSV. Well-structured component. ✅",
+    "Admin.tsx: Contract End column in subscriptions table correctly shows contract_end_date?.slice(0,10). Edit modal has both Start Date and Contract End Date inputs. ✅",
+    "Cart.tsx: Subscription start date section renders conditionally only for subscription items. Uses native HTML date input (type=date) with min/max constraints (tomorrow to +30 days). Functional. ✅",
+    "Backend: BankTransaction CRUD with logs array tracking created/updated actions, net_amount auto-calculated. All endpoints admin-protected. ✅",
+    "Backend startup migration: backfills contract_end_date for existing subscriptions (12 months from start). Verified working with test data."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter15_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "100% (12/12 scenarios passed)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123!",
+  "seed_data_creation": "Created and deleted test bank transactions during testing. 2 test transactions (TEST-UI-001, TEST-EDIT-001) remain in DB from UI test runs.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration 15 features verified and passing: (1) COMPLEX pricing with price shows Add to Cart button (prod_zoho_books_express, $1048.95); (2) TEST_CatalogProduct in test-category shows 3 bullets on store card; (3) CTA buttons are dark navy (bg-slate-900); (4) Admin Subscriptions has Contract End column + editable field in edit modal; (5) Bank Transactions tab has full CRUD - create/edit/delete/logs/export all working; (6) Cart shows Subscription Start Date date picker (native HTML input type=date) for subscription items. Minor note: Cart uses native HTML date picker not shadcn calendar for subscription start date.",
+  "verified_features": {
+    "add_to_cart_complex_pricing": "PASS - prod_zoho_books_express (COMPLEX, $1048.95) shows 'Add to cart' button, not 'Request a Quote'",
+    "test_catalog_product_bullets": "PASS - TEST_CatalogProduct shows 3 bullets: 'Bullet 1q', 'Bullet 21', 'Bullet 31'",
+    "cta_button_dark_navy": "PASS - CTA button is bg-slate-900 (rgb(15, 23, 42))",
+    "subscriptions_contract_end_column": "PASS - Table headers: [Sub ID, Customer, Email, Plan, Status, Start Date, Contract End, Created, Renewal, Cancel Date, Amount, Payment, Actions]",
+    "subscriptions_edit_modal_contract_end": "PASS - admin-sub-contract-end-input and admin-sub-start-input both present in edit modal",
+    "bank_transactions_tab_loads": "PASS - Filters (Source/Status/Type), Export CSV, + Add Transaction buttons all present",
+    "bank_transactions_create": "PASS - Created TEST-UI-001, amount=500, fees=5, net=495.00 shown correctly",
+    "bank_transactions_in_table": "PASS - Transaction appears immediately after creation with 'Transaction created' toast",
+    "bank_transactions_edit_and_logs": "PASS - Edit works, logs show 'Created' and 'Updated' entries with timestamps and change details",
+    "cart_subscription_start_date": "PASS - Subscription Start Date section with native date input (min=tomorrow, max=+30days) appears in cart for subscription items",
+    "product_detail_spacing": "PASS - space-y-8 (32px) between sections (What's Included, Not Included, What We Need From You, etc.)",
+    "currency_display": "PASS - Shows 'All prices in USD' for admin user with USD currency (not hardcoded CAD)"
+  }
+}
