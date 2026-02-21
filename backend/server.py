@@ -4067,6 +4067,18 @@ async def update_subscription(
         update_fields["status"] = payload.status
         changes["status"] = {"old": subscription.get("status"), "new": payload.status}
     
+    if payload.plan_name is not None:
+        update_fields["plan_name"] = payload.plan_name
+        changes["plan_name"] = {"old": subscription.get("plan_name"), "new": payload.plan_name}
+    
+    if payload.customer_id is not None:
+        update_fields["customer_id"] = payload.customer_id
+        changes["customer_id"] = {"old": subscription.get("customer_id"), "new": payload.customer_id}
+    
+    if payload.payment_method is not None:
+        update_fields["payment_method"] = payload.payment_method
+        changes["payment_method"] = {"old": subscription.get("payment_method"), "new": payload.payment_method}
+    
     if update_fields:
         update_fields["updated_at"] = now_iso()
         await db.subscriptions.update_one({"id": subscription_id}, {"$set": update_fields})
@@ -4248,6 +4260,22 @@ async def update_order(
             action="updated",
             actor=f"admin:{admin['id']}",
             details={"changes": changes}
+        )
+    
+    # Append new note if provided
+    if payload.new_note:
+        note_entry = {
+            "text": payload.new_note,
+            "timestamp": now_iso(),
+            "actor": f"admin:{admin['id']}"
+        }
+        await db.orders.update_one({"id": order_id}, {"$push": {"notes": note_entry}})
+        await create_audit_log(
+            entity_type="order",
+            entity_id=order_id,
+            action="note_added",
+            actor=f"admin:{admin['id']}",
+            details={"note": payload.new_note}
         )
     
     return {"message": "Order updated successfully"}
