@@ -3989,7 +3989,7 @@ async def complete_gocardless_redirect(
 ):
     """Complete GoCardless redirect flow and update order/subscription status"""
     try:
-        redirect_flow = complete_redirect_flow(payload.redirect_flow_id)
+        redirect_flow = complete_redirect_flow(payload.redirect_flow_id, session_token=payload.session_token or "")
         
         if not redirect_flow:
             # Log the failure
