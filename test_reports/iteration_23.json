@@ -1,0 +1,32 @@
+{
+  "summary": "Settings tab cleanup and consolidation testing - iteration 23. Tested backend APIs (27 tests, all passed) and frontend UI for the admin Settings tab. All new Zoho settings, Branding keys, and System Configuration categories working correctly. Obsolete API Keys (Stripe/GoCardless) are removed both from backend structured settings and from the UI. Interactive editing (click-to-edit, save with toast) and partner_tagging_enabled toggle fully functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_settings_cleanup.py",
+    "/app/test_reports/pytest/pytest_results_iter23.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Minor: /api/settings/public endpoint (server.py line 5608) calls db.app_settings.find_one({}) to get the first document for flat settings (primary_color, logo_url etc), then separately calls SettingsService.get() for zoho/branding keys. This dual storage pattern works but could be confusing - flat fields live in one document, structured keys are per-document. Acceptable as-is but worth a note.",
+    "Minor: cleanup_obsolete() deletes by key from the structured collection, but the flat app_settings document may still have legacy fields (stripe_secret_key, gocardless_token) in its subdocument. The /api/admin/settings GET still references these in its masking loop (line 5637). Purely cosmetic as these were never written from DB."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_settings_cleanup.py"
+  ],
+  "success_rate": {
+    "backend": "100% (27/27)",
+    "frontend": "100%"
+  },
+  "seed_data_creation": "No seed data created. service_fee_rate and override_code_expiry_hours were tested with values 0.08/72 respectively and reset back to defaults 0.05/48.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Settings tab cleanup fully tested and verified. Backend: GET /api/settings/public returns all 7 new fields (5 zoho + website_url + contact_email). GET /api/admin/settings/structured returns 6 categories (Branding, Email, FeatureFlags, Operations, Payments, Zoho) with no obsolete stripe/gocardless/logo_url keys. PUT /api/admin/settings/key/{key} works correctly. Frontend: Settings tab renders correctly with Store Info, Logo upload, Brand Colors (Primary+Accent only), Save Settings button, and full System Configuration section. Click-to-edit pattern works with toast confirmation. Toggle for partner_tagging_enabled shows Enabled/Disabled and toggles correctly."
+}
