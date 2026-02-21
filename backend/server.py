@@ -1640,40 +1640,41 @@ async def checkout_bank_transfer(
         period_end = period_start + timedelta(days=30)
         sub_id = make_id()
         
-        # Try to create GoCardless customer/mandate
+        # Create GoCardless customer and redirect flow
         gocardless_redirect_url = None
         gc_customer_id = customer.get("gocardless_customer_id")
+        redirect_flow_id = None
         
-        try:
-            import requests
-            gc_token = os.environ.get("GOCARDLESS_ACCESS_TOKEN")
-            if gc_token and not gc_customer_id:
-                # Create GoCardless customer
-                gc_response = requests.post(
-                    "https://api-sandbox.gocardless.com/customers",
-                    json={
-                        "customers": {
-                            "email": user["email"],
-                            "given_name": user.get("full_name", "").split()[0] if user.get("full_name") else "Customer",
-                            "family_name": user.get("full_name", "").split()[-1] if user.get("full_name") and len(user.get("full_name", "").split()) > 1 else "User",
-                            "company_name": user.get("company_name", ""),
-                        }
-                    },
-                    headers={
-                        "Authorization": f"Bearer {gc_token}",
-                        "GoCardless-Version": "2015-07-06",
-                        "Content-Type": "application/json"
-                    },
-                    timeout=10
+        if not gc_customer_id:
+            # Create GoCardless customer
+            name_parts = user.get("full_name", "Customer User").split()
+            gc_customer = create_gocardless_customer(
+                email=user["email"],
+                given_name=name_parts[0],
+                family_name=name_parts[-1] if len(name_parts) > 1 else "User",
+                company_name=user.get("company_name", "")
+            )
+            if gc_customer:
+                gc_customer_id = gc_customer["id"]
+                await db.customers.update_one(
+                    {"id": customer["id"]},
+                    {"$set": {"gocardless_customer_id": gc_customer_id}}
                 )
-                if gc_response.status_code == 201:
-                    gc_customer_id = gc_response.json()["customers"]["id"]
-                    await db.customers.update_one(
-                        {"id": customer["id"]},
-                        {"$set": {"gocardless_customer_id": gc_customer_id}}
-                    )
-        except Exception as e:
-            print(f"GoCardless customer creation failed: {e}")
+        
+        # Create redirect flow for mandate setup
+        if gc_customer_id:
+            session_token = make_id()
+            success_url = f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/gocardless/callback?session_token={session_token}&subscription_id={sub_id}"
+            
+            redirect_flow = create_redirect_flow(
+                session_token=session_token,
+                success_redirect_url=success_url,
+                description=f"Direct Debit for {product['name']}"
+            )
+            
+            if redirect_flow:
+                redirect_flow_id = redirect_flow["id"]
+                gocardless_redirect_url = redirect_flow["redirect_url"]
         
         await db.subscriptions.insert_one(
             {
@@ -1681,9 +1682,10 @@ async def checkout_bank_transfer(
                 "order_id": None,
                 "customer_id": customer["id"],
                 "plan_name": product["name"],
-                "status": "pending_bank_setup",
+                "status": "pending_direct_debit_setup",
                 "stripe_subscription_id": None,
                 "gocardless_customer_id": gc_customer_id,
+                "gocardless_redirect_flow_id": redirect_flow_id,
                 "current_period_start": period_start.isoformat(),
                 "current_period_end": period_end.isoformat(),
                 "cancel_at_period_end": False,
@@ -1695,6 +1697,15 @@ async def checkout_bank_transfer(
                 "terms_accepted_at": now_iso(),
             }
         )
+        
+        await create_audit_log(
+            entity_type="subscription",
+            entity_id=sub_id,
+            action="created",
+            actor="customer",
+            details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer"}
+        )
+        
         await db.zoho_sync_logs.insert_one(
             {
                 "id": make_id(),
@@ -1707,12 +1718,20 @@ async def checkout_bank_transfer(
                 "mocked": True,
             }
         )
+        
+        if not gocardless_redirect_url:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to create GoCardless redirect flow. Please contact support or try card payment."
+            )
+        
         return {
-            "message": "Subscription request created",
+            "message": "Subscription request created. Please complete Direct Debit setup.",
             "subscription_id": sub_id,
-            "status": "pending_bank_setup",
+            "status": "pending_direct_debit_setup",
             "gocardless_customer_id": gc_customer_id,
             "gocardless_redirect_url": gocardless_redirect_url,
+            "redirect_flow_id": redirect_flow_id,
         }
 
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
