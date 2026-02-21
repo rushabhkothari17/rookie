@@ -644,7 +644,22 @@ export default function Admin() {
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-slate-900">Customers</h3>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center flex-wrap">
+                <select
+                  data-testid="admin-customer-partner-map-filter"
+                  value={partnerMapFilter}
+                  onChange={(e) => setPartnerMapFilter(e.target.value)}
+                  className="h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-700"
+                >
+                  <option value="all">All Partner Maps</option>
+                  <option value="none">Not set</option>
+                  <option value="Yes - Pending Verification">Yes - Pending Verification</option>
+                  <option value="Pre-existing Customer - Pending Verification">Pre-existing Customer - Pending Verification</option>
+                  <option value="Not yet - Pending Verification">Not yet - Pending Verification</option>
+                  <option value="Yes">Yes (Verified)</option>
+                  <option value="Pre-existing Customer">Pre-existing Customer (Verified)</option>
+                  <option value="Not yet">Not yet (Verified)</option>
+                </select>
                 <Button size="sm" variant="outline" onClick={() => downloadCsv("/api/admin/export/customers", `customers_${new Date().toISOString().slice(0,10)}.csv`)} data-testid="admin-customers-export-csv">Export CSV</Button>
                 <Button size="sm" onClick={() => setShowCreateCustomerDialog(true)} data-testid="admin-create-customer-btn">+ Create Customer</Button>
               </div>
@@ -659,14 +674,24 @@ export default function Admin() {
                   <TableHead>Status</TableHead>
                   <TableHead>Bank Transfer</TableHead>
                   <TableHead>Card Payment</TableHead>
+                  <TableHead>Partner Map</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {customers.map((customer) => {
+                {customers.filter((c) => {
+                  if (partnerMapFilter === "all") return true;
+                  if (partnerMapFilter === "none") return !c.partner_map;
+                  return c.partner_map === partnerMapFilter;
+                }).map((customer) => {
                   const user = users.find((u) => u.id === customer.user_id);
                   const address = getCustomerAddress(customer.id);
                   const isActive = user?.is_active !== false; // default true
+                  const pm = customer.partner_map;
+                  const pmColor = !pm ? "bg-slate-100 text-slate-500"
+                    : pm.includes("Pending") ? "bg-amber-100 text-amber-700"
+                    : pm === "Yes" || pm === "Pre-existing Customer" ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700";
                   return (
                     <TableRow key={customer.id} data-testid={`admin-customer-row-${customer.id}`}>
                       <TableCell data-testid={`admin-customer-name-${customer.id}`}>{user?.full_name || customer.company_name}</TableCell>
@@ -688,8 +713,53 @@ export default function Admin() {
                           <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${(customer.allow_card_payment ?? false) ? "translate-x-4" : "translate-x-0.5"}`} />
                         </button>
                       </TableCell>
+                      <TableCell data-testid={`admin-customer-partner-map-${customer.id}`}>
+                        {editingPartnerMap?.customerId === customer.id ? (
+                          <div className="flex gap-1 items-center">
+                            <select
+                              data-testid={`admin-partner-map-select-${customer.id}`}
+                              value={editingPartnerMap.value}
+                              onChange={(e) => setEditingPartnerMap({ customerId: customer.id, value: e.target.value })}
+                              className="text-xs border border-slate-300 rounded px-1 py-0.5 bg-white"
+                              autoFocus
+                            >
+                              <option value="">Not set</option>
+                              <option value="Yes - Pending Verification">Yes - Pending Verification</option>
+                              <option value="Pre-existing Customer - Pending Verification">Pre-existing Customer - Pending Verification</option>
+                              <option value="Not yet - Pending Verification">Not yet - Pending Verification</option>
+                              <option value="Yes">Yes</option>
+                              <option value="Pre-existing Customer">Pre-existing Customer</option>
+                              <option value="Not yet">Not yet</option>
+                            </select>
+                            <button
+                              data-testid={`admin-partner-map-save-${customer.id}`}
+                              onClick={async () => {
+                                try {
+                                  await api.put(`/admin/customers/${customer.id}/partner-map`, { partner_map: editingPartnerMap.value });
+                                  setCustomers(prev => prev.map(c => c.id === customer.id ? { ...c, partner_map: editingPartnerMap.value } : c));
+                                  toast.success("Partner Map updated");
+                                } catch (e: any) { toast.error(e?.response?.data?.detail || "Failed to update"); }
+                                setEditingPartnerMap(null);
+                              }}
+                              className="text-green-600 text-xs font-medium hover:text-green-800"
+                            >Save</button>
+                            <button onClick={() => setEditingPartnerMap(null)} className="text-slate-400 text-xs hover:text-slate-600">✕</button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-1 items-center">
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${pmColor}`}>
+                              {pm || "Not set"}
+                            </span>
+                            <button
+                              data-testid={`admin-partner-map-edit-${customer.id}`}
+                              onClick={() => setEditingPartnerMap({ customerId: customer.id, value: pm || "" })}
+                              className="text-[10px] text-slate-400 hover:text-slate-700 underline ml-1"
+                            >edit</button>
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap">
                           <Button
                             variant="outline"
                             size="sm"
@@ -701,6 +771,18 @@ export default function Admin() {
                             }}
                             data-testid={`admin-customer-edit-${customer.id}`}
                           >Edit</Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid={`admin-customer-notes-${customer.id}`}
+                            onClick={async () => {
+                              try {
+                                const res = await api.get(`/admin/customers/${customer.id}/notes`);
+                                setCustomerNotes(res.data.notes || []);
+                                setViewNotesCustomer(customer);
+                              } catch { toast.error("Failed to load notes"); }
+                            }}
+                          >Notes</Button>
                           {user?.id !== authUser?.id && (
                             <Button
                               variant={isActive ? "destructive" : "outline"}
@@ -716,6 +798,36 @@ export default function Admin() {
                 })}
               </TableBody>
             </Table>
+
+            {/* Customer Notes Modal */}
+            {viewNotesCustomer && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      Customer Notes — {users.find(u => u.id === viewNotesCustomer.user_id)?.email || viewNotesCustomer.id}
+                    </h3>
+                    <button onClick={() => { setViewNotesCustomer(null); setCustomerNotes([]); }} className="text-slate-400 hover:text-slate-700 text-xl leading-none">×</button>
+                  </div>
+                  {customerNotes.length === 0 ? (
+                    <p className="text-sm text-slate-500">No notes for this customer.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {customerNotes.map((note, i) => (
+                        <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1">
+                          <p className="text-slate-700">{note.text}</p>
+                          <div className="flex gap-2 text-slate-400">
+                            <span>{note.timestamp ? new Date(note.timestamp).toLocaleString() : ""}</span>
+                            <span>•</span>
+                            <span>{note.actor}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Customer Edit Dialog */}
