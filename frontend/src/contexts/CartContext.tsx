@@ -4,6 +4,7 @@ export type CartItem = {
   product_id: string;
   quantity: number;
   inputs: Record<string, any>;
+  price_override?: number;
 };
 
 type CartContextType = {
