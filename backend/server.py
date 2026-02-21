@@ -265,16 +265,31 @@ class CancelSubscriptionBody(BaseModel):
 
 class AdminProductUpdate(BaseModel):
     name: str
-    tagline: str
-    description_long: str
-    bullets_included: List[str]
-    bullets_excluded: List[str]
-    bullets_needed: List[str]
-    next_steps: List[str]
-    faqs: List[str]
-    pricing_rules: Dict[str, Any]
+    short_description: Optional[str] = ""
+    tagline: Optional[str] = ""
+    description_long: str = ""
+    bullets: Optional[List[str]] = None
+    bullets_included: Optional[List[str]] = None
+    bullets_excluded: Optional[List[str]] = None
+    bullets_needed: Optional[List[str]] = None
+    tag: Optional[str] = None
+    category: Optional[str] = None
+    outcome: Optional[str] = None
+    automation_details: Optional[str] = None
+    support_details: Optional[str] = None
+    inclusions: Optional[List[str]] = None
+    exclusions: Optional[List[str]] = None
+    requirements: Optional[List[str]] = None
+    next_steps: Optional[List[str]] = None
+    faqs: Optional[List[Any]] = None
+    terms_id: Optional[str] = None
+    base_price: Optional[float] = None
+    is_subscription: Optional[bool] = None
     stripe_price_id: Optional[str] = None
+    pricing_complexity: Optional[str] = None
+    pricing_rules: Optional[Dict[str, Any]] = None
     is_active: bool = True
+    visible_to_customers: Optional[List[str]] = None
 
 class AdminCustomerPaymentUpdate(BaseModel):
     allow_bank_transfer: bool
