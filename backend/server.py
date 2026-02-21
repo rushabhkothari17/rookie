@@ -1903,11 +1903,20 @@ async def checkout_bank_transfer(
             "status": "MOCKED",
             "created_at": now_iso(),
         })
+    
+    if not gocardless_redirect_url:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to create GoCardless redirect flow. Please contact support or try card payment."
+        )
 
     return {
-        "message": "Bank transfer order created",
+        "message": "Order created. Please complete Direct Debit setup.",
         "order_id": order_id,
         "order_number": order_number,
+        "gocardless_redirect_url": gocardless_redirect_url,
+        "redirect_flow_id": redirect_flow_id,
+        "status": "pending_direct_debit_setup",
     }
     
     # Apply promo code discount (no fee for bank transfer)
