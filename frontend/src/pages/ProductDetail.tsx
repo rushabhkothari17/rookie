@@ -253,7 +253,7 @@ export default function ProductDetail() {
     <AppShell activeCategory={categoryLabel}>
       <div className="space-y-8" data-testid="product-detail">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
-          <div className="space-y-8">
+          <div className="space-y-6">
             <ProductHero product={product} />
 
             {product.price_inputs?.length > 0 && (
