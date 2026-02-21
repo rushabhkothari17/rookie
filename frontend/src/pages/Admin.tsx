@@ -1285,8 +1285,8 @@ export default function Admin() {
                     <Input type="date" value={selectedSubscription.start_date?.slice(0, 10) || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, start_date: e.target.value })} data-testid="admin-sub-start-input" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-slate-500">Created Date (read-only)</label>
-                    <Input type="date" value={selectedSubscription.created_at?.slice(0, 10) || ""} readOnly disabled className="bg-slate-50 cursor-not-allowed" data-testid="admin-sub-created-display" />
+                    <label className="text-xs text-slate-500">Contract End Date</label>
+                    <Input type="date" value={selectedSubscription.contract_end_date?.slice(0, 10) || ""} onChange={(e) => setSelectedSubscription({ ...selectedSubscription, contract_end_date: e.target.value })} data-testid="admin-sub-contract-end-input" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
