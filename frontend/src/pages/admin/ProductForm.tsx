@@ -88,7 +88,7 @@ function FAQList({ faqs, onChange }: { faqs: FAQ[]; onChange: (v: FAQ[]) => void
   );
 }
 
-interface Customer { id: string; user_id: string; company_name?: string; }
+interface Customer { id: string; user_id: string; company_name?: string; email?: string; }
 interface Term { id: string; title: string; }
 
 export function ProductForm({
@@ -105,13 +105,25 @@ export function ProductForm({
   terms: Term[];
 }) {
   const s = (key: keyof ProductFormData) => (v: any) => setForm({ ...form, [key]: v });
+  const [visSearch, setVisSearch] = useState("");
 
-  const toggleCustomer = (id: string) => {
-    const vis = form.visible_to_customers.includes(id)
-      ? form.visible_to_customers.filter((c) => c !== id)
-      : [...form.visible_to_customers, id];
-    setForm({ ...form, visible_to_customers: vis });
+  const addVisibleCustomer = (id: string) => {
+    if (!form.visible_to_customers.includes(id)) {
+      setForm({ ...form, visible_to_customers: [...form.visible_to_customers, id] });
+    }
+    setVisSearch("");
   };
+
+  const removeVisibleCustomer = (id: string) => {
+    setForm({ ...form, visible_to_customers: form.visible_to_customers.filter((c) => c !== id) });
+  };
+
+  const filteredVisCustomers = visSearch
+    ? customers.filter((c) => {
+        const q = visSearch.toLowerCase();
+        return (c.email?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q)) && !form.visible_to_customers.includes(c.id);
+      }).slice(0, 10)
+    : [];
 
   // Fixed bullets array to always have 3 slots
   const updateBullet = (i: number, v: string) => {
