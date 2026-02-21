@@ -470,6 +470,7 @@ export default function Admin() {
       await api.put(`/admin/subscriptions/${selectedSubscription.id}`, {
         renewal_date: selectedSubscription.renewal_date,
         start_date: selectedSubscription.start_date,
+        contract_end_date: selectedSubscription.contract_end_date,
         amount: selectedSubscription.amount,
         plan_name: selectedSubscription.plan_name,
         customer_id: selectedSubscription.customer_id,
