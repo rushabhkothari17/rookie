@@ -1698,6 +1698,12 @@ export default function Admin() {
           <BankTransactionsTab />
         </TabsContent>
 
+        <TabsContent value="override-codes" className="space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-6">
+            <OverrideCodesTab />
+          </div>
+        </TabsContent>
+
         <TabsContent value="settings" className="space-y-4">
           <SettingsTab />
         </TabsContent>
