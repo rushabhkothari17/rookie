@@ -598,14 +598,6 @@ export default function Admin() {
     return true;
   });
 
-  // Filter products
-  const filteredProducts = products.filter(product => {
-    if (catalogFilter === "all") return true;
-    if (catalogFilter === "subscription") return product.is_subscription;
-    if (catalogFilter === "one-time") return !product.is_subscription;
-    return true;
-  });
-
   return (
     <div className="space-y-6" data-testid="admin-page">
       <div>
