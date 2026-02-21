@@ -4269,6 +4269,134 @@ async def admin_cancel_subscription(
     return {"message": "Subscription cancellation scheduled", "cancelled_at": cancelled_at}
 
 
+# ============ ADMIN: USER MANAGEMENT (SUPER ADMIN ONLY) ============
+
+@api_router.get("/admin/users")
+async def admin_list_users(admin: Dict[str, Any] = Depends(require_super_admin)):
+    """Super admin only: List all admin/super_admin users"""
+    users = await db.users.find(
+        {"role": {"$in": ["admin", "super_admin"]}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(500)
+    return {"users": users}
+
+
+@api_router.post("/admin/users")
+async def admin_create_admin_user(
+    payload: AdminCreateUserRequest,
+    admin: Dict[str, Any] = Depends(require_super_admin)
+):
+    """Super admin only: Create a new admin or super_admin user"""
+    if payload.role not in ("admin", "super_admin"):
+        raise HTTPException(status_code=400, detail="Role must be 'admin' or 'super_admin'")
+    
+    existing = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user_id = make_id()
+    hashed = pwd_context.hash(payload.password)
+    user_doc = {
+        "id": user_id,
+        "email": payload.email.lower(),
+        "password_hash": hashed,
+        "full_name": payload.full_name,
+        "company_name": payload.company_name or "",
+        "job_title": payload.job_title or "",
+        "phone": payload.phone or "",
+        "is_admin": True,
+        "is_verified": True,
+        "role": payload.role,
+        "must_change_password": True,
+        "created_at": now_iso(),
+        "created_by_admin": admin["id"],
+    }
+    await db.users.insert_one(user_doc)
+    
+    await create_audit_log(
+        entity_type="user",
+        entity_id=user_id,
+        action="admin_user_created",
+        actor=f"admin:{admin['id']}",
+        details={"email": payload.email, "role": payload.role, "full_name": payload.full_name}
+    )
+    
+    return {"message": f"Admin user created", "user_id": user_id, "email": payload.email}
+
+
+# ============ ADMIN: CREATE CUSTOMER ============
+
+@api_router.post("/admin/customers/create")
+async def admin_create_customer(
+    payload: AdminCreateCustomerRequest,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Admin: Create a new customer with user account"""
+    existing = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user_id = make_id()
+    customer_id = make_id()
+    hashed = pwd_context.hash(payload.password)
+    currency = currency_for_country(payload.country)
+    
+    user_doc = {
+        "id": user_id,
+        "email": payload.email.lower(),
+        "password_hash": hashed,
+        "full_name": payload.full_name,
+        "company_name": payload.company_name or "",
+        "job_title": payload.job_title or "",
+        "phone": payload.phone or "",
+        "is_admin": False,
+        "is_verified": payload.mark_verified,
+        "role": "customer",
+        "must_change_password": True,
+        "verification_code": None,
+        "created_at": now_iso(),
+        "created_by_admin": admin["id"],
+    }
+    await db.users.insert_one(user_doc)
+    
+    customer_doc = {
+        "id": customer_id,
+        "user_id": user_id,
+        "company_name": payload.company_name or "",
+        "phone": payload.phone or "",
+        "currency": currency,
+        "currency_locked": False,
+        "allow_bank_transfer": True,
+        "allow_card_payment": False,
+        "stripe_customer_id": None,
+        "zoho_crm_contact_id": None,
+        "zoho_books_contact_id": None,
+        "created_at": now_iso(),
+    }
+    await db.customers.insert_one(customer_doc)
+    
+    await db.addresses.insert_one({
+        "id": make_id(),
+        "customer_id": customer_id,
+        "line1": payload.line1,
+        "line2": payload.line2 or "",
+        "city": payload.city,
+        "region": payload.region,
+        "postal": payload.postal,
+        "country": payload.country,
+    })
+    
+    await create_audit_log(
+        entity_type="customer",
+        entity_id=customer_id,
+        action="customer_created_by_admin",
+        actor=f"admin:{admin['id']}",
+        details={"email": payload.email, "full_name": payload.full_name, "verified": payload.mark_verified}
+    )
+    
+    return {"message": "Customer created", "customer_id": customer_id, "user_id": user_id}
+
+
 @api_router.get("/admin/orders/{order_id}/logs")
 async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(require_admin)):
     """Get audit logs for an order"""
