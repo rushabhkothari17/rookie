@@ -5138,6 +5138,37 @@ async def admin_create_admin_user(
     return {"message": "Admin user created", "user_id": user_id, "email": payload.email}
 
 
+@api_router.put("/admin/users/{user_id}")
+async def admin_update_user(
+    user_id: str,
+    payload: Dict[str, Any] = Body(...),
+    admin: Dict[str, Any] = Depends(require_super_admin)
+):
+    """Super admin only: Update name and role of an admin user"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    allowed_roles = ("admin", "super_admin")
+    updates: Dict[str, Any] = {}
+    if "full_name" in payload and payload["full_name"]:
+        updates["full_name"] = payload["full_name"].strip()
+    if "role" in payload:
+        if payload["role"] not in allowed_roles:
+            raise HTTPException(status_code=400, detail=f"Role must be one of: {allowed_roles}")
+        updates["role"] = payload["role"]
+    if updates:
+        await db.users.update_one({"id": user_id}, {"$set": updates})
+        await create_audit_log(
+            entity_type="user", entity_id=user_id,
+            action="admin_user_updated", actor=f"admin:{admin['id']}",
+            details=updates
+        )
+    user.update(updates)
+    user.pop("password_hash", None)
+    user.pop("_id", None)
+    return {"message": "User updated", "user": user}
+
+
 # ============ ADMIN: CREATE CUSTOMER ============
 
 @api_router.post("/admin/customers/create")
