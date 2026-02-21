@@ -550,4 +550,5 @@ def admin_token():
         "password": "ChangeMe123!"
     })
     assert resp.status_code == 200, f"Admin login failed: {resp.text}"
-    return resp.json()["access_token"]
+    data = resp.json()
+    return data.get("token") or data.get("access_token")
