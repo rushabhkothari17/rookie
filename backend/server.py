@@ -2576,12 +2576,15 @@ async def update_me(
 async def get_categories():
     inactive_cats = await db.categories.find({"is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
+    all_cats = await db.categories.find({"is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
+    cat_map = {c["name"]: c.get("description", "") for c in all_cats}
     products = await db.products.find({"is_active": True}, {"_id": 0, "category": 1}).to_list(1000)
     categories = sorted({
         p["category"] for p in products
         if p.get("category") and p["category"] not in inactive_names
     })
-    return {"categories": categories}
+    blurbs = {name: cat_map.get(name, "") for name in categories}
+    return {"categories": categories, "category_blurbs": blurbs}
 
 
 @api_router.get("/products")
