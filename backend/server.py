@@ -4212,7 +4212,7 @@ async def create_manual_subscription(
     from datetime import datetime
     try:
         renewal_date_dt = datetime.fromisoformat(payload.renewal_date.replace('Z', '+00:00'))
-    except:
+    except Exception:
         renewal_date_dt = datetime.now(timezone.utc) + timedelta(days=30)
     
     sub_doc = {
