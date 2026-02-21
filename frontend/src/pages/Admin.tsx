@@ -30,8 +30,8 @@ export default function Admin() {
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [terms, setTerms] = useState<any[]>([]);
   const [currencyOverride, setCurrencyOverride] = useState({ email: "", currency: "USD" });
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null); // kept for tab reset
+    const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderFilters, setOrderFilters] = useState({ email: "", product: "", startDate: "", endDate: "" });
   const [catalogFilter, setCatalogFilter] = useState<string>("all");
   const [newPromo, setNewPromo] = useState<{
