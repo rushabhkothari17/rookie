@@ -2334,7 +2334,9 @@ async def startup_tasks():
 
     # 2. Backfill pricing_complexity based on pricing_type for products missing it
     PRICING_TYPE_TO_COMPLEXITY = {
+        "fixed": "SIMPLE",
         "simple": "SIMPLE",
+        "calculator": "COMPLEX",
         "tiered": "COMPLEX",
         "hours": "COMPLEX",
         "external": "REQUEST_FOR_QUOTE",
