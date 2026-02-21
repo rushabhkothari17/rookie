@@ -2377,12 +2377,25 @@ async def create_checkout_session(
             raise HTTPException(status_code=400, detail="Subscription checkout must include only subscription items")
         if len(subscription_items) != 1:
             raise HTTPException(status_code=400, detail="Subscription checkout supports one plan at a time")
+        
         product = subscription_items[0]["product"]
         subtotal = subscription_items[0]["pricing"]["subtotal"]
         
         # Validate subscription has pricing
         if not subtotal or subtotal <= 0:
-            raise HTTPException(status_code=400, detail="Subscription requires valid pricing")
+            raise HTTPException(status_code=400, detail="Subscription pricing not configured. Please contact support.")
+        
+        # Validate customer is eligible for card payment
+        if not customer.get("allow_card_payment", False):
+            raise HTTPException(status_code=403, detail="Card payment is not enabled for your account. Please contact support or use Bank Transfer.")
+        
+        # Check if stripe_price_id exists for subscription products
+        stripe_price_id = product.get("stripe_price_id")
+        if not stripe_price_id:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Subscription product '{product.get('name')}' is not configured for card payment. Missing Stripe Price ID. Please contact support or use Bank Transfer."
+            )
 
     if checkout_type == "one_time":
         for item in order_items:
