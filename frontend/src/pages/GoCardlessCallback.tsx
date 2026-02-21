@@ -15,6 +15,7 @@ export default function GoCardlessCallback() {
       const redirectFlowId = searchParams.get("redirect_flow_id");
       const orderId = searchParams.get("order_id");
       const subscriptionId = searchParams.get("subscription_id");
+      const sessionToken = searchParams.get("session_token");
 
       if (!redirectFlowId) {
         setStatus("error");
@@ -26,6 +27,7 @@ export default function GoCardlessCallback() {
       try {
         await api.post("/gocardless/complete-redirect", {
           redirect_flow_id: redirectFlowId,
+          session_token: sessionToken,
           order_id: orderId,
           subscription_id: subscriptionId,
         });
