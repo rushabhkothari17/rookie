@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { ProductsTab } from "./admin/ProductsTab";
+import { CategoriesTab } from "./admin/CategoriesTab";
+import { SettingsTab } from "./admin/SettingsTab";
 
 export default function Admin() {
   const { user: authUser } = useAuth();
