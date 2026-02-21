@@ -49,7 +49,7 @@ from core.constants import (                             # hardcoded constants
     SERVICE_FEE_RATE, PREMIUM_MIGRATION_ITEMS, STANDARD_MIGRATION_SOURCES,
     PARTNER_TAG_RESPONSES, ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES,
 )
-from services.audit_service import AuditService, ensure_audit_indexes
+from services.audit_service import AuditService, ensure_audit_indexes, create_audit_log
 from services.settings_service import SettingsService
 from middleware.request_id import RequestIDMiddleware
 
