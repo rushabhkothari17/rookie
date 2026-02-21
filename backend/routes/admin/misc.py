@@ -26,6 +26,13 @@ async def admin_currency_override(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     await db.customers.update_one({"id": customer["id"]}, {"$set": {"currency": payload.currency, "currency_locked": True}})
+    await create_audit_log(
+        entity_type="customer",
+        entity_id=customer["id"],
+        action="currency_override",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"currency": payload.currency, "email": payload.customer_email},
+    )
     return {"message": "Currency overridden"}
 
 
