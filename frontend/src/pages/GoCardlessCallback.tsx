@@ -31,10 +31,14 @@ export default function GoCardlessCallback() {
         });
 
         setStatus("success");
-        toast.success("Direct Debit setup completed successfully!");
+        toast.success("Direct Debit setup completed and payment initiated!");
         
         setTimeout(() => {
-          navigate("/portal");
+          if (orderId) {
+            navigate("/checkout/success");
+          } else {
+            navigate("/portal");
+          }
         }, 2000);
       } catch (error: any) {
         setStatus("error");
