@@ -145,22 +145,25 @@ export function CategoriesTab() {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <Label>Name</label>
+              <label className="text-sm font-medium text-slate-700">Name</label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Zoho Express Setup"
+                className="mt-1"
                 data-testid="admin-category-name-input"
               />
             </div>
-            <div className="flex items-center gap-3">
-              <Switch
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
                 checked={form.is_active}
-                onCheckedChange={(v) => setForm({ ...form, is_active: v })}
+                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                className="w-4 h-4 rounded"
                 data-testid="admin-category-active-switch"
               />
-              <Label>Active (visible on storefront)</label>
-            </div>
+              <span className="text-sm text-slate-700">Active (visible on storefront)</span>
+            </label>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
               <Button onClick={handleSave} disabled={saving} data-testid="admin-category-save-btn">
