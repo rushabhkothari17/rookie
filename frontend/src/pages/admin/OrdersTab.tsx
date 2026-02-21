@@ -230,7 +230,7 @@ export function OrdersTab() {
         <Table data-testid="admin-orders-table" className="min-w-[1100px]">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead className="cursor-pointer select-none whitespace-nowrap">Date {sortOrder === "desc" ? "↓" : "↑"}</TableHead>
+              <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => setSortOrder(o => o === "desc" ? "asc" : "desc")}>Date {sortOrder === "desc" ? "↓" : "↑"}</TableHead>
               <TableHead>Order #</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Email</TableHead>
