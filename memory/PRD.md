@@ -198,6 +198,50 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - Downloads via `fetch + Bearer token + Blob` using `aa_token` localStorage key
 - Filenames include date: `orders_2026-02-21.csv`
 
+## Product & Category Management System + Settings Tab (Feb 21, 2026) ✅
+
+### New Backend Endpoints
+- `GET /api/settings/public` - Public brand settings (logo, colors, store name)
+- `GET/PUT /api/admin/settings` - Admin settings management (secrets masked)
+- `POST /api/admin/upload-logo` - Logo upload (stored as base64 in MongoDB)
+- `GET/POST /api/admin/categories` - Category CRUD
+- `PUT/DELETE /api/admin/categories/{id}` - Category update/delete
+- `GET /api/admin/products-all` - All products including inactive (admin only)
+- `POST /api/admin/products` - Create new product with full model
+- `PUT /api/admin/products/{id}` - Expanded product update (all new fields)
+- `POST /api/products/request-quote` - Submit quote request (saved to DB, email TBD)
+- `GET /api/admin/quote-requests` - List quote requests
+
+### New Product Fields
+- `short_description`, `bullets` (3 fixed), `tag`, `outcome`
+- `automation_details`, `support_details`
+- `inclusions`, `exclusions`, `requirements`, `next_steps` (dynamic lists)
+- `faqs` (Q&A pairs, dynamic)
+- `pricing_complexity`: SIMPLE | COMPLEX | REQUEST_FOR_QUOTE
+- `visible_to_customers` (list of customer IDs, empty = all)
+
+### Product Visibility Logic
+- Only `is_active=True` products shown on storefront
+- If product's category is inactive → product hidden
+- If `visible_to_customers` is non-empty → only those customers see it
+- Inactive product direct URL access blocked for non-admins (404)
+
+### Frontend New Components
+- `/pages/admin/ProductsTab.tsx` - Full product CRUD table with filters
+- `/pages/admin/CategoriesTab.tsx` - Category CRUD with active/inactive toggle
+- `/pages/admin/ProductForm.tsx` - Complete product form with dynamic lists
+- `/pages/admin/SettingsTab.tsx` - API keys, brand colors, logo upload
+
+### Admin Panel Updates
+- New tabs: **Categories** and **Settings** added
+- **Catalog tab** now uses ProductsTab (full CRUD replacing simple table)
+- `Admin.tsx` refactored to import tab components
+
+### Storefront Updates
+- `TopNav.tsx` fetches logo/store_name from `/api/settings/public`
+- `ProductDetail.tsx` shows "Request a Quote" modal for COMPLEX/REQUEST_FOR_QUOTE
+- `ProductHero.tsx` uses actual `outcome`, `automation_details`, `support_details` fields
+
 ### Next: Product Admin (COMPLEX vs SIMPLE pricing)
 - Fields: title, short_description, tag, outcome, automation, support, bullets (3), FAQs, terms_id, billing_type, pricing_type (SIMPLE/COMPLEX)
 - SIMPLE: fixed price/stripe_price_id, add-to-cart enabled
