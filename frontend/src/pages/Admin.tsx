@@ -1612,22 +1612,43 @@ export default function Admin() {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Must Change PW</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {adminUsers.map((u: any) => (
-                    <TableRow key={u.id} data-testid={`admin-user-row-${u.id}`}>
-                      <TableCell>{u.full_name}</TableCell>
-                      <TableCell>{u.email}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-0.5 rounded text-xs ${u.role === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{u.role}</span>
-                      </TableCell>
-                      <TableCell>{u.created_at?.slice(0, 10) || "—"}</TableCell>
-                      <TableCell>{u.must_change_password ? "Yes" : "No"}</TableCell>
-                    </TableRow>
-                  ))}
+                  {adminUsers.map((u: any) => {
+                    const isActive = u.is_active !== false;
+                    return (
+                      <TableRow key={u.id} data-testid={`admin-user-row-${u.id}`}>
+                        <TableCell>{u.full_name}</TableCell>
+                        <TableCell>{u.email}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-0.5 rounded text-xs ${u.role === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{u.role}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-user-status-${u.id}`}>
+                            {isActive ? "Active" : "Inactive"}
+                          </span>
+                        </TableCell>
+                        <TableCell>{u.created_at?.slice(0, 10) || "—"}</TableCell>
+                        <TableCell>{u.must_change_password ? "Yes" : "No"}</TableCell>
+                        <TableCell>
+                          {u.id !== authUser?.id && (
+                            <Button
+                              variant={isActive ? "destructive" : "outline"}
+                              size="sm"
+                              className="h-6 px-2 text-[11px]"
+                              onClick={() => handleToggleUserActive(u.id, isActive)}
+                              data-testid={`admin-user-toggle-active-${u.id}`}
+                            >{isActive ? "Deactivate" : "Activate"}</Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                   {adminUsers.length === 0 && (
                     <TableRow><TableCell colSpan={5} className="text-center text-slate-400 py-4">No admin users loaded. Click the Users tab again to load.</TableCell></TableRow>
                   )}
