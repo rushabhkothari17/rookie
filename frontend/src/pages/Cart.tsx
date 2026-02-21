@@ -145,6 +145,7 @@ export default function Cart() {
           promo_code: promoApplied?.code || null,
           terms_accepted: termsAccepted,
           terms_id: termsContent?.id || null,
+          start_date: checkoutType === "subscription" && subscriptionStartDate ? subscriptionStartDate : null,
         });
         window.location.href = response.data.url;
       }
