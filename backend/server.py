@@ -2503,6 +2503,7 @@ async def checkout_bank_transfer(
 @app.on_event("startup")
 async def startup_tasks():
     await ensure_audit_indexes()
+    await SettingsService.cleanup_obsolete()
     await SettingsService.seed()
     await seed_admin_user()
     await seed_products()
