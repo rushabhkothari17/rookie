@@ -4107,6 +4107,27 @@ async def create_scope_request_with_form(
             "budget_range": payload.form_data.budget_range or "",
             "additional_notes": payload.form_data.additional_notes or "",
         },
+        "notes_json": _deep_merge(
+            {
+                "product_intake": {item.product_id: dict(item.inputs) for item in payload.items},
+                "payment": {"method": "scope_request_form"},
+                "system_metadata": {
+                    "user_id": user["id"],
+                    "customer_id": customer["id"],
+                    "timestamp": now_iso(),
+                },
+            },
+            {
+                "scope_form": {
+                    "project_summary": payload.form_data.project_summary,
+                    "desired_outcomes": payload.form_data.desired_outcomes,
+                    "apps_involved": payload.form_data.apps_involved,
+                    "timeline_urgency": payload.form_data.timeline_urgency,
+                    "budget_range": payload.form_data.budget_range or "",
+                    "additional_notes": payload.form_data.additional_notes or "",
+                }
+            },
+        ),
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order)
