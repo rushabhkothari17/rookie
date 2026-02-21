@@ -23,6 +23,8 @@ export default function Cart() {
   const [termsContent, setTermsContent] = useState<any>(null);
   const [subscriptionStartDate, setSubscriptionStartDate] = useState("");
   const [futureStartEnabled, setFutureStartEnabled] = useState(false);
+  const [partnerTagResponse, setPartnerTagResponse] = useState("");
+  const [overrideCode, setOverrideCode] = useState("");
 
   const allowBankTransfer = customer?.allow_bank_transfer ?? true;
   const allowCardPayment = customer?.allow_card_payment ?? false;
