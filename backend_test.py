@@ -457,45 +457,22 @@ class AutomateAccountsAPITester:
         headers = {"Authorization": f"Bearer {self.token}"}
         admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
         
-        # First enable card payment for test user
-        # Get current user info
-        success_user, user_response = self.run_test("Get Current User for Card Payment", "GET", "me", 200, headers=headers)
+        # Get current user and customer info
+        success_user, me_response = self.run_test("Get Current User for Card Payment", "GET", "me", 200, headers=headers)
         if not success_user:
             return False
-            
-        # Get customer info  
-        success_customer, customer_response = self.run_test("Get Customer for Payment Methods", "GET", "admin/customers", 200, headers=admin_headers)
-        if not success_customer:
+        
+        customer_info = me_response.get("customer")
+        if not customer_info:
+            print("❌ No customer record found for test user")
             return False
-            
-        # Find test customer by customer_id from current user's customer record
-        success_my_customer, my_customer_response = self.run_test("Get My Customer Info", "GET", "me/customer", 200, headers=headers)
-        if not success_my_customer:
-            # Try finding in admin customers list by email
-            test_customer = None
-            for customer in customer_response.get("customers", []):
-                if customer.get("email") == user_response.get("email"):
-                    test_customer = customer
-                    break
-        else:
-            # Find customer in admin list by ID
-            customer_id = my_customer_response.get("id")
-            test_customer = None
-            for customer in customer_response.get("customers", []):
-                if customer.get("id") == customer_id:
-                    test_customer = customer
-                    break
-                
-        if not test_customer:
-            print("❌ Test customer not found in admin list")
-            return False
-            
+        
         # Enable card payment for test customer
         payment_update_data = {
             "allow_bank_transfer": True,
             "allow_card_payment": True
         }
-        success_enable, _ = self.run_test("Enable Card Payment", "PUT", f"admin/customers/{test_customer['id']}/payment-methods", 200, payment_update_data, headers=admin_headers)
+        success_enable, _ = self.run_test("Enable Card Payment", "PUT", f"admin/customers/{customer_info['id']}/payment-methods", 200, payment_update_data, headers=admin_headers)
         if not success_enable:
             return False
         
