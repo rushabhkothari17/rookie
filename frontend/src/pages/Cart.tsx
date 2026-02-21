@@ -695,6 +695,9 @@ export default function Cart() {
                         !termsAccepted ||
                         !partnerTagResponse ||
                         (partnerTagResponse === "Not yet" && !overrideCode.trim()) ||
+                        !zohoSubscriptionType ||
+                        !currentZohoProduct ||
+                        !zohoAccountAccess ||
                         currencyUnsupported ||
                         (!allowBankTransfer && !allowCardPayment) ||
                         (section.checkoutType === "subscription" && subscriptionMissingPrice && paymentMethod === "card")
