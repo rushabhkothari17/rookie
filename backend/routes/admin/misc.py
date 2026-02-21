@@ -61,6 +61,13 @@ async def admin_update_customer_partner_map(
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
     await db.customers.update_one({"id": customer_id}, {"$set": {"partner_map": payload.partner_map}})
+    await create_audit_log(
+        entity_type="customer",
+        entity_id=customer_id,
+        action="partner_map_updated",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"partner_map": payload.partner_map},
+    )
     return {"message": "Partner map updated"}
 
 
