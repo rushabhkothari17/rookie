@@ -231,6 +231,21 @@ backend:
         agent: "testing"
         comment: "✅ PASSED - Error handling works correctly. Returns specific error messages: 'Product not found' for invalid products, 'You must accept the Terms & Conditions to proceed' for terms not accepted. No generic error messages observed."
 
+  - task: "Critical Bug Fixes - Stripe Subscription Mode & GoCardless Error Handling"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "CRITICAL - Test specific bug fixes: Stripe subscription mode='subscription' and GoCardless error string formatting"
+      - working: true
+        agent: "testing"
+        comment: "✅ ALL CRITICAL BUG FIXES VERIFIED - 1) Stripe subscription checkout now uses mode='subscription' correctly (tested with prod_bookkeeping). Session creation successful with no 'payment mode but recurring price' error. 2) GoCardless errors return proper string messages, not raw Pydantic objects. 3) All error responses have string 'detail' field. 4) Error messages are human-readable. Comprehensive testing completed with 4/4 validations passed."
+
 frontend:
   - task: "Admin Catalog Tab with Terms Assignment"
     implemented: true
