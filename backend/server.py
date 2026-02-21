@@ -4075,13 +4075,24 @@ async def complete_gocardless_redirect(
             # Update subscription status
             subscription = await db.subscriptions.find_one({"id": payload.subscription_id}, {"_id": 0})
             if subscription and mandate_id:
+                # Determine charge_date from subscription's start_date
+                charge_date = None
+                sub_start = subscription.get("start_date")
+                if sub_start:
+                    try:
+                        sd = datetime.fromisoformat(sub_start.replace("Z", "+00:00"))
+                        if sd > datetime.now(timezone.utc):
+                            charge_date = sd.strftime("%Y-%m-%d")
+                    except Exception:
+                        pass
                 # Create first payment for subscription
                 payment = create_payment(
                     amount=subscription["amount"],
                     currency="USD",
                     mandate_id=mandate_id,
                     description=f"Subscription Payment - {subscription['plan_name']}",
-                    metadata={"subscription_id": subscription["id"]}
+                    metadata={"subscription_id": subscription["id"]},
+                    charge_date=charge_date
                 )
                 
                 if payment:
