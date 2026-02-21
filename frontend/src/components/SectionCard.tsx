@@ -11,11 +11,14 @@ export default function SectionCard({
 }) {
   return (
     <div
-      className="rounded-3xl bg-white/80 p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur"
+      className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
       data-testid={testId}
     >
-      <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-      <div className="mt-3 text-sm text-slate-600">{children}</div>
+      <div className="mb-4 flex items-center gap-3">
+        <div className="h-5 w-1 flex-shrink-0 rounded-full bg-red-500" />
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">{title}</h3>
+      </div>
+      <div className="text-sm text-slate-600">{children}</div>
     </div>
   );
 }
