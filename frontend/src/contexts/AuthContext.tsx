@@ -9,6 +9,8 @@ type AuthUser = {
   phone: string;
   is_verified: boolean;
   is_admin: boolean;
+  role: string;
+  must_change_password?: boolean;
 };
 
 type AuthContextType = {
