@@ -624,6 +624,7 @@ export default function Admin() {
           <TabsTrigger value="orders" data-testid="admin-tab-orders">Orders</TabsTrigger>
           <TabsTrigger value="quotes" data-testid="admin-tab-quotes">Quote Requests</TabsTrigger>
           <TabsTrigger value="bank-transactions" data-testid="admin-tab-bank-transactions">Bank Transactions</TabsTrigger>
+          <TabsTrigger value="override-codes" data-testid="admin-tab-override-codes">Override Codes</TabsTrigger>
           <TabsTrigger value="categories" data-testid="admin-tab-categories">Categories</TabsTrigger>
           <TabsTrigger value="catalog" data-testid="admin-tab-catalog">Catalog</TabsTrigger>
           <TabsTrigger value="terms" data-testid="admin-tab-terms">Terms</TabsTrigger>
