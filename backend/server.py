@@ -6586,14 +6586,36 @@ class ArticleEmailRequest(BaseModel):
 
 @api_router.get("/articles/admin/list")
 async def list_articles_admin(
+    page: int = 1,
+    per_page: int = 20,
     category: Optional[str] = None,
+    search: Optional[str] = None,
+    created_from: Optional[str] = None,
+    created_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     query: Dict[str, Any] = {"deleted_at": {"$exists": False}}
     if category:
         query["category"] = category
-    articles = await db.articles.find(query, {"_id": 0, "content": 0}).sort("created_at", -1).to_list(500)
-    return {"articles": articles}
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"id": {"$regex": search, "$options": "i"}},
+        ]
+    if created_from:
+        query.setdefault("created_at", {})["$gte"] = created_from
+    if created_to:
+        query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+    total = await db.articles.count_documents(query)
+    skip = (page - 1) * per_page
+    articles = await db.articles.find(query, {"_id": 0, "content": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+    return {
+        "articles": articles,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.get("/articles/public")
