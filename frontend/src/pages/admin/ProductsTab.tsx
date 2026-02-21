@@ -56,7 +56,7 @@ export function ProductsTab() {
         api.get("/admin/products-all").catch(() => api.get("/products")),
         api.get("/admin/categories").catch(() => ({ data: { categories: [] } })),
         api.get("/admin/customers").catch(() => ({ data: { customers: [] } })),
-        api.get("/admin/terms").catch(() => ({ data: { terms: [] } })),
+        api.get("/terms").catch(() => ({ data: { terms: [] } })),
       ]);
       setProducts(
         (prodRes.data.products || []).sort((a: any, b: any) =>
