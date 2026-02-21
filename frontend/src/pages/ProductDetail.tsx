@@ -444,6 +444,17 @@ export default function ProductDetail() {
                 currency={customer?.currency}
                 disabled={false}
               />
+            ) : scopeUnlock ? (
+              <StickyPurchaseSummary
+                pricing={{
+                  subtotal: scopeUnlock.price,
+                  fee: 0,
+                  total: scopeUnlock.price,
+                }}
+                cta={ctaConfig}
+                currency={customer?.currency}
+                disabled={false}
+              />
             ) : pricing ? (
               <StickyPurchaseSummary
                 pricing={{
