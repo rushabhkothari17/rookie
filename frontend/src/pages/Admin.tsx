@@ -845,11 +845,14 @@ export default function Admin() {
                   <TableHead>SKU</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Billing Type</TableHead>
+                  <TableHead>Terms Assigned</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product) => {
+                  const assignedTerms = terms.find((t: any) => t.id === product.terms_id);
+                  return (
                   <TableRow key={product.id} className="border-b border-slate-100">
                     <TableCell className="font-semibold">{product.name}</TableCell>
                     <TableCell className="font-mono text-xs">{product.sku}</TableCell>
@@ -858,6 +861,19 @@ export default function Admin() {
                       <span className={`text-xs px-2 py-1 rounded ${product.is_subscription ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
                         {product.is_subscription ? "Subscription" : "One-time"}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <Select value={product.terms_id || ""} onValueChange={(v) => handleAssignTermsToProduct(product.id, v || null)}>
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="Default T&C" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Default T&C</SelectItem>
+                          {terms.filter((t: any) => t.status === "active").map((t: any) => (
+                            <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>
                       <Dialog open={selectedProduct?.id === product.id} onOpenChange={(open) => { if (!open) setSelectedProduct(null); }}>
