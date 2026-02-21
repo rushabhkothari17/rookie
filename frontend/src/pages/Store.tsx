@@ -34,7 +34,11 @@ export default function Store() {
       const ordered = CATEGORY_ORDER.filter((category) =>
         categoryList.includes(category),
       );
-      const finalList = ordered.length ? ordered : categoryList;
+      // Include ALL categories: CATEGORY_ORDER first, then any new custom ones
+      const finalList = [
+        ...ordered,
+        ...categoryList.filter((c) => !ordered.includes(c)),
+      ];
       setActiveCategory(
         categoryFromSlug(searchParams.get("category"), finalList),
       );
