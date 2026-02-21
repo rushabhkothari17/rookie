@@ -9,6 +9,7 @@ from core.helpers import make_id, now_iso
 from core.security import require_admin, get_current_user
 from db.session import db
 from models import TermsCreate, TermsUpdate
+from services.audit_service import create_audit_log
 from services.checkout_service import resolve_terms_tags
 
 router = APIRouter(prefix="/api", tags=["admin-terms"])
@@ -73,6 +74,13 @@ async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(req
         "id": terms_id, "title": payload.title, "content": payload.content,
         "is_default": payload.is_default, "status": payload.status, "created_at": now_iso(),
     })
+    await create_audit_log(
+        entity_type="terms",
+        entity_id=terms_id,
+        action="created",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"title": payload.title, "is_default": payload.is_default, "status": payload.status},
+    )
     return {"message": "Terms created", "id": terms_id}
 
 
