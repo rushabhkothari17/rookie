@@ -6232,16 +6232,23 @@ async def validate_scope_article(
     article_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    # Accept full UUID or short ID (first 8 chars prefix match)
     article = await db.articles.find_one(
-        {"id": article_id, "deleted_at": {"$exists": False}},
+        {
+            "$or": [
+                {"id": article_id},
+                {"id": {"$regex": f"^{_re.escape(article_id.lower())}"}},
+            ],
+            "deleted_at": {"$exists": False},
+        },
         {"_id": 0, "content": 0},
     )
     if not article:
-        raise HTTPException(status_code=404, detail="Invalid Scope ID")
+        raise HTTPException(status_code=404, detail="Invalid Scope Id")
     if not article.get("category", "").startswith("Scope - Final"):
-        raise HTTPException(status_code=400, detail="Invalid Scope ID: article is not a finalized scope")
+        raise HTTPException(status_code=400, detail="Invalid Scope Id")
     if not article.get("price"):
-        raise HTTPException(status_code=400, detail="Invalid Scope ID: no price defined on this scope")
+        raise HTTPException(status_code=400, detail="Invalid Scope Id")
     return {
         "valid": True,
         "article_id": article["id"],
