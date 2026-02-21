@@ -2090,6 +2090,9 @@ async def checkout_bank_transfer(
                 "terms_accepted_at": now_iso(),
                 "start_date": requested_start or period_start.isoformat(),
                 "contract_end_date": contract_end.isoformat(),
+                "partner_tag_response": payload.partner_tag_response,
+                "override_code_id": None,  # updated below after override code lookup
+                "partner_tag_timestamp": now_iso(),
             }
         )
         
