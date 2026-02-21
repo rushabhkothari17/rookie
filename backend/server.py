@@ -1474,7 +1474,7 @@ def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any]) -> Dict[str
     else:
         subtotal = 0.0
 
-    fee = round_cents(subtotal * 0.05) if requires_checkout and not is_scope_request else 0.0
+    fee = round_cents(subtotal * fee_rate) if requires_checkout and not is_scope_request else 0.0
     total = round_cents(subtotal + fee)
 
     return {
