@@ -248,6 +248,16 @@ async def update_article(
             "details": changes,
             "created_at": now_iso(),
         })
+        await AuditService.log(
+            action="ARTICLE_UPDATED",
+            description=f"Article '{article.get('title')}' updated",
+            entity_type="Article",
+            entity_id=article_id,
+            actor_type="admin",
+            actor_email=admin.get("email"),
+            source="admin_ui",
+            after_json=changes,
+        )
 
     updated = await db.articles.find_one({"id": article_id}, {"_id": 0})
     updated.pop("_id", None)
