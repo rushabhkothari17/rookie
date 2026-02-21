@@ -254,8 +254,24 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - Store category blurbs loaded from /api/categories endpoint (dynamic)
 - Store.tsx finalList includes all categories beyond static CATEGORY_ORDER
 
-### Next: Product Admin (COMPLEX vs SIMPLE pricing)
-- Seeded categories collection from existing product categories via startup migration
+## UI/UX Redesign - Brand Theming (Feb 2026) ✅
+
+### Changes Made
+- **Global CSS**: `--aa-accent` changed from blue (#2563eb) to red (#dc2626) for brand identity
+- **Background gradient**: Updated to use subtle red tints instead of purple/indigo
+- **TopNav**: Removed "Portal" and "My Profile" from main nav bar (still in dropdown). Added CSS var application from settings on load.
+- **ProductHero**: Completely redesigned — dark navy (#0f172a) hero banner with red accent dash, category label, product title & description. Tag pills REMOVED.
+- **SectionCard**: Red left-border accent on all section headers
+- **StickyPurchaseSummary**: Red CTA button, cleaner price display with icons
+- **OfferingCard**: Clean white card with red "View details" link (replaced blue button)
+- **Store Hero**: Dark navy banner matching brand identity
+- **CategoryTabs**: Active tab now uses red background (was dark navy)
+- **Admin Settings**: Colors updated to proper brand defaults (Primary #0f172a, Accent #dc2626)
+
+### Bug Fix
+- **Category navigation bug**: Fixed `categoryFromSlug` in `lib/categories.ts` — now handles space-to-hyphen conversion for custom categories (e.g. "Test Category" → slug "test-category" now maps correctly back)
+
+
 - `CategoryTabs.tsx` now fetches from `GET /api/categories` dynamically (new categories appear automatically)
 - `Store.tsx` `finalList` now includes new categories beyond CATEGORY_ORDER
 - `productToForm` maps legacy fields: `bullets_included→inclusions`, `bullets_excluded→exclusions`, `bullets_needed→requirements`
