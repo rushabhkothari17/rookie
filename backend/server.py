@@ -179,7 +179,7 @@ def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, An
 
 
 async def create_audit_log(entity_type: str, entity_id: str, action: str, actor: str, details: Dict[str, Any] = None):
-    """Create an audit log entry"""
+    """Bridge: write to legacy audit_logs AND new comprehensive audit_trail collection."""
     await db.audit_logs.insert_one({
         "id": make_id(),
         "entity_type": entity_type,
@@ -189,17 +189,22 @@ async def create_audit_log(entity_type: str, entity_id: str, action: str, actor:
         "details": details or {},
         "created_at": now_iso(),
     })
+    # Also write to the comprehensive audit trail
+    actor_type = "admin" if "admin" in (actor or "").lower() else "system"
+    await AuditService.log(
+        action=f"{entity_type.upper()}_{action.upper().replace(' ', '_')}",
+        description=f"{action} on {entity_type} {entity_id} by {actor}",
+        entity_type=entity_type.capitalize(),
+        entity_id=entity_id,
+        actor_type=actor_type,
+        actor_email=actor if "@" in (actor or "") else None,
+        source="api",
+        meta_json=details or {},
+    )
 
 
-def _deep_merge(base: dict, override: dict) -> dict:
-    """Deep-merge override into base. Override values win on conflict."""
-    result = dict(base)
-    for k, v in override.items():
-        if k in result and isinstance(result[k], dict) and isinstance(v, dict):
-            result[k] = _deep_merge(result[k], v)
-        else:
-            result[k] = v
-    return result
+# _deep_merge now lives in core/helpers.py (imported at top)
+# kept here as alias for backward-compat with any existing references
 
 
 def build_checkout_notes_json(
