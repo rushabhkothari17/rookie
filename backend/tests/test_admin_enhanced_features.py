@@ -10,8 +10,18 @@ Tests for enhanced admin features:
 import pytest
 import requests
 import os
+from pathlib import Path
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+# Load from frontend .env since REACT_APP_BACKEND_URL is the public URL
+def _load_backend_url():
+    env_file = Path("/app/frontend/.env")
+    if env_file.exists():
+        for line in env_file.read_text().splitlines():
+            if line.startswith("REACT_APP_BACKEND_URL="):
+                return line.split("=", 1)[1].strip().rstrip("/")
+    return os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+
+BASE_URL = _load_backend_url()
 
 
 @pytest.fixture(scope="module")
