@@ -290,6 +290,7 @@ export function ProductsTab() {
           </TableBody>
         </Table>
       </div>
+      <AdminPagination page={page} totalPages={totalPages} total={filtered.length} perPage={PER_PAGE} onPage={(p) => setPage(p)} />
 
       {/* Product Create/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={(open) => { if (!open) setShowDialog(false); }}>
