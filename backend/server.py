@@ -74,7 +74,7 @@ from routes.admin.logs import router as audit_logs_router
 app.include_router(audit_logs_router)
 
 
-# Order status enum
+# Order status enum — imported from core.constants (ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES)
 ALLOWED_ORDER_STATUSES = [
     "pending",
     "pending_direct_debit_setup",
