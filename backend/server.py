@@ -538,6 +538,36 @@ class QuoteRequest(BaseModel):
     message: Optional[str] = None
 
 
+class BankTransactionCreate(BaseModel):
+    date: str  # YYYY-MM-DD
+    source: str  # "stripe", "gocardless", "manual"
+    transaction_id: Optional[str] = None
+    type: str  # "payment", "refund", "chargeback", "credit", "debit", "fee"
+    amount: float
+    fees: Optional[float] = 0.0
+    net_amount: Optional[float] = None
+    currency: Optional[str] = "USD"
+    status: str  # "pending", "completed", "failed", "refunded"
+    description: Optional[str] = None
+    linked_order_id: Optional[str] = None
+    internal_notes: Optional[str] = None
+
+
+class BankTransactionUpdate(BaseModel):
+    date: Optional[str] = None
+    source: Optional[str] = None
+    transaction_id: Optional[str] = None
+    type: Optional[str] = None
+    amount: Optional[float] = None
+    fees: Optional[float] = None
+    net_amount: Optional[float] = None
+    currency: Optional[str] = None
+    status: Optional[str] = None
+    description: Optional[str] = None
+    linked_order_id: Optional[str] = None
+    internal_notes: Optional[str] = None
+
+
 def build_seed_products(external_books_url: str) -> List[Dict[str, Any]]:
     return [
         {
