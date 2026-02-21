@@ -430,15 +430,15 @@ export function ArticlesTab({ customers }: { customers: any[] }) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-700">Visibility</label>
+              <label className="text-xs font-medium text-slate-700">Show this article to</label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="radio" checked={form.visibility === "all"} onChange={() => setForm({ ...form, visibility: "all", restricted_to: [] })} />
-                  Visible to all customers
+                  All customers
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="radio" checked={form.visibility === "restricted"} onChange={() => setForm({ ...form, visibility: "restricted" })} />
-                  Restrict to specific customers
+                  Specific customers only
                 </label>
               </div>
               {form.visibility === "restricted" && (
@@ -455,7 +455,7 @@ export function ArticlesTab({ customers }: { customers: any[] }) {
                       <option key={c.id} value={c.id}>{c.company_name || c.full_name || c.id}</option>
                     ))}
                   </select>
-                  <p className="text-xs text-slate-400">{form.restricted_to.length} selected</p>
+                  <p className="text-xs text-slate-400">{form.restricted_to.length} customer(s) selected</p>
                 </div>
               )}
             </div>
