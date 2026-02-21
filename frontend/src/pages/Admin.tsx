@@ -1397,8 +1397,30 @@ export default function Admin() {
         </TabsContent>
       </Tabs>
 
+      {/* Notes Dialog */}
+      <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Order Notes</DialogTitle></DialogHeader>
+          <div className="max-h-[50vh] overflow-y-auto space-y-2">
+            {selectedOrderNotes.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-4">No notes yet. Add one via Edit Order.</p>
+            ) : (
+              selectedOrderNotes.map((note: any, i: number) => (
+                <div key={i} className="border border-slate-200 rounded p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-xs text-slate-500 font-medium">{note.actor}</span>
+                    <span className="text-xs text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+                  </div>
+                  <p className="text-sm text-slate-800">{note.text}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Logs Dialog */}
-      <Dialog open={showLogsDialog} onOpenChange={setShowLogsDialog}>
+      <Dialog open={showLogsDialog} onOpenChange={(open) => { setShowLogsDialog(open); if (!open) { setSelectedOrderLogs([]); setSelectedSubLogs([]); } }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Audit Logs</DialogTitle></DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto space-y-2">
