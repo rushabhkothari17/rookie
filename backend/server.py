@@ -2511,25 +2511,14 @@ async def create_checkout_session(
     if checkout_type == "subscription":
         product = order_items[0]["product"]
         stripe_price_id = product.get("stripe_price_id")
-        if stripe_price_id:
-            checkout_request = CheckoutSessionRequest(
-                stripe_price_id=stripe_price_id,
-                quantity=order_items[0]["quantity"],
-                success_url=success_url,
-                cancel_url=cancel_url,
-                metadata=metadata,
-            )
-        else:
-            # Use price_data for dynamic subscription pricing
-            # Stripe expects monthly recurring for subscriptions
-            checkout_request = CheckoutSessionRequest(
-                amount=float(discounted_subtotal),  # No fee for subscriptions until renewal
-                currency=customer.get("currency", "USD").lower(),
-                success_url=success_url,
-                cancel_url=cancel_url,
-                metadata=metadata,
-                mode="subscription"
-            )
+        # For subscriptions, we must use stripe_price_id (validated above)
+        checkout_request = CheckoutSessionRequest(
+            stripe_price_id=stripe_price_id,
+            quantity=order_items[0]["quantity"],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+        )
     else:
         checkout_request = CheckoutSessionRequest(
             amount=float(total),
@@ -2539,7 +2528,16 @@ async def create_checkout_session(
             metadata=metadata,
         )
 
-    session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+    try:
+        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+    except Exception as e:
+        error_msg = str(e)
+        if "price" in error_msg.lower():
+            raise HTTPException(status_code=400, detail=f"Stripe Price configuration error: {error_msg}")
+        elif "currency" in error_msg.lower():
+            raise HTTPException(status_code=400, detail=f"Currency mismatch: {error_msg}")
+        else:
+            raise HTTPException(status_code=500, detail=f"Checkout session creation failed: {error_msg}")
 
     await db.payment_transactions.insert_one(
         {
