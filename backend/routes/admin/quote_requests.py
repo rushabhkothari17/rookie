@@ -131,4 +131,14 @@ async def admin_update_quote_request(
         await db.quote_requests.update_one({"id": quote_id}, {"$set": update})
     quote.update(update)
     quote.pop("_id", None)
+    await AuditService.log(
+        action="QUOTE_REQUEST_UPDATED",
+        description=f"Quote request '{quote_id}' updated by admin",
+        entity_type="QuoteRequest",
+        entity_id=quote_id,
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+        after_json=update,
+    )
     return {"quote": quote}
