@@ -5651,6 +5651,9 @@ async def update_customer(
         if address_data.postal is not None:
             address_updates["postal"] = address_data.postal
             changes["postal"] = {"old": address.get("postal"), "new": address_data.postal}
+        if address_data.country is not None:
+            address_updates["country"] = address_data.country
+            changes["country"] = {"old": address.get("country"), "new": address_data.country}
         
         if address_updates:
             await db.addresses.update_one({"customer_id": customer_id}, {"$set": address_updates})
@@ -5722,6 +5725,26 @@ async def update_order(
         if payload.total is not None:
             update_fields["total"] = payload.total
             changes["total"] = {"old": order.get("total"), "new": payload.total}
+    else:
+        # Allow amount edits for any order from admin (they know what they're doing)
+        if payload.subtotal is not None:
+            update_fields["subtotal"] = payload.subtotal
+        if payload.fee is not None:
+            update_fields["fee"] = payload.fee
+        if payload.total is not None:
+            update_fields["total"] = payload.total
+
+    if payload.subscription_id is not None:
+        update_fields["subscription_id"] = payload.subscription_id
+        changes["subscription_id"] = {"old": order.get("subscription_id"), "new": payload.subscription_id}
+
+    if payload.product_id is not None:
+        # Update the first order item's product
+        await db.order_items.update_one(
+            {"order_id": order_id},
+            {"$set": {"product_id": payload.product_id}}
+        )
+        changes["product_id"] = {"old": "previous", "new": payload.product_id}
     
     if payload.internal_note is not None:
         # Append note instead of replacing
