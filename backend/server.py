@@ -3022,6 +3022,14 @@ async def create_checkout_session(
     if customer.get("currency") not in ["USD", "CAD"]:
         raise HTTPException(status_code=400, detail="Purchases not supported in your region yet")
 
+    # Validate Zoho Partner Tag (fail fast before building order)
+    await validate_and_consume_partner_tag(
+        customer_id=customer["id"],
+        partner_tag_response=payload.partner_tag_response,
+        override_code=payload.override_code,
+        order_id=None,
+    )
+
     order_items = await build_order_items(payload.items)
 
     if any(i["product"].get("sku") == "MIG-CRM" for i in order_items) and any(
