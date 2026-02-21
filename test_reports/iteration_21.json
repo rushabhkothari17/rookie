@@ -1,0 +1,63 @@
+{
+  "summary": "Iteration 21: Retest of 2 previously failing bugs. Both bugs confirmed FIXED. All 5 required test scenarios passing.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Backend: /api/articles/{id} returns correct article with price=1500 (nested under 'article' key)",
+    "Backend: GET /api/articles/{article_id}/validate-scope returns valid=true and price=1500",
+    "Backend: POST /api/orders/preview WITHOUT _scope_unlock returns is_scope_request=True, subtotal=0",
+    "Backend: POST /api/orders/preview WITH _scope_unlock returns is_scope_request=False, subtotal=1500 - FIXED!",
+    "Backend: POST /api/orders/preview summary.one_time.subtotal=1500 and summary.scope_request.count=0 after unlock",
+    "Backend: POST /api/orders/scope-request creates order with notes_json",
+    "Backend: scope_request order has notes_json.product_intake, notes_json.payment, notes_json.system_metadata",
+    "Backend: notes_json.product_intake contains the correct product_id key",
+    "Frontend: Single TopNav on /articles page - [data-testid='top-nav'] count=1 (was 2 before fix)",
+    "Frontend: Single TopNav on /articles/:id page - [data-testid='top-nav'] count=1 (was 2 before fix)",
+    "Frontend: Product page scope ID input (scope-id-input) visible and functional",
+    "Frontend: Scope unlock validates and shows green success box with title 'Test Scope Final' and $1500",
+    "Frontend: CTA button text shows 'Add to cart — $1500' after scope unlock",
+    "Frontend: Add to cart navigates to /cart with item in One-time purchases section at $1500",
+    "Frontend: Cart page shows 'One-time purchases' section with Fixed-Scope Development at $1500.00",
+    "Frontend: Cart 'Scope n Pay Later' section shows 'No scope requests yet.' (empty - correct!)",
+    "Frontend: Card Payment (Stripe) selection shows 5% fee, total $1575.00",
+    "Frontend: Checkout with scope-unlocked product creates Stripe session - redirects to checkout.stripe.com at US$1,575.00"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_bug_retest_iter21.py",
+    "/app/test_reports/pytest/pytest_results_iter21.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "INFO: scope_request_form endpoint (/api/orders/scope-request-form) does not include notes_json in the order document (unlike /api/orders/scope-request which does). This may be acceptable since it's a different flow (scope form, not cart checkout). Consider adding notes_json for consistency.",
+    "INFO: The validate-scope endpoint is GET /api/articles/{article_id}/validate-scope (no product_id parameter). This is fine.",
+    "INFO: CartContext uses localStorage for persistence. Important for testing - page.goto() in Playwright creates fresh navigation but localStorage persists across same-domain navigations."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_bug_retest_iter21.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "100% (all scenarios passing - both bugs fixed)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "test_scope_article_id": "2fc74332-bd67-4e48-bc94-28aae13653db",
+    "test_rfq_product_id": "prod_fixed_scope_dev"
+  },
+  "seed_data_creation": "Created and deleted 1 test scope_request order during notes_json test. DB is clean.",
+  "retest_needed": false,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Both bugs from iteration 20 are now confirmed fixed: (1) Double TopNav on /articles and /articles/:id is fixed - only 1 TopNav visible. (2) Scope unlock cart price is fixed - scope-unlocked item shows as one-time purchase at $1500, not scope_request at $0. Stripe checkout flow also works correctly at $1575 (=$1500 + 5% fee). Backend 9/9 tests in /app/backend/tests/test_bug_retest_iter21.py all pass. No new issues found.",
+  "rca_confirmed": {
+    "double_topnav_fix": "Confirmed fixed: /articles and /articles/:articleId routes moved OUTSIDE of <BaseLayout> in App.tsx (same level as /store and /product/:productId). Both pages now render exactly 1 TopNav.",
+    "scope_unlock_price_fix": "Confirmed fixed: calculate_price() in server.py now checks inputs.get('_scope_unlock') for scope_request products. When present with a price, returns is_scope_request=False, requires_checkout=True, and uses scope_unlock.price as subtotal. CartItemInput also has price_override field. Full E2E flow works: validate scope -> add to cart at $1500 -> cart shows one-time purchase -> Stripe checkout at $1575."
+  }
+}
