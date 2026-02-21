@@ -93,10 +93,30 @@ export default function Admin() {
   const [productFilter, setProductFilter] = useState("");
   const [includeDeleted, setIncludeDeleted] = useState(false);
 
+  const loadOrders = async (page = 1) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        per_page: "20",
+        sort_by: "created_at",
+        sort_order: "desc",
+        include_deleted: includeDeleted.toString(),
+      });
+      if (productFilter) params.append("product_filter", productFilter);
+      
+      const res = await api.get(`/admin/orders?${params.toString()}`);
+      setOrders(res.data.orders || []);
+      setOrderItems(res.data.items || []);
+      setOrderPage(res.data.page || 1);
+      setOrderTotalPages(res.data.total_pages || 1);
+    } catch (error: any) {
+      toast.error("Failed to load orders");
+    }
+  };
+
   const load = async () => {
-    const [custRes, orderRes, subRes, productRes, logRes, promoRes, termsRes] = await Promise.all([
+    const [custRes, subRes, productRes, logRes, promoRes, termsRes] = await Promise.all([
       api.get("/admin/customers"),
-      api.get("/admin/orders"),
       api.get("/admin/subscriptions"),
       api.get("/products"),
       api.get("/admin/sync-logs"),
@@ -106,18 +126,23 @@ export default function Admin() {
     setCustomers(custRes.data.customers || []);
     setAddresses(custRes.data.addresses || []);
     setUsers(custRes.data.users || []);
-    setOrders(orderRes.data.orders || []);
-    setOrderItems(orderRes.data.items || []);
     setSubscriptions(subRes.data.subscriptions || []);
     setProducts(productRes.data.products || []);
     setLogs(logRes.data.logs || []);
     setPromoCodes(promoRes.data.promo_codes || []);
     setTerms(termsRes.data.terms || []);
+    
+    // Load orders separately with pagination
+    await loadOrders(1);
   };
 
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    loadOrders(orderPage);
+  }, [productFilter, includeDeleted]);
 
   const handleCurrencyOverride = async () => {
     try {
