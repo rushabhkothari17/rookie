@@ -1,0 +1,57 @@
+{
+  "summary": "Tested all 5 targeted Admin Panel fixes: Articles visibility typeahead+chips, Orders Edit dialog fields, Subscriptions Edit dialog, Customer Edit with country save, and table font consistency. Found and fixed a critical bug in CustomersTab.tsx where customer ID was overwritten by user ID during spread operation causing 'Customer not found' errors on save.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "CustomersTab",
+        "issue": "ID collision bug: setSelectedCustomer({ ...customer, ...user, ...address }) caused user.id to overwrite customer.id. API call used wrong ID → 'Customer not found' error for ALL customers.",
+        "selector": "[data-testid^='admin-customer-edit-']",
+        "priority": "CRITICAL",
+        "status": "FIXED - Added id: customer.id to spread in line 236"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Subscriptions table",
+        "issues": ["Table uses text-xs class making it slightly smaller font than Orders/QuoteRequests/BankTransactions/PromoCodes which all use text-sm. Minor inconsistency - not in scope of the 4 tabs tested."]
+      }
+    ]
+  },
+  "test_results": {
+    "articles_visibility": "PASS - 'Specific customers only' radio → email typeahead input appears → dropdown shows matching customers (e.g. 'test_user_033505@test.com — Test Company') → click adds chip with email text → chip has × remove button → × click removes chip → '0 customer(s) selected' counter updates",
+    "orders_edit_dialog": "PASS - All 9 required fields present: Customer email typeahead (shows dropdown with 'admin@automateaccounts.local — Automate Accounts'), Status dropdown (9 statuses), Payment Method (Card/Bank Transfer/Offline/GoCardless), Subtotal/Fee/Total number inputs, Pay Date input, Subscription ID input, Product dropdown. Save Changes button works.",
+    "subscriptions_edit_dialog": "PASS - Customer email typeahead works (shows 'test_user_033505@test.com — Test Company'), Status dropdown (5 options: active/unpaid/offline_manual/canceled_pending/cancelled), Amount number input, Payment Method dropdown (4 options). Save confirmed working (toast: 'Subscription updated').",
+    "customer_edit_country": "FIXED+PASS - Country dropdown present with 9 options (Australia, Canada, UK, US, NZ, India, Singapore, South Africa, Other). Region/Province text input present. Save now works after ID collision fix (toast: 'Customer updated', country value updated from 'USA' to 'NZ' in table).",
+    "table_consistency": "PASS - Orders: text-sm (no text-xs), QuoteRequests: text-sm, BankTransactions: text-sm, PromoCodes: text-sm. All 4 required tables use consistent text-sm font size. Subscriptions still uses text-xs (minor, not in scope)."
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_26.json"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/admin/CustomersTab.tsx"
+  ],
+  "action_items": [
+    "No blocking issues remain - all 5 features verified. Customer country edit bug was fixed inline.",
+    "MINOR: Consider changing SubscriptionsTab table from text-xs to text-sm for consistency with other tabs."
+  ],
+  "critical_code_review_comments": [
+    "FIXED: CustomersTab.tsx line 236 - setSelectedCustomer({ ...customer, ...user, ...address }) caused user.id to overwrite customer.id. Fixed by adding id: customer.id at end of spread.",
+    "SubscriptionsTab.tsx line 202: Table uses className='text-xs min-w-[900px]' - slightly inconsistent with other tabs that use text-sm. Low priority aesthetic issue.",
+    "NOTE: Backend server.py line 5635 has misleading comment 'country is NOT editable' but the code actually DOES allow country editing (lines 5654-5656). Comment should be removed.",
+    "All 5 features from the main agent's requirements are correctly implemented: typeahead inputs, chips UI, all order/subscription edit fields, country dropdown, table consistency."
+  ],
+  "success_rate": {
+    "backend": "N/A - frontend only testing",
+    "frontend": "100% (all 5 features pass; 1 critical bug fixed)"
+  },
+  "seed_data_creation": "None. Customer test_user_033505@test.com country changed from USA to NZ during testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 5 targeted Admin Panel fixes verified: (1) Articles visibility - typeahead+chips working, data-testid='article-customer-search'. (2) Orders edit - all fields working, dialog data-testid='admin-order-edit-dialog'. (3) Subscriptions edit - all fields working, dialog data-testid='admin-sub-edit-dialog'. (4) Customer country edit - was broken due to ID collision bug in spread, FIXED. Country dropdown data-testid='admin-customer-country-select'. (5) Table consistency - Orders/QuoteRequests/BankTransactions/PromoCodes all use text-sm. Key fix: CustomersTab.tsx line 236 now has id: customer.id to prevent ID overwrite from user.id.",
+  "rca_of_issue": "Customer Edit 'Customer not found' Bug RCA: In CustomersTab.tsx line 236, onClick handler used setSelectedCustomer({ ...customer, ...user, ...address }). The spread order causes user.id (the user's UUID) to overwrite customer.id (the customer's UUID). The API endpoint PUT /admin/customers/{customer_id} expects the customer's ID, but was receiving the user's ID. Fix: Added id: customer.id at end of spread to restore correct ID: setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id }). Verified: 'Customer updated' toast confirms fix works, country value persisted to 'NZ' in table."
+}
