@@ -2216,6 +2216,12 @@ async def startup_tasks():
         {"is_admin": False, "role": {"$exists": False}},
         {"$set": {"role": "customer"}}
     )
+    
+    # Backfill is_active=True for all existing users (so nobody is inadvertently locked out)
+    await db.users.update_many(
+        {"is_active": {"$exists": False}},
+        {"$set": {"is_active": True}}
+    )
 
 
 
