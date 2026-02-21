@@ -3708,11 +3708,66 @@ async def stripe_webhook(request: Request):
 
 
 @api_router.get("/admin/customers")
-async def admin_customers(admin: Dict[str, Any] = Depends(require_admin)):
-    customers = await db.customers.find({}, {"_id": 0}).to_list(500)
-    users = await db.users.find({}, {"_id": 0, "id": 1, "email": 1, "full_name": 1}).to_list(500)
-    addresses = await db.addresses.find({}, {"_id": 0}).to_list(500)
-    return {"customers": customers, "users": users, "addresses": addresses}
+async def admin_customers(
+    page: int = 1,
+    per_page: int = 20,
+    search: Optional[str] = None,
+    country: Optional[str] = None,
+    status: Optional[str] = None,
+    bank_transfer: Optional[str] = None,
+    card_payment: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    users_all = await db.users.find({}, {"_id": 0, "id": 1, "email": 1, "full_name": 1, "is_active": 1}).to_list(10000)
+    user_map = {u["id"]: u for u in users_all}
+    addresses_all = await db.addresses.find({}, {"_id": 0}).to_list(10000)
+    addr_map = {a["customer_id"]: a for a in addresses_all}
+
+    query: Dict[str, Any] = {}
+    if bank_transfer is not None:
+        query["allow_bank_transfer"] = (bank_transfer == "true")
+    if card_payment is not None:
+        query["allow_card_payment"] = (card_payment == "true")
+
+    customers_all = await db.customers.find(query, {"_id": 0}).to_list(10000)
+    filtered = []
+    for c in customers_all:
+        user = user_map.get(c.get("user_id", ""), {})
+        addr = addr_map.get(c["id"], {})
+        if country and addr.get("country", "").upper() != country.upper():
+            continue
+        if status:
+            is_active = user.get("is_active", True)
+            if status == "active" and not is_active:
+                continue
+            if status == "inactive" and is_active:
+                continue
+        if search:
+            s = search.lower()
+            haystack = " ".join(filter(None, [
+                user.get("email", ""), user.get("full_name", ""), c.get("company_name", "")
+            ])).lower()
+            if s not in haystack:
+                continue
+        filtered.append(c)
+
+    total = len(filtered)
+    skip = (page - 1) * per_page
+    page_custs = filtered[skip: skip + per_page]
+    page_uid_set = {c.get("user_id") for c in page_custs}
+    page_cid_set = {c["id"] for c in page_custs}
+    page_users = [u for u in users_all if u["id"] in page_uid_set]
+    page_addrs = [a for a in addresses_all if a.get("customer_id") in page_cid_set]
+
+    return {
+        "customers": page_custs,
+        "users": page_users,
+        "addresses": page_addrs,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.put("/admin/customers/{customer_id}/payment-methods")
