@@ -772,7 +772,14 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-4">
-          <div className="flex justify-end mb-3">
+          <div className="flex justify-end mb-3 gap-2">
+            <Button variant="outline" size="sm" onClick={() => {
+              const params = new URLSearchParams({ sort_order: orderSortOrder, include_deleted: includeDeleted.toString() });
+              if (orderNumberFilter) params.append("order_number_filter", orderNumberFilter);
+              if (orderStatusFilter) params.append("status_filter", orderStatusFilter);
+              if (productFilter) params.append("product_filter", productFilter);
+              downloadCsv(`/api/admin/export/orders?${params.toString()}`, `orders_${new Date().toISOString().slice(0,10)}.csv`);
+            }} data-testid="admin-orders-export-csv">Export CSV</Button>
             <Dialog open={showManualOrderDialog} onOpenChange={setShowManualOrderDialog}>
               <DialogTrigger asChild>
                 <Button>Create Manual Order</Button>
