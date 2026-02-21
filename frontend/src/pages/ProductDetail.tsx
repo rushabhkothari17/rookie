@@ -289,22 +289,27 @@ export default function ProductDetail() {
             )}
 
             <SectionCard title="What's included" testId="product-included">
-              <IncludedList items={product.bullets_included || []} testId="product-included-list" />
+              <IncludedList items={product.inclusions || product.bullets_included || []} testId="product-included-list" />
             </SectionCard>
+            {(product.exclusions || product.bullets_excluded || []).length > 0 && (
             <SectionCard title="Not included" testId="product-excluded">
               <ul className="space-y-2" data-testid="product-excluded-list">
-                {(product.bullets_excluded || []).map((item: string) => (
+                {(product.exclusions || product.bullets_excluded || []).map((item: string) => (
                   <li key={item}>• {item}</li>
                 ))}
               </ul>
             </SectionCard>
+            )}
+            {(product.requirements || product.bullets_needed || []).length > 0 && (
             <SectionCard title="What we need from you" testId="product-needed">
               <ul className="space-y-2" data-testid="product-needed-list">
-                {(product.bullets_needed || []).map((item: string) => (
+                {(product.requirements || product.bullets_needed || []).map((item: string) => (
                   <li key={item}>• {item}</li>
                 ))}
               </ul>
             </SectionCard>
+            )}
+            {(product.next_steps || []).length > 0 && (
             <SectionCard title="Next steps" testId="product-next-steps">
               <ol className="space-y-2" data-testid="product-next-steps-list">
                 {(product.next_steps || []).map((item: string, index: number) => (
@@ -312,13 +317,21 @@ export default function ProductDetail() {
                 ))}
               </ol>
             </SectionCard>
+            )}
+            {(product.faqs || []).length > 0 && (
             <SectionCard title="FAQs" testId="product-faqs">
-              <ul className="space-y-2" data-testid="product-faqs-list">
-                {(product.faqs || []).map((item: string) => (
-                  <li key={item}>• {item}</li>
+              <div className="space-y-4" data-testid="product-faqs-list">
+                {(product.faqs || []).map((item: any, i: number) => (
+                  typeof item === "string"
+                    ? <p key={i} className="text-sm text-slate-600">• {item}</p>
+                    : <div key={i}>
+                        <p className="text-sm font-medium text-slate-800">{item.question}</p>
+                        <p className="text-sm text-slate-500 mt-1">{item.answer}</p>
+                      </div>
                 ))}
-              </ul>
+              </div>
             </SectionCard>
+            )}
             <Link to="/store" className="text-sm text-slate-500" data-testid="product-back-link">
               Back to store
             </Link>
