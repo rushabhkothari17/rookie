@@ -1974,6 +1974,14 @@ async def checkout_bank_transfer(
     if not customer.get("allow_bank_transfer", True):
         raise HTTPException(status_code=403, detail="Bank transfer not enabled")
 
+    # Validate Zoho Partner Tag (before building order items to fail fast)
+    await validate_and_consume_partner_tag(
+        customer_id=customer["id"],
+        partner_tag_response=payload.partner_tag_response,
+        override_code=payload.override_code,
+        order_id=None,  # order_id not yet known; updated below after creation
+    )
+
     order_items = await build_order_items(payload.items)
 
     if any(i["product"].get("sku") == "MIG-CRM" for i in order_items) and any(
