@@ -254,7 +254,15 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - Store category blurbs loaded from /api/categories endpoint (dynamic)
 - Store.tsx finalList includes all categories beyond static CATEGORY_ORDER
 
-## Multi-Feature Update (Feb 2026) ✅
+## Bug Fix Batch (Feb 2026) ✅
+
+- **Product detail spacing**: Switched to `flex flex-col gap-6` + `pb-8` on SectionCard — boxes no longer touch.
+- **Color theme**: Active category tab → dark navy. `View details` link → dark slate. Red kept only as thin accent lines/dots.
+- **Admin cancel button**: IIFE-based `contract_end_date` check — hidden when contract is active, shows "Contract active" hint.
+- **Stripe trial_end**: Added Yes/No radio (Start today / Future date). Future date enforces 3-day minimum. Backend validates + skips trial if no future date.
+- **GoCardless subtotal**: `subtotal` field made `Optional` in `CompleteGoCardlessRedirect` — endpoint now accepts requests without it (backend reads from DB).
+
+
 
 ### Quick Fixes
 - **Add to Cart logic**: COMPLEX pricing products with a calculated price > $0 now show "Add to Cart" (not "Request Quote"). Only `REQUEST_FOR_QUOTE` type (or COMPLEX with $0 price) shows the quote button.
