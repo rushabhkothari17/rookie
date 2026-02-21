@@ -177,8 +177,28 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - **Zoho CRM & Books**: Creates log entries instead of API calls
 - **Email to rushabh@automateaccounts.com**: Creates email_outbox entry, not actually sent
 
+## Admin Panel Features (Completed Feb 2026)
+
+### P0 Admin CRUD (Feb 2026) ✅
+- **Customer Edit**: Full dialog with Name, Company, Job Title, Phone, Address fields. Country locked.
+- **Orders**: Paginated table (20/page) with Edit (status, payment method, payment date, notes), Delete, and Auto-Charge buttons.
+- **Subscriptions**: Edit dialog (plan name, amount, renewal date), Renew Now (manual only), View Logs.
+- **Audit Logs**: View Logs button on orders and subscriptions shows full change history.
+- **Catalog - Terms Assignment**: Per-product Terms & Conditions dropdown in Catalog tab.
+- **Backend Fix**: Removed duplicate `PUT /admin/orders/{order_id}` endpoint. New comprehensive endpoint active.
+- **Bug Fix**: Customer Edit address fields now correctly send user-edited values instead of stale state.
+
+### Key Admin API Endpoints
+- `PUT /api/admin/customers/{customer_id}` - Edit customer + address
+- `GET /api/admin/orders?page=&per_page=` - Paginated orders list
+- `PUT /api/admin/orders/{order_id}` - Update order (status, payment method, date, notes)
+- `DELETE /api/admin/orders/{order_id}` - Soft delete order
+- `POST /api/admin/orders/{order_id}/auto-charge` - Auto-charge unpaid order
+- `PUT /api/admin/subscriptions/{subscription_id}` - Edit subscription
+- `GET /api/admin/{entity_type}/{entity_id}/logs` - Audit log history
+
 ## Pending/Future Work
-- [ ] Real GoCardless integration
+- [ ] Real GoCardless integration (end-to-end payment confirmation)
 - [ ] Full Zoho CRM & Books integration
 - [ ] Real email sending for scope requests
 - [ ] Subscription renewal order creation on Stripe webhook
