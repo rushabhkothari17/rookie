@@ -176,6 +176,16 @@ async def create_article(
         "details": {"title": payload.title, "category": payload.category},
         "created_at": now,
     })
+    await AuditService.log(
+        action="ARTICLE_CREATED",
+        description=f"Article '{payload.title}' created",
+        entity_type="Article",
+        entity_id=article_id,
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+        after_json={"title": payload.title, "category": payload.category, "visibility": payload.visibility},
+    )
     doc.pop("_id", None)
     return {"article": doc}
 
