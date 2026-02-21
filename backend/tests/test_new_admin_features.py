@@ -39,7 +39,9 @@ def admin_token():
         "password": ADMIN_PASSWORD
     })
     assert resp.status_code == 200, f"Admin login failed: {resp.text}"
-    return resp.json()["access_token"]
+    data = resp.json()
+    # Try both key names
+    return data.get("access_token") or data.get("token")
 
 
 @pytest.fixture(scope="module")
