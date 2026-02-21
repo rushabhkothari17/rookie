@@ -381,7 +381,7 @@ class AutomateAccountsAPITester:
         # Find a manual subscription to renew
         manual_subscription = None
         for sub in subs_response.get("subscriptions", []):
-            if sub.get("type") == "manual":
+            if sub.get("payment_method") == "manual" or sub.get("is_manual"):
                 manual_subscription = sub
                 break
                 
@@ -390,7 +390,7 @@ class AutomateAccountsAPITester:
             return False
             
         # Test renewing subscription
-        success2, renewal_response = self.run_test("Renew Subscription", "POST", f"admin/subscriptions/{manual_subscription['id']}/renew", 200, {}, headers=headers)
+        success2, renewal_response = self.run_test("Renew Subscription", "POST", f"subscriptions/{manual_subscription['id']}/renew-now", 200, {}, headers=headers)
         
         if success2:
             # Verify renewal order was created
