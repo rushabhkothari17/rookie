@@ -23,7 +23,7 @@ export default function OfferingCard({ product }: { product: any }) {
           {formatTag(product)}
         </span>
         <ArrowUpRight
-          className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-red-500"
+          className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-600"
           size={16}
         />
       </div>
