@@ -17,6 +17,7 @@ import { SettingsTab } from "./admin/SettingsTab";
 import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
 import { BankTransactionsTab } from "./admin/BankTransactionsTab";
 import OverrideCodesTab from "./admin/OverrideCodesTab.jsx";
+import { ArticlesTab } from "./admin/ArticlesTab";
 
 export default function Admin() {
   const { user: authUser } = useAuth();
