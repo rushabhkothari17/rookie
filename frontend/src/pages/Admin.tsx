@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Admin() {
   const [customers, setCustomers] = useState<any[]>([]);
