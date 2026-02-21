@@ -83,6 +83,16 @@ async def create_bank_transaction(
     }
     await db.bank_transactions.insert_one(txn)
     txn.pop("_id", None)
+    await AuditService.log(
+        action="BANK_TXN_CREATED",
+        description=f"Bank transaction created: {payload.transaction_id} ({payload.type}) {payload.amount} {payload.currency}",
+        entity_type="BankTransaction",
+        entity_id=txn_id,
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+        after_json={"amount": payload.amount, "type": payload.type, "source": payload.source, "status": payload.status},
+    )
     return {"transaction": txn}
 
 
