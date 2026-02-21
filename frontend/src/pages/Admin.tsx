@@ -496,6 +496,7 @@ export default function Admin() {
                   <TableHead>Country</TableHead>
                   <TableHead>Bank Transfer</TableHead>
                   <TableHead>Card Payment</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
