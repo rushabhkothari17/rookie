@@ -561,8 +561,8 @@ export default function Cart() {
                             <a
                               href={
                                 address?.country === "Canada"
-                                  ? "https://store.zohocloud.ca/ResellerCustomerSignUp.do?id=341bc9b2ab087c30e176e7c0385e3caaa331989c27aa00d0f3a0521dfb926960"
-                                  : "https://store.zoho.com/ResellerCustomerSignUp.do?id=0752790261568b40e0d2ffef44a3f4e428bbcca5aa8fba3305f9e276702456a3"
+                                  ? zohoUrls.reseller_signup_ca
+                                  : zohoUrls.reseller_signup_us
                               }
                               target="_blank"
                               rel="noopener noreferrer"
