@@ -119,7 +119,9 @@ class TestBooksMigrationPricing:
         print(f"PASS: 6Y xero no premium = $3199 (3238.8 rounds to 3199)")
 
     def test_2y_standard_no_premium(self, auth_headers):
-        # 2Y + YTD, standard, no premium → 999 + 350 = 1349 → round=1349
+        # 2Y + YTD, standard, no premium → 999 + 350 = 1349
+        # round_to_nearest_99(1349): low=1299, high=1399, |1349-1299|=50, |1349-1399|=50
+        # Tie → high=1399
         resp = requests.post(
             f"{BASE_URL}/api/pricing/calc",
             json={"product_id": MIG_BOOKS_PRODUCT_ID, "inputs": {
@@ -129,8 +131,8 @@ class TestBooksMigrationPricing:
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["subtotal"] == 1349.0, f"Expected 1349, got {data['subtotal']}"
-        print(f"PASS: 2Y standard no premium = $1349")
+        assert data["subtotal"] == 1399.0, f"Expected 1399 (tie→high), got {data['subtotal']}"
+        print(f"PASS: 2Y standard no premium = $1399 (1349 tie rounds to high 1399)")
 
     def test_5y_standard_no_premium(self, auth_headers):
         # 5Y + YTD, standard, no premium → 999 + 4*350 = 2399 → round=2399
