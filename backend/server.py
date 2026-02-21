@@ -2478,6 +2478,15 @@ async def create_checkout_session(
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
+    
+    # Create audit log
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="created",
+        actor="system",
+        details={"checkout_type": checkout_type, "payment_method": "card", "total": total}
+    )
 
     for item in order_items:
         product = item["product"]
