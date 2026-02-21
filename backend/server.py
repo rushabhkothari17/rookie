@@ -6454,7 +6454,7 @@ async def email_article(
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
     app_settings = await db.app_settings.find_one({}, {"_id": 0})
-    resend_key = (app_settings or {}).get("resend_api_key")
+    resend_key = await SettingsService.get("resend_api_key") or (app_settings or {}).get("resend_api_key")
     if not resend_key:
         raise HTTPException(status_code=400, detail="Resend API key not configured. Please add it in Admin > Settings.")
     resend.api_key = resend_key
