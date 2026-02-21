@@ -64,18 +64,16 @@ Build a full-featured customer-facing portal for Automate Accounts (Zoho partner
   - Scope metadata (`_scope_unlock`) captured in `notes_json.product_intake`
   - Full Stripe checkout flow works with scope-unlocked price
 
-### Session 5 (Admin Panel UX + Consistency Enhancement) — 2026-02-21
-- **Backend**: Implemented pagination (20/page), filtering, sorting for 11 modules (Users, Customers, Subscriptions, Orders, Quote Requests, Bank Transactions, Articles, Categories, Terms, Promo Codes, Override Codes)
-- **CSV Exports**: Added export endpoints for 6 modules (customers, orders, subscriptions, quote-requests, articles, categories, terms, promo-codes, override-codes)
-- **New Edit Endpoints**: `PUT /admin/users/{id}`, `PUT /admin/terms/{id}`, `PUT /admin/promo-codes/{id}`
-- **Frontend Refactor** (Admin panel modularization):
-  - Created shared components: `AdminPageHeader.tsx`, `AdminPagination.tsx` in `admin/shared/`
-  - Created self-contained tab components: `CustomersTab.tsx`, `SubscriptionsTab.tsx`, `OrdersTab.tsx`, `PromoCodesTab.tsx`, `TermsTab.tsx`, `UsersTab.tsx`
-  - Updated `ArticlesTab.tsx` to self-fetch customers (no longer needs prop)
-  - Rewrote `Admin.tsx` as a slim container (~80 lines) importing all tab components
-  - Orders table: fee badge shows as amber "fee: $X.XX" badge per row
-  - All 15 admin tabs: pagination, filters, CSV exports verified by testing agent (100% pass)
-  - Fixed LogsTab SelectItem empty-string value crash (Radix UI constraint)
+### Session 5 (Admin Panel UX + Consistency Enhancement — COMPLETE) — 2026-02-21
+- **Backend**: Pagination (20/page), filtering, sorting for 11 modules; CSV export endpoints for 9 modules; edit endpoints for Users/Terms/PromoCodes
+- **Frontend — Full Refactor**:
+  - Rewrote `Admin.tsx` as slim ~80-line container with 14 modular tab components
+  - All tabs have: `AdminPageHeader`, filter bar with Clear button, pagination, sortable table headers
+  - **New/Fully Rewritten Tabs**: OrdersTab (fee badge, all filters), QuoteRequestsTab (email typeahead customer search), BankTransactionsTab (Notes as modal not column, Delete text), TermsTab (Edit button, CSV), PromoCodesTab (Edit button, CSV, expiry filter), UsersTab (Edit button, pagination), OverrideCodesTab (converted from JSX/dark to TSX/white, email display, CSV), CategoriesTab (filters, CSV), ProductsTab/CatalogTab (category + complexity filters, pagination)
+  - **ArticlesTab**: pagination, date range filter, search, CSV, visibility bug fixed (customers now show email)
+  - **BooksMigrationForm**: Added "Company Name" field (saved in notes_json)
+  - All "Del" text → "Delete" throughout admin panel
+  - Tested by testing agent: **100% pass rate** on all 14 feature categories
 
 ### Session 4 (P1 Audit Logs + P2 DB-backed Settings) — 2026-02-21
 - **P1 — Global Audit Log system**:
