@@ -282,7 +282,7 @@ export default function ProductDetail() {
     if (product.pricing_type === "inquiry") {
       return {
         label: "Contact sales",
-        href: "mailto:hello@automateaccounts.com",
+        href: `mailto:${contactEmail}`,
       };
     }
     if (pricing?.is_scope_request || product.pricing_type === "scope_request") {
