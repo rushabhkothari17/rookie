@@ -71,18 +71,18 @@ Build a full-featured customer-facing portal for Automate Accounts (Zoho partner
   - `/api/admin/audit-logs` endpoint with full filtering (actor, source, entity_type, action, severity, date range, free text)
   - `LogsTab.tsx`: full-featured admin UI with filters, load-more pagination, detail dialog
   - Audit logging on: settings changes (SETTINGS_KEY_UPDATE, SETTINGS_UPDATE), order status updates, webhooks
-- **P2 — DB-backed Settings**:
-  - `SettingsService` in `backend/services/settings_service.py` with in-memory cache (60s TTL)
-  - `app_settings` collection seeded on startup with 14 structured settings
-  - Categories: Payments, GoCardless, Email, Zoho, Branding, FeatureFlags
-  - `/api/admin/settings/structured` GET — grouped by category
+- **P2 — DB-backed Settings (complete)**:
+  - `SettingsService` in `backend/services/settings_service.py` with in-memory cache (60s TTL) + startup cleanup of obsolete keys
+  - `app_settings` collection seeded with 12 structured settings across 6 categories
+  - **Categories**: Payments (`service_fee_rate`), Operations (`override_code_expiry_hours`), Email (resend + sender + admin email), Zoho (5 checkout URLs), Branding (`website_url`, `contact_email`), FeatureFlags (`partner_tagging_enabled`)
+  - **Removed dead settings**: stripe_publishable/secret/webhook keys, gocardless_access_token/environment, logo_url (duplicate), zoho_partner_link_aus/nz/global (wrong URLs, unused)
+  - `/api/settings/public` extended to return all Zoho + branding fields (unauthenticated)
+  - `/api/admin/settings/structured` GET — grouped by category (clean, no dead keys)
   - `/api/admin/settings/key/{key}` PUT — update single setting
-  - `SettingsTab.tsx` — complete `SystemConfigSection` rewrite:
-    - Bool fields → inline toggle
-    - Number fields → number input with badge
-    - Secret fields → password input with reveal toggle
-    - Click-to-edit pattern with Cancel button
-  - Legacy corrupt document filtered from structured settings response
+  - **Wired to codebase**: `service_fee_rate` used in `calculate_price()`, order create, webhook renewal; `resend_api_key` via SettingsService; `override_code_expiry_hours` for override code generation
+  - **Cart.tsx**: loads 5 Zoho URLs from `/api/settings/public` (no more hardcoded)
+  - **ProductDetail.tsx**: loads `contact_email` + `website_url` from settings; passes `website_url` to `BooksMigrationForm`
+  - **SettingsTab.tsx** cleaned up: removed API Keys section, removed Secondary color (unused), clean 2-column Brand Colors layout
 
 ---
 
