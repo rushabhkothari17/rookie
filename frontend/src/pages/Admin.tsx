@@ -548,7 +548,7 @@ export default function Admin() {
 
   const downloadCsv = async (endpoint: string, filename: string) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("aa_token");
       const baseUrl = process.env.REACT_APP_BACKEND_URL || "";
       const resp = await fetch(`${baseUrl}${endpoint}`, { headers: { Authorization: `Bearer ${token}` } });
       if (!resp.ok) throw new Error("Export failed");
