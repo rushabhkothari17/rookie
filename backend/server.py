@@ -244,6 +244,7 @@ class CheckoutSessionRequestBody(BaseModel):
     promo_code: Optional[str] = None
     terms_accepted: bool = False
     terms_id: Optional[str] = None
+    start_date: Optional[str] = None  # YYYY-MM-DD for subscription start
 
 
 class BankTransferCheckoutRequest(BaseModel):
@@ -252,6 +253,7 @@ class BankTransferCheckoutRequest(BaseModel):
     promo_code: Optional[str] = None
     terms_accepted: bool = False
     terms_id: Optional[str] = None
+    start_date: Optional[str] = None  # YYYY-MM-DD for subscription start
 
 
 
