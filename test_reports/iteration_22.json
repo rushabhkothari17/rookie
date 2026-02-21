@@ -1,0 +1,74 @@
+{
+  "summary": "Iteration 22: Tested 7 bug fixes. All backend tests pass (10/10). All frontend checks pass. All 7 fixes are confirmed working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Backend: validate-scope with full UUID '2fc74332-bd67-4e48-bc94-28aae13653db' returns valid=True, price=1500",
+    "Backend: validate-scope with short ID '2fc74332' returns valid=True, price=1500 (P0 fix confirmed)",
+    "Backend: Both short and full ID resolve to same article_id (2fc74332-bd67-4e48-bc94-28aae13653db)",
+    "Backend: Invalid scope ID '00000000' returns 404 with detail='Invalid Scope Id' (capital S, lowercase d)",
+    "Backend: POST /api/orders/scope-request-form creates order successfully",
+    "Backend: scope-request-form order has notes_json.product_intake with product_id key",
+    "Backend: scope-request-form order has notes_json.scope_form with project_summary and other fields",
+    "Backend: scope-request-form order has notes_json.payment.method='scope_request_form'",
+    "Backend: Article API returns 'id' field (length 36 UUID) for Short ID display",
+    "Backend: Article title returned correctly from API",
+    "Frontend: /articles page - articles list grid has 'pt-4' class (spacing between filter pills and card grid)",
+    "Frontend: /articles page - category filters visible, article cards visible",
+    "Frontend: /articles/:id - Short ID element shows '2fc74332' (clickable code element)",
+    "Frontend: /articles/:id - Article ID element shows full UUID '2fc74332-bd67-4e48-bc94-28aae13653db' (clickable code element)",
+    "Frontend: /articles/:id - 'Short ID:' and 'Article ID:' labels both present",
+    "Frontend: ProductDetail scope ID section has text 'Otherwise, submit an enquiry to proceed'",
+    "Frontend: ProductDetail invalid scope ID shows error 'Invalid Scope Id' (capital S, lowercase d)",
+    "Frontend: ProductDetail short ID '2fc74332' validates correctly - shows 'Scope unlocked', 'Test Scope Final', '$1500' (screenshot confirmed)",
+    "Frontend: ProductDetail CTA button shows 'Add to cart — $1500' after short ID validation",
+    "Frontend: Admin panel left sidebar visible with PEOPLE, COMMERCE, CONTENT, SETTINGS section headers",
+    "Frontend: Admin sidebar has all expected tabs: Users, Customers, Subscriptions, Orders, Quote Requests, Bank Transactions, Articles, Categories, Catalog, Terms, Override Codes, Promo Codes, Settings, Zoho Sync Logs",
+    "Frontend: Clicking Orders tab in admin sidebar shows orders table with order data",
+    "Frontend: Admin Articles form dialog shows 'Show this article to' label with 'All customers' and 'Specific customers only' radio options"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_iter22_fixes.py",
+    "/app/test_reports/pytest/pytest_results_iter22.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "MINOR: data-testid for scope success box is 'scope-id-success' (not 'scope-unlock-success'). Not a functional issue - visually confirmed working via screenshot.",
+    "INFO: validate-scope uses $regex prefix match: '^{re.escape(article_id.lower())}' - this works correctly for 8-char short IDs but could theoretically match multiple articles if two UUIDs share the same 8-char prefix. Acceptable for now.",
+    "INFO: scope-request-form notes_json uses _deep_merge - confirmed both product_intake and scope_form fields are present and correct."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter22_fixes.py"
+  ],
+  "success_rate": {
+    "backend": "100% (10/10 tests passed)",
+    "frontend": "100% (all 7 fixes visually and functionally confirmed)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "test_scope_article_short_id": "2fc74332",
+    "test_scope_article_full_id": "2fc74332-bd67-4e48-bc94-28aae13653db",
+    "test_rfq_product_id": "prod_fixed_scope_dev"
+  },
+  "seed_data_creation": "Created and deleted 1 test scope-request-form order during notes_json test. DB is clean.",
+  "retest_needed": false,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "All 7 iteration 22 fixes confirmed working: (1) Short ID validation on validate-scope endpoint works for '2fc74332' - P0 fix confirmed. (2) Article view shows Short ID and Article ID as clickable code elements. (3) ProductDetail scope section copy includes 'Otherwise, submit an enquiry to proceed'. (4) Articles admin form shows 'Show this article to' / 'All customers' / 'Specific customers only' radio options. (5) Admin panel has left sidebar with PEOPLE/COMMERCE/CONTENT/SETTINGS sections - all tabs functional. (6) /articles page has pt-4 spacing between category pills and article grid. (7) scope-request-form order has notes_json with product_intake and scope_form data. Backend 10/10 tests pass in /app/backend/tests/test_iter22_fixes.py.",
+  "screenshots": [
+    "/app/test_reports/iter22_articles_page.jpeg",
+    "/app/test_reports/iter22_article_view.jpeg",
+    "/app/test_reports/iter22_product_scope.jpeg",
+    "/app/test_reports/iter22_admin_sidebar.jpeg",
+    "/app/test_reports/iter22_admin_orders.jpeg",
+    "/app/test_reports/iter22_admin_articles_form.jpeg",
+    "/app/test_reports/iter22_scope_short_id.jpeg"
+  ]
+}
