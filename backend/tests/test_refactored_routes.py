@@ -828,7 +828,7 @@ class TestArticles:
         """Create an article"""
         payload = {
             "title": "TEST Article for Automated Tests",
-            "category": "General",
+            "category": "Blog",  # valid category per ARTICLE_CATEGORIES constant
             "content": "<p>TEST content for automated testing</p>",
             "visibility": "all",
             "restricted_to": []
