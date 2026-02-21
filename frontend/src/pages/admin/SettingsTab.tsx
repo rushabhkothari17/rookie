@@ -6,12 +6,7 @@ import { toast } from "@/components/ui/sonner";
 import { Eye, EyeOff, Upload, Save, X } from "lucide-react";
 
 interface Settings {
-  stripe_public_key?: string;
-  stripe_secret_key?: string;
-  gocardless_token?: string;
-  resend_api_key?: string;
   primary_color?: string;
-  secondary_color?: string;
   accent_color?: string;
   logo_url?: string;
   store_name?: string;
