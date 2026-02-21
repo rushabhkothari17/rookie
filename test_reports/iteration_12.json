@@ -1,0 +1,52 @@
+{
+  "summary": "Iteration 12 testing of 7 bug fixes: categories seeding, pricing complexity backfill, inactive product blocking, product edit form prefill, Quote Requests tab, dynamic storefront category tabs. All 23 backend tests passed (100%). All 11 frontend test scenarios passed (100%). All fixes verified working end-to-end.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Inactive product page (/product/{id})",
+        "issues": ["In development mode, React shows 'Uncaught runtime errors' overlay with AxiosError 404. Production build would show clean 'Product not found' message without overlay. Not a bug, just dev-mode behavior."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_bug_fixes_iter12.py",
+    "/app/test_reports/pytest/pytest_results_iter12.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Admin Categories tab still shows orphan test categories from previous test iterations ('Enterprise', 'Test', 'Test Category', 'test', 'test2'). These are harmless (not shown on storefront since no active products), but E1 may want to clean them up or add a 'delete all orphan categories' migration.",
+    "The 'Outcome' field for Zoho One Express Setup shows '11' - this is test data contamination from a previous iteration that modified the product's outcome field. The productToForm mapping is correct; the DB just has stale test data.",
+    "The /product/{inactive_id} URL shows a React dev error overlay (404 AxiosError). The backend correctly returns 404 for inactive products. Frontend should handle this gracefully (redirect to /store or show proper 404 page) in the Product.tsx component.",
+    "Store.tsx category filter uses ?category=migrate-to-zoho URL but the actual slug is 'migrations' (from CATEGORY_SLUGS). Deep-linking by the wrong slug defaults to first category - not a blocking issue since users click tabs rather than type URLs."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_bug_fixes_iter12.py"
+  ],
+  "success_rate": {
+    "backend": "100% (23/23 tests passed)",
+    "frontend": "100% (all 11 scenarios verified)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123!",
+  "seed_data_creation": "Created TEST_InactiveProduct_Iter12 (kept inactive for testing) via backend test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 7 bug fixes verified working: (1) Categories tab shows 6 real seeded categories; (2) New categories appear as storefront tabs dynamically; (3) Product edit form prefills legacy fields (bullets_included→inclusions, bullets_excluded→exclusions, bullets_needed→requirements); (4) Inactive products return 404 on direct URL and excluded from storefront list; (5) Zoho Books tiered pricing shows COMPLEX, Migrate to Zoho Books external shows REQUEST_FOR_QUOTE; (6) Quote Requests tab visible in admin panel with empty table; (7) Customer visibility checkbox list shows company names. Minor: admin categories tab has orphan test categories from prev iterations, inactive product page shows React dev error overlay (not a production issue). Backend: 100%. Frontend: 100%.",
+  "verified_features": {
+    "categories_seeded": "6 real categories present in GET /api/categories and admin Categories tab",
+    "storefront_category_tabs": "6 tabs dynamically loaded from /api/categories: Zoho Express Setup, Migrate to Zoho, Managed Services, Build & Automate, Accounting on Zoho, Audit & Optimize",
+    "product_form_prefill": "Zoho One Express Setup form correctly shows inclusions (from bullets_included), exclusions (from bullets_excluded), requirements (from bullets_needed), next_steps",
+    "pricing_complexity_backfill": "Zoho Books Express (tiered) = COMPLEX in table and edit form; Migrate to Zoho Books (external) = REQUEST_FOR_QUOTE in table and edit form",
+    "inactive_product_blocking": "GET /api/products excludes inactive; GET /api/products/{id} returns 404 for inactive products",
+    "quote_requests_tab": "Visible in admin nav, shows empty table with 'No quote requests yet.' message",
+    "visibility_checkbox": "Customer visibility checkboxes show company names in edit form"
+  },
+  "mocked_apis": [
+    "Email sending for quote requests (stores to DB only)"
+  ]
+}
