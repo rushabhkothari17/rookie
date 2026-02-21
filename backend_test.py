@@ -298,8 +298,8 @@ class AutomateAccountsAPITester:
             
         headers = {"Authorization": f"Bearer {self.admin_token}"}
         
-        # Test getting admin catalog (should show "Terms Assigned" column)
-        success1, catalog_response = self.run_test("Admin Get Catalog", "GET", "admin/catalog", 200, headers=headers)
+        # Get products (admin can access regular products endpoint)
+        success1, products_response = self.run_test("Admin Get Products", "GET", "products", 200, headers=headers)
         if not success1:
             return False
             
@@ -309,8 +309,8 @@ class AutomateAccountsAPITester:
             return False
             
         # Test getting products to find one to update
-        if catalog_response.get("products"):
-            product = catalog_response["products"][0]
+        if products_response.get("products"):
+            product = products_response["products"][0]
             product_id = product["id"]
             
             if terms_response.get("terms"):
