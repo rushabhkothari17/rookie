@@ -4049,6 +4049,319 @@ async def get_subscription_logs(subscription_id: str, admin: Dict[str, Any] = De
     return {"logs": logs}
 
 
+# ============ ADMIN: CUSTOMER EDIT ============
+
+@api_router.put("/admin/customers/{customer_id}")
+async def update_customer(
+    customer_id: str,
+    customer_data: CustomerUpdate,
+    address_data: AddressUpdate,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Update customer details (country is locked)"""
+    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    changes = {}
+    
+    # Update user fields
+    user_updates = {}
+    if customer_data.full_name is not None:
+        user_updates["full_name"] = customer_data.full_name
+        changes["full_name"] = {"old": user.get("full_name"), "new": customer_data.full_name}
+    if customer_data.company_name is not None:
+        user_updates["company_name"] = customer_data.company_name
+        changes["company_name"] = {"old": user.get("company_name"), "new": customer_data.company_name}
+    if customer_data.job_title is not None:
+        user_updates["job_title"] = customer_data.job_title
+        changes["job_title"] = {"old": user.get("job_title"), "new": customer_data.job_title}
+    if customer_data.phone is not None:
+        user_updates["phone"] = customer_data.phone
+        changes["phone"] = {"old": user.get("phone"), "new": customer_data.phone}
+    
+    if user_updates:
+        await db.users.update_one({"id": user["id"]}, {"$set": user_updates})
+    
+    # Update address fields (country is NOT editable)
+    address = await db.addresses.find_one({"customer_id": customer_id}, {"_id": 0})
+    if address:
+        address_updates = {}
+        if address_data.line1 is not None:
+            address_updates["line1"] = address_data.line1
+            changes["address_line1"] = {"old": address.get("line1"), "new": address_data.line1}
+        if address_data.line2 is not None:
+            address_updates["line2"] = address_data.line2
+            changes["address_line2"] = {"old": address.get("line2"), "new": address_data.line2}
+        if address_data.city is not None:
+            address_updates["city"] = address_data.city
+            changes["city"] = {"old": address.get("city"), "new": address_data.city}
+        if address_data.region is not None:
+            address_updates["region"] = address_data.region
+            changes["region"] = {"old": address.get("region"), "new": address_data.region}
+        if address_data.postal is not None:
+            address_updates["postal"] = address_data.postal
+            changes["postal"] = {"old": address.get("postal"), "new": address_data.postal}
+        
+        if address_updates:
+            await db.addresses.update_one({"customer_id": customer_id}, {"$set": address_updates})
+    
+    # Log the changes
+    await create_audit_log(
+        entity_type="customer",
+        entity_id=customer_id,
+        action="updated",
+        actor=f"admin:{admin['id']}",
+        details={"changes": changes}
+    )
+    
+    return {"message": "Customer updated successfully"}
+
+
+# ============ ADMIN: ORDER CRUD ============
+
+@api_router.put("/admin/orders/{order_id}")
+async def update_order(
+    order_id: str,
+    payload: OrderUpdate,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Update order details"""
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Validate status if provided
+    if payload.status and not validate_order_status(payload.status):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid status. Allowed: {', '.join(ALLOWED_ORDER_STATUSES)}"
+        )
+    
+    changes = {}
+    update_fields = {}
+    
+    if payload.customer_id is not None:
+        update_fields["customer_id"] = payload.customer_id
+        changes["customer_id"] = {"old": order.get("customer_id"), "new": payload.customer_id}
+    
+    if payload.status is not None:
+        update_fields["status"] = payload.status
+        changes["status"] = {"old": order.get("status"), "new": payload.status}
+    
+    if payload.payment_method is not None:
+        update_fields["payment_method"] = payload.payment_method
+        changes["payment_method"] = {"old": order.get("payment_method"), "new": payload.payment_method}
+    
+    if payload.order_date is not None:
+        update_fields["created_at"] = payload.order_date
+        changes["order_date"] = {"old": order.get("created_at"), "new": payload.order_date}
+    
+    if payload.payment_date is not None:
+        update_fields["payment_date"] = payload.payment_date
+        changes["payment_date"] = {"old": order.get("payment_date"), "new": payload.payment_date}
+    
+    # Only allow amount edits for manual/offline orders
+    is_manual = order.get("payment_method") in ["manual", "offline"]
+    if is_manual:
+        if payload.subtotal is not None:
+            update_fields["subtotal"] = payload.subtotal
+            changes["subtotal"] = {"old": order.get("subtotal"), "new": payload.subtotal}
+        if payload.fee is not None:
+            update_fields["fee"] = payload.fee
+            changes["fee"] = {"old": order.get("fee"), "new": payload.fee}
+        if payload.total is not None:
+            update_fields["total"] = payload.total
+            changes["total"] = {"old": order.get("total"), "new": payload.total}
+    
+    if payload.internal_note is not None:
+        # Append note instead of replacing
+        existing_note = order.get("internal_note", "")
+        new_note = f"{existing_note}\n[{now_iso()}] {payload.internal_note}" if existing_note else payload.internal_note
+        update_fields["internal_note"] = new_note
+        changes["internal_note_added"] = payload.internal_note
+    
+    if update_fields:
+        update_fields["updated_at"] = now_iso()
+        await db.orders.update_one({"id": order_id}, {"$set": update_fields})
+        
+        await create_audit_log(
+            entity_type="order",
+            entity_id=order_id,
+            action="updated",
+            actor=f"admin:{admin['id']}",
+            details={"changes": changes}
+        )
+    
+    return {"message": "Order updated successfully"}
+
+
+@api_router.delete("/admin/orders/{order_id}")
+async def delete_order(
+    order_id: str,
+    payload: OrderDelete,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Soft delete an order"""
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Soft delete
+    await db.orders.update_one(
+        {"id": order_id},
+        {"$set": {"deleted_at": now_iso(), "deleted_by": admin["id"]}}
+    )
+    
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="deleted",
+        actor=f"admin:{admin['id']}",
+        details={"reason": payload.reason or "No reason provided"}
+    )
+    
+    return {"message": "Order deleted successfully"}
+
+
+@api_router.post("/admin/orders/{order_id}/auto-charge")
+async def auto_charge_order(
+    order_id: str,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Attempt to auto-charge an unpaid order"""
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    if order.get("status") == "paid":
+        raise HTTPException(status_code=400, detail="Order is already paid")
+    
+    customer = await db.customers.find_one({"id": order["customer_id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    payment_method = order.get("payment_method")
+    result = {"success": False, "message": ""}
+    
+    try:
+        if payment_method == "card":
+            # For Stripe card payments, we'd need to create a payment intent or invoice
+            # This is a simplified version
+            result["message"] = "Card payment auto-charge requires Stripe Payment Intent setup. Please process manually or contact customer."
+            result["success"] = False
+        
+        elif payment_method == "bank_transfer":
+            # For GoCardless, check if mandate exists
+            mandate_id = order.get("gocardless_mandate_id")
+            if not mandate_id:
+                result["message"] = "No GoCardless mandate found. Customer must complete Direct Debit setup first."
+                result["success"] = False
+            else:
+                # Create payment
+                payment = create_payment(
+                    amount=order["total"],
+                    currency=order.get("currency", "USD"),
+                    mandate_id=mandate_id,
+                    description=f"Auto-charge for Order {order['order_number']}",
+                    metadata={"order_id": order["id"], "order_number": order["order_number"]}
+                )
+                
+                if payment:
+                    await db.orders.update_one(
+                        {"id": order_id},
+                        {"$set": {
+                            "status": "pending_payment",
+                            "gocardless_payment_id": payment["id"],
+                            "updated_at": now_iso()
+                        }}
+                    )
+                    result["success"] = True
+                    result["message"] = f"Payment initiated with GoCardless. Payment ID: {payment['id']}"
+                    result["payment_id"] = payment["id"]
+                else:
+                    result["message"] = "Failed to create GoCardless payment"
+                    result["success"] = False
+        
+        else:
+            result["message"] = f"Auto-charge not supported for payment method: {payment_method}"
+            result["success"] = False
+        
+        # Log the attempt
+        await create_audit_log(
+            entity_type="order",
+            entity_id=order_id,
+            action="auto_charge_attempt",
+            actor=f"admin:{admin['id']}",
+            details={"result": result, "payment_method": payment_method}
+        )
+        
+        return result
+    
+    except Exception as e:
+        await create_audit_log(
+            entity_type="order",
+            entity_id=order_id,
+            action="auto_charge_failed",
+            actor=f"admin:{admin['id']}",
+            details={"error": str(e), "payment_method": payment_method}
+        )
+        raise HTTPException(status_code=500, detail=f"Auto-charge failed: {str(e)}")
+
+
+@api_router.get("/admin/orders")
+async def get_admin_orders_paginated(
+    page: int = 1,
+    per_page: int = 20,
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+    include_deleted: bool = False,
+    product_filter: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """Get paginated orders list"""
+    skip = (page - 1) * per_page
+    
+    # Build query
+    query = {}
+    if not include_deleted:
+        query["deleted_at"] = {"$exists": False}
+    
+    # Get orders
+    sort_direction = -1 if sort_order == "desc" else 1
+    orders = await db.orders.find(query, {"_id": 0}).sort(sort_by, sort_direction).skip(skip).limit(per_page).to_list(per_page)
+    
+    # Get order items for product filtering
+    if product_filter:
+        order_ids = [o["id"] for o in orders]
+        items = await db.order_items.find({"order_id": {"$in": order_ids}}, {"_id": 0}).to_list(1000)
+        products = await db.products.find({}, {"_id": 0}).to_list(1000)
+        
+        # Filter orders by product name
+        product_ids_matching = [p["id"] for p in products if product_filter.lower() in p.get("name", "").lower()]
+        matching_order_ids = [i["order_id"] for i in items if i["product_id"] in product_ids_matching]
+        orders = [o for o in orders if o["id"] in matching_order_ids]
+    
+    # Get items for all orders
+    all_order_ids = [o["id"] for o in orders]
+    items = await db.order_items.find({"order_id": {"$in": all_order_ids}}, {"_id": 0}).to_list(1000)
+    
+    total_count = await db.orders.count_documents(query)
+    
+    return {
+        "orders": orders,
+        "items": items,
+        "page": page,
+        "per_page": per_page,
+        "total": total_count,
+        "total_pages": (total_count + per_page - 1) // per_page
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
