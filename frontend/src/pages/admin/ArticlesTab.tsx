@@ -133,9 +133,12 @@ export function ArticlesTab() {
   // Fetch customers for visibility/email controls
   useEffect(() => {
     api.get("/admin/customers?per_page=1000")
-      .then(r => { const custs = r.data.customers || []; const usrs = r.data.users || []; const um: Record<string,any> = {}; usrs.forEach((u:any) => { um[u.id] = u; }); setCustomers(custs.map((c:any) => ({ ...c, ...um[c.user_id] }))); })
+      .then(r => { const custs = r.data.customers || []; const usrs = r.data.users || []; const um: Record<string,any> = {}; usrs.forEach((u:any) => { um[u.id] = u; }); setCustomers(custs.map((c:any) => ({ ...c, email: um[c.user_id]?.email || '', full_name: um[c.user_id]?.full_name || '' }))); })
       .catch(() => {});
   }, []);
+
+  // Customer search for visibility typeahead
+  const [custVisSearch, setCustVisSearch] = useState("");
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
