@@ -260,10 +260,13 @@ export default function ProductDetail() {
       };
     }
     if (isRFQ) {
+      // If scope has been unlocked, show Add to cart instead
+      if (scopeUnlock) {
+        return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
+      }
       return { label: "Request a Quote", onClick: () => setShowQuoteModal(true) };
     }
     if (product.pricing_type === "external") {
-      // Legacy fallback: show as add to cart since external redirect is removed
       return { label: "Add to cart", onClick: handleAddToCart };
     }
     if (product.pricing_type === "inquiry") {
@@ -276,7 +279,7 @@ export default function ProductDetail() {
       return { label: "Request scope", onClick: handleScopeRequest };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
-  }, [product, pricing, isRFQ, migBooksData]);
+  }, [product, pricing, isRFQ, migBooksData, scopeUnlock]);
 
   if (loading) {
     return (
