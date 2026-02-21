@@ -1,71 +1,29 @@
 import { useEffect, useState } from "react";
-import api from "../../lib/api";
-import { toast } from "sonner";
+import api from "@/lib/api";
+import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-interface OverrideCode {
-  id: string;
-  code: string;
-  customer_id: string;
-  customer_email?: string;
-  customer_name?: string;
-  status: string;
-  effective_status: string;
-  created_at: string;
-  expires_at: string;
-  used_at?: string;
-  used_for_order_id?: string;
-}
-
-interface Customer {
-  id: string;
-  user_id: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  full_name: string;
-}
-
-interface CustomerOption {
-  customer_id: string;
-  email: string;
-  name: string;
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  active: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-  inactive: "bg-slate-500/20 text-slate-400 border border-slate-500/30",
-  expired: "bg-red-500/20 text-red-400 border border-red-500/30",
+const STATUS_COLORS = {
+  active: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+  inactive: "bg-slate-100 text-slate-500 border border-slate-200",
+  expired: "bg-red-100 text-red-600 border border-red-200",
 };
 
 export default function OverrideCodesTab() {
-  const [codes, setCodes] = useState<OverrideCode[]>([]);
+  const [codes, setCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [customers, setCustomers] = useState<CustomerOption[]>([]);
-  const [editingCode, setEditingCode] = useState<OverrideCode | null>(null);
+  const [customers, setCustomers] = useState([]);
+  const [editingCode, setEditingCode] = useState(null);
 
-  const [createForm, setCreateForm] = useState({
-    code: "",
-    customer_id: "",
-    expires_at: "",
-  });
-
-  const [editForm, setEditForm] = useState({
-    code: "",
-    customer_id: "",
-    status: "",
-    expires_at: "",
-  });
+  const [createForm, setCreateForm] = useState({ code: "", customer_id: "", expires_at: "" });
+  const [editForm, setEditForm] = useState({ code: "", customer_id: "", status: "", expires_at: "" });
 
   const fetchCodes = async () => {
     try {
-      const params: Record<string, string> = {};
+      const params = {};
       if (filterStatus) params.status = filterStatus;
       const res = await api.get("/admin/override-codes", { params });
       setCodes(res.data.override_codes || []);
@@ -82,27 +40,22 @@ export default function OverrideCodesTab() {
         api.get("/admin/customers"),
         api.get("/admin/users"),
       ]);
-      const custs: Customer[] = custRes.data.customers || custRes.data || [];
-      const users: User[] = userRes.data.users || userRes.data || [];
-      const options: CustomerOption[] = custs.map((c) => {
-        const u = users.find((u) => u.id === c.user_id) || ({} as User);
+      const custs = custRes.data.customers || custRes.data || [];
+      const users = userRes.data.users || userRes.data || [];
+      const options = custs.map((c) => {
+        const u = users.find((u) => u.id === c.user_id) || {};
         return { customer_id: c.id, email: u.email || c.user_id, name: u.full_name || "" };
       });
       setCustomers(options);
     } catch {
-      // ignore — customers are shown in the list already
+      // ignore
     }
   };
 
-  useEffect(() => {
-    fetchCodes();
-  }, [filterStatus]);
+  useEffect(() => { fetchCodes(); }, [filterStatus]);
+  useEffect(() => { fetchCustomers(); }, []);
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
     if (!createForm.code.trim() || !createForm.customer_id) {
       toast.error("Code and customer are required");
@@ -112,18 +65,18 @@ export default function OverrideCodesTab() {
       await api.post("/admin/override-codes", {
         code: createForm.code.trim(),
         customer_id: createForm.customer_id,
-        expires_at: createForm.expires_at || undefined,
+        expires_at: createForm.expires_at ? new Date(createForm.expires_at).toISOString() : undefined,
       });
       toast.success("Override code created");
       setCreateForm({ code: "", customer_id: "", expires_at: "" });
       setShowCreate(false);
       fetchCodes();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err?.response?.data?.detail || "Failed to create override code");
     }
   };
 
-  const openEdit = (oc: OverrideCode) => {
+  const openEdit = (oc) => {
     setEditingCode(oc);
     setEditForm({
       code: oc.code,
@@ -133,11 +86,11 @@ export default function OverrideCodesTab() {
     });
   };
 
-  const handleEdit = async (e: React.FormEvent) => {
+  const handleEdit = async (e) => {
     e.preventDefault();
     if (!editingCode) return;
     try {
-      const updates: Record<string, string> = {};
+      const updates = {};
       if (editForm.code !== editingCode.code) updates.code = editForm.code;
       if (editForm.customer_id !== editingCode.customer_id) updates.customer_id = editForm.customer_id;
       if (editForm.status !== editingCode.status) updates.status = editForm.status;
@@ -147,12 +100,12 @@ export default function OverrideCodesTab() {
       toast.success("Override code updated");
       setEditingCode(null);
       fetchCodes();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err?.response?.data?.detail || "Failed to update override code");
     }
   };
 
-  const handleDeactivate = async (id: string) => {
+  const handleDeactivate = async (id) => {
     if (!confirm("Deactivate this override code?")) return;
     try {
       await api.delete(`/admin/override-codes/${id}`);
@@ -163,9 +116,7 @@ export default function OverrideCodesTab() {
     }
   };
 
-  const filtered = codes.filter((c) =>
-    filterStatus ? c.effective_status === filterStatus : true
-  );
+  const filtered = filterStatus ? codes.filter((c) => c.effective_status === filterStatus) : codes;
 
   return (
     <div data-testid="override-codes-tab" className="space-y-6">
@@ -174,7 +125,7 @@ export default function OverrideCodesTab() {
         <div>
           <h2 className="text-xl font-semibold text-white">Override Codes</h2>
           <p className="text-sm text-slate-400 mt-0.5">
-            Customer-specific codes that allow checkout without Zoho Partner tagging
+            Customer-specific codes allowing checkout without Zoho Partner tagging
           </p>
         </div>
         <Button
@@ -196,7 +147,7 @@ export default function OverrideCodesTab() {
           <h3 className="text-sm font-semibold text-white">New Override Code</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1">
-              <Label className="text-slate-300 text-xs">Code *</Label>
+              <label className="text-slate-300 text-xs block">Code *</label>
               <Input
                 data-testid="override-code-input"
                 value={createForm.code}
@@ -206,7 +157,7 @@ export default function OverrideCodesTab() {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-slate-300 text-xs">Customer *</Label>
+              <label className="text-slate-300 text-xs block">Customer *</label>
               <select
                 data-testid="override-customer-select"
                 value={createForm.customer_id}
@@ -222,7 +173,7 @@ export default function OverrideCodesTab() {
               </select>
             </div>
             <div className="space-y-1">
-              <Label className="text-slate-300 text-xs">Expires At (default: 48h)</Label>
+              <label className="text-slate-300 text-xs block">Expires At (default: 48h)</label>
               <Input
                 data-testid="override-expires-input"
                 type="datetime-local"
@@ -233,19 +184,10 @@ export default function OverrideCodesTab() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              type="submit"
-              data-testid="submit-override-code-btn"
-              className="bg-slate-700 hover:bg-slate-600 text-white"
-            >
+            <Button type="submit" data-testid="submit-override-code-btn" className="bg-slate-700 hover:bg-slate-600 text-white">
               Create Code
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setShowCreate(false)}
-              className="text-slate-400"
-            >
+            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)} className="text-slate-400">
               Cancel
             </Button>
           </div>
@@ -262,7 +204,7 @@ export default function OverrideCodesTab() {
             <h3 className="text-sm font-semibold text-white">Edit Override Code</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label className="text-slate-300 text-xs">Code</Label>
+                <label className="text-slate-300 text-xs block">Code</label>
                 <Input
                   value={editForm.code}
                   onChange={(e) => setEditForm({ ...editForm, code: e.target.value })}
@@ -270,7 +212,7 @@ export default function OverrideCodesTab() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-slate-300 text-xs">Customer</Label>
+                <label className="text-slate-300 text-xs block">Customer</label>
                 <select
                   value={editForm.customer_id}
                   onChange={(e) => setEditForm({ ...editForm, customer_id: e.target.value })}
@@ -284,7 +226,7 @@ export default function OverrideCodesTab() {
                 </select>
               </div>
               <div className="space-y-1">
-                <Label className="text-slate-300 text-xs">Status</Label>
+                <label className="text-slate-300 text-xs block">Status</label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
@@ -295,7 +237,7 @@ export default function OverrideCodesTab() {
                 </select>
               </div>
               <div className="space-y-1">
-                <Label className="text-slate-300 text-xs">Expires At</Label>
+                <label className="text-slate-300 text-xs block">Expires At</label>
                 <Input
                   type="datetime-local"
                   value={editForm.expires_at}
@@ -305,17 +247,8 @@ export default function OverrideCodesTab() {
               </div>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button type="submit" className="bg-slate-700 hover:bg-slate-600 text-white">
-                Save Changes
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setEditingCode(null)}
-                className="text-slate-400"
-              >
-                Cancel
-              </Button>
+              <Button type="submit" className="bg-slate-700 hover:bg-slate-600 text-white">Save Changes</Button>
+              <Button type="button" variant="ghost" onClick={() => setEditingCode(null)} className="text-slate-400">Cancel</Button>
             </div>
           </form>
         </div>
@@ -330,8 +263,8 @@ export default function OverrideCodesTab() {
             onClick={() => setFilterStatus(s)}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               filterStatus === s
-                ? "bg-[#162234] text-white border border-slate-500"
-                : "text-slate-400 hover:text-white border border-transparent"
+                ? "bg-slate-200 text-slate-800 border border-slate-400"
+                : "text-slate-500 hover:text-slate-800 border border-transparent"
             }`}
           >
             {s ? s.charAt(0).toUpperCase() + s.slice(1) : "All"}
@@ -343,67 +276,51 @@ export default function OverrideCodesTab() {
       {loading ? (
         <p className="text-slate-400 text-sm">Loading...</p>
       ) : filtered.length === 0 ? (
-        <p className="text-slate-400 text-sm">No override codes found.</p>
+        <p className="text-slate-500 text-sm py-8 text-center">No override codes found.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-700">
+        <div className="overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-700 bg-[#0e1a2e]">
+              <tr className="border-b border-slate-200 bg-slate-50">
                 {["Code", "Customer", "Status", "Created", "Expires", "Used At", "Order", "Actions"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                    {h}
-                  </th>
+                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map((oc) => (
-                <tr key={oc.id} className="border-b border-slate-800 hover:bg-[#0e1a2e]/60 transition-colors">
+                <tr key={oc.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-3">
-                    <code className="bg-slate-800 text-slate-200 px-2 py-0.5 rounded text-xs font-mono">
-                      {oc.code}
-                    </code>
+                    <code className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs font-mono">{oc.code}</code>
                   </td>
-                  <td className="px-4 py-3 text-slate-300 text-xs">
+                  <td className="px-4 py-3 text-slate-600 text-xs">
                     <div>{oc.customer_email || oc.customer_id?.slice(0, 8)}</div>
-                    {oc.customer_name && <div className="text-slate-500">{oc.customer_name}</div>}
+                    {oc.customer_name && <div className="text-slate-400">{oc.customer_name}</div>}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[oc.effective_status] || STATUS_COLORS.inactive}`}>
                       {oc.effective_status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-400 text-xs">
-                    {new Date(oc.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-slate-400 text-xs">
-                    {oc.expires_at ? new Date(oc.expires_at).toLocaleString() : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-400 text-xs">
-                    {oc.used_at ? new Date(oc.used_at).toLocaleString() : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-slate-400 text-xs">
-                    {oc.used_for_order_id ? (
-                      <code className="text-slate-300 text-xs">{oc.used_for_order_id.slice(0, 8)}</code>
-                    ) : "—"}
+                  <td className="px-4 py-3 text-slate-500 text-xs">{new Date(oc.created_at).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-slate-500 text-xs">{oc.expires_at ? new Date(oc.expires_at).toLocaleString() : "—"}</td>
+                  <td className="px-4 py-3 text-slate-500 text-xs">{oc.used_at ? new Date(oc.used_at).toLocaleString() : "—"}</td>
+                  <td className="px-4 py-3 text-slate-500 text-xs">
+                    {oc.used_for_order_id ? <code className="text-slate-600 text-xs">{oc.used_for_order_id.slice(0, 8)}</code> : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button
                         data-testid={`edit-override-code-${oc.id}`}
                         onClick={() => openEdit(oc)}
-                        className="text-xs text-slate-400 hover:text-white underline transition-colors"
-                      >
-                        Edit
-                      </button>
+                        className="text-xs text-slate-500 hover:text-slate-800 underline transition-colors"
+                      >Edit</button>
                       {oc.effective_status === "active" && (
                         <button
                           data-testid={`deactivate-override-code-${oc.id}`}
                           onClick={() => handleDeactivate(oc.id)}
-                          className="text-xs text-red-400 hover:text-red-300 underline transition-colors"
-                        >
-                          Deactivate
-                        </button>
+                          className="text-xs text-red-500 hover:text-red-700 underline transition-colors"
+                        >Deactivate</button>
                       )}
                     </div>
                   </td>
