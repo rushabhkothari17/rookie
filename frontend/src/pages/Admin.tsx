@@ -100,9 +100,7 @@ export default function Admin() {
             <TermsTab />
           </TabsContent>
           <TabsContent value="override-codes" className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
-              <OverrideCodesTab />
-            </div>
+            <OverrideCodesTab />
           </TabsContent>
           <TabsContent value="promo" className="space-y-4">
             <PromoCodesTab />
