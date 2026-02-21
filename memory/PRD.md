@@ -254,7 +254,26 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - Store category blurbs loaded from /api/categories endpoint (dynamic)
 - Store.tsx finalList includes all categories beyond static CATEGORY_ORDER
 
-## UI/UX Redesign - Brand Theming (Feb 2026) ✅
+## Multi-Feature Update (Feb 2026) ✅
+
+### Quick Fixes
+- **Add to Cart logic**: COMPLEX pricing products with a calculated price > $0 now show "Add to Cart" (not "Request Quote"). Only `REQUEST_FOR_QUOTE` type (or COMPLEX with $0 price) shows the quote button.
+- **Key Bullets bug**: `OfferingCard` now reads `product.bullets` field (from admin KEY BULLETS), fixing cards not showing bullets.
+- **Product detail spacing**: Sections now use `space-y-8` (32px) for clearer visual separation.
+- **Currency fix**: Removed hardcoded "All prices in CAD" — now displays user's actual currency from AuthContext.
+- **Color theme**: CTA buttons changed from red to dark navy (`bg-slate-900`). Red remains only as accent decorators (lines, dots, active tabs).
+
+### New Features
+- **Subscription Contract End Date**: 
+  - Default = start_date + 12 months, stored in DB.
+  - Startup migration backfills existing subscriptions.
+  - New "Contract End" column in admin subscriptions table.
+  - Editable in edit modal (logged to audit trail).
+  - Portal: cancel button hidden until contract end date passes; shows "Contract active until [date]" message instead.
+- **Bank Transactions Tab** (admin): Full CRUD for manual transaction log. Fields: date, source, txn ID, type, amount, fees, net, currency, status, description, linked order, notes. Filters, logs per transaction, export CSV.
+- **Subscription Start Date at checkout**: Date picker in cart for subscription products (any date within next 30 days). Passed to Stripe as `trial_end` (scheduled billing start). GoCardless: stored `start_date` used as `charge_date` for first payment.
+
+
 
 ### Changes Made
 - **Global CSS**: `--aa-accent` changed from blue (#2563eb) to red (#dc2626) for brand identity
