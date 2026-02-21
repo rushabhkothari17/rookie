@@ -50,6 +50,7 @@ from core.constants import (                             # hardcoded constants
     PARTNER_TAG_RESPONSES, ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES,
 )
 from services.audit_service import AuditService, ensure_audit_indexes
+from services.settings_service import SettingsService
 from middleware.request_id import RequestIDMiddleware
 
 app = FastAPI()
