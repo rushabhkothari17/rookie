@@ -2335,6 +2335,8 @@ async def login(payload: LoginRequest):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.get("is_verified"):
         raise HTTPException(status_code=403, detail="Email verification required")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
 
     token = create_access_token(
         {
