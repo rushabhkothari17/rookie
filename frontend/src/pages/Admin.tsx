@@ -461,18 +461,25 @@ export default function Admin() {
     try {
       await api.put(`/admin/subscriptions/${selectedSubscription.id}`, {
         renewal_date: selectedSubscription.renewal_date,
+        start_date: selectedSubscription.start_date,
         amount: selectedSubscription.amount,
         plan_name: selectedSubscription.plan_name,
         customer_id: selectedSubscription.customer_id,
         status: selectedSubscription.status,
         payment_method: selectedSubscription.payment_method,
+        new_note: selectedSubscription.new_note || undefined,
       });
       toast.success("Subscription updated");
       setShowSubEditDialog(false);
-      load();
+      loadSubscriptions();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to update subscription");
     }
+  };
+
+  const handleViewSubNotes = (sub: any) => {
+    setSelectedSubNotes(sub.notes || []);
+    setShowSubNotesDialog(true);
   };
 
   const handleViewOrderNotes = (order: any) => {
@@ -485,9 +492,33 @@ export default function Admin() {
     try {
       await api.post(`/admin/subscriptions/${subId}/cancel`);
       toast.success("Subscription cancellation scheduled");
-      load();
+      loadSubscriptions();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Cancellation failed");
+    }
+  };
+
+  const handleCreateAdminUser = async () => {
+    try {
+      await api.post("/admin/users", newAdminUser);
+      toast.success(`Admin user ${newAdminUser.email} created`);
+      setShowCreateAdminDialog(false);
+      setNewAdminUser({ email: "", full_name: "", company_name: "", phone: "", password: "", role: "admin" });
+      loadAdminUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to create admin user");
+    }
+  };
+
+  const handleCreateCustomer = async () => {
+    try {
+      await api.post("/admin/customers/create", newCustomer);
+      toast.success(`Customer ${newCustomer.email} created`);
+      setShowCreateCustomerDialog(false);
+      setNewCustomer({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "GB", mark_verified: true });
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to create customer");
     }
   };
 
