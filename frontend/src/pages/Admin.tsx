@@ -497,6 +497,7 @@ export default function Admin() {
                   <TableHead>Customer Name</TableHead>
                   <TableHead>Customer Email</TableHead>
                   <TableHead>Product(s)</TableHead>
+                  <TableHead>Subscription #</TableHead>
                   <TableHead>Subtotal</TableHead>
                   <TableHead>Fee</TableHead>
                   <TableHead>Total</TableHead>
@@ -517,27 +518,31 @@ export default function Admin() {
                       <TableCell>{user?.full_name || "—"}</TableCell>
                       <TableCell className="text-xs">{user?.email || "—"}</TableCell>
                       <TableCell className="max-w-[200px] truncate text-xs" title={productNames}>{productNames}</TableCell>
+                      <TableCell className="font-mono text-xs">{order.subscription_number || order.subscription_id || "—"}</TableCell>
                       <TableCell>${order.subtotal?.toFixed(2)}</TableCell>
                       <TableCell>${order.fee?.toFixed(2)}</TableCell>
                       <TableCell className="font-semibold">${order.total?.toFixed(2)}</TableCell>
-                      <TableCell><span className={`text-xs px-2 py-1 rounded ${order.payment_method === "bank_transfer" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>{order.payment_method === "bank_transfer" ? "Bank" : "Card"}</span></TableCell>
-                      <TableCell><span className={`text-xs px-2 py-1 rounded ${order.status === "paid" ? "bg-green-100 text-green-700" : order.status === "awaiting_bank_transfer" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>{order.status}</span></TableCell>
+                      <TableCell><span className={`text-xs px-2 py-1 rounded ${order.payment_method === "bank_transfer" ? "bg-blue-100 text-blue-700" : order.payment_method === "offline" ? "bg-gray-100 text-gray-700" : "bg-green-100 text-green-700"}`}>{order.payment_method === "bank_transfer" ? "Bank" : order.payment_method === "offline" ? "Manual" : "Card"}</span></TableCell>
+                      <TableCell><span className={`text-xs px-2 py-1 rounded ${order.status === "paid" ? "bg-green-100 text-green-700" : order.status === "unpaid" ? "bg-red-100 text-red-700" : order.status === "awaiting_bank_transfer" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>{order.status}</span></TableCell>
                       <TableCell>
-                        <Dialog open={selectedOrder?.id === order.id} onOpenChange={(open) => { if (!open) setSelectedOrder(null); }}>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)} data-testid={`admin-order-edit-${order.id}`}>Edit</Button>
-                          </DialogTrigger>
-                          {selectedOrder && selectedOrder.id === order.id && (
-                            <DialogContent data-testid="admin-order-dialog">
-                              <DialogHeader><DialogTitle>Update order {order.order_number}</DialogTitle></DialogHeader>
-                              <div className="space-y-3">
-                                <Input placeholder="Manual status" value={selectedOrder.manual_status || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, manual_status: e.target.value })} data-testid="admin-order-status-input" />
-                                <Textarea placeholder="Internal note" value={selectedOrder.internal_note || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, internal_note: e.target.value })} data-testid="admin-order-note-input" />
-                                <Button onClick={handleOrderSave} data-testid="admin-order-save">Save update</Button>
-                              </div>
-                            </DialogContent>
-                          )}
-                        </Dialog>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewOrderLogs(order.id)}>View Logs</Button>
+                          <Dialog open={selectedOrder?.id === order.id} onOpenChange={(open) => { if (!open) setSelectedOrder(null); }}>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)} data-testid={`admin-order-edit-${order.id}`}>Edit</Button>
+                            </DialogTrigger>
+                            {selectedOrder && selectedOrder.id === order.id && (
+                              <DialogContent data-testid="admin-order-dialog">
+                                <DialogHeader><DialogTitle>Update order {order.order_number}</DialogTitle></DialogHeader>
+                                <div className="space-y-3">
+                                  <Input placeholder="Manual status" value={selectedOrder.manual_status || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, manual_status: e.target.value })} data-testid="admin-order-status-input" />
+                                  <Textarea placeholder="Internal note" value={selectedOrder.internal_note || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, internal_note: e.target.value })} data-testid="admin-order-note-input" />
+                                  <Button onClick={handleOrderSave} data-testid="admin-order-save">Save update</Button>
+                                </div>
+                              </DialogContent>
+                            )}
+                          </Dialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
