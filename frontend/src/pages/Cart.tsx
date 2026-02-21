@@ -633,7 +633,7 @@ export default function Cart() {
                       <p className="text-xs text-slate-500 leading-relaxed">
                         You can tag us as your Zoho Partner by clicking{" "}
                         <a
-                          href="https://store.zoho.com/html/store/tagyourpartner.html?partnerid=zkms01370000000123731ce9bbb964daefb3ac6c1ff255b5fa6f"
+                          href={zohoUrls.partner_tag_us}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 underline font-medium"
