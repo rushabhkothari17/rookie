@@ -468,12 +468,23 @@ class AutomateAccountsAPITester:
         if not success_customer:
             return False
             
-        # Find test customer by email
-        test_customer = None
-        for customer in customer_response.get("customers", []):
-            if customer.get("email") == user_response.get("email"):
-                test_customer = customer
-                break
+        # Find test customer by customer_id from current user's customer record
+        success_my_customer, my_customer_response = self.run_test("Get My Customer Info", "GET", "me/customer", 200, headers=headers)
+        if not success_my_customer:
+            # Try finding in admin customers list by email
+            test_customer = None
+            for customer in customer_response.get("customers", []):
+                if customer.get("email") == user_response.get("email"):
+                    test_customer = customer
+                    break
+        else:
+            # Find customer in admin list by ID
+            customer_id = my_customer_response.get("id")
+            test_customer = None
+            for customer in customer_response.get("customers", []):
+                if customer.get("id") == customer_id:
+                    test_customer = customer
+                    break
                 
         if not test_customer:
             print("❌ Test customer not found in admin list")
