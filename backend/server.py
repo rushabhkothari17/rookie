@@ -5083,6 +5083,12 @@ async def auto_charge_order(
 
 
 
+@api_router.get("/admin/products-all")
+async def admin_list_all_products(admin: Dict[str, Any] = Depends(require_admin)):
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    return {"products": products}
+
+
 # ============ APP SETTINGS ============
 
 @api_router.get("/settings/public")
