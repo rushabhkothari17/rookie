@@ -324,6 +324,8 @@ class SubscriptionUpdate(BaseModel):
     status: Optional[str] = None
     plan_name: Optional[str] = None
     product_id: Optional[str] = None
+    customer_id: Optional[str] = None
+    payment_method: Optional[str] = None
 
 
 class CustomerUpdate(BaseModel):
@@ -3044,15 +3046,21 @@ async def admin_orders(
     sort_order: str = "desc",
     include_deleted: bool = False,
     product_filter: Optional[str] = None,
+    order_number_filter: Optional[str] = None,
+    status_filter: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin)
 ):
     """Get paginated orders list"""
     skip = (page - 1) * per_page
     
     # Build query
-    query = {}
+    query: Dict[str, Any] = {}
     if not include_deleted:
         query["deleted_at"] = {"$exists": False}
+    if order_number_filter:
+        query["order_number"] = {"$regex": order_number_filter, "$options": "i"}
+    if status_filter:
+        query["status"] = status_filter
     
     # Get orders
     sort_direction = -1 if sort_order == "desc" else 1
