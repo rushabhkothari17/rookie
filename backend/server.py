@@ -139,6 +139,21 @@ async def require_super_admin(user: Dict[str, Any] = Depends(get_current_user)):
     return user
 
 
+async def optional_get_current_user(request: Request) -> Optional[Dict[str, Any]]:
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return None
+    try:
+        token = auth_header.split(" ", 1)[1]
+        payload = decode_token(token)
+        user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
+        if user and user.get("is_active", True):
+            return user
+    except Exception:
+        pass
+    return None
+
+
 def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, Any], product_name: str) -> str:
     """Resolve dynamic tags in T&C content"""
     resolved = content
