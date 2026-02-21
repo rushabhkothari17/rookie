@@ -82,6 +82,11 @@ export default function ProductDetail() {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteForm, setQuoteForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
   const [submittingQuote, setSubmittingQuote] = useState(false);
+  // Scope ID unlock state
+  const [scopeId, setScopeId] = useState("");
+  const [scopeValidating, setScopeValidating] = useState(false);
+  const [scopeUnlock, setScopeUnlock] = useState<any>(null); // validated article data
+  const [scopeError, setScopeError] = useState("");
   const [scopeForm, setScopeForm] = useState({
     project_summary: "",
     desired_outcomes: "",
