@@ -117,9 +117,9 @@ class AuditService:
         return d["t"], d["id"]
 
     @staticmethod
-    async def query(
-        *,
+    def _build_filter(
         actor: Optional[str] = None,
+        actor_type: Optional[str] = None,
         source: Optional[str] = None,
         entity_type: Optional[str] = None,
         entity_id: Optional[str] = None,
@@ -129,17 +129,15 @@ class AuditService:
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
         q: Optional[str] = None,
-        before_cursor: Optional[str] = None,
-        limit: int = 50,
-    ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
-        """Keyset-paginated query. Returns (records, next_cursor | None)."""
+    ) -> Dict[str, Any]:
         flt: Dict[str, Any] = {}
-
         if actor:
             flt["$or"] = [
                 {"actor_email": {"$regex": actor, "$options": "i"}},
                 {"actor_id": {"$regex": actor, "$options": "i"}},
             ]
+        if actor_type:
+            flt["actor_type"] = actor_type
         if source:
             flt["source"] = source
         if entity_type:
@@ -155,9 +153,63 @@ class AuditService:
         if date_from:
             flt.setdefault("occurred_at", {})["$gte"] = date_from
         if date_to:
-            flt.setdefault("occurred_at", {})["$lte"] = date_to
+            flt.setdefault("occurred_at", {})["$lte"] = date_to + "T23:59:59"
         if q:
-            flt["description"] = {"$regex": q, "$options": "i"}
+            flt["$or"] = flt.get("$or", []) + [
+                {"description": {"$regex": q, "$options": "i"}},
+                {"action": {"$regex": q, "$options": "i"}},
+                {"actor_email": {"$regex": q, "$options": "i"}},
+            ]
+        return flt
+
+    @staticmethod
+    async def count(
+        *,
+        actor: Optional[str] = None,
+        actor_type: Optional[str] = None,
+        source: Optional[str] = None,
+        entity_type: Optional[str] = None,
+        entity_id: Optional[str] = None,
+        action: Optional[str] = None,
+        success: Optional[bool] = None,
+        severity: Optional[str] = None,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        q: Optional[str] = None,
+    ) -> int:
+        flt = AuditService._build_filter(
+            actor=actor, actor_type=actor_type, source=source,
+            entity_type=entity_type, entity_id=entity_id, action=action,
+            success=success, severity=severity,
+            date_from=date_from, date_to=date_to, q=q,
+        )
+        return await db.audit_trail.count_documents(flt)
+
+    @staticmethod
+    async def query(
+        *,
+        actor: Optional[str] = None,
+        actor_type: Optional[str] = None,
+        source: Optional[str] = None,
+        entity_type: Optional[str] = None,
+        entity_id: Optional[str] = None,
+        action: Optional[str] = None,
+        success: Optional[bool] = None,
+        severity: Optional[str] = None,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        q: Optional[str] = None,
+        before_cursor: Optional[str] = None,
+        page: int = 1,
+        limit: int = 50,
+    ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+        """Keyset-paginated query. Returns (records, next_cursor | None)."""
+        flt = AuditService._build_filter(
+            actor=actor, actor_type=actor_type, source=source,
+            entity_type=entity_type, entity_id=entity_id, action=action,
+            success=success, severity=severity,
+            date_from=date_from, date_to=date_to, q=q,
+        )
 
         # Keyset pagination: records *older* than the cursor
         if before_cursor:
@@ -172,9 +224,12 @@ class AuditService:
             except Exception:
                 pass
 
+        skip = (page - 1) * limit if page > 1 and not before_cursor else 0
+
         records = (
             await db.audit_trail.find(flt, {"_id": 0})
             .sort([("occurred_at", -1), ("id", 1)])
+            .skip(skip)
             .limit(limit + 1)
             .to_list(limit + 1)
         )
