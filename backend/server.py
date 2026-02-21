@@ -2359,7 +2359,7 @@ async def checkout_bank_transfer(
         "partner_tag_response": payload.partner_tag_response,
         "override_code_id": None,  # set after override code validation
         "partner_tag_timestamp": now_iso(),
-        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"]),
+        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="bank_transfer"),
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
