@@ -126,7 +126,14 @@ function ArticleEditor({ value, onChange }: { value: string; onChange: (v: strin
   );
 }
 
-export function ArticlesTab({ customers }: { customers: any[] }) {
+export function ArticlesTab() {
+  const [customers, setCustomers] = useState<any[]>([]);
+  // Fetch customers for visibility/email controls
+  useEffect(() => {
+    api.get("/admin/customers?per_page=1000")
+      .then(r => { const custs = r.data.customers || []; const usrs = r.data.users || []; const um: Record<string,any> = {}; usrs.forEach((u:any) => { um[u.id] = u; }); setCustomers(custs.map((c:any) => ({ ...c, ...um[c.user_id] }))); })
+      .catch(() => {});
+  }, []);
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
