@@ -242,7 +242,19 @@ Production-ready, login-gated e-store for Automate Accounts providing Zoho servi
 - `ProductDetail.tsx` shows "Request a Quote" modal for COMPLEX/REQUEST_FOR_QUOTE
 - `ProductHero.tsx` uses actual `outcome`, `automation_details`, `support_details` fields
 
-### Bug Fixes Round 1 (Feb 2026)
+### Bug Fixes Round 2 (Feb 2026)
+- Category deletion blocked (409) if products linked; client-side check + product count column
+- Category description field added (create/edit/view); descriptions seeded from CATEGORY_BLURBS
+- Manual quote request CRUD from admin (create/edit with product, customer, contact, status)
+- Admin tab order: Users, Customers, Subscriptions, Orders, Quote Requests, Categories, Catalog, Terms, Promos, Settings, Zoho sync
+- Promo tab: Status filter, Code filter, Date Created column
+- Terms tab: Products Linked column (assign terms via Catalog > Edit), Status filter
+- Catalog table: Preview link per product row (opens product detail in new tab)
+- Processing fee hidden from product detail page (only Total shown)
+- Store category blurbs loaded from /api/categories endpoint (dynamic)
+- Store.tsx finalList includes all categories beyond static CATEGORY_ORDER
+
+### Next: Product Admin (COMPLEX vs SIMPLE pricing)
 - Seeded categories collection from existing product categories via startup migration
 - `CategoryTabs.tsx` now fetches from `GET /api/categories` dynamically (new categories appear automatically)
 - `Store.tsx` `finalList` now includes new categories beyond CATEGORY_ORDER
