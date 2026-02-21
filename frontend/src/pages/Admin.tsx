@@ -853,48 +853,48 @@ export default function Admin() {
                 {filteredProducts.map((product) => {
                   const assignedTerms = terms.find((t: any) => t.id === product.terms_id);
                   return (
-                  <TableRow key={product.id} className="border-b border-slate-100">
-                    <TableCell className="font-semibold">{product.name}</TableCell>
-                    <TableCell className="font-mono text-xs">{product.sku}</TableCell>
-                    <TableCell className="text-xs">{product.category}</TableCell>
-                    <TableCell>
-                      <span className={`text-xs px-2 py-1 rounded ${product.is_subscription ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
-                        {product.is_subscription ? "Subscription" : "One-time"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Select value={product.terms_id || ""} onValueChange={(v) => handleAssignTermsToProduct(product.id, v || null)}>
-                        <SelectTrigger className="w-48">
-                          <SelectValue placeholder="Default T&C" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">Default T&C</SelectItem>
-                          {terms.filter((t: any) => t.status === "active").map((t: any) => (
-                            <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Dialog open={selectedProduct?.id === product.id} onOpenChange={(open) => { if (!open) setSelectedProduct(null); }}>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" onClick={() => setSelectedProduct(product)} data-testid={`admin-edit-${product.id}`}>Edit</Button>
-                        </DialogTrigger>
-                        {selectedProduct && selectedProduct.id === product.id && (
-                          <DialogContent className="max-h-[80vh] overflow-y-auto" data-testid="admin-product-dialog">
-                            <DialogHeader><DialogTitle>Edit {product.name}</DialogTitle></DialogHeader>
-                            <div className="space-y-3">
-                              <Input placeholder="Name" value={selectedProduct.name || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })} data-testid="admin-product-name" />
-                              <Input placeholder="Tagline" value={selectedProduct.tagline || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, tagline: e.target.value })} data-testid="admin-product-tagline" />
-                              <Textarea placeholder="Description" value={selectedProduct.description_long || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, description_long: e.target.value })} data-testid="admin-product-description" />
-                              <Input placeholder="Stripe Price ID" value={selectedProduct.stripe_price_id || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, stripe_price_id: e.target.value })} data-testid="admin-product-stripe" />
-                              <Button onClick={handleProductSave} data-testid="admin-product-save">Save changes</Button>
-                            </div>
-                          </DialogContent>
-                        )}
-                      </Dialog>
-                    </TableCell>
-                  </TableRow>
+                    <TableRow key={product.id} className="border-b border-slate-100">
+                      <TableCell className="font-semibold">{product.name}</TableCell>
+                      <TableCell className="font-mono text-xs">{product.sku}</TableCell>
+                      <TableCell className="text-xs">{product.category}</TableCell>
+                      <TableCell>
+                        <span className={`text-xs px-2 py-1 rounded ${product.is_subscription ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
+                          {product.is_subscription ? "Subscription" : "One-time"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Select value={product.terms_id || ""} onValueChange={(v) => handleAssignTermsToProduct(product.id, v || null)}>
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Default T&C" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Default T&C</SelectItem>
+                            {terms.filter((t: any) => t.status === "active").map((t: any) => (
+                              <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Dialog open={selectedProduct?.id === product.id} onOpenChange={(open) => { if (!open) setSelectedProduct(null); }}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedProduct(product)} data-testid={`admin-edit-${product.id}`}>Edit</Button>
+                          </DialogTrigger>
+                          {selectedProduct && selectedProduct.id === product.id && (
+                            <DialogContent className="max-h-[80vh] overflow-y-auto" data-testid="admin-product-dialog">
+                              <DialogHeader><DialogTitle>Edit {product.name}</DialogTitle></DialogHeader>
+                              <div className="space-y-3">
+                                <Input placeholder="Name" value={selectedProduct.name || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, name: e.target.value })} data-testid="admin-product-name" />
+                                <Input placeholder="Tagline" value={selectedProduct.tagline || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, tagline: e.target.value })} data-testid="admin-product-tagline" />
+                                <Textarea placeholder="Description" value={selectedProduct.description_long || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, description_long: e.target.value })} data-testid="admin-product-description" />
+                                <Input placeholder="Stripe Price ID" value={selectedProduct.stripe_price_id || ""} onChange={(e) => setSelectedProduct({ ...selectedProduct, stripe_price_id: e.target.value })} data-testid="admin-product-stripe" />
+                                <Button onClick={handleProductSave} data-testid="admin-product-save">Save changes</Button>
+                              </div>
+                            </DialogContent>
+                          )}
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
               </TableBody>
