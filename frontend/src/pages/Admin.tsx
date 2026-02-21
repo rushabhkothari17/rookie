@@ -746,7 +746,63 @@ export default function Admin() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-xs text-slate-500">Page {orderPage} of {orderTotalPages}</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={orderPage <= 1} onClick={() => { setOrderPage(p => p - 1); loadOrders(orderPage - 1); }} data-testid="admin-orders-prev">Previous</Button>
+              <Button variant="outline" size="sm" disabled={orderPage >= orderTotalPages} onClick={() => { setOrderPage(p => p + 1); loadOrders(orderPage + 1); }} data-testid="admin-orders-next">Next</Button>
+            </div>
+          </div>
         </TabsContent>
+
+        {/* Order Edit Dialog (outside table to avoid nesting issues) */}
+        <Dialog open={showOrderEditDialog} onOpenChange={(open) => { setShowOrderEditDialog(open); if (!open) setSelectedOrder(null); }}>
+          <DialogContent data-testid="admin-order-edit-dialog">
+            <DialogHeader><DialogTitle>Edit Order {selectedOrder?.order_number}</DialogTitle></DialogHeader>
+            {selectedOrder && (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Status</label>
+                  <Select value={selectedOrder.status || ""} onValueChange={(v) => setSelectedOrder({ ...selectedOrder, status: v })}>
+                    <SelectTrigger data-testid="admin-order-status-select"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="unpaid">Unpaid</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="awaiting_bank_transfer">Awaiting Bank Transfer</SelectItem>
+                      <SelectItem value="pending_payment">Pending Payment</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="refunded">Refunded</SelectItem>
+                      <SelectItem value="disputed">Disputed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Payment Method</label>
+                  <Select value={selectedOrder.payment_method || ""} onValueChange={(v) => setSelectedOrder({ ...selectedOrder, payment_method: v })}>
+                    <SelectTrigger data-testid="admin-order-payment-select"><SelectValue placeholder="Select method" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="offline">Offline / Manual</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Payment Date</label>
+                  <Input type="date" value={selectedOrder.payment_date?.slice(0, 10) || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, payment_date: e.target.value })} data-testid="admin-order-payment-date" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Internal Note</label>
+                  <Textarea placeholder="Internal note" value={selectedOrder.internal_note || ""} onChange={(e) => setSelectedOrder({ ...selectedOrder, internal_note: e.target.value })} data-testid="admin-order-note-input" rows={3} />
+                </div>
+                <Button onClick={handleOrderEdit} className="w-full" data-testid="admin-order-save">Save Changes</Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <TabsContent value="subscriptions" className="space-y-4">
           <div className="flex justify-end mb-3">
