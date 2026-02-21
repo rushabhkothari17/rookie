@@ -98,6 +98,13 @@ async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any
         update_data["status"] = payload.status
     if update_data:
         await db.terms_and_conditions.update_one({"id": terms_id}, {"$set": update_data})
+    await create_audit_log(
+        entity_type="terms",
+        entity_id=terms_id,
+        action="updated",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"changes": update_data},
+    )
     return {"message": "Terms updated"}
 
 
@@ -110,6 +117,13 @@ async def delete_terms(terms_id: str, admin: Dict[str, Any] = Depends(require_ad
         raise HTTPException(status_code=400, detail="Cannot delete default terms")
     await db.terms_and_conditions.delete_one({"id": terms_id})
     await db.products.update_many({"terms_id": terms_id}, {"$unset": {"terms_id": ""}})
+    await create_audit_log(
+        entity_type="terms",
+        entity_id=terms_id,
+        action="deleted",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"title": existing.get("title")},
+    )
     return {"message": "Terms deleted"}
 
 
