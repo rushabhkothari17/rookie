@@ -263,23 +263,40 @@ export function ProductForm({
         </div>
         <div>
           <label className="text-xs text-slate-600">
-            Restrict to specific customers (leave empty = visible to all)
+            Visible to specific customers only — leave empty for all customers
           </label>
-          <div className="mt-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2 space-y-1" data-testid="pf-visibility-list">
-            {customers.length === 0 && <p className="text-xs text-slate-400">No customers found</p>}
-            {customers.map((c) => (
-              <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded text-sm">
-                <input
-                  type="checkbox"
-                  checked={form.visible_to_customers.includes(c.id)}
-                  onChange={() => toggleCustomer(c.id)}
-                  className="rounded"
-                  data-testid={`pf-vis-${c.id}`}
-                />
-                {c.company_name || c.id}
-              </label>
-            ))}
+          <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border border-slate-200 rounded-lg p-2" data-testid="pf-visibility-list">
+            {customers.length === 0 ? (
+              <p className="text-xs text-slate-400 p-1">No customers found</p>
+            ) : (
+              customers.map((c) => (
+                <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.visible_to_customers.includes(c.id)}
+                    onChange={() => toggleCustomer(c.id)}
+                    className="w-4 h-4 rounded"
+                    data-testid={`pf-vis-${c.id}`}
+                  />
+                  {c.company_name || `Customer ${c.id.slice(0, 8)}`}
+                </label>
+              ))
+            )}
           </div>
+          {form.visible_to_customers.length > 0 && (
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-xs text-blue-600 font-medium">
+                {form.visible_to_customers.length} customer(s) selected
+              </span>
+              <button
+                type="button"
+                onClick={() => s("visible_to_customers")([])}
+                className="text-xs text-slate-400 hover:text-red-500 underline"
+              >
+                Clear (show to all)
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
