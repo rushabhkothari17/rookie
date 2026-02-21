@@ -1567,6 +1567,10 @@ export default function Admin() {
           <QuoteRequestsTab />
         </TabsContent>
 
+        <TabsContent value="bank-transactions" className="space-y-4">
+          <BankTransactionsTab />
+        </TabsContent>
+
         <TabsContent value="settings" className="space-y-4">
           <SettingsTab />
         </TabsContent>
