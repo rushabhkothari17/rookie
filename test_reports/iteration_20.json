@@ -1,0 +1,130 @@
+{
+  "summary": "Comprehensive testing of 3 new features: Articles Module (Admin+Customer), Notes JSON Capture, and Scope ID Unlock. Backend: 25/25 tests passed. Frontend: Most features working but 2 critical bugs found.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/orders/preview (and /api/checkout/*)",
+        "issue": "When a scope-unlocked product (_scope_unlock in inputs) is added to cart, the backend price calculation ignores the scope unlock data. pricing_type=scope_request products always return is_scope_request=true and subtotal=0.0 regardless of _scope_unlock inputs. Fix: In calculate_item_price (server.py ~line 1395-1399), check if '_scope_unlock' is in inputs and use scope_unlocks[pid]['price'] as subtotal, set is_scope_request=False, requires_checkout=True.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "POST /api/articles/{id}/email with empty customer_ids",
+        "issue": "Returns 404 'No customers found' for empty customer_ids instead of 400 'Bad request'. Should validate customer_ids list before DB lookup. Minor UX issue only."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Articles.tsx + ArticleView.tsx in App.tsx routing",
+        "issue": "DOUBLE TopNav rendered on /articles and /articles/:id pages. App.tsx places these routes inside <BaseLayout> (which renders <TopNav>), but Articles.tsx and ArticleView.tsx use <AppShell> which also renders <TopNav>. Results in 2 navigation bars visible. Fix: Move /articles and /articles/:articleId routes OUTSIDE of <BaseLayout> in App.tsx (same pattern as /store and /product/:productId).",
+        "selector": "[data-testid='top-nav']",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Scope ID Unlock -> Add to Cart -> Cart Page",
+        "issue": "After scope unlock and 'Add to cart' click, the cart page shows the product under 'Scope n Pay Later' section with Estimated $0.00 instead of as a one-time purchase at $1500. This is caused by the backend not detecting _scope_unlock in the cart preview API (see backend critical issue). The unlock and Add to Cart button work correctly on ProductDetail page, but the cart page doesn't reflect the unlocked price.",
+        "affected_selectors": ["[data-testid='scope-id-success']", "[data-testid='cart-page']"]
+      }
+    ],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Backend: GET /api/articles/admin/list returns 200 with articles",
+    "Backend: Unauthenticated /api/articles/admin/list returns 401",
+    "Backend: Category filter on admin articles list works correctly",
+    "Backend: Test Scope-Final article (2fc74332) exists with price=1500",
+    "Backend: GET /api/articles/public returns 200 for logged-in users",
+    "Backend: Unauthenticated /api/articles/public returns 401",
+    "Backend: GET /api/articles/{id} returns correct article",
+    "Backend: GET /api/articles/invalid-id returns 404",
+    "Backend: validate-scope with valid Scope-Final article returns valid=true + price",
+    "Backend: validate-scope with invalid ID returns 404",
+    "Backend: validate-scope with non-Scope-Final article returns 400",
+    "Backend: Create Blog article (POST /api/articles) works",
+    "Backend: Create Scope-Final without price returns 400",
+    "Backend: Create Scope-Final with price works",
+    "Backend: GET article after creation persists correctly",
+    "Backend: PUT /api/articles/{id} update works and persists",
+    "Backend: Article logs created after article creation",
+    "Backend: DELETE /api/articles/{id} works and returns 404 afterward",
+    "Backend: Orders have notes_json field in response",
+    "Backend: notes_json has correct structure (product_intake, checkout_intake, payment, system_metadata)",
+    "Backend: Article email endpoint attempts send with customer list",
+    "Backend: Products endpoint returns 200",
+    "Frontend: Admin Articles tab between Terms and Promo Codes",
+    "Frontend: All 7 table columns present (ID, Created, Modified, Category, Price, Visible to, Actions)",
+    "Frontend: New Article dialog opens with TipTap editor and all fields",
+    "Frontend: Auto-generated slug from title works",
+    "Frontend: Price field hidden for Blog category",
+    "Frontend: Price field shown for Scope-Final Won category",
+    "Frontend: Article creation works and appears in list",
+    "Frontend: Edit dialog pre-populates with correct article data",
+    "Frontend: Edit shows price field for Scope-Final article (value: 1500)",
+    "Frontend: Article logs dialog shows created event with timestamp and details JSON",
+    "Frontend: Email dialog opens with 28 customer options, pre-populated subject, message field",
+    "Frontend: Category filter (Blog) filters articles correctly",
+    "Frontend: Article deletion shows 'Article deleted' toast and removes from list",
+    "Frontend: Articles nav link present between Store and Admin in TopNav",
+    "Frontend: /articles page loads with category filter buttons (All, Blog, Scope-Final Won)",
+    "Frontend: Article cards show category badge, title, price (for Scope-Final), date",
+    "Frontend: /articles/:id article view shows title, category, price, content, back button",
+    "Frontend: Scope ID unlock section visible on Fixed-Scope Development (RFQ) product",
+    "Frontend: Invalid scope ID shows error 'Invalid Scope ID'",
+    "Frontend: Valid scope ID (2fc74332) shows green success box with title and $1500 price",
+    "Frontend: After scope unlock, CTA changes to 'Add to cart - $1500'",
+    "Frontend: Price summary updates to $1500.00 after scope unlock",
+    "Frontend: Order Notes dialog shows notes_json as INTAKE DATA (JSON) pretty-printed section",
+    "Frontend: Notes JSON includes product_intake, checkout_intake, system_metadata fields"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_articles_and_notes.py",
+    "/app/test_reports/pytest/pytest_results_iter20.xml"
+  ],
+  "action_items": [
+    "CRITICAL FIX: In server.py calculate_item_price (line ~1395), add check for '_scope_unlock' in inputs. When present, use scope_unlock['price'] as subtotal, set is_scope_request=False, requires_checkout=True. Also consider adding price_override to CartItemInput Pydantic model.",
+    "HIGH FIX: In App.tsx, move /articles and /articles/:articleId routes OUTSIDE of <BaseLayout> (same as /store and /product/:productId). Both components use AppShell internally which already includes TopNav.",
+    "LOW: Email endpoint with empty customer_ids returns 404 'No customers found' instead of 400 'Bad request'. Consider adding customer_ids length validation before DB lookup.",
+    "LOW: Notes section on admin subscriptions shows 'No notes yet' for subscriptions without notes_json (manually created). Consider showing both notes and notes_json when available in dialog."
+  ],
+  "critical_code_review_comments": [
+    "CRITICAL BUG: CartItemInput (server.py line 450) lacks price_override field. The Scope ID unlock sets price_override in the cart item on the frontend, but this is silently dropped by Pydantic. The _scope_unlock key in inputs is handled by build_checkout_notes_json but not by calculate_item_price, so the cart always shows scope_request items with $0 price.",
+    "BUG: /articles and /articles/:id routes in App.tsx are nested inside BaseLayout which adds TopNav. These components also use AppShell which adds another TopNav. Result: 2 TopNavs visible. Simple fix: move routes outside BaseLayout.",
+    "INFO: Article email endpoint checks Resend API key before customer_ids validation - so without a key, API returns 400 (not 422 for empty customer_ids). Resend key is currently configured (email endpoint reaches DB lookup stage).",
+    "INFO: Subscriptions API response doesn't include notes_json for manually-created subscriptions (expected). Only checkout-created subscriptions have notes_json. Admin UI handles this correctly with null fallback.",
+    "INFO: validate-scope endpoint route order is correct (appears before /{article_id} GET to avoid route conflict)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_articles_and_notes.py"
+  ],
+  "success_rate": {
+    "backend": "100% (25/25 tests passed)",
+    "frontend": "85% (43/50 scenarios passing - 2 critical bugs blocking full score)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "test_scope_article_id": "2fc74332-bd67-4e48-bc94-28aae13653db",
+    "test_rfq_product_id": "prod_fixed_scope_dev"
+  },
+  "seed_data_creation": "Created and deleted test article 'Test Article UI Creation' (Blog category) during testing. DB is clean.",
+  "retest_needed": true,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Two critical bugs need retest after fix: (1) Double TopNav on /articles - fixed by moving routes outside BaseLayout in App.tsx (2) Scope unlock cart price not working - fixed by updating calculate_item_price in server.py to detect _scope_unlock in inputs. All other features (Articles CRUD, logs, email dialog, public articles page, scope ID validation) are fully working. Backend 25/25 tests in /app/backend/tests/test_articles_and_notes.py. Scope-Final article 2fc74332-bd67-4e48-bc94-28aae13653db exists with price $1500. RFQ test product: prod_fixed_scope_dev (Fixed-Scope Development).",
+  "rca_of_issues": {
+    "scope_unlock_cart_bug": {
+      "root_cause": "CartItemInput Pydantic model in server.py doesn't have price_override field, so it's ignored. The calculate_item_price function for pricing_type='scope_request' always returns is_scope_request=True and subtotal=0 without checking for _scope_unlock in inputs.",
+      "reproduction": "1. Login as customer. 2. Go to /product/prod_fixed_scope_dev. 3. Enter scope ID 2fc74332-bd67-4e48-bc94-28aae13653db and validate. 4. Click 'Add to cart — $1500'. 5. Cart page shows item under 'Scope n Pay Later' with $0.00 instead of one-time purchase with $1500.",
+      "mitigation": "In calculate_item_price (around line 1395): if pricing_type == 'scope_request' and '_scope_unlock' in inputs: use inputs['_scope_unlock']['price'] as subtotal, set is_scope_request=False, requires_checkout=True."
+    },
+    "double_topnav_bug": {
+      "root_cause": "App.tsx places /articles and /articles/:articleId inside <BaseLayout> component (which renders <TopNav>). But Articles.tsx and ArticleView.tsx use <AppShell> which also renders <TopNav>. Both render on the same page.",
+      "reproduction": "1. Login. 2. Navigate to /articles. 3. Inspect DOM - there are 2 elements with [data-testid='top-nav'].",
+      "mitigation": "In App.tsx, move <Route path='/articles' element={<Articles />} /> and <Route path='/articles/:articleId' element={<ArticleView />} /> outside of the <Route element={<BaseLayout />}> wrapper, same as /store and /product/:productId routes."
+    }
+  }
+}
