@@ -304,7 +304,7 @@ class AutomateAccountsAPITester:
             return False
             
         # Test getting terms list first
-        success2, terms_response = self.run_test("Admin Get Terms", "GET", "admin/terms", 200, headers=headers)
+        success2, terms_response = self.run_test("Admin Get Terms", "GET", "terms", 200, headers=headers)
         if not success2:
             return False
             
