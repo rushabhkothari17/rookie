@@ -88,6 +88,8 @@ export default function App() {
             >
               <Route path="/store" element={<Store />} />
               <Route path="/product/:productId" element={<ProductDetail />} />
+              <Route path="/articles" element={<Articles />} />
+              <Route path="/articles/:articleId" element={<ArticleView />} />
               <Route element={<BaseLayout />}>
                 <Route path="/cart" element={<ErrorBoundary><Cart /></ErrorBoundary>} />
                 <Route path="/checkout/success" element={<CheckoutSuccess />} />
