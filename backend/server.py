@@ -3571,6 +3571,22 @@ async def stripe_webhook(request: Request):
             "created_at": now_iso(),
         }
     )
+    # Also log to audit trail
+    await AuditService.log(
+        action=f"WEBHOOK_STRIPE_{webhook_response.event_type.upper().replace('.', '_')}",
+        description=f"Stripe webhook received: {webhook_response.event_type}",
+        entity_type="Payment",
+        entity_id=webhook_response.session_id,
+        actor_type="webhook",
+        actor_id="stripe",
+        source="webhook",
+        meta_json={
+            "event_id": webhook_response.event_id,
+            "event_type": webhook_response.event_type,
+            "payment_status": webhook_response.payment_status,
+            "metadata": webhook_response.metadata,
+        },
+    )
 
     metadata = webhook_response.metadata or {}
     order_id = metadata.get("order_id")
