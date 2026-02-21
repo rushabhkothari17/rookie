@@ -51,7 +51,7 @@ export const categoryFromSlug = (slug: string | null, available: string[]) => {
     return fromSlug[0];
   }
   const directMatch = available.find(
-    (category) => category.toLowerCase() === normalized,
+    (category) => category.toLowerCase().replace(/\s+/g, "-") === normalized,
   );
   return displayCategory(directMatch || available[0] || CATEGORY_ORDER[0]);
 };
