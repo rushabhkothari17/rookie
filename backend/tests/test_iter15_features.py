@@ -198,18 +198,18 @@ class TestProductPricingComplexity:
         assert product["id"] == "prod_zoho_books_express"
         print(f"[OK] Product found: {product['name']}")
 
-    def test_zoho_books_express_pricing(self):
+    def test_zoho_books_express_pricing(self, admin_headers):
         resp = requests.get(f"{BASE_URL}/api/products/prod_zoho_books_express")
         assert resp.status_code == 200
         product = resp.json().get("product", {})
         pricing_complexity = product.get("pricing_complexity", "SIMPLE")
         print(f"pricing_complexity={pricing_complexity}")
 
-        # Test the pricing endpoint
-        pricing_resp = requests.post(f"{BASE_URL}/api/pricing/calc", json={
-            "product_id": "prod_zoho_books_express",
-            "inputs": {}
-        })
+        # Test the pricing endpoint (requires auth)
+        pricing_resp = requests.post(f"{BASE_URL}/api/pricing/calc",
+            json={"product_id": "prod_zoho_books_express", "inputs": {}},
+            headers=admin_headers
+        )
         assert pricing_resp.status_code == 200
         pricing = pricing_resp.json()
         print(f"pricing total={pricing.get('total')}, subtotal={pricing.get('subtotal')}")
@@ -222,11 +222,11 @@ class TestProductPricingComplexity:
         else:
             print(f"[INFO] Product pricing_complexity={pricing_complexity}, total={pricing.get('total')}")
 
-    def test_pricing_calc_returns_nonzero(self):
-        pricing_resp = requests.post(f"{BASE_URL}/api/pricing/calc", json={
-            "product_id": "prod_zoho_books_express",
-            "inputs": {}
-        })
+    def test_pricing_calc_returns_nonzero(self, admin_headers):
+        pricing_resp = requests.post(f"{BASE_URL}/api/pricing/calc",
+            json={"product_id": "prod_zoho_books_express", "inputs": {}},
+            headers=admin_headers
+        )
         assert pricing_resp.status_code == 200
         pricing = pricing_resp.json()
         total = pricing.get("total", 0)
