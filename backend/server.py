@@ -6036,10 +6036,14 @@ async def admin_update_quote_request(
 
 @api_router.get("/admin/bank-transactions")
 async def list_bank_transactions(
+    page: int = 1,
+    per_page: int = 20,
     source: Optional[str] = None,
     status: Optional[str] = None,
     type: Optional[str] = None,
     linked_order_id: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     query: Dict[str, Any] = {}
@@ -6051,8 +6055,20 @@ async def list_bank_transactions(
         query["type"] = type
     if linked_order_id:
         query["linked_order_id"] = linked_order_id
-    txns = await db.bank_transactions.find(query, {"_id": 0}).sort("date", -1).to_list(1000)
-    return {"transactions": txns}
+    if date_from:
+        query.setdefault("date", {})["$gte"] = date_from
+    if date_to:
+        query.setdefault("date", {})["$lte"] = date_to + "T23:59:59"
+    total = await db.bank_transactions.count_documents(query)
+    skip = (page - 1) * per_page
+    txns = await db.bank_transactions.find(query, {"_id": 0}).sort("date", -1).skip(skip).limit(per_page).to_list(per_page)
+    return {
+        "transactions": txns,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.post("/admin/bank-transactions")
