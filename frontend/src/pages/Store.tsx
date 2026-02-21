@@ -93,7 +93,7 @@ export default function Store() {
               </div>
               <h2 className="text-3xl font-semibold text-slate-900">{activeCategory}</h2>
               <p className="text-sm text-slate-500" data-testid="category-blurb">
-                {CATEGORY_BLURBS[activeCategory || ""] ||
+                {categoryBlurbs[activeCategory || ""] ||
                   "Curated offerings designed for fast, measurable delivery."}
               </p>
             </div>
