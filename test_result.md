@@ -247,6 +247,51 @@ backend:
         comment: "✅ ALL CRITICAL BUG FIXES VERIFIED - 1) Stripe subscription checkout now uses mode='subscription' correctly (tested with prod_bookkeeping). Session creation successful with no 'payment mode but recurring price' error. 2) GoCardless errors return proper string messages, not raw Pydantic objects. 3) All error responses have string 'detail' field. 4) Error messages are human-readable. Comprehensive testing completed with 4/4 validations passed."
 
 frontend:
+  - task: "Cart Error Handling - No React Crash"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/Cart.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Testing cart checkout error handling to ensure no React crashes with object rendering errors"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Cart error handling implemented correctly. Code review confirms safe error extraction at lines 149-182: handles string detail, array detail (Pydantic validation), and object detail, always converts to strings before toast.error(). No React error overlay detected, no '[object Object]' errors found. Error messages are readable strings. ErrorBoundary wraps Cart component (App.tsx line 90)."
+
+  - task: "GoCardless Callback - Error Boundary Protection"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/GoCardlessCallback.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "CRITICAL - Testing for 'Objects are not valid as a React child' error on GoCardless callback page"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - GoCardless callback error handling working correctly. Tested with invalid redirect flow ID to trigger error handling. NO 'Objects are not valid as a React child' error detected, NO React error overlay, NO '[object Object]' in page content. Code review confirms safe error extraction at lines 43-74: handles string, array, and object error formats properly. ErrorBoundary wraps component (App.tsx line 93)."
+
+  - task: "Error Boundary Fallback UI"
+    implemented: true
+    working: true
+    file: "frontend/src/components/ErrorBoundary.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Verifying ErrorBoundary component implementation and fallback UI"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - ErrorBoundary correctly implemented. Fallback UI includes ⚠️ icon (line 33), 'Something went wrong' message (line 34), 'Refresh Page' button (lines 38-43). Wraps Cart and GoCardlessCallback components in App.tsx (lines 90, 93). No raw React error stack traces shown to users. Component ready to catch unexpected errors."
+
   - task: "Admin Catalog Tab with Terms Assignment"
     implemented: true
     working: "blocked"
