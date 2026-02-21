@@ -304,27 +304,45 @@ export function ArticlesTab() {
     }
   };
 
+  const downloadCsv = () => {
+    const token = localStorage.getItem("aa_token");
+    const base = process.env.REACT_APP_BACKEND_URL || "";
+    const params = new URLSearchParams();
+    if (categoryFilter !== "all") params.append("category", categoryFilter);
+    if (searchFilter) params.append("search", searchFilter);
+    fetch(`${base}/api/admin/export/articles?${params}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `articles-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
+      .catch(() => toast.error("Export failed"));
+  };
+
   const appUrl = (window as any).__REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL || "";
   const frontendUrl = appUrl.replace("/api", "").replace(":8001", ":3000");
 
   return (
     <div className="space-y-4" data-testid="admin-articles-tab">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">Articles</h2>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="h-8 border border-slate-200 rounded px-2 text-sm"
-            data-testid="articles-category-filter"
-          >
+      <AdminPageHeader title="Articles" subtitle={`${total} articles`} actions={
+        <>
+          <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="articles-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button size="sm" onClick={openCreate} className="gap-2" data-testid="articles-create-btn"><Plus size={14} /> New Article</Button>
+        </>
+      } />
+
+      {/* Filters */}
+      <div className="rounded-xl border border-slate-200 bg-white p-3">
+        <div className="flex flex-wrap gap-2 items-end">
+          <Input placeholder="Search title or ID…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="articles-search-filter" />
+          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-8 border border-slate-200 rounded px-2 text-xs bg-white" data-testid="articles-category-filter">
             <option value="all">All categories</option>
-            {ARTICLE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {ARTICLE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-slate-400">Created</span>
+            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="articles-start-date" />
+            <span className="text-xs text-slate-400">–</span>
+            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" data-testid="articles-end-date" />
+          </div>
+          <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setCategoryFilter("all"); setStartDate(""); setEndDate(""); }} className="h-8 text-xs" data-testid="articles-clear-filters">Clear</Button>
         </div>
-        <Button onClick={openCreate} className="gap-2" data-testid="articles-create-btn">
-          <Plus size={14} /> New Article
-        </Button>
       </div>
 
       <div className="rounded-xl border border-slate-200 overflow-hidden">
@@ -385,7 +403,7 @@ export function ArticlesTab() {
                       <Mail size={10} /> Email
                     </Button>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1 text-red-500 hover:text-red-700" onClick={() => handleDelete(a.id)} disabled={deleting === a.id} data-testid={`article-delete-${a.id}`}>
-                      <Trash2 size={10} /> Del
+                      <Trash2 size={10} /> Delete
                     </Button>
                   </div>
                 </TableCell>
@@ -394,6 +412,7 @@ export function ArticlesTab() {
           </TableBody>
         </Table>
       </div>
+      <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={(p) => load(p)} />
 
       {/* Create / Edit Dialog */}
       <Dialog open={showForm} onOpenChange={(o) => { setShowForm(o); if (!o) setEditingArticle(null); }}>
