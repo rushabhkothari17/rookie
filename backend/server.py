@@ -2233,6 +2233,9 @@ async def checkout_bank_transfer(
         "terms_id_used": terms_id,
         "rendered_terms_text": rendered_terms_text,
         "terms_accepted_at": now_iso(),
+        "partner_tag_response": payload.partner_tag_response,
+        "override_code_id": None,  # set after override code validation
+        "partner_tag_timestamp": now_iso(),
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
