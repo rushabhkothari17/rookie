@@ -246,7 +246,6 @@ export default function ProductDetail() {
   }
 
   const categoryLabel = displayCategory(product.category);
-  const categorySlug = slugFromCategory(categoryLabel);
 
   return (
     <AppShell activeCategory={categoryLabel}>
