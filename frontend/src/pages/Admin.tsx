@@ -634,7 +634,10 @@ export default function Admin() {
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-slate-900">Customers</h3>
-              <Button size="sm" onClick={() => setShowCreateCustomerDialog(true)} data-testid="admin-create-customer-btn">+ Create Customer</Button>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => downloadCsv("/api/admin/export/customers", `customers_${new Date().toISOString().slice(0,10)}.csv`)} data-testid="admin-customers-export-csv">Export CSV</Button>
+                <Button size="sm" onClick={() => setShowCreateCustomerDialog(true)} data-testid="admin-create-customer-btn">+ Create Customer</Button>
+              </div>
             </div>
             <Table data-testid="admin-customer-table">
               <TableHeader>
@@ -643,6 +646,7 @@ export default function Admin() {
                   <TableHead>Email</TableHead>
                   <TableHead>State/Province</TableHead>
                   <TableHead>Country</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Bank Transfer</TableHead>
                   <TableHead>Card Payment</TableHead>
                   <TableHead>Actions</TableHead>
@@ -652,12 +656,18 @@ export default function Admin() {
                 {customers.map((customer) => {
                   const user = users.find((u) => u.id === customer.user_id);
                   const address = getCustomerAddress(customer.id);
+                  const isActive = user?.is_active !== false; // default true
                   return (
                     <TableRow key={customer.id} data-testid={`admin-customer-row-${customer.id}`}>
                       <TableCell data-testid={`admin-customer-name-${customer.id}`}>{user?.full_name || customer.company_name}</TableCell>
                       <TableCell data-testid={`admin-customer-email-${customer.id}`}>{user?.email || "—"}</TableCell>
                       <TableCell data-testid={`admin-customer-region-${customer.id}`}>{address?.region || "—"}</TableCell>
                       <TableCell data-testid={`admin-customer-country-${customer.id}`}>{address?.country || "—"}</TableCell>
+                      <TableCell>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-customer-status-${customer.id}`}>
+                          {isActive ? "Active" : "Inactive"}
+                        </span>
+                      </TableCell>
                       <TableCell>
                         <button onClick={() => handlePaymentMethodToggle(customer.id, "allow_bank_transfer", !(customer.allow_bank_transfer ?? true))} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${(customer.allow_bank_transfer ?? true) ? "bg-slate-900" : "bg-slate-200"}`} data-testid={`admin-customer-bank-toggle-${customer.id}`}>
                           <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${(customer.allow_bank_transfer ?? true) ? "translate-x-4" : "translate-x-0.5"}`} />
@@ -669,22 +679,25 @@ export default function Admin() {
                         </button>
                       </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
-                            const user = getCustomerUser(customer.id);
-                            const address = getCustomerAddress(customer.id);
-                            setSelectedCustomer({
-                              ...customer,
-                              ...user,
-                              ...address
-                            });
-                            setShowCustomerDialog(true);
-                          }}
-                        >
-                          Edit
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const u = getCustomerUser(customer.id);
+                              const address = getCustomerAddress(customer.id);
+                              setSelectedCustomer({ ...customer, ...u, ...address });
+                              setShowCustomerDialog(true);
+                            }}
+                            data-testid={`admin-customer-edit-${customer.id}`}
+                          >Edit</Button>
+                          <Button
+                            variant={isActive ? "destructive" : "outline"}
+                            size="sm"
+                            onClick={() => handleToggleCustomerActive(customer.id, isActive)}
+                            data-testid={`admin-customer-toggle-active-${customer.id}`}
+                          >{isActive ? "Deactivate" : "Activate"}</Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
