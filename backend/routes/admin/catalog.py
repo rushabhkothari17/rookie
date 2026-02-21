@@ -254,6 +254,13 @@ async def admin_update_category(
     if update:
         await db.categories.update_one({"id": cat_id}, {"$set": update})
     cat.update(update)
+    await create_audit_log(
+        entity_type="category",
+        entity_id=cat_id,
+        action="updated",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"changes": update},
+    )
     return {"category": cat}
 
 
@@ -272,4 +279,11 @@ async def admin_delete_category(
             detail=f"Cannot delete: {product_count} product(s) are linked to this category.",
         )
     await db.categories.delete_one({"id": cat_id})
+    await create_audit_log(
+        entity_type="category",
+        entity_id=cat_id,
+        action="deleted",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"name": cat.get("name")},
+    )
     return {"message": "Category deleted"}
