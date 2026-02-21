@@ -64,6 +64,19 @@ Build a full-featured customer-facing portal for Automate Accounts (Zoho partner
   - Scope metadata (`_scope_unlock`) captured in `notes_json.product_intake`
   - Full Stripe checkout flow works with scope-unlocked price
 
+### Session 5 (Admin Panel UX + Consistency Enhancement) — 2026-02-21
+- **Backend**: Implemented pagination (20/page), filtering, sorting for 11 modules (Users, Customers, Subscriptions, Orders, Quote Requests, Bank Transactions, Articles, Categories, Terms, Promo Codes, Override Codes)
+- **CSV Exports**: Added export endpoints for 6 modules (customers, orders, subscriptions, quote-requests, articles, categories, terms, promo-codes, override-codes)
+- **New Edit Endpoints**: `PUT /admin/users/{id}`, `PUT /admin/terms/{id}`, `PUT /admin/promo-codes/{id}`
+- **Frontend Refactor** (Admin panel modularization):
+  - Created shared components: `AdminPageHeader.tsx`, `AdminPagination.tsx` in `admin/shared/`
+  - Created self-contained tab components: `CustomersTab.tsx`, `SubscriptionsTab.tsx`, `OrdersTab.tsx`, `PromoCodesTab.tsx`, `TermsTab.tsx`, `UsersTab.tsx`
+  - Updated `ArticlesTab.tsx` to self-fetch customers (no longer needs prop)
+  - Rewrote `Admin.tsx` as a slim container (~80 lines) importing all tab components
+  - Orders table: fee badge shows as amber "fee: $X.XX" badge per row
+  - All 15 admin tabs: pagination, filters, CSV exports verified by testing agent (100% pass)
+  - Fixed LogsTab SelectItem empty-string value crash (Radix UI constraint)
+
 ### Session 4 (P1 Audit Logs + P2 DB-backed Settings) — 2026-02-21
 - **P1 — Global Audit Log system**:
   - `AuditService` in `backend/services/audit_service.py` with keyset pagination
