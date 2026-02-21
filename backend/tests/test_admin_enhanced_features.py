@@ -190,7 +190,7 @@ class TestAdminOrdersGetWithFilters:
 class TestAdminOrderUpdate:
     """Tests for enhanced PUT /admin/orders/{order_id}"""
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def first_unpaid_order_id(self, admin_headers):
         resp = requests.get(
             f"{BASE_URL}/api/admin/orders?status_filter=unpaid&per_page=1",
@@ -200,7 +200,7 @@ class TestAdminOrderUpdate:
             return resp.json()["orders"][0]["id"]
         pytest.skip("No unpaid orders available")
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def first_order_id(self, admin_headers):
         resp = requests.get(
             f"{BASE_URL}/api/admin/orders?page=1&per_page=1",
