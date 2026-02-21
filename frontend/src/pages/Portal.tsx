@@ -116,9 +116,10 @@ export default function Portal() {
         <Table data-testid="portal-subscriptions-table">
           <TableHeader>
             <TableRow>
+              <TableHead>Sub ID</TableHead>
               <TableHead>Plan</TableHead>
-              <TableHead>Start date</TableHead>
-              <TableHead>Renewal date</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead>Renewal Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Cancellation</TableHead>
@@ -126,28 +127,35 @@ export default function Portal() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {subscriptions.map((sub) => (
-              <TableRow key={sub.id} data-testid={`portal-subscription-row-${sub.id}`}>
-                <TableCell data-testid={`portal-subscription-plan-${sub.id}`}>{sub.plan_name}</TableCell>
-                <TableCell data-testid={`portal-subscription-start-${sub.id}`}>{sub.current_period_start?.slice(0, 10)}</TableCell>
-                <TableCell data-testid={`portal-subscription-renewal-${sub.id}`}>{sub.current_period_end?.slice(0, 10)}</TableCell>
-                <TableCell data-testid={`portal-subscription-status-${sub.id}`}>{sub.status}</TableCell>
-                <TableCell data-testid={`portal-subscription-amount-${sub.id}`}>${(sub.amount || 0).toFixed(2)}</TableCell>
-                <TableCell data-testid={`portal-subscription-cancel-date-${sub.id}`}>
-                  {sub.cancel_at_period_end ? sub.current_period_end?.slice(0, 10) : "—"}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => api.post(`/subscriptions/${sub.id}/cancel`, {})}
-                    data-testid={`subscription-cancel-${sub.id}`}
-                  >
-                    Cancel
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {subscriptions.map((sub) => {
+              const startDate = sub.start_date?.slice(0, 10) || sub.current_period_start?.slice(0, 10) || "—";
+              const cancelDate = sub.cancel_at_period_end
+                ? (sub.current_period_end?.slice(0, 10) || sub.canceled_at?.slice(0, 10) || "—")
+                : (sub.canceled_at?.slice(0, 10) || "—");
+              return (
+                <TableRow key={sub.id} data-testid={`portal-subscription-row-${sub.id}`}>
+                  <TableCell className="font-mono text-xs" data-testid={`portal-subscription-id-${sub.id}`}>{sub.subscription_number || sub.id?.slice(0, 8)}</TableCell>
+                  <TableCell data-testid={`portal-subscription-plan-${sub.id}`}>{sub.plan_name}</TableCell>
+                  <TableCell data-testid={`portal-subscription-start-${sub.id}`}>{startDate}</TableCell>
+                  <TableCell data-testid={`portal-subscription-renewal-${sub.id}`}>{sub.renewal_date?.slice(0, 10) || sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
+                  <TableCell data-testid={`portal-subscription-status-${sub.id}`}>{sub.status}</TableCell>
+                  <TableCell data-testid={`portal-subscription-amount-${sub.id}`}>${(sub.amount || 0).toFixed(2)}</TableCell>
+                  <TableCell data-testid={`portal-subscription-cancel-date-${sub.id}`}>{cancelDate}</TableCell>
+                  <TableCell>
+                    {sub.status !== "cancelled" && sub.status !== "canceled_pending" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => api.post(`/subscriptions/${sub.id}/cancel`, {})}
+                        data-testid={`subscription-cancel-${sub.id}`}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
