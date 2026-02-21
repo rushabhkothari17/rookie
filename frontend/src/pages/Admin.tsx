@@ -35,6 +35,10 @@ export default function Admin() {
   const [promoCodeFilter, setPromoCodeFilter] = useState("");
   const [promoStatusFilter, setPromoStatusFilter] = useState("all");
   const [termsStatusFilter, setTermsStatusFilter] = useState("all");
+  const [partnerMapFilter, setPartnerMapFilter] = useState("all");
+  const [viewNotesCustomer, setViewNotesCustomer] = useState<any>(null);
+  const [customerNotes, setCustomerNotes] = useState<any[]>([]);
+  const [editingPartnerMap, setEditingPartnerMap] = useState<{customerId: string; value: string} | null>(null);
   const [currencyOverride, setCurrencyOverride] = useState({ email: "", currency: "USD" });
   const [selectedProduct, setSelectedProduct] = useState<any>(null); // kept for tab reset
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
