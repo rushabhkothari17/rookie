@@ -103,6 +103,16 @@ async def admin_create_quote_request(
     }
     await db.quote_requests.insert_one(quote)
     quote.pop("_id", None)
+    await AuditService.log(
+        action="QUOTE_REQUEST_CREATED",
+        description=f"Admin created quote request for '{quote.get('product_name')}' ({quote.get('email')})",
+        entity_type="QuoteRequest",
+        entity_id=quote["id"],
+        actor_type="admin",
+        actor_email=admin.get("email"),
+        source="admin_ui",
+        meta_json={"created_by_admin": True},
+    )
     return {"quote": quote}
 
 
