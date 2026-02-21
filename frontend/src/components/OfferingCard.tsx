@@ -59,7 +59,7 @@ export default function OfferingCard({ product }: { product: any }) {
       </ul>
 
       <div
-        className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-red-600"
+        className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-slate-700"
         data-testid={`offering-cta-${product.id}`}
       >
         View details
