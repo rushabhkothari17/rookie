@@ -567,6 +567,8 @@ export default function Cart() {
                       disabled={
                         loading ||
                         !termsAccepted ||
+                        !partnerTagResponse ||
+                        (partnerTagResponse === "Not yet" && !overrideCode.trim()) ||
                         currencyUnsupported ||
                         (!allowBankTransfer && !allowCardPayment) ||
                         (section.checkoutType === "subscription" && subscriptionMissingPrice && paymentMethod === "card")
