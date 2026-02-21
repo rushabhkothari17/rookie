@@ -4306,6 +4306,37 @@ async def get_all_terms():
     return {"terms": terms}
 
 
+@api_router.get("/admin/terms")
+async def admin_list_terms(
+    page: int = 1,
+    per_page: int = 20,
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    created_from: Optional[str] = None,
+    created_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    query: Dict[str, Any] = {}
+    if status:
+        query["status"] = status
+    if search:
+        query["title"] = {"$regex": search, "$options": "i"}
+    if created_from:
+        query.setdefault("created_at", {})["$gte"] = created_from
+    if created_to:
+        query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+    total = await db.terms_and_conditions.count_documents(query)
+    skip = (page - 1) * per_page
+    terms = await db.terms_and_conditions.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+    return {
+        "terms": terms,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
+
+
 @api_router.get("/terms/default")
 async def get_default_terms():
     default = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
