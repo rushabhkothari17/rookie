@@ -5461,6 +5461,85 @@ async def export_catalog_csv(admin: Dict[str, Any] = Depends(require_admin)):
     return _make_csv_response(products, f"catalog_{today}.csv")
 
 
+@api_router.get("/admin/export/quote-requests")
+async def export_quote_requests_csv(
+    status: Optional[str] = None,
+    email: Optional[str] = None,
+    product: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    query: Dict[str, Any] = {}
+    if status:
+        query["status"] = status
+    if email:
+        query["email"] = {"$regex": email, "$options": "i"}
+    if product:
+        query["product_name"] = {"$regex": product, "$options": "i"}
+    if date_from:
+        query.setdefault("created_at", {})["$gte"] = date_from
+    if date_to:
+        query.setdefault("created_at", {})["$lte"] = date_to + "T23:59:59"
+    quotes = await db.quote_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(quotes, f"quote-requests-{ts}.csv")
+
+
+@api_router.get("/admin/export/articles")
+async def export_articles_csv(
+    category: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    query: Dict[str, Any] = {}
+    if category:
+        query["category"] = category
+    articles = await db.articles.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(articles, f"articles-{ts}.csv")
+
+
+@api_router.get("/admin/export/categories")
+async def export_categories_csv(admin: Dict[str, Any] = Depends(require_admin)):
+    cats = await db.categories.find({}, {"_id": 0}).sort("name", 1).to_list(1000)
+    for cat in cats:
+        cat["product_count"] = await db.products.count_documents({"category": cat["name"]})
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(cats, f"categories-{ts}.csv")
+
+
+@api_router.get("/admin/export/terms")
+async def export_terms_csv(admin: Dict[str, Any] = Depends(require_admin)):
+    terms = await db.terms_and_conditions.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(terms, f"terms-{ts}.csv")
+
+
+@api_router.get("/admin/export/override-codes")
+async def export_override_codes_csv(
+    status: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    codes = await db.override_codes.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    if status:
+        codes = [c for c in codes if c.get("status") == status]
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(codes, f"override-codes-{ts}.csv")
+
+
+@api_router.get("/admin/export/promo-codes")
+async def export_promo_codes_csv(
+    applies_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    query: Dict[str, Any] = {}
+    if applies_to:
+        query["applies_to"] = applies_to
+    codes = await db.promo_codes.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(codes, f"promo-codes-{ts}.csv")
+
+
 @api_router.get("/admin/orders/{order_id}/logs")
 async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(require_admin)):
     """Get audit logs for an order"""
