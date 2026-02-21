@@ -1506,6 +1506,10 @@ export default function Admin() {
           <CategoriesTab />
         </TabsContent>
 
+        <TabsContent value="quotes" className="space-y-4">
+          <QuoteRequestsTab />
+        </TabsContent>
+
         <TabsContent value="settings" className="space-y-4">
           <SettingsTab />
         </TabsContent>
