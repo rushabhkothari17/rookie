@@ -3192,7 +3192,6 @@ async def admin_orders(
 
 
 @api_router.get("/admin/subscriptions")
-@api_router.get("/admin/subscriptions")
 async def admin_subscriptions(
     sort_by: str = "created_at",
     sort_order: str = "desc",
