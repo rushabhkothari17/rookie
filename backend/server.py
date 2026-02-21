@@ -2969,12 +2969,13 @@ async def pricing_calc(
 
 
 async def build_order_items(items: List[CartItemInput]):
+    fee_rate = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
     order_items = []
     for item in items:
         product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
-        pricing = calculate_price(product, item.inputs)
+        pricing = calculate_price(product, item.inputs, fee_rate=fee_rate)
         order_items.append(
             {
                 "id": make_id(),
