@@ -4002,7 +4002,7 @@ async def complete_gocardless_redirect(
             )
             raise HTTPException(
                 status_code=400, 
-                detail="Failed to complete GoCardless redirect flow. The session may have expired. Please try creating the order again."
+                detail="Failed to complete the Direct Debit setup. The payment link may have expired or been used already. Please return to checkout and try again."
             )
         
         mandate_id = redirect_flow.get("links", {}).get("mandate")
