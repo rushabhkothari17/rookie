@@ -250,8 +250,16 @@ export function ProductForm({
       <div className="space-y-3 border-b border-slate-100 pb-4">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Visibility</h4>
         <div className="flex items-center gap-3">
-          <Switch checked={form.is_active} onCheckedChange={s("is_active")} data-testid="pf-active" />
-          <label className="text-sm">Active (visible on storefront)</label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.is_active}
+              onChange={(e) => s("is_active")(e.target.checked)}
+              className="w-4 h-4 rounded"
+              data-testid="pf-active"
+            />
+            <span className="text-sm">Active (visible on storefront)</span>
+          </label>
         </div>
         <div>
           <label className="text-xs text-slate-600">
