@@ -80,7 +80,7 @@ export default function Articles() {
             No articles available yet.
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="articles-list">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pt-4" data-testid="articles-list">
             {filtered.map((a) => (
               <button
                 key={a.id}
