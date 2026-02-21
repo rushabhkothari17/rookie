@@ -359,7 +359,7 @@ export default function ProductDetail() {
                     </Button>
                   </div>
                   {scopeError && (
-                    <p className="text-sm text-red-600" data-testid="scope-id-error">{scopeError}</p>
+                    <p className="text-sm text-red-600" data-testid="scope-id-error">{scopeError.includes("Invalid") ? "Invalid Scope Id" : scopeError}</p>
                   )}
                   {scopeUnlock && (
                     <div className="rounded-lg bg-green-50 border border-green-200 p-3 space-y-1" data-testid="scope-id-success">
