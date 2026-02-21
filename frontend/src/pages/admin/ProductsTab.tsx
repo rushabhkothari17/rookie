@@ -252,6 +252,15 @@ export function ProductsTab() {
                     >
                       {product.is_active ? "Deactivate" : "Activate"}
                     </Button>
+                    <a
+                      href={`/product/${product.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-slate-400 hover:text-slate-700 underline"
+                      data-testid={`admin-preview-${product.id}`}
+                    >
+                      Preview
+                    </a>
                   </div>
                 </TableCell>
               </TableRow>
