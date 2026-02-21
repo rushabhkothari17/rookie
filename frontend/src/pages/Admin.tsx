@@ -1214,6 +1214,7 @@ export default function Admin() {
                         </span>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">{startDate}</TableCell>
+                      <TableCell className="whitespace-nowrap font-medium text-slate-700">{sub.contract_end_date?.slice(0, 10) || "—"}</TableCell>
                       <TableCell className="whitespace-nowrap">{sub.created_at?.slice(0, 10) || "—"}</TableCell>
                       <TableCell className="whitespace-nowrap">{sub.renewal_date?.slice(0, 10) || sub.current_period_end?.slice(0, 10) || "—"}</TableCell>
                       <TableCell className="whitespace-nowrap text-amber-600">{cancelDate}</TableCell>
