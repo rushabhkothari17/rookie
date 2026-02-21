@@ -33,7 +33,7 @@ export default function Admin() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null); // kept for tab reset
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderFilters, setOrderFilters] = useState({ email: "", product: "", startDate: "", endDate: "" });
-  const [catalogFilter, setCatalogFilter] = useState<string>("all");
+  const [catalogFilter] = useState<string>("all"); // kept for legacy
   const [newPromo, setNewPromo] = useState<{
     code: string;
     discount_type: string;
