@@ -401,6 +401,7 @@ class AdminCreateCustomerRequest(BaseModel):
 class SubscriptionUpdate(BaseModel):
     renewal_date: Optional[str] = None
     start_date: Optional[str] = None
+    contract_end_date: Optional[str] = None
     amount: Optional[float] = None
     status: Optional[str] = None
     plan_name: Optional[str] = None
