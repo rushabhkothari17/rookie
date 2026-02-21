@@ -1521,7 +1521,71 @@ export default function Admin() {
             ))}
           </div>
         </TabsContent>
+
+        {/* Users Tab (super_admin only) */}
+        {isSuperAdmin && (
+          <TabsContent value="users" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">Admin Users</h3>
+                <p className="text-xs text-slate-500 mt-1">Only super admins can create admin users.</p>
+              </div>
+              <Button size="sm" onClick={() => setShowCreateAdminDialog(true)} data-testid="admin-create-user-btn">+ Create Admin User</Button>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white">
+              <Table data-testid="admin-users-table" className="text-sm">
+                <TableHeader>
+                  <TableRow className="bg-slate-50">
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Must Change PW</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {adminUsers.map((u: any) => (
+                    <TableRow key={u.id} data-testid={`admin-user-row-${u.id}`}>
+                      <TableCell>{u.full_name}</TableCell>
+                      <TableCell>{u.email}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-0.5 rounded text-xs ${u.role === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{u.role}</span>
+                      </TableCell>
+                      <TableCell>{u.created_at?.slice(0, 10) || "—"}</TableCell>
+                      <TableCell>{u.must_change_password ? "Yes" : "No"}</TableCell>
+                    </TableRow>
+                  ))}
+                  {adminUsers.length === 0 && (
+                    <TableRow><TableCell colSpan={5} className="text-center text-slate-400 py-4">No admin users loaded. Click the Users tab again to load.</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
+
+      {/* Sub Notes Dialog */}
+      <Dialog open={showSubNotesDialog} onOpenChange={setShowSubNotesDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Subscription Notes</DialogTitle></DialogHeader>
+          <div className="max-h-[50vh] overflow-y-auto space-y-2">
+            {selectedSubNotes.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-4">No notes yet. Add one via Edit Subscription.</p>
+            ) : (
+              selectedSubNotes.map((note: any, i: number) => (
+                <div key={i} className="border border-slate-200 rounded p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-xs text-slate-500 font-medium">{note.actor}</span>
+                    <span className="text-xs text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+                  </div>
+                  <p className="text-sm text-slate-800">{note.text}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Notes Dialog */}
       <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
