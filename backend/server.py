@@ -1785,14 +1785,16 @@ async def apply_catalog_overrides():
                 "card_tag": "Project based",
                 "tagline": "Clean & accurate transition to Zoho Books with minimum downtime",
                 "description_long": "Clean & accurate transition to Zoho Books with minimum downtime",
+                "pricing_type": "calculator",
+                "pricing_rules": {"calc_type": "books_migration"},
                 "card_bullets": [
                     "Multi-year historical data transfer",
-                    "Invetory, Projects, Multi-currency",
+                    "Inventory, Projects, Multi-currency",
                     "Post-migration checks and support and more",
                 ],
                 "bullets_included": [
                     "Multi-year historical data transfer",
-                    "Invetory, Projects, Multi-currency",
+                    "Inventory, Projects, Multi-currency",
                     "Post-migration checks and support and more",
                 ],
             },
