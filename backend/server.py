@@ -51,6 +51,9 @@ ALLOWED_ORDER_STATUSES = [
     "completed",
     "cancelled",
     "refunded",
+    "disputed",
+    "scope_pending",
+    "canceled_pending",
 ]
 
 
@@ -348,6 +351,7 @@ class OrderUpdate(BaseModel):
     fee: Optional[float] = None
     total: Optional[float] = None
     internal_note: Optional[str] = None
+    new_note: Optional[str] = None
 
 
 class OrderDelete(BaseModel):
