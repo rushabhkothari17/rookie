@@ -496,11 +496,13 @@ export default function Admin() {
 
   const handleViewSubNotes = (sub: any) => {
     setSelectedSubNotes(sub.notes || []);
+    setSelectedSubNotesJson(sub.notes_json || null);
     setShowSubNotesDialog(true);
   };
 
   const handleViewOrderNotes = (order: any) => {
     setSelectedOrderNotes(order.notes || []);
+    setSelectedOrderNotesJson(order.notes_json || null);
     setShowNotesDialog(true);
   };
 
