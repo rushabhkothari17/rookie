@@ -6116,27 +6116,9 @@ async def get_customer_notes(
 
 # ---------------------------------------------------------------------------
 # ARTICLES MODULE
+# — ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES imported from core.constants
+# — _slugify imported from core.helpers
 # ---------------------------------------------------------------------------
-
-ARTICLE_CATEGORIES = [
-    "Scope - Draft",
-    "Scope - Final Lost",
-    "Scope - Final Won",
-    "Blog",
-    "Help",
-    "Guide",
-    "SOP",
-    "Other",
-]
-SCOPE_FINAL_CATEGORIES = {"Scope - Final Lost", "Scope - Final Won"}
-
-
-def _slugify(text: str) -> str:
-    slug = text.lower().strip()
-    slug = _re.sub(r"[^a-z0-9\s-]", "", slug)
-    slug = _re.sub(r"\s+", "-", slug)
-    slug = _re.sub(r"-+", "-", slug)
-    return slug.strip("-")
 
 
 class ArticleCreate(BaseModel):
