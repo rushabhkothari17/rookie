@@ -1,0 +1,80 @@
+"""Admin: Promo code management."""
+from __future__ import annotations
+
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from core.helpers import make_id, now_iso
+from core.security import require_admin
+from db.session import db
+from models import PromoCodeCreate, PromoCodeUpdate
+
+router = APIRouter(prefix="/api", tags=["admin-promo-codes"])
+
+
+@router.get("/admin/promo-codes")
+async def admin_list_promo_codes(
+    page: int = 1,
+    per_page: int = 20,
+    search: Optional[str] = None,
+    enabled: Optional[str] = None,
+    created_from: Optional[str] = None,
+    created_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    query: Dict[str, Any] = {}
+    if search:
+        query["code"] = {"$regex": search, "$options": "i"}
+    if enabled is not None:
+        query["enabled"] = enabled == "true"
+    if created_from:
+        query.setdefault("created_at", {})["$gte"] = created_from
+    if created_to:
+        query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+    total = await db.promo_codes.count_documents(query)
+    skip = (page - 1) * per_page
+    codes = await db.promo_codes.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+    return {"promo_codes": codes, "page": page, "per_page": per_page, "total": total, "total_pages": max(1, (total + per_page - 1) // per_page)}
+
+
+@router.post("/admin/promo-codes")
+async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any] = Depends(require_admin)):
+    existing = await db.promo_codes.find_one({"code": payload.code.upper()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Promo code already exists")
+    code_id = make_id()
+    doc = {
+        "id": code_id, "code": payload.code.upper(),
+        "discount_type": payload.discount_type, "discount_value": payload.discount_value,
+        "applies_to": payload.applies_to, "applies_to_products": payload.applies_to_products,
+        "product_ids": payload.product_ids, "expiry_date": payload.expiry_date,
+        "max_uses": payload.max_uses, "one_time_code": payload.one_time_code,
+        "enabled": payload.enabled, "usage_count": 0, "created_at": now_iso(),
+    }
+    await db.promo_codes.insert_one(doc)
+    return {"message": "Promo code created", "id": code_id}
+
+
+@router.put("/admin/promo-codes/{code_id}")
+async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin: Dict[str, Any] = Depends(require_admin)):
+    existing = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Promo code not found")
+    update: Dict[str, Any] = {}
+    for field in ["discount_type", "discount_value", "applies_to", "applies_to_products", "product_ids", "expiry_date", "max_uses", "one_time_code", "enabled"]:
+        val = getattr(payload, field, None)
+        if val is not None:
+            update[field] = val
+    if update:
+        await db.promo_codes.update_one({"id": code_id}, {"$set": update})
+    return {"message": "Promo code updated"}
+
+
+@router.delete("/admin/promo-codes/{code_id}")
+async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    existing = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Promo code not found")
+    await db.promo_codes.delete_one({"id": code_id})
+    return {"message": "Promo code deleted"}
