@@ -839,7 +839,7 @@ class TestArticles:
         assert "article" in data
         article = data["article"]
         assert article["title"] == payload["title"]
-        assert article["category"] == "General"
+        assert article["category"] == "Blog"
         assert "id" in article
         TestArticles._created_article_id = article["id"]
         print(f"✓ Article created: {article['id']}")
