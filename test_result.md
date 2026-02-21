@@ -254,7 +254,9 @@ test_plan:
     - "Terms & Conditions Display API"
     - "GoCardless Payment Flow API"
     - "Payment Error Handling API"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Stripe Subscription Checkout API"
+    - "GoCardless Payment Flow API"
   test_all: false
   test_priority: "high_first"
 
