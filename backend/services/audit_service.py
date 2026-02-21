@@ -21,6 +21,8 @@ import base64
 import json
 from typing import Any, Dict, List, Optional, Tuple
 
+from typing import Any, Dict, List, Optional, Tuple  # noqa: F811
+
 from core.helpers import make_id, now_iso
 from db.session import db
 
