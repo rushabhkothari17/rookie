@@ -2380,6 +2380,20 @@ async def startup_tasks():
                 {"$set": {"description": CATEGORY_BLURBS_SEED[cat_name]}}
             )
 
+    # Backfill contract_end_date for existing subscriptions (default 12 months from start)
+    async for sub in db.subscriptions.find({"contract_end_date": {"$exists": False}}):
+        start_raw = sub.get("start_date") or sub.get("current_period_start") or sub.get("created_at")
+        if start_raw:
+            try:
+                start_dt = datetime.fromisoformat(start_raw.replace("Z", "+00:00"))
+                contract_end = start_dt + timedelta(days=365)
+                await db.subscriptions.update_one(
+                    {"id": sub["id"]},
+                    {"$set": {"contract_end_date": contract_end.isoformat()}}
+                )
+            except Exception:
+                pass
+
     # Seed default app settings (brand colors) if not already customized
     existing_settings = await db.app_settings.find_one({})
     if not existing_settings:
