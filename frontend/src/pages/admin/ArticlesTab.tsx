@@ -557,7 +557,7 @@ export function ArticlesTab() {
                 data-testid="email-customer-select"
               >
                 {customers.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.company_name || c.full_name || c.id}</option>
+                  <option key={c.id} value={c.id}>{c.email || c.company_name || c.full_name || c.id}</option>
                 ))}
               </select>
               <p className="text-xs text-slate-400">{emailForm.customer_ids.length} selected</p>
