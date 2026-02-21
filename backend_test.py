@@ -605,48 +605,42 @@ class AutomateAccountsAPITester:
         
         if success2:
             order_id = checkout_response.get("order_id")
-            if order_id:
-                # Test GoCardless redirect flow creation
-                redirect_data = {"order_id": order_id}
-                success3, redirect_response = self.run_test("Create GoCardless Redirect", "POST", "gocardless/redirect", 200, redirect_data, headers=headers)
+            redirect_flow_id = checkout_response.get("redirect_flow_id")
+            redirect_url = checkout_response.get("gocardless_redirect_url")
+            
+            if order_id and redirect_flow_id and redirect_url:
+                print(f"✅ GoCardless redirect URL created: {redirect_url[:50]}...")
+                
+                # Test completing redirect flow (simulating return from GoCardless)
+                complete_data = {
+                    "redirect_flow_id": redirect_flow_id,
+                    "order_id": order_id,
+                    "subtotal": 100.0,
+                    "discount": 0.0,
+                    "fee": 0.0,
+                    "status": "paid"
+                }
+                success3, complete_response = self.run_test("Complete GoCardless Redirect", "POST", "gocardless/complete-redirect", 200, complete_data, headers=headers)
                 
                 if success3:
-                    redirect_url = redirect_response.get("redirect_url")
-                    redirect_flow_id = redirect_response.get("redirect_flow_id")
+                    # Verify order status updated
+                    success4, order_status = self.run_test("Check Order Status After GoCardless", "GET", f"orders/{order_id}", 200, headers=headers)
                     
-                    if redirect_url and redirect_flow_id:
-                        print(f"✅ GoCardless redirect URL created: {redirect_url[:50]}...")
+                    if success4:
+                        status = order_status.get("status")
+                        has_payment_id = order_status.get("gocardless_payment_id") is not None
                         
-                        # Test completing redirect flow (simulating return from GoCardless)
-                        complete_data = {
-                            "redirect_flow_id": redirect_flow_id,
-                            "order_id": order_id
-                        }
-                        success4, complete_response = self.run_test("Complete GoCardless Redirect", "POST", "gocardless/complete", 200, complete_data, headers=headers)
-                        
-                        if success4:
-                            # Verify order status updated
-                            success5, order_status = self.run_test("Check Order Status After GoCardless", "GET", f"orders/{order_id}", 200, headers=headers)
+                        if status in ["paid", "pending_payment"] and has_payment_id:
+                            print(f"✅ Order status updated to '{status}' with GoCardless payment ID")
+                            return True
+                        else:
+                            print(f"❌ Order status '{status}' or missing GoCardless payment ID")
+                            return False
                             
-                            if success5:
-                                status = order_status.get("status")
-                                has_payment_id = order_status.get("gocardless_payment_id") is not None
-                                
-                                if status in ["paid", "pending_payment"] and has_payment_id:
-                                    print(f"✅ Order status updated to '{status}' with GoCardless payment ID")
-                                    return True
-                                else:
-                                    print(f"❌ Order status '{status}' or missing GoCardless payment ID")
-                                    return False
-                                    
-                            return success1 and success2 and success3 and success4 and success5
-                        return success1 and success2 and success3 and success4
-                    else:
-                        print("❌ Missing redirect_url or redirect_flow_id")
-                        return False
+                    return success1 and success2 and success3 and success4
                 return success1 and success2 and success3
             else:
-                print("❌ No order_id returned from bank transfer checkout")
+                print("❌ Missing order_id, redirect_flow_id, or redirect URL")
                 return False
         return success1 and success2
 
