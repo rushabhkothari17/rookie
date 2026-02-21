@@ -275,7 +275,16 @@ export default function ProductDetail() {
           <div className="flex flex-col gap-6">
             <ProductHero product={product} />
 
-            {product.price_inputs?.length > 0 && (
+            {product.sku === "MIG-BOOKS" && (
+              <SectionCard title="Migration Details" testId="books-migration-config">
+                <BooksMigrationForm
+                  onChange={setMigBooksData}
+                  initialValues={{}}
+                />
+              </SectionCard>
+            )}
+
+            {product.sku !== "MIG-BOOKS" && product.price_inputs?.length > 0 && (
               <SectionCard title="Configure pricing" testId="product-input-card">
                 <div className="space-y-3">
                   {product.price_inputs?.map((field: any) => (
