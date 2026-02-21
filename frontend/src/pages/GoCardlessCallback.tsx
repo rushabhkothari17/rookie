@@ -42,7 +42,33 @@ export default function GoCardlessCallback() {
         }, 2000);
       } catch (error: any) {
         setStatus("error");
-        toast.error(error.response?.data?.detail || "Failed to complete setup");
+        
+        // Safe error message extraction
+        let errorMsg = "Failed to complete Direct Debit setup. Please try again.";
+        
+        if (error.response?.data) {
+          const data = error.response.data;
+          
+          // Handle string detail
+          if (typeof data.detail === 'string') {
+            errorMsg = data.detail;
+          }
+          // Handle Pydantic validation errors
+          else if (Array.isArray(data.detail)) {
+            const messages = data.detail.map((err: any) => {
+              if (typeof err === 'string') return err;
+              if (err.msg) return `${err.loc?.join('.') || 'Field'}: ${err.msg}`;
+              return 'Validation error';
+            });
+            errorMsg = messages.join('; ');
+          }
+          // Handle object detail
+          else if (typeof data.detail === 'object') {
+            errorMsg = data.detail.message || 'GoCardless setup failed';
+          }
+        }
+        
+        toast.error(errorMsg);
       } finally {
         setLoading(false);
       }
