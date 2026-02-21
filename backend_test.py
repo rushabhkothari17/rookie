@@ -61,6 +61,7 @@ class AutomateAccountsAPITester:
         """Test user signup"""
         signup_data = {
             "full_name": "Test User",
+            "job_title": "Test Position",
             "company_name": "Test Company",
             "email": self.user_email,
             "phone": "+1234567890",
