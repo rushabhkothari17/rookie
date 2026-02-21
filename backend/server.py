@@ -18,7 +18,7 @@ import os
 import uuid
 import jwt
 import secrets
-from gocardless_helper import create_gocardless_customer, create_redirect_flow, complete_redirect_flow
+from gocardless_helper import create_gocardless_customer, create_redirect_flow, complete_redirect_flow, create_payment, get_payment_status
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
