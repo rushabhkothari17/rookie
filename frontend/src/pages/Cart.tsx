@@ -584,7 +584,7 @@ export default function Cart() {
                         <p className="text-xs text-slate-500">
                           Please use{" "}
                           <a
-                            href="https://www.automateaccounts.com"
+                            href={zohoUrls.access_instructions_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 underline"
