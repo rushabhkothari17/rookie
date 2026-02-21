@@ -159,69 +159,6 @@ def round_nearest_25(value: float) -> float:
     return float(round(value / 25) * 25)
 
 
-def currency_for_country(country: str) -> str:
-    c = (country or "").strip().lower()
-    if c in ["canada", "ca"]:
-        return "CAD"
-    if c in ["usa", "us", "united states", "united states of america"]:
-        return "USD"
-    return "UNSUPPORTED"
-
-
-def create_access_token(payload: Dict[str, Any]) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(days=7)
-    payload.update({"exp": expire})
-    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
-
-
-def decode_token(token: str) -> Dict[str, Any]:
-    try:
-        return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-):
-    payload = decode_token(credentials.credentials)
-    user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    if not user.get("is_active", True):
-        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
-    return user
-
-
-async def require_admin(user: Dict[str, Any] = Depends(get_current_user)):
-    if not (user.get("is_admin") or user.get("role") in ("admin", "super_admin")):
-        raise HTTPException(status_code=403, detail="Admin access required")
-    return user
-
-
-async def require_super_admin(user: Dict[str, Any] = Depends(get_current_user)):
-    if user.get("role") != "super_admin":
-        raise HTTPException(status_code=403, detail="Super admin access required")
-    return user
-
-
-async def optional_get_current_user(request: Request) -> Optional[Dict[str, Any]]:
-    auth_header = request.headers.get("Authorization", "")
-    if not auth_header.startswith("Bearer "):
-        return None
-    try:
-        token = auth_header.split(" ", 1)[1]
-        payload = decode_token(token)
-        user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
-        if user and user.get("is_active", True):
-            return user
-    except Exception:
-        pass
-    return None
-
-
 def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, Any], product_name: str) -> str:
     """Resolve dynamic tags in T&C content"""
     resolved = content
