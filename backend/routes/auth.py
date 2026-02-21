@@ -138,6 +138,16 @@ async def login(payload: LoginRequest):
         "email": user["email"],
         "is_admin": user.get("is_admin", False),
     })
+    await AuditService.log(
+        action="USER_LOGIN",
+        description=f"User login: {user['email']}",
+        entity_type="User",
+        entity_id=user["id"],
+        actor_type="admin" if user.get("is_admin") else "user",
+        actor_email=user["email"],
+        source="api",
+        meta_json={"role": user.get("role", "customer")},
+    )
     return {"token": token}
 
 
