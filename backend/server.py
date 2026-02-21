@@ -3219,9 +3219,10 @@ async def create_checkout_session(
                     discount_amount = min(round_cents(promo["discount_value"]), subtotal)
                 promo_code_data = promo
     
-    # Calculate fee on discounted subtotal: fee = 5% * (subtotal - discount)
+    # Calculate fee on discounted subtotal
+    _fee_rate = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
     discounted_subtotal = subtotal - discount_amount
-    fee = round_cents(discounted_subtotal * 0.05)
+    fee = round_cents(discounted_subtotal * _fee_rate)
     total = round_cents(discounted_subtotal + fee)
     
     # Get T&C for the product and resolve tags
