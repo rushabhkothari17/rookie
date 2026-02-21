@@ -5876,9 +5876,42 @@ async def auto_charge_order(
 
 
 @api_router.get("/admin/products-all")
-async def admin_list_all_products(admin: Dict[str, Any] = Depends(require_admin)):
-    products = await db.products.find({}, {"_id": 0}).to_list(1000)
-    return {"products": products}
+async def admin_list_all_products(
+    page: int = 1,
+    per_page: int = 20,
+    search: Optional[str] = None,
+    category: Optional[str] = None,
+    billing: Optional[str] = None,
+    pricing_type: Optional[str] = None,
+    status: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    query: Dict[str, Any] = {}
+    if search:
+        query["$or"] = [
+            {"name": {"$regex": search, "$options": "i"}},
+            {"sku": {"$regex": search, "$options": "i"}},
+        ]
+    if category:
+        query["category"] = category
+    if billing:
+        query["billing_cycle"] = billing
+    if pricing_type:
+        query["pricing_type"] = pricing_type
+    if status == "active":
+        query["is_active"] = True
+    elif status == "inactive":
+        query["is_active"] = False
+    total = await db.products.count_documents(query)
+    skip = (page - 1) * per_page
+    products = await db.products.find(query, {"_id": 0}).skip(skip).limit(per_page).to_list(per_page)
+    return {
+        "products": products,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 # ============ APP SETTINGS ============
