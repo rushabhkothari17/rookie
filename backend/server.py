@@ -504,6 +504,13 @@ class AdminProductCreate(BaseModel):
     is_active: bool = True
     visible_to_customers: List[str] = Field(default_factory=list)
 
+    @property
+    def validated_complexity(self) -> str:
+        allowed = {"SIMPLE", "COMPLEX", "REQUEST_FOR_QUOTE"}
+        if self.pricing_complexity.upper() in allowed:
+            return self.pricing_complexity.upper()
+        return "SIMPLE"
+
 
 class AppSettingsUpdate(BaseModel):
     stripe_public_key: Optional[str] = None
