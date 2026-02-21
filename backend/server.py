@@ -6004,12 +6004,32 @@ async def upload_logo(
 # ============ CATEGORIES ADMIN CRUD ============
 
 @api_router.get("/admin/categories")
-async def admin_list_categories(admin: Dict[str, Any] = Depends(require_admin)):
-    cats = await db.categories.find({}, {"_id": 0}).sort("name", 1).to_list(500)
-    # Attach product count for each category
+async def admin_list_categories(
+    page: int = 1,
+    per_page: int = 20,
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    query: Dict[str, Any] = {}
+    if search:
+        query["name"] = {"$regex": search, "$options": "i"}
+    if status == "active":
+        query["is_active"] = True
+    elif status == "inactive":
+        query["is_active"] = False
+    cats = await db.categories.find(query, {"_id": 0}).sort("name", 1).to_list(1000)
     for cat in cats:
         cat["product_count"] = await db.products.count_documents({"category": cat["name"]})
-    return {"categories": cats}
+    total = len(cats)
+    skip = (page - 1) * per_page
+    return {
+        "categories": cats[skip: skip + per_page],
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.post("/admin/categories")
