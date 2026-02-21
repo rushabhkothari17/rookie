@@ -5956,9 +5956,37 @@ async def request_quote(
 
 
 @api_router.get("/admin/quote-requests")
-async def admin_list_quote_requests(admin: Dict[str, Any] = Depends(require_admin)):
-    quotes = await db.quote_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    return {"quotes": quotes}
+async def admin_list_quote_requests(
+    page: int = 1,
+    per_page: int = 20,
+    status: Optional[str] = None,
+    email: Optional[str] = None,
+    product: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    query: Dict[str, Any] = {}
+    if status:
+        query["status"] = status
+    if email:
+        query["email"] = {"$regex": email, "$options": "i"}
+    if product:
+        query["product_name"] = {"$regex": product, "$options": "i"}
+    if date_from:
+        query.setdefault("created_at", {})["$gte"] = date_from
+    if date_to:
+        query.setdefault("created_at", {})["$lte"] = date_to + "T23:59:59"
+    total = await db.quote_requests.count_documents(query)
+    skip = (page - 1) * per_page
+    quotes = await db.quote_requests.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+    return {
+        "quotes": quotes,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.post("/admin/quote-requests")
