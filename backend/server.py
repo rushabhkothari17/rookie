@@ -451,6 +451,7 @@ class CartItemInput(BaseModel):
     product_id: str
     quantity: int = 1
     inputs: Dict[str, Any] = Field(default_factory=dict)
+    price_override: Optional[float] = None
 
 
 class OrderPreviewRequest(BaseModel):
