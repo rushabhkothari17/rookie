@@ -17,14 +17,6 @@ export default function StickyPurchaseSummary({
       data-testid="sticky-purchase-summary"
     >
       <div className="space-y-3">
-        <div className="flex items-center justify-between text-sm text-slate-500">
-          <span data-testid="summary-subtotal-label">Subtotal</span>
-          <span data-testid="summary-subtotal">${pricing.subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center justify-between text-sm text-slate-500">
-          <span data-testid="summary-fee-label">Processing fee (5%)</span>
-          <span data-testid="summary-fee">${pricing.fee.toFixed(2)}</span>
-        </div>
         <div className="flex items-center justify-between text-base font-semibold text-slate-900">
           <span data-testid="summary-total-label">Total</span>
           <span data-testid="summary-total">${pricing.total.toFixed(2)}</span>
