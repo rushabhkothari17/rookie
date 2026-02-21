@@ -16,7 +16,7 @@ import { CategoriesTab } from "./admin/CategoriesTab";
 import { SettingsTab } from "./admin/SettingsTab";
 import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
 import { BankTransactionsTab } from "./admin/BankTransactionsTab";
-import OverrideCodesTab from "@/components/admin/OverrideCodesTab";
+import OverrideCodesTab from "./admin/OverrideCodesTab";
 
 export default function Admin() {
   const { user: authUser } = useAuth();
