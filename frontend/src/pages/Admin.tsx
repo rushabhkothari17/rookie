@@ -11,7 +11,7 @@ import { CategoriesTab } from "./admin/CategoriesTab";
 import { SettingsTab } from "./admin/SettingsTab";
 import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
 import { BankTransactionsTab } from "./admin/BankTransactionsTab";
-import OverrideCodesTab from "./admin/OverrideCodesTab.jsx";
+import { OverrideCodesTab } from "./admin/OverrideCodesTab";
 import { ArticlesTab } from "./admin/ArticlesTab";
 import { LogsTab } from "./admin/LogsTab";
 
