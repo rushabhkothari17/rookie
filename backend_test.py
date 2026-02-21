@@ -479,7 +479,7 @@ class AutomateAccountsAPITester:
                 "quantity": 1,
                 "inputs": {"transactions": 100, "inventory": False, "multi_currency": False, "offshore": False}
             }],
-            "checkout_type": "card_payment",
+            "checkout_type": "subscription",
             "origin_url": "https://unruffled-allen-yzuzhj.preview.emergentagent.com",
             "terms_accepted": True
         }
