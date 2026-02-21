@@ -437,12 +437,31 @@ export default function Admin() {
         renewal_date: selectedSubscription.renewal_date,
         amount: selectedSubscription.amount,
         plan_name: selectedSubscription.plan_name,
+        customer_id: selectedSubscription.customer_id,
+        status: selectedSubscription.status,
+        payment_method: selectedSubscription.payment_method,
       });
       toast.success("Subscription updated");
       setShowSubEditDialog(false);
       load();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to update subscription");
+    }
+  };
+
+  const handleViewOrderNotes = (order: any) => {
+    setSelectedOrderNotes(order.notes || []);
+    setShowNotesDialog(true);
+  };
+
+  const handleAdminCancelSubscription = async (subId: string) => {
+    if (!confirm("Cancel this subscription? Status will be set to 'canceled_pending'.")) return;
+    try {
+      await api.post(`/admin/subscriptions/${subId}/cancel`);
+      toast.success("Subscription cancellation scheduled");
+      load();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Cancellation failed");
     }
   };
 
