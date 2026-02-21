@@ -6,11 +6,13 @@ export default function StickyPurchaseSummary({
   cta,
   disabled,
   warning,
+  currency,
 }: {
   pricing: { subtotal: number; fee: number; total: number };
   cta: { label: string; onClick?: () => void; href?: string };
   disabled?: boolean;
   warning?: string;
+  currency?: string;
 }) {
   return (
     <div
@@ -40,7 +42,7 @@ export default function StickyPurchaseSummary({
       {cta.href ? (
         <Button
           asChild
-          className="mt-6 w-full rounded-full bg-red-600 text-white hover:bg-red-700 active:bg-red-800 h-12 text-sm font-semibold"
+          className="mt-6 w-full rounded-full bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-700 h-12 text-sm font-semibold"
           data-testid="summary-cta-link"
         >
           <a href={cta.href} target="_blank" rel="noreferrer">
@@ -49,7 +51,7 @@ export default function StickyPurchaseSummary({
         </Button>
       ) : (
         <Button
-          className="mt-6 w-full rounded-full bg-red-600 text-white hover:bg-red-700 active:bg-red-800 h-12 text-sm font-semibold"
+          className="mt-6 w-full rounded-full bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-700 h-12 text-sm font-semibold"
           onClick={cta.onClick}
           disabled={disabled}
           data-testid="summary-cta-button"
@@ -59,7 +61,7 @@ export default function StickyPurchaseSummary({
       )}
 
       <p className="mt-3 text-center text-xs text-slate-400" data-testid="summary-currency-note">
-        All prices in CAD · Confirmed at checkout
+        {currency ? `All prices in ${currency}` : "Confirmed at checkout"}
       </p>
 
       <div className="mt-5 space-y-2.5 border-t border-slate-100 pt-5" data-testid="summary-policies">
