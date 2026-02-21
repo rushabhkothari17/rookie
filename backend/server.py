@@ -299,6 +299,39 @@ class SubscriptionUpdate(BaseModel):
     renewal_date: Optional[str] = None
     amount: Optional[float] = None
     status: Optional[str] = None
+    plan_name: Optional[str] = None
+    product_id: Optional[str] = None
+
+
+class CustomerUpdate(BaseModel):
+    full_name: Optional[str] = None
+    company_name: Optional[str] = None
+    job_title: Optional[str] = None
+    phone: Optional[str] = None
+
+
+class AddressUpdate(BaseModel):
+    line1: Optional[str] = None
+    line2: Optional[str] = None
+    city: Optional[str] = None
+    region: Optional[str] = None
+    postal: Optional[str] = None
+
+
+class OrderUpdate(BaseModel):
+    customer_id: Optional[str] = None
+    status: Optional[str] = None
+    payment_method: Optional[str] = None
+    order_date: Optional[str] = None
+    payment_date: Optional[str] = None
+    subtotal: Optional[float] = None
+    fee: Optional[float] = None
+    total: Optional[float] = None
+    internal_note: Optional[str] = None
+
+
+class OrderDelete(BaseModel):
+    reason: Optional[str] = ""
 
 
 class CompleteGoCardlessRedirect(BaseModel):
