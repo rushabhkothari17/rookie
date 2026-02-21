@@ -329,8 +329,35 @@ class ManualSubscriptionCreate(BaseModel):
     inputs: Dict[str, Any] = Field(default_factory=dict)
     amount: float
     renewal_date: str
+    start_date: Optional[str] = None
     status: str = "active"
     internal_note: Optional[str] = ""
+
+
+class AdminCreateUserRequest(BaseModel):
+    email: str
+    full_name: str
+    company_name: Optional[str] = ""
+    job_title: Optional[str] = ""
+    phone: Optional[str] = ""
+    password: str
+    role: str = "admin"
+
+
+class AdminCreateCustomerRequest(BaseModel):
+    full_name: str
+    company_name: Optional[str] = ""
+    job_title: Optional[str] = ""
+    email: str
+    phone: Optional[str] = ""
+    password: str
+    line1: str
+    line2: Optional[str] = ""
+    city: str
+    region: str
+    postal: str
+    country: str
+    mark_verified: bool = True
 
 
 class SubscriptionUpdate(BaseModel):
