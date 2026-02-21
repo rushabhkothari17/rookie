@@ -3846,21 +3846,62 @@ async def admin_orders(
 
 @api_router.get("/admin/subscriptions")
 async def admin_subscriptions(
+    page: int = 1,
+    per_page: int = 20,
     sort_by: str = "created_at",
     sort_order: str = "desc",
+    status: Optional[str] = None,
+    payment: Optional[str] = None,
+    email: Optional[str] = None,
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
+    start_from: Optional[str] = None,
+    start_to: Optional[str] = None,
+    contract_end_from: Optional[str] = None,
+    contract_end_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin)
 ):
     query: Dict[str, Any] = {}
+    if status:
+        query["status"] = status
+    if payment:
+        query["payment_method"] = payment
     if created_from:
         query.setdefault("created_at", {})["$gte"] = created_from
     if created_to:
         query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
-    
+    if start_from:
+        query.setdefault("start_date", {})["$gte"] = start_from
+    if start_to:
+        query.setdefault("start_date", {})["$lte"] = start_to + "T23:59:59"
+    if contract_end_from:
+        query.setdefault("contract_end_date", {})["$gte"] = contract_end_from
+    if contract_end_to:
+        query.setdefault("contract_end_date", {})["$lte"] = contract_end_to + "T23:59:59"
+
     sort_dir = -1 if sort_order == "desc" else 1
-    subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).to_list(500)
-    return {"subscriptions": subs}
+    total = await db.subscriptions.count_documents(query)
+    skip = (page - 1) * per_page
+    subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).skip(skip).limit(per_page).to_list(per_page)
+
+    # Filter by email (needs user join)
+    if email:
+        all_subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).to_list(10000)
+        users_all = await db.users.find({}, {"_id": 0, "id": 1, "email": 1}).to_list(10000)
+        custs_all = await db.customers.find({}, {"_id": 0, "id": 1, "user_id": 1}).to_list(10000)
+        cust_to_user = {c["id"]: c.get("user_id", "") for c in custs_all}
+        user_email = {u["id"]: u.get("email", "") for u in users_all}
+        all_subs = [s for s in all_subs if email.lower() in user_email.get(cust_to_user.get(s.get("customer_id", ""), ""), "").lower()]
+        total = len(all_subs)
+        subs = all_subs[skip: skip + per_page]
+
+    return {
+        "subscriptions": subs,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
 
 
 @api_router.put("/admin/products/{product_id}")
