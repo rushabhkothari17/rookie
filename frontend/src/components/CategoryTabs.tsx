@@ -36,8 +36,8 @@ export default function CategoryTabs({
             to={`/store?category=${slugFromCategory(category)}`}
             className={`whitespace-nowrap rounded-full px-5 py-2 text-sm font-medium transition-colors ${
               isActive
-                ? "bg-slate-900 text-white shadow-sm"
-                : "bg-white/80 text-slate-600 ring-1 ring-slate-200 hover:text-slate-900"
+                ? "bg-red-600 text-white shadow-sm"
+                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:text-slate-900 hover:ring-slate-300"
             }`}
             data-testid={`category-tab-${slugFromCategory(category)}`}
           >
