@@ -473,11 +473,13 @@ class ScopeRequestWithForm(BaseModel):
 
 class CategoryCreate(BaseModel):
     name: str
+    description: str = ""
     is_active: bool = True
 
 
 class CategoryUpdate(BaseModel):
     name: Optional[str] = None
+    description: Optional[str] = None
     is_active: Optional[bool] = None
 
 
