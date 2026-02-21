@@ -1824,18 +1824,7 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="sync" className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600" data-testid="admin-sync-list">
-            {logs.length === 0 && <p>No sync logs yet.</p>}
-            {logs.map((log) => (
-              <div key={log.id} className="flex justify-between border-b border-slate-100 py-2" data-testid={`admin-log-${log.id}`}>
-                <div>
-                  <span className="font-mono text-xs">{log.entity_type}</span>
-                  <span className="ml-2 text-xs text-slate-400">{log.created_at?.slice(0, 10)}</span>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded ${log.status === "Sent" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>{log.status}</span>
-              </div>
-            ))}
-          </div>
+          <LogsTab />
         </TabsContent>
 
         {/* Users Tab (super_admin only) */}
