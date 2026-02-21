@@ -206,20 +206,6 @@ export default function Admin() {
     setSelectedOrder(null);
   };
 
-  const handleOrderSave = async () => {
-    if (!selectedOrder) return;
-    try {
-      await api.put(`/admin/orders/${selectedOrder.id}`, {
-        manual_status: selectedOrder.manual_status || "",
-        internal_note: selectedOrder.internal_note || "",
-      });
-      toast.success("Order updated");
-      load();
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Order update failed");
-    }
-  };
-
   const handleCreatePromo = async () => {
     try {
       await api.post("/admin/promo-codes", {
