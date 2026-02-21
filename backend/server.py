@@ -3192,8 +3192,22 @@ async def admin_orders(
 
 
 @api_router.get("/admin/subscriptions")
-async def admin_subscriptions(admin: Dict[str, Any] = Depends(require_admin)):
-    subs = await db.subscriptions.find({}, {"_id": 0}).to_list(500)
+@api_router.get("/admin/subscriptions")
+async def admin_subscriptions(
+    sort_by: str = "created_at",
+    sort_order: str = "desc",
+    created_from: Optional[str] = None,
+    created_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    query: Dict[str, Any] = {}
+    if created_from:
+        query.setdefault("created_at", {})["$gte"] = created_from
+    if created_to:
+        query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+    
+    sort_dir = -1 if sort_order == "desc" else 1
+    subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).to_list(500)
     return {"subscriptions": subs}
 
 
