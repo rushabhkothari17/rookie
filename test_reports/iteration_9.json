@@ -1,0 +1,113 @@
+{
+  "summary": "Comprehensive testing of new admin panel features: Subscription columns/filters/edit/notes, Users tab (super_admin only), Create Customer, and Customer Portal updates. All 24 backend tests PASSED. All frontend features verified via Playwright.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin Subscriptions - Notes Dialog / Audit Logs",
+        "issues": [
+          "Actor shown as raw UUID format (e.g., 'admin:ef402b8d-5400-4fd7-b972-3ae32c3d6f75') instead of friendly name. Pre-existing low priority issue."
+        ]
+      },
+      {
+        "screen": "Customer Portal - Subscriptions",
+        "issues": [
+          "Status shows raw value 'canceled_pending' instead of a friendly label like 'Cancellation Pending'. Functional, but could be improved for UX."
+        ]
+      }
+    ]
+  },
+  "passed_tests": [
+    "Backend: GET /api/me returns role=super_admin for admin@automateaccounts.local",
+    "Backend: GET /api/admin/subscriptions?sort_by=renewal_date&sort_order=asc returns 200",
+    "Backend: GET /api/admin/subscriptions?sort_by=renewal_date&sort_order=desc returns 200",
+    "Backend: ASC vs DESC sort by renewal_date produces different ordering",
+    "Backend: GET /api/admin/subscriptions?sort_by=created_at returns 200",
+    "Backend: GET /api/admin/subscriptions?created_from=2024-01-01 filters correctly",
+    "Backend: GET /api/admin/subscriptions?created_to=2030-12-31 filters correctly",
+    "Backend: All subscriptions have subscription_number after startup backfill",
+    "Backend: Subscriptions have start_date field after startup backfill",
+    "Backend: PUT /api/admin/subscriptions/{id} with status=offline_manual succeeds",
+    "Backend: PUT /api/admin/subscriptions/{id} with start_date update succeeds",
+    "Backend: PUT /api/admin/subscriptions/{id} with new_note appends note",
+    "Backend: POST /api/admin/subscriptions/{id}/cancel returns 200 with message+cancelled_at",
+    "Backend: Cancel creates 'cancelled' audit log with actor='admin:UUID' and created_at timestamp",
+    "Backend: After cancel, subscription status becomes 'canceled_pending'",
+    "Backend: GET /api/admin/users returns 200 with users array (super_admin only)",
+    "Backend: admin@automateaccounts.local found in admin users list",
+    "Backend: No password_hash exposed in /admin/users response",
+    "Backend: All admin users have valid role field (admin or super_admin)",
+    "Backend: POST /api/admin/users creates new admin user successfully",
+    "Backend: POST /api/admin/users with role='customer' returns 400",
+    "Backend: POST /api/admin/customers/create creates new customer successfully",
+    "Backend: POST /api/admin/customers/create with duplicate email returns 400",
+    "Backend: Created customer appears in /admin/customers list",
+    "Backend: GET /api/subscriptions returns subscriptions with subscription_number",
+    "Backend: GET /api/admin/users without auth returns 401 or 403",
+    "Frontend: Admin subscriptions table has Sub ID, Start Date, Created, Renewal, Cancel Date columns",
+    "Frontend: Subscription filters panel has Created From date input (admin-sub-created-from)",
+    "Frontend: Subscription filters panel has Created To date input (admin-sub-created-to)",
+    "Frontend: Subscription filters panel has Sort By dropdown (admin-sub-sort-field) with Created Date/Renewal Date options",
+    "Frontend: Subscription filters panel has Sort Order dropdown (admin-sub-sort-order)",
+    "Frontend: Edit Subscription dialog opens on Edit button click",
+    "Frontend: Start Date input (admin-sub-start-input) is editable (not disabled/readonly)",
+    "Frontend: Created Date display (admin-sub-created-display) is read-only/disabled",
+    "Frontend: Notes textarea (admin-sub-note-input) present in Edit Subscription dialog",
+    "Frontend: Status dropdown includes 'Offline / Manual' (offline_manual) option",
+    "Frontend: Adding note via Edit dialog and saving shows 'Subscription updated' success toast",
+    "Frontend: Notes button shows count 'Notes (5)' and opens Notes dialog with note content and timestamps",
+    "Frontend: Renew button disabled (with correct tooltip) for canceled_pending subscriptions",
+    "Frontend: Renew button enabled for active subscriptions",
+    "Frontend: Users tab visible in TabsList (admin-tab-users) for super_admin user",
+    "Frontend: Admin users table (admin-users-table) loads with admin@automateaccounts.local",
+    "Frontend: super_admin role badge visible in users table",
+    "Frontend: Create Admin User button (admin-create-user-btn) found",
+    "Frontend: Create Admin User dialog opens with all fields (name, email, password, role, submit)",
+    "Frontend: Creating admin user shows success toast",
+    "Frontend: New admin user appears in users table after creation",
+    "Frontend: Create Customer button (admin-create-customer-btn) found in Customers tab",
+    "Frontend: Create Customer dialog (admin-create-customer-dialog) has all required fields: Name, Email, Password, Line1, City, Region, Postal, Country",
+    "Frontend: Creating customer shows success toast",
+    "Frontend: Portal subscriptions table has Sub ID column",
+    "Frontend: Portal subscriptions table has Start Date column",
+    "Frontend: Portal subscriptions table has Cancellation column",
+    "Frontend: Portal Sub ID cells show SUB-XXXXXXXX format subscription_number",
+    "Frontend: Portal Start Date cells show correct dates (start_date or current_period_start fallback)",
+    "Frontend: Portal Cancel button visible ONLY for non-cancelled, non-canceled_pending subscriptions",
+    "Frontend: Portal Cancel button absent for all 5 canceled_pending subscriptions"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_new_admin_features.py",
+    "/app/test_reports/pytest/pytest_results_iter9.xml"
+  ],
+  "action_items": [
+    "LOW: Consider showing friendly actor name (e.g., 'Admin' or email) instead of raw UUID in Notes/Audit Logs dialogs",
+    "LOW: Portal subscriptions: consider showing 'Cancellation Pending' instead of raw 'canceled_pending' status for better UX"
+  ],
+  "critical_code_review_comments": [
+    "DUPLICATE ROUTE: In server.py line 3194-3195, the @api_router.get('/admin/subscriptions') decorator is applied twice (duplicate decorator). Should be cleaned up, though FastAPI usually handles the last one.",
+    "OFFLINE_MANUAL status shown in Admin subscriptions table correctly as 'Offline/Manual' badge. Migration from 'manual' -> 'offline' payment_method and backfill of subscription_number and start_date all working correctly.",
+    "Create Admin User form is missing 'company_name' and 'phone' fields in the frontend (they exist in newAdminUser state and backend payload), but the dialog only shows name, email, password, and role. Optional fields - low priority."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_new_admin_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (24/24 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!"
+  },
+  "seed_data_creation": "Created test admin users: testadmin_iter9@example.com, testadmin_playwright@example.com. Created test customers: test9999_iter9@example.com, playwright_test_XXXX@example.com. Added notes to subscription SUB-1ED79108.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All new features from this iteration are fully tested and working. Key testids verified: admin-tab-users, admin-create-user-btn, admin-create-user-dialog, admin-new-user-email, admin-new-user-password, admin-new-user-role, admin-new-user-submit, admin-users-table, admin-create-customer-btn, admin-create-customer-dialog, admin-new-customer-name/email/password/line1/city/region/postal/country, admin-new-customer-submit, admin-sub-notes-{id}, admin-sub-start-input, admin-sub-created-display, admin-sub-sort-field, admin-sub-sort-order, admin-sub-created-from, admin-sub-created-to, portal-subscription-id-{id}. DUPLICATE DECORATOR bug in server.py at line 3194-3195. Admin user has role=super_admin confirmed (startup migration working).",
+  "mocked_api_notes": "Zoho CRM sync, GoCardless payment confirmation, Email sending are MOCKED"
+}
