@@ -12,34 +12,6 @@ interface Settings {
   store_name?: string;
 }
 
-function SecretInput({ label, value, onChange, placeholder, testId }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string; testId?: string;
-}) {
-  const [show, setShow] = useState(false);
-  return (
-    <div>
-      <label className="text-xs text-slate-600">{label}</label>
-      <div className="relative mt-1">
-        <Input
-          type={show ? "text" : "password"}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder || "Enter value…"}
-          data-testid={testId}
-          className="pr-10"
-        />
-        <button
-          type="button"
-          onClick={() => setShow(!show)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
-        >
-          {show ? <EyeOff size={16} /> : <Eye size={16} />}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function ColorInput({ label, value, onChange, testId }: {
   label: string; value: string; onChange: (v: string) => void; testId?: string;
 }) {
