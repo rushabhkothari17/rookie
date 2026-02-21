@@ -120,7 +120,12 @@ export function OrdersTab() {
         status: selectedOrder.status,
         payment_method: selectedOrder.payment_method,
         order_date: selectedOrder.order_date_edit || undefined,
-        payment_date: selectedOrder.payment_date || undefined,
+        payment_date: selectedOrder.payment_date?.slice(0, 10) || undefined,
+        subtotal: selectedOrder.subtotal,
+        fee: selectedOrder.fee,
+        total: selectedOrder.total,
+        subscription_id: selectedOrder.subscription_id || undefined,
+        product_id: selectedOrder.edit_product_id || undefined,
         internal_note: selectedOrder.internal_note,
         new_note: selectedOrder.new_note || undefined,
       });
