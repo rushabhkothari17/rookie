@@ -86,6 +86,8 @@ app.include_router(admin_override_codes_router)
 app.include_router(admin_exports_router)
 app.include_router(admin_settings_router)
 app.include_router(admin_website_router)
+app.include_router(references_router)
+app.include_router(email_templates_router)
 app.include_router(articles_router)
 
 
