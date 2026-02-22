@@ -31,9 +31,17 @@ interface WebsiteData {
   email_verification_subject: string; email_verification_body: string;
   msg_partner_tagging_prompt: string; msg_override_required: string;
   msg_cart_empty: string; msg_quote_success: string; msg_scope_success: string;
-  // Payment display labels (shown in checkout — configurable per white-label)
+  // Payment display
   payment_gocardless_label: string; payment_gocardless_description: string;
   payment_stripe_label: string; payment_stripe_description: string;
+  // Checkout page configuration
+  checkout_zoho_enabled: boolean; checkout_zoho_title: string;
+  checkout_zoho_subscription_options: string; checkout_zoho_product_options: string;
+  checkout_zoho_signup_note: string; checkout_zoho_access_note: string;
+  checkout_zoho_access_delay_warning: string;
+  checkout_partner_enabled: boolean; checkout_partner_title: string;
+  checkout_partner_description: string; checkout_partner_options: string;
+  checkout_partner_misrep_warning: string; checkout_extra_schema: string;
 }
 
 interface BrandingData {
