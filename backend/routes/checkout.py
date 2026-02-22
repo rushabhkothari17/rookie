@@ -473,7 +473,8 @@ async def create_checkout_session(
     host_url = payload.origin_url.rstrip("/")
     success_url = f"{host_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{host_url}/cart"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=f"{host_url}/api/webhook/stripe")
+    _stripe_key = await SettingsService.get("stripe_secret_key") or STRIPE_API_KEY
+    stripe_checkout = StripeCheckout(api_key=_stripe_key, webhook_url=f"{host_url}/api/webhook/stripe")
     metadata = {
         "order_id": order_id, "order_number": order_number,
         "customer_id": customer["id"], "checkout_type": checkout_type,
