@@ -24,13 +24,15 @@ def round_to_nearest_99(amount: float) -> int:
     return high if abs(amount - high) <= abs(amount - low) else low
 
 
+import math
+
 def round_nearest_25(value: float) -> float:
     return float(round(value / 25) * 25)
 
 
 def round_nearest(value: float, nearest: int) -> float:
-    """Round value to the nearest multiple of `nearest`."""
-    return float(round(value / nearest) * nearest)
+    """Round value to the nearest multiple of `nearest` using conventional rounding (0.5 rounds up)."""
+    return float(math.floor(value / nearest + 0.5) * nearest)
 
 
 def currency_for_country(country: str) -> str:
