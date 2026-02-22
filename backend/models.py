@@ -422,6 +422,26 @@ class AppSettingsUpdate(BaseModel):
     store_name: Optional[str] = None
 
 
+class WebsiteSettingsUpdate(BaseModel):
+    hero_label: Optional[str] = None
+    hero_title: Optional[str] = None
+    hero_subtitle: Optional[str] = None
+    login_title: Optional[str] = None
+    login_subtitle: Optional[str] = None
+    login_portal_label: Optional[str] = None
+    register_title: Optional[str] = None
+    register_subtitle: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_address: Optional[str] = None
+    footer_tagline: Optional[str] = None
+    quote_form_title: Optional[str] = None
+    quote_form_subtitle: Optional[str] = None
+    quote_form_response_time: Optional[str] = None
+    scope_form_title: Optional[str] = None
+    scope_form_subtitle: Optional[str] = None
+
+
 class QuoteRequest(BaseModel):
     product_id: str
     product_name: str
