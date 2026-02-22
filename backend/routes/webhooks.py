@@ -22,7 +22,8 @@ router = APIRouter(prefix="/api", tags=["webhooks"])
 
 @router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
+    _stripe_key = await SettingsService.get("stripe_secret_key") or STRIPE_API_KEY
+    stripe_checkout = StripeCheckout(api_key=_stripe_key, webhook_url="")
     body = await request.body()
     webhook_response = await stripe_checkout.handle_webhook(body, request.headers.get("Stripe-Signature"))
 
