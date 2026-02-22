@@ -240,13 +240,18 @@ function TemplateEditor({ template, onSave, onClose }: {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const insertVar = (v: string) => {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const newVal = htmlBody.slice(0, start) + v + htmlBody.slice(end);
-    setHtmlBody(newVal);
-    setTimeout(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + v.length; }, 0);
+    if (tab === "html") {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const newVal = htmlBody.slice(0, start) + v + htmlBody.slice(end);
+      setHtmlBody(newVal);
+      setTimeout(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + v.length; }, 0);
+    } else {
+      // For rich text and preview, just append to htmlBody
+      setHtmlBody(prev => prev + v);
+    }
   };
 
   const handleSave = async () => {
