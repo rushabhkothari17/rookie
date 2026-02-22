@@ -95,6 +95,11 @@ export function OrdersTab() {
       if (orderNumberFilter) params.append("order_number_filter", orderNumberFilter);
       if (statusFilter) params.append("status_filter", statusFilter);
       if (productFilter) params.append("product_filter", productFilter);
+      if (subNumberFilter) params.append("sub_number_filter", subNumberFilter);
+      if (processorIdFilter) params.append("processor_id_filter", processorIdFilter);
+      if (payMethodFilter) params.append("payment_method_filter", payMethodFilter);
+      if (payDateFrom) params.append("pay_date_from", payDateFrom);
+      if (payDateTo) params.append("pay_date_to", payDateTo);
       const res = await api.get(`/admin/orders?${params}`);
       let ords = res.data.orders || [];
       // Client-side email filter
@@ -112,9 +117,13 @@ export function OrdersTab() {
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load orders"); }
-  }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter, emailFilter, startDate, endDate, customers, users]);
+  }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, payDateFrom, payDateTo, emailFilter, startDate, endDate, customers, users]);
 
   useEffect(() => {
+    api.get("/admin/filter-options").then(r => {
+      if (r.data.order_statuses) setOrderStatuses(r.data.order_statuses);
+      if (r.data.payment_methods) setPaymentMethods(r.data.payment_methods);
+    }).catch(() => {});
     Promise.all([
       api.get("/admin/customers?per_page=1000").catch(() => ({ data: { customers: [], users: [] } })),
       api.get("/products").catch(() => ({ data: { products: [] } })),
@@ -125,7 +134,7 @@ export function OrdersTab() {
     });
   }, []);
 
-  useEffect(() => { load(1); }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter]);
+  useEffect(() => { load(1); }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, payDateFrom, payDateTo]);
 
   // customer search for edit dialog
   const [custSearch, setCustSearch] = useState("");
