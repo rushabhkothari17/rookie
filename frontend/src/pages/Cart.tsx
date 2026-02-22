@@ -357,9 +357,9 @@ export default function Cart() {
   return (
     <div className="space-y-8" data-testid="cart-page">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900">Your cart</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">{ws.cart_title || "Your cart"}</h1>
         <Button variant="ghost" onClick={clear} data-testid="cart-clear-button">
-          Clear cart
+          {ws.cart_clear_btn_text || "Clear cart"}
         </Button>
       </div>
 
@@ -368,7 +368,7 @@ export default function Cart() {
           className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700"
           data-testid="cart-currency-block"
         >
-          Purchases are not supported in your region yet. Please contact admin for an override.
+          {ws.msg_currency_unsupported || "Purchases are not supported in your region yet. Please contact admin for an override."}
         </div>
       )}
 
