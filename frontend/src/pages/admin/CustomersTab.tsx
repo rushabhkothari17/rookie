@@ -65,8 +65,7 @@ export function CustomersTab() {
       if (search) params.append("search", search);
       if (countryFilter) params.append("country", countryFilter);
       if (statusFilter) params.append("status", statusFilter);
-      if (bankFilter) params.append("bank_transfer", bankFilter);
-      if (cardFilter) params.append("card_payment", cardFilter);
+      if (paymentModeFilter) params.append("payment_mode", paymentModeFilter);
       const res = await api.get(`/admin/customers?${params}`);
       let custs = res.data.customers || [];
       if (partnerMapFilter !== "all") {
@@ -79,9 +78,9 @@ export function CustomersTab() {
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load customers"); }
-  }, [search, countryFilter, statusFilter, bankFilter, cardFilter, partnerMapFilter, page]);
+  }, [search, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, page]);
 
-  useEffect(() => { load(1); }, [search, countryFilter, statusFilter, bankFilter, cardFilter, partnerMapFilter]);
+  useEffect(() => { load(1); }, [search, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter]);
 
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
