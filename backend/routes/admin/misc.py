@@ -44,10 +44,12 @@ async def admin_sync_logs(admin: Dict[str, Any] = Depends(require_admin)):
 
 @router.post("/admin/sync-logs/{log_id}/retry")
 async def admin_retry_sync(log_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    log_entry = await db.zoho_sync_logs.find_one({"id": log_id}, {"_id": 0})
     await db.zoho_sync_logs.update_one(
         {"id": log_id},
         {"$set": {"status": "Sent", "last_error": None}, "$inc": {"attempts": 1}},
     )
+    await create_audit_log(entity_type="sync_log", entity_id=log_id, action="sync_retry", actor=admin["email"], details={"entity_type": log_entry.get("entity_type") if log_entry else None})
     return {"message": "Retry queued", "mocked": True}
 
 
