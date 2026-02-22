@@ -743,6 +743,7 @@ class TestAdminCategories:
 
     def test_update_category(self, admin_headers, seed_data):
         cat = seed_data.get("category", {})
+        # category is {"id": ..., "name": ...} not nested
         cid = cat.get("id") or cat.get("category_id")
         if not cid:
             pytest.skip("No seed category")
