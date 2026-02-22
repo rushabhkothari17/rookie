@@ -793,11 +793,16 @@ export default function Cart() {
                       disabled={
                         loading ||
                         !termsAccepted ||
-                        (ws.checkout_partner_enabled !== false && !partnerTagResponse) ||
-                        (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) ||
-                        (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) ||
-                        (ws.checkout_zoho_enabled !== false && (() => { const p = ws.checkout_zoho_product_options?.split('\n').filter(Boolean) || []; return p.length > 0 && !currentZohoProduct; })()) ||
-                        (ws.checkout_zoho_enabled !== false && !zohoAccountAccess) ||
+                        (checkoutSections !== null
+                          ? sectionRequiredFieldsMissing || (extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim())
+                          : (
+                            (ws.checkout_partner_enabled !== false && !partnerTagResponse) ||
+                            (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) ||
+                            (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) ||
+                            (ws.checkout_zoho_enabled !== false && (() => { const p = ws.checkout_zoho_product_options?.split('\n').filter(Boolean) || []; return p.length > 0 && !currentZohoProduct; })()) ||
+                            (ws.checkout_zoho_enabled !== false && !zohoAccountAccess)
+                          )
+                        ) ||
                         currencyUnsupported ||
                         (!allowBankTransfer && !allowCardPayment) ||
                         (section.checkoutType === "subscription" && subscriptionMissingPrice && paymentMethod === "card")
