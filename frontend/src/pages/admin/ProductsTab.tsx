@@ -111,13 +111,24 @@ export function ProductsTab() {
     setSaving(true);
     try {
       const payload = {
-        ...form,
-        bullets: form.bullets.filter((b) => b.trim()),
-        tagline: form.short_description,
+        name: form.name,
+        short_description: form.short_description,
+        description_long: form.description_long,
+        bullets: form.bullets.filter(b => b.trim()),
+        tag: form.tag || null,
+        category: form.category,
+        faqs: form.faqs,
         terms_id: form.terms_id || null,
+        base_price: form.base_price,
+        is_subscription: form.is_subscription,
         stripe_price_id: form.stripe_price_id || null,
-        pricing_rules: editProduct?.pricing_rules || {},
+        price_rounding: form.price_rounding || null,
+        is_active: form.is_active,
+        visible_to_customers: form.visible_to_customers,
         intake_schema_json: form.intake_schema_json,
+        custom_sections: form.custom_sections,
+        tagline: form.short_description,
+        pricing_rules: editProduct?.pricing_rules || {},
       };
       if (editProduct) {
         await api.put(`/admin/products/${editProduct.id}`, payload);
