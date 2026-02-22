@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Plus, ChevronUp, ChevronDown } from "lucide-react";
 
-export interface IntakeOption { label: string; value: string; }
+export interface IntakeOption { label: string; value: string; price_value: number; }
 
 export interface IntakeQuestion {
   key: string;
