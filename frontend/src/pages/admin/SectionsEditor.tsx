@@ -153,16 +153,13 @@ export function SectionsEditor({
                   </div>
                   <div>
                     <label className="text-[11px] text-slate-500">Icon</label>
-                    <select
-                      value={sec.icon || "FileText"}
-                      onChange={e => update(i, { icon: e.target.value })}
-                      className="mt-0.5 h-7 w-full text-xs border border-slate-200 rounded px-2 bg-white"
-                      data-testid={`section-icon-${i}`}
-                    >
-                      {SECTION_ICONS.map(name => (
-                        <option key={name} value={name}>{name}</option>
-                      ))}
-                    </select>
+                    <div className="mt-0.5">
+                      <IconPicker
+                        value={sec.icon || "FileText"}
+                        onChange={v => update(i, { icon: v })}
+                        colorHex={COLOR_HEX[sec.icon_color] || "#64748b"}
+                      />
+                    </div>
                   </div>
                 </div>
 
