@@ -572,7 +572,46 @@ async def checkout_status(
     if status.payment_status == "paid" and transaction:
         order = await db.orders.find_one({"id": transaction.get("order_id")}, {"_id": 0})
         if order and order.get("status") != "paid":
-            await db.orders.update_one({"id": order["id"]}, {"$set": {"status": "paid", "processor_id": session_id}})
+            # --- Resolve actual Stripe payment intent ID ---
+            payment_intent_id = session_id  # fallback to session id
+            stripe_sub_id = None
+            try:
+                _stripe_key = await SettingsService.get("stripe_secret_key") or STRIPE_API_KEY
+                stripe_sdk.api_key = _stripe_key
+                session_obj = stripe_sdk.checkout.Session.retrieve(
+                    session_id, expand=["payment_intent", "subscription"]
+                )
+                if session_obj.get("payment_intent"):
+                    pi = session_obj["payment_intent"]
+                    payment_intent_id = pi["id"] if isinstance(pi, dict) else getattr(pi, "id", session_id)
+                if session_obj.get("subscription"):
+                    sub_obj = session_obj["subscription"]
+                    stripe_sub_id = sub_obj["id"] if isinstance(sub_obj, dict) else getattr(sub_obj, "id", None)
+                    if stripe_sub_id and not session_obj.get("payment_intent"):
+                        # For subscriptions get PI from latest invoice
+                        try:
+                            sub_detail = stripe_sdk.Subscription.retrieve(stripe_sub_id)
+                            if sub_detail.get("latest_invoice"):
+                                inv = stripe_sdk.Invoice.retrieve(
+                                    sub_detail["latest_invoice"], expand=["payment_intent"]
+                                )
+                                pi = inv.get("payment_intent")
+                                if pi:
+                                    payment_intent_id = pi["id"] if isinstance(pi, dict) else getattr(pi, "id", session_id)
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+            await db.orders.update_one(
+                {"id": order["id"]},
+                {"$set": {
+                    "status": "paid",
+                    "processor_id": payment_intent_id,
+                    "payment_date": now_iso(),
+                    "updated_at": now_iso(),
+                }},
+            )
             await create_audit_log(
                 entity_type="order",
                 entity_id=order["id"],
@@ -580,6 +619,7 @@ async def checkout_status(
                 actor="stripe",
                 details={
                     "session_id": session_id,
+                    "payment_intent_id": payment_intent_id,
                     "amount": order.get("total"),
                     "currency": order.get("currency"),
                     "payment_method": "card",
@@ -596,25 +636,49 @@ async def checkout_status(
                 if not existing_sub:
                     items = await db.order_items.find({"order_id": order["id"]}, {"_id": 0}).to_list(5)
                     product_name = "Subscription"
+                    product_id = None
                     if items:
                         product = await db.products.find_one({"id": items[0]["product_id"]}, {"_id": 0})
                         if product:
                             product_name = product["name"]
+                            product_id = product["id"]
                     period_start = datetime.now(timezone.utc)
                     period_end = period_start + timedelta(days=30)
+                    contract_end = period_start + timedelta(days=365)
                     sub_id = make_id()
+                    sub_number = f"SUB-{sub_id.split('-')[0].upper()}"
                     await db.subscriptions.insert_one({
-                        "id": sub_id, "order_id": order["id"], "customer_id": order["customer_id"],
-                        "plan_name": product_name, "status": "active",
-                        "stripe_subscription_id": None, "processor_id": session_id,
+                        "id": sub_id,
+                        "subscription_number": sub_number,
+                        "order_id": order["id"],
+                        "customer_id": order["customer_id"],
+                        "product_id": product_id,
+                        "plan_name": product_name,
+                        "status": "active",
+                        "stripe_subscription_id": stripe_sub_id,
+                        "processor_id": payment_intent_id,
                         "current_period_start": period_start.isoformat(),
                         "current_period_end": period_end.isoformat(),
-                        "cancel_at_period_end": False, "canceled_at": None,
-                        "amount": order.get("total"), "payment_method": "card",
+                        "start_date": period_start.isoformat(),
+                        "renewal_date": period_end.isoformat(),
+                        "contract_end_date": contract_end.isoformat(),
+                        "cancel_at_period_end": False,
+                        "canceled_at": None,
+                        "amount": order.get("subtotal"),
+                        "payment_method": "card",
+                        "notes": [],
+                        "internal_note": "",
                         "partner_tag_response": order.get("partner_tag_response"),
                         "override_code_id": order.get("override_code_id"),
                         "partner_tag_timestamp": order.get("partner_tag_timestamp"),
+                        "created_at": now_iso(),
+                        "updated_at": now_iso(),
                     })
+                    # Back-fill order with subscription linkage
+                    await db.orders.update_one(
+                        {"id": order["id"]},
+                        {"$set": {"subscription_id": sub_id, "subscription_number": sub_number}},
+                    )
                     await create_audit_log(
                         entity_type="subscription",
                         entity_id=sub_id,
@@ -626,6 +690,8 @@ async def checkout_status(
                             "payment_method": "card",
                             "order_id": order["id"],
                             "session_id": session_id,
+                            "payment_intent_id": payment_intent_id,
+                            "stripe_subscription_id": stripe_sub_id,
                         },
                     )
                     await db.email_outbox.insert_one({
