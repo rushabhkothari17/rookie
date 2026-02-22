@@ -120,6 +120,7 @@ async def verify_email(payload: VerifyEmailRequest):
         "status": "MOCKED",
         "created_at": now_iso(),
     })
+    await create_audit_log(entity_type="user", entity_id=user["id"], action="email_verified", actor=payload.email.lower(), details={})
     return {"message": "Verified"}
 
 
