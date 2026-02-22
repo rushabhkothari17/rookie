@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from core.helpers import make_id, now_iso, round_cents
 from core.security import get_current_user
-from core.config import STRIPE_API_KEY
+from core.config import STRIPE_API_KEY, GOCARDLESS_ACCESS_TOKEN, GOCARDLESS_ENVIRONMENT
 from db.session import db
 from models import CheckoutSessionRequestBody, BankTransferCheckoutRequest
 from services.audit_service import create_audit_log
