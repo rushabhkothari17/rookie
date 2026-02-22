@@ -18,6 +18,73 @@ import IncludedList from "@/components/IncludedList";
 import { displayCategory } from "@/lib/categories";
 import BooksMigrationForm, { calculateBooksMigrationPrice } from "@/components/BooksMigrationForm";
 
+// ── Intake helpers ──────────────────────────────────────────
+function getEnabledIntakeQuestions(schema: any): any[] {
+  if (!schema?.questions) return [];
+  const result: any[] = [];
+  for (const qtype of ["dropdown", "multiselect", "single_line", "multi_line"]) {
+    const qs = (schema.questions[qtype] || [])
+      .filter((q: any) => q.enabled)
+      .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+    result.push(...qs.map((q: any) => ({ ...q, qtype })));
+  }
+  return result;
+}
+
+function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
+  if (q.qtype === "dropdown") {
+    return (
+      <Select value={value || ""} onValueChange={onChange}>
+        <SelectTrigger data-testid={`intake-${q.key}`}>
+          <SelectValue placeholder={`Select…`} />
+        </SelectTrigger>
+        <SelectContent>
+          {(q.options || []).map((opt: any) => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+  if (q.qtype === "multiselect") {
+    const selected: string[] = Array.isArray(value) ? value : [];
+    return (
+      <div className="space-y-2" data-testid={`intake-${q.key}`}>
+        {(q.options || []).map((opt: any) => (
+          <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer">
+            <Checkbox
+              checked={selected.includes(opt.value)}
+              onCheckedChange={(checked) =>
+                onChange(checked ? [...selected, opt.value] : selected.filter((v: string) => v !== opt.value))
+              }
+            />
+            {opt.label}
+          </label>
+        ))}
+      </div>
+    );
+  }
+  if (q.qtype === "multi_line") {
+    return (
+      <Textarea
+        value={value || ""}
+        onChange={e => onChange(e.target.value)}
+        placeholder={q.helper_text || ""}
+        rows={3}
+        data-testid={`intake-${q.key}`}
+      />
+    );
+  }
+  return (
+    <Input
+      value={value || ""}
+      onChange={e => onChange(e.target.value)}
+      placeholder={q.helper_text || ""}
+      data-testid={`intake-${q.key}`}
+    />
+  );
+}
+
 const renderInputField = (
   field: any,
   value: any,
