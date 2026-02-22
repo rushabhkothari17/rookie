@@ -57,7 +57,6 @@ export function ProductsTab() {
   const [loading, setLoading] = useState(true);
   const [catalogFilter, setCatalogFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [complexityFilter, setComplexityFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [editProduct, setEditProduct] = useState<any>(null);
