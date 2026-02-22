@@ -353,7 +353,7 @@ export function SubscriptionsTab() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Method</label>
                   <select value={selectedSub.payment_method} onChange={e => setSelectedSub({ ...selectedSub, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-sub-payment-select">
-                    {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                    {paymentMethods.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
               </div>
