@@ -94,6 +94,15 @@ export function ProductsTab() {
 
   useEffect(() => { load(); }, []);
 
+  // Re-fetch categories whenever the dialog opens to pick up newly added categories
+  useEffect(() => {
+    if (showDialog) {
+      api.get("/admin/categories?per_page=500")
+        .then(res => setCategories(res.data.categories || []))
+        .catch(() => {});
+    }
+  }, [showDialog]);
+
   const openCreate = () => {
     setEditProduct(null);
     setForm(EMPTY_FORM);
