@@ -109,7 +109,7 @@ export default function Portal() {
   const orderItems = (orderId: string) => items.filter((i) => i.order_id === orderId);
 
   // ── Orders ──────────────────────────────────────────────
-  const oneTimeOrders = orders.filter((o) => o.type !== "subscription_start");
+  const oneTimeOrders = useMemo(() => orders.filter((o) => o.type !== "subscription_start"), [orders]);
 
   const filteredOrders = useMemo(() => {
     let list = orders.filter((o) => o.type !== "subscription_start");
