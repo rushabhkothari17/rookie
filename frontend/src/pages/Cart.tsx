@@ -869,7 +869,7 @@ export default function Cart() {
               data-testid="cart-currency-note"
             >
               {paymentMethod === "bank_transfer" 
-                ? "No processing fee for bank transfer orders."
+                ? (ws.payment_gocardless_description || "No processing fee for bank transfer orders.")
                 : "Prices are displayed as $ only. Final currency will be confirmed in Stripe Checkout."}
             </div>
           </div>
