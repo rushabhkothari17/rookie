@@ -107,6 +107,26 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 - All 6 status filters and 3 payment filters now accurately reflect DB data
 - File: `/app/frontend/src/pages/admin/SubscriptionsTab.tsx`
 
+## Phase 6: Settings Tab Payment Variables Restored + Full Filter Audit (Completed — Feb 2026)
+### Settings Restoration
+- `stripe_secret_key`, `stripe_publishable_key`, `stripe_webhook_secret`, `gocardless_access_token`, `gocardless_environment` were mistakenly placed in `_OBSOLETE_KEYS` by a previous refactor and deleted on startup
+- Removed all 5 from `_OBSOLETE_KEYS`, added to `SETTINGS_DEFAULTS` with env var fallback values
+- Checkout, webhook, and GoCardless routes now read keys from SettingsService at request time (DB first, env var fallback)
+- `gocardless_helper.py` functions now accept optional `gc_token` and `gc_env` parameters for dynamic routing
+- Files: `settings_service.py`, `gocardless_helper.py`, `routes/checkout.py`, `routes/webhooks.py`, `routes/gocardless.py`
+
+### Filter Enum Audit (all admin tabs checked)
+| Tab | Issue | Records Affected | Fixed |
+|-----|-------|-----------------|-------|
+| Subscriptions | `paused` status missing | 2 | ✅ |
+| Subscriptions | `gocardless` payment (stored as `bank_transfer`) | misleading | ✅ |
+| Orders | `pending_direct_debit_setup` missing | 21 | ✅ |
+| Orders | `scope_requested` missing | 3 | ✅ |
+| Orders | edit dialog: `gocardless` payment → replaced with `manual` | 5 | ✅ |
+| Bank Transactions | `matched` status missing | 5 | ✅ |
+| Bank Transactions | `bank_transfer` source missing | 10 | ✅ |
+| Bank Transactions | `stripe`/`gocardless` sources not in DB | misleading | ✅ |
+
 ## Known Issues / Technical Debt
 - server.py still contains old `api_router` (~6000 lines) as safety fallback. Remove after production validation.
 - HTML hydration warning in admin dropdowns (non-blocking, Radix UI issue)
