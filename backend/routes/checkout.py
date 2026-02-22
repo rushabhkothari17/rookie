@@ -486,7 +486,7 @@ async def create_checkout_session(
         product = order_items[0]["product"]
         stripe_price_id = product.get("stripe_price_id")
         try:
-            stripe_sdk.api_key = STRIPE_API_KEY
+            stripe_sdk.api_key = _stripe_key
             subscription_data: Dict[str, Any] = {"metadata": metadata}
             requested_start_date = payload.start_date
             if requested_start_date:
