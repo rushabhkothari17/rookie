@@ -478,6 +478,7 @@ class QuoteRequest(BaseModel):
     company: Optional[str] = None
     phone: Optional[str] = None
     message: Optional[str] = None
+    extra_fields: Optional[Dict[str, Any]] = None
 
 
 class BankTransactionCreate(BaseModel):
