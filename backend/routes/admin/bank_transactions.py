@@ -164,7 +164,10 @@ async def get_bank_transaction_logs(
     txn = await db.bank_transactions.find_one({"id": txn_id}, {"_id": 0})
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    return {"logs": txn.get("logs", [])}
+    inline_logs = txn.get("logs", [])
+    audit_logs = await db.audit_logs.find({"entity_type": "bank_transaction", "entity_id": txn_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    merged = sorted(inline_logs + audit_logs, key=lambda x: x.get("created_at", ""), reverse=True)
+    return {"logs": merged}
 
 
 @router.get("/admin/export/bank-transactions")
