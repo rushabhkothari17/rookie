@@ -188,7 +188,7 @@ export default function ReferencesSection() {
                     </td>
                   </tr>
                   {editingId === ref.id && (
-                    <tr key={`edit-${ref.id}`} className="bg-slate-50 border-b border-slate-200">
+                    <tr className="bg-slate-50 border-b border-slate-200">
                       <td colSpan={5} className="px-4 py-4">
                         <ReferenceForm draft={draft} setDraft={setDraft} lockKey={ref.system} />
                         <div className="flex gap-2 mt-3">
