@@ -71,7 +71,7 @@ export function ProductsTab() {
     setLoading(true);
     try {
       const [prodRes, catRes, custRes, termsRes] = await Promise.all([
-        api.get("/admin/products-all").catch(() => api.get("/products")),
+        api.get("/admin/products-all?per_page=500").catch(() => api.get("/products")),
         api.get("/admin/categories").catch(() => ({ data: { categories: [] } })),
         api.get("/admin/customers?per_page=1000").catch(() => ({ data: { customers: [], users: [] } })),
         api.get("/terms").catch(() => ({ data: { terms: [] } })),
