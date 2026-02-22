@@ -136,7 +136,7 @@ export function CustomersTab() {
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create customer"); }
   };
 
-  const clearFilters = () => { setSearch(""); setCountryFilter(""); setStatusFilter(""); setBankFilter(""); setCardFilter(""); setPartnerMapFilter("all"); };
+  const clearFilters = () => { setSearch(""); setCountryFilter(""); setStatusFilter(""); setPaymentModeFilter(""); setPartnerMapFilter("all"); };
 
   return (
     <div className="space-y-4" data-testid="customers-tab">
