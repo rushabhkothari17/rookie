@@ -343,8 +343,8 @@ export default function Cart() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium text-slate-900">Bank Transfer (GoCardless)</div>
-                      <div className="text-sm text-slate-500">No processing fee. We'll send bank transfer instructions.</div>
+                      <div className="font-medium text-slate-900">{gcLabel}</div>
+                      <div className="text-sm text-slate-500">{gcDescription}</div>
                     </div>
                   </button>
                 )}
@@ -367,8 +367,8 @@ export default function Cart() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium text-slate-900">Card Payment (Stripe)</div>
-                      <div className="text-sm text-slate-500">5% processing fee applies. Pay securely with credit/debit card.</div>
+                      <div className="font-medium text-slate-900">{stripeLabel}</div>
+                      <div className="text-sm text-slate-500">{stripeDescription}</div>
                     </div>
                   </button>
                 )}
