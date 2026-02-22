@@ -249,6 +249,12 @@ class TestFormSchemaDefaults:
     """Verify default form schemas have expected fields."""
 
     def test_quote_form_schema_default_fields(self, admin_headers):
+        # Restore default schema first to ensure test independence
+        default_schema = json.dumps([
+            {"id": "f_name", "key": "name", "label": "Your Name", "type": "text", "required": True, "placeholder": "Full name", "locked": False, "enabled": True, "order": 0},
+            {"id": "f_email", "key": "email", "label": "Email", "type": "email", "required": True, "placeholder": "your@email.com", "locked": False, "enabled": True, "order": 1},
+        ])
+        requests.put(f"{BASE_URL}/api/admin/website-settings", json={"quote_form_schema": default_schema}, headers=admin_headers)
         resp = requests.get(f"{BASE_URL}/api/admin/website-settings", headers=admin_headers)
         settings = resp.json().get("settings", {})
         schema_str = settings.get("quote_form_schema", "")
@@ -258,7 +264,6 @@ class TestFormSchemaDefaults:
         assert isinstance(schema, list)
         keys = [f["key"] for f in schema]
         print(f"Quote form keys: {keys}")
-        # Should have at minimum: name, email
         assert "name" in keys or "email" in keys, f"Expected name/email in {keys}"
 
     def test_scope_form_schema_has_timeline_select(self, admin_headers):
