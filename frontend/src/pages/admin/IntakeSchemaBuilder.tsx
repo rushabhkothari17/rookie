@@ -164,8 +164,22 @@ function QuestionEditor({ q, idx, total, allKeys, hasOptions, onChange, onRemove
         )}
       </div>
 
+      {hasOptions && q.affects_price && (
+        <div>
+          <label className="text-[11px] text-slate-500">Price adjustment mode</label>
+          <div className="flex gap-2 mt-1">
+            {(["add", "multiply"] as const).map(m => (
+              <label key={m} className="flex items-center gap-1.5 text-xs cursor-pointer select-none">
+                <input type="radio" name={`pm-${q.key}`} value={m} checked={q.price_mode === m} onChange={() => onChange({ ...q, price_mode: m })} />
+                {m === "add" ? "Add/subtract (±$)" : "Multiply (×)"}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {hasOptions && (
-        <OptionsEditor options={q.options} onChange={opts => onChange({ ...q, options: opts })} />
+        <OptionsEditor options={q.options} onChange={opts => onChange({ ...q, options: opts })} affects_price={q.affects_price} />
       )}
     </div>
   );
