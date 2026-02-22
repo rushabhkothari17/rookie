@@ -12,7 +12,7 @@ import EmailSection from "./EmailSection";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Section =
-  | "branding" | "hero" | "auth" | "forms" | "email" | "errors"
+  | "branding" | "hero" | "auth" | "forms" | "checkout" | "email" | "errors"
   | "footer" | "references" | "payments" | "sysconfig";
 
 interface WebsiteData {
