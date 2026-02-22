@@ -347,7 +347,7 @@ export function SubscriptionsTab() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
                   <select value={selectedSub.status} onChange={e => setSelectedSub({ ...selectedSub, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-sub-status-select">
-                    {SUB_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    {subStatuses.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1">
