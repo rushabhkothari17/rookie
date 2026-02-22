@@ -202,6 +202,20 @@ export default function ProductDetail() {
     setInputs(initialInputs);
   }, [product]);
 
+  // Compute enabled intake questions & initialise answers with defaults
+  const enabledIntakeQuestions = useMemo(() => getEnabledIntakeQuestions(product?.intake_schema_json), [product]);
+
+  useEffect(() => {
+    if (!enabledIntakeQuestions.length) return;
+    const defaults: Record<string, any> = {};
+    for (const q of enabledIntakeQuestions) {
+      if (q.qtype === "multiselect") defaults[q.key] = [];
+      else if (q.qtype === "dropdown") defaults[q.key] = q.options?.[0]?.value || "";
+      else defaults[q.key] = "";
+    }
+    setIntakeAnswers(defaults);
+  }, [product]);
+
   const fetchPricing = async (nextInputs: Record<string, any>) => {
     if (!product) return;
     if (product.sku === "MIG-BOOKS") {
