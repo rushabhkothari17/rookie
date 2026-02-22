@@ -388,6 +388,7 @@ class AdminProductCreate(BaseModel):
     pricing_complexity: str = "SIMPLE"
     is_active: bool = True
     visible_to_customers: List[str] = Field(default_factory=list)
+    intake_schema_json: Optional[IntakeSchemaJson] = None
 
     @property
     def validated_complexity(self) -> str:
