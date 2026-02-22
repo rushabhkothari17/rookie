@@ -109,7 +109,19 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
-### Phase 4 — Dynamic Emails, References & Payment Modes (Feb 2026)
+### Phase 5 — Architecture Audit & Payment/Email Refactor (Feb 2026)
+- Removed redundant 'Integrations' tab from Website admin sidebar
+- Added 'Payments' section (GoCardless + Stripe cards with toggle, display labels, API keys, fee rates)
+- Removed 'Payment Settings' from System Config (now lives in Payments tab)
+- Email section retains its own Resend provider config (clean separation)
+- Customer module: replaced Bank Transfer/Card Payment columns with 'Payment Methods' chips column
+- Customer module: replaced bank/card filters with unified 'Payment Mode' dropdown (GoCardless/Stripe/Both/None)
+- allowed_payment_modes values standardized: 'bank_transfer' → 'gocardless', 'card' → 'stripe'
+- Cart.tsx: payment method labels, descriptions, and fee % are now fully dynamic from website settings
+- Email Templates: TipTap rich text editor added as first tab (alongside HTML Source + Preview)
+- Dead code cleanup: removed unused handlePaymentToggle function
+- currency_for_country() expanded (Phase 4) to support GBP, AUD, NZD, SGD, INR, ZAR, EUR
+
 - Fixed IndentationError in articles.py (orphaned code from incomplete refactor)
 - EmailSection.tsx — full email template editor (9 system templates, enable/disable toggle, HTML editor with variable insertion, live preview, email logs)
 - ReferencesSection.tsx — CRUD for key-value references (`{{ref:key}}` syntax usable in templates and content)
