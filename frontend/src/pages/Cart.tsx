@@ -254,7 +254,7 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <div className="text-center text-slate-600" data-testid="cart-empty">
-        Your cart is empty.
+        {ws.msg_cart_empty || "Your cart is empty."}
       </div>
     );
   }
