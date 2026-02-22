@@ -250,6 +250,11 @@ class AuditService:
 # Convenience helper — used across route handlers
 # ---------------------------------------------------------------------------
 
+def _to_pascal(snake: str) -> str:
+    """Convert snake_case or lowercase to PascalCase. e.g. 'promo_code' → 'PromoCode'."""
+    return "".join(word.capitalize() for word in snake.split("_"))
+
+
 async def create_audit_log(
     entity_type: str,
     entity_id: str,
@@ -268,13 +273,25 @@ async def create_audit_log(
         "created_at": now_iso(),
     })
     actor_type = "admin" if "admin" in (actor or "").lower() else "system"
+    source = "admin_ui" if actor_type == "admin" else "api"
+
+    # Build action: avoid double prefix e.g. CUSTOMER_CUSTOMER_CREATED → CUSTOMER_CREATED
+    action_upper = action.upper().replace(" ", "_").replace("-", "_")
+    entity_prefix = entity_type.upper().replace(" ", "_")
+    if action_upper.startswith(entity_prefix + "_"):
+        full_action = action_upper
+    else:
+        full_action = f"{entity_prefix}_{action_upper}"
+
+    pascal_entity = _to_pascal(entity_type)
+
     await AuditService.log(
-        action=f"{entity_type.upper()}_{action.upper().replace(' ', '_')}",
+        action=full_action,
         description=f"{action} on {entity_type} {entity_id} by {actor}",
-        entity_type=entity_type.capitalize(),
+        entity_type=pascal_entity,
         entity_id=entity_id,
         actor_type=actor_type,
         actor_email=actor if "@" in (actor or "") else None,
-        source="api",
+        source=source,
         meta_json=details or {},
     )
