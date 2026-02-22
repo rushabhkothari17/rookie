@@ -20,14 +20,13 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = "aa_cart_items";
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setItems(JSON.parse(stored));
-    }
-  }, []);
+  // Lazy initializer: loads from localStorage on first render to avoid flash-of-empty-cart
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
