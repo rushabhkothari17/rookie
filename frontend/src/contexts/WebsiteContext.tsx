@@ -99,6 +99,8 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   msg_cart_empty: "Your cart is empty.",
   msg_quote_success: "Quote request submitted! We'll be in touch shortly.",
   msg_scope_success: "Scope request submitted!",
+  stripe_enabled: false,
+  gocardless_enabled: false,
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
