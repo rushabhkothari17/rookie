@@ -38,8 +38,12 @@ async def complete_gocardless_redirect(
 ):
     """Complete GoCardless redirect flow and update order/subscription status."""
     try:
+        gc_token = await SettingsService.get("gocardless_access_token") or GOCARDLESS_ACCESS_TOKEN
+        gc_env = await SettingsService.get("gocardless_environment", GOCARDLESS_ENVIRONMENT)
+
         redirect_flow = complete_redirect_flow(
-            payload.redirect_flow_id, session_token=payload.session_token or ""
+            payload.redirect_flow_id, session_token=payload.session_token or "",
+            gc_token=gc_token, gc_env=gc_env,
         )
         if not redirect_flow:
             await create_audit_log(
