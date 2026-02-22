@@ -90,6 +90,7 @@ async def register(payload: RegisterRequest):
         source="customer_ui",
         meta_json={"company_name": payload.company_name, "country": payload.address.country},
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "user", "entity_id": user_id, "action": "registered", "actor": payload.email.lower(), "details": {"company_name": payload.company_name, "country": payload.address.country}, "created_at": now_iso()})
     return {
         "message": "Verification required",
         "verification_code": verification_code,
