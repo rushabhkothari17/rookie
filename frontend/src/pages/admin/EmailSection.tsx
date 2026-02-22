@@ -296,21 +296,27 @@ function TemplateEditor({ template, onSave, onClose }: {
             </div>
           )}
 
-          {/* HTML / Preview tabs */}
+          {/* Editor tabs */}
           <div className="border border-slate-200 rounded-xl overflow-hidden">
             <div className="flex border-b border-slate-200 bg-slate-50">
-              {(["html", "preview"] as const).map(t => (
+              {(["rich", "html", "preview"] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
                   className={`px-4 py-2 text-xs font-medium transition-colors ${tab === t ? "text-slate-900 bg-white border-b-2 border-slate-900" : "text-slate-500 hover:text-slate-700"}`}>
-                  {t === "html" ? "HTML Source" : "Preview"}
+                  {t === "rich" ? "Rich Text" : t === "html" ? "HTML Source" : "Preview"}
                 </button>
               ))}
             </div>
-            {tab === "html" ? (
+            {tab === "rich" && (
+              <div className="p-2">
+                <RichTextEditor key="rich-editor" value={htmlBody} onChange={setHtmlBody} />
+              </div>
+            )}
+            {tab === "html" && (
               <textarea ref={textareaRef} value={htmlBody} onChange={e => setHtmlBody(e.target.value)}
                 className="w-full h-72 p-3 text-xs font-mono text-slate-700 outline-none resize-none bg-white"
                 spellCheck={false} data-testid="template-html-editor" />
-            ) : (
+            )}
+            {tab === "preview" && (
               <div className="h-72 overflow-auto bg-white p-4" data-testid="template-html-preview">
                 <div dangerouslySetInnerHTML={{ __html: htmlBody }} />
               </div>
