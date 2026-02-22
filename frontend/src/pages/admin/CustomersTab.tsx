@@ -340,6 +340,8 @@ export function CustomersTab() {
     </div>
   );
 }
+
+function CurrencyOverrideWidget() {
   const [val, setVal] = useState({ email: "", currency: "USD" });
   const handle = async () => {
     try { await api.post("/admin/currency-override", { customer_email: val.email, currency: val.currency }); toast.success("Currency overridden"); }
