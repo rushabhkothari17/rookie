@@ -540,10 +540,25 @@ export default function WebsiteTab() {
                 return (
                   <div key={cat} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
                     <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">{cat.replace("FeatureFlags", "Feature Flags")}</h4>
-                    {items.map(item => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+                    {items.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
                   </div>
                 );
               })}
+              {/* Non-API-key items from Payments (e.g. service_fee_rate) */}
+              {(() => {
+                const feeItems = (structured["Payments"] || []).filter((item: any) =>
+                  !item.is_secret && item.value_type !== "secret" &&
+                  !["key", "token", "secret"].some((kw: string) => item.key.toLowerCase().includes(kw)) &&
+                  !item.key.toLowerCase().includes("sender")
+                );
+                if (!feeItems.length) return null;
+                return (
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
+                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">Payment Settings</h4>
+                    {feeItems.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+                  </div>
+                );
+              })()}
             </>
           )}
 
