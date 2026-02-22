@@ -68,9 +68,15 @@ function OptionsEditor({ options, onChange, affects_price }: {
   };
   return (
     <div className="ml-3 border-l-2 border-slate-200 pl-3 mt-2 space-y-1.5">
-      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-        Options {affects_price && <span className="text-blue-500">· Price value shown</span>}
-      </p>
+      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Options</p>
+      {options.length > 0 && (
+        <div className="flex gap-1 items-center text-[10px] text-slate-400 font-medium px-0.5">
+          <span className="flex-1">Display label</span>
+          <span className="flex-1">Key value (stored)</span>
+          {affects_price && <span className="w-20 text-blue-400">Price adj ($)</span>}
+          <span className="w-16" />
+        </div>
+      )}
       {options.map((opt, i) => (
         <div key={i} className="flex gap-1 items-center">
           <Input value={opt.label} onChange={e => update(i, "label", e.target.value)} placeholder="Label" className="h-7 text-xs flex-1" data-testid={`opt-label-${i}`} />
