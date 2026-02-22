@@ -13,7 +13,7 @@ import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
 import { BankTransactionsTab } from "./admin/BankTransactionsTab";
 import { OverrideCodesTab } from "./admin/OverrideCodesTab";
 import { ArticlesTab } from "./admin/ArticlesTab";
-import { LogsTab } from "./admin/LogsTab";
+import WebsiteTab from "./admin/WebsiteTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg " +
