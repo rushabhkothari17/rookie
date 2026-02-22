@@ -64,7 +64,6 @@ export default function Admin() {
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
             <TabsTrigger value="override-codes" data-testid="admin-tab-override-codes" className={TAB_CLASS}>Override Codes</TabsTrigger>
             <TabsTrigger value="promo" data-testid="admin-tab-promo" className={TAB_CLASS}>Promo Codes</TabsTrigger>
-            <TabsTrigger value="settings" data-testid="admin-tab-settings" className={TAB_CLASS}>Settings</TabsTrigger>
             <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
           </TabsList>
         </div>
