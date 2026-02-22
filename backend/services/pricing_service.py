@@ -120,9 +120,44 @@ def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any], fee_rate: f
     requires_checkout = pricing_type not in ["external", "inquiry"]
     external_url = rules.get("external_url") if pricing_type == "external" else None
 
-    if pricing_type == "fixed":
+    if pricing_type in ("fixed", "simple", None, ""):
         subtotal = float(product.get("base_price") or 0.0)
-        line_items.append({"label": product["name"], "amount": subtotal})
+        if subtotal > 0:
+            line_items.append({"label": product["name"], "amount": subtotal})
+
+        # Apply intake-based price adjustments (dropdown / multiselect with affects_price=true)
+        schema = product.get("intake_schema_json")
+        if schema and subtotal >= 0:
+            intake_qs = schema.get("questions", {})
+            for q_type in ("dropdown", "multiselect"):
+                for q in intake_qs.get(q_type, []):
+                    if not q.get("affects_price") or not q.get("enabled"):
+                        continue
+                    price_mode = q.get("price_mode", "add")
+                    raw_val = inputs.get(q["key"])
+                    if raw_val is None:
+                        continue
+                    selected = [raw_val] if isinstance(raw_val, str) else (raw_val if isinstance(raw_val, list) else [])
+                    for opt in q.get("options", []):
+                        if opt.get("value") in selected:
+                            pv = float(opt.get("price_value") or 0)
+                            if pv == 0:
+                                continue
+                            if price_mode == "add":
+                                subtotal += pv
+                                line_items.append({"label": f"{q['label']}: {opt['label']}", "amount": round_cents(pv)})
+                            elif price_mode == "multiply":
+                                new_sub = round_cents(subtotal * pv)
+                                line_items.append({"label": f"{q['label']}: {opt['label']} (×{pv})", "amount": round_cents(new_sub - subtotal)})
+                                subtotal = new_sub
+
+        # Product-level price rounding
+        price_rounding = product.get("price_rounding")
+        if price_rounding and subtotal > 0:
+            nearest = {"25": 25, "50": 50, "100": 100}.get(str(price_rounding))
+            if nearest:
+                subtotal = round_nearest(subtotal, nearest)
+
     elif pricing_type == "tiered":
         variants = rules.get("variants", [])
         variant_id = inputs.get("variant") or (variants[0]["id"] if variants else None)
