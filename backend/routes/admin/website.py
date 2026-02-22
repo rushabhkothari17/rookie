@@ -91,9 +91,15 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
 
 @router.get("/website-settings")
 async def get_website_settings_public():
-    """Public endpoint — returns all website content + branding."""
+    """Public endpoint — returns all website content + branding + payment flags."""
     app_s = await db.app_settings.find_one({}, {"_id": 0}) or {}
     web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
+
+    # Load payment provider flags from structured settings (app_settings)
+    from services.settings_service import SettingsService
+    stripe_enabled = await SettingsService.get("stripe_enabled", False)
+    gocardless_enabled = await SettingsService.get("gocardless_enabled", False)
+
     return {
         "settings": {
             **DEFAULT_WEBSITE_SETTINGS,
@@ -104,6 +110,9 @@ async def get_website_settings_public():
             "accent_color": app_s.get("accent_color") or "",
             # Content overrides (from website_settings)
             **{k: v for k, v in web_s.items() if v is not None and k != "_id"},
+            # Payment flags (always from SettingsService)
+            "stripe_enabled": bool(stripe_enabled),
+            "gocardless_enabled": bool(gocardless_enabled),
         }
     }
 
