@@ -123,4 +123,6 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 ## Test Reports
 - `/app/test_reports/iteration_5.json` — UI bug fix verification (100% pass)
 - `/app/test_reports/iteration_28.json` — Backend refactor regression test (61/61 pass, 100%)
+- `/app/test_reports/iteration_29.json` — Audit log instrumentation (28/28 pass, 100%)
+- `/app/test_reports/iteration_30.json` — Full E2E QA pass (95.8% backend, 90% frontend, 1 critical cart crash fixed)
 - `/app/backend/tests/test_refactored_routes.py` — Pytest suite for all new route modules
