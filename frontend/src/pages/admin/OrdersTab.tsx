@@ -329,7 +329,7 @@ export function OrdersTab() {
                     <option value="card">Card</option>
                     <option value="bank_transfer">Bank Transfer</option>
                     <option value="offline">Offline / Manual</option>
-                    <option value="gocardless">GoCardless</option>
+                    <option value="manual">Manual</option>
                   </select>
                 </div>
                 {/* Order Date */}
