@@ -855,7 +855,7 @@ export default function Cart() {
               )}
               {showFee && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Processing fee (5%)</span>
+                  <span className="text-slate-500">Processing fee ({stripeFeePercent}%)</span>
                   <span className="text-slate-900">${fee.toFixed(2)}</span>
                 </div>
               )}
