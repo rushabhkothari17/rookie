@@ -166,11 +166,9 @@ export function CustomersTab() {
             <option value="">All Statuses</option><option value="active">Active</option><option value="inactive">Inactive</option>
           </select>
           <select value={paymentModeFilter} onChange={(e) => setPaymentModeFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customers-payment-filter">
-            <option value="">All Payment Modes</option>
-            <option value="gocardless">GoCardless</option>
-            <option value="stripe">Stripe</option>
-            <option value="both">Both (GC + Stripe)</option>
-            <option value="none">None assigned</option>
+            {paymentFilterOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
           <select value={partnerMapFilter} onChange={(e) => setPartnerMapFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customer-partner-map-filter">
             <option value="all">All Partner Maps</option><option value="none">Not set</option>
