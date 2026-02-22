@@ -569,7 +569,7 @@ export default function WebsiteTab() {
                     <h4 className="text-sm font-semibold text-slate-900">Zoho Account Details</h4>
                     <p className="text-xs text-slate-400">Section shown before checkout for Zoho account info</p>
                   </div>
-                  <button onClick={() => s("checkout_zoho_enabled")(!ws.checkout_zoho_enabled)}
+                  <button onClick={() => setWs(p => ({...p, checkout_zoho_enabled: !p.checkout_zoho_enabled}))}
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${
                       ws.checkout_zoho_enabled
                         ? "bg-green-50 text-green-700 border-green-200"
