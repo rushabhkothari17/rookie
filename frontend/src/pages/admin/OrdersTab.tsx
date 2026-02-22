@@ -271,7 +271,18 @@ export function OrdersTab() {
                   <TableCell className="max-w-[160px] truncate">{user?.email || "—"}</TableCell>
                   <TableCell className="max-w-[160px] truncate">{productNames}</TableCell>
                   <TableCell className="font-mono">{order.subscription_number || order.subscription_id?.slice(0, 8) || "—"}</TableCell>
-                  <TableCell className="font-mono text-[10px]" data-testid={`admin-order-processor-${order.id}`}>{order.processor_id ? <span title={order.processor_id} className="px-1.5 py-0.5 bg-slate-100 rounded cursor-default">{order.processor_id.slice(0, 14)}…</span> : "—"}</TableCell>
+                  <TableCell className="font-mono text-[10px]" data-testid={`admin-order-processor-${order.id}`}>
+                    {order.processor_id ? (() => {
+                      const link = getProcessorLink(order.processor_id);
+                      return link ? (
+                        <a href={link} target="_blank" rel="noopener noreferrer" title={order.processor_id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors">
+                          {order.processor_id.slice(0, 14)}… <ExternalLink size={10} />
+                        </a>
+                      ) : (
+                        <span title={order.processor_id} className="px-1.5 py-0.5 bg-slate-100 rounded">{order.processor_id.slice(0, 14)}…</span>
+                      );
+                    })() : "—"}
+                  </TableCell>
                   <TableCell>${order.subtotal?.toFixed(2)}</TableCell>
                   <TableCell>
                     <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-100 text-amber-700">
