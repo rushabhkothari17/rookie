@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +15,6 @@ import AppShell from "@/components/AppShell";
 import ProductHero from "@/components/ProductHero";
 import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
 import SectionCard from "@/components/SectionCard";
-import IncludedList from "@/components/IncludedList";
 import { displayCategory } from "@/lib/categories";
 import BooksMigrationForm, { calculateBooksMigrationPrice } from "@/components/BooksMigrationForm";
 
