@@ -172,7 +172,7 @@ export default function Portal() {
     return list;
   }, [subscriptions, subSearch, subStatusFilter, subSort]);
 
-  const subUniqueStatuses = useMemo(() => Array.from(new Set(subscriptions.map(s => s.status).filter(Boolean))), [subscriptions]);
+  const subUniqueStatuses = SUB_STATUSES;
   const paginatedSubs = filteredSubs.slice((subPage - 1) * SUBS_PER_PAGE, subPage * SUBS_PER_PAGE);
 
   // Reset pages on filter/sort change
