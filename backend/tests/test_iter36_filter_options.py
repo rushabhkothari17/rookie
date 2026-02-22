@@ -15,7 +15,7 @@ ADMIN_PASS = "ChangeMe123!"
 @pytest.fixture(scope="module")
 def admin_token():
     """Get admin JWT token"""
-    r = requests.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASS})
+    r = requests.post(f"{BASE_URL}/api/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASS})
     if r.status_code != 200:
         pytest.skip(f"Admin login failed: {r.status_code} {r.text}")
     data = r.json()
