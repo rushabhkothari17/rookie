@@ -15,6 +15,35 @@ from services.pricing_service import build_price_inputs
 router = APIRouter(prefix="/api", tags=["admin-catalog"])
 
 
+def _validate_intake_schema(schema: IntakeSchemaJson) -> None:
+    """Validate intake schema: key uniqueness, option arrays, max 10 per type."""
+    all_keys: list = []
+    type_map = {
+        "dropdown": schema.questions.dropdown,
+        "multiselect": schema.questions.multiselect,
+        "single_line": schema.questions.single_line,
+        "multi_line": schema.questions.multi_line,
+    }
+    for q_type, questions in type_map.items():
+        if len(questions) > 10:
+            raise HTTPException(status_code=400, detail=f"Max 10 {q_type} questions allowed")
+        for q in questions:
+            if not q.key or not q.key.strip():
+                raise HTTPException(status_code=400, detail="All questions must have a non-empty key")
+            all_keys.append(q.key)
+            if q_type in ("dropdown", "multiselect"):
+                if not q.options:
+                    raise HTTPException(status_code=400, detail=f"Question '{q.key}' must have options")
+                for opt in q.options:
+                    if not opt.label or not opt.value:
+                        raise HTTPException(status_code=400, detail=f"Option in '{q.key}' must have label and value")
+    seen: set = set()
+    for k in all_keys:
+        if k in seen:
+            raise HTTPException(status_code=400, detail=f"Duplicate question key: '{k}'")
+        seen.add(k)
+
+
 @router.get("/admin/products-all")
 async def admin_list_all_products(
     page: int = 1,
