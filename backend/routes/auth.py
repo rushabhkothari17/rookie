@@ -43,6 +43,8 @@ async def register(payload: RegisterRequest):
         "verification_code": verification_code,
         "created_at": now_iso(),
     }
+    if payload.profile_meta:
+        user_doc["profile_meta"] = payload.profile_meta
     await db.users.insert_one(user_doc)
 
     customer_id = make_id()
