@@ -491,6 +491,56 @@ class WebsiteSettingsUpdate(BaseModel):
     checkout_partner_options: Optional[str] = None
     checkout_partner_misrep_warning: Optional[str] = None
     checkout_extra_schema: Optional[str] = None
+    # Dynamic checkout sections (JSON list of sections with form fields)
+    checkout_sections: Optional[str] = None
+    # Checkout success page
+    checkout_success_title: Optional[str] = None
+    checkout_success_paid_msg: Optional[str] = None
+    checkout_success_pending_msg: Optional[str] = None
+    checkout_success_expired_msg: Optional[str] = None
+    checkout_success_next_steps_title: Optional[str] = None
+    checkout_success_step_1: Optional[str] = None
+    checkout_success_step_2: Optional[str] = None
+    checkout_success_step_3: Optional[str] = None
+    checkout_portal_link_text: Optional[str] = None
+    # Bank transfer success page
+    bank_success_title: Optional[str] = None
+    bank_success_message: Optional[str] = None
+    bank_instructions_title: Optional[str] = None
+    bank_instruction_1: Optional[str] = None
+    bank_instruction_2: Optional[str] = None
+    bank_instruction_3: Optional[str] = None
+    bank_next_steps_title: Optional[str] = None
+    bank_next_step_1: Optional[str] = None
+    bank_next_step_2: Optional[str] = None
+    bank_next_step_3: Optional[str] = None
+    # 404 page
+    page_404_title: Optional[str] = None
+    page_404_link_text: Optional[str] = None
+    # GoCardless callback page
+    gocardless_processing_title: Optional[str] = None
+    gocardless_processing_subtitle: Optional[str] = None
+    gocardless_success_title: Optional[str] = None
+    gocardless_success_message: Optional[str] = None
+    gocardless_error_title: Optional[str] = None
+    gocardless_error_message: Optional[str] = None
+    gocardless_return_btn_text: Optional[str] = None
+    # Verify email page
+    verify_email_label: Optional[str] = None
+    verify_email_title: Optional[str] = None
+    verify_email_subtitle: Optional[str] = None
+    # Portal page
+    portal_title: Optional[str] = None
+    portal_subtitle: Optional[str] = None
+    # Profile page
+    profile_label: Optional[str] = None
+    profile_title: Optional[str] = None
+    profile_subtitle: Optional[str] = None
+    # Cart page
+    cart_title: Optional[str] = None
+    cart_clear_btn_text: Optional[str] = None
+    msg_currency_unsupported: Optional[str] = None
+    msg_no_payment_methods: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):

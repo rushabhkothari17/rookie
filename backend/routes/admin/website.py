@@ -108,6 +108,56 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "checkout_partner_misrep_warning": "Misrepresenting or false responses may lead to cancellation of service.",
     # Checkout page — custom extra questions (FormSchema JSON)
     "checkout_extra_schema": "[]",
+    # Dynamic checkout sections (new builder)
+    "checkout_sections": "[]",
+    # Checkout success page
+    "checkout_success_title": "Checkout status",
+    "checkout_success_paid_msg": "Payment successful.",
+    "checkout_success_pending_msg": "Checking payment status...",
+    "checkout_success_expired_msg": "Session expired.",
+    "checkout_success_next_steps_title": "Next steps",
+    "checkout_success_step_1": "We'll send a confirmation email with intake instructions.",
+    "checkout_success_step_2": "A delivery lead will schedule your kickoff within 2 business days.",
+    "checkout_success_step_3": "You can track status and invoices in the customer portal.",
+    "checkout_portal_link_text": "Go to customer portal",
+    # Bank transfer success page
+    "bank_success_title": "Order Created",
+    "bank_success_message": "Your order has been created and is awaiting bank transfer payment.",
+    "bank_instructions_title": "Payment Instructions",
+    "bank_instruction_1": "You will receive an email with bank transfer details and instructions.",
+    "bank_instruction_2": "Please complete the transfer within 7 business days.",
+    "bank_instruction_3": "Once payment is confirmed, your order will be processed and a team member will reach out.",
+    "bank_next_steps_title": "What Happens Next",
+    "bank_next_step_1": "1. Check your email for transfer instructions",
+    "bank_next_step_2": "2. Complete the bank transfer",
+    "bank_next_step_3": "3. We'll confirm receipt and begin processing your order",
+    # 404 page
+    "page_404_title": "Page not found",
+    "page_404_link_text": "Back to store",
+    # GoCardless callback page
+    "gocardless_processing_title": "Processing Direct Debit Setup",
+    "gocardless_processing_subtitle": "Please wait while we confirm your mandate...",
+    "gocardless_success_title": "Payment Initiated!",
+    "gocardless_success_message": "Your Direct Debit mandate has been set up and payment has been initiated. It will be processed shortly.",
+    "gocardless_error_title": "Setup Failed",
+    "gocardless_error_message": "There was an error completing your Direct Debit setup.",
+    "gocardless_return_btn_text": "Return to Store",
+    # Verify email page
+    "verify_email_label": "Verify email",
+    "verify_email_title": "Enter your code",
+    "verify_email_subtitle": "We sent a 6-digit code to your email.",
+    # Portal page
+    "portal_title": "Customer portal",
+    "portal_subtitle": "Track your orders and subscriptions in one place.",
+    # Profile page
+    "profile_label": "My Profile",
+    "profile_title": "Account details",
+    "profile_subtitle": "Update your contact details. Currency remains locked after your first purchase.",
+    # Cart page
+    "cart_title": "Your cart",
+    "cart_clear_btn_text": "Clear cart",
+    "msg_currency_unsupported": "Purchases are not supported in your region yet. Please contact admin for an override.",
+    "msg_no_payment_methods": "No payment methods available. Please contact support.",
 }
 
 
