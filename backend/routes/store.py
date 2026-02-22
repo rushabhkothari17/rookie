@@ -331,6 +331,7 @@ Order/Deal ID: {order_number}
         "created_at": now_iso(),
         "mocked": True,
     })
+    await create_audit_log(entity_type="order", entity_id=order_id, action="scope_request_form_created", actor=user["email"], details={"order_number": order_number, "timeline": payload.form_data.timeline_urgency})
     return {
         "message": "Scope request submitted",
         "order_id": order_id,
