@@ -150,10 +150,20 @@ async def admin_create_product(
         "created_at": now_iso(),
         "is_custom": True,
     }
+    # Custom sections — default to one "Overview" section if not provided
+    if payload.custom_sections:
+        product["custom_sections"] = _build_sections(payload.custom_sections)
+    else:
+        product["custom_sections"] = [{
+            "id": make_id(), "name": "Overview", "content": "",
+            "icon": "FileText", "icon_color": "blue", "tags": [], "order": 0,
+        }]
     if payload.intake_schema_json is not None:
         _validate_intake_schema(payload.intake_schema_json)
+        schema_dict = payload.intake_schema_json.dict()
+        _normalize_schema_dict(schema_dict)
         product["intake_schema_json"] = {
-            **payload.intake_schema_json.dict(),
+            **schema_dict,
             "version": 1,
             "updated_at": now_iso(),
             "updated_by": admin.get("email", admin["id"]),
