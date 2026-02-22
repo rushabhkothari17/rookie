@@ -116,7 +116,7 @@ async def admin_create_product(
         "pricing_complexity": payload.pricing_complexity,
         "is_active": payload.is_active,
         "visible_to_customers": payload.visible_to_customers,
-        "pricing_type": "simple",
+        "pricing_type": "fixed",
         "pricing_rules": {},
         "created_at": now_iso(),
         "is_custom": True,
