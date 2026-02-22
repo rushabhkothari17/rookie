@@ -1,22 +1,7 @@
 import { displayCategory } from "@/lib/categories";
 
-const outcomeCopy = (product: any) => {
-  const items = [];
-  const outcome = product.outcome || product.tagline;
-  if (outcome) items.push({ title: "Outcome", body: outcome });
-  if (product.automation_details) items.push({ title: "Automation", body: product.automation_details });
-  if (product.support_details) items.push({ title: "Support", body: product.support_details });
-  if (items.length === 0) {
-    items.push({ title: "Outcome", body: product.tagline || "Clear delivery milestones aligned to your goals." });
-    items.push({ title: "Automation", body: "Workflow credits and automation clarity baked in from day one." });
-    items.push({ title: "Support", body: "Dedicated delivery lead with structured check-ins." });
-  }
-  return items;
-};
-
 export default function ProductHero({ product }: { product: any }) {
   const categoryLabel = displayCategory(product.category);
-  const items = outcomeCopy(product);
 
   return (
     <div data-testid="product-hero">
@@ -40,34 +25,26 @@ export default function ProductHero({ product }: { product: any }) {
             {product.name}
           </h1>
 
-          {product.description_long && (
+          {(product.description_long || product.tagline || product.short_description) && (
             <p
               className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300"
               data-testid="product-hero-description"
             >
-              {product.description_long}
+              {product.description_long || product.tagline || product.short_description}
             </p>
           )}
-        </div>
-      </div>
 
-      {/* Outcome strip */}
-      <div className="mt-4 grid gap-4 md:grid-cols-3" data-testid="product-outcome-strip">
-        {items.map((item) => (
-          <div
-            key={item.title}
-            className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm"
-            data-testid={`product-outcome-${item.title.toLowerCase()}`}
-          >
-            <div className="mb-2 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                {item.title}
-              </span>
-            </div>
-            <p className="text-sm leading-relaxed text-slate-700">{item.body}</p>
-          </div>
-        ))}
+          {(product.bullets || []).length > 0 && (
+            <ul className="mt-5 space-y-1.5" data-testid="product-hero-bullets">
+              {(product.bullets as string[]).map((b, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
+                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-red-500" />
+                  {b}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
