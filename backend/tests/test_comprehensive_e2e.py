@@ -958,6 +958,7 @@ class TestAdminPromoCodes:
 
     def test_update_promo_code(self, admin_headers, seed_data):
         pc = seed_data.get("promo_code", {})
+        # promo code create returns {"message": ..., "id": ...}
         pid = pc.get("id")
         if not pid:
             pytest.skip("No seed promo code")
