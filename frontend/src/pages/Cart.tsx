@@ -296,7 +296,7 @@ export default function Cart() {
   
   // Fee is calculated on discounted subtotal
   const discountedSubtotal = totalSubtotal - discountAmount;
-  const fee = showFee ? Math.round(discountedSubtotal * 5) / 100 : 0;
+  const fee = showFee ? Math.round(discountedSubtotal * stripeFeeRate * 100) / 100 : 0;
   const total = discountedSubtotal + fee;
 
   return (
