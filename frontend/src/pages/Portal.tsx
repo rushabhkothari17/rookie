@@ -235,6 +235,7 @@ export default function Portal() {
                   {paginatedOrders.map((order) => (
                     <TableRow key={order.id} data-testid={`portal-order-row-${order.id}`} className="hover:bg-slate-50/50">
                       <TableCell className="font-mono text-xs font-medium" data-testid={`portal-order-number-${order.id}`}>{order.order_number}</TableCell>
+                      <TableCell className="font-mono text-xs text-slate-500" data-testid={`portal-order-sub-number-${order.id}`}>{order.subscription_number || "—"}</TableCell>
                       <TableCell className="text-xs text-slate-500" data-testid={`portal-order-date-${order.id}`}>{order.created_at?.slice(0, 10)}</TableCell>
                       <TableCell className="text-xs max-w-[180px] truncate" data-testid={`portal-order-products-${order.id}`}>
                         {orderItems(order.id).map(i => productMap[i.product_id]?.name || i.product_id).join(", ") || "—"}
