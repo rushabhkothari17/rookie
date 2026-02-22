@@ -307,7 +307,7 @@ export function ProductsTab() {
 
       {/* Product Create/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={(open) => { if (!open) setShowDialog(false); }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="admin-product-dialog">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="admin-product-dialog">
           <DialogHeader>
             <DialogTitle>{editProduct ? `Edit: ${editProduct.name}` : "New Product"}</DialogTitle>
           </DialogHeader>
