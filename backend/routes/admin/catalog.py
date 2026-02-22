@@ -294,3 +294,9 @@ async def get_product_logs(product_id: str, admin: Dict[str, Any] = Depends(requ
     logs = await db.audit_logs.find({"entity_type": "product", "entity_id": product_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
+@router.get("/admin/categories/{cat_id}/logs")
+async def get_category_logs(cat_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "category", "entity_id": cat_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+
+

@@ -179,8 +179,10 @@ export function QuoteRequestsTab() {
                 <TableCell className="max-w-[180px]"><span className="line-clamp-2">{q.message || "—"}</span></TableCell>
                 <TableCell>{statusBadge(q.status)}</TableCell>
                 <TableCell>
-                  <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(q)} data-testid={`admin-edit-quote-${q.id}`}>Edit</Button>
-                  <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/quote-requests/${q.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-quote-logs-${q.id}`}>Logs</Button>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(q)} data-testid={`admin-edit-quote-${q.id}`}>Edit</Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/quote-requests/${q.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-quote-logs-${q.id}`}>Logs</Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
