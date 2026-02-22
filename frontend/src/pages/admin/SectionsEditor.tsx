@@ -125,7 +125,7 @@ export function SectionsEditor({
               onClick={() => setExpandedIdx(isExpanded ? null : i)}
               data-testid={`section-header-${i}`}
             >
-              <DynamicIcon name={sec.icon || "FileText"} className={colorDef.text} />
+              <DynamicIcon name={sec.icon || "FileText"} colorHex={COLOR_HEX[sec.icon_color] || "#3b82f6"} />
               <span className="flex-1 text-sm font-medium text-slate-700 truncate">
                 {sec.name || <span className="text-slate-400 italic">Untitled section</span>}
               </span>
