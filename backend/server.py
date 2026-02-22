@@ -83,6 +83,7 @@ app.include_router(admin_bank_transactions_router)
 app.include_router(admin_override_codes_router)
 app.include_router(admin_exports_router)
 app.include_router(admin_settings_router)
+app.include_router(admin_website_router)
 app.include_router(articles_router)
 
 
