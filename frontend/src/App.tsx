@@ -4,6 +4,7 @@ import "@/App.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { WebsiteProvider } from "@/contexts/WebsiteContext";
 import TopNav from "@/components/TopNav";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Login from "@/pages/Login";
