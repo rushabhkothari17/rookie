@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
 import * as icons from "lucide-react";
 
-const COLOR_MAP: Record<string, string> = {
-  blue: "text-blue-500",
-  green: "text-green-500",
-  red: "text-red-500",
-  purple: "text-purple-500",
-  orange: "text-orange-500",
-  slate: "text-slate-500",
+const COLOR_HEX: Record<string, string> = {
+  blue: "#3b82f6",
+  green: "#22c55e",
+  red: "#ef4444",
+  purple: "#a855f7",
+  orange: "#f97316",
+  slate: "#64748b",
 };
 
 export default function SectionCard({
@@ -24,7 +24,7 @@ export default function SectionCard({
   iconColor?: string;
 }) {
   const IconComp = icon ? (icons as any)[icon] : null;
-  const iconClass = iconColor ? (COLOR_MAP[iconColor] || "text-blue-500") : "text-blue-500";
+  const iconHex = iconColor ? (COLOR_HEX[iconColor] || "#3b82f6") : "#3b82f6";
 
   return (
     <div
@@ -33,7 +33,7 @@ export default function SectionCard({
     >
       <div className="mb-5 flex items-center gap-3">
         {IconComp ? (
-          <IconComp size={16} className={`flex-shrink-0 ${iconClass}`} />
+          <IconComp size={16} style={{ color: iconHex }} className="flex-shrink-0" />
         ) : (
           <div className="h-5 w-1 flex-shrink-0 rounded-full bg-red-500" />
         )}
