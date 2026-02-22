@@ -388,6 +388,18 @@ export function OrdersTab() {
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Subscription ID / #</label>
                   <Input value={selectedOrder.subscription_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, subscription_id: e.target.value })} placeholder="Leave blank to unlink" data-testid="admin-order-subscription-input" />
                 </div>
+                {/* Processor ID */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Processor ID</label>
+                  <div className="flex items-center gap-1">
+                    <Input value={selectedOrder.processor_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, processor_id: e.target.value })} placeholder="e.g. pi_xxx or PM01xxx" data-testid="admin-order-processor-input" className="flex-1" />
+                    {selectedOrder.processor_id && getProcessorLink(selectedOrder.processor_id) && (
+                      <a href={getProcessorLink(selectedOrder.processor_id)!} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center h-9 w-9 border border-slate-200 rounded hover:bg-slate-50 transition-colors" title="Open in payment dashboard">
+                        <ExternalLink size={14} className="text-blue-600" />
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Product change */}
