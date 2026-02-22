@@ -510,12 +510,16 @@ export default function WebsiteTab() {
               <h3 className="text-sm font-semibold text-slate-700 mb-1">Integrations</h3>
               <p className="text-xs text-slate-400 mb-4">API keys and credentials for third-party services. Click a value to edit.</p>
               {["Payments", "Email"].map(cat => {
-                const items = structured[cat] || [];
+                const items = (structured[cat] || []).filter(item =>
+                  item.is_secret || item.value_type === "secret" ||
+                  ["key", "token", "secret"].some((kw: string) => item.key.toLowerCase().includes(kw)) ||
+                  item.key.toLowerCase().includes("email") || item.key.toLowerCase().includes("sender")
+                );
                 if (!items.length) return null;
                 return (
                   <div key={cat} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
                     <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">{cat}</h4>
-                    {items.map(item => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+                    {items.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
                   </div>
                 );
               })}
