@@ -137,6 +137,18 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 - Final server.py: 853 lines (down from 6,973) — 88% reduction
 - Files: `server.py`, `data/__init__.py`, `data/seed_products.py`
 
+## Phase 8: P0 Checkout Bug Fixes (Completed — Feb 2026)
+### Stripe Import Fix
+- Root cause: `checkout.py` imported from `emergentintegrations.payments.stripe` but that `__init__.py` only exports `StripeCheckout` and `CheckoutError`. `CheckoutSessionRequest`, etc. are only in the `.checkout` submodule.
+- Fix: Changed import to `from emergentintegrations.payments.stripe.checkout import ...`
+- Result: Stripe checkout flows fully restored (returns valid `checkout.stripe.com` URL)
+
+### GoCardless Webhook Secret Fix
+- Root cause: `gocardless_webhook_secret` was never added to `SETTINGS_DEFAULTS` in `settings_service.py` during settings refactor.
+- Fix: Added entry to `SETTINGS_DEFAULTS` with `is_secret=True`, `category=Payments`
+- Files: `routes/checkout.py`, `services/settings_service.py`
+- Test reports: `/app/test_reports/iteration_31.json` (24/24 pass, 100%)
+
 ## Known Issues / Technical Debt
 - HTML hydration warning in admin dropdowns (non-blocking, Radix UI issue)
 - Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
@@ -145,20 +157,23 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 ## Prioritized Backlog
 
 ### P0 — Must Have
-- Remove old api_router endpoint definitions from server.py (final cleanup)
+- ~~Remove old api_router endpoint definitions from server.py~~ Done
+- ~~Fix Stripe checkout (incorrect import path)~~ Done
+- ~~Fix GoCardless checkout (missing webhook secret in settings)~~ Done
 
 ### P1 — High Value
-- Audit Log Instrumentation: instrument all routes to use AuditService for comprehensive logging
+- Admin Dashboard: visual metrics for revenue, subscriptions, orders, recent activity
 - Production monitoring + error alerting
 
 ### P2 — Nice to Have
 - Zoho CRM & Books integration (sync customers, orders)
 - Email notifications for Quote Requests submitted
+- React hydration warning fix in Header.tsx
 - PostgreSQL migration (if scale requires it)
 
 ## Test Reports
-- `/app/test_reports/iteration_5.json` — UI bug fix verification (100% pass)
 - `/app/test_reports/iteration_28.json` — Backend refactor regression test (61/61 pass, 100%)
 - `/app/test_reports/iteration_29.json` — Audit log instrumentation (28/28 pass, 100%)
-- `/app/test_reports/iteration_30.json` — Full E2E QA pass (95.8% backend, 90% frontend, 1 critical cart crash fixed)
-- `/app/backend/tests/test_refactored_routes.py` — Pytest suite for all new route modules
+- `/app/test_reports/iteration_30.json` — Full E2E QA pass (95.8% backend, 90% frontend)
+- `/app/test_reports/iteration_31.json` — P0 checkout bug fixes (24/24 pass, 100%)
+- `/app/backend/tests/test_p0_checkout_fixes.py` — P0 bug fix test suite
