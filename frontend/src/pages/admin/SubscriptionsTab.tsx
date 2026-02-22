@@ -93,6 +93,11 @@ export function SubscriptionsTab() {
       if (email) params.append("email", email);
       if (status) params.append("status", status);
       if (payment) params.append("payment", payment);
+      if (subNumberFilter) params.append("sub_number", subNumberFilter);
+      if (processorIdFilter) params.append("processor_id_filter", processorIdFilter);
+      if (planFilter) params.append("plan_name_filter", planFilter);
+      if (renewalFrom) params.append("renewal_from", renewalFrom);
+      if (renewalTo) params.append("renewal_to", renewalTo);
       if (createdFrom) params.append("created_from", createdFrom);
       if (createdTo) params.append("created_to", createdTo);
       if (startFrom) params.append("start_from", startFrom);
@@ -116,13 +121,17 @@ export function SubscriptionsTab() {
       custs.forEach((c: any) => { em[c.id] = um[c.user_id] || c.id; });
       setCustomerEmails(em);
     } catch { toast.error("Failed to load subscriptions"); }
-  }, [email, status, payment, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
+  }, [email, status, payment, subNumberFilter, processorIdFilter, planFilter, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
 
   useEffect(() => {
+    api.get("/admin/filter-options").then(r => {
+      if (r.data.subscription_statuses) setSubStatuses(r.data.subscription_statuses);
+      if (r.data.payment_methods) setPaymentMethods(r.data.payment_methods);
+    }).catch(() => {});
     load(1);
     api.get("/products").then(r => setProducts(r.data.products || [])).catch(() => {});
     api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
-  }, [email, status, payment, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
+  }, [email, status, payment, subNumberFilter, processorIdFilter, planFilter, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
 
   const sortHeader = (field: string, label: string) => (
     <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => { if (sortField === field) setSortOrder(o => o === "desc" ? "asc" : "desc"); else { setSortField(field); setSortOrder("desc"); } }}>
