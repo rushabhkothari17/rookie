@@ -128,6 +128,7 @@ export function SubscriptionsTab() {
         contract_end_date: selectedSub.contract_end_date, amount: selectedSub.amount,
         plan_name: selectedSub.plan_name, customer_id: selectedSub.customer_id,
         status: selectedSub.status, payment_method: selectedSub.payment_method,
+        processor_id: selectedSub.processor_id !== undefined ? selectedSub.processor_id : undefined,
         new_note: selectedSub.new_note || undefined,
       });
       toast.success("Subscription updated"); setShowEditDialog(false); load(page);
