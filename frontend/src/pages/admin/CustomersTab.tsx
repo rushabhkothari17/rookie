@@ -41,8 +41,7 @@ export function CustomersTab() {
   const [search, setSearch] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [bankFilter, setBankFilter] = useState("");
-  const [cardFilter, setCardFilter] = useState("");
+  const [paymentModeFilter, setPaymentModeFilter] = useState("");
   const [partnerMapFilter, setPartnerMapFilter] = useState("all");
 
   // Dialogs
