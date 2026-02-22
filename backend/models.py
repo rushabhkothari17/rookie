@@ -95,6 +95,36 @@ class CancelSubscriptionBody(BaseModel):
     reason: Optional[str] = ""
 
 
+class IntakeOption(BaseModel):
+    label: str
+    value: str
+
+
+class IntakeQuestion(BaseModel):
+    key: str
+    label: str
+    helper_text: Optional[str] = ""
+    required: bool = False
+    enabled: bool = True
+    order: int = 0
+    affects_price: bool = False
+    options: Optional[List[IntakeOption]] = None
+
+
+class IntakeQuestionsBlock(BaseModel):
+    dropdown: List[IntakeQuestion] = Field(default_factory=list)
+    multiselect: List[IntakeQuestion] = Field(default_factory=list)
+    single_line: List[IntakeQuestion] = Field(default_factory=list)
+    multi_line: List[IntakeQuestion] = Field(default_factory=list)
+
+
+class IntakeSchemaJson(BaseModel):
+    version: int = 1
+    updated_at: Optional[str] = None
+    updated_by: Optional[str] = None
+    questions: IntakeQuestionsBlock = Field(default_factory=IntakeQuestionsBlock)
+
+
 class AdminProductUpdate(BaseModel):
     name: str
     short_description: Optional[str] = ""
