@@ -16,6 +16,7 @@ const countries = [
 export default function Signup() {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const ws = useWebsite();
   const [form, setForm] = useState({
     full_name: "",
     job_title: "",
