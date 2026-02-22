@@ -169,7 +169,7 @@ export function CustomersTab() {
             <option value="all">All Partner Maps</option><option value="none">Not set</option>
             {PARTNER_MAP_OPTIONS.filter(o => o.value).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
-          <Button size="sm" variant="outline" onClick={clearFilters} className="h-8 text-xs">Clear</Button>
+          <Button size="sm" variant="outline" onClick={clearFilters} className="h-8 text-xs" data-testid="admin-customers-clear">Clear</Button>
         </div>
       </div>
 
