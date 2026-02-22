@@ -142,6 +142,7 @@ export default function ProductDetail() {
   const { customer } = useAuth();
   const [product, setProduct] = useState<any>(null);
   const [inputs, setInputs] = useState<Record<string, any>>({});
+  const [intakeAnswers, setIntakeAnswers] = useState<Record<string, any>>({});
   const [pricing, setPricing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [migBooksData, setMigBooksData] = useState<{inputs: any; price: number; isComplete: boolean}>({inputs: {}, price: 999, isComplete: false});
