@@ -39,11 +39,39 @@ export default function Cart() {
     access_instructions_url: "",
   });
 
-  // Parse custom extra checkout questions from website settings
+  // Parse custom extra checkout questions from website settings (legacy)
   const extraSchema = useMemo(() => {
     try { return JSON.parse(ws.checkout_extra_schema || "[]"); }
     catch { return []; }
   }, [ws.checkout_extra_schema]);
+
+  // Parse new dynamic checkout sections — if non-empty, replaces legacy zoho/partner sections
+  const checkoutSections = useMemo(() => {
+    try {
+      const parsed = JSON.parse(ws.checkout_sections || "[]");
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+          .filter((s: any) => s.enabled !== false)
+          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+      }
+    } catch {}
+    return null; // null means use legacy zoho/partner system
+  }, [ws.checkout_sections]);
+
+  const parseSectionFields = (fieldsSchema: string) => {
+    try {
+      const fields = JSON.parse(fieldsSchema || "[]");
+      return Array.isArray(fields) ? fields.filter((f: any) => f.enabled !== false) : [];
+    } catch { return []; }
+  };
+
+  const sectionRequiredFieldsMissing = useMemo(() => {
+    if (!checkoutSections) return false;
+    return checkoutSections.some((section: any) => {
+      const fields = parseSectionFields(section.fields_schema);
+      return fields.some((f: any) => f.required && !extraFields[f.key || f.name]);
+    });
+  }, [checkoutSections, extraFields]);
 
   useEffect(() => {
     api.get("/settings/public").then((res) => {
