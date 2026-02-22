@@ -292,6 +292,41 @@ export function CustomersTab() {
                   <option value="OTHER">Other</option>
                 </select>
               </div>
+              <hr />
+              <div>
+                <label className="text-xs font-medium text-slate-700 block mb-2">Allowed Payment Methods</label>
+                <div className="space-y-2">
+                  {[
+                    { id: "bank_transfer", label: "Bank Transfer (GoCardless)", defaultOn: true },
+                    { id: "card", label: "Card Payment (Stripe)", defaultOn: false },
+                  ].map(mode => {
+                    const modes: string[] | undefined = selectedCustomer.allowed_payment_modes;
+                    const isEnabled = modes
+                      ? modes.includes(mode.id)
+                      : mode.id === "bank_transfer"
+                        ? selectedCustomer.allow_bank_transfer ?? true
+                        : selectedCustomer.allow_card_payment ?? false;
+                    const toggleMode = (checked: boolean) => {
+                      const current: string[] = selectedCustomer.allowed_payment_modes
+                        ?? ([] as string[])
+                          .concat(selectedCustomer.allow_bank_transfer !== false ? ["bank_transfer"] : [])
+                          .concat(selectedCustomer.allow_card_payment ? ["card"] : []);
+                      const next = checked
+                        ? [...new Set([...current, mode.id])]
+                        : current.filter((m: string) => m !== mode.id);
+                      setSelectedCustomer({ ...selectedCustomer, allowed_payment_modes: next, _payment_modes_changed: true });
+                    };
+                    return (
+                      <label key={mode.id} className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
+                        <input type="checkbox" checked={isEnabled} onChange={e => toggleMode(e.target.checked)}
+                          className="h-4 w-4 rounded border-slate-300 accent-slate-900"
+                          data-testid={`edit-payment-mode-${mode.id}`} />
+                        <span className={isEnabled ? "text-slate-800" : "text-slate-400"}>{mode.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
               <Button onClick={handleCustomerEdit} className="w-full" data-testid="admin-customer-save-btn">Save Changes</Button>
             </div>
           )}
