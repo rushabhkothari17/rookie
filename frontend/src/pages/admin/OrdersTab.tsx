@@ -35,6 +35,10 @@ export function OrdersTab() {
   const [total, setTotal] = useState(0);
   const PER_PAGE = 20;
 
+  // Filter options from backend (single source of truth)
+  const [orderStatuses, setOrderStatuses] = useState<string[]>(ORDER_STATUSES_FALLBACK);
+  const [paymentMethods, setPaymentMethods] = useState<string[]>(PAYMENT_METHODS_FALLBACK);
+
   // For table display + edit dialog
   const [customers, setCustomers] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
@@ -45,6 +49,11 @@ export function OrdersTab() {
   const [orderNumberFilter, setOrderNumberFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [productFilter, setProductFilter] = useState("");
+  const [subNumberFilter, setSubNumberFilter] = useState("");
+  const [processorIdFilter, setProcessorIdFilter] = useState("");
+  const [payMethodFilter, setPayMethodFilter] = useState("");
+  const [payDateFrom, setPayDateFrom] = useState("");
+  const [payDateTo, setPayDateTo] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [includeDeleted, setIncludeDeleted] = useState(false);
