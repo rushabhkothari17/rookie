@@ -53,6 +53,7 @@ export default function Articles() {
     <div className="min-h-screen aa-bg">
       <TopNav />
       <main className="aa-container py-10">
+        <div className="space-y-8" data-testid="articles-page">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-slate-900">Articles</h1>
           <p className="text-slate-500 text-sm">Guides, scopes, and resources from your consultant</p>
@@ -146,6 +147,7 @@ export default function Articles() {
             )}
           </>
         )}
+        </div>
       </main>
     </div>
   );
