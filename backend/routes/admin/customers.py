@@ -85,20 +85,33 @@ async def admin_customers(
 @router.put("/admin/customers/{customer_id}/payment-methods")
 async def admin_update_customer_payment_methods(
     customer_id: str,
-    payload: AdminCustomerPaymentUpdate,
+    payload: Dict[str, Any],
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     existing = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
-    await db.customers.update_one(
-        {"id": customer_id},
-        {"$set": {
-            "allow_bank_transfer": payload.allow_bank_transfer,
-            "allow_card_payment": payload.allow_card_payment,
-        }}
-    )
-    await create_audit_log(entity_type="customer", entity_id=customer_id, action="payment_methods_updated", actor=admin["email"], details={"allow_bank_transfer": payload.allow_bank_transfer, "allow_card_payment": payload.allow_card_payment})
+
+    allowed_modes = payload.get("allowed_payment_modes")
+    update_doc: Dict[str, Any] = {}
+
+    if allowed_modes is not None:
+        update_doc["allowed_payment_modes"] = allowed_modes
+        # Keep backward-compat booleans in sync
+        update_doc["allow_bank_transfer"] = "bank_transfer" in allowed_modes
+        update_doc["allow_card_payment"] = "card" in allowed_modes
+    else:
+        # Legacy individual field updates
+        if "allow_bank_transfer" in payload:
+            update_doc["allow_bank_transfer"] = payload["allow_bank_transfer"]
+        if "allow_card_payment" in payload:
+            update_doc["allow_card_payment"] = payload["allow_card_payment"]
+
+    if not update_doc:
+        return {"message": "Nothing to update"}
+
+    await db.customers.update_one({"id": customer_id}, {"$set": update_doc})
+    await create_audit_log(entity_type="customer", entity_id=customer_id, action="payment_methods_updated", actor=admin["email"], details=update_doc)
     return {"message": "Payment methods updated"}
 
 
