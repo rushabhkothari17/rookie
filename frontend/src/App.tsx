@@ -113,6 +113,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </WebsiteProvider>
         <Toaster richColors position="top-right" />
       </CartProvider>
     </AuthProvider>
