@@ -407,6 +407,7 @@ class AdminProductCreate(BaseModel):
     visible_to_customers: List[str] = Field(default_factory=list)
     intake_schema_json: Optional[IntakeSchemaJson] = None
     price_rounding: Optional[str] = None
+    custom_sections: Optional[List[CustomSection]] = None
 
 
 class AppSettingsUpdate(BaseModel):
