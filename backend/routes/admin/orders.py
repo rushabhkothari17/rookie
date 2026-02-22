@@ -26,6 +26,11 @@ async def admin_orders(
     product_filter: Optional[str] = None,
     order_number_filter: Optional[str] = None,
     status_filter: Optional[str] = None,
+    sub_number_filter: Optional[str] = None,
+    processor_id_filter: Optional[str] = None,
+    payment_method_filter: Optional[str] = None,
+    pay_date_from: Optional[str] = None,
+    pay_date_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     skip = (page - 1) * per_page
@@ -36,6 +41,16 @@ async def admin_orders(
         query["order_number"] = {"$regex": order_number_filter, "$options": "i"}
     if status_filter:
         query["status"] = status_filter
+    if sub_number_filter:
+        query["subscription_number"] = {"$regex": sub_number_filter, "$options": "i"}
+    if processor_id_filter:
+        query["processor_id"] = {"$regex": processor_id_filter, "$options": "i"}
+    if payment_method_filter:
+        query["payment_method"] = payment_method_filter
+    if pay_date_from:
+        query.setdefault("payment_date", {})["$gte"] = pay_date_from
+    if pay_date_to:
+        query.setdefault("payment_date", {})["$lte"] = pay_date_to + "T23:59:59"
 
     sort_direction = -1 if sort_order == "desc" else 1
     orders = await db.orders.find(query, {"_id": 0}).sort(sort_by, sort_direction).skip(skip).limit(per_page).to_list(per_page)
