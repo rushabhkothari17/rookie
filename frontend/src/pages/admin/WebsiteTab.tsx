@@ -473,28 +473,74 @@ export default function WebsiteTab() {
           {/* ── References ── */}
           {activeSection === "references" && <ReferencesSection />}
 
-          {/* ── Integrations ── */}
-          {activeSection === "integrations" && (
+          {/* ── Payments ── */}
+          {activeSection === "payments" && (
             <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">Integrations</h3>
-              <p className="text-xs text-slate-400 mb-4">API keys and credentials for third-party services. Click a value to edit.</p>
-              {["Payments", "Email"].map(cat => {
-                const items = (structured[cat] || []).filter(item =>
-                  item.is_secret || item.value_type === "secret" ||
-                  ["key", "token", "secret"].some((kw: string) => item.key.toLowerCase().includes(kw)) ||
-                  item.key.toLowerCase().includes("email") || item.key.toLowerCase().includes("sender")
-                );
-                if (!items.length) return null;
-                return (
-                  <div key={cat} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
-                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">{cat}</h4>
-                    {items.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold text-slate-700">Payment Integrations</h3>
+                <p className="text-xs text-slate-400">Enabled providers appear in the Customers module for per-customer assignment.</p>
+              </div>
+
+              {/* GoCardless */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900">GoCardless</h4>
+                    <p className="text-xs text-slate-400 mt-0.5">Direct Debit / Bank Transfer</p>
                   </div>
-                );
-              })}
-              {!structured["Payments"] && !structured["Email"] && (
-                <p className="text-sm text-slate-400">No integration settings found.</p>
-              )}
+                  {(() => {
+                    const item = (structured["Payments"] || []).find((i: any) => i.key === "gocardless_enabled");
+                    return item ? <SettingRow item={item} onSaved={onStructuredSaved} /> : null;
+                  })()}
+                </div>
+                <div className="border-t border-slate-100 pt-4 space-y-3">
+                  <p className="text-xs font-medium text-slate-600">Checkout display (shown in cart)</p>
+                  <Field label="Label" hint='e.g. "Bank Transfer (GoCardless)"' value={ws.payment_gocardless_label} onChange={s("payment_gocardless_label")} testId="ws-gc-label" />
+                  <Field label="Description" hint="Short description shown under the label" value={ws.payment_gocardless_description} onChange={s("payment_gocardless_description")} testId="ws-gc-desc" />
+                </div>
+                <div className="border-t border-slate-100 pt-4 space-y-1">
+                  <p className="text-xs font-medium text-slate-600 mb-2">Credentials & Config</p>
+                  {(structured["Payments"] || [])
+                    .filter((i: any) => i.key.startsWith("gocardless") && i.key !== "gocardless_enabled" && i.key !== "gocardless_fee_rate")
+                    .map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+                  <p className="text-xs font-medium text-slate-600 mt-3 mb-1">Fee Rate</p>
+                  {(() => {
+                    const item = (structured["Payments"] || []).find((i: any) => i.key === "gocardless_fee_rate");
+                    return item ? <SettingRow item={item} onSaved={onStructuredSaved} /> : null;
+                  })()}
+                </div>
+              </div>
+
+              {/* Stripe */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900">Stripe</h4>
+                    <p className="text-xs text-slate-400 mt-0.5">Credit / Debit Card</p>
+                  </div>
+                  {(() => {
+                    const item = (structured["Payments"] || []).find((i: any) => i.key === "stripe_enabled");
+                    return item ? <SettingRow item={item} onSaved={onStructuredSaved} /> : null;
+                  })()}
+                </div>
+                <div className="border-t border-slate-100 pt-4 space-y-3">
+                  <p className="text-xs font-medium text-slate-600">Checkout display (shown in cart)</p>
+                  <Field label="Label" hint='e.g. "Card Payment (Stripe)"' value={ws.payment_stripe_label} onChange={s("payment_stripe_label")} testId="ws-stripe-label" />
+                  <Field label="Description" hint="Short description shown under the label" value={ws.payment_stripe_description} onChange={s("payment_stripe_description")} testId="ws-stripe-desc" />
+                </div>
+                <div className="border-t border-slate-100 pt-4 space-y-1">
+                  <p className="text-xs font-medium text-slate-600 mb-2">Credentials & Config</p>
+                  {(structured["Payments"] || [])
+                    .filter((i: any) => i.key.startsWith("stripe") && i.key !== "stripe_enabled" && i.key !== "stripe_fee_rate" && i.key !== "service_fee_rate")
+                    .map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+                  <p className="text-xs font-medium text-slate-600 mt-3 mb-1">Fee Rate</p>
+                  {(() => {
+                    const item = (structured["Payments"] || []).find((i: any) => i.key === "stripe_fee_rate");
+                    return item ? <SettingRow item={item} onSaved={onStructuredSaved} /> : null;
+                  })()}
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">Labels and descriptions are saved with the "Save Changes" button above. API keys and toggles save immediately.</p>
             </>
           )}
 
