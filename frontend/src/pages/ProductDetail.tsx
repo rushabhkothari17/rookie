@@ -189,20 +189,16 @@ export default function ProductDetail() {
   const [migBooksData, setMigBooksData] = useState<{inputs: any; price: number; isComplete: boolean}>({inputs: {}, price: 999, isComplete: false});
   const [showScopeModal, setShowScopeModal] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
-  const [quoteForm, setQuoteForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
+  const [quoteFormData, setQuoteFormData] = useState<Record<string, string>>({ name: "", email: "", company: "", phone: "", message: "" });
   const [submittingQuote, setSubmittingQuote] = useState(false);
   // Scope ID unlock state
   const [scopeId, setScopeId] = useState("");
   const [scopeValidating, setScopeValidating] = useState(false);
-  const [scopeUnlock, setScopeUnlock] = useState<any>(null); // validated article data
+  const [scopeUnlock, setScopeUnlock] = useState<any>(null);
   const [scopeError, setScopeError] = useState("");
-  const [scopeForm, setScopeForm] = useState({
-    project_summary: "",
-    desired_outcomes: "",
-    apps_involved: "",
-    timeline_urgency: "",
-    budget_range: "",
-    additional_notes: "",
+  const [scopeFormData, setScopeFormData] = useState<Record<string, string>>({
+    project_summary: "", desired_outcomes: "", apps_involved: "",
+    timeline_urgency: "", budget_range: "", additional_notes: "",
   });
   const [submittingScope, setSubmittingScope] = useState(false);
   const [contactEmail, setContactEmail] = useState("hello@automateaccounts.com");
