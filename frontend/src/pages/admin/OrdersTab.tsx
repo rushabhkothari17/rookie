@@ -11,7 +11,7 @@ import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { Download } from "lucide-react";
 
-const ORDER_STATUSES = ["paid", "unpaid", "completed", "pending", "pending_payment", "awaiting_bank_transfer", "cancelled", "refunded", "disputed"];
+const ORDER_STATUSES = ["paid", "unpaid", "completed", "pending", "pending_payment", "pending_direct_debit_setup", "awaiting_bank_transfer", "scope_requested", "scope_pending", "canceled_pending", "cancelled", "refunded", "disputed"];
 
 export function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
