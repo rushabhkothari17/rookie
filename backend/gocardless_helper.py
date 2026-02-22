@@ -2,20 +2,29 @@ import os
 import requests
 from typing import Optional, Dict, Any
 
-GOCARDLESS_API_URL = "https://api-sandbox.gocardless.com"
+GOCARDLESS_SANDBOX_URL = "https://api-sandbox.gocardless.com"
+GOCARDLESS_LIVE_URL = "https://api.gocardless.com"
 
-def get_gocardless_token() -> str:
-    return os.environ.get("GOCARDLESS_ACCESS_TOKEN", "")
 
-def create_gocardless_customer(email: str, given_name: str, family_name: str, company_name: str = "") -> Optional[Dict[str, Any]]:
+def get_gocardless_token(override: str = None) -> str:
+    return override or os.environ.get("GOCARDLESS_ACCESS_TOKEN", "")
+
+
+def get_gocardless_api_url(gc_env: str = None) -> str:
+    env = gc_env or os.environ.get("GOCARDLESS_ENVIRONMENT", "sandbox")
+    return GOCARDLESS_LIVE_URL if env == "live" else GOCARDLESS_SANDBOX_URL
+
+
+def create_gocardless_customer(email: str, given_name: str, family_name: str, company_name: str = "", gc_token: str = None, gc_env: str = None) -> Optional[Dict[str, Any]]:
     """Create a GoCardless customer"""
-    token = get_gocardless_token()
+    token = get_gocardless_token(gc_token)
+    api_url = get_gocardless_api_url(gc_env)
     if not token:
         return None
     
     try:
         response = requests.post(
-            f"{GOCARDLESS_API_URL}/customers",
+            f"{api_url}/customers",
             json={
                 "customers": {
                     "email": email,
@@ -37,15 +46,17 @@ def create_gocardless_customer(email: str, given_name: str, family_name: str, co
         print(f"GoCardless customer creation failed: {e}")
     return None
 
-def create_redirect_flow(session_token: str, success_redirect_url: str, description: str) -> Optional[Dict[str, Any]]:
+
+def create_redirect_flow(session_token: str, success_redirect_url: str, description: str, gc_token: str = None, gc_env: str = None) -> Optional[Dict[str, Any]]:
     """Create a GoCardless redirect flow for mandate setup"""
-    token = get_gocardless_token()
+    token = get_gocardless_token(gc_token)
+    api_url = get_gocardless_api_url(gc_env)
     if not token:
         return None
     
     try:
         response = requests.post(
-            f"{GOCARDLESS_API_URL}/redirect_flows",
+            f"{api_url}/redirect_flows",
             json={
                 "redirect_flows": {
                     "session_token": session_token,
@@ -66,9 +77,11 @@ def create_redirect_flow(session_token: str, success_redirect_url: str, descript
         print(f"GoCardless redirect flow creation failed: {e}")
     return None
 
-def complete_redirect_flow(redirect_flow_id: str, session_token: str = "") -> Optional[Dict[str, Any]]:
+
+def complete_redirect_flow(redirect_flow_id: str, session_token: str = "", gc_token: str = None, gc_env: str = None) -> Optional[Dict[str, Any]]:
     """Complete a GoCardless redirect flow after user returns"""
-    token = get_gocardless_token()
+    token = get_gocardless_token(gc_token)
+    api_url = get_gocardless_api_url(gc_env)
     if not token:
         print("GoCardless: no access token configured")
         return None
@@ -76,7 +89,7 @@ def complete_redirect_flow(redirect_flow_id: str, session_token: str = "") -> Op
     try:
         body = {"data": {"session_token": session_token}} if session_token else {}
         response = requests.post(
-            f"{GOCARDLESS_API_URL}/redirect_flows/{redirect_flow_id}/actions/complete",
+            f"{api_url}/redirect_flows/{redirect_flow_id}/actions/complete",
             json=body,
             headers={
                 "Authorization": f"Bearer {token}",
@@ -93,9 +106,10 @@ def complete_redirect_flow(redirect_flow_id: str, session_token: str = "") -> Op
     return None
 
 
-def create_payment(amount: float, currency: str, mandate_id: str, description: str, metadata: Dict[str, Any] = None, charge_date: str = None) -> Optional[Dict[str, Any]]:
+def create_payment(amount: float, currency: str, mandate_id: str, description: str, metadata: Dict[str, Any] = None, charge_date: str = None, gc_token: str = None, gc_env: str = None) -> Optional[Dict[str, Any]]:
     """Create a GoCardless payment"""
-    token = get_gocardless_token()
+    token = get_gocardless_token(gc_token)
+    api_url = get_gocardless_api_url(gc_env)
     if not token:
         return None
     
@@ -116,7 +130,7 @@ def create_payment(amount: float, currency: str, mandate_id: str, description: s
             payment_data["charge_date"] = charge_date  # YYYY-MM-DD format
 
         response = requests.post(
-            f"{GOCARDLESS_API_URL}/payments",
+            f"{api_url}/payments",
             json={"payments": payment_data},
             headers={
                 "Authorization": f"Bearer {token}",
@@ -133,15 +147,16 @@ def create_payment(amount: float, currency: str, mandate_id: str, description: s
     return None
 
 
-def get_payment_status(payment_id: str) -> Optional[Dict[str, Any]]:
+def get_payment_status(payment_id: str, gc_token: str = None, gc_env: str = None) -> Optional[Dict[str, Any]]:
     """Get GoCardless payment status"""
-    token = get_gocardless_token()
+    token = get_gocardless_token(gc_token)
+    api_url = get_gocardless_api_url(gc_env)
     if not token:
         return None
     
     try:
         response = requests.get(
-            f"{GOCARDLESS_API_URL}/payments/{payment_id}",
+            f"{api_url}/payments/{payment_id}",
             headers={
                 "Authorization": f"Bearer {token}",
                 "GoCardless-Version": "2015-07-06",
