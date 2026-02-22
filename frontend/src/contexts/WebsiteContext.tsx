@@ -62,7 +62,7 @@ export interface WebsiteSettings {
   payment_gocardless_description: string;
   payment_stripe_label: string;
   payment_stripe_description: string;
-  // Checkout page configuration
+  // Checkout page configuration (legacy)
   checkout_zoho_enabled: boolean;
   checkout_zoho_title: string;
   checkout_zoho_subscription_options: string;
@@ -76,6 +76,56 @@ export interface WebsiteSettings {
   checkout_partner_options: string;
   checkout_partner_misrep_warning: string;
   checkout_extra_schema: string;
+  // Dynamic checkout sections (new builder)
+  checkout_sections: string;
+  // Checkout success page
+  checkout_success_title: string;
+  checkout_success_paid_msg: string;
+  checkout_success_pending_msg: string;
+  checkout_success_expired_msg: string;
+  checkout_success_next_steps_title: string;
+  checkout_success_step_1: string;
+  checkout_success_step_2: string;
+  checkout_success_step_3: string;
+  checkout_portal_link_text: string;
+  // Bank transfer success page
+  bank_success_title: string;
+  bank_success_message: string;
+  bank_instructions_title: string;
+  bank_instruction_1: string;
+  bank_instruction_2: string;
+  bank_instruction_3: string;
+  bank_next_steps_title: string;
+  bank_next_step_1: string;
+  bank_next_step_2: string;
+  bank_next_step_3: string;
+  // 404 page
+  page_404_title: string;
+  page_404_link_text: string;
+  // GoCardless callback page
+  gocardless_processing_title: string;
+  gocardless_processing_subtitle: string;
+  gocardless_success_title: string;
+  gocardless_success_message: string;
+  gocardless_error_title: string;
+  gocardless_error_message: string;
+  gocardless_return_btn_text: string;
+  // Verify email page
+  verify_email_label: string;
+  verify_email_title: string;
+  verify_email_subtitle: string;
+  // Portal page
+  portal_title: string;
+  portal_subtitle: string;
+  // Profile page
+  profile_label: string;
+  profile_title: string;
+  profile_subtitle: string;
+  // Cart page
+  cart_title: string;
+  cart_clear_btn_text: string;
+  msg_currency_unsupported: string;
+  msg_no_payment_methods: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
