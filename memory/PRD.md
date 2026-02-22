@@ -95,10 +95,16 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 - Email: admin@automateaccounts.local
 - Password: ChangeMe123!
 
+## Phase 4: Audit Log Instrumentation (Completed — Feb 2026)
+- AuditService wired into ALL mutation endpoints: auth, customers, orders, subscriptions, users, catalog, promo_codes, terms, quote_requests, bank_transactions, override_codes, articles, settings, misc
+- `create_audit_log` helper fixed: PascalCase entity types (PromoCode not Promo_code), correct source (admin_ui vs api), no double-prefix in action names
+- LogsTab rebuilt: actor_type filter, page-based pagination with total count, colored badges, relative time, before/after/meta JSON in detail dialog
+- Test reports: /app/test_reports/iteration_29.json (28/28 backend, all frontend pass)
+
 ## Known Issues / Technical Debt
-- server.py still contains old `api_router` and all its endpoint definitions as fallback (~6000 lines). These should be removed in a future cleanup step after full production validation.
-- HTML hydration warning in admin dropdowns: `<span>` inside `<select>/<option>` (non-blocking)
-- `create_audit_log` is defined both in server.py (local) and services/audit_service.py — the one in server.py should be removed once the api_router cleanup is done
+- server.py still contains old `api_router` (~6000 lines) as safety fallback. Remove after production validation.
+- HTML hydration warning in admin dropdowns (non-blocking, Radix UI issue)
+- Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
 
 ## Prioritized Backlog
 
