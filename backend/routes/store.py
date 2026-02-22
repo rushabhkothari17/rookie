@@ -394,13 +394,11 @@ async def cancel_subscription(
         {"$set": {"cancel_at_period_end": True, "status": "canceled_pending", "canceled_at": now_iso()}},
     )
     await create_audit_log(entity_type="subscription", entity_id=subscription_id, action="cancellation_requested", actor=user["email"], details={"reason": getattr(payload, "reason", None), "initiated_by": "customer"})
-    await db.email_outbox.insert_one({
-        "id": make_id(),
-        "to": user["email"],
-        "subject": "Cancellation requested",
-        "body": "Your subscription will cancel at the end of the billing period.",
-        "type": "cancellation",
-        "status": "MOCKED",
-        "created_at": now_iso(),
-    })
+    from services.email_service import EmailService
+    await EmailService.send(
+        trigger="subscription_cancellation",
+        recipient=user["email"],
+        variables={"customer_name": user.get("full_name", ""), "customer_email": user["email"]},
+        db=db,
+    )
     return {"message": "Cancellation scheduled"}
