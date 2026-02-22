@@ -149,10 +149,13 @@ async def checkout_bank_transfer(
                 redirect_flow_id = redirect_flow["id"]
                 gocardless_redirect_url = redirect_flow["redirect_url"]
 
+        sub_number = f"SUB-{sub_id.split('-')[0].upper()}"
         await db.subscriptions.insert_one({
             "id": sub_id,
+            "subscription_number": sub_number,
             "order_id": None,
             "customer_id": customer["id"],
+            "product_id": product["id"],
             "plan_name": product["name"],
             "status": "pending_direct_debit_setup",
             "stripe_subscription_id": None,
@@ -169,11 +172,16 @@ async def checkout_bank_transfer(
             "rendered_terms_text": rendered_terms_text,
             "terms_accepted_at": now_iso(),
             "start_date": requested_start or period_start.isoformat(),
+            "renewal_date": period_end.isoformat(),
             "contract_end_date": contract_end.isoformat(),
             "partner_tag_response": payload.partner_tag_response,
             "override_code_id": None,
             "partner_tag_timestamp": now_iso(),
             "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="bank_transfer"),
+            "notes": [],
+            "internal_note": "",
+            "created_at": now_iso(),
+            "updated_at": now_iso(),
         })
         await create_audit_log(
             entity_type="subscription", entity_id=sub_id,
