@@ -149,9 +149,9 @@ export default function Portal() {
   const subUniqueStatuses = useMemo(() => Array.from(new Set(subscriptions.map(s => s.status).filter(Boolean))), [subscriptions]);
   const paginatedSubs = filteredSubs.slice((subPage - 1) * SUBS_PER_PAGE, subPage * SUBS_PER_PAGE);
 
-  // Reset pages on filter change
-  useEffect(() => { setOrderPage(1); }, [orderSearch, orderStatusFilter]);
-  useEffect(() => { setSubPage(1); }, [subSearch, subStatusFilter]);
+  // Reset pages on filter/sort change
+  useEffect(() => { setOrderPage(1); }, [orderSearch, orderStatusFilter, orderSort]);
+  useEffect(() => { setSubPage(1); }, [subSearch, subStatusFilter, subSort]);
 
   if (loading) {
     return (
