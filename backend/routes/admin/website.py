@@ -1,6 +1,7 @@
 """Admin: Website content settings routes."""
 from __future__ import annotations
 
+import json
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends
@@ -12,24 +13,79 @@ from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["website-settings"])
 
+_QUOTE_FORM_SCHEMA = json.dumps([
+    {"id": "f_name", "key": "name", "label": "Your Name", "type": "text", "required": True, "placeholder": "Full name", "locked": False, "enabled": True, "order": 0},
+    {"id": "f_email", "key": "email", "label": "Email", "type": "email", "required": True, "placeholder": "your@email.com", "locked": False, "enabled": True, "order": 1},
+    {"id": "f_company", "key": "company", "label": "Company", "type": "text", "required": False, "placeholder": "Company name", "locked": False, "enabled": True, "order": 2},
+    {"id": "f_phone", "key": "phone", "label": "Phone", "type": "tel", "required": False, "placeholder": "+1 (555) 000-0000", "locked": False, "enabled": True, "order": 3},
+    {"id": "f_message", "key": "message", "label": "Message", "type": "textarea", "required": False, "placeholder": "Tell us about your requirements\u2026", "locked": False, "enabled": True, "order": 4},
+])
+
+_SCOPE_FORM_SCHEMA = json.dumps([
+    {"id": "s_summary", "key": "project_summary", "label": "Project Summary", "type": "textarea", "required": True, "placeholder": "Describe your project in a few sentences...", "locked": False, "enabled": True, "order": 0},
+    {"id": "s_outcomes", "key": "desired_outcomes", "label": "Desired Outcomes", "type": "textarea", "required": True, "placeholder": "What do you want to achieve with this project?", "locked": False, "enabled": True, "order": 1},
+    {"id": "s_apps", "key": "apps_involved", "label": "Apps Involved", "type": "text", "required": True, "placeholder": "e.g., Zoho CRM, Zoho Books, Zoho Desk...", "locked": False, "enabled": True, "order": 2},
+    {"id": "s_timeline", "key": "timeline_urgency", "label": "Timeline / Urgency", "type": "select", "required": True, "options": ["ASAP (within 2 weeks)|asap", "Within 1 month|1-month", "2-3 months|2-3-months", "Flexible / No rush|flexible"], "locked": False, "enabled": True, "order": 3},
+    {"id": "s_budget", "key": "budget_range", "label": "Budget Range", "type": "select", "required": False, "options": ["Under $5,000|under-5k", "$5,000 - $10,000|5k-10k", "$10,000 - $25,000|10k-25k", "$25,000 - $50,000|25k-50k", "$50,000+|50k+", "Not sure yet|not-sure"], "locked": False, "enabled": True, "order": 4},
+    {"id": "s_notes", "key": "additional_notes", "label": "Additional Notes", "type": "textarea", "required": False, "placeholder": "Anything else we should know?", "locked": False, "enabled": True, "order": 5},
+])
+
+_SIGNUP_FORM_SCHEMA = json.dumps([
+    {"id": "su_name", "key": "full_name", "label": "Full Name", "type": "text", "required": True, "placeholder": "Your full name", "locked": True, "enabled": True, "order": 0},
+    {"id": "su_email", "key": "email", "label": "Email", "type": "email", "required": True, "placeholder": "your@email.com", "locked": True, "enabled": True, "order": 1},
+    {"id": "su_password", "key": "password", "label": "Password", "type": "password", "required": True, "placeholder": "", "locked": True, "enabled": True, "order": 2},
+    {"id": "su_company", "key": "company_name", "label": "Company Name", "type": "text", "required": True, "placeholder": "Your company", "locked": False, "enabled": True, "order": 3},
+    {"id": "su_job", "key": "job_title", "label": "Job Title", "type": "text", "required": False, "placeholder": "Your role", "locked": False, "enabled": True, "order": 4},
+    {"id": "su_phone", "key": "phone", "label": "Phone", "type": "tel", "required": False, "placeholder": "+1 (555) 000-0000", "locked": False, "enabled": True, "order": 5},
+    {"id": "su_country", "key": "country", "label": "Country", "type": "select", "required": True, "options": ["Canada|Canada", "United States|USA", "Other|Other"], "locked": True, "enabled": True, "order": 6},
+])
+
 DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
-    "hero_label": "AUTOMATE ACCOUNTS STOREFRONT",
-    "hero_title": "One Partner, One Roadmap — We've Got Zoho Covered",
-    "hero_subtitle": "All-in-one Zoho partner for setup, customization, migrations, training and ongoing support.",
+    # Store Hero
+    "hero_label": "STOREFRONT",
+    "hero_title": "Welcome",
+    "hero_subtitle": "",
+    # Auth Pages
     "login_title": "Welcome back",
-    "login_subtitle": "Sign in to unlock the store.",
+    "login_subtitle": "Sign in to continue.",
     "login_portal_label": "Customer Portal",
-    "register_title": "Create your portal access",
-    "register_subtitle": "We'll use this info to configure pricing and currency.",
+    "register_title": "Create your account",
+    "register_subtitle": "",
+    # Contact
     "contact_email": "",
     "contact_phone": "",
     "contact_address": "",
+    # Footer & Nav
     "footer_tagline": "",
+    "footer_copyright": "",
+    "nav_store_label": "Store",
+    "nav_articles_label": "Articles",
+    "nav_portal_label": "Portal",
+    # Forms text
     "quote_form_title": "Request a Quote",
     "quote_form_subtitle": "Fill in your details and we'll get back to you with a custom quote.",
     "quote_form_response_time": "We'll respond within 1-2 business days.",
     "scope_form_title": "Request Scope",
     "scope_form_subtitle": "Tell us about your project and we'll get back to you with a detailed scope, timeline, and quote.",
+    "signup_form_title": "Create your account",
+    "signup_form_subtitle": "",
+    # Form schemas (JSON)
+    "quote_form_schema": _QUOTE_FORM_SCHEMA,
+    "scope_form_schema": _SCOPE_FORM_SCHEMA,
+    "signup_form_schema": _SIGNUP_FORM_SCHEMA,
+    # Email templates
+    "email_from_name": "",
+    "email_article_subject_template": "Article: {{article_title}}",
+    "email_article_cta_text": "View Article",
+    "email_article_footer_text": "Your consultant has shared this document with you.",
+    "email_verification_subject": "Verify your account",
+    "email_verification_body": "Your verification code is {{code}}",
+    # Error / UI messages
+    "msg_partner_tagging_prompt": "Please select whether you have tagged us as your partner.",
+    "msg_override_required": "An override code is required when you have not yet tagged us as your partner.",
+    "msg_cart_empty": "Your cart is empty.",
+    "msg_quote_success": "Quote request submitted! We'll be in touch shortly.",
+    "msg_scope_success": "Scope request submitted!",
 }
 
 
