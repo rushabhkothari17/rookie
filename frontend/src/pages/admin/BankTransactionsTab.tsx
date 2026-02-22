@@ -51,7 +51,12 @@ export function BankTransactionsTab() {
     setPage(p);
   }, [filterSource, filterStatus, filterType, startDate, endDate]);
 
-  useEffect(() => { load(1); }, [filterSource, filterStatus, filterType, startDate, endDate]);
+  useEffect(() => {
+    api.get("/admin/filter-options").then(r => {
+      if (r.data.bank_transaction_statuses) setBtStatuses(r.data.bank_transaction_statuses);
+    }).catch(() => {});
+    load(1);
+  }, [filterSource, filterStatus, filterType, startDate, endDate]);
 
   const openCreate = () => { setEditTxn(null); setForm(EMPTY_FORM); setShowForm(true); };
   const openEdit = (txn: any) => { setEditTxn(txn); setForm({ date: txn.date || "", source: txn.source || "manual", transaction_id: txn.transaction_id || "", type: txn.type || "payment", amount: String(txn.amount || ""), fees: String(txn.fees || "0"), currency: txn.currency || "USD", status: txn.status || "completed", description: txn.description || "", linked_order_id: txn.linked_order_id || "", internal_notes: txn.internal_notes || "" }); setShowForm(true); };
