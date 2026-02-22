@@ -56,6 +56,10 @@ export default function Admin() {
             <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Catalog</TabsTrigger>
             <TabsTrigger value="terms" data-testid="admin-tab-terms" className={TAB_CLASS}>Terms</TabsTrigger>
 
+            {/* Website */}
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Website</p>
+            <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
+
             {/* Settings */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
             <TabsTrigger value="override-codes" data-testid="admin-tab-override-codes" className={TAB_CLASS}>Override Codes</TabsTrigger>
