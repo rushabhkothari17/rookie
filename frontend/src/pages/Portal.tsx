@@ -139,8 +139,12 @@ export default function Portal() {
     const q = subSearch.toLowerCase();
     if (q) list = list.filter(s => s.plan_name?.toLowerCase().includes(q) || s.subscription_number?.toLowerCase().includes(q));
     if (subStatusFilter) list = list.filter(s => s.status === subStatusFilter);
+    list = [...list].sort((a, b) => {
+      const da = a.created_at || a.start_date || "", db = b.created_at || b.start_date || "";
+      return subSort === "desc" ? db.localeCompare(da) : da.localeCompare(db);
+    });
     return list;
-  }, [subscriptions, subSearch, subStatusFilter]);
+  }, [subscriptions, subSearch, subStatusFilter, subSort]);
 
   const subUniqueStatuses = useMemo(() => Array.from(new Set(subscriptions.map(s => s.status).filter(Boolean))), [subscriptions]);
   const paginatedSubs = filteredSubs.slice((subPage - 1) * SUBS_PER_PAGE, subPage * SUBS_PER_PAGE);
