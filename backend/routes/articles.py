@@ -363,4 +363,6 @@ async def email_article(
         except Exception as e:
             errors.append({"email": email_addr, "error": str(e)})
 
+    if sent:
+        await create_audit_log(entity_type="article", entity_id=article_id, action="email_sent", actor=admin.get("email", "admin"), details={"recipients": sent, "subject": subject, "sent_count": len(sent)})
     return {"sent": sent, "errors": errors, "message": f"Sent to {len(sent)} recipient(s)"}
