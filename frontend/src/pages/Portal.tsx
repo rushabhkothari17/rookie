@@ -207,7 +207,7 @@ export default function Portal() {
             <div className="relative">
               <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <Input
-                placeholder="Search order # or product…"
+                placeholder="Search order #, sub #, payment…"
                 value={orderSearch}
                 onChange={e => setOrderSearch(e.target.value)}
                 className="h-8 pl-7 text-xs w-52"
