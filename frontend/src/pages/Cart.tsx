@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import api from "@/lib/api";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWebsite } from "@/contexts/WebsiteContext";
 import PriceSummary from "@/components/PriceSummary";
 
 export default function Cart() {
