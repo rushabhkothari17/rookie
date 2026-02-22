@@ -86,6 +86,11 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "msg_cart_empty": "Your cart is empty.",
     "msg_quote_success": "Quote request submitted! We'll be in touch shortly.",
     "msg_scope_success": "Scope request submitted!",
+    # Payment display (checkout page labels)
+    "payment_gocardless_label": "Bank Transfer (GoCardless)",
+    "payment_gocardless_description": "No processing fee. We'll send bank transfer instructions.",
+    "payment_stripe_label": "Card Payment (Stripe)",
+    "payment_stripe_description": "5% processing fee applies. Pay securely with credit/debit card.",
 }
 
 
