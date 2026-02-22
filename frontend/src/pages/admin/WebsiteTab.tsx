@@ -603,7 +603,7 @@ export default function WebsiteTab() {
                     <h4 className="text-sm font-semibold text-slate-900">Partner Tagging</h4>
                     <p className="text-xs text-slate-400">Section for "Have you tagged us as your partner?"</p>
                   </div>
-                  <button onClick={() => s("checkout_partner_enabled")(!ws.checkout_partner_enabled)}
+                  <button onClick={() => setWs(p => ({...p, checkout_partner_enabled: !p.checkout_partner_enabled}))}
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${
                       ws.checkout_partner_enabled
                         ? "bg-green-50 text-green-700 border-green-200"
