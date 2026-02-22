@@ -153,6 +153,26 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
+### Phase 7 — Full Whitelabel Audit + Dynamic Checkout Section Builder (Feb 2026)
+- **35+ new website_settings fields** added for complete page content whitelabeling
+- **CheckoutSuccess page**: title, paid/pending/expired messages, next steps (3 steps), portal link text — all dynamic
+- **BankTransferSuccess page**: title, message, instructions (3), next steps (3) — all dynamic
+- **NotFound (404) page**: title and back link text — dynamic; moved inside BaseLayout for consistent navbar
+- **GoCardlessCallback page**: processing/success/error titles and messages, return button text — all dynamic
+- **VerifyEmail page**: label, title, subtitle — all dynamic
+- **Portal page**: title and subtitle — dynamic
+- **Profile page**: label, title, subtitle — dynamic
+- **Cart page**: cart title, clear button text, currency unsupported message, no payment methods message — all dynamic
+- **New "Page Content" section** added to Website admin sidebar with grouped fields for every page
+- **Error Messages section** extended with Cart page strings
+- **Dynamic Checkout Section Builder** (`CheckoutSectionsBuilder.tsx`): admins can add/edit/reorder/hide/delete sections, each with custom form fields (FormSchemaBuilder)
+- **Cart.tsx** updated: if `checkout_sections` is non-empty, renders dynamic sections instead of legacy Zoho/Partner; special `partner_tag_response = Not yet` case handled for override codes
+- Backend: `WebsiteSettingsUpdate` and `DEFAULT_WEBSITE_SETTINGS` updated with all 35+ new fields
+- WebsiteContext: 75+ fields now in TypeScript interface with defaults
+- Fixed: Duplicate Footer & Nav section bug in WebsiteTab.tsx
+
+---
+
 ## P0/P1/P2 Backlog
 
 ### P0 (Critical)
@@ -163,7 +183,6 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 - Quote/Scope requests tab should display extra_fields in detail view
 
 ### P2 (Nice to have)
-- Full whitelabel audit — scan codebase for remaining hardcoded brand references
 - Footer component (no global footer currently)
 - Email delivery live testing (currently mocked; configure Resend key to enable)
 - Zoho CRM/Books integration
