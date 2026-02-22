@@ -38,7 +38,17 @@ export function CustomersTab() {
   const [total, setTotal] = useState(0);
   const PER_PAGE = 20;
 
-  // Filters
+  const ws = useWebsite();
+
+  // Dynamic payment mode filter options — only show globally-enabled providers
+  const paymentFilterOptions = useMemo(() => {
+    const opts: { value: string; label: string }[] = [{ value: "", label: "All Payment Modes" }];
+    if (ws.gocardless_enabled) opts.push({ value: "gocardless", label: "GoCardless" });
+    if (ws.stripe_enabled) opts.push({ value: "stripe", label: "Stripe" });
+    if (ws.gocardless_enabled && ws.stripe_enabled) opts.push({ value: "both", label: "Both (GC + Stripe)" });
+    opts.push({ value: "none", label: "None assigned" });
+    return opts;
+  }, [ws.gocardless_enabled, ws.stripe_enabled]);
   const [search, setSearch] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
