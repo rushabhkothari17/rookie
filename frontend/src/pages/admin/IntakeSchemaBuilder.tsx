@@ -58,8 +58,14 @@ function OptionsEditor({ options, onChange, affects_price }: {
   onChange: (v: IntakeOption[]) => void;
   affects_price?: boolean;
 }) {
-  const update = (i: number, f: keyof IntakeOption, v: any) => {
-    const n = [...options]; n[i] = { ...n[i], [f]: v }; onChange(n);
+  const updateLabel = (i: number, label: string) => {
+    const n = [...options];
+    const autoValue = labelToKey(label);
+    n[i] = { ...n[i], label, value: autoValue };
+    onChange(n);
+  };
+  const updatePrice = (i: number, price_value: number) => {
+    const n = [...options]; n[i] = { ...n[i], price_value }; onChange(n);
   };
   const move = (i: number, dir: -1 | 1) => {
     const n = [...options]; const j = i + dir;
@@ -72,20 +78,18 @@ function OptionsEditor({ options, onChange, affects_price }: {
       {options.length > 0 && (
         <div className="flex gap-1 items-center text-[10px] text-slate-400 font-medium px-0.5">
           <span className="flex-1">Display label</span>
-          <span className="flex-1">Key value (stored)</span>
           {affects_price && <span className="w-20 text-blue-400">Price adj ($)</span>}
           <span className="w-16" />
         </div>
       )}
       {options.map((opt, i) => (
         <div key={i} className="flex gap-1 items-center">
-          <Input value={opt.label} onChange={e => update(i, "label", e.target.value)} placeholder="Label" className="h-7 text-xs flex-1" data-testid={`opt-label-${i}`} />
-          <Input value={opt.value} onChange={e => update(i, "value", e.target.value)} placeholder="Value" className="h-7 text-xs flex-1 font-mono" data-testid={`opt-value-${i}`} />
+          <Input value={opt.label} onChange={e => updateLabel(i, e.target.value)} placeholder="Option label" className="h-7 text-xs flex-1" data-testid={`opt-label-${i}`} />
           {affects_price && (
             <Input
               type="number"
               value={opt.price_value ?? 0}
-              onChange={e => update(i, "price_value", parseFloat(e.target.value) || 0)}
+              onChange={e => updatePrice(i, parseFloat(e.target.value) || 0)}
               placeholder="0"
               className="h-7 text-xs w-20 font-mono"
               data-testid={`opt-price-${i}`}
