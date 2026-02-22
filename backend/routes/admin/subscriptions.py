@@ -8,12 +8,23 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.constants import ALLOWED_SUBSCRIPTION_STATUSES
+from core.constants import ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHODS, ALLOWED_ORDER_STATUSES, ALLOWED_BANK_TRANSACTION_STATUSES
 from db.session import db
 from models import SubscriptionUpdate, ManualSubscriptionCreate
 from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["admin-subscriptions"])
+
+
+@router.get("/admin/filter-options")
+async def get_filter_options(admin: Dict[str, Any] = Depends(require_admin)):
+    """Single source of truth for all admin filter dropdowns."""
+    return {
+        "order_statuses": ALLOWED_ORDER_STATUSES,
+        "subscription_statuses": ALLOWED_SUBSCRIPTION_STATUSES,
+        "payment_methods": ALLOWED_PAYMENT_METHODS,
+        "bank_transaction_statuses": ALLOWED_BANK_TRANSACTION_STATUSES,
+    }
 
 
 @router.get("/admin/subscriptions")
@@ -25,6 +36,11 @@ async def admin_subscriptions(
     status: Optional[str] = None,
     payment: Optional[str] = None,
     email: Optional[str] = None,
+    sub_number: Optional[str] = None,
+    processor_id_filter: Optional[str] = None,
+    plan_name_filter: Optional[str] = None,
+    renewal_from: Optional[str] = None,
+    renewal_to: Optional[str] = None,
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
     start_from: Optional[str] = None,
@@ -38,6 +54,16 @@ async def admin_subscriptions(
         query["status"] = status
     if payment:
         query["payment_method"] = payment
+    if sub_number:
+        query["subscription_number"] = {"$regex": sub_number, "$options": "i"}
+    if processor_id_filter:
+        query["processor_id"] = {"$regex": processor_id_filter, "$options": "i"}
+    if plan_name_filter:
+        query["plan_name"] = {"$regex": plan_name_filter, "$options": "i"}
+    if renewal_from:
+        query.setdefault("renewal_date", {})["$gte"] = renewal_from
+    if renewal_to:
+        query.setdefault("renewal_date", {})["$lte"] = renewal_to + "T23:59:59"
     if created_from:
         query.setdefault("created_at", {})["$gte"] = created_from
     if created_to:
