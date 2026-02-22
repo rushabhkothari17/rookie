@@ -287,7 +287,7 @@ async def checkout_bank_transfer(
         "status": "pending_direct_debit_setup",
         "subtotal": round_cents(subtotal), "discount_amount": discount_amount,
         "promo_code": promo_code_data["code"] if promo_code_data else None,
-        "fee": 0.0, "total": total, "currency": customer.get("currency"),
+        "fee": round_cents(float(await SettingsService.get("gocardless_fee_rate", 0.0)) * discounted_subtotal) if "discounted_subtotal" in dir() else 0.0, "total": total, "currency": customer.get("currency"),
         "payment_method": "bank_transfer",
         "gocardless_redirect_flow_id": redirect_flow_id,
         "terms_id_used": terms_id, "rendered_terms_text": rendered_terms_text,
