@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
-import { Eye, EyeOff, Save, Upload, X } from "lucide-react";
+import { Eye, EyeOff, Save, Upload, X, Pencil } from "lucide-react";
 import api from "@/lib/api";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
 import ReferencesSection from "./ReferencesSection";
