@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWebsite } from "@/contexts/WebsiteContext";
 import AppShell from "@/components/AppShell";
 import ProductHero from "@/components/ProductHero";
 import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
