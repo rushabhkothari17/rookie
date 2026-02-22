@@ -141,6 +141,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { customer } = useAuth();
+  const ws = useWebsite();
   const [product, setProduct] = useState<any>(null);
   const [inputs, setInputs] = useState<Record<string, any>>({});
   const [intakeAnswers, setIntakeAnswers] = useState<Record<string, any>>({});
