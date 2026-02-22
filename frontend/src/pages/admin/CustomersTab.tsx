@@ -52,6 +52,8 @@ export function CustomersTab() {
   const [editingPartnerMap, setEditingPartnerMap] = useState<{ customerId: string; value: string } | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "GB", mark_verified: true });
+  const [entityLogs, setEntityLogs] = useState<any[]>([]);
+  const [showEntityLogs, setShowEntityLogs] = useState(false);
 
   const userMap: Record<string, any> = {};
   users.forEach((u) => { userMap[u.id] = u; });
