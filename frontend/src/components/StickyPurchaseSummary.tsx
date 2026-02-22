@@ -7,12 +7,14 @@ export default function StickyPurchaseSummary({
   disabled,
   warning,
   currency,
+  isRFQ,
 }: {
   pricing: { subtotal: number; fee: number; total: number };
   cta: { label: string; onClick?: () => void; href?: string };
   disabled?: boolean;
   warning?: string;
   currency?: string;
+  isRFQ?: boolean;
 }) {
   return (
     <div
@@ -21,13 +23,13 @@ export default function StickyPurchaseSummary({
     >
       {/* Price Display */}
       <div className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
-        Total
+        {isRFQ ? "Pricing" : "Total"}
       </div>
       <div
         className="text-4xl font-bold tracking-tight text-slate-900"
         data-testid="summary-total"
       >
-        ${pricing.total.toFixed(2)}
+        {isRFQ ? <span className="text-2xl text-slate-400 font-medium">Price on request</span> : `$${pricing.total.toFixed(2)}`}
       </div>
 
       {warning && (
