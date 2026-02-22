@@ -822,6 +822,116 @@ export default function WebsiteTab() {
               <Field label="Cart empty message" value={ws.msg_cart_empty} onChange={s("msg_cart_empty")} testId="ws-msg-cart-empty" />
               <Field label="Quote request success" value={ws.msg_quote_success} onChange={s("msg_quote_success")} testId="ws-msg-quote-success" />
               <Field label="Scope request success" value={ws.msg_scope_success} onChange={s("msg_scope_success")} testId="ws-msg-scope-success" />
+              <div className="border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-2">Cart Page</h3>
+                <Field label="Cart page heading" value={ws.cart_title} onChange={s("cart_title")} testId="ws-cart-title" />
+                <Field label="Clear cart button text" value={ws.cart_clear_btn_text} onChange={s("cart_clear_btn_text")} testId="ws-cart-clear-btn" />
+                <Field label="Currency unsupported message" value={ws.msg_currency_unsupported} onChange={s("msg_currency_unsupported")} multiline testId="ws-msg-currency-unsupported" />
+                <Field label="No payment methods message" value={ws.msg_no_payment_methods} onChange={s("msg_no_payment_methods")} multiline testId="ws-msg-no-payment" />
+              </div>
+            </>
+          )}
+
+          {/* ── Footer & Nav ── */}
+          {activeSection === "footer" && (
+            <>
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">Footer</h3>
+              <Field label="Footer tagline" hint="Short text shown in the footer" value={ws.footer_tagline} onChange={s("footer_tagline")} testId="ws-footer-tagline" />
+              <Field label="Copyright text" hint='e.g. "© 2025 Acme Inc. All rights reserved."' value={ws.footer_copyright} onChange={s("footer_copyright")} testId="ws-footer-copyright" />
+
+              <div className="border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Navigation Labels</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <Field label="Store link label" value={ws.nav_store_label} onChange={s("nav_store_label")} testId="ws-nav-store" />
+                  <Field label="Articles link label" value={ws.nav_articles_label} onChange={s("nav_articles_label")} testId="ws-nav-articles" />
+                  <Field label="Portal link label" value={ws.nav_portal_label} onChange={s("nav_portal_label")} testId="ws-nav-portal" />
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Contact Info</h3>
+                <Field label="Contact Email" value={ws.contact_email} onChange={s("contact_email")} testId="ws-contact-email" />
+                <Field label="Phone Number" value={ws.contact_phone} onChange={s("contact_phone")} testId="ws-contact-phone" />
+                <Field label="Address" value={ws.contact_address} onChange={s("contact_address")} multiline testId="ws-contact-address" />
+              </div>
+            </>
+          )}
+
+          {/* ── Page Content ── */}
+          {activeSection === "pages" && (
+            <>
+              <h3 className="text-sm font-semibold text-slate-700 mb-1">Page Content</h3>
+              <p className="text-xs text-slate-400 mb-5">Customise headings, descriptions, and button labels on every page of the app.</p>
+
+              {/* Checkout Success */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Checkout Success Page</h4>
+                <Field label="Page heading" value={ws.checkout_success_title} onChange={s("checkout_success_title")} testId="ws-cs-title" />
+                <Field label="'Payment successful' message" value={ws.checkout_success_paid_msg} onChange={s("checkout_success_paid_msg")} testId="ws-cs-paid" />
+                <Field label="'Checking status' message" value={ws.checkout_success_pending_msg} onChange={s("checkout_success_pending_msg")} testId="ws-cs-pending" />
+                <Field label="'Session expired' message" value={ws.checkout_success_expired_msg} onChange={s("checkout_success_expired_msg")} testId="ws-cs-expired" />
+                <Field label="Next steps heading" value={ws.checkout_success_next_steps_title} onChange={s("checkout_success_next_steps_title")} testId="ws-cs-next-title" />
+                <Field label="Next step 1" value={ws.checkout_success_step_1} onChange={s("checkout_success_step_1")} testId="ws-cs-step1" />
+                <Field label="Next step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} testId="ws-cs-step2" />
+                <Field label="Next step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} testId="ws-cs-step3" />
+                <Field label="Portal link text" value={ws.checkout_portal_link_text} onChange={s("checkout_portal_link_text")} testId="ws-cs-portal-link" />
+              </div>
+
+              {/* Bank Transfer Success */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Bank Transfer Success Page</h4>
+                <Field label="Page heading" value={ws.bank_success_title} onChange={s("bank_success_title")} testId="ws-bt-title" />
+                <Field label="Intro message" value={ws.bank_success_message} onChange={s("bank_success_message")} multiline testId="ws-bt-message" />
+                <Field label="Instructions section heading" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bt-instr-title" />
+                <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} testId="ws-bt-i1" />
+                <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} testId="ws-bt-i2" />
+                <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} testId="ws-bt-i3" />
+                <Field label="Next steps heading" value={ws.bank_next_steps_title} onChange={s("bank_next_steps_title")} testId="ws-bt-next-title" />
+                <Field label="Next step 1" value={ws.bank_next_step_1} onChange={s("bank_next_step_1")} testId="ws-bt-ns1" />
+                <Field label="Next step 2" value={ws.bank_next_step_2} onChange={s("bank_next_step_2")} testId="ws-bt-ns2" />
+                <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} testId="ws-bt-ns3" />
+              </div>
+
+              {/* 404 Page */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">404 / Not Found Page</h4>
+                <Field label="Heading" value={ws.page_404_title} onChange={s("page_404_title")} testId="ws-404-title" />
+                <Field label="Back link text" value={ws.page_404_link_text} onChange={s("page_404_link_text")} testId="ws-404-link" />
+              </div>
+
+              {/* GoCardless Callback */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">GoCardless Callback Page</h4>
+                <Field label="Processing title" value={ws.gocardless_processing_title} onChange={s("gocardless_processing_title")} testId="ws-gc-proc-title" />
+                <Field label="Processing subtitle" value={ws.gocardless_processing_subtitle} onChange={s("gocardless_processing_subtitle")} testId="ws-gc-proc-sub" />
+                <Field label="Success title" value={ws.gocardless_success_title} onChange={s("gocardless_success_title")} testId="ws-gc-succ-title" />
+                <Field label="Success message" value={ws.gocardless_success_message} onChange={s("gocardless_success_message")} multiline testId="ws-gc-succ-msg" />
+                <Field label="Error title" value={ws.gocardless_error_title} onChange={s("gocardless_error_title")} testId="ws-gc-err-title" />
+                <Field label="Error message" value={ws.gocardless_error_message} onChange={s("gocardless_error_message")} multiline testId="ws-gc-err-msg" />
+                <Field label="Return to store button text" value={ws.gocardless_return_btn_text} onChange={s("gocardless_return_btn_text")} testId="ws-gc-return-btn" />
+              </div>
+
+              {/* Verify Email */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Verify Email Page</h4>
+                <Field label="Step label (breadcrumb)" value={ws.verify_email_label} onChange={s("verify_email_label")} testId="ws-ve-label" />
+                <Field label="Title" value={ws.verify_email_title} onChange={s("verify_email_title")} testId="ws-ve-title" />
+                <Field label="Subtitle / instructions" value={ws.verify_email_subtitle} onChange={s("verify_email_subtitle")} multiline testId="ws-ve-subtitle" />
+              </div>
+
+              {/* Portal & Profile */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Customer Portal Page</h4>
+                <Field label="Page title" value={ws.portal_title} onChange={s("portal_title")} testId="ws-portal-title" />
+                <Field label="Page subtitle" value={ws.portal_subtitle} onChange={s("portal_subtitle")} multiline testId="ws-portal-subtitle" />
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Profile Page</h4>
+                <Field label="Step label (breadcrumb)" value={ws.profile_label} onChange={s("profile_label")} testId="ws-profile-label" />
+                <Field label="Page title" value={ws.profile_title} onChange={s("profile_title")} testId="ws-profile-title" />
+                <Field label="Page subtitle" value={ws.profile_subtitle} onChange={s("profile_subtitle")} multiline testId="ws-profile-subtitle" />
+              </div>
             </>
           )}
 
