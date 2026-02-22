@@ -139,6 +139,16 @@ Complete overhaul of product creation/editing experience and customer-facing pro
 
 - Test report: `/app/test_reports/iteration_40.json` (10/10 backend, 100% frontend)
 
+### Phase 15b: Product Page Bug Fixes & Migration (Feb 2026)
+
+- **Icon picker fix**: Dynamic Tailwind classes purged at build time → fixed by switching to inline `style={{ color/backgroundColor: hex }}` in SectionsEditor and SectionCard
+- **Category dropdown staleness fix**: `useEffect` on `showDialog` state in ProductsTab re-fetches categories each time the form opens
+- **ProductHero hardcoded content removed**: `outcomeCopy()` fallback function eliminated; hero now shows only `description_long` + `bullets` from the product record
+- **Legacy sections removed from ProductDetail**: Fallback rendering (inclusions/exclusions/requirements/next_steps) removed entirely; page now only shows `custom_sections` + FAQs
+- **react-markdown added**: Custom section content now rendered as proper HTML (bullets, ordered lists, bold, etc.)
+- **Migration ran**: 21 products migrated from old static fields → `custom_sections`; 8 products already had sections (skipped)
+- Test report: `/app/test_reports/iteration_41.json` (12/12 backend, 100% frontend)
+
 ## Known Issues / Technical Debt
 - HTML hydration warning `<span> cannot be child of <select>/<option>` — caused by Emergent VE browser wrapper. **Not fixable in application code.** Non-blocking.
 - Section content in `ProductDetail.tsx` is rendered with `whitespace-pre-wrap` (plain text). Markdown formatting like `- bullet` shows as literal dashes, not HTML bullets. Admin form says "Markdown supported" meaning admins can TYPE markdown syntax — rendering is plain text. A markdown library (react-markdown) could be added if proper rendering is desired.
