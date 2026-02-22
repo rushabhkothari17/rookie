@@ -84,7 +84,8 @@ def seed_data(admin_headers):
         "name": "TEST_E2E_Category", "description": "E2E test category", "is_active": True
     }, headers=admin_headers)
     if r.status_code == 200:
-        data["category"] = r.json()
+        cat_obj = r.json().get("category", r.json())
+        data["category"] = cat_obj  # {"id": ..., "name": ...}
 
     # Create a customer (correct payload structure)
     r = requests.post(f"{BASE_URL}/api/admin/customers/create", json={
