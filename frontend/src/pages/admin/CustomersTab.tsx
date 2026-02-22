@@ -312,7 +312,7 @@ export function CustomersTab() {
                           .concat(selectedCustomer.allow_bank_transfer !== false ? ["bank_transfer"] : [])
                           .concat(selectedCustomer.allow_card_payment ? ["card"] : []);
                       const next = checked
-                        ? [...new Set([...current, mode.id])]
+                        ? current.concat(mode.id).filter((m: string, i: number, a: string[]) => a.indexOf(m) === i)
                         : current.filter((m: string) => m !== mode.id);
                       setSelectedCustomer({ ...selectedCustomer, allowed_payment_modes: next, _payment_modes_changed: true });
                     };
