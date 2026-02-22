@@ -293,7 +293,7 @@ class TestAuditLogGeneration:
                 "discount_type": "percentage",
                 "discount_value": 10,
                 "applies_to": "all",
-                "applies_to_products": False,
+                "applies_to_products": "all",
                 "product_ids": [],
                 "expiry_date": None,
                 "max_uses": None,
