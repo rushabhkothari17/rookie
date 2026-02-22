@@ -41,7 +41,21 @@ def currency_for_country(country: str) -> str:
         return "CAD"
     if c in ["usa", "us", "united states", "united states of america"]:
         return "USD"
-    return "UNSUPPORTED"
+    if c in ["gb", "uk", "united kingdom", "england", "scotland", "wales"]:
+        return "GBP"
+    if c in ["au", "australia"]:
+        return "AUD"
+    if c in ["nz", "new zealand"]:
+        return "NZD"
+    if c in ["sg", "singapore"]:
+        return "SGD"
+    if c in ["in", "india"]:
+        return "INR"
+    if c in ["za", "south africa"]:
+        return "ZAR"
+    if c in ["eu", "de", "fr", "es", "it", "nl", "be", "at", "pt", "ie"]:
+        return "EUR"
+    return "USD"
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
