@@ -154,6 +154,7 @@ export function TermsTab() {
                   <TableCell className="text-xs">{t.created_at ? new Date(t.created_at).toLocaleDateString() : "—"}</TableCell>
                   <TableCell>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(t)} data-testid={`admin-terms-edit-${t.id}`}>Edit</Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/terms/${t.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-terms-logs-${t.id}`}>Logs</Button>
                   </TableCell>
                 </TableRow>
               );
