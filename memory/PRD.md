@@ -127,6 +127,15 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 | Bank Transactions | `bank_transfer` source missing | 10 | ✅ |
 | Bank Transactions | `stripe`/`gocardless` sources not in DB | misleading | ✅ |
 
+## Phase 7: server.py Full Cleanup (Completed — Feb 2026)
+- Removed old `api_router` dead code: 6,973 → 2,271 lines in Phase 6
+- Extracted `build_seed_products` (458 lines) to `data/seed_products.py`
+- Removed all duplicate function definitions (validate_order_status, calculate_books_migration_price, resolve_terms_tags, create_audit_log, build_checkout_notes_json, validate_and_consume_partner_tag, build_price_inputs, calculate_price)
+- Removed all duplicate Pydantic model class definitions (all now properly in models.py)
+- Replaced with clean imports from their respective service/data modules
+- Final server.py: 853 lines (down from 6,973) — 88% reduction
+- Files: `server.py`, `data/__init__.py`, `data/seed_products.py`
+
 ## Known Issues / Technical Debt
 - HTML hydration warning in admin dropdowns (non-blocking, Radix UI issue)
 - Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
