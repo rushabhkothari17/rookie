@@ -101,7 +101,7 @@ export default function TopNav() {
                 <Link to="/profile">My Profile</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild data-testid="nav-user-portal">
-                <Link to="/portal">Portal</Link>
+                <Link to="/portal">{ws.nav_portal_label || "Portal"}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-600"
