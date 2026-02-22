@@ -128,9 +128,9 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 | Bank Transactions | `stripe`/`gocardless` sources not in DB | misleading | ✅ |
 
 ## Known Issues / Technical Debt
-- server.py still contains old `api_router` (~6000 lines) as safety fallback. Remove after production validation.
 - HTML hydration warning in admin dropdowns (non-blocking, Radix UI issue)
 - Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
+- Orders email filter is client-side only (filters current page only, not all pages)
 
 ## Prioritized Backlog
 
