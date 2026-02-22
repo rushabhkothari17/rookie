@@ -211,7 +211,16 @@ export default function Portal() {
                 <TableHeader>
                   <TableRow className="bg-slate-50">
                     <TableHead className="text-xs">Order</TableHead>
-                    <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="text-xs">
+                      <button
+                        className="flex items-center gap-1 hover:text-slate-700 transition-colors"
+                        onClick={() => setOrderSort(s => s === "desc" ? "asc" : "desc")}
+                        data-testid="portal-orders-sort-date"
+                      >
+                        Date
+                        {orderSort === "desc" ? <ArrowDown size={11} /> : orderSort === "asc" ? <ArrowUp size={11} /> : <ArrowUpDown size={11} />}
+                      </button>
+                    </TableHead>
                     <TableHead className="text-xs">Products</TableHead>
                     <TableHead className="text-xs">Subtotal</TableHead>
                     <TableHead className="text-xs">Fee</TableHead>
