@@ -396,7 +396,7 @@ export default function EmailSection() {
                       </td>
                       <td className="px-4 py-2.5">
                         {log.status === "sent" ? <CheckCircle2 size={13} className="text-emerald-500" /> :
-                          log.status === "failed" ? <XCircle size={13} className="text-red-500" title={log.error_message} /> :
+                          log.status === "failed" ? <XCircle size={13} className="text-red-500" aria-label={log.error_message} /> :
                           <span className="text-slate-400">{log.status}</span>}
                       </td>
                       <td className="px-4 py-2.5 text-slate-400">{new Date(log.created_at).toLocaleString()}</td>
