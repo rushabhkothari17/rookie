@@ -123,8 +123,12 @@ export default function Portal() {
       });
     }
     if (orderStatusFilter) list = list.filter(o => o.status === orderStatusFilter);
+    list = [...list].sort((a, b) => {
+      const da = a.created_at || "", db = b.created_at || "";
+      return orderSort === "desc" ? db.localeCompare(da) : da.localeCompare(db);
+    });
     return list;
-  }, [orders, items, orderSearch, orderStatusFilter, productMap]);
+  }, [orders, items, orderSearch, orderStatusFilter, orderSort, productMap]);
 
   const orderUniqueStatuses = useMemo(() => Array.from(new Set(oneTimeOrders.map(o => o.status).filter(Boolean))), [oneTimeOrders]);
   const paginatedOrders = filteredOrders.slice((orderPage - 1) * ORDERS_PER_PAGE, orderPage * ORDERS_PER_PAGE);
