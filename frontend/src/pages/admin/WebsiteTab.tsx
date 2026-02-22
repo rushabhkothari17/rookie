@@ -610,7 +610,7 @@ export default function WebsiteTab() {
                 Answers are stored with each order in <code className="font-mono bg-slate-100 px-1 rounded">extra_fields</code>.
               </p>
 
-              <CheckoutSectionsList value={ws.checkout_sections} onChange={s("checkout_sections")} />
+              <CheckoutSectionsBuilder value={ws.checkout_sections} onChange={s("checkout_sections")} />
 
               <div className="border-t border-slate-100 pt-5 mt-4">
                 <h3 className="text-sm font-semibold text-slate-700 mb-1">Legacy Sections</h3>
