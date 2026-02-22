@@ -217,7 +217,7 @@ export function BankTransactionsTab() {
               ["Amount *", <Input key="am" type="number" step="0.01" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} data-testid="bt-form-amount" />],
               ["Fees", <Input key="fe" type="number" step="0.01" value={form.fees} onChange={e => setForm({...form, fees: e.target.value})} data-testid="bt-form-fees" />],
               ["Currency", <Input key="cu" value={form.currency} onChange={e => setForm({...form, currency: e.target.value.toUpperCase()})} maxLength={3} data-testid="bt-form-currency" />],
-              ["Status *", <Select key="st" value={form.status} onValueChange={v => setForm({...form, status: v})}><SelectTrigger data-testid="bt-form-status"><SelectValue /></SelectTrigger><SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>]
+              ["Status *", <Select key="st" value={form.status} onValueChange={v => setForm({...form, status: v})}><SelectTrigger data-testid="bt-form-status"><SelectValue /></SelectTrigger><SelectContent>{btStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>]
             ].map(([label, child]: any) => (
               <div key={String(label)} className="space-y-1"><label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</label>{child}</div>
             ))}
