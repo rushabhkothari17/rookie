@@ -98,6 +98,7 @@ class CancelSubscriptionBody(BaseModel):
 class IntakeOption(BaseModel):
     label: str
     value: str
+    price_value: float = 0.0
 
 
 class IntakeQuestion(BaseModel):
@@ -108,6 +109,7 @@ class IntakeQuestion(BaseModel):
     enabled: bool = True
     order: int = 0
     affects_price: bool = False
+    price_mode: str = "add"
     options: Optional[List[IntakeOption]] = None
 
 
