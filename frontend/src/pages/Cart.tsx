@@ -429,7 +429,7 @@ export default function Cart() {
                 )}
               </div>
               {!allowBankTransfer && !allowCardPayment && (
-                <p className="text-sm text-amber-600">No payment methods available. Please contact support.</p>
+                <p className="text-sm text-amber-600">{ws.msg_no_payment_methods || "No payment methods available. Please contact support."}</p>
               )}
             </div>
 
