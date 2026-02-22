@@ -598,11 +598,11 @@ export default function ProductDetail() {
       <Dialog open={showQuoteModal} onOpenChange={setShowQuoteModal}>
         <DialogContent className="max-w-md" data-testid="quote-request-modal">
           <DialogHeader>
-            <DialogTitle>Request a Quote — {product?.name}</DialogTitle>
+            <DialogTitle>{ws.quote_form_title || "Request a Quote"} — {product?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-slate-500">
-              Fill in your details and we'll get back to you with a custom quote.
+              {ws.quote_form_subtitle || "Fill in your details and we'll get back to you with a custom quote."}
             </p>
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700">Your Name *</label>
