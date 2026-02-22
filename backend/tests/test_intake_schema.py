@@ -71,12 +71,12 @@ class TestIntakeSchemaRead:
         assert len(q["options"]) >= 1
 
     def test_admin_products_all_includes_intake_schema(self, admin_headers):
-        """Admin products-all endpoint should return products with intake_schema_json."""
-        resp = requests.get(f"{BASE_URL}/api/admin/products-all", headers=admin_headers)
+        """Admin products-all endpoint should return products with intake_schema_json (search by name)."""
+        resp = requests.get(f"{BASE_URL}/api/admin/products-all?search=Intake+Test&per_page=50", headers=admin_headers)
         assert resp.status_code == 200
         products = resp.json()["products"]
         target = next((p for p in products if p["id"] == TEST_PRODUCT_ID), None)
-        assert target is not None, "Test product not found in admin products-all"
+        assert target is not None, f"Test product not found in admin products-all. Products returned: {[p.get('name') for p in products]}"
         assert "intake_schema_json" in target
 
 
