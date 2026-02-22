@@ -338,6 +338,18 @@ export function ProductForm({
           )}
         </div>
       </div>
+
+      {/* Intake Questions */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Intake Questions</h4>
+          <span className="text-xs text-slate-400">Shown to customer on product page</span>
+        </div>
+        <IntakeSchemaBuilder
+          schema={form.intake_schema_json}
+          onChange={v => setForm({ ...form, intake_schema_json: v })}
+        />
+      </div>
     </div>
   );
 }
