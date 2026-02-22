@@ -73,6 +73,7 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
+        <WebsiteProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="/store" replace />} />
