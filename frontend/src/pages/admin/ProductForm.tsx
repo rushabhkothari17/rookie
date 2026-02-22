@@ -30,6 +30,7 @@ export interface ProductFormData {
   pricing_complexity: string;
   is_active: boolean;
   visible_to_customers: string[];
+  intake_schema_json: IntakeSchemaJson;
 }
 
 export const EMPTY_FORM: ProductFormData = {
