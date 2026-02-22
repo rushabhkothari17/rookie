@@ -28,18 +28,37 @@ def admin_headers(admin_token):
 
 @pytest.fixture(scope="session")
 def customer_token(admin_headers):
-    """Create or get customer user for testing"""
-    reg = requests.post(f"{BASE_URL}/api/auth/register", json={
-        "email": CUSTOMER_EMAIL, "password": CUSTOMER_PASSWORD,
-        "full_name": "QA Test Customer"
-    })
-    if reg.status_code in [200, 201]:
-        data = reg.json()
-        return data.get("token")
-    # Try login if already exists
+    """Create or get customer user for testing (full register→verify→login flow)"""
+    # Try login first
     login = requests.post(f"{BASE_URL}/api/auth/login", json={"email": CUSTOMER_EMAIL, "password": CUSTOMER_PASSWORD})
     if login.status_code == 200:
         return login.json().get("token")
+
+    # Register with required address
+    reg = requests.post(f"{BASE_URL}/api/auth/register", json={
+        "email": CUSTOMER_EMAIL, "password": CUSTOMER_PASSWORD,
+        "full_name": "QA Test Customer",
+        "address": {
+            "line1": "1 QA St", "city": "London",
+            "region": "England", "postal": "E1 1QA", "country": "GB"
+        }
+    })
+    if reg.status_code == 400:
+        # Already exists but login failed - might be unverified, skip
+        return None
+    if reg.status_code not in [200, 201]:
+        return None
+
+    # Verify email
+    vcode = reg.json().get("verification_code", "")
+    if vcode:
+        verify_r = requests.post(f"{BASE_URL}/api/auth/verify-email", json={
+            "email": CUSTOMER_EMAIL, "code": vcode
+        })
+    # Now login
+    login2 = requests.post(f"{BASE_URL}/api/auth/login", json={"email": CUSTOMER_EMAIL, "password": CUSTOMER_PASSWORD})
+    if login2.status_code == 200:
+        return login2.json().get("token")
     return None
 
 @pytest.fixture(scope="session")
