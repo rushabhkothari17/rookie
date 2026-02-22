@@ -11,8 +11,8 @@ import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { Download } from "lucide-react";
 
-const SUB_STATUSES = ["active", "unpaid", "offline_manual", "canceled_pending", "cancelled"];
-const PAYMENT_METHODS = ["card", "bank_transfer", "offline", "gocardless"];
+const SUB_STATUSES = ["active", "unpaid", "paused", "canceled_pending", "cancelled", "offline_manual"];
+const PAYMENT_METHODS = ["card", "bank_transfer", "offline"];
 
 export function SubscriptionsTab() {
   const [subs, setSubs] = useState<any[]>([]);
