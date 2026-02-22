@@ -112,17 +112,17 @@ export default function Portal() {
   const oneTimeOrders = orders.filter((o) => o.type !== "subscription_start");
 
   const filteredOrders = useMemo(() => {
-    let list = oneTimeOrders;
+    let list = orders.filter((o) => o.type !== "subscription_start");
     const q = orderSearch.toLowerCase();
     if (q) {
       list = list.filter(o => {
-        const prods = orderItems(o.id).map(i => productMap[i.product_id]?.name || "").join(" ").toLowerCase();
+        const prods = items.filter(i => i.order_id === o.id).map(i => productMap[i.product_id]?.name || "").join(" ").toLowerCase();
         return o.order_number?.toLowerCase().includes(q) || prods.includes(q);
       });
     }
     if (orderStatusFilter) list = list.filter(o => o.status === orderStatusFilter);
     return list;
-  }, [oneTimeOrders, orderSearch, orderStatusFilter, productMap, items]);
+  }, [orders, items, orderSearch, orderStatusFilter, productMap]);
 
   const orderUniqueStatuses = useMemo(() => [...new Set(oneTimeOrders.map(o => o.status).filter(Boolean))], [oneTimeOrders]);
   const paginatedOrders = filteredOrders.slice((orderPage - 1) * ORDERS_PER_PAGE, orderPage * ORDERS_PER_PAGE);
