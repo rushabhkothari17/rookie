@@ -338,24 +338,32 @@ export default function ProductDetail() {
   };
 
   const handleSubmitScopeForm = async () => {
-    if (!scopeForm.project_summary || !scopeForm.desired_outcomes || !scopeForm.apps_involved || !scopeForm.timeline_urgency) {
+    const scopeSchema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false);
+    const requiredFields = scopeSchema.filter(f => f.required);
+    for (const field of requiredFields) {
+      if (!scopeFormData[field.key]) {
+        toast.error(`${field.label} is required`);
+        return;
+      }
+    }
+    if (!scopeFormData.project_summary || !scopeFormData.desired_outcomes || !scopeFormData.apps_involved || !scopeFormData.timeline_urgency) {
       toast.error("Please fill in all required fields");
       return;
     }
     setSubmittingScope(true);
     try {
+      const stdFields = Object.fromEntries(SCOPE_STD.map(k => [k, scopeFormData[k] || ""]));
+      const extra = Object.fromEntries(Object.entries(scopeFormData).filter(([k]) => !SCOPE_STD.includes(k)));
       const response = await api.post("/orders/scope-request-form", {
         items: [{ product_id: product.id, quantity: 1, inputs }],
-        form_data: scopeForm,
+        form_data: { ...stdFields, extra_fields: Object.keys(extra).length ? extra : undefined },
       });
-      toast.success(`Scope request submitted! Order: ${response.data.order_number}`);
+      toast.success(ws.msg_scope_success || `Scope request submitted! Order: ${response.data.order_number}`);
       setShowScopeModal(false);
       navigate("/portal");
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to submit scope request");
-    } finally {
-      setSubmittingScope(false);
-    }
+    } finally { setSubmittingScope(false); }
   };
 
   const isRFQ = product?.sku !== "MIG-BOOKS" && !pricing?.is_scope_request && pricing !== null && (pricing?.total === 0 || (!product?.base_price && !pricing?.total));
