@@ -22,6 +22,7 @@ class RegisterRequest(BaseModel):
     job_title: str = ""
     phone: str = ""
     address: AddressInput
+    profile_meta: Optional[Dict[str, Any]] = None
 
 
 class LoginRequest(BaseModel):
