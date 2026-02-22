@@ -55,6 +55,13 @@ export interface WebsiteSettings {
   // Payment flags (from settings_service)
   stripe_enabled: boolean;
   gocardless_enabled: boolean;
+  stripe_fee_rate: number;
+  gocardless_fee_rate: number;
+  // Payment display labels (configurable per white-label)
+  payment_gocardless_label: string;
+  payment_gocardless_description: string;
+  payment_stripe_label: string;
+  payment_stripe_description: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
