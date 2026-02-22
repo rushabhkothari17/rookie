@@ -16,15 +16,6 @@ type Section =
   | "branding" | "hero" | "auth" | "forms" | "checkout" | "email" | "errors"
   | "footer" | "references" | "payments" | "sysconfig" | "pages";
 
-interface CheckoutSection {
-  id: string;
-  title: string;
-  description: string;
-  enabled: boolean;
-  order: number;
-  fields_schema: string;
-}
-
 interface WebsiteData {
   hero_label: string; hero_title: string; hero_subtitle: string;
   login_title: string; login_subtitle: string; login_portal_label: string;
