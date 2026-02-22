@@ -23,13 +23,17 @@ export const SECTION_ICONS = [
 ];
 
 export const ICON_COLORS = [
-  { value: "blue", bg: "bg-blue-500", text: "text-blue-500" },
-  { value: "green", bg: "bg-green-500", text: "text-green-500" },
-  { value: "red", bg: "bg-red-500", text: "text-red-500" },
-  { value: "purple", bg: "bg-purple-500", text: "text-purple-500" },
-  { value: "orange", bg: "bg-orange-500", text: "text-orange-500" },
-  { value: "slate", bg: "bg-slate-500", text: "text-slate-500" },
+  { value: "blue", hex: "#3b82f6" },
+  { value: "green", hex: "#22c55e" },
+  { value: "red", hex: "#ef4444" },
+  { value: "purple", hex: "#a855f7" },
+  { value: "orange", hex: "#f97316" },
+  { value: "slate", hex: "#64748b" },
 ];
+
+export const COLOR_HEX: Record<string, string> = Object.fromEntries(
+  ICON_COLORS.map(c => [c.value, c.hex])
+);
 
 const MAX_SECTIONS = 10;
 
