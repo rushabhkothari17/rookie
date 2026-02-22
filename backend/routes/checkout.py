@@ -250,6 +250,8 @@ async def checkout_bank_transfer(
             given_name=name_parts[0],
             family_name=name_parts[-1] if len(name_parts) > 1 else "User",
             company_name=user.get("company_name", ""),
+            gc_token=await SettingsService.get("gocardless_access_token") or GOCARDLESS_ACCESS_TOKEN,
+            gc_env=await SettingsService.get("gocardless_environment", GOCARDLESS_ENVIRONMENT),
         )
         if gc_customer:
             gc_customer_id = gc_customer["id"]
@@ -263,6 +265,8 @@ async def checkout_bank_transfer(
             session_token=session_token,
             success_redirect_url=success_url,
             description=f"Payment for Order {order_number}",
+            gc_token=await SettingsService.get("gocardless_access_token") or GOCARDLESS_ACCESS_TOKEN,
+            gc_env=await SettingsService.get("gocardless_environment", GOCARDLESS_ENVIRONMENT),
         )
         if redirect_flow:
             redirect_flow_id = redirect_flow["id"]
