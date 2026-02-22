@@ -105,6 +105,28 @@ const WEB_DEFAULTS: WebsiteData = {
   checkout_partner_enabled: true, checkout_partner_title: "",
   checkout_partner_description: "", checkout_partner_options: "",
   checkout_partner_misrep_warning: "", checkout_extra_schema: "[]",
+  checkout_sections: "[]",
+  // Page content
+  checkout_success_title: "", checkout_success_paid_msg: "",
+  checkout_success_pending_msg: "", checkout_success_expired_msg: "",
+  checkout_success_next_steps_title: "",
+  checkout_success_step_1: "", checkout_success_step_2: "", checkout_success_step_3: "",
+  checkout_portal_link_text: "",
+  bank_success_title: "", bank_success_message: "",
+  bank_instructions_title: "",
+  bank_instruction_1: "", bank_instruction_2: "", bank_instruction_3: "",
+  bank_next_steps_title: "",
+  bank_next_step_1: "", bank_next_step_2: "", bank_next_step_3: "",
+  page_404_title: "", page_404_link_text: "",
+  gocardless_processing_title: "", gocardless_processing_subtitle: "",
+  gocardless_success_title: "", gocardless_success_message: "",
+  gocardless_error_title: "", gocardless_error_message: "",
+  gocardless_return_btn_text: "",
+  verify_email_label: "", verify_email_title: "", verify_email_subtitle: "",
+  portal_title: "", portal_subtitle: "",
+  profile_label: "", profile_title: "", profile_subtitle: "",
+  cart_title: "", cart_clear_btn_text: "",
+  msg_currency_unsupported: "", msg_no_payment_methods: "",
 };
 
 // ─── Sidebar config ───────────────────────────────────────────────────────────
