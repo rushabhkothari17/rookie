@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from core.helpers import make_id, now_iso
 from core.security import require_admin
 from db.session import db
-from models import AdminProductCreate, AdminProductUpdate, CategoryCreate, CategoryUpdate
+from models import AdminProductCreate, AdminProductUpdate, CategoryCreate, CategoryUpdate, IntakeSchemaJson
 from services.audit_service import create_audit_log
 from services.pricing_service import build_price_inputs
 
