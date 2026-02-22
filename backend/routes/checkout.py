@@ -156,6 +156,7 @@ async def checkout_bank_transfer(
             "plan_name": product["name"],
             "status": "pending_direct_debit_setup",
             "stripe_subscription_id": None,
+            "processor_id": redirect_flow_id,
             "gocardless_customer_id": gc_customer_id,
             "gocardless_redirect_flow_id": redirect_flow_id,
             "current_period_start": period_start.isoformat(),
