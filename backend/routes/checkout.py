@@ -23,7 +23,7 @@ from services.settings_service import SettingsService
 from core.constants import SERVICE_FEE_RATE
 
 try:
-    from emergentintegrations.payments.stripe import (
+    from emergentintegrations.payments.stripe.checkout import (
         StripeCheckout,
         CheckoutSessionRequest,
         CheckoutSessionResponse,
