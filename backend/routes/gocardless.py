@@ -80,6 +80,7 @@ async def complete_gocardless_redirect(
                     mandate_id=mandate_id,
                     description=f"Payment for Order {order['order_number']}",
                     metadata={"order_id": order["id"], "order_number": order["order_number"]},
+                    gc_token=gc_token, gc_env=gc_env,
                 )
                 if payment:
                     payment_id = payment["id"]
@@ -96,7 +97,7 @@ async def complete_gocardless_redirect(
                     )
                     import time
                     time.sleep(2)
-                    payment_status = get_payment_status(payment_id)
+                    payment_status = get_payment_status(payment_id, gc_token=gc_token, gc_env=gc_env)
                     if payment_status:
                         status = payment_status.get("status")
                         await create_audit_log(
