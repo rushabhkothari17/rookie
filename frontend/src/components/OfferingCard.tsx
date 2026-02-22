@@ -3,12 +3,16 @@ import { Link } from "react-router-dom";
 import { displayCategory } from "@/lib/categories";
 
 const formatTag = (product: any) => {
+  if (product.tag) return product.tag;
   if (product.card_tag) return product.card_tag;
   if (product.is_subscription) return "Subscription";
   return "Project based";
 };
 
 export default function OfferingCard({ product }: { product: any }) {
+  const bullets = product.card_bullets || product.bullets || product.bullets_included || [];
+  const description = product.short_description || product.card_description || product.tagline;
+
   return (
     <Link
       to={`/product/${product.id}`}
@@ -41,22 +45,26 @@ export default function OfferingCard({ product }: { product: any }) {
         >
           {product.card_title || product.name}
         </h3>
-        <p
-          className="mt-1 text-sm leading-relaxed text-slate-500"
-          data-testid={`offering-tagline-${product.id}`}
-        >
-          {product.card_description || product.tagline}
-        </p>
+        {description && (
+          <p
+            className="mt-1 text-sm leading-relaxed text-slate-500"
+            data-testid={`offering-description-${product.id}`}
+          >
+            {description}
+          </p>
+        )}
       </div>
 
-      <ul className="mt-4 space-y-1.5 text-sm text-slate-500" data-testid={`offering-bullets-${product.id}`}>
-        {(product.card_bullets || product.bullets || product.bullets_included || []).slice(0, 3).map((item: string) => (
-          <li key={item} className="flex items-start gap-2">
-            <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-red-400" />
-            {item}
-          </li>
-        ))}
-      </ul>
+      {bullets.length > 0 && (
+        <ul className="mt-4 space-y-1.5 text-sm text-slate-500" data-testid={`offering-bullets-${product.id}`}>
+          {bullets.map((item: string, idx: number) => (
+            <li key={idx} className="flex items-start gap-2">
+              <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-red-400" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div
         className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-slate-700"
