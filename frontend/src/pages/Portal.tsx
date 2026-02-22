@@ -221,7 +221,7 @@ export default function Portal() {
               data-testid="portal-orders-status-filter"
             >
               <option value="">All statuses</option>
-              {orderUniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+              {ORDER_STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
             </select>
           </div>
         </div>
