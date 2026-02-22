@@ -207,4 +207,7 @@ async def update_me(
     if update_cust:
         await db.customers.update_one({"id": customer["id"]}, {"$set": update_cust})
 
+    if update_user or update_cust:
+        await create_audit_log(entity_type="user", entity_id=user["id"], action="profile_updated", actor=user["email"], details={k: v for k, v in {**update_user, **update_cust}.items()})
+
     return {"message": "Profile updated"}
