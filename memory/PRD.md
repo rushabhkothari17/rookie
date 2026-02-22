@@ -109,7 +109,17 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
-### Phase 5 — Architecture Audit & Payment/Email Refactor (Feb 2026)
+### Phase 6 — Payments UI Redesign, Cart Dynamic Content, Whitelabel Audit (Feb 2026)
+- Payments section: compact provider cards with colored status dot, pill Enable/Disable toggle, pencil icon that expands inline with label/desc/API keys/fee rate
+- Customer filter: dynamically shows only globally-enabled payment providers (GoCardless/Stripe) via useWebsite()
+- Zoho system links moved to References section (amber System Links panel) — removed from System Config
+- New 'Checkout' section in Website admin: configure Zoho section (title/options/notes/toggle), Partner section (title/desc/options/toggle), Custom Extra Questions (FormSchemaBuilder)
+- Cart.tsx: all Zoho section content, partner tagging content, options — fully dynamic from website settings
+- Custom extra checkout questions supported via checkout_extra_schema; answers stored in orders as extra_fields with audit log
+- CartContext: fixed lazy initializer (prevents flash-of-empty-cart on load)
+- Checkout button disabled state now respects show/hide flags for Zoho and partner sections
+- Whitelabel audit: removed hardcoded automateaccounts.com email/URL from ProductDetail.tsx, "Secure payment via Stripe" from StickyPurchaseSummary.tsx
+
 - Removed redundant 'Integrations' tab from Website admin sidebar
 - Added 'Payments' section (GoCardless + Stripe cards with toggle, display labels, API keys, fee rates)
 - Removed 'Payment Settings' from System Config (now lives in Payments tab)
