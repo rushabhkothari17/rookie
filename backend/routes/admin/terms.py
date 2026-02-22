@@ -141,6 +141,8 @@ async def assign_terms_to_product(
         if not terms:
             raise HTTPException(status_code=404, detail="Terms not found")
         await db.products.update_one({"id": product_id}, {"$set": {"terms_id": terms_id}})
+        await create_audit_log(entity_type="product", entity_id=product_id, action="terms_assigned", actor=admin["email"], details={"terms_id": terms_id, "terms_title": terms.get("title")})
     else:
         await db.products.update_one({"id": product_id}, {"$unset": {"terms_id": ""}})
+        await create_audit_log(entity_type="product", entity_id=product_id, action="terms_removed", actor=admin["email"], details={})
     return {"message": "Terms assignment updated"}
