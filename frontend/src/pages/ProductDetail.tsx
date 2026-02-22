@@ -18,6 +18,45 @@ import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
 import SectionCard from "@/components/SectionCard";
 import { displayCategory } from "@/lib/categories";
 import BooksMigrationForm, { calculateBooksMigrationPrice } from "@/components/BooksMigrationForm";
+import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
+
+// ── Dynamic form field renderer ─────────────────────────────
+function DynamicField({ field, value, onChange }: {
+  field: FormField; value: string; onChange: (v: string) => void;
+}) {
+  const common = { "data-testid": `dyn-field-${field.key}` };
+  if (field.type === "textarea") {
+    return <Textarea value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} rows={3} {...common} />;
+  }
+  if (field.type === "select") {
+    return (
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger {...common}><SelectValue placeholder="Select…" /></SelectTrigger>
+        <SelectContent>
+          {(field.options || []).map(opt => {
+            const [label, val] = opt.includes("|") ? opt.split("|") : [opt, opt];
+            return <SelectItem key={val} value={val}>{label}</SelectItem>;
+          })}
+        </SelectContent>
+      </Select>
+    );
+  }
+  if (field.type === "checkbox") {
+    return (
+      <label className="flex items-center gap-2 cursor-pointer" {...common}>
+        <Checkbox checked={value === "true"} onCheckedChange={c => onChange(c ? "true" : "false")} />
+        <span className="text-sm text-slate-600">{field.placeholder || field.label}</span>
+      </label>
+    );
+  }
+  return (
+    <Input type={field.type === "password" ? "password" : field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+      value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} {...common} />
+  );
+}
+
+const QUOTE_STD = ["name", "email", "company", "phone", "message"];
+const SCOPE_STD = ["project_summary", "desired_outcomes", "apps_involved", "timeline_urgency", "budget_range", "additional_notes"];
 
 // ── Intake helpers ──────────────────────────────────────────
 function getEnabledIntakeQuestions(schema: any): any[] {
