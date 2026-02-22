@@ -98,6 +98,7 @@ async def admin_update_customer_payment_methods(
             "allow_card_payment": payload.allow_card_payment,
         }}
     )
+    await create_audit_log(entity_type="customer", entity_id=customer_id, action="payment_methods_updated", actor=admin["email"], details={"allow_bank_transfer": payload.allow_bank_transfer, "allow_card_payment": payload.allow_card_payment})
     return {"message": "Payment methods updated"}
 
 
