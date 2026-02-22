@@ -98,7 +98,7 @@ export default function Portal() {
                       <div className="space-y-2 text-sm text-slate-600" data-testid={`order-details-${order.id}`}>
                         {orderItems(order.id).map((item) => (
                           <div key={item.id} data-testid={`order-item-${item.id}`}>
-                            {productMap[item.product_id]?.name || item.product_id} — ${item.line_total.toFixed(2)}
+                            {productMap[item.product_id]?.name || item.product_id} — ${(item.line_total || 0).toFixed(2)}
                           </div>
                         ))}
                       </div>
