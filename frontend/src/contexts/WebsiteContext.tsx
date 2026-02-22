@@ -62,6 +62,20 @@ export interface WebsiteSettings {
   payment_gocardless_description: string;
   payment_stripe_label: string;
   payment_stripe_description: string;
+  // Checkout page configuration
+  checkout_zoho_enabled: boolean;
+  checkout_zoho_title: string;
+  checkout_zoho_subscription_options: string;
+  checkout_zoho_product_options: string;
+  checkout_zoho_signup_note: string;
+  checkout_zoho_access_note: string;
+  checkout_zoho_access_delay_warning: string;
+  checkout_partner_enabled: boolean;
+  checkout_partner_title: string;
+  checkout_partner_description: string;
+  checkout_partner_options: string;
+  checkout_partner_misrep_warning: string;
+  checkout_extra_schema: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
