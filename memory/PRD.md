@@ -238,6 +238,45 @@ Admin can now one-click open any Stripe or GoCardless payment/subscription in th
 - Added missing sort logic to `filteredSubs` useMemo (was missing in previous session)
 - Test report: `/app/test_reports/iteration_37.json` (100% pass)
 
+## Phase 13: Intake Questions Schema — Admin + Customer Frontend (Feb 2026)
+
+### Summary
+Admin can now configure structured intake questions per product via Admin → Catalog → Edit. Customer product pages dynamically render those questions and capture answers that flow into `notes_json` at checkout.
+
+### Admin UI (IntakeSchemaBuilder)
+- New "Intake Questions" section at bottom of product editor (all 4 types in tabs)
+- **4 question types**: Dropdown, Multi-select, Single-line, Multi-line (max 10 per type)
+- **Each question**: key (auto-suggested from label, editable, uniqueness validated), label, helper_text, required, enabled, order (move up/down)
+- **Dropdown + Multi-select only**: options array editor (label/value, add/remove/reorder), affects_price flag
+- Product editor dialog widened to `max-w-3xl`
+- Admin catalog now loads `per_page=500` (was defaulting to 20, hiding page 2+ products)
+
+### Backend (`models.py`, `routes/admin/catalog.py`)
+- New Pydantic models: `IntakeOption`, `IntakeQuestion`, `IntakeQuestionsBlock`, `IntakeSchemaJson`
+- `intake_schema_json: Optional[IntakeSchemaJson]` added to both `AdminProductCreate` and `AdminProductUpdate`
+- `_validate_intake_schema()` enforces: max 10/type, non-empty keys, key uniqueness, option completeness for dropdown/multiselect
+- On save: backend stamps `version` (auto-incremented), `updated_at`, `updated_by` onto the schema
+- Audit logs include `intake_schema` counts + version on both create and update actions
+
+### Customer Product Page (`ProductDetail.tsx`)
+- `getEnabledIntakeQuestions(schema)` flattens all 4 question types (filtered to enabled, sorted by order)
+- `renderIntakeField(q, value, onChange)` renders appropriate input per type (Select/Checkboxes/Input/Textarea)
+- "Tell us about your project" SectionCard shown when product has enabled intake questions
+- Required fields validated before Add to Cart
+- Intake answers merged into cart `inputs` → automatically captured in `notes_json.product_intake` at checkout
+
+### Migration (NOT executed yet)
+- Existing hardcoded intake fields (legacy dropdowns/text) will be mapped to `intake_schema_json` after admin confirms the new UI
+
+### Files changed
+- `/app/backend/models.py`
+- `/app/backend/routes/admin/catalog.py`
+- `/app/frontend/src/pages/admin/IntakeSchemaBuilder.tsx` (new)
+- `/app/frontend/src/pages/admin/ProductForm.tsx`
+- `/app/frontend/src/pages/admin/ProductsTab.tsx`
+- `/app/frontend/src/pages/ProductDetail.tsx`
+- Test report: `/app/test_reports/iteration_38.json` (20/20 backend, 100% frontend)
+
 ## Known Issues / Technical Debt
 - HTML hydration warning `<span> cannot be child of <select>/<option>` — caused by Emergent VE browser wrapper injecting spans. **Not fixable in application code.** Non-blocking.
 - Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
