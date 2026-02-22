@@ -56,11 +56,20 @@ export default function Cart() {
     ? customer.allowed_payment_modes
     : undefined;
   const allowBankTransfer = allowedModes
-    ? allowedModes.includes("bank_transfer")
+    ? allowedModes.includes("gocardless")
     : (customer?.allow_bank_transfer ?? true);
   const allowCardPayment = allowedModes
-    ? allowedModes.includes("card")
+    ? allowedModes.includes("stripe")
     : (customer?.allow_card_payment ?? false);
+
+  // Payment display — from website settings (configurable per white-label)
+  const gcLabel = ws.payment_gocardless_label || "Bank Transfer (GoCardless)";
+  const gcDescription = ws.payment_gocardless_description || "No processing fee. We'll send bank transfer instructions.";
+  const stripeLabel = ws.payment_stripe_label || "Card Payment (Stripe)";
+  const stripeDescription = ws.payment_stripe_description || "Processing fee applies. Pay securely with credit/debit card.";
+  // Fee rate from settings (e.g. 0.05 = 5%)
+  const stripeFeeRate = ws.stripe_fee_rate || 0.05;
+  const stripeFeePercent = Math.round(stripeFeeRate * 100);
 
   useEffect(() => {
     if (allowBankTransfer) {
