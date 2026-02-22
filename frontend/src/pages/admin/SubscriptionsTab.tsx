@@ -324,6 +324,18 @@ export function SubscriptionsTab() {
                   </select>
                 </div>
               </div>
+              {/* Processor ID */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Processor ID</label>
+                <div className="flex items-center gap-1">
+                  <Input value={selectedSub.processor_id || ""} onChange={e => setSelectedSub({ ...selectedSub, processor_id: e.target.value })} placeholder="e.g. sub_xxx or PM01xxx or MD01xxx" data-testid="admin-sub-processor-input" className="flex-1" />
+                  {selectedSub.processor_id && getProcessorLink(selectedSub.processor_id) && (
+                    <a href={getProcessorLink(selectedSub.processor_id)!} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center h-9 w-9 border border-slate-200 rounded hover:bg-slate-50 transition-colors" title="Open in payment dashboard">
+                      <ExternalLink size={14} className="text-blue-600" />
+                    </a>
+                  )}
+                </div>
+              </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Add Note</label>
                 <Textarea placeholder="Add a note…" value={selectedSub.new_note || ""} onChange={e => setSelectedSub({ ...selectedSub, new_note: e.target.value })} rows={2} />
