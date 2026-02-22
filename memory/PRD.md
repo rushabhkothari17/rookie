@@ -229,6 +229,15 @@ Admin can now one-click open any Stripe or GoCardless payment/subscription in th
 - `routes/admin/orders.py` + `routes/admin/subscriptions.py`: Handle `processor_id` in PUT with audit logging (`changes.processor_id`)
 - Test report: `/app/test_reports/iteration_35.json` (18/18 backend + 13/13 frontend = 100%)
 
+## Phase 12: Customer Portal Date Sorting (Feb 2026)
+- Added clickable "Date" column header to One-Time Orders table (`data-testid="portal-orders-sort-date"`)
+- Added clickable "Start Date" column header to Subscriptions table (`data-testid="portal-subs-sort-date"`)
+- Both headers show ArrowUp/ArrowDown icon indicating current sort direction
+- Clicking toggles between descending (newest first) and ascending (oldest first)
+- Pagination resets to page 1 on sort change
+- Added missing sort logic to `filteredSubs` useMemo (was missing in previous session)
+- Test report: `/app/test_reports/iteration_37.json` (100% pass)
+
 ## Known Issues / Technical Debt
 - HTML hydration warning `<span> cannot be child of <select>/<option>` — caused by Emergent VE browser wrapper injecting spans. **Not fixable in application code.** Non-blocking.
 - Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
