@@ -76,7 +76,7 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
   {
     group: "Configuration",
     items: [
-      { key: "links", label: "Links & URLs" },
+      { key: "references", label: "References" },
       { key: "integrations", label: "Integrations" },
       { key: "sysconfig", label: "System Config" },
     ],
