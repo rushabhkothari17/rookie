@@ -22,11 +22,43 @@ from db.session import db
 SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
     # ---- Payments ----
     {
+        "key": "stripe_enabled",
+        "value_json": False,
+        "value_type": "bool",
+        "category": "Payments",
+        "description": "Enable Stripe credit/debit card payments.",
+        "is_secret": False,
+    },
+    {
+        "key": "stripe_fee_rate",
+        "value_json": 0.05,
+        "value_type": "number",
+        "category": "Payments",
+        "description": "Processing fee rate for Stripe card payments (0.05 = 5%).",
+        "is_secret": False,
+    },
+    {
+        "key": "gocardless_enabled",
+        "value_json": False,
+        "value_type": "bool",
+        "category": "Payments",
+        "description": "Enable GoCardless direct debit bank transfer payments.",
+        "is_secret": False,
+    },
+    {
+        "key": "gocardless_fee_rate",
+        "value_json": 0.0,
+        "value_type": "number",
+        "category": "Payments",
+        "description": "Processing fee rate for GoCardless bank transfer payments (0.0 = no fee).",
+        "is_secret": False,
+    },
+    {
         "key": "service_fee_rate",
         "value_json": 0.05,
         "value_type": "number",
         "category": "Payments",
-        "description": "Percentage service fee applied to all orders (0.05 = 5%).",
+        "description": "Legacy fallback service fee rate (0.05 = 5%).",
         "is_secret": False,
     },
     {
