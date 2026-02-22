@@ -8,9 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import get_current_user
+from core.config import GOCARDLESS_ACCESS_TOKEN, GOCARDLESS_ENVIRONMENT
 from db.session import db
 from models import CompleteGoCardlessRedirect
 from services.audit_service import create_audit_log
+from services.settings_service import SettingsService
 
 try:
     from gocardless_helper import (
