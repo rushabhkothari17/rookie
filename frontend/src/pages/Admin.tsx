@@ -111,9 +111,6 @@ export default function Admin() {
           <TabsContent value="promo" className="space-y-4">
             <PromoCodesTab />
           </TabsContent>
-          <TabsContent value="settings" className="space-y-4">
-            <SettingsTab />
-          </TabsContent>
           <TabsContent value="sync" className="space-y-4">
             <LogsTab />
           </TabsContent>
