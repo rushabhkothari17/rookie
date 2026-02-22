@@ -91,6 +91,7 @@ function Paginator({ page, total, perPage, onChange }: { page: number; total: nu
 
 export default function Portal() {
   const { user } = useAuth();
+  const ws = useWebsite();
   const [orders, setOrders] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -192,8 +193,8 @@ export default function Portal() {
       {/* Header */}
       <div>
         <p className="text-sm text-slate-500" data-testid="portal-welcome">Welcome, {user?.full_name || "Customer"}</p>
-        <h1 className="text-2xl font-semibold text-slate-900">Customer portal</h1>
-        <p className="text-sm text-slate-400">Track your orders and subscriptions in one place.</p>
+        <h1 className="text-2xl font-semibold text-slate-900">{ws.portal_title}</h1>
+        <p className="text-sm text-slate-400">{ws.portal_subtitle}</p>
       </div>
 
       {/* ── One-time orders ──────────────────────────────── */}

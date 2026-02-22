@@ -8,6 +8,7 @@ import api from "@/lib/api";
 
 export default function Profile() {
   const { user, customer, address, refresh } = useAuth();
+  const ws = useWebsite();
   const [form, setForm] = useState({
     full_name: "",
     company_name: "",
@@ -69,11 +70,9 @@ export default function Profile() {
   return (
     <div className="space-y-6" data-testid="profile-page">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">My Profile</p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-900">Account details</h1>
-        <p className="text-sm text-slate-500">
-          Update your contact details. Currency remains locked after your first purchase.
-        </p>
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{ws.profile_label}</p>
+        <h1 className="mt-2 text-3xl font-semibold text-slate-900">{ws.profile_title}</h1>
+        <p className="text-sm text-slate-500">{ws.profile_subtitle}</p>
       </div>
 
       <form
