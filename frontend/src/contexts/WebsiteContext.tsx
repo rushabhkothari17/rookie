@@ -128,6 +128,19 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   payment_gocardless_description: "No processing fee. We'll send bank transfer instructions.",
   payment_stripe_label: "Card Payment (Stripe)",
   payment_stripe_description: "5% processing fee applies. Pay securely with credit/debit card.",
+  checkout_zoho_enabled: true,
+  checkout_zoho_title: "Zoho Account Details",
+  checkout_zoho_subscription_options: "Paid - Annual\nPaid - Monthly\nFree / Not on Zoho",
+  checkout_zoho_product_options: "",
+  checkout_zoho_signup_note: "for a free 1 hour Welcome to Zoho and a 30-day trial",
+  checkout_zoho_access_note: "to understand how to provide us access to your Zoho account",
+  checkout_zoho_access_delay_warning: "Please note service delays can happen if you complete purchase without providing us the access.",
+  checkout_partner_enabled: true,
+  checkout_partner_title: "Have you tagged us as your Zoho Partner?",
+  checkout_partner_description: "You can tag us as your Zoho Partner by clicking the links below.",
+  checkout_partner_options: "Yes\nPre-existing Customer\nNot yet",
+  checkout_partner_misrep_warning: "Misrepresenting or false responses may lead to cancellation of service.",
+  checkout_extra_schema: "[]",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
