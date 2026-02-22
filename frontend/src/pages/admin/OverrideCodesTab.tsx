@@ -184,6 +184,7 @@ export function OverrideCodesTab() {
                   <div className="flex gap-1">
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(oc)} data-testid={`admin-oc-edit-${oc.id}`}>Edit</Button>
                     <Button variant="destructive" size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleDelete(oc.id)} data-testid={`admin-oc-delete-${oc.id}`}>Delete</Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/override-codes/${oc.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-oc-logs-${oc.id}`}>Logs</Button>
                   </div>
                 </TableCell>
               </TableRow>
