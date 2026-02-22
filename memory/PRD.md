@@ -4,7 +4,7 @@
 Build a fully customizable "whitelabel" solution that can be resold. No content should be hardcoded. Everything must be dynamically managed from the admin panel.
 
 ## Core Requirements (User Specified)
-1. **Fully Dynamic Content** — No hardcoded text anywhere (hero, auth, forms, navigation, email, errors)
+1. **Fully Dynamic Content** — No hardcoded text anywhere (hero, auth, forms, navigation, email, errors, all pages)
 2. **Website Configuration Module** — Admin panel "Website Content" tab managing all sitewide content
 3. **Customizable Product Pages** — Dynamic sections with rich text (markdown), icons, custom names
 4. **Customizable Forms** — ALL forms (Quote, Scope, Signup) fully customizable via schema builder
@@ -14,6 +14,8 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 8. **Email Templates** — All emails configurable, cannot be deleted
 9. **Integrations Tab** — GoCardless, Stripe, Resend API keys in Website module
 10. **Settings Merge** — Settings tab removed, merged into Website Content tab
+11. **Dynamic Checkout Section Builder** — Admins define sections with custom form fields on cart page
+12. **Complete Page Whitelabeling** — All pages (CheckoutSuccess, BankTransfer, 404, GoCardless, VerifyEmail, Portal, Profile, Cart) use dynamic strings
 
 ---
 
@@ -22,32 +24,39 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 ### Backend
 ```
 /app/backend/
-├── models.py               # WebsiteSettingsUpdate (40+ fields), QuoteRequest (extra_fields), RegisterRequest (profile_meta)
+├── models.py               # WebsiteSettingsUpdate (75+ fields), QuoteRequest, RegisterRequest
 ├── routes/
 │   ├── auth.py             # profile_meta support, configurable verification email
-│   ├── articles.py         # Configurable email templates (from_name, CTA, footer, subject)
+│   ├── articles.py         # Configurable email templates
 │   └── admin/
-│       └── website.py      # DEFAULT_WEBSITE_SETTINGS with form schemas + all new fields
+│       └── website.py      # DEFAULT_WEBSITE_SETTINGS with 75+ field defaults
 ├── services/
-│   └── settings_service.py # Structured settings (Payments/Email/Zoho/Branding/Operations/FeatureFlags)
+│   └── settings_service.py # Structured settings (Payments/Email/Zoho/Branding/Operations)
 ```
 
 ### Frontend
 ```
 /app/frontend/src/
 ├── components/
-│   ├── FormSchemaBuilder.tsx  # Visual form field schema editor (NEW)
-│   ├── IconPicker.tsx         # Visual icon selector
-│   └── TopNav.tsx             # Uses nav labels from WebsiteContext
+│   ├── FormSchemaBuilder.tsx          # Visual form field schema editor
+│   ├── admin/
+│   │   └── CheckoutSectionsBuilder.tsx  # Dynamic checkout section builder (NEW)
+│   ├── IconPicker.tsx
+│   └── TopNav.tsx
 ├── contexts/
-│   └── WebsiteContext.tsx     # 50+ dynamic fields including form schemas
+│   └── WebsiteContext.tsx     # 75+ dynamic fields
 ├── pages/
 │   ├── Admin.tsx              # Settings tab REMOVED, merged into Website Content
-│   ├── Cart.tsx               # Uses configurable msg_partner_tagging_prompt etc.
-│   ├── Signup.tsx             # Dynamic form schema (show/hide fields, custom extra fields)
-│   ├── ProductDetail.tsx      # Dynamic quote/scope form rendering from schema
+│   ├── Cart.tsx               # Fully dynamic (new checkout_sections + legacy fallback)
+│   ├── CheckoutSuccess.tsx    # All strings from ws.checkout_success_*
+│   ├── BankTransferSuccess.tsx # All strings from ws.bank_*
+│   ├── NotFound.tsx           # ws.page_404_title/link_text
+│   ├── GoCardlessCallback.tsx  # ws.gocardless_* fields
+│   ├── VerifyEmail.tsx        # ws.verify_email_*
+│   ├── Portal.tsx             # ws.portal_title/subtitle
+│   ├── Profile.tsx            # ws.profile_label/title/subtitle
 │   └── admin/
-│       └── WebsiteTab.tsx     # 10-section comprehensive settings panel (REWRITTEN)
+│       └── WebsiteTab.tsx     # 12-section admin panel + new CheckoutSectionsBuilder
 ```
 
 ---
