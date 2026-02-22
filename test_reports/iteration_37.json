@@ -1,0 +1,56 @@
+{
+  "summary": "Tested date sorting feature on /portal page for both One-Time Orders and Subscriptions tables. All sort interactions, icon changes, pagination resets, and search-after-sort flows work correctly.",
+  "testing_type": "frontend only",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Portal - One-Time Orders table header",
+        "issues": [
+          "Minor: orders sort icon uses a ternary with ArrowUpDown fallback (line 221) but subs uses simpler binary check (line 337) — functionally equivalent since state is always 'asc' or 'desc', but a cosmetic inconsistency"
+        ]
+      }
+    ]
+  },
+  "test_results": {
+    "orders_sort": {
+      "button_present": "PASS - data-testid='portal-orders-sort-date' found, visible=true, enabled=true",
+      "button_text": "PASS - text='Date'",
+      "initial_state": "PASS - desc (2026-02-22 dates shown first)",
+      "click_desc_to_asc": "PASS - dates changed to 2026-02-20 after click",
+      "icon_changes": "PASS - arrow icon changes direction on toggle (verified via screenshot: ↓ becomes ↑)",
+      "pagination_reset": "PASS - navigated to page 2, clicked sort, pagination showed '1–8 of 51'",
+      "click_asc_to_desc": "PASS - dates reverted to 2026-02-22",
+      "search_after_sort": "PASS - search returned 8 results after sort change"
+    },
+    "subscriptions_sort": {
+      "button_present": "PASS - data-testid='portal-subs-sort-date' found, visible=true, enabled=true",
+      "button_text": "PASS - text='Start Date'",
+      "initial_state": "PASS - desc ['2026-02-22', '2026-02-22', '2026-02-22', '2026-02-21', '2026-02-21']",
+      "click_desc_to_asc": "PASS - dates changed to ['2026-02-20', '2026-02-21'...] after click",
+      "icon_changes": "PASS - SVG path changed from ArrowDown (M12 5v14 | m19 12-7 7-7-7) to ArrowUp (m5 12 7-7 7 7 | M12 19V5)",
+      "pagination_reset": "PASS - subs paginator shows '1–5 of 17' after sort change from page 2",
+      "click_asc_to_desc": "PASS - dates reverted to ['2026-02-22', '2026-02-22', '2026-02-22', '2026-02-21', '2026-02-21']",
+      "search_after_sort": "PASS - search returned 5 results after sort change"
+    }
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Portal.tsx line 221: Orders uses ternary with ArrowUpDown fallback (`orderSort === 'desc' ? ArrowDown : orderSort === 'asc' ? ArrowUp : ArrowUpDown`) while subs line 337 uses binary check — functionally fine but minor inconsistency worth aligning"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - frontend only",
+    "frontend": "100%"
+  },
+  "seed_data_creation": "None - used existing admin account data (51 orders, 17 subscriptions)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Portal sort feature fully implemented and tested. Both tables (orders: data-testid='portal-orders-sort-date', subs: data-testid='portal-subs-sort-date') have working sort buttons. Arrow icons change direction on click. Pagination resets to page 1 on sort change. Search works after sort change. Admin credentials: admin@automateaccounts.local / ChangeMe123!"
+}
