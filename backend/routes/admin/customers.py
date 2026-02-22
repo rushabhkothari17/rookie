@@ -101,10 +101,18 @@ async def admin_update_customer_payment_methods(
     update_doc: Dict[str, Any] = {}
 
     if allowed_modes is not None:
-        update_doc["allowed_payment_modes"] = allowed_modes
-        # Keep backward-compat booleans in sync
-        update_doc["allow_bank_transfer"] = "bank_transfer" in allowed_modes
-        update_doc["allow_card_payment"] = "card" in allowed_modes
+        # Normalize old mode names (bank_transfer→gocardless, card→stripe)
+        normalized = []
+        for m in allowed_modes:
+            if m == "bank_transfer":
+                normalized.append("gocardless")
+            elif m == "card":
+                normalized.append("stripe")
+            else:
+                normalized.append(m)
+        update_doc["allowed_payment_modes"] = normalized
+        update_doc["allow_bank_transfer"] = "gocardless" in normalized
+        update_doc["allow_card_payment"] = "stripe" in normalized
     else:
         # Legacy individual field updates
         if "allow_bank_transfer" in payload:
