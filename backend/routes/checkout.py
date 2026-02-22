@@ -467,12 +467,13 @@ async def create_checkout_session(
         "terms_accepted_at": now_iso(), "partner_tag_response": payload.partner_tag_response,
         "override_code_id": None, "partner_tag_timestamp": now_iso(),
         "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="card"),
+        "extra_fields": payload.extra_fields or {},
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
     await create_audit_log(
         entity_type="order", entity_id=order_id, action="created", actor="system",
-        details={"checkout_type": checkout_type, "payment_method": "card", "total": total},
+        details={"checkout_type": checkout_type, "payment_method": "card", "total": total, "extra_fields": list((payload.extra_fields or {}).keys())},
     )
 
     for item in order_items:
