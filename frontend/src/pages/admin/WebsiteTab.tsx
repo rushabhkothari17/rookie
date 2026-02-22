@@ -425,27 +425,7 @@ export default function WebsiteTab() {
           )}
 
           {/* ── Email Templates ── */}
-          {activeSection === "email" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">Email Sender</h3>
-              <Field label="From Name" hint='Display name shown as sender (e.g. "Acme Support")' value={ws.email_from_name} onChange={s("email_from_name")} testId="ws-email-from-name" />
-
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Article Email</h3>
-                <p className="text-xs text-slate-400 mb-3">Sent when admin emails an article to customers. Use <code className="bg-slate-100 px-1 rounded">{"{{article_title}}"}</code> in subject.</p>
-                <Field label="Subject template" value={ws.email_article_subject_template} onChange={s("email_article_subject_template")} testId="ws-email-article-subject" />
-                <Field label="CTA button text" value={ws.email_article_cta_text} onChange={s("email_article_cta_text")} testId="ws-email-article-cta" />
-                <Field label="Footer text" hint="Small text shown at the bottom of the email." value={ws.email_article_footer_text} onChange={s("email_article_footer_text")} multiline testId="ws-email-article-footer" />
-              </div>
-
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Verification Email</h3>
-                <p className="text-xs text-slate-400 mb-3">Sent on signup. Use <code className="bg-slate-100 px-1 rounded">{"{{code}}"}</code> for the verification code.</p>
-                <Field label="Subject" value={ws.email_verification_subject} onChange={s("email_verification_subject")} testId="ws-email-verify-subject" />
-                <Field label="Body" value={ws.email_verification_body} onChange={s("email_verification_body")} multiline testId="ws-email-verify-body" />
-              </div>
-            </>
-          )}
+          {activeSection === "email" && <EmailSection />}
 
           {/* ── Error Messages ── */}
           {activeSection === "errors" && (
