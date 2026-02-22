@@ -73,9 +73,9 @@ export default function Portal() {
                 <TableCell data-testid={`portal-order-products-${order.id}`}>
                   {orderItems(order.id).map((item) => productMap[item.product_id]?.name || item.product_id).join(", ") || "—"}
                 </TableCell>
-                <TableCell data-testid={`portal-order-subtotal-${order.id}`}>${order.subtotal.toFixed(2)}</TableCell>
-                <TableCell data-testid={`portal-order-fee-${order.id}`}>${order.fee.toFixed(2)}</TableCell>
-                <TableCell data-testid={`portal-order-total-${order.id}`}>${order.total.toFixed(2)}</TableCell>
+                <TableCell data-testid={`portal-order-subtotal-${order.id}`}>${(order.subtotal || 0).toFixed(2)}</TableCell>
+                <TableCell data-testid={`portal-order-fee-${order.id}`}>${(order.fee || 0).toFixed(2)}</TableCell>
+                <TableCell data-testid={`portal-order-total-${order.id}`}>${(order.total || 0).toFixed(2)}</TableCell>
                 <TableCell data-testid={`portal-order-payment-${order.id}`}>
                   {order.payment_method === "bank_transfer" ? "Bank Transfer" : order.payment_method === "card" ? "Card" : "—"}
                 </TableCell>
