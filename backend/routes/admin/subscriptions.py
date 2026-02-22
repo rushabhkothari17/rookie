@@ -251,6 +251,10 @@ async def update_subscription(
         update_fields["payment_method"] = payload.payment_method
         changes["payment_method"] = {"old": subscription.get("payment_method"), "new": payload.payment_method}
 
+    if payload.processor_id is not None:
+        update_fields["processor_id"] = payload.processor_id
+        changes["processor_id"] = {"old": subscription.get("processor_id"), "new": payload.processor_id}
+
     if update_fields:
         update_fields["updated_at"] = now_iso()
         await db.subscriptions.update_one({"id": subscription_id}, {"$set": update_fields})

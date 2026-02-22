@@ -187,6 +187,10 @@ async def update_order(
         update_fields["subscription_id"] = payload.subscription_id
         changes["subscription_id"] = {"old": order.get("subscription_id"), "new": payload.subscription_id}
 
+    if payload.processor_id is not None:
+        update_fields["processor_id"] = payload.processor_id
+        changes["processor_id"] = {"old": order.get("processor_id"), "new": payload.processor_id}
+
     if payload.product_id is not None:
         await db.order_items.update_one(
             {"order_id": order_id},
