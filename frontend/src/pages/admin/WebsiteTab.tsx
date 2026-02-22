@@ -56,6 +56,8 @@ const WEB_DEFAULTS: WebsiteData = {
   email_verification_subject: "", email_verification_body: "",
   msg_partner_tagging_prompt: "", msg_override_required: "",
   msg_cart_empty: "", msg_quote_success: "", msg_scope_success: "",
+  payment_gocardless_label: "", payment_gocardless_description: "",
+  payment_stripe_label: "", payment_stripe_description: "",
 };
 
 // ─── Sidebar config ───────────────────────────────────────────────────────────
