@@ -311,15 +311,25 @@ Additional Notes: {payload.form_data.additional_notes or 'None'}
 
 Order/Deal ID: {order_number}
 """
-    await db.email_outbox.insert_one({
-        "id": make_id(),
-        "to": "rushabh@automateaccounts.com",
-        "subject": f"New Scope Request: {order_number} from {user.get('full_name', 'Customer')}",
-        "body": email_body,
-        "type": "scope_request",
-        "status": "MOCKED",
-        "created_at": now_iso(),
-    })
+    admin_email = await SettingsService.get("admin_notification_email", "")
+    if admin_email:
+        from services.email_service import EmailService
+        await EmailService.send(
+            trigger="scope_request_admin",
+            recipient=admin_email,
+            variables={
+                "order_number": order_number,
+                "customer_name": user.get("full_name", "Customer"),
+                "customer_email": user.get("email", ""),
+                "project_summary": payload.form_data.project_summary,
+                "desired_outcomes": payload.form_data.desired_outcomes,
+                "apps_involved": payload.form_data.apps_involved,
+                "timeline_urgency": payload.form_data.timeline_urgency,
+                "budget_range": payload.form_data.budget_range or "Not specified",
+                "additional_notes": payload.form_data.additional_notes or "",
+            },
+            db=db,
+        )
     await db.zoho_sync_logs.insert_one({
         "id": make_id(),
         "entity_type": "scope_request",
