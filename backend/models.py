@@ -254,6 +254,7 @@ class SubscriptionUpdate(BaseModel):
     product_id: Optional[str] = None
     customer_id: Optional[str] = None
     payment_method: Optional[str] = None
+    processor_id: Optional[str] = None
     new_note: Optional[str] = None
 
 
@@ -286,6 +287,7 @@ class OrderUpdate(BaseModel):
     new_note: Optional[str] = None
     subscription_id: Optional[str] = None
     product_id: Optional[str] = None
+    processor_id: Optional[str] = None
 
 
 class OrderDelete(BaseModel):
