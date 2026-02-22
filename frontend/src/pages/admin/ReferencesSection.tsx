@@ -200,7 +200,7 @@ export default function ReferencesSection() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
