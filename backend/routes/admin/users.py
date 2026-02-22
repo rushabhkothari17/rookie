@@ -140,7 +140,7 @@ async def admin_set_user_active(
 
 
 @router.get("/admin/users/{user_id}/logs")
-async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(require_super_admin)):
     logs = await db.audit_logs.find({"entity_type": "user", "entity_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
