@@ -6,6 +6,8 @@ import { toast } from "@/components/ui/sonner";
 import { Eye, EyeOff, Save, Upload, X } from "lucide-react";
 import api from "@/lib/api";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
+import ReferencesSection from "./ReferencesSection";
+import EmailSection from "./EmailSection";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
