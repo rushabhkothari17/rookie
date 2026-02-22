@@ -13,6 +13,7 @@ export interface IntakeQuestion {
   enabled: boolean;
   order: number;
   affects_price: boolean;
+  price_mode: "add" | "multiply";
   options: IntakeOption[];
 }
 
