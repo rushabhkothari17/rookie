@@ -117,10 +117,6 @@ function QuestionEditor({ q, idx, total, allKeys, hasOptions, onChange, onRemove
     onChange({ ...q, label: v, key: labelToKey(v) });
   };
 
-  const handleKeyChange = (v: string) => {
-    onChange({ ...q, key: v.toLowerCase().replace(/[^a-z0-9_]/g, "") });
-  };
-
   return (
     <div className="border border-slate-200 rounded-lg p-3 space-y-2.5 bg-white">
       <div className="flex items-center justify-between">
