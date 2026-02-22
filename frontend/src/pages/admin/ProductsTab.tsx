@@ -275,6 +275,7 @@ export function ProductsTab() {
                 <TableCell>
                   <div className="flex gap-2 items-center">
                     <Button variant="outline" size="sm" onClick={() => openEdit(product)} data-testid={`admin-edit-${product.id}`}>Edit</Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/products/${product.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-product-logs-${product.id}`}>Logs</Button>
                     <Button
                       variant={product.is_active ? "destructive" : "outline"}
                       size="sm"
