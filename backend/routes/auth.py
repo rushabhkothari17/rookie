@@ -74,7 +74,6 @@ async def register(payload: RegisterRequest):
         "postal": payload.address.postal,
         "country": payload.address.country,
     })
-    await db.email_logs.delete_many({})  # clear old logs if any on startup
     from services.email_service import EmailService
     await EmailService.send(
         trigger="verification",
