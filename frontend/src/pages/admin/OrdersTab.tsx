@@ -9,7 +9,19 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
-import { Download } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
+
+const getProcessorLink = (id: string | undefined): string | null => {
+  if (!id) return null;
+  if (id.startsWith("pi_") || id.startsWith("ch_")) return `https://dashboard.stripe.com/payments/${id}`;
+  if (id.startsWith("sub_")) return `https://dashboard.stripe.com/subscriptions/${id}`;
+  if (id.startsWith("cus_")) return `https://dashboard.stripe.com/customers/${id}`;
+  if (id.startsWith("in_")) return `https://dashboard.stripe.com/invoices/${id}`;
+  if (id.startsWith("PM")) return `https://manage.gocardless.com/payments/${id}`;
+  if (id.startsWith("MD")) return `https://manage.gocardless.com/mandates/${id}`;
+  if (id.startsWith("SB")) return `https://manage.gocardless.com/subscriptions/${id}`;
+  return null;
+};
 
 const ORDER_STATUSES = ["paid", "unpaid", "completed", "pending", "pending_payment", "pending_direct_debit_setup", "awaiting_bank_transfer", "scope_requested", "scope_pending", "canceled_pending", "cancelled", "refunded", "disputed"];
 
