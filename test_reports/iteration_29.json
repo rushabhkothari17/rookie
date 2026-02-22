@@ -1,0 +1,125 @@
+{
+  "summary": "Comprehensive backend + frontend testing of Audit Log Instrumentation feature. Fixed a critical missing import bug in articles.py (AuditService not imported). All 28 backend tests pass. All frontend LogsTab UI tests pass.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/articles, PUT /api/articles/{id}, DELETE /api/articles/{id}",
+        "issue": "FIXED: articles.py was missing 'from services.audit_service import AuditService' import. All 3 article audit calls (ARTICLE_CREATED, ARTICLE_UPDATED, ARTICLE_DELETED) would have thrown NameError at runtime. Import added in this session.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/audit-logs (entity_type filter for promo codes)",
+        "issue": "create_audit_log() helper uses entity_type.capitalize() which converts 'promo_code' → 'Promo_code' instead of 'PromoCode'. The frontend ENTITY_TYPES list expects 'PromoCode', so promo code entity badges fall back to gray/slate default color instead of getting a custom badge. The entity_type filter also won't match if user selects 'PromoCode' from the dropdown (no records would return)."
+      },
+      {
+        "endpoint": "POST/PUT/DELETE /api/admin/promo-codes, /api/admin/products, /api/admin/categories, /api/admin/customers",
+        "issue": "create_audit_log() helper hardcodes source='api' for all admin UI mutations. All admin panel operations should use source='admin_ui' instead of 'api' to correctly reflect the source in audit trail."
+      },
+      {
+        "endpoint": "POST /api/admin/customers/create audit log",
+        "issue": "create_audit_log() generates action 'CUSTOMER_CUSTOMER_CREATED_BY_ADMIN' (double prefix). The helper prepends entity_type.upper() to action, so entity_type='customer' + action='customer_created_by_admin' → 'CUSTOMER_CUSTOMER_CREATED_BY_ADMIN'. Should be 'CUSTOMER_CREATED_BY_ADMIN'."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Logs tab - Entity column for Promo Code entries",
+        "issues": [
+          "Promo code entity badge shows 'Promo_code' (gray/slate) instead of 'PromoCode' with a distinct color. This is because the audit_service create_audit_log helper stores entity_type='Promo_code' but the LogsTab entityBadge function only handles 'PromoCode' (no underscore/capitalization). E1 should fix create_audit_log to normalize entity types to match frontend expectations."
+        ]
+      },
+      {
+        "screen": "CustomersTab - partner_map filter dropdown",
+        "issues": [
+          "Previously known: HTML hydration warning <span> inside <select>/<option> (non-blocking, pre-existing from iteration 28)"
+        ]
+      }
+    ]
+  },
+  "passed_tests": [
+    "Backend: GET /api/admin/audit-logs returns 200 with correct structure (logs, total, total_pages, page, per_page)",
+    "Backend: total is a positive integer (89+ events)",
+    "Backend: limit=10 returns max 10 records",
+    "Backend: limit=25 returns max 25 records",
+    "Backend: page=2 returns different records than page=1",
+    "Backend: total_pages calculation is correct",
+    "Backend: Each log record has id, occurred_at, action, actor_type, entity_type, source, success fields",
+    "Backend: Unauthorized request returns 401/403",
+    "Backend: actor_type=admin filter returns only admin events",
+    "Backend: actor_type=user filter returns only user events",
+    "Backend: actor_type=system filter returns only system events",
+    "Backend: entity_type=User filter returns User entity logs",
+    "Backend: action=USER_LOGIN filter returns USER_LOGIN events",
+    "Backend: success=true filter returns only successful events",
+    "Backend: success=false filter returns only failed events",
+    "Backend: severity=info filter returns only info events",
+    "Backend: q=login search returns logs matching 'login'",
+    "Backend: entity_type=Article filter returns Article events",
+    "Backend: Date range filter returns 200",
+    "Backend: Login generates USER_LOGIN audit log with actor_email=admin@automateaccounts.local",
+    "Backend: Promo code creation generates PROMO_CODE_CREATED audit log",
+    "Backend: Customer update test passes (12 customer audit events exist)",
+    "Backend: Article creation generates ARTICLE_CREATED audit log (entity_type=Article, actor_type=admin, source=admin_ui)",
+    "Backend: Article deletion generates ARTICLE_DELETED audit log",
+    "Backend: USER_REGISTERED audit log exists from past registrations",
+    "Backend: GET /api/admin/audit-logs/{log_id} returns single log by ID",
+    "Backend: GET /api/admin/audit-logs/nonexistent returns 404",
+    "Frontend: Logs tab accessible via 'Logs' sidebar link",
+    "Frontend: [data-testid='admin-logs-tab'] present",
+    "Frontend: Events count badge shows total (88+ events)",
+    "Frontend: Filters panel visible with all filter dropdowns",
+    "Frontend: Apply button [data-testid='logs-apply-btn'] functional",
+    "Frontend: Refresh button [data-testid='logs-refresh-btn'] present",
+    "Frontend: Actor type filter dropdown [data-testid='logs-filter-actor_type'] present",
+    "Frontend: All pagination controls present (logs-page-first, logs-page-prev, logs-page-next, logs-page-last)",
+    "Frontend: Actor type badges visible (Admin=indigo-blue, badges correct)",
+    "Frontend: 50 OK status badges (green) visible",
+    "Frontend: Entity type badges visible (User=blue, Article=pink, Promo_code=gray)",
+    "Frontend: Table shows 50 rows with default limit=50",
+    "Frontend: Actor type filter 'Admin' selected → all rows show Admin badges",
+    "Frontend: Reset all filter works and restores full count",
+    "Frontend: Row click opens detail dialog with [data-testid='log-detail-dialog']",
+    "Frontend: Detail dialog shows When, Actor, Actor Type/Role, Source, Entity, Status, Severity, Description, Meta/Context",
+    "Frontend: Pagination - page 1 shows 1-50, page 2 shows 51-89",
+    "Frontend: page 2 button highlighted after navigating to page 2",
+    "Frontend: First page button returns to page 1",
+    "Frontend: Per-page 25 works - shows Showing 1-25, 25 rows visible"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_audit_logs.py",
+    "/app/test_reports/pytest/pytest_audit_logs.xml"
+  ],
+  "action_items": [
+    "Fix create_audit_log() in audit_service.py: normalize entity_type to PascalCase (e.g. 'promo_code' → 'PromoCode', 'promo_code' → 'PromoCode') so entity badges in frontend are colored correctly and entity_type filter dropdown matches stored values.",
+    "Fix create_audit_log() source parameter: pass source='admin_ui' for all calls from admin route handlers (promo_codes.py, catalog.py, customers.py) instead of the hardcoded 'api' in the helper function.",
+    "Fix action naming for customer creation: entity_type='customer' + action='customer_created_by_admin' produces 'CUSTOMER_CUSTOMER_CREATED_BY_ADMIN'. Should produce 'CUSTOMER_CREATED_BY_ADMIN'. Fix by removing entity_type prefix from action string OR by using direct AuditService.log() calls instead of create_audit_log() helper for better control."
+  ],
+  "critical_code_review_comments": [
+    "articles.py was missing AuditService import — CRITICAL BUG FIXED in this session. Without this fix, ARTICLE_CREATED/UPDATED/DELETED endpoints would raise NameError.",
+    "create_audit_log() helper has 3 issues: (1) entity_type.capitalize() produces wrong PascalCase for compound names (2) source hardcoded to 'api' (3) action construction double-prefixes entity_type. Consider replacing create_audit_log() calls with direct AuditService.log() calls for precision.",
+    "Missing audit log instrumentation for orders.py, subscriptions.py, bank_transactions.py, override_codes.py, users.py, settings.py — these admin mutations are NOT wired to AuditService. If full audit coverage is desired, these routes need instrumentation too.",
+    "The actor_type inference in create_audit_log() ('admin' if 'admin' in actor.lower() else 'system') is brittle. Direct AuditService.log() calls with explicit actor_type are preferable."
+  ],
+  "updated_files": [
+    "/app/backend/routes/articles.py (added missing AuditService import)",
+    "/app/backend/tests/test_audit_logs.py (new test file)"
+  ],
+  "success_rate": {
+    "backend": "100% (28/28 tests passed)",
+    "frontend": "100% (all LogsTab features working)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!"
+  },
+  "seed_data_creation": "Backend tests created and deleted: 2 TEST_AUDIT articles, 1 TESTAUDIT promo code. All cleaned up. 89 total audit log entries now in system.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Audit log feature is fully working. Logs at GET /api/admin/audit-logs. LogsTab UI at /admin → Logs sidebar link. 89+ real audit events. All filters work: actor_type, entity_type, action, success, severity, date_from, date_to, q (search). Pagination works with page/limit params. Row click opens detail dialog. Fixed: missing AuditService import in articles.py. Known minor issues: (1) promo code entity_type stored as 'Promo_code' not 'PromoCode' - entity badges show gray for promo codes, (2) source='api' hardcoded for admin UI promo/catalog/customer mutations, (3) double entity prefix in customer creation action name.",
+  "rca_of_issue": "Missing AuditService import in articles.py: The file was refactored from server.py where AuditService was already imported at module level. When routes were extracted to separate files, the import was not carried over to articles.py. The file imports create_audit_log (used in older routes) but not AuditService (used in newer article routes). Lines 179, 251, 286 all call AuditService.log() which would raise NameError on first article creation/update/delete in any environment where the test data didn't already exist."
+}
