@@ -221,6 +221,7 @@ export function SubscriptionsTab() {
               <TableRow key={sub.id} data-testid={`admin-sub-row-${sub.id}`}>
                 <TableCell className="whitespace-nowrap">{sub.created_at?.slice(0, 10)}</TableCell>
                 <TableCell className="font-mono">{sub.subscription_number || sub.id?.slice(0, 8)}</TableCell>
+                <TableCell className="font-mono text-[10px]" data-testid={`admin-sub-processor-${sub.id}`}>{(sub.processor_id || sub.stripe_subscription_id || sub.gocardless_mandate_id) ? <span title={sub.processor_id || sub.stripe_subscription_id || sub.gocardless_mandate_id} className="px-1.5 py-0.5 bg-slate-100 rounded cursor-default">{(sub.processor_id || sub.stripe_subscription_id || sub.gocardless_mandate_id)?.slice(0, 14)}…</span> : "—"}</TableCell>
                 <TableCell className="max-w-[160px] truncate">{customerEmails[sub.customer_id] || sub.customer_id?.slice(0, 8)}</TableCell>
                 <TableCell className="max-w-[120px] truncate">{sub.plan_name || "—"}</TableCell>
                 <TableCell>${sub.amount?.toFixed(2)}</TableCell>
