@@ -182,9 +182,8 @@ export function ProductsTab() {
       (catalogFilter === "active" && p.is_active) ||
       (catalogFilter === "inactive" && !p.is_active);
     const matchCategory = categoryFilter === "all" || p.category === categoryFilter;
-    const matchComplexity = complexityFilter === "all" || p.pricing_complexity === complexityFilter;
     const matchSearch = !searchText || p.name?.toLowerCase().includes(searchText.toLowerCase()) || p.category?.toLowerCase().includes(searchText.toLowerCase());
-    return matchFilter && matchCategory && matchComplexity && matchSearch;
+    return matchFilter && matchCategory && matchSearch;
   });
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
