@@ -197,6 +197,7 @@ export function CustomersTab() {
                   <TableCell data-testid={`admin-customer-email-${customer.id}`}>{user.email || "—"}</TableCell>
                   <TableCell data-testid={`admin-customer-region-${customer.id}`}>{address.region || "—"}</TableCell>
                   <TableCell data-testid={`admin-customer-country-${customer.id}`}>{address.country || "—"}</TableCell>
+                  <TableCell data-testid={`admin-customer-currency-${customer.id}`}><span className="text-xs font-mono px-1.5 py-0.5 bg-slate-100 rounded">{customer.currency || "—"}</span></TableCell>
                   <TableCell>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-customer-status-${customer.id}`}>{isActive ? "Active" : "Inactive"}</span>
                   </TableCell>
