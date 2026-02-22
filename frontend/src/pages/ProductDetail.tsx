@@ -224,7 +224,7 @@ export default function ProductDetail() {
     }
     const response = await api.post("/pricing/calc", {
       product_id: product.id,
-      inputs: nextInputs,
+      inputs: { ...nextInputs, ...intakeAnswers },
     });
     setPricing(response.data);
   };
@@ -233,7 +233,7 @@ export default function ProductDetail() {
     if (product) {
       fetchPricing(inputs);
     }
-  }, [inputs, product]);
+  }, [inputs, product, intakeAnswers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInputChange = (key: string, value: any) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
