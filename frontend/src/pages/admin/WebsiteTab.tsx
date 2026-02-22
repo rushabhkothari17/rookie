@@ -88,6 +88,7 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
       { key: "hero", label: "Store Hero" },
       { key: "auth", label: "Auth Pages" },
       { key: "forms", label: "Forms" },
+      { key: "checkout", label: "Checkout" },
       { key: "email", label: "Email Templates" },
       { key: "errors", label: "Error Messages" },
       { key: "footer", label: "Footer & Nav" },
