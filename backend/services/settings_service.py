@@ -69,6 +69,14 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "description": "GoCardless environment: 'sandbox' or 'live'.",
         "is_secret": False,
     },
+    {
+        "key": "gocardless_webhook_secret",
+        "value_json": os.environ.get("GOCARDLESS_WEBHOOK_SECRET", ""),
+        "value_type": "secret",
+        "category": "Payments",
+        "description": "GoCardless Webhook Secret for verifying incoming webhook signatures.",
+        "is_secret": True,
+    },
     # ---- Operations ----
     {
         "key": "override_code_expiry_hours",
