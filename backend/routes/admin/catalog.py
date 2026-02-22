@@ -212,16 +212,33 @@ async def admin_update_product(
         update_fields["pricing_rules"] = payload.pricing_rules
     if payload.visible_to_customers is not None:
         update_fields["visible_to_customers"] = payload.visible_to_customers
+    if payload.intake_schema_json is not None:
+        _validate_intake_schema(payload.intake_schema_json)
+        current_version = (existing.get("intake_schema_json") or {}).get("version", 0)
+        update_fields["intake_schema_json"] = {
+            **payload.intake_schema_json.dict(),
+            "version": current_version + 1,
+            "updated_at": now_iso(),
+            "updated_by": admin.get("email", admin["id"]),
+        }
 
     merged = {**existing, **update_fields}
     merged["price_inputs"] = build_price_inputs(merged)
     await db.products.update_one({"id": product_id}, {"$set": merged})
+    audit_details: Dict[str, Any] = {"name": payload.name, "is_active": payload.is_active}
+    if payload.intake_schema_json is not None:
+        q = payload.intake_schema_json.questions
+        audit_details["intake_schema"] = {
+            "dropdown": len(q.dropdown), "multiselect": len(q.multiselect),
+            "single_line": len(q.single_line), "multi_line": len(q.multi_line),
+            "version": update_fields["intake_schema_json"]["version"],
+        }
     await create_audit_log(
         entity_type="product",
         entity_id=product_id,
         action="updated",
         actor=f"admin:{admin.get('email', admin['id'])}",
-        details={"name": payload.name, "is_active": payload.is_active},
+        details=audit_details,
     )
     return {"message": "Product updated"}
 
