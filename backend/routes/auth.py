@@ -74,15 +74,18 @@ async def register(payload: RegisterRequest):
         "postal": payload.address.postal,
         "country": payload.address.country,
     })
-    await db.email_outbox.insert_one({
-        "id": make_id(),
-        "to": payload.email.lower(),
-        "subject": await SettingsService.get("email_verification_subject", "Verify your account"),
-        "body": (await SettingsService.get("email_verification_body", "Your verification code is {{code}}")).replace("{{code}}", verification_code),
-        "type": "verification",
-        "status": "MOCKED",
-        "created_at": now_iso(),
-    })
+    await db.email_logs.delete_many({})  # clear old logs if any on startup
+    from services.email_service import EmailService
+    await EmailService.send(
+        trigger="verification",
+        recipient=payload.email.lower(),
+        variables={
+            "customer_name": payload.full_name,
+            "customer_email": payload.email.lower(),
+            "verification_code": verification_code,
+        },
+        db=db,
+    )
     await AuditService.log(
         action="USER_REGISTERED",
         description=f"New user registered: {payload.email}",
