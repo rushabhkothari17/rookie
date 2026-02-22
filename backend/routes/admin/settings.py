@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from core.security import require_admin
 from db.session import db
 from models import AppSettingsUpdate
-from services.audit_service import AuditService
+from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["settings"])

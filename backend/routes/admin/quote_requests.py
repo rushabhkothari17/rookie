@@ -9,7 +9,7 @@ from core.helpers import make_id, now_iso
 from core.security import require_admin, get_current_user
 from db.session import db
 from models import QuoteRequest
-from services.audit_service import AuditService
+from services.audit_service import AuditService, create_audit_log
 
 router = APIRouter(prefix="/api", tags=["quote-requests"])
 
