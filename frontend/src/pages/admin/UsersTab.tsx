@@ -25,6 +25,8 @@ export function UsersTab() {
   const [editUser, setEditUser] = useState<any>(null);
   const [newUser, setNewUser] = useState({ email: "", full_name: "", password: "", role: "admin" });
   const [editForm, setEditForm] = useState({ full_name: "", email: "", role: "admin" });
+  const [entityLogs, setEntityLogs] = useState<any[]>([]);
+  const [showEntityLogs, setShowEntityLogs] = useState(false);
 
   const load = useCallback(async (p = 1) => {
     try {
