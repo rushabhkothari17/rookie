@@ -40,6 +40,7 @@ export const EMPTY_FORM: ProductFormData = {
   inclusions: [], exclusions: [], requirements: [], next_steps: [],
   faqs: [], terms_id: "", base_price: 0, is_subscription: false, stripe_price_id: "",
   pricing_complexity: "SIMPLE", is_active: true, visible_to_customers: [],
+  price_rounding: "",
   intake_schema_json: EMPTY_INTAKE_SCHEMA,
 };
 
