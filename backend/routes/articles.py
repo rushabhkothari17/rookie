@@ -310,12 +310,6 @@ async def email_article(
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
-    app_settings = await db.app_settings.find_one({}, {"_id": 0})
-    resend_key = await SettingsService.get("resend_api_key") or (app_settings or {}).get("resend_api_key")
-    if not resend_key:
-        raise HTTPException(status_code=400, detail="Resend API key not configured. Please add it in Admin > Settings.")
-    resend.api_key = resend_key
-
     customers = await db.customers.find({"id": {"$in": payload.customer_ids}}, {"_id": 0}).to_list(50)
     if not customers:
         raise HTTPException(status_code=404, detail="No customers found")
@@ -326,16 +320,13 @@ async def email_article(
 
     app_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
     article_url = f"{app_url}/articles/{article.get('slug') or article_id}"
-    # Load configurable email settings from website_settings
     web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
-    from_name = web_s.get("email_from_name") or ""
+    subject_tpl = web_s.get("email_article_subject_template") or "{{article_title}} — from {{store_name}}"
+    subject = payload.subject or subject_tpl.replace("{{article_title}}", article["title"])
     cta_text = web_s.get("email_article_cta_text") or "View Article"
-    footer_text = web_s.get("email_article_footer_text") or "Your consultant has shared this document with you."
-    subject_tpl = web_s.get("email_article_subject_template") or "Article: {{article_title}}"
-    sender_email = await SettingsService.get("resend_sender_email", "noreply@example.com")
-    from_field = f"{from_name} <{sender_email}>" if from_name else sender_email
+    footer_text = web_s.get("email_article_footer_text") or ""
 
-    subject = payload.subject or subject_tpl.replace("{{article_title}}", article['title'])
+    from services.email_service import EmailService
     sent = []
     errors = []
     now = now_iso()
@@ -344,23 +335,21 @@ async def email_article(
         email_addr = user_email_map.get(customer.get("user_id"))
         if not email_addr:
             continue
-        message_body = payload.message or ""
-        price_line = f"<p style='color:#475569;'>Price: <strong>${article['price']}</strong></p>" if article.get("price") else ""
-        html_body = f"""
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-          <h2 style="color:#1e293b;">{article['title']}</h2>
-          {"<p style='color:#475569;'>" + message_body + "</p>" if message_body else ""}
-          <p style="color:#475569;">Category: <strong>{article['category']}</strong></p>
-          {price_line}
-          <a href="{article_url}" style="display:inline-block;background:#1e293b;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;margin-top:16px;">
-            {cta_text}
-          </a>
-          <p style="color:#94a3b8;font-size:12px;margin-top:24px;">{footer_text}</p>
-        </div>"""
-        try:
-            params = {"from": from_field, "to": [email_addr], "subject": subject, "html": html_body}
-            await asyncio.to_thread(resend.Emails.send, params)
-            sent.append(email_addr)
+        result = await EmailService.send(
+            trigger="article_email",
+            recipient=email_addr,
+            variables={
+                "article_title": article["title"],
+                "article_category": article.get("category", ""),
+                "article_url": article_url,
+                "article_message": payload.message or "",
+                "article_price": f"${article['price']}" if article.get("price") else "",
+                "cta_text": cta_text,
+                "footer_text": footer_text,
+                "customer_name": "",
+            },
+            db=db,
+        )
             await db.article_logs.insert_one({
                 "id": make_id(),
                 "article_id": article_id,
