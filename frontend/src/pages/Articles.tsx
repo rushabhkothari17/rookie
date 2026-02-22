@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AppShell from "@/components/AppShell";
+import TopNav from "@/components/TopNav";
 import api from "@/lib/api";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -50,8 +50,9 @@ export default function Articles() {
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
-    <AppShell activeCategory={null}>
-      <div className="space-y-8" data-testid="articles-page">
+    <div className="min-h-screen aa-bg">
+      <TopNav />
+      <main className="aa-container py-10">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-slate-900">Articles</h1>
           <p className="text-slate-500 text-sm">Guides, scopes, and resources from your consultant</p>
