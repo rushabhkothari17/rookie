@@ -350,8 +350,6 @@ async def email_article(
             },
             db=db,
         )
-            await db.article_logs.insert_one({
-                "id": make_id(),
         if result.get("status") in ("sent", "mocked"):
             sent.append(email_addr)
             await db.article_logs.insert_one({
