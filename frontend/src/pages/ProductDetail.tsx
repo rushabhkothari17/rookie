@@ -638,11 +638,11 @@ export default function ProductDetail() {
       <Dialog open={showScopeModal} onOpenChange={setShowScopeModal}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="scope-request-modal">
           <DialogHeader>
-            <DialogTitle>Request Scope for {product?.name}</DialogTitle>
+            <DialogTitle>{ws.scope_form_title || "Request Scope"} — {product?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-slate-500">
-              Tell us about your project and we'll get back to you with a detailed scope, timeline, and quote.
+              {ws.scope_form_subtitle || "Tell us about your project and we'll get back to you with a detailed scope, timeline, and quote."}
             </p>
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700">Project Summary *</label>
