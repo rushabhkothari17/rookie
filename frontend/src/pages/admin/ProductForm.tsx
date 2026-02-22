@@ -27,7 +27,8 @@ export interface ProductFormData {
   base_price: number;
   is_subscription: boolean;
   stripe_price_id: string;
-  pricing_complexity: string;
+  pricing_complexity: string;  // kept for TS compat but not sent
+  price_rounding: string;
   is_active: boolean;
   visible_to_customers: string[];
   intake_schema_json: IntakeSchemaJson;
