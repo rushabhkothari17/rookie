@@ -26,8 +26,7 @@ async def admin_customers(
     search: Optional[str] = None,
     country: Optional[str] = None,
     status: Optional[str] = None,
-    bank_transfer: Optional[str] = None,
-    card_payment: Optional[str] = None,
+    payment_mode: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     users_all = await db.users.find({}, {"_id": 0, "id": 1, "email": 1, "full_name": 1, "is_active": 1}).to_list(10000)
@@ -36,10 +35,16 @@ async def admin_customers(
     addr_map = {a["customer_id"]: a for a in addresses_all}
 
     query: Dict[str, Any] = {}
-    if bank_transfer is not None:
-        query["allow_bank_transfer"] = (bank_transfer == "true")
-    if card_payment is not None:
-        query["allow_card_payment"] = (card_payment == "true")
+    if payment_mode == "gocardless":
+        query["allow_bank_transfer"] = True
+    elif payment_mode == "stripe":
+        query["allow_card_payment"] = True
+    elif payment_mode == "both":
+        query["allow_bank_transfer"] = True
+        query["allow_card_payment"] = True
+    elif payment_mode == "none":
+        query["allow_bank_transfer"] = False
+        query["allow_card_payment"] = False
 
     customers_all = await db.customers.find(query, {"_id": 0}).to_list(10000)
     filtered = []
