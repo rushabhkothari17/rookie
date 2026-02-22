@@ -135,11 +135,11 @@ export default function Cart() {
       return;
     }
     if (!partnerTagResponse) {
-      toast.error("Please select whether you have tagged us as your Zoho Partner");
+      toast.error(ws.msg_partner_tagging_prompt || "Please select whether you have tagged us as your partner");
       return;
     }
     if (partnerTagResponse === "Not yet" && !overrideCode.trim()) {
-      toast.error("An override code is required when you have not yet tagged us as your Zoho Partner");
+      toast.error(ws.msg_override_required || "An override code is required when you have not yet tagged us as your partner");
       return;
     }
     setLoading(true);
