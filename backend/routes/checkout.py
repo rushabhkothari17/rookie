@@ -552,7 +552,7 @@ async def checkout_status(
     session_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
+    stripe_checkout = StripeCheckout(api_key=await SettingsService.get("stripe_secret_key") or STRIPE_API_KEY, webhook_url="")
     status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
     transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
     if transaction:
