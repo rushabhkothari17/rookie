@@ -44,6 +44,7 @@ function productToForm(p: any): ProductFormData {
     pricing_complexity: p.pricing_complexity || "SIMPLE",
     is_active: p.is_active ?? true,
     visible_to_customers: p.visible_to_customers || [],
+    price_rounding: p.price_rounding || "",
     intake_schema_json: p.intake_schema_json || EMPTY_INTAKE_SCHEMA,
   };
 }
