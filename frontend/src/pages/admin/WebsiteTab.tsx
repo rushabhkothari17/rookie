@@ -82,7 +82,7 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
     group: "Configuration",
     items: [
       { key: "references", label: "References" },
-      { key: "integrations", label: "Integrations" },
+      { key: "payments", label: "Payments" },
       { key: "sysconfig", label: "System Config" },
     ],
   },
