@@ -564,6 +564,19 @@ async def checkout_status(
         order = await db.orders.find_one({"id": transaction.get("order_id")}, {"_id": 0})
         if order and order.get("status") != "paid":
             await db.orders.update_one({"id": order["id"]}, {"$set": {"status": "paid"}})
+            await create_audit_log(
+                entity_type="order",
+                entity_id=order["id"],
+                action="payment_confirmed",
+                actor="stripe",
+                details={
+                    "session_id": session_id,
+                    "amount": order.get("total"),
+                    "currency": order.get("currency"),
+                    "payment_method": "card",
+                    "previous_status": order.get("status"),
+                },
+            )
             await db.invoices.insert_one({
                 "id": make_id(), "order_id": order["id"], "subscription_id": None,
                 "stripe_invoice_id": None, "zoho_books_invoice_id": None,
@@ -593,6 +606,19 @@ async def checkout_status(
                         "override_code_id": order.get("override_code_id"),
                         "partner_tag_timestamp": order.get("partner_tag_timestamp"),
                     })
+                    await create_audit_log(
+                        entity_type="subscription",
+                        entity_id=sub_id,
+                        action="created",
+                        actor="stripe",
+                        details={
+                            "plan_name": product_name,
+                            "status": "active",
+                            "payment_method": "card",
+                            "order_id": order["id"],
+                            "session_id": session_id,
+                        },
+                    )
                     await db.email_outbox.insert_one({
                         "id": make_id(), "to": user["email"],
                         "subject": "Subscription started",
