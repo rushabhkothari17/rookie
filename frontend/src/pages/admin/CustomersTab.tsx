@@ -186,8 +186,8 @@ export function CustomersTab() {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>State/Province</TableHead>
-              <TableHead>Country</TableHead><TableHead>Currency</TableHead><TableHead>Status</TableHead><TableHead>Bank Transfer</TableHead>
-              <TableHead>Card Payment</TableHead><TableHead>Partner Map</TableHead><TableHead>Actions</TableHead>
+              <TableHead>Country</TableHead><TableHead>Currency</TableHead><TableHead>Status</TableHead>
+              <TableHead>Payment Methods</TableHead><TableHead>Partner Map</TableHead><TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -196,6 +196,9 @@ export function CustomersTab() {
               const address = addrMap[customer.id] || {};
               const isActive = user.is_active !== false;
               const pm = customer.partner_map;
+              const modes: string[] | undefined = customer.allowed_payment_modes;
+              const hasGC = modes ? modes.includes("gocardless") : (customer.allow_bank_transfer ?? true);
+              const hasStripe = modes ? modes.includes("stripe") : (customer.allow_card_payment ?? false);
               return (
                 <TableRow key={customer.id} data-testid={`admin-customer-row-${customer.id}`}>
                   <TableCell data-testid={`admin-customer-name-${customer.id}`}>{user.full_name || customer.company_name}</TableCell>
@@ -206,15 +209,12 @@ export function CustomersTab() {
                   <TableCell>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-customer-status-${customer.id}`}>{isActive ? "Active" : "Inactive"}</span>
                   </TableCell>
-                  <TableCell>
-                    <button onClick={() => handlePaymentToggle(customer.id, "allow_bank_transfer", !(customer.allow_bank_transfer ?? true))} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${(customer.allow_bank_transfer ?? true) ? "bg-slate-900" : "bg-slate-200"}`} data-testid={`admin-customer-bank-toggle-${customer.id}`}>
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${(customer.allow_bank_transfer ?? true) ? "translate-x-4" : "translate-x-0.5"}`} />
-                    </button>
-                  </TableCell>
-                  <TableCell>
-                    <button onClick={() => handlePaymentToggle(customer.id, "allow_card_payment", !(customer.allow_card_payment ?? false))} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${(customer.allow_card_payment ?? false) ? "bg-slate-900" : "bg-slate-200"}`} data-testid={`admin-customer-card-toggle-${customer.id}`}>
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${(customer.allow_card_payment ?? false) ? "translate-x-4" : "translate-x-0.5"}`} />
-                    </button>
+                  <TableCell data-testid={`admin-customer-payment-modes-${customer.id}`}>
+                    <div className="flex flex-wrap gap-1">
+                      {hasGC && <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-50 text-blue-700">GoCardless</span>}
+                      {hasStripe && <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-50 text-purple-700">Stripe</span>}
+                      {!hasGC && !hasStripe && <span className="text-[10px] text-slate-400 italic">None</span>}
+                    </div>
                   </TableCell>
                   <TableCell data-testid={`admin-customer-partner-map-${customer.id}`}>
                     {editingPartnerMap?.customerId === customer.id ? (
