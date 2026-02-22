@@ -86,7 +86,7 @@ function OptionsEditor({ options, onChange, affects_price }: {
               type="number"
               value={opt.price_value ?? 0}
               onChange={e => update(i, "price_value", parseFloat(e.target.value) || 0)}
-              placeholder="±$"
+              placeholder="0"
               className="h-7 text-xs w-20 font-mono"
               data-testid={`opt-price-${i}`}
             />
