@@ -251,7 +251,7 @@ export function ProductsTab() {
                   </span>
                 </TableCell>
                 <TableCell>{complexityBadge(product.pricing_complexity)}</TableCell>
-                <TableCell className="text-sm">{product.base_price ? `$${product.base_price}` : "—"}</TableCell>
+                <TableCell className="text-sm">{product.base_price ? `$${product.base_price}` : <span className="text-slate-400 text-xs">RFQ</span>}</TableCell>
                 <TableCell>
                   <span className={`text-xs px-2 py-0.5 rounded font-medium ${product.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                     {product.is_active ? "Active" : "Inactive"}
