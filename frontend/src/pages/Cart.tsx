@@ -185,6 +185,7 @@ export default function Cart() {
           zoho_subscription_type: zohoSubscriptionType,
           current_zoho_product: currentZohoProduct,
           zoho_account_access: zohoAccountAccess,
+          extra_fields: Object.keys(extraFields).length ? extraFields : undefined,
         });
         
         // Check if GoCardless redirect is needed
