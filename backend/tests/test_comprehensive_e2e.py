@@ -166,7 +166,7 @@ def seed_data(admin_headers):
             "expires_at": (datetime.utcnow() + timedelta(days=30)).isoformat()
         }, headers=admin_headers)
         if r.status_code == 200:
-            oc = r.json()
+            oc = r.json()  # {"message": ..., "id": ...}
             data["override_code"] = oc
             data["override_code_id"] = oc.get("id")
 
