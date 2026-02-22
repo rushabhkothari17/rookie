@@ -149,8 +149,8 @@ export default function ReferencesSection() {
             </thead>
             <tbody>
               {refs.map(ref => (
-                <>
-                  <tr key={ref.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                <React.Fragment key={ref.id}>
+                  <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <span className="font-medium text-slate-800">{ref.label}</span>
