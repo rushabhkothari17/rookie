@@ -1,0 +1,82 @@
+{
+  "summary": "Iteration 36: Comprehensive testing of admin panel filter-options endpoint, new subscription/order filters, cs_ prefix deep-links, and patched data. All 24 backend tests pass (100%). All frontend UI verification checks pass (100%).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "All admin pages (console log)",
+        "issues": [
+          "Persistent hydration warning: '<span> cannot be a child of <select>/<option>' - Emergent VE framework wrapper, non-blocking, confirmed non-fixable at app level."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter36_filter_options.py",
+    "/app/test_reports/pytest/pytest_results_iter36.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All features implemented correctly and working end-to-end.",
+    "GET /api/admin/filter-options returns ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHODS, ALLOWED_BANK_TRANSACTION_STATUSES from constants.py - working correctly.",
+    "pending_direct_debit_setup present in both subscription_statuses and order_statuses arrays.",
+    "SubscriptionsTab.tsx: 8 new filters verified (sub#, processorId, plan, status, payment, renewalFrom/To); status and payment dropdowns load from filter-options API.",
+    "OrdersTab.tsx: 8 new filters verified (email, order#, sub#, processorId, status, method, payDateFrom/To); status and method dropdowns load from filter-options API.",
+    "BankTransactionsTab.tsx: btStatuses state populated from filter-options; status dropdown shows matched/completed/pending/failed/refunded correctly.",
+    "cs_ prefix deep-link: SUB-7EF107CB processor_id=cs_test_a1B6W9Nuu0... renders as blue badge linking to https://dashboard.stripe.com/checkout/sessions/... - working correctly.",
+    "Patched data verified: AA-7BE7DB36 has subscription_number=SUB-7EF107CB and payment_date=2026-02-22; SUB-7EF107CB has renewal_date=2026-03-22.",
+    "Orders sub_number_filter=SUB-7EF correctly returns AA-7BE7DB36 showing SUB-7EF107CB in Sub# column.",
+    "getProcessorLink in both OrdersTab and SubscriptionsTab handles cs_ prefix correctly (7th prefix type added in this iteration)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter36_filter_options.py"
+  ],
+  "success_rate": {
+    "backend": "100% (24/24 tests passed)",
+    "frontend": "100% (all UI checks passed)"
+  },
+  "test_credentials": {
+    "admin": "admin@automateaccounts.local / ChangeMe123!"
+  },
+  "seed_data_creation": "No new seed data created. Tests relied on existing patched data (SUB-7EF107CB, AA-7BE7DB36).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 36 verified: (1) /api/admin/filter-options returns all 4 arrays from constants.py including pending_direct_debit_setup. (2) Subscriptions table has 8 filter inputs (sub#, processorId, plan, status dropdown from API, payment dropdown from API, renewalFrom, renewalTo + created/start/contractEnd ranges). (3) Orders table has sub#, processorId, payMethod, payDateFrom/To filters. (4) BankTransactionsTab btStatuses loaded from filter-options. (5) cs_ prefix generates stripe checkout session deep-link; SUB-7EF107CB processor_id=cs_test_a1B6W9... shows as blue clickable link. (6) Patched data AA-7BE7DB36 has sub#=SUB-7EF107CB and payment_date. (7) SUB-7EF107CB has renewal_date=2026-03-22. React hydration warning from Emergent VE wrapper is persistent but non-blocking.",
+  "feature_test_results": {
+    "GET /api/admin/filter-options returns 4 arrays": "PASS",
+    "filter-options includes pending_direct_debit_setup in subscription_statuses": "PASS",
+    "filter-options includes pending_direct_debit_setup in order_statuses": "PASS",
+    "filter-options bank_transaction_statuses: matched/completed/pending/failed/refunded": "PASS",
+    "Subscriptions sub_number filter returns SUB-7EF107CB": "PASS",
+    "Subscriptions plan_name_filter=Bookkeeping returns bookkeeping subs": "PASS",
+    "Subscriptions payment=card filter": "PASS",
+    "Subscriptions status=active filter": "PASS",
+    "Subscriptions renewal_from=2026-03-01 filter": "PASS",
+    "Subscriptions processor_id_filter=cs_test returns cs_ subs": "PASS",
+    "SUB-7EF107CB has renewal_date set": "PASS - 2026-03-22",
+    "Orders sub_number_filter=SUB-7EF returns AA-7BE7DB36": "PASS",
+    "Orders payment_method_filter=card": "PASS",
+    "Orders processor_id_filter=pi_ returns pi_ orders": "PASS",
+    "AA-7BE7DB36 subscription_number=SUB-7EF107CB": "PASS",
+    "AA-7BE7DB36 payment_date set": "PASS - 2026-02-22",
+    "Orders pay_date_from/to range filter": "PASS",
+    "cs_ deep-link points to stripe checkout/sessions/": "PASS - href=https://dashboard.stripe.com/checkout/sessions/cs_test_a1B6W9...",
+    "Subscriptions filter UI: Sub# input visible": "PASS",
+    "Subscriptions filter UI: Processor ID input visible": "PASS",
+    "Subscriptions filter UI: Plan name input visible": "PASS",
+    "Subscriptions filter UI: Renewal date range visible": "PASS",
+    "Subscriptions filter UI: Method dropdown visible": "PASS",
+    "Subscriptions status dropdown from filter-options with pending_direct_debit_setup": "PASS",
+    "Orders filter UI: Sub# input visible": "PASS",
+    "Orders filter UI: Processor ID input visible": "PASS",
+    "Orders filter UI: Pay Method dropdown visible": "PASS",
+    "Orders filter UI: Pay date range visible": "PASS",
+    "Orders status dropdown from filter-options with pending_direct_debit_setup": "PASS",
+    "BankTransactionsTab status dropdown uses btStatuses from filter-options": "PASS - shows matched/completed/pending/failed/refunded"
+  }
+}
