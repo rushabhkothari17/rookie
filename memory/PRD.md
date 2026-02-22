@@ -277,6 +277,41 @@ Admin can now configure structured intake questions per product via Admin → Ca
 - `/app/frontend/src/pages/ProductDetail.tsx`
 - Test report: `/app/test_reports/iteration_38.json` (20/20 backend, 100% frontend)
 
+## Phase 14: Pricing Overhaul + Category Filter Fix (Feb 2026)
+
+### Root Cause Fixes
+- `pricing_type="simple"` (set by all admin-created products) was unhandled in `calculate_price` → returned $0. Fixed by treating `simple/fixed/null` identically.
+- New products created via admin now use `pricing_type="fixed"` (not "simple")
+- Category filter in admin catalog was missing categories because `/admin/categories` was capped at per_page=20 (only 20 loaded). Fixed to per_page=500.
+
+### Pricing Type (pricing_complexity) Removal
+- Removed "Pricing Complexity" (SIMPLE/COMPLEX/RFQ) from admin table column, filter dropdown, and product editor form
+- RFQ behavior is now purely data-driven: `isRFQ = pricing.total === 0 && !is_scope_request`
+- RFQ products show "Price on request" in the purchase summary (not confusing "$0.00")
+
+### Intake Affects-Price Implementation
+- `IntakeOption.price_value: float` — numeric value for add/multiply mode
+- `IntakeQuestion.price_mode: "add" | "multiply"` — applies per-question
+- Admin UI: price_mode radio shown when affects_price=true; price_value input shown in each option
+- Backend calc: add mode sums option price_values onto subtotal; multiply mode multiplies sequentially
+
+### Price Rounding (product-level)
+- `product.price_rounding: "25" | "50" | "100" | null` — applied after all intake adjustments
+- Uses conventional rounding (0.5 rounds up, not Python banker's rounding)
+- Admin form: "Price Rounding" select (No rounding / Round to $25 / $50 / $100)
+
+### Files changed
+- `/app/backend/core/helpers.py` (round_nearest, uses math.floor for conventional rounding)
+- `/app/backend/services/pricing_service.py` (fixed/simple/null pricing, intake adjustments, rounding)
+- `/app/backend/models.py` (IntakeOption.price_value, IntakeQuestion.price_mode, price_rounding fields)
+- `/app/backend/routes/admin/catalog.py` (pricing_type="fixed", price_rounding persisted)
+- `/app/frontend/src/pages/admin/IntakeSchemaBuilder.tsx` (price_mode radio + price_value input)
+- `/app/frontend/src/pages/admin/ProductForm.tsx` (Price Rounding replaces Pricing Complexity)
+- `/app/frontend/src/pages/admin/ProductsTab.tsx` (complexity removed, categories per_page=500)
+- `/app/frontend/src/pages/ProductDetail.tsx` (isRFQ based on pricing.total===0)
+- `/app/frontend/src/components/StickyPurchaseSummary.tsx` (isRFQ prop → "Price on request")
+- Test report: `/app/test_reports/iteration_39.json` (27/27 backend, 100% frontend)
+
 ## Known Issues / Technical Debt
 - HTML hydration warning `<span> cannot be child of <select>/<option>` — caused by Emergent VE browser wrapper injecting spans. **Not fixable in application code.** Non-blocking.
 - Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
