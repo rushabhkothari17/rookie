@@ -30,13 +30,20 @@ export default function Cart() {
   const [zohoSubscriptionType, setZohoSubscriptionType] = useState("");
   const [currentZohoProduct, setCurrentZohoProduct] = useState("");
   const [zohoAccountAccess, setZohoAccountAccess] = useState("");
+  const [extraFields, setExtraFields] = useState<Record<string, string>>({});
   const [zohoUrls, setZohoUrls] = useState({
-    reseller_signup_us: "https://store.zoho.com/ResellerCustomerSignUp.do?id=0752790261568b40e0d2ffef44a3f4e428bbcca5aa8fba3305f9e276702456a3",
-    reseller_signup_ca: "https://store.zohocloud.ca/ResellerCustomerSignUp.do?id=341bc9b2ab087c30e176e7c0385e3caaa331989c27aa00d0f3a0521dfb926960",
-    partner_tag_us: "https://store.zoho.com/html/store/tagyourpartner.html?partnerid=zkms01370000000123731ce9bbb964daefb3ac6c1ff255b5fa6f",
-    partner_tag_ca: "https://store.zohocloud.ca/html/store/tagyourpartner.html?partnerid=zkms0135000000008003432a39b432f137718e6225e74e34fc66",
-    access_instructions_url: "https://www.automateaccounts.com",
+    reseller_signup_us: "",
+    reseller_signup_ca: "",
+    partner_tag_us: "",
+    partner_tag_ca: "",
+    access_instructions_url: "",
   });
+
+  // Parse custom extra checkout questions from website settings
+  const extraSchema = useMemo(() => {
+    try { return JSON.parse(ws.checkout_extra_schema || "[]"); }
+    catch { return []; }
+  }, [ws.checkout_extra_schema]);
 
   useEffect(() => {
     api.get("/settings/public").then((res) => {
