@@ -165,3 +165,113 @@ async def stripe_webhook(request: Request):
         })
 
     return {"status": "ok"}
+
+
+@router.post("/webhook/gocardless")
+async def gocardless_webhook(request: Request):
+    """Handle GoCardless webhook events (payments, mandates)."""
+    body = await request.body()
+    signature = request.headers.get("Webhook-Signature", "")
+
+    # Verify HMAC-SHA256 signature
+    gc_webhook_secret = await SettingsService.get("gocardless_webhook_secret") or os.environ.get("GOCARDLESS_WEBHOOK_SECRET", "")
+    if gc_webhook_secret and signature:
+        expected = hmac.new(gc_webhook_secret.encode(), body, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected, signature):
+            raise HTTPException(status_code=498, detail="Invalid webhook signature")
+
+    try:
+        payload = json.loads(body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    events = payload.get("events", [])
+
+    for event in events:
+        resource_type = event.get("resource_type", "")  # "payments", "mandates"
+        action = event.get("action", "")
+        links = event.get("links", {})
+        payment_id = links.get("payment")
+        mandate_id = links.get("mandate")
+        event_id = event.get("id", make_id())
+
+        # Deduplicate
+        existing = await db.audit_logs.find_one(
+            {"action": "gocardless_event", "entity_id": event_id}, {"_id": 0}
+        )
+        if existing:
+            continue
+
+        await db.audit_logs.insert_one({
+            "id": make_id(),
+            "actor": "gocardless_webhook",
+            "action": "gocardless_event",
+            "entity_type": resource_type,
+            "entity_id": event_id,
+            "details": {"resource_type": resource_type, "action": action, "links": links},
+            "created_at": now_iso(),
+        })
+
+        if resource_type == "payments" and payment_id:
+            # Check orders
+            order = await db.orders.find_one({"gocardless_payment_id": payment_id}, {"_id": 0})
+            if order:
+                if action == "confirmed":
+                    await db.orders.update_one(
+                        {"id": order["id"]},
+                        {"$set": {"status": "paid", "payment_date": now_iso(), "updated_at": now_iso()}},
+                    )
+                    await create_audit_log(
+                        entity_type="order", entity_id=order["id"],
+                        action="payment_confirmed", actor="gocardless_webhook",
+                        details={"payment_id": payment_id, "gocardless_event": action},
+                    )
+                elif action in ("failed", "charged_back"):
+                    await db.orders.update_one(
+                        {"id": order["id"]},
+                        {"$set": {"status": "unpaid", "updated_at": now_iso()}},
+                    )
+                    await create_audit_log(
+                        entity_type="order", entity_id=order["id"],
+                        action="payment_failed", actor="gocardless_webhook",
+                        details={"payment_id": payment_id, "gocardless_event": action},
+                    )
+
+            # Check subscriptions
+            sub = await db.subscriptions.find_one({"gocardless_payment_id": payment_id}, {"_id": 0})
+            if sub:
+                if action == "confirmed":
+                    await db.subscriptions.update_one(
+                        {"id": sub["id"]},
+                        {"$set": {"status": "active", "updated_at": now_iso()}},
+                    )
+                    await create_audit_log(
+                        entity_type="subscription", entity_id=sub["id"],
+                        action="payment_confirmed", actor="gocardless_webhook",
+                        details={"payment_id": payment_id, "gocardless_event": action},
+                    )
+                elif action in ("failed", "charged_back"):
+                    await db.subscriptions.update_one(
+                        {"id": sub["id"]},
+                        {"$set": {"status": "unpaid", "updated_at": now_iso()}},
+                    )
+                    await create_audit_log(
+                        entity_type="subscription", entity_id=sub["id"],
+                        action="payment_failed", actor="gocardless_webhook",
+                        details={"payment_id": payment_id, "gocardless_event": action},
+                    )
+
+        elif resource_type == "mandates" and mandate_id:
+            if action in ("cancelled", "failed", "expired"):
+                # Mark any active subscriptions with this mandate as unpaid
+                await db.subscriptions.update_many(
+                    {"gocardless_mandate_id": mandate_id, "status": "active"},
+                    {"$set": {"status": "unpaid", "updated_at": now_iso()}},
+                )
+                await create_audit_log(
+                    entity_type="subscription", entity_id=mandate_id,
+                    action=f"mandate_{action}", actor="gocardless_webhook",
+                    details={"mandate_id": mandate_id, "gocardless_event": action},
+                )
+
+    return {"status": "ok"}
