@@ -465,26 +465,8 @@ export default function WebsiteTab() {
             </>
           )}
 
-          {/* ── Links & URLs ── */}
-          {activeSection === "links" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">Links & URLs</h3>
-              <p className="text-xs text-slate-400 mb-4">Click any value to edit. Changes are saved individually.</p>
-              {["Zoho", "Branding"].map(cat => {
-                const items = structured[cat] || [];
-                if (!items.length) return null;
-                return (
-                  <div key={cat} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
-                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">{cat}</h4>
-                    {items.map(item => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
-                  </div>
-                );
-              })}
-              {!structured["Zoho"] && !structured["Branding"] && (
-                <p className="text-sm text-slate-400">No link settings configured.</p>
-              )}
-            </>
-          )}
+          {/* ── References ── */}
+          {activeSection === "references" && <ReferencesSection />}
 
           {/* ── Integrations ── */}
           {activeSection === "integrations" && (
