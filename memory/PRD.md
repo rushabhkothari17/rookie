@@ -186,7 +186,30 @@ All 23 previously identified audit logging gaps have been addressed. Every POST/
 - Files: `routes/checkout.py`, `services/settings_service.py`
 - Test reports: `/app/test_reports/iteration_31.json` (24/24 pass, 100%)
 
-## Phase 10: Processor ID Deep-Link + Edit (Completed — Feb 2026)
+## Phase 11: Filter System Overhaul + Checkout Data Completeness (Feb 2026)
+
+### Root Cause Fixed (Recurring Filter Bug)
+- **Single source of truth**: Added `GET /api/admin/filter-options` endpoint in `subscriptions.py` returning values from `constants.py`. Both OrdersTab and SubscriptionsTab (and BankTransactionsTab) now load their status/payment method dropdowns from this endpoint on mount with fallback defaults. No more frontend ↔ backend drift.
+
+### Checkout Flow Completeness
+- **Stripe subscriptions** (`checkout_status`): Now fetches actual Stripe PaymentIntent ID (`pi_xxx`) from the checkout session via `stripe.checkout.Session.retrieve(expand=["payment_intent","subscription"])`. Stores `pi_xxx` as `processor_id`. All subscription fields populated: `subscription_number`, `created_at`, `start_date`, `renewal_date`, `contract_end_date`, `product_id`, `notes`, `internal_note`, `stripe_subscription_id`. Order back-filled with `subscription_id`, `subscription_number`, `payment_date`.
+- **GoCardless subscriptions**: Added `subscription_number`, `created_at`, `updated_at`, `renewal_date`, `product_id`, `notes`, `internal_note`.
+- **Order subscription_id update**: Backend auto-resolves `subscription_number` when `subscription_id` is set via admin edit.
+- **Existing data patched**: SUB-7EF107CB (renewal_date), AA-7BE7DB36 (payment_date, subscription_id, subscription_number).
+
+### New Filters
+- **Subscriptions**: sub#, processor ID, plan name, renewal date range, method
+- **Orders**: sub#, processor ID, payment method, payment date range
+- **Backend**: New query params on `GET /admin/subscriptions` and `GET /admin/orders`
+
+### Deep-Link Enhancement
+- Added `cs_` prefix → `https://dashboard.stripe.com/checkout/sessions/{id}` in `getProcessorLink`
+- Added `pending_direct_debit_setup` to `ALLOWED_SUBSCRIPTION_STATUSES`
+- Added `ALLOWED_PAYMENT_METHODS` and `ALLOWED_BANK_TRANSACTION_STATUSES` to `constants.py`
+
+### Portal Fix
+- Fixed `TypeError: Cannot read properties of undefined (reading 'toFixed')` — all `.toFixed()` calls now null-safe
+- Test report: `/app/test_reports/iteration_36.json` (24/24 backend + frontend = 100%)
 
 ### Summary
 Admin can now one-click open any Stripe or GoCardless payment/subscription in the provider's dashboard directly from the Orders or Subscriptions table. The processor_id is also editable via the Edit dialog.
