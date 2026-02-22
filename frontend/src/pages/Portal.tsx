@@ -338,7 +338,7 @@ export default function Portal() {
               data-testid="portal-subs-status-filter"
             >
               <option value="">All statuses</option>
-              {subUniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+              {subUniqueStatuses.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
             </select>
           </div>
         </div>
