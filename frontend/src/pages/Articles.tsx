@@ -146,7 +146,7 @@ export default function Articles() {
             )}
           </>
         )}
-      </div>
-    </AppShell>
+      </main>
+    </div>
   );
 }
