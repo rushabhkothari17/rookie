@@ -75,7 +75,7 @@ async def update_app_settings(
         source="admin_ui",
         after_json={k: "***" if "key" in k or "secret" in k or "token" in k else v for k, v in update.items()},
     )
-    await db.audit_logs.insert_one({"id": __import__("uuid").uuid4().hex, "entity_type": "setting", "entity_id": "app_settings", "action": "settings_updated", "actor": admin.get("email", "admin"), "details": {"keys_changed": list(update.keys())}, "created_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()})
+    await create_audit_log(entity_type="setting", entity_id="app_settings", action="settings_updated", actor=admin.get("email", "admin"), details={"keys_changed": list(update.keys())})
     return {"message": "Settings updated"}
 
 
