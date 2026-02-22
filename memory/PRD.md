@@ -1,4 +1,5 @@
 # Product Requirements Document — Automate Accounts Admin Portal
+_Last updated: Feb 2026_
 
 ## Original Problem Statement
 Build a full-featured admin panel for "Automate Accounts" — a Zoho automation consultancy. The platform provides:
