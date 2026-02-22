@@ -255,16 +255,24 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
+    // Validate required intake questions
+    for (const q of enabledIntakeQuestions) {
+      if (!q.required) continue;
+      const val = intakeAnswers[q.key];
+      const empty = q.qtype === "multiselect" ? !val || val.length === 0 : !val || val === "";
+      if (empty) { toast.error(`"${q.label}" is required`); return; }
+    }
+
     if (product.sku === "MIG-BOOKS") {
       if (!migBooksData.isComplete) {
         toast.error("Please complete the required fields to get your price");
         return;
       }
-      addItem({ product_id: product.id, quantity: 1, inputs: migBooksData.inputs, price_override: migBooksData.price });
+      addItem({ product_id: product.id, quantity: 1, inputs: { ...migBooksData.inputs, ...intakeAnswers }, price_override: migBooksData.price });
     } else if (scopeUnlock) {
-      // Add to cart with scope-unlocked price
       const scopeInputs = {
         ...inputs,
+        ...intakeAnswers,
         _scope_unlock: {
           scope_id: scopeUnlock.article_id,
           article_title: scopeUnlock.title,
@@ -274,7 +282,7 @@ export default function ProductDetail() {
       };
       addItem({ product_id: product.id, quantity: 1, inputs: scopeInputs, price_override: scopeUnlock.price });
     } else {
-      addItem({ product_id: product.id, quantity: 1, inputs });
+      addItem({ product_id: product.id, quantity: 1, inputs: { ...inputs, ...intakeAnswers } });
     }
     toast.success("Added to cart");
     navigate("/cart");
