@@ -53,8 +53,12 @@ const emptyQ = (order: number): IntakeQuestion => ({
   order, affects_price: false, price_mode: "add", options: [],
 });
 
-function OptionsEditor({ options, onChange }: { options: IntakeOption[]; onChange: (v: IntakeOption[]) => void }) {
-  const update = (i: number, f: keyof IntakeOption, v: string) => {
+function OptionsEditor({ options, onChange, affects_price }: {
+  options: IntakeOption[];
+  onChange: (v: IntakeOption[]) => void;
+  affects_price?: boolean;
+}) {
+  const update = (i: number, f: keyof IntakeOption, v: any) => {
     const n = [...options]; n[i] = { ...n[i], [f]: v }; onChange(n);
   };
   const move = (i: number, dir: -1 | 1) => {
@@ -64,17 +68,29 @@ function OptionsEditor({ options, onChange }: { options: IntakeOption[]; onChang
   };
   return (
     <div className="ml-3 border-l-2 border-slate-200 pl-3 mt-2 space-y-1.5">
-      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Options</p>
+      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+        Options {affects_price && <span className="text-blue-500">· Price value shown</span>}
+      </p>
       {options.map((opt, i) => (
         <div key={i} className="flex gap-1 items-center">
           <Input value={opt.label} onChange={e => update(i, "label", e.target.value)} placeholder="Label" className="h-7 text-xs flex-1" data-testid={`opt-label-${i}`} />
           <Input value={opt.value} onChange={e => update(i, "value", e.target.value)} placeholder="Value" className="h-7 text-xs flex-1 font-mono" data-testid={`opt-value-${i}`} />
+          {affects_price && (
+            <Input
+              type="number"
+              value={opt.price_value ?? 0}
+              onChange={e => update(i, "price_value", parseFloat(e.target.value) || 0)}
+              placeholder="±$"
+              className="h-7 text-xs w-20 font-mono"
+              data-testid={`opt-price-${i}`}
+            />
+          )}
           <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="text-slate-400 hover:text-slate-600 disabled:opacity-25 shrink-0"><ChevronUp size={12} /></button>
           <button type="button" onClick={() => move(i, 1)} disabled={i === options.length - 1} className="text-slate-400 hover:text-slate-600 disabled:opacity-25 shrink-0"><ChevronDown size={12} /></button>
           <button type="button" onClick={() => onChange(options.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 shrink-0"><X size={12} /></button>
         </div>
       ))}
-      <Button type="button" variant="outline" size="sm" onClick={() => onChange([...options, { label: "", value: "" }])} className="h-6 text-xs px-2">
+      <Button type="button" variant="outline" size="sm" onClick={() => onChange([...options, { label: "", value: "", price_value: 0 }])} className="h-6 text-xs px-2">
         <Plus size={11} className="mr-1" /> Option
       </Button>
     </div>
