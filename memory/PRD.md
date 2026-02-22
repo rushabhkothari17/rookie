@@ -109,6 +109,19 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
+### Phase 4 — Dynamic Emails, References & Payment Modes (Feb 2026)
+- Fixed IndentationError in articles.py (orphaned code from incomplete refactor)
+- EmailSection.tsx — full email template editor (9 system templates, enable/disable toggle, HTML editor with variable insertion, live preview, email logs)
+- ReferencesSection.tsx — CRUD for key-value references (`{{ref:key}}` syntax usable in templates and content)
+- email_service.py — centralized email sending (Resend integration + mocked outbox fallback)
+- email_templates routes — GET/PUT for all templates
+- references routes — full CRUD
+- allowed_payment_modes on Customer edit dialog (Bank Transfer / Card Payment checkboxes)
+- Cart.tsx respects allowed_payment_modes (falls back to legacy booleans)
+- currency_for_country() expanded to support GBP, AUD, NZD, SGD, INR, ZAR, EUR
+
+---
+
 ## P0/P1/P2 Backlog
 
 ### P0 (Critical)
@@ -121,7 +134,7 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 ### P2 (Nice to have)
 - Full whitelabel audit — scan codebase for remaining hardcoded brand references
 - Footer component (no global footer currently)
-- Email delivery (currently mocked in email_outbox collection)
+- Email delivery live testing (currently mocked; configure Resend key to enable)
 - Zoho CRM/Books integration
 
 ### Backlog
@@ -135,9 +148,9 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 - Admin: admin@automateaccounts.local / ChangeMe123!
 
 ## Third-Party Integrations
-- Stripe (payments)
-- GoCardless (direct debit)
-- Resend (email, currently mocked in dev)
+- Stripe (payments — global toggle: stripe_enabled in settings)
+- GoCardless (direct debit — global toggle: gocardless_enabled in settings)
+- Resend (email — global toggle: email_provider_enabled; falls back to mocked outbox)
 
 ## Key API Endpoints
 - `GET /api/website-settings` — Public, returns all settings + form schemas
@@ -145,3 +158,11 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 - `PUT /api/admin/website-settings` — Admin, updates website settings
 - `GET /api/admin/settings/structured` — Admin, returns grouped DB settings
 - `PUT /api/admin/settings/key/{key}` — Admin, updates individual setting
+- `GET /api/admin/email-templates` — Admin, list all email templates
+- `PUT /api/admin/email-templates/{id}` — Admin, update template subject/body/enabled
+- `GET /api/admin/email-logs` — Admin, view email send logs
+- `GET /api/admin/references` — Admin, list all references
+- `POST /api/admin/references` — Admin, create reference
+- `PUT /api/admin/references/{id}` — Admin, update reference
+- `DELETE /api/admin/references/{id}` — Admin, delete reference
+- `PUT /api/admin/customers/{id}/payment-methods` — Admin, set allowed_payment_modes
