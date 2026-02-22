@@ -383,6 +383,7 @@ async def cancel_subscription(
         {"id": subscription_id},
         {"$set": {"cancel_at_period_end": True, "status": "canceled_pending", "canceled_at": now_iso()}},
     )
+    await create_audit_log(entity_type="subscription", entity_id=subscription_id, action="cancellation_requested", actor=user["email"], details={"reason": getattr(payload, "reason", None), "initiated_by": "customer"})
     await db.email_outbox.insert_one({
         "id": make_id(),
         "to": user["email"],
