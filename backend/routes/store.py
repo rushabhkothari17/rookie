@@ -16,6 +16,7 @@ from models import (
 from services.pricing_service import calculate_price
 from services.checkout_service import build_order_items
 from services.settings_service import SettingsService
+from services.audit_service import create_audit_log
 from core.constants import SERVICE_FEE_RATE
 
 router = APIRouter(prefix="/api", tags=["store"])
