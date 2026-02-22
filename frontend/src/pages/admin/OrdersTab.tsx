@@ -241,13 +241,23 @@ export function OrdersTab() {
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Customer email" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-orders-email-filter" />
           <Input placeholder="Order # (AA-...)" value={orderNumberFilter} onChange={e => setOrderNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-number-filter" />
+          <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-sub-number-filter" />
+          <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-processor-filter" />
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-orders-status-filter">
             <option value="">All Statuses</option>
-            {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            {orderStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <select value={payMethodFilter} onChange={e => setPayMethodFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-orders-method-filter">
+            <option value="">All Methods</option>
+            {paymentMethods.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
           <Input placeholder="Product name" value={productFilter} onChange={e => setProductFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-orders-product-filter" />
           <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">From</span>
+            <span className="text-xs text-slate-400">Pay date</span>
+            <Input type="date" value={payDateFrom} onChange={e => setPayDateFrom(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-pay-date-from" />
+            <span className="text-xs text-slate-400">–</span>
+            <Input type="date" value={payDateTo} onChange={e => setPayDateTo(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-pay-date-to" />
+          </div>
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-start-date" />
             <span className="text-xs text-slate-400">–</span>
             <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-end-date" />
