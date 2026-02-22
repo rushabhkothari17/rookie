@@ -1102,7 +1102,9 @@ class TestAdminSettings:
         r = requests.get(f"{BASE_URL}/api/admin/settings", headers=admin_headers)
         assert r.status_code == 200
         data = r.json()
-        assert "store_name" in data or any("store" in k for k in data.keys())
+        # Settings are wrapped in {"settings": {...}}
+        settings_obj = data.get("settings", data)
+        assert "store_name" in settings_obj, f"store_name not found in settings: {list(settings_obj.keys())}"
 
     def test_update_setting(self, admin_headers):
         r = requests.put(f"{BASE_URL}/api/admin/settings", json={
