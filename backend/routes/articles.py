@@ -296,6 +296,7 @@ async def delete_article(
         source="admin_ui",
         before_json={"title": article.get("title"), "category": article.get("category")},
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": article_id, "action": "deleted", "actor": admin.get("email", "admin"), "details": {"title": article.get("title")}, "created_at": now_iso()})
     return {"message": "Article deleted"}
 
 
