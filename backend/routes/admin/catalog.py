@@ -121,15 +121,30 @@ async def admin_create_product(
         "created_at": now_iso(),
         "is_custom": True,
     }
+    if payload.intake_schema_json is not None:
+        _validate_intake_schema(payload.intake_schema_json)
+        product["intake_schema_json"] = {
+            **payload.intake_schema_json.dict(),
+            "version": 1,
+            "updated_at": now_iso(),
+            "updated_by": admin.get("email", admin["id"]),
+        }
     product["price_inputs"] = build_price_inputs(product)
     await db.products.insert_one(product)
     product.pop("_id", None)
+    audit_details: Dict[str, Any] = {"name": payload.name, "category": payload.category, "is_subscription": payload.is_subscription}
+    if payload.intake_schema_json is not None:
+        q = payload.intake_schema_json.questions
+        audit_details["intake_schema"] = {
+            "dropdown": len(q.dropdown), "multiselect": len(q.multiselect),
+            "single_line": len(q.single_line), "multi_line": len(q.multi_line),
+        }
     await create_audit_log(
         entity_type="product",
         entity_id=product_id,
         action="created",
         actor=f"admin:{admin.get('email', admin['id'])}",
-        details={"name": payload.name, "category": payload.category, "is_subscription": payload.is_subscription},
+        details=audit_details,
     )
     return {"product": product}
 
