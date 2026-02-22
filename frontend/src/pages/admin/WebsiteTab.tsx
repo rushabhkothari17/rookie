@@ -43,7 +43,7 @@ interface WebsiteData {
   // Payment display
   payment_gocardless_label: string; payment_gocardless_description: string;
   payment_stripe_label: string; payment_stripe_description: string;
-  // Checkout page configuration
+  // Checkout legacy fields
   checkout_zoho_enabled: boolean; checkout_zoho_title: string;
   checkout_zoho_subscription_options: string; checkout_zoho_product_options: string;
   checkout_zoho_signup_note: string; checkout_zoho_access_note: string;
@@ -51,6 +51,29 @@ interface WebsiteData {
   checkout_partner_enabled: boolean; checkout_partner_title: string;
   checkout_partner_description: string; checkout_partner_options: string;
   checkout_partner_misrep_warning: string; checkout_extra_schema: string;
+  // Dynamic checkout sections
+  checkout_sections: string;
+  // Page content strings
+  checkout_success_title: string; checkout_success_paid_msg: string;
+  checkout_success_pending_msg: string; checkout_success_expired_msg: string;
+  checkout_success_next_steps_title: string;
+  checkout_success_step_1: string; checkout_success_step_2: string; checkout_success_step_3: string;
+  checkout_portal_link_text: string;
+  bank_success_title: string; bank_success_message: string;
+  bank_instructions_title: string;
+  bank_instruction_1: string; bank_instruction_2: string; bank_instruction_3: string;
+  bank_next_steps_title: string;
+  bank_next_step_1: string; bank_next_step_2: string; bank_next_step_3: string;
+  page_404_title: string; page_404_link_text: string;
+  gocardless_processing_title: string; gocardless_processing_subtitle: string;
+  gocardless_success_title: string; gocardless_success_message: string;
+  gocardless_error_title: string; gocardless_error_message: string;
+  gocardless_return_btn_text: string;
+  verify_email_label: string; verify_email_title: string; verify_email_subtitle: string;
+  portal_title: string; portal_subtitle: string;
+  profile_label: string; profile_title: string; profile_subtitle: string;
+  cart_title: string; cart_clear_btn_text: string;
+  msg_currency_unsupported: string; msg_no_payment_methods: string;
 }
 
 interface BrandingData {
