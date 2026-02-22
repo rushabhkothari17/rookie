@@ -74,8 +74,12 @@ export default function Signup() {
       <div className="glass-card w-full max-w-3xl rounded-2xl p-8">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Account setup</p>
-          <h1 className="text-3xl font-semibold text-slate-900">Create your portal access</h1>
-          <p className="text-sm text-slate-500">We'll use this info to configure pricing and currency.</p>
+          <h1 className="text-3xl font-semibold text-slate-900" data-testid="register-title">
+            {ws.register_title || "Create your portal access"}
+          </h1>
+          <p className="text-sm text-slate-500" data-testid="register-subtitle">
+            {ws.register_subtitle || "We'll use this info to configure pricing and currency."}
+          </p>
         </div>
         <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
           <div className="space-y-2">
