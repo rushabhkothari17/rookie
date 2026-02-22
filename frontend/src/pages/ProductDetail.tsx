@@ -201,8 +201,8 @@ export default function ProductDetail() {
     timeline_urgency: "", budget_range: "", additional_notes: "",
   });
   const [submittingScope, setSubmittingScope] = useState(false);
-  const [contactEmail, setContactEmail] = useState("hello@automateaccounts.com");
-  const [websiteUrl, setWebsiteUrl] = useState("https://www.automateaccounts.com");
+  const [contactEmail, setContactEmail] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   useEffect(() => {
     api.get("/settings/public").then((res) => {
