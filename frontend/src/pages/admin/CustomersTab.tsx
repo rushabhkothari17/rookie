@@ -296,20 +296,20 @@ export function CustomersTab() {
                 <label className="text-xs font-medium text-slate-700 block mb-2">Allowed Payment Methods</label>
                 <div className="space-y-2">
                   {[
-                    { id: "bank_transfer", label: "Bank Transfer (GoCardless)", defaultOn: true },
-                    { id: "card", label: "Card Payment (Stripe)", defaultOn: false },
+                    { id: "gocardless", label: "GoCardless (Bank Transfer / Direct Debit)", defaultOn: true },
+                    { id: "stripe", label: "Stripe (Credit / Debit Card)", defaultOn: false },
                   ].map(mode => {
                     const modes: string[] | undefined = selectedCustomer.allowed_payment_modes;
                     const isEnabled = modes
                       ? modes.includes(mode.id)
-                      : mode.id === "bank_transfer"
+                      : mode.id === "gocardless"
                         ? selectedCustomer.allow_bank_transfer ?? true
                         : selectedCustomer.allow_card_payment ?? false;
                     const toggleMode = (checked: boolean) => {
                       const current: string[] = selectedCustomer.allowed_payment_modes
                         ?? ([] as string[])
-                          .concat(selectedCustomer.allow_bank_transfer !== false ? ["bank_transfer"] : [])
-                          .concat(selectedCustomer.allow_card_payment ? ["card"] : []);
+                          .concat(selectedCustomer.allow_bank_transfer !== false ? ["gocardless"] : [])
+                          .concat(selectedCustomer.allow_card_payment ? ["stripe"] : []);
                       const next = checked
                         ? current.concat(mode.id).filter((m: string, i: number, a: string[]) => a.indexOf(m) === i)
                         : current.filter((m: string) => m !== mode.id);
