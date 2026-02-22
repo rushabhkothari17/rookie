@@ -137,7 +137,44 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 - Final server.py: 853 lines (down from 6,973) — 88% reduction
 - Files: `server.py`, `data/__init__.py`, `data/seed_products.py`
 
-## Phase 8: P0 Checkout Bug Fixes (Completed — Feb 2026)
+## Phase 9: Comprehensive Audit Logging (Completed — Feb 2026)
+
+### Summary
+All 23 previously identified audit logging gaps have been addressed. Every POST/PUT/DELETE action (internal or external) now writes to BOTH `audit_logs` (entity-level history) AND `audit_trail` (admin Logs tab).
+
+### Group A — Added to BOTH (previously had no audit logging):
+1. `PUT /api/me` — user profile update → `profile_updated`
+2. `POST /auth/verify-email` — email verification → `email_verified`
+3. `POST /orders/scope-request` — customer scope request → `scope_request_created`
+4. `POST /orders/scope-request-form` — customer scope form → `scope_request_form_created`
+5. `POST /subscriptions/{id}/cancel` — customer cancels subscription → `cancellation_requested`
+6. `PUT /admin/customers/{id}/payment-methods` — payment method update → `payment_methods_updated`
+7. `POST /admin/sync-logs/{id}/retry` — Zoho sync retry → `sync_retry`
+8. `PUT /admin/products/{id}/terms` — terms assignment → `terms_assigned`/`terms_removed`
+9. `POST /admin/upload-logo` — logo upload → `logo_uploaded`
+
+### Group B — Added audit_logs write (previously audit_trail only):
+10. `POST /auth/register` — registration
+11. `POST /auth/login` — login
+12-14. Article CRUD (create, update, delete) + email action
+15-17. Bank transaction CRUD
+18-20. Quote request (submit, create, update)
+21-22. Settings bulk update + single key update
+
+### New Backend /logs Endpoints:
+- `GET /admin/customers/{id}/logs`
+- `GET /admin/users/{id}/logs`
+- `GET /admin/products/{id}/logs`
+- `GET /admin/promo-codes/{id}/logs`
+- `GET /admin/override-codes/{id}/logs`
+- `GET /admin/quote-requests/{id}/logs`
+- `GET /admin/terms/{id}/logs`
+- `GET /admin/bank-transactions/{id}/logs` — updated to merge inline + audit_logs
+
+### Frontend Logs Buttons Added:
+- Users, Customers, Products, PromoCodes, OverrideCodes, QuoteRequests, Terms tabs all have per-row "Logs" button that opens an audit log dialog.
+
+- Test reports: `/app/test_reports/iteration_32.json` (39/39 backend, 100% frontend)
 ### Stripe Import Fix
 - Root cause: `checkout.py` imported from `emergentintegrations.payments.stripe` but that `__init__.py` only exports `StripeCheckout` and `CheckoutError`. `CheckoutSessionRequest`, etc. are only in the `.checkout` submodule.
 - Fix: Changed import to `from emergentintegrations.payments.stripe.checkout import ...`
