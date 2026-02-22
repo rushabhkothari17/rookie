@@ -34,10 +34,19 @@ export function SubscriptionsTab() {
   const [total, setTotal] = useState(0);
   const PER_PAGE = 20;
 
+  // Filter options from backend (single source of truth)
+  const [subStatuses, setSubStatuses] = useState<string[]>(SUB_STATUSES_FALLBACK);
+  const [paymentMethods, setPaymentMethods] = useState<string[]>(PAYMENT_METHODS_FALLBACK);
+
   // Filters
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
   const [payment, setPayment] = useState("");
+  const [subNumberFilter, setSubNumberFilter] = useState("");
+  const [processorIdFilter, setProcessorIdFilter] = useState("");
+  const [planFilter, setPlanFilter] = useState("");
+  const [renewalFrom, setRenewalFrom] = useState("");
+  const [renewalTo, setRenewalTo] = useState("");
   const [createdFrom, setCreatedFrom] = useState("");
   const [createdTo, setCreatedTo] = useState("");
   const [startFrom, setStartFrom] = useState("");
