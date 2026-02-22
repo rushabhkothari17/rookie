@@ -140,6 +140,7 @@ export function OrdersTab() {
         product_id: selectedOrder.edit_product_id || undefined,
         internal_note: selectedOrder.internal_note,
         new_note: selectedOrder.new_note || undefined,
+        processor_id: selectedOrder.processor_id !== undefined ? selectedOrder.processor_id : undefined,
       });
       toast.success("Order updated");
       setShowEditDialog(false);
