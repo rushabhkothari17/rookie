@@ -597,7 +597,7 @@ async def checkout_status(
                     await db.subscriptions.insert_one({
                         "id": sub_id, "order_id": order["id"], "customer_id": order["customer_id"],
                         "plan_name": product_name, "status": "active",
-                        "stripe_subscription_id": None,
+                        "stripe_subscription_id": None, "processor_id": session_id,
                         "current_period_start": period_start.isoformat(),
                         "current_period_end": period_end.isoformat(),
                         "cancel_at_period_end": False, "canceled_at": None,
