@@ -165,11 +165,12 @@ export function CustomersTab() {
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customers-status-filter">
             <option value="">All Statuses</option><option value="active">Active</option><option value="inactive">Inactive</option>
           </select>
-          <select value={bankFilter} onChange={(e) => setBankFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white">
-            <option value="">Bank Transfer: All</option><option value="true">Enabled</option><option value="false">Disabled</option>
-          </select>
-          <select value={cardFilter} onChange={(e) => setCardFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white">
-            <option value="">Card Payment: All</option><option value="true">Enabled</option><option value="false">Disabled</option>
+          <select value={paymentModeFilter} onChange={(e) => setPaymentModeFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customers-payment-filter">
+            <option value="">All Payment Modes</option>
+            <option value="gocardless">GoCardless</option>
+            <option value="stripe">Stripe</option>
+            <option value="both">Both (GC + Stripe)</option>
+            <option value="none">None assigned</option>
           </select>
           <select value={partnerMapFilter} onChange={(e) => setPartnerMapFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customer-partner-map-filter">
             <option value="all">All Partner Maps</option><option value="none">Not set</option>
