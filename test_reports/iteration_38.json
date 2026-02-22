@@ -1,0 +1,90 @@
+{
+  "summary": "Comprehensive testing of Intake Questions feature (brand new). Backend: 20/20 tests pass. Admin UI: all intake schema builder interactions work correctly. Customer product page: intake section renders and Add to Cart merges intake answers correctly. One pre-existing bug found in admin catalog pagination.",
+  "testing_type": "both",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin Catalog",
+        "issues": [
+          "PRE-EXISTING: Admin catalog calls /api/admin/products-all without per_page param (defaults to 20). With 42+ products, only first 20 are loaded. Client-side search/filter only works on those 20. Products beyond page 1 (e.g., 'Intake Test Updated') are invisible. Subtitle incorrectly shows '20 products' instead of total 42. Fix: pass per_page=1000 or implement server-side search in ProductsTab.tsx API call."
+        ]
+      }
+    ]
+  },
+  "test_results": {
+    "backend_20_20": {
+      "intake_schema_read": "PASS - test product fc5d2e93 has intake_schema_json with version, questions, updated_by",
+      "dropdown_structure": "PASS - company_size dropdown with options correctly stored",
+      "admin_products_all": "PASS - returns intake_schema_json for product",
+      "create_with_dropdown": "PASS - product created with dropdown questions, version=1, updated_by=admin",
+      "create_with_singleline": "PASS - product created with single_line questions",
+      "create_with_multiselect": "PASS - product created with multiselect + affects_price=true",
+      "persistence_verification": "PASS - GET after POST confirms intake_schema_json persisted",
+      "update_version_bump": "PASS - update increments version (e.g., 3->4)",
+      "update_sets_updated_by": "PASS - updated_by = admin email",
+      "update_sets_updated_at": "PASS - updated_at timestamp present",
+      "duplicate_key_400": "PASS - returns 400 with 'Duplicate question key' detail",
+      "max_10_dropdown_400": "PASS - 11 dropdown questions returns 400 'Max 10 dropdown questions allowed'",
+      "empty_options_400": "PASS - dropdown with empty options[] returns 400",
+      "empty_key_400": "PASS - empty key returns 400 'All questions must have a non-empty key'",
+      "max_10_multiselect_400": "PASS - 11 multiselect questions returns 400",
+      "logs_accessible": "PASS - /api/admin/products/{id}/logs returns 200 with logs array",
+      "log_has_intake_schema": "PASS - update log contains intake_schema details with version",
+      "log_actor_is_admin": "PASS - actor contains 'admin:' prefix",
+      "public_product_has_schema": "PASS - /api/products/{id} returns intake_schema_json",
+      "public_schema_has_enabled": "PASS - enabled=true on dropdown question"
+    },
+    "frontend_admin": {
+      "catalog_navigation": "PASS - Catalog tab in sidebar loads product table",
+      "intake_section_visible": "PASS - 'INTAKE QUESTIONS' section visible at bottom of product editor",
+      "all_4_tabs_present": "PASS - dropdown, multiselect, single_line, multi_line tabs all present with data-testids",
+      "add_dropdown_button": "PASS - data-testid='intake-add-dropdown' button works",
+      "key_auto_suggests": "PASS - typing 'Company Size' in label auto-suggests 'company_size' in key field",
+      "options_editor": "PASS - '+Option' button adds options with label/value inputs",
+      "required_checkbox": "PASS - Required, Enabled, Affects price checkboxes work",
+      "single_line_tab": "PASS - Single-line tab works, adds question with label auto-key",
+      "save_product": "PASS - Clicking 'Save Product' shows 'Product updated' toast and closes dialog"
+    },
+    "frontend_customer": {
+      "product_page_loads": "PASS - /product/fc5d2e93 loads 'Intake Test Updated'",
+      "intake_section": "PASS - 'TELL US ABOUT YOUR PROJECT' SectionCard visible",
+      "company_size_dropdown": "PASS - intake-company_size SelectTrigger renders with options",
+      "required_indicator": "PASS - red asterisk shown next to 'Company Size *'",
+      "helper_text": "PASS - 'How large is your company?' helper text shown",
+      "select_option": "PASS - Can select '11-50' from company_size dropdown",
+      "add_to_cart": "PASS - 'Add to cart' button works, shows 'Added to cart' toast",
+      "cart_navigation": "PASS - Navigates to /cart after adding to cart",
+      "intake_in_cart_inputs": "PASS - Intake answers merged into cart item inputs (company_size=11_50)"
+    }
+  },
+  "critical_code_review_comments": [
+    "ProductsTab.tsx: api.get('/admin/products-all') doesn't specify per_page, defaulting to 20. With 42+ products, admin cannot search/find products on page 2+. Fix: use per_page=1000 or implement server-side search.",
+    "The admin catalog subtitle shows '20 products' (loaded count) not total (42+). Misleading to admin users.",
+    "Both issues are pre-existing, not related to the new intake schema feature."
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_intake_schema.py",
+    "/app/test_reports/pytest/intake_schema_results.xml"
+  ],
+  "action_items": [
+    "Fix admin catalog pagination: in ProductsTab.tsx line 74, change `api.get('/admin/products-all')` to `api.get('/admin/products-all?per_page=200')` to load all products (currently only loads first 20 of 42+ products, making any product on page 2+ invisible and unsearchable in admin UI)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_intake_schema.py"
+  ],
+  "success_rate": {
+    "backend": "100% (20/20)",
+    "frontend": "100% - all intake feature flows work correctly"
+  },
+  "seed_data_creation": "Backend test updated product fc5d2e93-4adc-4db8-9ac9-f4df3e416e7a to version 4 (company_size dropdown with 1-10/11-50/50+ options, required=true). Admin UI test added intake questions to 'Data Migration to Zoho CRM' product (first visible product in catalog).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Intake schema feature fully tested and working. Backend 20/20 pass. The test product fc5d2e93-4adc-4db8-9ac9-f4df3e416e7a (Intake Test Updated) has company_size dropdown at version 4. Main known issue: admin catalog only loads first 20 products (pre-existing), so Intake Test Updated is not visible in admin catalog search (it's on page 2 of API). Admin UI was tested using first visible product instead. Customer page and Add to Cart intake flow work perfectly.",
+  "rca_of_issue": "Admin catalog pagination bug: ProductsTab.tsx calls api.get('/admin/products-all') with no per_page param. Backend defaults to per_page=20. With 42+ products, only first 20 are returned. Frontend does client-side pagination on those 20 items. Products on page 2+ (including 'Intake Test Updated') are invisible to admin. Fix: add per_page=200 or similar large value in the API call on line 74 of ProductsTab.tsx."
+}
