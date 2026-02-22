@@ -172,11 +172,14 @@ class TestPublicProducts:
 class TestAdminProductDetail:
     """Test admin product detail API for custom_sections."""
 
-    def test_admin_product_get_by_id(self, auth_headers):
-        """GET /api/admin/products/{id} should return custom_sections."""
-        resp = requests.get(f"{BASE_URL}/api/admin/products/prod_zoho_crm_express", headers=auth_headers)
+    def test_admin_product_get_by_id_via_list(self, auth_headers):
+        """Admin products-all with filter should return custom_sections for prod_zoho_crm_express.
+        Note: /api/admin/products/{id} only supports PUT (405 on GET) — use list endpoint."""
+        resp = requests.get(f"{BASE_URL}/api/admin/products-all?per_page=500", headers=auth_headers)
         assert resp.status_code == 200
-        product = resp.json().get("product", {})
+        products = resp.json().get("products", [])
+        product = next((p for p in products if p.get("id") == "prod_zoho_crm_express"), None)
+        assert product is not None, "prod_zoho_crm_express not found in admin list"
         assert "custom_sections" in product
         cs = product["custom_sections"]
         assert len(cs) > 0
