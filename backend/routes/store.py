@@ -209,6 +209,7 @@ async def scope_request(
         "created_at": now_iso(),
         "mocked": True,
     })
+    await create_audit_log(entity_type="order", entity_id=order_id, action="scope_request_created", actor=user["email"], details={"order_number": order_number, "product_count": len(scope_items)})
     return {"message": "Scope request created", "order_id": order_id, "order_number": order_number}
 
 
