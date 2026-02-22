@@ -361,8 +361,8 @@ class TestPriceRounding:
         created_product_ids.append(pid)
         TestPriceRounding.rounding_ids["25"] = pid
 
-    def test_pricing_rounding_25_487_rounds_to_500(self, admin_headers):
-        """487 rounded to nearest 25 = 500."""
+    def test_pricing_rounding_25_487_rounds_to_475(self, admin_headers):
+        """487 rounded to nearest 25 = 475 (487-475=12 < 500-487=13; Python round() uses banker's)."""
         pid = TestPriceRounding.rounding_ids.get("25")
         if not pid:
             pytest.skip("No product created")
@@ -373,7 +373,7 @@ class TestPriceRounding:
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["subtotal"] == 500.0, f"Expected subtotal=500, got: {data['subtotal']}"
+        assert data["subtotal"] == 475.0, f"Expected subtotal=475 (487 nearest 25), got: {data['subtotal']}"
 
     def test_product_without_rounding_not_rounded(self, admin_headers):
         """Product without price_rounding should return exact base_price."""
