@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import { LogOut, ShoppingCart, User } from "lucide-react";
-import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,25 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
-import api from "@/lib/api";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
 export default function TopNav() {
   const { user, logout } = useAuth();
   const { items } = useCart();
   const location = useLocation();
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [storeName, setStoreName] = useState<string>("Automate Accounts");
+  const ws = useWebsite();
 
-  useEffect(() => {
-    api.get("/settings/public").then((res) => {
-      const s = res.data?.settings || {};
-      if (s.logo_url) setLogoUrl(s.logo_url);
-      if (s.store_name) setStoreName(s.store_name);
-      const root = document.documentElement;
-      if (s.primary_color) root.style.setProperty("--aa-primary", s.primary_color);
-      if (s.accent_color) root.style.setProperty("--aa-accent", s.accent_color);
-    }).catch(() => {});
-  }, []);
+  const storeName = ws.store_name || "Store";
+  const logoUrl = ws.logo_url || null;
 
   const isActive = (path: string) =>
     location.pathname.startsWith(path)
