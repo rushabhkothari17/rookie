@@ -93,6 +93,7 @@ async def create_bank_transaction(
         source="admin_ui",
         after_json={"amount": payload.amount, "type": payload.type, "source": payload.source, "status": payload.status},
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "bank_transaction", "entity_id": txn_id, "action": "created", "actor": admin.get("email", "admin"), "details": {"amount": payload.amount, "type": payload.type, "currency": payload.currency}, "created_at": now_iso()})
     return {"transaction": txn}
 
 
