@@ -124,7 +124,7 @@ export default function Portal() {
     return list;
   }, [orders, items, orderSearch, orderStatusFilter, productMap]);
 
-  const orderUniqueStatuses = useMemo(() => [...new Set(oneTimeOrders.map(o => o.status).filter(Boolean))], [oneTimeOrders]);
+  const orderUniqueStatuses = useMemo(() => Array.from(new Set(oneTimeOrders.map(o => o.status).filter(Boolean))), [oneTimeOrders]);
   const paginatedOrders = filteredOrders.slice((orderPage - 1) * ORDERS_PER_PAGE, orderPage * ORDERS_PER_PAGE);
 
   // ── Subscriptions ────────────────────────────────────────
