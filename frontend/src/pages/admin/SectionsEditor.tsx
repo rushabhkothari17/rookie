@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import * as LucideIcons from "lucide-react";
+import { IconPicker } from "@/components/IconPicker";
 
 export interface CustomSection {
   id: string;
