@@ -140,7 +140,13 @@ export default function Portal() {
     if (q) {
       list = list.filter(o => {
         const prods = items.filter(i => i.order_id === o.id).map(i => productMap[i.product_id]?.name || "").join(" ").toLowerCase();
-        return o.order_number?.toLowerCase().includes(q) || prods.includes(q);
+        const payment = (o.payment_method || "").toLowerCase().replace(/_/g, " ");
+        return (
+          o.order_number?.toLowerCase().includes(q) ||
+          o.subscription_number?.toLowerCase().includes(q) ||
+          payment.includes(q) ||
+          prods.includes(q)
+        );
       });
     }
     if (orderStatusFilter) list = list.filter(o => o.status === orderStatusFilter);
@@ -151,7 +157,6 @@ export default function Portal() {
     return list;
   }, [orders, items, orderSearch, orderStatusFilter, orderSort, productMap]);
 
-  const orderUniqueStatuses = useMemo(() => Array.from(new Set(oneTimeOrders.map(o => o.status).filter(Boolean))), [oneTimeOrders]);
   const paginatedOrders = filteredOrders.slice((orderPage - 1) * ORDERS_PER_PAGE, orderPage * ORDERS_PER_PAGE);
 
   // ── Subscriptions ────────────────────────────────────────
