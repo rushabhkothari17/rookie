@@ -326,7 +326,16 @@ async def email_article(
 
     app_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
     article_url = f"{app_url}/articles/{article.get('slug') or article_id}"
-    subject = payload.subject or f"Article: {article['title']}"
+    # Load configurable email settings from website_settings
+    web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
+    from_name = web_s.get("email_from_name") or ""
+    cta_text = web_s.get("email_article_cta_text") or "View Article"
+    footer_text = web_s.get("email_article_footer_text") or "Your consultant has shared this document with you."
+    subject_tpl = web_s.get("email_article_subject_template") or "Article: {{article_title}}"
+    sender_email = await SettingsService.get("resend_sender_email", "noreply@example.com")
+    from_field = f"{from_name} <{sender_email}>" if from_name else sender_email
+
+    subject = payload.subject or subject_tpl.replace("{{article_title}}", article['title'])
     sent = []
     errors = []
     now = now_iso()
@@ -344,12 +353,12 @@ async def email_article(
           <p style="color:#475569;">Category: <strong>{article['category']}</strong></p>
           {price_line}
           <a href="{article_url}" style="display:inline-block;background:#1e293b;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;margin-top:16px;">
-            View Article
+            {cta_text}
           </a>
-          <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Your consultant has shared this document with you.</p>
+          <p style="color:#94a3b8;font-size:12px;margin-top:24px;">{footer_text}</p>
         </div>"""
         try:
-            params = {"from": "noreply@automateaccounts.com", "to": [email_addr], "subject": subject, "html": html_body}
+            params = {"from": from_field, "to": [email_addr], "subject": subject, "html": html_body}
             await asyncio.to_thread(resend.Emails.send, params)
             sent.append(email_addr)
             await db.article_logs.insert_one({
