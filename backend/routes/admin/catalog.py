@@ -255,13 +255,17 @@ async def admin_update_product(
         update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
     if payload.intake_schema_json is not None:
         _validate_intake_schema(payload.intake_schema_json)
+        schema_dict = payload.intake_schema_json.dict()
+        _normalize_schema_dict(schema_dict)
         current_version = (existing.get("intake_schema_json") or {}).get("version", 0)
         update_fields["intake_schema_json"] = {
-            **payload.intake_schema_json.dict(),
+            **schema_dict,
             "version": current_version + 1,
             "updated_at": now_iso(),
             "updated_by": admin.get("email", admin["id"]),
         }
+    if payload.custom_sections is not None:
+        update_fields["custom_sections"] = _build_sections(payload.custom_sections)
 
     merged = {**existing, **update_fields}
     merged["price_inputs"] = build_price_inputs(merged)
