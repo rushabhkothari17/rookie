@@ -77,8 +77,8 @@ async def register(payload: RegisterRequest):
     await db.email_outbox.insert_one({
         "id": make_id(),
         "to": payload.email.lower(),
-        "subject": "Verify your Automate Accounts account",
-        "body": f"Your verification code is {verification_code}",
+        "subject": await SettingsService.get("email_verification_subject", "Verify your account"),
+        "body": (await SettingsService.get("email_verification_body", "Your verification code is {{code}}")).replace("{{code}}", verification_code),
         "type": "verification",
         "status": "MOCKED",
         "created_at": now_iso(),
