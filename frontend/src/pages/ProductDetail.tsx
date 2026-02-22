@@ -321,7 +321,7 @@ export default function ProductDetail() {
     }
   };
 
-  const isRFQ = product?.sku !== "MIG-BOOKS" && (product?.pricing_complexity === "REQUEST_FOR_QUOTE" || (product?.pricing_complexity === "COMPLEX" && (!pricing || pricing.total === 0)));
+  const isRFQ = product?.sku !== "MIG-BOOKS" && !pricing?.is_scope_request && pricing !== null && (pricing?.total === 0 || (!product?.base_price && !pricing?.total));
 
   const handleSubmitQuote = async () => {
     if (!quoteForm.name || !quoteForm.email) {
