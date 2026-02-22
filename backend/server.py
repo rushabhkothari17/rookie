@@ -62,6 +62,8 @@ from routes.admin.override_codes import router as admin_override_codes_router
 from routes.admin.exports import router as admin_exports_router
 from routes.admin.settings import router as admin_settings_router
 from routes.admin.website import router as admin_website_router
+from routes.admin.references import router as references_router
+from routes.admin.email_templates import router as email_templates_router
 from routes.articles import router as articles_router
 
 app.include_router(auth_router)
