@@ -235,7 +235,7 @@ function TemplateEditor({ template, onSave, onClose }: {
 }) {
   const [subject, setSubject] = useState(template.subject);
   const [htmlBody, setHtmlBody] = useState(template.html_body);
-  const [tab, setTab] = useState<"html" | "preview">("html");
+  const [tab, setTab] = useState<"rich" | "html" | "preview">("rich");
   const [saving, setSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
