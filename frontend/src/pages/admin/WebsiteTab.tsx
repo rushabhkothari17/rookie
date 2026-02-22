@@ -13,7 +13,7 @@ import EmailSection from "./EmailSection";
 
 type Section =
   | "branding" | "hero" | "auth" | "forms" | "email" | "errors"
-  | "footer" | "links" | "integrations" | "sysconfig";
+  | "footer" | "references" | "integrations" | "sysconfig";
 
 interface WebsiteData {
   hero_label: string; hero_title: string; hero_subtitle: string;
