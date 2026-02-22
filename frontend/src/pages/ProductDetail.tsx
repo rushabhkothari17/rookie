@@ -496,46 +496,76 @@ export default function ProductDetail() {
               </SectionCard>
             )}
 
-            <SectionCard title="What's included" testId="product-included">
-              <IncludedList items={product.inclusions || product.bullets_included || []} testId="product-included-list" />
-            </SectionCard>
+            {/* ── Custom sections (new) OR legacy static sections (fallback) ── */}
+            {(product.custom_sections || []).length > 0 ? (
+              (product.custom_sections as any[]).map((sec: any, i: number) => (
+                <SectionCard
+                  key={sec.id || i}
+                  title={sec.name}
+                  testId={`custom-section-${i}`}
+                  icon={sec.icon}
+                  iconColor={sec.icon_color}
+                >
+                  {sec.content ? (
+                    <div className="whitespace-pre-wrap">{sec.content}</div>
+                  ) : (
+                    <span className="text-slate-400 italic">No content added yet.</span>
+                  )}
+                  {sec.tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {sec.tags.map((tag: string) => (
+                        <span key={tag} className="px-2 py-0.5 bg-slate-100 rounded-full text-xs text-slate-500">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </SectionCard>
+              ))
+            ) : (
+              <>
+                {(product.inclusions || product.bullets_included || []).length > 0 && (
+                  <SectionCard title="What's included" testId="product-included">
+                    <IncludedList items={product.inclusions || product.bullets_included || []} testId="product-included-list" />
+                  </SectionCard>
+                )}
 
-            {(product.exclusions || product.bullets_excluded || []).length > 0 && (
-              <SectionCard title="Not included" testId="product-excluded">
-                <IncludedList
-                  items={product.exclusions || product.bullets_excluded || []}
-                  testId="product-excluded-list"
-                  variant="excluded"
-                />
-              </SectionCard>
-            )}
+                {(product.exclusions || product.bullets_excluded || []).length > 0 && (
+                  <SectionCard title="Not included" testId="product-excluded">
+                    <IncludedList
+                      items={product.exclusions || product.bullets_excluded || []}
+                      testId="product-excluded-list"
+                      variant="excluded"
+                    />
+                  </SectionCard>
+                )}
 
-            {(product.requirements || product.bullets_needed || []).length > 0 && (
-              <SectionCard title="What we need from you" testId="product-needed">
-                <ul className="space-y-2.5" data-testid="product-needed-list">
-                  {(product.requirements || product.bullets_needed || []).map((item: string) => (
-                    <li key={item} className="flex items-start gap-2.5">
-                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
-                      <span className="leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </SectionCard>
-            )}
+                {(product.requirements || product.bullets_needed || []).length > 0 && (
+                  <SectionCard title="What we need from you" testId="product-needed">
+                    <ul className="space-y-2.5" data-testid="product-needed-list">
+                      {(product.requirements || product.bullets_needed || []).map((item: string) => (
+                        <li key={item} className="flex items-start gap-2.5">
+                          <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400" />
+                          <span className="leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </SectionCard>
+                )}
 
-            {(product.next_steps || []).length > 0 && (
-              <SectionCard title="Next steps" testId="product-next-steps">
-                <ol className="space-y-3" data-testid="product-next-steps-list">
-                  {(product.next_steps || []).map((item: string, index: number) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
-                        {index + 1}
-                      </span>
-                      <span className="pt-0.5 leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ol>
-              </SectionCard>
+                {(product.next_steps || []).length > 0 && (
+                  <SectionCard title="Next steps" testId="product-next-steps">
+                    <ol className="space-y-3" data-testid="product-next-steps-list">
+                      {(product.next_steps || []).map((item: string, index: number) => (
+                        <li key={item} className="flex items-start gap-3">
+                          <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                            {index + 1}
+                          </span>
+                          <span className="pt-0.5 leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </SectionCard>
+                )}
+              </>
             )}
 
             {(product.faqs || []).length > 0 && (
