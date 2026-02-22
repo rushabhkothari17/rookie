@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
-import { Search, ChevronLeft, ChevronRight, Package, RefreshCw } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Package, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 const ORDERS_PER_PAGE = 8;
 const SUBS_PER_PAGE = 5;
