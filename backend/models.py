@@ -395,9 +395,7 @@ class AdminProductCreate(BaseModel):
     is_active: bool = True
     visible_to_customers: List[str] = Field(default_factory=list)
     intake_schema_json: Optional[IntakeSchemaJson] = None
-
-    @property
-    def validated_complexity(self) -> str:
+    price_rounding: Optional[str] = None(self) -> str:
         allowed = {"SIMPLE", "COMPLEX", "REQUEST_FOR_QUOTE"}
         if self.pricing_complexity.upper() in allowed:
             return self.pricing_complexity.upper()
