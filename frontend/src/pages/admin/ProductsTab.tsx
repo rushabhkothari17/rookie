@@ -61,6 +61,8 @@ export function ProductsTab() {
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
+  const [entityLogs, setEntityLogs] = useState<any[]>([]);
+  const [showEntityLogs, setShowEntityLogs] = useState(false);
   const PER_PAGE = 20;
 
   const load = async () => {
