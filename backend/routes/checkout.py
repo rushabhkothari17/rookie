@@ -563,7 +563,7 @@ async def checkout_status(
     if status.payment_status == "paid" and transaction:
         order = await db.orders.find_one({"id": transaction.get("order_id")}, {"_id": 0})
         if order and order.get("status") != "paid":
-            await db.orders.update_one({"id": order["id"]}, {"$set": {"status": "paid"}})
+            await db.orders.update_one({"id": order["id"]}, {"$set": {"status": "paid", "processor_id": session_id}})
             await create_audit_log(
                 entity_type="order",
                 entity_id=order["id"],

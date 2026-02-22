@@ -86,7 +86,7 @@ async def complete_gocardless_redirect(
                     payment_id = payment["id"]
                     await db.orders.update_one(
                         {"id": payload.order_id},
-                        {"$set": {"status": "pending_payment", "gocardless_mandate_id": mandate_id, "gocardless_payment_id": payment_id, "updated_at": now_iso()}},
+                        {"$set": {"status": "pending_payment", "processor_id": mandate_id, "gocardless_mandate_id": mandate_id, "gocardless_payment_id": payment_id, "updated_at": now_iso()}},
                     )
                     await create_audit_log(
                         entity_type="order",
