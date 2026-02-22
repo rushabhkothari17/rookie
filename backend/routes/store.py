@@ -139,7 +139,15 @@ async def orders_preview(
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         pricing = calculate_price(product, item.inputs, fee_rate=fee_rate)
-        results.append({"product_id": item.product_id, "product_name": product["name"], **pricing})
+        # Include nested product and pricing objects so Cart.tsx can access item.product.pricing_type
+        # and item.pricing.is_scope_request etc.
+        results.append({
+            "product_id": item.product_id,
+            "product_name": product["name"],
+            "product": product,
+            "pricing": pricing,
+            **pricing,  # keep flat keys for backward compatibility
+        })
     return {"items": results}
 
 
