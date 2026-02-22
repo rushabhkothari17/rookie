@@ -114,9 +114,7 @@ function QuestionEditor({ q, idx, total, allKeys, hasOptions, onChange, onRemove
   const isDuplicate = q.key !== "" && allKeys.filter(k => k === q.key).length > 1;
 
   const handleLabelChange = (v: string) => {
-    const autoKey = labelToKey(q.label);
-    const keyIsAuto = q.key === "" || q.key === autoKey;
-    onChange({ ...q, label: v, key: keyIsAuto ? labelToKey(v) : q.key });
+    onChange({ ...q, label: v, key: labelToKey(v) });
   };
 
   const handleKeyChange = (v: string) => {
