@@ -218,7 +218,7 @@ export default function Portal() {
                         data-testid="portal-orders-sort-date"
                       >
                         Date
-                        {orderSort === "desc" ? <ArrowDown size={11} /> : orderSort === "asc" ? <ArrowUp size={11} /> : <ArrowUpDown size={11} />}
+                        {orderSort === "desc" ? <ArrowDown size={11} /> : <ArrowUp size={11} />}
                       </button>
                     </TableHead>
                     <TableHead className="text-xs">Products</TableHead>
