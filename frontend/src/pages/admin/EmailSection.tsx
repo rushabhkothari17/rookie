@@ -187,7 +187,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
   // Re-sync content when value changes externally (e.g. variable insertion)
   useEffect(() => {
     if (editor && !editor.isDestroyed && editor.getHTML() !== value) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value, false, { preserveWhitespace: "full" });
     }
   }, [value, editor]);
 
