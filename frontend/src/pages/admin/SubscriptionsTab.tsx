@@ -17,14 +17,15 @@ const getProcessorLink = (id: string | undefined): string | null => {
   if (id.startsWith("sub_")) return `https://dashboard.stripe.com/subscriptions/${id}`;
   if (id.startsWith("cus_")) return `https://dashboard.stripe.com/customers/${id}`;
   if (id.startsWith("in_")) return `https://dashboard.stripe.com/invoices/${id}`;
+  if (id.startsWith("cs_")) return `https://dashboard.stripe.com/checkout/sessions/${id}`;
   if (id.startsWith("PM")) return `https://manage.gocardless.com/payments/${id}`;
   if (id.startsWith("MD")) return `https://manage.gocardless.com/mandates/${id}`;
   if (id.startsWith("SB")) return `https://manage.gocardless.com/subscriptions/${id}`;
   return null;
 };
 
-const SUB_STATUSES = ["active", "unpaid", "paused", "canceled_pending", "cancelled", "offline_manual"];
-const PAYMENT_METHODS = ["card", "bank_transfer", "offline"];
+const SUB_STATUSES_FALLBACK = ["active", "unpaid", "paused", "canceled_pending", "cancelled", "pending_direct_debit_setup", "offline_manual"];
+const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "offline", "manual"];
 
 export function SubscriptionsTab() {
   const [subs, setSubs] = useState<any[]>([]);
