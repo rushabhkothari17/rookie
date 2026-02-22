@@ -1,7 +1,8 @@
 """Admin: Catalog (products + categories) routes."""
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+import re
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -13,6 +14,22 @@ from services.audit_service import create_audit_log
 from services.pricing_service import build_price_inputs
 
 router = APIRouter(prefix="/api", tags=["admin-catalog"])
+
+
+def _label_to_key(label: str, fallback: str = "key") -> str:
+    return re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")[:40] or fallback
+
+
+def _normalize_schema_dict(schema_dict: dict) -> None:
+    """Auto-generate keys for questions and values for options (in-place on dict)."""
+    questions = schema_dict.get("questions", {})
+    for q_type in ("dropdown", "multiselect", "single_line", "multi_line"):
+        for i, q in enumerate(questions.get(q_type, [])):
+            if not q.get("key", "").strip():
+                q["key"] = _label_to_key(q.get("label", ""), f"q_{i}")
+            for opt in q.get("options", []):
+                if not opt.get("value", "").strip():
+                    opt["value"] = _label_to_key(opt.get("label", ""), "opt")
 
 
 def _validate_intake_schema(schema: IntakeSchemaJson) -> None:
@@ -28,20 +45,31 @@ def _validate_intake_schema(schema: IntakeSchemaJson) -> None:
         if len(questions) > 10:
             raise HTTPException(status_code=400, detail=f"Max 10 {q_type} questions allowed")
         for q in questions:
-            if not q.key or not q.key.strip():
-                raise HTTPException(status_code=400, detail="All questions must have a non-empty key")
-            all_keys.append(q.key)
             if q_type in ("dropdown", "multiselect"):
                 if not q.options:
-                    raise HTTPException(status_code=400, detail=f"Question '{q.key}' must have options")
+                    raise HTTPException(status_code=400, detail=f"Question '{q.key or q.label}' must have options")
                 for opt in q.options:
-                    if not opt.label or not opt.value:
-                        raise HTTPException(status_code=400, detail=f"Option in '{q.key}' must have label and value")
+                    if not opt.label:
+                        raise HTTPException(status_code=400, detail=f"Option in '{q.key or q.label}' must have a label")
+            if q.key:
+                all_keys.append(q.key)
     seen: set = set()
     for k in all_keys:
         if k in seen:
             raise HTTPException(status_code=400, detail=f"Duplicate question key: '{k}'")
         seen.add(k)
+
+
+def _build_sections(sections_payload: list) -> List[Dict[str, Any]]:
+    """Normalize custom_sections list: ensure IDs and consistent order."""
+    result = []
+    for i, sec in enumerate(sections_payload):
+        sec_dict = sec.dict() if hasattr(sec, "dict") else dict(sec)
+        if not sec_dict.get("id"):
+            sec_dict["id"] = make_id()
+        sec_dict["order"] = i
+        result.append(sec_dict)
+    return result
 
 
 @router.get("/admin/products-all")
