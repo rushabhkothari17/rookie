@@ -258,6 +258,8 @@ export function OrdersTab() {
             <span className="text-xs text-slate-400">–</span>
             <Input type="date" value={payDateTo} onChange={e => setPayDateTo(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-pay-date-to" />
           </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-slate-400">Created</span>
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-start-date" />
             <span className="text-xs text-slate-400">–</span>
             <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-end-date" />
