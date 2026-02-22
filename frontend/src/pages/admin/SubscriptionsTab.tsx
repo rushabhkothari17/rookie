@@ -204,6 +204,7 @@ export function SubscriptionsTab() {
             <TableRow className="bg-slate-50">
               {sortHeader("created_at", "Created")}
               <TableHead>Sub #</TableHead>
+              <TableHead>Processor ID</TableHead>
               <TableHead>Customer Email</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Amount</TableHead>

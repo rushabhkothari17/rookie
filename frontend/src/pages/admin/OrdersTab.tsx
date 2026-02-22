@@ -236,6 +236,7 @@ export function OrdersTab() {
               <TableHead>Email</TableHead>
               <TableHead>Product(s)</TableHead>
               <TableHead>Sub #</TableHead>
+              <TableHead>Processor ID</TableHead>
               <TableHead>Subtotal</TableHead>
               <TableHead>Fee</TableHead>
               <TableHead>Total</TableHead>
