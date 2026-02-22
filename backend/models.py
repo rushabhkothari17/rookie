@@ -155,6 +155,7 @@ class AdminProductUpdate(BaseModel):
     is_active: bool = True
     visible_to_customers: Optional[List[str]] = None
     intake_schema_json: Optional[IntakeSchemaJson] = None
+    price_rounding: Optional[str] = None
 
 
 class AdminCustomerPaymentUpdate(BaseModel):
