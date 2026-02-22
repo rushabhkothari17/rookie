@@ -78,11 +78,13 @@ export default function Portal() {
   // Orders filters + pagination
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("");
+  const [orderSort, setOrderSort] = useState<"desc" | "asc">("desc");
   const [orderPage, setOrderPage] = useState(1);
 
   // Subscriptions filters + pagination
   const [subSearch, setSubSearch] = useState("");
   const [subStatusFilter, setSubStatusFilter] = useState("");
+  const [subSort, setSubSort] = useState<"desc" | "asc">("desc");
   const [subPage, setSubPage] = useState(1);
 
   const load = async () => {
