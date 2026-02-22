@@ -294,12 +294,13 @@ async def checkout_bank_transfer(
         "terms_accepted_at": now_iso(), "partner_tag_response": payload.partner_tag_response,
         "override_code_id": None, "partner_tag_timestamp": now_iso(),
         "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="bank_transfer"),
+        "extra_fields": payload.extra_fields or {},
         "created_at": now_iso(),
     }
     await db.orders.insert_one(order_doc)
     await create_audit_log(
         entity_type="order", entity_id=order_id, action="created", actor="customer",
-        details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer", "total": total},
+        details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer", "total": total, "extra_fields": list((payload.extra_fields or {}).keys())},
     )
     if promo_code_data:
         await db.promo_codes.update_one({"id": promo_code_data["id"]}, {"$inc": {"usage_count": 1}})
