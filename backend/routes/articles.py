@@ -352,14 +352,18 @@ async def email_article(
         )
             await db.article_logs.insert_one({
                 "id": make_id(),
+        if result.get("status") in ("sent", "mocked"):
+            sent.append(email_addr)
+            await db.article_logs.insert_one({
+                "id": make_id(),
                 "article_id": article_id,
                 "action": "email_sent",
                 "actor": admin.get("email", "admin"),
                 "details": {"to": email_addr, "customer_id": customer["id"], "subject": subject},
                 "created_at": now,
             })
-        except Exception as e:
-            errors.append({"email": email_addr, "error": str(e)})
+        else:
+            errors.append({"email": email_addr, "error": result.get("error") or result.get("reason", "unknown")})
 
     if sent:
         await create_audit_log(entity_type="article", entity_id=article_id, action="email_sent", actor=admin.get("email", "admin"), details={"recipients": sent, "subject": subject, "sent_count": len(sent)})
