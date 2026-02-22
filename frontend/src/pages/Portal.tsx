@@ -10,6 +10,17 @@ import { Search, ChevronLeft, ChevronRight, Package, RefreshCw, ArrowUp, ArrowDo
 const ORDERS_PER_PAGE = 8;
 const SUBS_PER_PAGE = 5;
 
+const ORDER_STATUSES = [
+  "pending", "pending_direct_debit_setup", "pending_payment", "awaiting_bank_transfer",
+  "paid", "unpaid", "completed", "cancelled", "refunded", "disputed",
+  "scope_pending", "scope_requested", "canceled_pending",
+];
+
+const SUB_STATUSES = [
+  "active", "unpaid", "paused", "canceled_pending", "cancelled",
+  "pending_direct_debit_setup", "offline_manual",
+];
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     paid: "bg-green-100 text-green-700",
