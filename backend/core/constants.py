@@ -22,7 +22,23 @@ ALLOWED_SUBSCRIPTION_STATUSES = [
     "paused",
     "canceled_pending",
     "cancelled",
+    "pending_direct_debit_setup",
     "offline_manual",
+]
+
+ALLOWED_PAYMENT_METHODS = [
+    "card",
+    "bank_transfer",
+    "offline",
+    "manual",
+]
+
+ALLOWED_BANK_TRANSACTION_STATUSES = [
+    "pending",
+    "completed",
+    "matched",
+    "failed",
+    "refunded",
 ]
 
 # Pricing
