@@ -46,10 +46,10 @@ export default function TopNav() {
           </Link>
           <nav className="flex items-center gap-4 text-sm" data-testid="nav-links">
             <Link to="/store" className={isActive("/store")} data-testid="nav-store">
-              Store
+              {ws.nav_store_label || "Store"}
             </Link>
             <Link to="/articles" className={isActive("/articles")} data-testid="nav-articles">
-              Articles
+              {ws.nav_articles_label || "Articles"}
             </Link>
             {user?.is_admin && (
               <Link to="/admin" className={isActive("/admin")} data-testid="nav-admin">
