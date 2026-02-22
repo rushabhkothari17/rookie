@@ -163,6 +163,69 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
   );
 }
 
+// ─── Rich Text Editor ─────────────────────────────────────────────────────────
+
+function ToolBtn({ active, onClick, title, children }: { active?: boolean; onClick: () => void; title: string; children: React.ReactNode }) {
+  return (
+    <button type="button" title={title} onClick={onClick}
+      className={`px-2 py-1 text-xs rounded transition-colors ${active ? "bg-slate-900 text-white" : "hover:bg-slate-200 text-slate-700"}`}>
+      {children}
+    </button>
+  );
+}
+
+function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Link.configure({ openOnClick: false }),
+    ],
+    content: value,
+    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+  });
+
+  // Re-sync content when value changes externally (e.g. variable insertion)
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && editor.getHTML() !== value) {
+      editor.commands.setContent(value, false);
+    }
+  }, [value, editor]);
+
+  if (!editor) return null;
+
+  const setLink = () => {
+    const url = prompt("Enter URL:");
+    if (url) editor.chain().focus().setLink({ href: url }).run();
+    else editor.chain().focus().unsetLink().run();
+  };
+
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <div className="flex flex-wrap gap-0.5 p-2 bg-slate-50 border-b border-slate-200">
+        <ToolBtn active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} title="Bold"><strong>B</strong></ToolBtn>
+        <ToolBtn active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} title="Italic"><em>I</em></ToolBtn>
+        <ToolBtn active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} title="Strikethrough"><s>S</s></ToolBtn>
+        <span className="w-px bg-slate-200 mx-1" />
+        <ToolBtn active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} title="Heading 1">H1</ToolBtn>
+        <ToolBtn active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="Heading 2">H2</ToolBtn>
+        <ToolBtn active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="Heading 3">H3</ToolBtn>
+        <span className="w-px bg-slate-200 mx-1" />
+        <ToolBtn active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet list">• List</ToolBtn>
+        <ToolBtn active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered list">1. List</ToolBtn>
+        <ToolBtn active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Blockquote">"</ToolBtn>
+        <span className="w-px bg-slate-200 mx-1" />
+        <ToolBtn active={editor.isActive("link")} onClick={setLink} title="Set link">Link</ToolBtn>
+        <ToolBtn active={false} onClick={() => editor.chain().focus().unsetLink().run()} title="Remove link">Unlink</ToolBtn>
+        <span className="w-px bg-slate-200 mx-1" />
+        <ToolBtn active={false} onClick={() => editor.chain().focus().undo().run()} title="Undo">↩</ToolBtn>
+        <ToolBtn active={false} onClick={() => editor.chain().focus().redo().run()} title="Redo">↪</ToolBtn>
+      </div>
+      <EditorContent editor={editor}
+        className="prose prose-sm max-w-none p-3 min-h-[280px] outline-none focus-within:outline-none" />
+    </div>
+  );
+}
+
 // ─── Template Editor ──────────────────────────────────────────────────────────
 
 function TemplateEditor({ template, onSave, onClose }: {
