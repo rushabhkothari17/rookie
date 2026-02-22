@@ -52,6 +52,9 @@ export interface WebsiteSettings {
   msg_cart_empty: string;
   msg_quote_success: string;
   msg_scope_success: string;
+  // Payment flags (from settings_service)
+  stripe_enabled: boolean;
+  gocardless_enabled: boolean;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
