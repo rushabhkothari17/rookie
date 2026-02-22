@@ -470,6 +470,11 @@ class WebsiteSettingsUpdate(BaseModel):
     msg_cart_empty: Optional[str] = None
     msg_quote_success: Optional[str] = None
     msg_scope_success: Optional[str] = None
+    # Payment display (checkout page labels — configurable per white-label)
+    payment_gocardless_label: Optional[str] = None
+    payment_gocardless_description: Optional[str] = None
+    payment_stripe_label: Optional[str] = None
+    payment_stripe_description: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
