@@ -152,9 +152,7 @@ class AdminProductUpdate(BaseModel):
     pricing_rules: Optional[Dict[str, Any]] = None
     is_active: bool = True
     visible_to_customers: Optional[List[str]] = None
-
-
-class AdminCustomerPaymentUpdate(BaseModel):
+    intake_schema_json: Optional[IntakeSchemaJson] = None(BaseModel):
     allow_bank_transfer: bool
     allow_card_payment: bool
 
