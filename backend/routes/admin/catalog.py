@@ -212,6 +212,8 @@ async def admin_update_product(
         update_fields["pricing_rules"] = payload.pricing_rules
     if payload.visible_to_customers is not None:
         update_fields["visible_to_customers"] = payload.visible_to_customers
+    if payload.price_rounding is not None:
+        update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
     if payload.intake_schema_json is not None:
         _validate_intake_schema(payload.intake_schema_json)
         current_version = (existing.get("intake_schema_json") or {}).get("version", 0)
