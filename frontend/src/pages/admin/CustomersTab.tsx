@@ -181,7 +181,7 @@ export function CustomersTab() {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>State/Province</TableHead>
-              <TableHead>Country</TableHead><TableHead>Status</TableHead><TableHead>Bank Transfer</TableHead>
+              <TableHead>Country</TableHead><TableHead>Currency</TableHead><TableHead>Status</TableHead><TableHead>Bank Transfer</TableHead>
               <TableHead>Card Payment</TableHead><TableHead>Partner Map</TableHead><TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
