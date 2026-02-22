@@ -1,0 +1,62 @@
+{
+  "summary": "Iteration 34: Tested 3 new features - (1) Processor ID column in Admin Orders & Subscriptions tables, (2) Articles page using TopNav directly (no AppShell, no product category tabs), (3) Backend processor_id saved on payment confirmation. All 10 backend tests pass (100%). All frontend features verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "All admin pages (console log)",
+        "issues": [
+          "Persistent console hydration warning: '<span> cannot be a child of <select>/<option>' - caused by Emergent framework VE wrapper, not application code. Non-blocking. Carried from previous iterations."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter34_features.py",
+    "/app/test_reports/pytest/pytest_results_iter34.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All 3 features implemented correctly.",
+    "checkout.py: processor_id=session_id saved on order/subscription via checkout/status/{session_id} ✓",
+    "gocardless.py: processor_id=mandate_id saved on complete_redirect for both orders and subscriptions ✓",
+    "OrdersTab.tsx: Processor ID TableHead + TableCell with data-testid after Sub # ✓",
+    "SubscriptionsTab.tsx: Processor ID TableHead + TableCell with fallback chain (processor_id || stripe_subscription_id || gocardless_mandate_id) ✓",
+    "Articles.tsx: Uses TopNav directly, no AppShell, no CategoryTabs - product category tabs completely removed ✓",
+    "Note: Articles page still correctly shows article-level category filters (All/Blog/Scope - Final Won)"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter34_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (10/10 tests passed)",
+    "frontend": "100% (all 3 features verified)"
+  },
+  "test_credentials": {
+    "admin": "admin@automateaccounts.local / ChangeMe123!"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 34 tested 3 new features. Key results: (1) Admin Orders table: headers=['Date', 'Order #', 'Customer', 'Email', 'Product(s)', 'Sub #', 'Processor ID', 'Subtotal', 'Fee', 'Total', 'Pay Date', 'Method', 'Status', 'Actions'], Processor ID at index 6, data-testid=admin-order-processor-{id}, shows '—' for null. (2) Admin Subscriptions table: headers=[..., 'Sub #', 'Processor ID', 'Customer Email', ...], Processor ID at index 2, data-testid=admin-sub-processor-{id}, fallback chain: processor_id||stripe_subscription_id||gocardless_mandate_id, shows '—' for null. (3) Articles page at /articles: uses TopNav directly, NO product category tabs (Zoho Express Setup, Migrate to Zoho, Managed Services all absent), shows article category filters (All/Blog/Scope - Final Won), pagination shows Showing 1-9 of 33 articles, Page 1 of 4.",
+  "feature_test_results": {
+    "GET /api/admin/orders - 200": "PASS",
+    "GET /api/admin/orders - processor_id field": "PASS - present as None or string (no _id)",
+    "GET /api/admin/subscriptions - 200": "PASS",
+    "GET /api/admin/subscriptions - processor_id chain": "PASS - processor_id/stripe_subscription_id/gocardless_mandate_id all valid",
+    "GET /api/articles/public - 200": "PASS",
+    "Articles - no store product category": "PASS - Zoho Express Setup/Migrate to Zoho/Managed Services NOT in articles",
+    "Admin Orders table - Processor ID column": "PASS - visible at index 6, after Sub #",
+    "Admin Orders table - cell value": "PASS - shows '—' for orders without processor_id",
+    "Admin Subscriptions table - Processor ID column": "PASS - visible at index 2, after Sub #",
+    "Admin Subscriptions table - cell value": "PASS - shows '—' for subs without processor_id",
+    "Articles page - no product category tabs": "PASS - no Zoho Express Setup/Migrate to Zoho/Managed Services tabs",
+    "Articles page - article category filters present": "PASS - All/Blog/Scope - Final Won buttons visible",
+    "Articles page - pagination": "PASS - Showing 1-9 of 33, Page 1 of 4, Previous/Next buttons"
+  }
+}
