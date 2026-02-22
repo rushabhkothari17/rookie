@@ -101,9 +101,10 @@ async def get_website_settings_public():
     web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
 
     # Load payment provider flags from structured settings (app_settings)
-    from services.settings_service import SettingsService
     stripe_enabled = await SettingsService.get("stripe_enabled", False)
     gocardless_enabled = await SettingsService.get("gocardless_enabled", False)
+    stripe_fee_rate = await SettingsService.get("stripe_fee_rate", 0.05)
+    gocardless_fee_rate = await SettingsService.get("gocardless_fee_rate", 0.0)
 
     return {
         "settings": {
@@ -118,6 +119,8 @@ async def get_website_settings_public():
             # Payment flags (always from SettingsService)
             "stripe_enabled": bool(stripe_enabled),
             "gocardless_enabled": bool(gocardless_enabled),
+            "stripe_fee_rate": float(stripe_fee_rate) if stripe_fee_rate else 0.05,
+            "gocardless_fee_rate": float(gocardless_fee_rate) if gocardless_fee_rate else 0.0,
         }
     }
 
