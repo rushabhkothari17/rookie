@@ -295,10 +295,18 @@ class TestFormSchemaDefaults:
 # ── 5. Cleanup (restore defaults) ───────────────────────────────────────────
 
 class TestCleanup:
-    def test_restore_hero_defaults(self, admin_headers):
-        """Restore the hero label to original default."""
+    def test_restore_hero_and_schema_defaults(self, admin_headers):
+        """Restore defaults that tests modified."""
+        import json as _json
+        _QUOTE_SCHEMA = _json.dumps([
+            {"id": "f_name", "key": "name", "label": "Your Name", "type": "text", "required": True, "placeholder": "Full name", "locked": False, "enabled": True, "order": 0},
+            {"id": "f_email", "key": "email", "label": "Email", "type": "email", "required": True, "placeholder": "your@email.com", "locked": False, "enabled": True, "order": 1},
+            {"id": "f_company", "key": "company", "label": "Company", "type": "text", "required": False, "placeholder": "Company name", "locked": False, "enabled": True, "order": 2},
+            {"id": "f_phone", "key": "phone", "label": "Phone", "type": "tel", "required": False, "placeholder": "+1 (555) 000-0000", "locked": False, "enabled": True, "order": 3},
+            {"id": "f_message", "key": "message", "label": "Message", "type": "textarea", "required": False, "placeholder": "Tell us about your requirements\u2026", "locked": False, "enabled": True, "order": 4},
+        ])
         resp = requests.put(f"{BASE_URL}/api/admin/website-settings",
-                           json={"hero_label": "STOREFRONT", "hero_title": "Welcome"},
+                           json={"hero_label": "STOREFRONT", "hero_title": "Welcome", "quote_form_schema": _QUOTE_SCHEMA},
                            headers=admin_headers)
         assert resp.status_code == 200
-        print("Restored hero_label to STOREFRONT")
+        print("Restored hero_label and quote_form_schema to defaults")
