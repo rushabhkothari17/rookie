@@ -600,71 +600,73 @@ export default function Cart() {
                       </div>
                     )}
 
-                    {/* Zoho Partner Tag — mandatory before checkout */}
-                    <div
-                      className="rounded-md border border-blue-200 bg-blue-50 p-4 space-y-3"
-                      data-testid="partner-tag-section"
-                    >
-                      <label className="text-sm font-semibold text-slate-700 block">
-                        Have you tagged us as your Zoho Partner? <span className="text-red-500">*</span>
-                      </label>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        You can tag us as your Zoho Partner by clicking{" "}
-                        <a
-                          href={zohoUrls.partner_tag_us}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline font-medium"
-                          data-testid="partner-tag-us-link"
-                        >
-                          here (US DC)
-                        </a>{" "}
-                        or{" "}
-                        <a
-                          href={zohoUrls.partner_tag_ca}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline font-medium"
-                          data-testid="partner-tag-ca-link"
-                        >
-                          here (CA DC)
-                        </a>
-                        . If the US DC link doesn't work, try the CA DC link and vice versa. You must be logged in to your Zoho account before tagging us.{" "}
-                        <span className="text-red-600 font-medium">
-                          Misrepresenting or false responses may lead to cancellation of service.
-                        </span>
-                      </p>
-                      <select
-                        data-testid="partner-tag-dropdown"
-                        value={partnerTagResponse}
-                        onChange={(e) => { setPartnerTagResponse(e.target.value); setOverrideCode(""); }}
-                        className={`w-full h-10 border rounded-md px-3 text-sm bg-white text-slate-800 ${
-                          !partnerTagResponse ? "border-red-300" : "border-slate-300"
-                        }`}
-                      >
-                        <option value="">-- Select an option --</option>
-                        <option value="Yes">Yes</option>
-                        <option value="Pre-existing Customer">Pre-existing Customer</option>
-                        <option value="Not yet">Not yet</option>
-                      </select>
-                      {partnerTagResponse === "Not yet" && (
-                        <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-600 block">
-                            Override Code <span className="text-red-500">*</span>
+                    {/* Partner Tagging — dynamic from website settings */}
+                    {ws.checkout_partner_enabled !== false && (() => {
+                      const partnerOpts = ws.checkout_partner_options?.split('\n').filter(Boolean) || ["Yes", "Pre-existing Customer", "Not yet"];
+                      return (
+                        <div className="rounded-md border border-blue-200 bg-blue-50 p-4 space-y-3" data-testid="partner-tag-section">
+                          <label className="text-sm font-semibold text-slate-700 block">
+                            {ws.checkout_partner_title || "Have you tagged us as your Zoho Partner?"} <span className="text-red-500">*</span>
                           </label>
-                          <Input
-                            data-testid="override-code-checkout-input"
-                            value={overrideCode}
-                            onChange={(e) => setOverrideCode(e.target.value)}
-                            placeholder="Enter override code provided by admin"
-                            className={`text-sm ${!overrideCode.trim() ? "border-red-300" : "border-slate-300"}`}
-                          />
-                          <p className="text-xs text-slate-500">
-                            Contact admin to receive a valid override code for your account.
+                          <p className="text-xs text-slate-500 leading-relaxed">
+                            {ws.checkout_partner_description || "You can tag us as your Zoho Partner by clicking the links below."}
+                            {(zohoUrls.partner_tag_us || zohoUrls.partner_tag_ca) && (
+                              <>
+                                {" "}
+                                {zohoUrls.partner_tag_us && <><a href={zohoUrls.partner_tag_us} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline font-medium" data-testid="partner-tag-us-link">here (US DC)</a>{" "}</>}
+                                {zohoUrls.partner_tag_ca && <>{zohoUrls.partner_tag_us ? "or " : ""}<a href={zohoUrls.partner_tag_ca} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline font-medium" data-testid="partner-tag-ca-link">here (CA DC)</a>.</>}
+                              </>
+                            )}
+                            {ws.checkout_partner_misrep_warning && (
+                              <> <span className="text-red-600 font-medium">{ws.checkout_partner_misrep_warning}</span></>
+                            )}
                           </p>
+                          <select data-testid="partner-tag-dropdown" value={partnerTagResponse}
+                            onChange={e => { setPartnerTagResponse(e.target.value); setOverrideCode(""); }}
+                            className={`w-full h-10 border rounded-md px-3 text-sm bg-white text-slate-800 ${!partnerTagResponse ? "border-red-300" : "border-slate-300"}`}>
+                            <option value="">-- Select an option --</option>
+                            {partnerOpts.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                          {partnerTagResponse === "Not yet" && (
+                            <div className="space-y-1">
+                              <label className="text-xs font-semibold text-slate-600 block">Override Code <span className="text-red-500">*</span></label>
+                              <Input data-testid="override-code-checkout-input" value={overrideCode} onChange={e => setOverrideCode(e.target.value)}
+                                placeholder="Enter override code provided by admin"
+                                className={`text-sm ${!overrideCode.trim() ? "border-red-300" : "border-slate-300"}`} />
+                              <p className="text-xs text-slate-500">Contact admin to receive a valid override code for your account.</p>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      );
+                    })()}
+                    {/* Custom extra questions from website settings */}
+                    {extraSchema.length > 0 && (
+                      <div className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-4" data-testid="checkout-extra-questions">
+                        {extraSchema.map((field: any) => (
+                          <div key={field.name} className="space-y-1">
+                            <label className="text-xs font-medium text-slate-600 block">
+                              {field.label}{field.required && <span className="text-red-500"> *</span>}
+                            </label>
+                            {field.type === "select" ? (
+                              <select value={extraFields[field.name] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.name]: e.target.value }))}
+                                className="w-full h-9 border border-slate-200 rounded-md px-3 text-sm bg-white">
+                                <option value="">-- Select --</option>
+                                {(field.options || []).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            ) : field.type === "checkbox" ? (
+                              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="checkbox" checked={extraFields[field.name] === "true"}
+                                  onChange={e => setExtraFields(p => ({ ...p, [field.name]: String(e.target.checked) }))} />
+                                {field.label}
+                              </label>
+                            ) : (
+                              <Input value={extraFields[field.name] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.name]: e.target.value }))}
+                                placeholder={field.placeholder || ""} className="text-sm" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {/* Terms & Conditions */}
                     <div className="flex items-start gap-2 p-3 rounded-md border border-slate-200 bg-slate-50">
                       <input
