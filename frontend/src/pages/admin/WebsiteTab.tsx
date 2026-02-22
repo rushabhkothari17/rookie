@@ -720,88 +720,93 @@ export default function WebsiteTab() {
             </>
           )}
 
-          {/* ── Email Templates ── */}
-          {activeSection === "email" && <EmailSection />}
           {/* ── Checkout ── */}
           {activeSection === "checkout" && (
             <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">Checkout Page Content</h3>
-              <p className="text-xs text-slate-400 mb-4">Configure sections and questions shown in the cart/checkout flow.</p>
+              <h3 className="text-sm font-semibold text-slate-700 mb-1">Checkout Page Sections</h3>
+              <p className="text-xs text-slate-400 mb-4">
+                Build the sections shown on the cart/checkout page. Each section can have a title, description, and custom form fields.
+                Answers are stored with each order in <code className="font-mono bg-slate-100 px-1 rounded">extra_fields</code>.
+              </p>
 
-              {/* Zoho Section */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-900">Zoho Account Details</h4>
-                    <p className="text-xs text-slate-400">Section shown before checkout for Zoho account info</p>
-                  </div>
-                  <button onClick={() => setWs(p => ({...p, checkout_zoho_enabled: !p.checkout_zoho_enabled}))}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${
-                      ws.checkout_zoho_enabled
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : "bg-slate-100 text-slate-500 border-slate-200"
-                    }`} data-testid="checkout-zoho-toggle">
-                    {ws.checkout_zoho_enabled ? "Visible" : "Hidden"}
-                  </button>
-                </div>
-                <div className="space-y-3 border-t border-slate-100 pt-4">
-                  <Field label="Section title" value={ws.checkout_zoho_title} onChange={s("checkout_zoho_title")} testId="ws-zoho-title" />
-                  <div>
-                    <label className="text-xs text-slate-600 block mb-1">Subscription options <span className="text-slate-400">(one per line)</span></label>
-                    <Textarea value={ws.checkout_zoho_subscription_options} onChange={e => s("checkout_zoho_subscription_options")(e.target.value)}
-                      className="text-sm min-h-20 font-mono" data-testid="ws-zoho-sub-options" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-600 block mb-1">Product options <span className="text-slate-400">(one per line)</span></label>
-                    <Textarea value={ws.checkout_zoho_product_options} onChange={e => s("checkout_zoho_product_options")(e.target.value)}
-                      className="text-sm min-h-32 font-mono" data-testid="ws-zoho-product-options" />
-                  </div>
-                  <Field label="Signup note (shown when 'Not on Zoho')" value={ws.checkout_zoho_signup_note} onChange={s("checkout_zoho_signup_note")} />
-                  <Field label="Access instructions note" value={ws.checkout_zoho_access_note} onChange={s("checkout_zoho_access_note")} />
-                  <Field label="Access delay warning" value={ws.checkout_zoho_access_delay_warning} onChange={s("checkout_zoho_access_delay_warning")} />
-                </div>
-              </div>
+              <CheckoutSectionsList value={ws.checkout_sections} onChange={s("checkout_sections")} />
 
-              {/* Partner Tagging Section */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-900">Partner Tagging</h4>
-                    <p className="text-xs text-slate-400">Section for "Have you tagged us as your partner?"</p>
-                  </div>
-                  <button onClick={() => setWs(p => ({...p, checkout_partner_enabled: !p.checkout_partner_enabled}))}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${
-                      ws.checkout_partner_enabled
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : "bg-slate-100 text-slate-500 border-slate-200"
-                    }`} data-testid="checkout-partner-toggle">
-                    {ws.checkout_partner_enabled ? "Visible" : "Hidden"}
-                  </button>
-                </div>
-                <div className="space-y-3 border-t border-slate-100 pt-4">
-                  <Field label="Section title / question" value={ws.checkout_partner_title} onChange={s("checkout_partner_title")} testId="ws-partner-title" />
-                  <div>
-                    <label className="text-xs text-slate-600 block mb-1">Description text <span className="text-slate-400">(shown above response options; URLs managed in References)</span></label>
-                    <Textarea value={ws.checkout_partner_description} onChange={e => s("checkout_partner_description")(e.target.value)}
-                      className="text-sm min-h-16" data-testid="ws-partner-desc" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-600 block mb-1">Response options <span className="text-slate-400">(one per line)</span></label>
-                    <Textarea value={ws.checkout_partner_options} onChange={e => s("checkout_partner_options")(e.target.value)}
-                      className="text-sm min-h-16 font-mono" data-testid="ws-partner-options" />
-                  </div>
-                  <Field label="Misrepresentation warning" value={ws.checkout_partner_misrep_warning} onChange={s("checkout_partner_misrep_warning")} />
-                </div>
-              </div>
+              <div className="border-t border-slate-100 pt-5 mt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-1">Legacy Sections</h3>
+                <p className="text-xs text-slate-400 mb-4">
+                  These sections use the original fixed format. They remain active if no custom sections are configured above.
+                  Use the new builder above to replace them.
+                </p>
 
-              {/* Custom Extra Questions */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900">Custom Extra Questions</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">Additional questions shown at checkout. Answers are stored with each order.</p>
+                {/* Zoho Section (Legacy) */}
+                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 mb-4 opacity-80">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900">Zoho Account Details <span className="text-xs font-normal text-slate-400">(legacy)</span></h4>
+                      <p className="text-xs text-slate-400">Section shown before checkout for Zoho account info</p>
+                    </div>
+                    <button onClick={() => setWs(p => ({...p, checkout_zoho_enabled: !p.checkout_zoho_enabled}))}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${ws.checkout_zoho_enabled ? "bg-green-50 text-green-700 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}
+                      data-testid="checkout-zoho-toggle">
+                      {ws.checkout_zoho_enabled ? "Visible" : "Hidden"}
+                    </button>
+                  </div>
+                  <div className="space-y-3 border-t border-slate-100 pt-4">
+                    <Field label="Section title" value={ws.checkout_zoho_title} onChange={s("checkout_zoho_title")} testId="ws-zoho-title" />
+                    <div>
+                      <label className="text-xs text-slate-600 block mb-1">Subscription options <span className="text-slate-400">(one per line)</span></label>
+                      <Textarea value={ws.checkout_zoho_subscription_options} onChange={e => s("checkout_zoho_subscription_options")(e.target.value)}
+                        className="text-sm min-h-20 font-mono" data-testid="ws-zoho-sub-options" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-600 block mb-1">Product options <span className="text-slate-400">(one per line)</span></label>
+                      <Textarea value={ws.checkout_zoho_product_options} onChange={e => s("checkout_zoho_product_options")(e.target.value)}
+                        className="text-sm min-h-32 font-mono" data-testid="ws-zoho-product-options" />
+                    </div>
+                    <Field label="Signup note (shown when 'Not on Zoho')" value={ws.checkout_zoho_signup_note} onChange={s("checkout_zoho_signup_note")} />
+                    <Field label="Access instructions note" value={ws.checkout_zoho_access_note} onChange={s("checkout_zoho_access_note")} />
+                    <Field label="Access delay warning" value={ws.checkout_zoho_access_delay_warning} onChange={s("checkout_zoho_access_delay_warning")} />
+                  </div>
                 </div>
-                <div className="border-t border-slate-100 pt-4">
-                  <FormSchemaBuilder title="Extra checkout questions" value={ws.checkout_extra_schema} onChange={s("checkout_extra_schema")} />
+
+                {/* Partner Tagging Section (Legacy) */}
+                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 mb-4 opacity-80">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900">Partner Tagging <span className="text-xs font-normal text-slate-400">(legacy)</span></h4>
+                      <p className="text-xs text-slate-400">Section for "Have you tagged us as your partner?"</p>
+                    </div>
+                    <button onClick={() => setWs(p => ({...p, checkout_partner_enabled: !p.checkout_partner_enabled}))}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${ws.checkout_partner_enabled ? "bg-green-50 text-green-700 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}
+                      data-testid="checkout-partner-toggle">
+                      {ws.checkout_partner_enabled ? "Visible" : "Hidden"}
+                    </button>
+                  </div>
+                  <div className="space-y-3 border-t border-slate-100 pt-4">
+                    <Field label="Section title / question" value={ws.checkout_partner_title} onChange={s("checkout_partner_title")} testId="ws-partner-title" />
+                    <div>
+                      <label className="text-xs text-slate-600 block mb-1">Description text</label>
+                      <Textarea value={ws.checkout_partner_description} onChange={e => s("checkout_partner_description")(e.target.value)}
+                        className="text-sm min-h-16" data-testid="ws-partner-desc" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-600 block mb-1">Response options <span className="text-slate-400">(one per line)</span></label>
+                      <Textarea value={ws.checkout_partner_options} onChange={e => s("checkout_partner_options")(e.target.value)}
+                        className="text-sm min-h-16 font-mono" data-testid="ws-partner-options" />
+                    </div>
+                    <Field label="Misrepresentation warning" value={ws.checkout_partner_misrep_warning} onChange={s("checkout_partner_misrep_warning")} />
+                  </div>
+                </div>
+
+                {/* Custom Extra Questions (Legacy) */}
+                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 opacity-80">
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900">Custom Extra Questions <span className="text-xs font-normal text-slate-400">(legacy)</span></h4>
+                    <p className="text-xs text-slate-400 mt-0.5">Additional questions at checkout (no sections). Use the new builder above for a better experience.</p>
+                  </div>
+                  <div className="border-t border-slate-100 pt-4">
+                    <FormSchemaBuilder title="Extra checkout questions" value={ws.checkout_extra_schema} onChange={s("checkout_extra_schema")} />
+                  </div>
                 </div>
               </div>
             </>
