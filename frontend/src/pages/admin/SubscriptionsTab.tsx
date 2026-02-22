@@ -170,7 +170,12 @@ export function SubscriptionsTab() {
     catch (e: any) { toast.error(e.response?.data?.detail || "Failed"); }
   };
 
-  const clearFilters = () => { setEmail(""); setStatus(""); setPayment(""); setCreatedFrom(""); setCreatedTo(""); setStartFrom(""); setStartTo(""); setContractEndFrom(""); setContractEndTo(""); };
+  const clearFilters = () => {
+    setEmail(""); setStatus(""); setPayment("");
+    setSubNumberFilter(""); setProcessorIdFilter(""); setPlanFilter("");
+    setRenewalFrom(""); setRenewalTo("");
+    setCreatedFrom(""); setCreatedTo(""); setStartFrom(""); setStartTo(""); setContractEndFrom(""); setContractEndTo("");
+  };
 
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
