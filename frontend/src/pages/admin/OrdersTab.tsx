@@ -198,6 +198,8 @@ export function OrdersTab() {
 
   const clearFilters = () => {
     setEmailFilter(""); setOrderNumberFilter(""); setStatusFilter(""); setProductFilter("");
+    setSubNumberFilter(""); setProcessorIdFilter(""); setPayMethodFilter("");
+    setPayDateFrom(""); setPayDateTo("");
     setStartDate(""); setEndDate(""); setIncludeDeleted(false);
   };
 
