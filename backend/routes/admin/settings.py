@@ -126,4 +126,5 @@ async def upload_logo(
     content_type = file.content_type or "image/png"
     data_url = f"data:{content_type};base64,{b64}"
     await db.app_settings.update_one({}, {"$set": {"logo_url": data_url}}, upsert=True)
+    await create_audit_log(entity_type="setting", entity_id="logo", action="logo_uploaded", actor=admin.get("email", "admin"), details={"file_name": file.filename, "content_type": content_type})
     return {"logo_url": data_url}
