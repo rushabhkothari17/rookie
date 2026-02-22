@@ -155,7 +155,10 @@ class AdminProductUpdate(BaseModel):
     is_active: bool = True
     visible_to_customers: Optional[List[str]] = None
     intake_schema_json: Optional[IntakeSchemaJson] = None
-    price_rounding: Optional[str] = None(BaseModel):
+    price_rounding: Optional[str] = None
+
+
+class AdminCustomerPaymentUpdate(BaseModel):
     allow_bank_transfer: bool
     allow_card_payment: bool
 
