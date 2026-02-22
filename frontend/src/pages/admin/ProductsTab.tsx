@@ -215,13 +215,7 @@ export function ProductsTab() {
             <option value="all">All Categories</option>
             {categories.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
-          <select value={complexityFilter} onChange={e => { setComplexityFilter(e.target.value); setPage(1); }} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-catalog-complexity-filter">
-            <option value="all">All Pricing</option>
-            <option value="SIMPLE">Simple</option>
-            <option value="COMPLEX">Complex</option>
-            <option value="REQUEST_FOR_QUOTE">RFQ</option>
-          </select>
-          <Button size="sm" variant="outline" onClick={() => { setSearchText(""); setCatalogFilter("all"); setCategoryFilter("all"); setComplexityFilter("all"); setPage(1); }} className="h-8 text-xs" data-testid="admin-catalog-clear-filters">Clear</Button>
+          <Button size="sm" variant="outline" onClick={() => { setSearchText(""); setCatalogFilter("all"); setCategoryFilter("all"); setPage(1); }} className="h-8 text-xs" data-testid="admin-catalog-clear-filters">Clear</Button>
         </div>
       </div>
 
@@ -232,7 +226,6 @@ export function ProductsTab() {
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Billing</TableHead>
-              <TableHead>Pricing</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
@@ -240,10 +233,10 @@ export function ProductsTab() {
           </TableHeader>
           <TableBody>
             {loading && (
-              <TableRow><TableCell colSpan={7} className="text-center text-slate-400">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-slate-400">Loading…</TableCell></TableRow>
             )}
             {!loading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="text-center text-slate-400">No products found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-slate-400">No products found.</TableCell></TableRow>
             )}
             {paged.map((product) => (
               <TableRow key={product.id} data-testid={`admin-product-row-${product.id}`}>
