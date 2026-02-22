@@ -150,6 +150,7 @@ async def login(payload: LoginRequest):
         source="api",
         meta_json={"role": user.get("role", "customer")},
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "user", "entity_id": user["id"], "action": "login", "actor": user["email"], "details": {"role": user.get("role", "customer")}, "created_at": now_iso()})
     return {"token": token}
 
 
