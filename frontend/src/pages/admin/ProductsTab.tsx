@@ -13,11 +13,13 @@ import { AdminPagination } from "./shared/AdminPagination";
 import { Download } from "lucide-react";
 
 function productToForm(p: any): ProductFormData {
-  // bullets: prefer new 'bullets' field, fall back to bullets_included (max 3)
-  const bullets: string[] = p.bullets?.filter((b: string) => b)?.length
-    ? [...p.bullets]
-    : [...(p.bullets_included || []).slice(0, 3)];
-  while (bullets.length < 3) bullets.push("");
+  // bullets: prefer new 'bullets' field, fall back to bullets_included
+  const bullets: string[] = (p.bullets || []).filter((b: string) => b);
+  if (bullets.length === 0) {
+    const fallback = (p.bullets_included || []).filter((b: string) => b);
+    if (fallback.length > 0) bullets.push(...fallback);
+    else bullets.push("");
+  }
 
   return {
     name: p.name || "",
@@ -26,14 +28,6 @@ function productToForm(p: any): ProductFormData {
     bullets,
     tag: p.tag || "",
     category: p.category || "",
-    outcome: p.outcome || p.tagline || "",
-    automation_details: p.automation_details || "",
-    support_details: p.support_details || "",
-    // Prefer new fields, fall back to legacy bullet fields
-    inclusions: p.inclusions?.length ? p.inclusions : (p.bullets_included || []),
-    exclusions: p.exclusions?.length ? p.exclusions : (p.bullets_excluded || []),
-    requirements: p.requirements?.length ? p.requirements : (p.bullets_needed || []),
-    next_steps: p.next_steps || [],
     faqs: Array.isArray(p.faqs)
       ? p.faqs.map((f: any) => typeof f === "string" ? { question: f, answer: "" } : f)
       : [],
@@ -41,11 +35,11 @@ function productToForm(p: any): ProductFormData {
     base_price: p.base_price ?? 0,
     is_subscription: p.is_subscription ?? false,
     stripe_price_id: p.stripe_price_id || "",
-    pricing_complexity: p.pricing_complexity || "SIMPLE",
+    price_rounding: p.price_rounding || "",
     is_active: p.is_active ?? true,
     visible_to_customers: p.visible_to_customers || [],
-    price_rounding: p.price_rounding || "",
     intake_schema_json: p.intake_schema_json || EMPTY_INTAKE_SCHEMA,
+    custom_sections: p.custom_sections || [],
   };
 }
 
