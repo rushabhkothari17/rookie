@@ -146,6 +146,7 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
       { key: "email", label: "Email Templates" },
       { key: "errors", label: "Error Messages" },
       { key: "footer", label: "Footer & Nav" },
+      { key: "pages", label: "Page Content" },
     ],
   },
   {
