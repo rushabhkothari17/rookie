@@ -125,7 +125,7 @@ def seed_data(admin_headers):
         "applies_to": "both", "enabled": True
     }, headers=admin_headers)
     if r.status_code == 200:
-        data["promo_code"] = r.json()
+        data["promo_code"] = r.json()  # {"message": ..., "id": ...}
 
     # Create ZOHOR promo code if not exists
     r2 = requests.post(f"{BASE_URL}/api/admin/promo-codes", json={
