@@ -647,8 +647,8 @@ export default function WebsiteTab() {
           {activeSection === "sysconfig" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700 mb-1">System Configuration</h3>
-              <p className="text-xs text-slate-400 mb-4">Database-backed settings. Click any value to edit.</p>
-              {["Operations", "FeatureFlags", "Zoho"].map(cat => {
+              <p className="text-xs text-slate-400 mb-4">Database-backed settings. Click any value to edit. Zoho system links are managed in the References section.</p>
+              {["Operations", "FeatureFlags"].map(cat => {
                 const items = structured[cat] || [];
                 if (!items.length) return null;
                 return (
