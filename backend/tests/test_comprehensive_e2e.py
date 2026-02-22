@@ -759,7 +759,8 @@ class TestAdminCategories:
         }, headers=admin_headers)
         if r.status_code != 200:
             pytest.skip("Could not create category")
-        cid = r.json().get("id")
+        cat_obj = r.json().get("category", r.json())
+        cid = cat_obj.get("id")
         if not cid:
             pytest.skip("No category id returned")
         del_r = requests.delete(f"{BASE_URL}/api/admin/categories/{cid}", headers=admin_headers)
