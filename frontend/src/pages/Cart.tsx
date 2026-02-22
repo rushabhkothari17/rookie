@@ -51,8 +51,16 @@ export default function Cart() {
     }).catch(() => {});
   }, []);
 
-  const allowBankTransfer = customer?.allow_bank_transfer ?? true;
-  const allowCardPayment = customer?.allow_card_payment ?? false;
+  // Respect per-customer allowed_payment_modes if set; fall back to legacy booleans
+  const allowedModes: string[] | undefined = customer?.allowed_payment_modes?.length
+    ? customer.allowed_payment_modes
+    : undefined;
+  const allowBankTransfer = allowedModes
+    ? allowedModes.includes("bank_transfer")
+    : (customer?.allow_bank_transfer ?? true);
+  const allowCardPayment = allowedModes
+    ? allowedModes.includes("card")
+    : (customer?.allow_card_payment ?? false);
 
   useEffect(() => {
     if (allowBankTransfer) {
