@@ -231,6 +231,115 @@ function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, val: 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+// ─── Payment Provider Card ──────────────────────────────────────────────────
+
+function PaymentProviderCard({
+  title, subtitle, enabledItem, displayLabelKey, displayDescKey,
+  initialLabel, initialDesc, credItems, feeRateItem, onSaved,
+}: {
+  title: string; subtitle: string; enabledItem: any;
+  displayLabelKey: string; displayDescKey: string;
+  initialLabel: string; initialDesc: string;
+  credItems: any[]; feeRateItem: any | null;
+  onSaved: (key: string, val: any) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [label, setLabel] = useState(initialLabel);
+  const [desc, setDesc] = useState(initialDesc);
+  const [saving, setSaving] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(
+    enabledItem?.value_json === "true" || enabledItem?.value_json === true
+  );
+  const [toggling, setToggling] = useState(false);
+
+  useEffect(() => { setLabel(initialLabel); }, [initialLabel]);
+  useEffect(() => { setDesc(initialDesc); }, [initialDesc]);
+
+  const toggleEnabled = async () => {
+    const next = !isEnabled;
+    setToggling(true);
+    try {
+      await api.put(`/admin/settings/key/${enabledItem.key}`, { value: next });
+      setIsEnabled(next);
+      toast.success(next ? `${title} enabled` : `${title} disabled`);
+    } catch { toast.error("Failed to update"); }
+    finally { setToggling(false); }
+  };
+
+  const saveLabels = async () => {
+    setSaving(true);
+    try {
+      await api.put("/admin/website-settings", { [displayLabelKey]: label, [displayDescKey]: desc });
+      toast.success("Checkout labels saved");
+    } catch { toast.error("Save failed"); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden" data-testid={`payment-card-${enabledItem?.key}`}>
+      <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 transition-colors ${isEnabled ? "bg-green-500" : "bg-slate-300"}`} />
+          <div>
+            <p className="text-sm font-semibold text-slate-900">{title}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={toggleEnabled} disabled={toggling || !enabledItem}
+            className={`px-3 py-1 text-xs font-medium rounded-full transition-all border disabled:opacity-50 ${
+              isEnabled
+                ? "bg-green-50 text-green-700 border-green-200 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200"
+            }`} data-testid={`payment-toggle-${enabledItem?.key}`}>
+            {isEnabled ? "Enabled" : "Disabled"}
+          </button>
+          <button onClick={() => setOpen(v => !v)}
+            className={`p-2 rounded-lg transition-colors ${open ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"}`}
+            data-testid={`payment-edit-${enabledItem?.key}`}>
+            <Pencil size={13} />
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div className="border-t border-slate-100">
+          <div className="p-4 bg-slate-50 space-y-3">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Checkout Display</p>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Label (shown to customers)</label>
+              <input value={label} onChange={e => setLabel(e.target.value)}
+                placeholder="e.g. Bank Transfer (GoCardless)"
+                className="w-full h-9 text-sm border border-slate-200 rounded-lg px-3 bg-white" />
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Description (shown under label)</label>
+              <input value={desc} onChange={e => setDesc(e.target.value)}
+                placeholder="Short description"
+                className="w-full h-9 text-sm border border-slate-200 rounded-lg px-3 bg-white" />
+            </div>
+            <button onClick={saveLabels} disabled={saving}
+              className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors">
+              {saving ? "Saving…" : "Save Labels"}
+            </button>
+          </div>
+          {credItems.length > 0 && (
+            <div className="p-4 border-t border-slate-100 space-y-1">
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Credentials & Config</p>
+              {credItems.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onSaved} />)}
+            </div>
+          )}
+          {feeRateItem && (
+            <div className="p-4 border-t border-slate-100">
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Fee Rate</p>
+              <SettingRow item={feeRateItem} onSaved={onSaved} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function WebsiteTab() {
   const [activeSection, setActiveSection] = useState<Section>("branding");
   const [ws, setWs] = useState<WebsiteData>(WEB_DEFAULTS);
