@@ -123,6 +123,7 @@ export function ProductsTab() {
         terms_id: form.terms_id || null,
         stripe_price_id: form.stripe_price_id || null,
         pricing_rules: editProduct?.pricing_rules || {},
+        intake_schema_json: form.intake_schema_json,
       };
       if (editProduct) {
         await api.put(`/admin/products/${editProduct.id}`, payload);
