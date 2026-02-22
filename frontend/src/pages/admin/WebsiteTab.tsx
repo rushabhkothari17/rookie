@@ -596,7 +596,19 @@ export default function WebsiteTab() {
           )}
 
           {/* ── References ── */}
-          {activeSection === "references" && <ReferencesSection />}
+          {activeSection === "references" && (
+            <>
+              {/* Zoho system URLs — moved here from System Config */}
+              {(structured["Zoho"] || []).length > 0 && (
+                <div className="rounded-xl border border-amber-100 bg-amber-50 p-5 mb-4">
+                  <h4 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">System Links (Zoho)</h4>
+                  <p className="text-xs text-amber-600 mb-3">Partner tag and signup URLs used in the checkout flow. Click a value to edit.</p>
+                  {(structured["Zoho"] || []).map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+                </div>
+              )}
+              <ReferencesSection />
+            </>
+          )}
 
           {/* ── Payments ── */}
           {activeSection === "payments" && (
