@@ -628,7 +628,7 @@ export default function ProductDetail() {
               {submittingQuote ? "Submitting…" : "Submit Quote Request"}
             </Button>
             <p className="text-xs text-slate-400 text-center">
-              We'll respond within 1-2 business days.
+              {ws.quote_form_response_time || "We'll respond within 1-2 business days."}
             </p>
           </div>
         </DialogContent>
