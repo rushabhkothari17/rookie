@@ -131,6 +131,7 @@ async def update_bank_transaction(
         source="admin_ui",
         after_json=updates,
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "bank_transaction", "entity_id": txn_id, "action": "updated", "actor": admin.get("email", "admin"), "details": updates, "created_at": now_iso()})
     return {"transaction": updated}
 
 
