@@ -152,6 +152,7 @@ async def delete_bank_transaction(
         actor_email=admin.get("email"),
         source="admin_ui",
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "bank_transaction", "entity_id": txn_id, "action": "deleted", "actor": admin.get("email", "admin"), "details": {}, "created_at": now_iso()})
     return {"message": "Deleted"}
 
 
