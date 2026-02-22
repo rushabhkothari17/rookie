@@ -201,25 +201,34 @@ class TestCustomersCurrencyField:
 class TestArticlesPagination:
     """Tests for articles pagination - verify API returns 33 articles."""
 
-    def test_articles_public_endpoint_accessible(self):
-        """GET /articles/public is accessible without auth."""
-        resp = requests.get(f"{BASE_URL}/api/articles/public")
+    @pytest.fixture(scope="class")
+    def customer_headers(self):
+        """Customer auth headers (articles/public requires auth)."""
+        resp = requests.post(f"{BASE_URL}/api/auth/login", json={"email": CUSTOMER_EMAIL, "password": CUSTOMER_PASSWORD})
+        if resp.status_code != 200:
+            pytest.skip(f"Customer login failed: {resp.text}")
+        token = resp.json()["token"]
+        return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+    def test_articles_public_endpoint_accessible(self, customer_headers):
+        """GET /articles/public is accessible with customer auth."""
+        resp = requests.get(f"{BASE_URL}/api/articles/public", headers=customer_headers)
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
         assert "articles" in data
         print(f"Total articles: {len(data['articles'])}")
 
-    def test_articles_count_supports_pagination(self):
+    def test_articles_count_supports_pagination(self, customer_headers):
         """Articles count >= 9 so pagination will be triggered."""
-        resp = requests.get(f"{BASE_URL}/api/articles/public")
+        resp = requests.get(f"{BASE_URL}/api/articles/public", headers=customer_headers)
         assert resp.status_code == 200
         articles = resp.json().get("articles", [])
         assert len(articles) >= 9, f"Expected >=9 articles for pagination, got {len(articles)}"
         print(f"Articles count: {len(articles)} - pagination will trigger with >9")
 
-    def test_articles_count_for_4_pages(self):
+    def test_articles_count_for_4_pages(self, customer_headers):
         """Verify 33 articles exist => 4 pages of 9."""
-        resp = requests.get(f"{BASE_URL}/api/articles/public")
+        resp = requests.get(f"{BASE_URL}/api/articles/public", headers=customer_headers)
         assert resp.status_code == 200
         articles = resp.json().get("articles", [])
         count = len(articles)
@@ -228,9 +237,9 @@ class TestArticlesPagination:
         # Just verify the count is reasonable for multiple pages
         assert count > 9, f"Expected >9 articles for multi-page pagination, got {count}"
 
-    def test_articles_have_required_fields(self):
+    def test_articles_have_required_fields(self, customer_headers):
         """Articles have required fields for display."""
-        resp = requests.get(f"{BASE_URL}/api/articles/public")
+        resp = requests.get(f"{BASE_URL}/api/articles/public", headers=customer_headers)
         assert resp.status_code == 200
         articles = resp.json().get("articles", [])
         if not articles:
@@ -241,9 +250,9 @@ class TestArticlesPagination:
             assert field in first, f"Article missing required field: {field}"
         print(f"First article fields: {list(first.keys())}")
 
-    def test_articles_no_id_field(self):
+    def test_articles_no_id_field(self, customer_headers):
         """Articles should not expose MongoDB _id."""
-        resp = requests.get(f"{BASE_URL}/api/articles/public")
+        resp = requests.get(f"{BASE_URL}/api/articles/public", headers=customer_headers)
         assert resp.status_code == 200
         articles = resp.json().get("articles", [])
         for art in articles[:5]:
