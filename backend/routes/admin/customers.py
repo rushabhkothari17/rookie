@@ -268,3 +268,10 @@ async def admin_set_customer_active(
         details={"is_active": {"old": old_state, "new": active}, "also_updated_user": bool(user)},
     )
     return {"message": f"Customer {'activated' if active else 'deactivated'}", "is_active": active}
+
+
+@router.get("/admin/customers/{customer_id}/logs")
+async def get_customer_logs(customer_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "customer", "entity_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+

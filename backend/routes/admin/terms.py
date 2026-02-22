@@ -146,3 +146,10 @@ async def assign_terms_to_product(
         await db.products.update_one({"id": product_id}, {"$unset": {"terms_id": ""}})
         await create_audit_log(entity_type="product", entity_id=product_id, action="terms_removed", actor=admin["email"], details={})
     return {"message": "Terms assignment updated"}
+
+
+@router.get("/admin/terms/{terms_id}/logs")
+async def get_terms_logs(terms_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "terms", "entity_id": terms_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+

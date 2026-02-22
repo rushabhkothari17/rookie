@@ -137,3 +137,10 @@ async def admin_set_user_active(
         details={"is_active": {"old": old_state, "new": active}, "email": user.get("email")},
     )
     return {"message": f"User {'activated' if active else 'deactivated'}", "is_active": active}
+
+
+@router.get("/admin/users/{user_id}/logs")
+async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "user", "entity_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+

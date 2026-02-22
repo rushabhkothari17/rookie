@@ -145,3 +145,10 @@ async def admin_update_quote_request(
     )
     await db.audit_logs.insert_one({"id": make_id(), "entity_type": "quote_request", "entity_id": quote_id, "action": "updated", "actor": admin.get("email", "admin"), "details": update, "created_at": now_iso()})
     return {"quote": quote}
+
+
+@router.get("/admin/quote-requests/{quote_id}/logs")
+async def get_quote_request_logs(quote_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "quote_request", "entity_id": quote_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+
