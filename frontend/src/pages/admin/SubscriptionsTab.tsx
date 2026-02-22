@@ -204,14 +204,23 @@ export function SubscriptionsTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Customer email" value={email} onChange={e => setEmail(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-sub-filter-email" />
+          <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-sub-number" />
+          <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-processor-id" />
+          <Input placeholder="Plan name" value={planFilter} onChange={e => setPlanFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-sub-filter-plan" />
           <select value={status} onChange={e => setStatus(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-sub-filter-status">
             <option value="">All Statuses</option>
-            {SUB_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            {subStatuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select value={payment} onChange={e => setPayment(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-sub-filter-payment">
-            <option value="">All Payment</option>
-            {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+            <option value="">All Methods</option>
+            {paymentMethods.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-slate-400">Renewal</span>
+            <Input type="date" value={renewalFrom} onChange={e => setRenewalFrom(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-renewal-from" />
+            <span className="text-xs text-slate-400">–</span>
+            <Input type="date" value={renewalTo} onChange={e => setRenewalTo(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-renewal-to" />
+          </div>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Created</span>
             <Input type="date" value={createdFrom} onChange={e => setCreatedFrom(e.target.value)} className="h-8 text-xs w-32" />
