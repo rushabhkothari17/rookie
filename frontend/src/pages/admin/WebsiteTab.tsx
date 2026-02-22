@@ -66,6 +66,13 @@ const WEB_DEFAULTS: WebsiteData = {
   msg_cart_empty: "", msg_quote_success: "", msg_scope_success: "",
   payment_gocardless_label: "", payment_gocardless_description: "",
   payment_stripe_label: "", payment_stripe_description: "",
+  checkout_zoho_enabled: true, checkout_zoho_title: "",
+  checkout_zoho_subscription_options: "", checkout_zoho_product_options: "",
+  checkout_zoho_signup_note: "", checkout_zoho_access_note: "",
+  checkout_zoho_access_delay_warning: "",
+  checkout_partner_enabled: true, checkout_partner_title: "",
+  checkout_partner_description: "", checkout_partner_options: "",
+  checkout_partner_misrep_warning: "", checkout_extra_schema: "[]",
 };
 
 // ─── Sidebar config ───────────────────────────────────────────────────────────
