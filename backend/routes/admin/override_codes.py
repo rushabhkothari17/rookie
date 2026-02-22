@@ -197,3 +197,10 @@ async def deactivate_override_code(
         details={},
     )
     return {"message": "Override code deactivated"}
+
+
+@router.get("/admin/override-codes/{code_id}/logs")
+async def get_override_code_logs(code_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "override_code", "entity_id": code_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+

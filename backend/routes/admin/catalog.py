@@ -287,3 +287,10 @@ async def admin_delete_category(
         details={"name": cat.get("name")},
     )
     return {"message": "Category deleted"}
+
+
+@router.get("/admin/products/{product_id}/logs")
+async def get_product_logs(product_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "product", "entity_id": product_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+

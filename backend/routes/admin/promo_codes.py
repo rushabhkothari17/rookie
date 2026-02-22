@@ -100,3 +100,10 @@ async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(
         details={"code": existing.get("code")},
     )
     return {"message": "Promo code deleted"}
+
+
+@router.get("/admin/promo-codes/{promo_id}/logs")
+async def get_promo_code_logs(promo_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+    logs = await db.audit_logs.find({"entity_type": "promo_code", "entity_id": promo_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"logs": logs}
+
