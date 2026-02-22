@@ -379,7 +379,7 @@ export function OrdersTab() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
                   <select value={selectedOrder.status || ""} onChange={e => setSelectedOrder({ ...selectedOrder, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-order-status-select">
-                    {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    {orderStatuses.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 {/* Payment Method */}
