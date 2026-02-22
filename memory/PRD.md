@@ -186,8 +186,28 @@ All 23 previously identified audit logging gaps have been addressed. Every POST/
 - Files: `routes/checkout.py`, `services/settings_service.py`
 - Test reports: `/app/test_reports/iteration_31.json` (24/24 pass, 100%)
 
+## Phase 10: Processor ID Deep-Link + Edit (Completed — Feb 2026)
+
+### Summary
+Admin can now one-click open any Stripe or GoCardless payment/subscription in the provider's dashboard directly from the Orders or Subscriptions table. The processor_id is also editable via the Edit dialog.
+
+### Changes
+- `OrdersTab.tsx` + `SubscriptionsTab.tsx`: `getProcessorLink()` helper maps ID prefixes to dashboard URLs:
+  - `pi_` / `ch_` → `https://dashboard.stripe.com/payments/{id}`
+  - `sub_` → `https://dashboard.stripe.com/subscriptions/{id}`
+  - `cus_` → `https://dashboard.stripe.com/customers/{id}`
+  - `in_` → `https://dashboard.stripe.com/invoices/{id}`
+  - `PM` → `https://manage.gocardless.com/payments/{id}`
+  - `MD` → `https://manage.gocardless.com/mandates/{id}`
+  - `SB` → `https://manage.gocardless.com/subscriptions/{id}`
+- Table cell renders blue clickable badge with ExternalLink icon for known prefixes; plain badge for unknown
+- Edit dialog: new `processor_id` text input (pre-filled); inline ExternalLink button opens dashboard
+- `models.py`: Added `processor_id: Optional[str] = None` to both `OrderUpdate` and `SubscriptionUpdate`
+- `routes/admin/orders.py` + `routes/admin/subscriptions.py`: Handle `processor_id` in PUT with audit logging (`changes.processor_id`)
+- Test report: `/app/test_reports/iteration_35.json` (18/18 backend + 13/13 frontend = 100%)
+
 ## Known Issues / Technical Debt
-- HTML hydration warning in admin dropdowns (non-blocking, Radix UI issue)
+- HTML hydration warning `<span> cannot be child of <select>/<option>` — caused by Emergent VE browser wrapper injecting spans. **Not fixable in application code.** Non-blocking.
 - Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
 - Orders email filter is client-side only (filters current page only, not all pages)
 
@@ -197,15 +217,15 @@ All 23 previously identified audit logging gaps have been addressed. Every POST/
 - ~~Remove old api_router endpoint definitions from server.py~~ Done
 - ~~Fix Stripe checkout (incorrect import path)~~ Done
 - ~~Fix GoCardless checkout (missing webhook secret in settings)~~ Done
+- ~~Processor ID deep-link + edit~~ Done
 
 ### P1 — High Value
-- Admin Dashboard: visual metrics for revenue, subscriptions, orders, recent activity
+- **Admin Dashboard**: visual metrics for revenue, subscriptions, orders, recent activity (charts, KPI cards)
 - Production monitoring + error alerting
 
 ### P2 — Nice to Have
 - Zoho CRM & Books integration (sync customers, orders)
 - Email notifications for Quote Requests submitted
-- React hydration warning fix in Header.tsx
 - PostgreSQL migration (if scale requires it)
 
 ## Test Reports
@@ -213,4 +233,5 @@ All 23 previously identified audit logging gaps have been addressed. Every POST/
 - `/app/test_reports/iteration_29.json` — Audit log instrumentation (28/28 pass, 100%)
 - `/app/test_reports/iteration_30.json` — Full E2E QA pass (95.8% backend, 90% frontend)
 - `/app/test_reports/iteration_31.json` — P0 checkout bug fixes (24/24 pass, 100%)
-- `/app/backend/tests/test_p0_checkout_fixes.py` — P0 bug fix test suite
+- `/app/test_reports/iteration_35.json` — Processor ID deep-link + edit (18/18 backend, 13/13 frontend, 100%)
+- `/app/backend/tests/test_iter35_processor_id.py` — Processor ID test suite
