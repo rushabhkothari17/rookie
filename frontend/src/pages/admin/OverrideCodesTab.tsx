@@ -38,6 +38,8 @@ export function OverrideCodesTab() {
   const [createForm, setCreateForm] = useState({ code: "", customer_id: "", expires_at: "" });
   const [editForm, setEditForm] = useState({ code: "", customer_id: "", status: "", expires_at: "" });
   const [customerSearch, setCustomerSearch] = useState("");
+  const [entityLogs, setEntityLogs] = useState<any[]>([]);
+  const [showEntityLogs, setShowEntityLogs] = useState(false);
 
   const userMap: Record<string, any> = {};
   users.forEach(u => { userMap[u.id] = u; });
