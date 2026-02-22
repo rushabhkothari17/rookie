@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
-import { ChevronDown, ChevronUp, Eye, EyeOff, Pencil, Plus, Save, Upload, X } from "lucide-react";
+import { Eye, EyeOff, Pencil, Save, Upload, X } from "lucide-react";
 import api from "@/lib/api";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
 import ReferencesSection from "./ReferencesSection";
 import EmailSection from "./EmailSection";
+import CheckoutSectionsBuilder from "@/components/admin/CheckoutSectionsBuilder";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
