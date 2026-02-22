@@ -10,6 +10,7 @@ from core.security import require_admin
 from db.session import db
 from models import WebsiteSettingsUpdate
 from services.audit_service import create_audit_log
+from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["website-settings"])
 
