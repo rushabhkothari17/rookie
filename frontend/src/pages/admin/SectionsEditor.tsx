@@ -115,7 +115,6 @@ export function SectionsEditor({
 
       {sections.map((sec, i) => {
         const isExpanded = expandedIdx === i;
-        const colorDef = ICON_COLORS.find(c => c.value === sec.icon_color) || ICON_COLORS[0];
 
         return (
           <div key={sec.id || i} className="border border-slate-200 rounded-lg bg-white overflow-hidden">
