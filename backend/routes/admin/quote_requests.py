@@ -44,6 +44,7 @@ async def request_quote(
         source="customer_ui",
         meta_json={"product_id": payload.product_id, "company": payload.company},
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "quote_request", "entity_id": quote["id"], "action": "submitted", "actor": user.get("email", ""), "details": {"product_name": payload.product_name, "company": payload.company}, "created_at": now_iso()})
     return {"message": "Quote request submitted. We will be in touch shortly.", "quote_id": quote["id"]}
 
 
