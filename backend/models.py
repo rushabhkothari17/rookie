@@ -364,6 +364,7 @@ class ScopeRequestFormData(BaseModel):
     timeline_urgency: str
     budget_range: Optional[str] = ""
     additional_notes: Optional[str] = ""
+    extra_fields: Optional[Dict[str, Any]] = None
 
 
 class ScopeRequestWithForm(BaseModel):
