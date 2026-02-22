@@ -26,6 +26,8 @@ export function CategoriesTab() {
   const [editCat, setEditCat] = useState<any>(null);
   const [form, setForm] = useState({ name: "", description: "", is_active: true });
   const [saving, setSaving] = useState(false);
+  const [entityLogs, setEntityLogs] = useState<any[]>([]);
+  const [showEntityLogs, setShowEntityLogs] = useState(false);
 
   const load = useCallback(async (p = 1) => {
     try {

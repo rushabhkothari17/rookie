@@ -14,11 +14,14 @@ const CATEGORY_COLORS: Record<string, string> = {
   Other: "bg-slate-50 border-slate-200 text-slate-700",
 };
 
+const PER_PAGE = 9;
+
 export default function Articles() {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const load = async () => {
@@ -34,11 +37,17 @@ export default function Articles() {
     load();
   }, []);
 
+  // Reset page when filter changes
+  useEffect(() => { setPage(1); }, [selectedCategory]);
+
   const categories = Array.from(new Set(articles.map((a) => a.category))).sort();
 
   const filtered = selectedCategory
     ? articles.filter((a) => a.category === selectedCategory)
     : articles;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <AppShell activeCategory={null}>
@@ -80,31 +89,61 @@ export default function Articles() {
             No articles available yet.
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pt-4" data-testid="articles-list">
-            {filtered.map((a) => (
-              <button
-                key={a.id}
-                onClick={() => navigate(`/articles/${a.slug || a.id}`)}
-                className="text-left rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md hover:border-slate-300 transition-all group"
-                data-testid={`article-card-${a.id}`}
-              >
-                <div className="space-y-3">
-                  <span className={`inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[a.category] || CATEGORY_COLORS["Other"]}`}>
-                    {a.category}
-                  </span>
-                  <h3 className="font-semibold text-slate-900 group-hover:text-slate-700 leading-tight">
-                    {a.title}
-                  </h3>
-                  {a.price && (
-                    <div className="text-sm font-semibold text-green-700">${a.price}</div>
-                  )}
-                  <div className="text-xs text-slate-400">
-                    Updated {new Date(a.updated_at).toLocaleDateString()}
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pt-4" data-testid="articles-list">
+              {paginated.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => navigate(`/articles/${a.slug || a.id}`)}
+                  className="text-left rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md hover:border-slate-300 transition-all group"
+                  data-testid={`article-card-${a.id}`}
+                >
+                  <div className="space-y-3">
+                    <span className={`inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[a.category] || CATEGORY_COLORS["Other"]}`}>
+                      {a.category}
+                    </span>
+                    <h3 className="font-semibold text-slate-900 group-hover:text-slate-700 leading-tight">
+                      {a.title}
+                    </h3>
+                    {a.price && (
+                      <div className="text-sm font-semibold text-green-700">${a.price}</div>
+                    )}
+                    <div className="text-xs text-slate-400">
+                      Updated {new Date(a.updated_at).toLocaleDateString()}
+                    </div>
                   </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-2" data-testid="articles-pagination">
+                <p className="text-sm text-slate-500">
+                  Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} of {filtered.length} articles
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-50 transition-colors"
+                    data-testid="articles-prev-page"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-slate-600 px-2">Page {page} of {totalPages}</span>
+                  <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-50 transition-colors"
+                    data-testid="articles-next-page"
+                  >
+                    Next
+                  </button>
                 </div>
-              </button>
-            ))}
-          </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </AppShell>
