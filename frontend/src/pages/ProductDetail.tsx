@@ -435,6 +435,29 @@ export default function ProductDetail() {
               </SectionCard>
             )}
 
+            {enabledIntakeQuestions.length > 0 && (
+              <SectionCard title="Tell us about your project" testId="product-intake-section">
+                <div className="space-y-4">
+                  {enabledIntakeQuestions.map((q: any) => (
+                    <div key={q.key} className="space-y-1.5" data-testid={`intake-field-${q.key}`}>
+                      <label className="text-sm font-medium text-slate-700">
+                        {q.label}
+                        {q.required && <span className="text-red-500 ml-1">*</span>}
+                      </label>
+                      {q.helper_text && (
+                        <p className="text-xs text-slate-400">{q.helper_text}</p>
+                      )}
+                      {renderIntakeField(
+                        q,
+                        intakeAnswers[q.key],
+                        (v: any) => setIntakeAnswers(prev => ({ ...prev, [q.key]: v }))
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
+
             {/* Scope ID Unlock — for RFQ products only */}
             {isRFQ && product.sku !== "MIG-BOOKS" && (
               <SectionCard title="Unlock with Scope ID" testId="scope-id-card">
