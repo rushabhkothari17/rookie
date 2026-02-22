@@ -41,10 +41,10 @@ function makeId() {
   return Math.random().toString(36).substr(2, 9);
 }
 
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
+function DynamicIcon({ name, colorHex }: { name: string; colorHex?: string }) {
   const IconComp = (LucideIcons as any)[name];
   if (!IconComp) return null;
-  return <IconComp size={15} className={className} />;
+  return <IconComp size={15} style={{ color: colorHex || "#3b82f6" }} />;
 }
 
 export const DEFAULT_SECTION: CustomSection = {
