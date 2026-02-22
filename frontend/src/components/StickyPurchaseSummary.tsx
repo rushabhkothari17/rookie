@@ -77,7 +77,7 @@ export default function StickyPurchaseSummary({
         </div>
         <div className="flex items-start gap-2.5 text-xs text-slate-500">
           <CreditCard size={14} className="mt-0.5 flex-shrink-0 text-slate-400" />
-          <span>Secure payment via Stripe.</span>
+          <span>Secure payment via our payment provider.</span>
         </div>
       </div>
     </div>
