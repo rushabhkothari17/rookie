@@ -14,6 +14,8 @@ BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"
+CUSTOMER_EMAIL = "test_user_004712@test.com"
+CUSTOMER_PASSWORD = "Test1234!"
 
 
 @pytest.fixture(scope="module")
