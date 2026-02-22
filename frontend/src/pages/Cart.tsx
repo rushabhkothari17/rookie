@@ -533,112 +533,62 @@ export default function Cart() {
                         )}
                       </div>
                     )}
-                    {/* Zoho Account Context Questions */}
-                    <div
-                      className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-4"
-                      data-testid="zoho-checkout-questions"
-                    >
-                      <p className="text-sm font-semibold text-slate-700">Zoho Account Details</p>
-
-                      {/* Q1: Zoho subscription type */}
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-600 block">
-                          Current Zoho subscription type? <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          data-testid="zoho-subscription-type"
-                          value={zohoSubscriptionType}
-                          onChange={(e) => setZohoSubscriptionType(e.target.value)}
-                          className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-800 ${!zohoSubscriptionType ? "border-red-300" : "border-slate-300"}`}
-                        >
-                          <option value="">-- Select --</option>
-                          <option value="Paid - Annual">Paid - Annual</option>
-                          <option value="Paid - Monthly">Paid - Monthly</option>
-                          <option value="Free / Not on Zoho">Free / Not on Zoho</option>
-                        </select>
-                      </div>
-
-                      {/* Q2: Current Zoho product */}
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-600 block">
-                          Current Zoho Product? <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          data-testid="current-zoho-product"
-                          value={currentZohoProduct}
-                          onChange={(e) => setCurrentZohoProduct(e.target.value)}
-                          className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-800 ${!currentZohoProduct ? "border-red-300" : "border-slate-300"}`}
-                        >
-                          <option value="">-- Select --</option>
-                          <option value="Zoho One (Free)">Zoho One (Free)</option>
-                          <option value="Zoho One (All employee pricing)">Zoho One (All employee pricing)</option>
-                          <option value="Zoho One (Flexible user pricing)">Zoho One (Flexible user pricing)</option>
-                          <option value="Zoho Books (Free)">Zoho Books (Free)</option>
-                          <option value="Zoho One (Essentials)">Zoho One (Essentials)</option>
-                          <option value="Zoho Books (Standard)">Zoho Books (Standard)</option>
-                          <option value="Zoho Books (Professional)">Zoho Books (Professional)</option>
-                          <option value="Zoho Books (Premium)">Zoho Books (Premium)</option>
-                          <option value="Zoho Books (Elite)">Zoho Books (Elite)</option>
-                          <option value="Zoho Books (Ultimate)">Zoho Books (Ultimate)</option>
-                          <option value="Zoho Books (Enterprise)">Zoho Books (Enterprise)</option>
-                          <option value="Not on Zoho">Not on Zoho</option>
-                        </select>
-                        {currentZohoProduct === "Not on Zoho" && (
-                          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800">
-                            Sign up to Zoho now using{" "}
-                            <a
-                              href={
-                                address?.country === "Canada"
-                                  ? zohoUrls.reseller_signup_ca
-                                  : zohoUrls.reseller_signup_us
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline font-medium text-blue-700"
-                              data-testid="zoho-signup-link"
-                            >
-                              this link
-                            </a>{" "}
-                            for a free 1 hour Welcome to Zoho and a 30-day trial
+                    {/* Zoho Account Details — dynamic from website settings */}
+                    {ws.checkout_zoho_enabled !== false && (() => {
+                      const subOpts = ws.checkout_zoho_subscription_options?.split('\n').filter(Boolean) || ["Paid - Annual", "Paid - Monthly", "Free / Not on Zoho"];
+                      const prodOpts = ws.checkout_zoho_product_options?.split('\n').filter(Boolean) || [];
+                      const signupUrl = address?.country === "Canada" ? zohoUrls.reseller_signup_ca : zohoUrls.reseller_signup_us;
+                      return (
+                        <div className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-4" data-testid="zoho-checkout-questions">
+                          <p className="text-sm font-semibold text-slate-700">{ws.checkout_zoho_title || "Zoho Account Details"}</p>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-slate-600 block">Current Zoho subscription type? <span className="text-red-500">*</span></label>
+                            <select data-testid="zoho-subscription-type" value={zohoSubscriptionType} onChange={e => setZohoSubscriptionType(e.target.value)}
+                              className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-800 ${!zohoSubscriptionType ? "border-red-300" : "border-slate-300"}`}>
+                              <option value="">-- Select --</option>
+                              {subOpts.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
                           </div>
-                        )}
-                      </div>
-
-                      {/* Q3: Zoho account access */}
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-600 block">
-                          Have you provided us access to your Zoho account? <span className="text-red-500">*</span>
-                        </label>
-                        <p className="text-xs text-slate-500">
-                          Please use{" "}
-                          <a
-                            href={zohoUrls.access_instructions_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 underline"
-                            data-testid="zoho-access-link"
-                          >
-                            this link
-                          </a>{" "}
-                          to understand how to provide us access to your Zoho account
-                        </p>
-                        <select
-                          data-testid="zoho-account-access"
-                          value={zohoAccountAccess}
-                          onChange={(e) => setZohoAccountAccess(e.target.value)}
-                          className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-800 ${!zohoAccountAccess ? "border-red-300" : "border-slate-300"}`}
-                        >
-                          <option value="">-- Select --</option>
-                          <option value="Yes">Yes</option>
-                          <option value="Not yet">Not yet</option>
-                        </select>
-                        {zohoAccountAccess === "Not yet" && (
-                          <div className="bg-amber-50 border border-amber-300 rounded-md p-2 text-xs text-amber-800">
-                            <strong>Note:</strong> Please note service delays can happen if you complete purchase without providing us the access.
+                          {prodOpts.length > 0 && (
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-slate-600 block">Current Zoho Product? <span className="text-red-500">*</span></label>
+                              <select data-testid="current-zoho-product" value={currentZohoProduct} onChange={e => setCurrentZohoProduct(e.target.value)}
+                                className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-800 ${!currentZohoProduct ? "border-red-300" : "border-slate-300"}`}>
+                                <option value="">-- Select --</option>
+                                {prodOpts.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                              {currentZohoProduct === "Not on Zoho" && signupUrl && (
+                                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800">
+                                  Sign up to Zoho now using{" "}
+                                  <a href={signupUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium text-blue-700" data-testid="zoho-signup-link">this link</a>
+                                  {" "}{ws.checkout_zoho_signup_note || "for a free 1 hour Welcome to Zoho and a 30-day trial"}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-slate-600 block">Have you provided us access to your Zoho account? <span className="text-red-500">*</span></label>
+                            {zohoUrls.access_instructions_url && (
+                              <p className="text-xs text-slate-500">
+                                Please use <a href={zohoUrls.access_instructions_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline" data-testid="zoho-access-link">this link</a>{" "}
+                                {ws.checkout_zoho_access_note || "to understand how to provide us access to your Zoho account"}
+                              </p>
+                            )}
+                            <select data-testid="zoho-account-access" value={zohoAccountAccess} onChange={e => setZohoAccountAccess(e.target.value)}
+                              className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-800 ${!zohoAccountAccess ? "border-red-300" : "border-slate-300"}`}>
+                              <option value="">-- Select --</option>
+                              <option value="Yes">Yes</option>
+                              <option value="Not yet">Not yet</option>
+                            </select>
+                            {zohoAccountAccess === "Not yet" && (
+                              <div className="bg-amber-50 border border-amber-300 rounded-md p-2 text-xs text-amber-800">
+                                <strong>Note:</strong> {ws.checkout_zoho_access_delay_warning || "Please note service delays can happen if you complete purchase without providing us the access."}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* ZOHOR promo code note */}
                     {promoApplied?.code && promoApplied.code.toUpperCase().includes("ZOHOR") && (
