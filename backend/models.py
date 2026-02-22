@@ -127,6 +127,16 @@ class IntakeSchemaJson(BaseModel):
     questions: IntakeQuestionsBlock = Field(default_factory=IntakeQuestionsBlock)
 
 
+class CustomSection(BaseModel):
+    id: str = ""
+    name: str
+    content: str = ""
+    icon: Optional[str] = None
+    icon_color: Optional[str] = None
+    tags: List[str] = Field(default_factory=list)
+    order: int = 0
+
+
 class AdminProductUpdate(BaseModel):
     name: str
     short_description: Optional[str] = ""
