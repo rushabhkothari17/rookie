@@ -87,11 +87,27 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "msg_cart_empty": "Your cart is empty.",
     "msg_quote_success": "Quote request submitted! We'll be in touch shortly.",
     "msg_scope_success": "Scope request submitted!",
-    # Payment display (checkout page labels)
+    # Payment display labels
     "payment_gocardless_label": "Bank Transfer (GoCardless)",
     "payment_gocardless_description": "No processing fee. We'll send bank transfer instructions.",
     "payment_stripe_label": "Card Payment (Stripe)",
     "payment_stripe_description": "5% processing fee applies. Pay securely with credit/debit card.",
+    # Checkout page — Zoho section
+    "checkout_zoho_enabled": True,
+    "checkout_zoho_title": "Zoho Account Details",
+    "checkout_zoho_subscription_options": "Paid - Annual\nPaid - Monthly\nFree / Not on Zoho",
+    "checkout_zoho_product_options": "Zoho One (Free)\nZoho One (All employee pricing)\nZoho One (Flexible user pricing)\nZoho Books (Free)\nZoho One (Essentials)\nZoho Books (Standard)\nZoho Books (Professional)\nZoho Books (Premium)\nZoho Books (Elite)\nZoho Books (Ultimate)\nZoho Books (Enterprise)\nNot on Zoho",
+    "checkout_zoho_signup_note": "for a free 1 hour Welcome to Zoho and a 30-day trial",
+    "checkout_zoho_access_note": "to understand how to provide us access to your Zoho account",
+    "checkout_zoho_access_delay_warning": "Please note service delays can happen if you complete purchase without providing us the access.",
+    # Checkout page — Partner tagging section
+    "checkout_partner_enabled": True,
+    "checkout_partner_title": "Have you tagged us as your Zoho Partner?",
+    "checkout_partner_description": "You can tag us as your Zoho Partner by clicking the links below. If the US DC link doesn't work, try the CA DC link. You must be logged in to your Zoho account before tagging us.",
+    "checkout_partner_options": "Yes\nPre-existing Customer\nNot yet",
+    "checkout_partner_misrep_warning": "Misrepresenting or false responses may lead to cancellation of service.",
+    # Checkout page — custom extra questions (FormSchema JSON)
+    "checkout_extra_schema": "[]",
 }
 
 
