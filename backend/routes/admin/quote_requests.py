@@ -143,4 +143,5 @@ async def admin_update_quote_request(
         source="admin_ui",
         after_json=update,
     )
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "quote_request", "entity_id": quote_id, "action": "updated", "actor": admin.get("email", "admin"), "details": update, "created_at": now_iso()})
     return {"quote": quote}
