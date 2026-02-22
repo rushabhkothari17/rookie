@@ -816,31 +816,6 @@ export default function WebsiteTab() {
             </>
           )}
 
-          {/* ── Footer & Nav ── */}
-          {activeSection === "footer" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3">Footer</h3>
-              <Field label="Footer tagline" hint="Short text shown in the footer" value={ws.footer_tagline} onChange={s("footer_tagline")} testId="ws-footer-tagline" />
-              <Field label="Copyright text" hint='e.g. "© 2025 Acme Inc. All rights reserved."' value={ws.footer_copyright} onChange={s("footer_copyright")} testId="ws-footer-copyright" />
-
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Navigation Labels</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <Field label="Store link label" value={ws.nav_store_label} onChange={s("nav_store_label")} testId="ws-nav-store" />
-                  <Field label="Articles link label" value={ws.nav_articles_label} onChange={s("nav_articles_label")} testId="ws-nav-articles" />
-                  <Field label="Portal link label" value={ws.nav_portal_label} onChange={s("nav_portal_label")} testId="ws-nav-portal" />
-                </div>
-              </div>
-
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Contact Info</h3>
-                <Field label="Contact Email" value={ws.contact_email} onChange={s("contact_email")} testId="ws-contact-email" />
-                <Field label="Phone Number" value={ws.contact_phone} onChange={s("contact_phone")} testId="ws-contact-phone" />
-                <Field label="Address" value={ws.contact_address} onChange={s("contact_address")} multiline testId="ws-contact-address" />
-              </div>
-            </>
-          )}
-
           {/* ── References ── */}
           {activeSection === "references" && (
             <>
