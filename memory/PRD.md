@@ -1,182 +1,147 @@
-# Product Requirements Document — Automate Accounts Admin Portal
-_Last updated: Feb 2026_
+# Product Requirements Document — Automate Accounts (Whitelabel Platform)
 
 ## Original Problem Statement
-Build a full-featured admin panel for "Automate Accounts" — a Zoho automation consultancy. The platform provides:
-- Customer-facing product store with complex pricing (fixed, tiered, calculator, scope request)
-- Admin panel for managing customers, orders, subscriptions, products, users, financials, and content
-- Integrations: Stripe (card payments), GoCardless (Direct Debit), Resend (email)
+Build a fully customizable "whitelabel" solution that can be resold. No content should be hardcoded. Everything must be dynamically managed from the admin panel.
+
+## Core Requirements (User Specified)
+1. **Fully Dynamic Content** — No hardcoded text anywhere (hero, auth, forms, navigation, email, errors)
+2. **Website Configuration Module** — Admin panel "Website Content" tab managing all sitewide content
+3. **Customizable Product Pages** — Dynamic sections with rich text (markdown), icons, custom names
+4. **Customizable Forms** — ALL forms (Quote, Scope, Signup) fully customizable via schema builder
+5. **Admin UX Overhaul** — Tabbed product form, visual icon picker, auto-key generation
+6. **Store UI/UX** — Left-sidebar category navigation (scalable)
+7. **Data Migration** — Existing products migrated to dynamic sections format
+8. **Email Templates** — All emails configurable, cannot be deleted
+9. **Integrations Tab** — GoCardless, Stripe, Resend API keys in Website module
+10. **Settings Merge** — Settings tab removed, merged into Website Content tab
+
+---
 
 ## Architecture
 
+### Backend
 ```
-/app/
-├── backend/
-│   ├── core/
-│   │   ├── config.py       # env vars: JWT_SECRET, STRIPE_API_KEY, ADMIN credentials
-│   │   ├── constants.py    # ALLOWED_ORDER/SUBSCRIPTION_STATUSES, ARTICLE_CATEGORIES, etc.
-│   │   ├── helpers.py      # make_id, now_iso, round_cents, _slugify, currency_for_country
-│   │   └── security.py     # pwd_context, JWT helpers, get_current_user, require_admin, require_super_admin
-│   ├── db/
-│   │   └── session.py      # MongoDB connection (db, client)
-│   ├── middleware/
-│   │   ├── audit.py        # audit middleware
-│   │   └── request_id.py   # RequestID middleware
-│   ├── models/
-│   │   └── models.py       # Pydantic request/response models (in /app/backend/models.py)
-│   ├── routes/
-│   │   ├── auth.py          # Auth + profile endpoints
-│   │   ├── store.py         # Store (products, categories, orders, subscriptions)
-│   │   ├── checkout.py      # Stripe + bank transfer checkout
-│   │   ├── gocardless.py    # GoCardless redirect flow
-│   │   ├── webhooks.py      # Stripe webhooks
-│   │   ├── articles.py      # Articles CRUD + email
-│   │   └── admin/
-│   │       ├── logs.py          # Audit logs
-│   │       ├── misc.py          # currency-override, sync-logs, partner-map, notes
-│   │       ├── promo_codes.py   # Promo codes admin
-│   │       ├── terms.py         # Terms & Conditions admin
-│   │       ├── customers.py     # Customer management
-│   │       ├── orders.py        # Order management
-│   │       ├── subscriptions.py # Subscription management
-│   │       ├── users.py         # Admin user management
-│   │       ├── catalog.py       # Products + Categories CRUD (updated with custom_sections)
-│   │       ├── quote_requests.py # Quote requests
-│   │       ├── bank_transactions.py # Bank transactions
-│   │       ├── override_codes.py   # Override codes
-│   │       ├── exports.py       # CSV exports for all entities
-│   │       └── settings.py      # App settings
-│   ├── services/
-│   │   ├── audit_service.py    # AuditService class + create_audit_log helper
-│   │   ├── pricing_service.py  # build_price_inputs, calculate_price, calculate_books_migration_price
-│   │   └── settings_service.py # SettingsService (key-value store with MongoDB)
-│   ├── migration_script.py  # One-time migration: old static sections → custom_sections (NOT run yet)
-│   └── server.py               # FastAPI app setup, middleware, all router includes, startup tasks
-└── frontend/
-    └── src/
-        └── pages/
-            ├── admin/
-            │   ├── ProductForm.tsx       # Tabbed layout (General/Pricing/Intake/Page Content)
-            │   ├── SectionsEditor.tsx    # Custom sections editor (NEW)
-            │   ├── IntakeSchemaBuilder.tsx # Read-only keys, auto-gen option values
-            │   ├── ProductsTab.tsx       # Updated productToForm + handleSave
-            │   └── tabs/   # CustomersTab, OrdersTab, SubscriptionsTab, etc.
-            └── ProductDetail.tsx  # Dynamic custom_sections rendering with fallback
+/app/backend/
+├── models.py               # WebsiteSettingsUpdate (40+ fields), QuoteRequest (extra_fields), RegisterRequest (profile_meta)
+├── routes/
+│   ├── auth.py             # profile_meta support, configurable verification email
+│   ├── articles.py         # Configurable email templates (from_name, CTA, footer, subject)
+│   └── admin/
+│       └── website.py      # DEFAULT_WEBSITE_SETTINGS with form schemas + all new fields
+├── services/
+│   └── settings_service.py # Structured settings (Payments/Email/Zoho/Branding/Operations/FeatureFlags)
 ```
 
-## What's Been Implemented
+### Frontend
+```
+/app/frontend/src/
+├── components/
+│   ├── FormSchemaBuilder.tsx  # Visual form field schema editor (NEW)
+│   ├── IconPicker.tsx         # Visual icon selector
+│   └── TopNav.tsx             # Uses nav labels from WebsiteContext
+├── contexts/
+│   └── WebsiteContext.tsx     # 50+ dynamic fields including form schemas
+├── pages/
+│   ├── Admin.tsx              # Settings tab REMOVED, merged into Website Content
+│   ├── Cart.tsx               # Uses configurable msg_partner_tagging_prompt etc.
+│   ├── Signup.tsx             # Dynamic form schema (show/hide fields, custom extra fields)
+│   ├── ProductDetail.tsx      # Dynamic quote/scope form rendering from schema
+│   └── admin/
+│       └── WebsiteTab.tsx     # 10-section comprehensive settings panel (REWRITTEN)
+```
 
-### Phase 1: Admin Panel UI (Completed)
-- Full admin panel with 14 tabs: Users, Customers, Subscriptions, Orders, Quote Requests, Bank Transactions, Articles, Categories, Catalog, Terms, Override Codes, Promo Codes, Settings, Logs
-- Server-side pagination, filtering, sorting across all admin tables
-- CSV export for all major entities
-- Searchable email typeahead in product edit form (visible_to_customers)
-- Consistent `text-sm` font sizing across all admin tables
+---
 
-### Phase 2: UI Bug Fixes (Completed)
-- Fixed inconsistent font sizes in CustomersTab.tsx, SubscriptionsTab.tsx
-- Implemented searchable email typeahead for product visibility (ProductForm.tsx)
-- All UI issues verified by testing agent (100% pass rate)
+## Website Settings Sections (WebsiteTab)
+| Section | Content |
+|---------|---------|
+| Branding | Store name, logo upload, primary/accent colors |
+| Store Hero | Hero label, title, subtitle |
+| Auth Pages | Login/register page text |
+| Forms | Quote/Scope/Signup form schema builders + text labels |
+| Email Templates | From name, article email subject/CTA/footer, verification email |
+| Error Messages | Partner tagging prompt, override required, cart empty, quote/scope success |
+| Footer & Nav | Footer text, copyright, nav link labels, contact info |
+| Links & URLs | Zoho URLs (signup, partner tag, access instructions) |
+| Integrations | Stripe, GoCardless, Resend API keys |
+| System Config | Service fee rate, feature flags, operations settings |
 
-### Phase 3: Backend Refactoring (Completed — Feb 2026)
-- Migrated all endpoints from monolithic server.py into 20 route modules
-- Modular structure: routes/, services/, models/, core/, db/, middleware/
-- All 61 backend tests pass (100% pass rate)
-- server.py cleaned up: removed duplicate constants, all new routers wired
+---
 
-## Tech Stack
-- Frontend: React + TypeScript, Tailwind CSS, Shadcn/UI
-- Backend: FastAPI (Python), Motor (async MongoDB)
-- Database: MongoDB
-- Auth: JWT tokens
-- Payments: Stripe (card), GoCardless (Direct Debit)
-- Email: Resend
+## Form Schema System
+- Schemas stored as JSON strings in `website_settings` collection
+- Three form schemas: `quote_form_schema`, `scope_form_schema`, `signup_form_schema`
+- Field types: text, email, tel, number, date, textarea, select, checkbox, file, password
+- Locked fields (core auth): cannot be deleted, can be shown/hidden
+- Custom extra fields in signup → stored in `profile_meta` on user record
+- Custom extra fields in quote/scope → stored in `extra_fields` on quote/scope record
 
-## 3rd Party Integrations
-- **Stripe**: Checkout sessions, webhook events, payment intents
-- **GoCardless**: Redirect flow for Direct Debit mandates, payment creation
-- **Resend**: Article email delivery
+---
 
-## Admin Credentials (test)
-- Email: admin@automateaccounts.local
-- Password: ChangeMe123!
+## What Has Been Implemented
 
-### Phase 15: Product Experience Overhaul (Completed — Feb 2026)
+### Phase 1 - Dynamic Content Architecture (Session 1)
+- WebsiteContext with global settings provider
+- website_settings MongoDB collection
+- Dynamic text on Login, Signup, Store Hero, TopNav, Quote modals
+- Store page redesigned with left-sidebar categories
+- Visual IconPicker component
 
-#### Summary
-Complete overhaul of product creation/editing experience and customer-facing product pages.
+### Phase 2 - Product Customization (Session 1)
+- custom_sections on products (tabbed product form, SectionsEditor)
+- react-markdown support for section content
+- Migration of 21 existing products to new format
 
-#### Backend Changes
-- **New `CustomSection` Pydantic model** in `models.py`: fields `id`, `name`, `content`, `icon`, `icon_color`, `tags`, `order`
-- **`custom_sections` field added** to both `AdminProductCreate` and `AdminProductUpdate` models
-- **Auto-generation helpers** in `catalog.py`:
-  - `_normalize_schema_dict()`: auto-generates intake question keys from labels (if empty)
-  - Auto-generates intake option values from labels (if empty)
-  - `_build_sections()`: ensures all sections have unique IDs, consistent order
-- **Default section auto-created**: new products without `custom_sections` get a default "Overview" section
-- **Migration script** at `/app/backend/migration_script.py`: converts old static fields (outcome, automation_details, support_details, inclusions, exclusions, requirements, next_steps) into `custom_sections` array. **NOT run yet — requires admin approval.**
+### Phase 3 - Whitelabel Expansion (Session 2 - Feb 2026)
+- Merged Settings tab into Website Content (10 sections)
+- FormSchemaBuilder component for all forms
+- Dynamic form rendering in ProductDetail.tsx (quote + scope)
+- Dynamic signup form (show/hide fields, custom extra fields → profile_meta)
+- Email templates configurable (articles.py uses settings)
+- Auth verification email uses configurable subject/body
+- Error messages configurable (Cart.tsx, etc.)
+- Nav labels configurable (TopNav.tsx)
+- Integrations section (Stripe/GoCardless/Resend keys)
+- Links & URLs section (Zoho URLs)
+- System Config section (fee, flags)
+- profile_meta on RegisterRequest → stored in user record
+- extra_fields on QuoteRequest + ScopeRequestFormData
 
-#### Admin UI Changes
-- **ProductForm.tsx** fully rewritten with **4-tab layout**:
-  - **General**: Name, Tag, Category, Short Description, Description, Key Bullets (dynamic 1–10), visibility
-  - **Pricing**: Base Price, Price Rounding, Subscription, Stripe Price ID, Terms
-  - **Intake Questions**: existing IntakeSchemaBuilder
-  - **Page Content**: SectionsEditor + FAQs
-- **SectionsEditor.tsx** (new file): add/remove/reorder up to 10 custom sections, each with name, icon (24 Lucide icons), icon color (6 colors), markdown content, optional tags
-- **IntakeSchemaBuilder.tsx** updated:
-  - Question `key` field is now **read-only** (displayed as auto-generated from label)
-  - Option `value` input **removed** — auto-generated from option label
-- **ProductsTab.tsx** updated: `productToForm` maps `custom_sections`, `handleSave` sends `custom_sections` in payload
+---
 
-#### Customer UI Changes
-- **ProductDetail.tsx**: renders `custom_sections` dynamically (with icon, color, content, tags); falls back to old static section rendering if `custom_sections` is empty
-- **OfferingCard.tsx**: shows `product.tag` (custom tag field), `product.short_description`, ALL bullets (no 3-bullet limit)
-- **SectionCard.tsx**: enhanced with optional `icon` and `iconColor` props (dynamic Lucide icon rendering)
+## P0/P1/P2 Backlog
 
-#### Key DB Schema Change
-- **ADD**: `custom_sections: List[object]` to products collection
-- **Future (migration)**: Remove `outcome`, `automation_details`, `support_details`, `inclusions`, `exclusions`, `requirements`, `next_steps` after migration is run
+### P0 (Critical)
+- None currently
 
-- Test report: `/app/test_reports/iteration_40.json` (10/10 backend, 100% frontend)
+### P1 (Important)
+- Admin Dashboard — KPI cards for revenue, subscriptions, orders, recent activity
+- Quote/Scope requests tab should display extra_fields in detail view
 
-### Phase 15b: Product Page Bug Fixes & Migration (Feb 2026)
+### P2 (Nice to have)
+- Full whitelabel audit — scan codebase for remaining hardcoded brand references
+- Footer component (no global footer currently)
+- Email delivery (currently mocked in email_outbox collection)
+- Zoho CRM/Books integration
 
-- **Icon picker fix**: Dynamic Tailwind classes purged at build time → fixed by switching to inline `style={{ color/backgroundColor: hex }}` in SectionsEditor and SectionCard
-- **Category dropdown staleness fix**: `useEffect` on `showDialog` state in ProductsTab re-fetches categories each time the form opens
-- **ProductHero hardcoded content removed**: `outcomeCopy()` fallback function eliminated; hero now shows only `description_long` + `bullets` from the product record
-- **Legacy sections removed from ProductDetail**: Fallback rendering (inclusions/exclusions/requirements/next_steps) removed entirely; page now only shows `custom_sections` + FAQs
-- **react-markdown added**: Custom section content now rendered as proper HTML (bullets, ordered lists, bold, etc.)
-- **Migration ran**: 21 products migrated from old static fields → `custom_sections`; 8 products already had sections (skipped)
-- Test report: `/app/test_reports/iteration_41.json` (12/12 backend, 100% frontend)
+### Backlog
+- React Hydration Warning (low priority technical debt)
+- Admin dashboard metrics/analytics
+- Customer notification emails for order status changes
 
-## Known Issues / Technical Debt
-- HTML hydration warning `<span> cannot be child of <select>/<option>` — caused by Emergent VE browser wrapper. **Not fixable in application code.** Non-blocking.
-- Section content in `ProductDetail.tsx` is rendered with `whitespace-pre-wrap` (plain text). Markdown formatting like `- bullet` shows as literal dashes, not HTML bullets. Admin form says "Markdown supported" meaning admins can TYPE markdown syntax — rendering is plain text. A markdown library (react-markdown) could be added if proper rendering is desired.
-- Migration script at `/app/backend/migration_script.py` is READY but **NOT RUN**. Requires explicit admin approval.
-- Old audit_trail entries may have `Promo_code` entity_type; new entries use `PromoCode`
-- Orders email filter is client-side only (filters current page only)
+---
 
-## Prioritized Backlog
+## Credentials
+- Admin: admin@automateaccounts.local / ChangeMe123!
 
-### P0 — Done
-- ~~Custom Sections + Product Form Overhaul~~ Done (Phase 15)
-- ~~Remove old api_router endpoint definitions from server.py~~ Done
-- ~~Fix Stripe checkout (incorrect import path)~~ Done
-- ~~Fix GoCardless checkout (missing webhook secret in settings)~~ Done
+## Third-Party Integrations
+- Stripe (payments)
+- GoCardless (direct debit)
+- Resend (email, currently mocked in dev)
 
-### P1 — High Value
-- **Run Migration Script**: After admin verifies new product form, run `python /app/backend/migration_script.py` to migrate existing products to custom_sections
-- **Admin Dashboard**: visual metrics for revenue, subscriptions, orders, recent activity (charts, KPI cards)
-- **Markdown rendering**: Add react-markdown for proper markdown rendering in custom sections on ProductDetail
-
-### P2 — Nice to Have
-- Zoho CRM & Books integration (sync customers, orders)
-- Email notifications for Quote Requests submitted
-- PostgreSQL migration (if scale requires it)
-
-## Test Reports
-- `/app/test_reports/iteration_28.json` — Backend refactor regression test (61/61 pass, 100%)
-- `/app/test_reports/iteration_29.json` — Audit log instrumentation (28/28 pass, 100%)
-- `/app/test_reports/iteration_38.json` — Intake Questions Schema (20/20 backend, 100% frontend)
-- `/app/test_reports/iteration_39.json` — Pricing Overhaul (27/27 backend, 100% frontend)
-- `/app/test_reports/iteration_40.json` — Product Experience Overhaul (10/10 backend, 100% frontend)
+## Key API Endpoints
+- `GET /api/website-settings` — Public, returns all settings + form schemas
+- `GET /api/admin/website-settings` — Admin, returns all settings
+- `PUT /api/admin/website-settings` — Admin, updates website settings
+- `GET /api/admin/settings/structured` — Admin, returns grouped DB settings
+- `PUT /api/admin/settings/key/{key}` — Admin, updates individual setting
