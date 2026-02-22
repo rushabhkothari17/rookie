@@ -108,6 +108,12 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   msg_scope_success: "Scope request submitted!",
   stripe_enabled: false,
   gocardless_enabled: false,
+  stripe_fee_rate: 0.05,
+  gocardless_fee_rate: 0.0,
+  payment_gocardless_label: "Bank Transfer (GoCardless)",
+  payment_gocardless_description: "No processing fee. We'll send bank transfer instructions.",
+  payment_stripe_label: "Card Payment (Stripe)",
+  payment_stripe_description: "5% processing fee applies. Pay securely with credit/debit card.",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
