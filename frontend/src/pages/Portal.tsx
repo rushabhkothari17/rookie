@@ -211,6 +211,7 @@ export default function Portal() {
                 <TableHeader>
                   <TableRow className="bg-slate-50">
                     <TableHead className="text-xs">Order</TableHead>
+                    <TableHead className="text-xs">Sub #</TableHead>
                     <TableHead className="text-xs">
                       <button
                         className="flex items-center gap-1 hover:text-slate-700 transition-colors"
