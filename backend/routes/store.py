@@ -131,7 +131,10 @@ async def orders_preview(
     payload: OrderPreviewRequest,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    fee_rate = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
+    # Use stripe_fee_rate for card payment preview (fallback to legacy service_fee_rate)
+    stripe_fee = float(await SettingsService.get("stripe_fee_rate", 0.0))
+    legacy_fee = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
+    fee_rate = stripe_fee if stripe_fee else legacy_fee
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     customer_id = customer["id"] if customer else None
     results = []
