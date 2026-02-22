@@ -12,7 +12,7 @@ import { Download } from "lucide-react";
 
 const SOURCES = ["manual", "bank_transfer", "stripe", "gocardless"];
 const TYPES = ["payment", "refund", "chargeback", "credit", "debit", "fee"];
-const STATUSES = ["pending", "completed", "matched", "failed", "refunded"];
+const STATUSES_FALLBACK = ["pending", "completed", "matched", "failed", "refunded"];
 const EMPTY_FORM = { date: new Date().toISOString().slice(0, 10), source: "manual", transaction_id: "", type: "payment", amount: "", fees: "0", currency: "USD", status: "completed", description: "", linked_order_id: "", internal_notes: "" };
 
 export function BankTransactionsTab() {
