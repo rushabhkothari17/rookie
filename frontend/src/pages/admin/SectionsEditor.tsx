@@ -175,9 +175,10 @@ export function SectionsEditor({
                         key={c.value}
                         type="button"
                         onClick={() => update(i, { icon_color: c.value })}
-                        className={`w-5 h-5 rounded-full transition-all border-2 ${c.bg} ${
-                          sec.icon_color === c.value ? "border-slate-700 scale-110" : "border-transparent opacity-70"
+                        className={`w-5 h-5 rounded-full transition-all border-2 ${
+                          sec.icon_color === c.value ? "border-slate-700 scale-110" : "border-slate-200 opacity-70"
                         }`}
+                        style={{ backgroundColor: c.hex }}
                         title={c.value}
                         data-testid={`section-color-${i}-${c.value}`}
                       />
