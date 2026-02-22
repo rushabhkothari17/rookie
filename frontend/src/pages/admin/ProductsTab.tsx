@@ -188,16 +188,6 @@ export function ProductsTab() {
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
 
-  const complexityBadge = (c?: string) => {
-    const complexity = c || "SIMPLE";
-    const map: Record<string, string> = {
-      SIMPLE: "bg-green-100 text-green-700",
-      COMPLEX: "bg-orange-100 text-orange-700",
-      REQUEST_FOR_QUOTE: "bg-blue-100 text-blue-700",
-    };
-    return <span className={`text-xs px-2 py-0.5 rounded font-medium ${map[complexity] || "bg-slate-100 text-slate-600"}`}>{complexity}</span>;
-  };
-
   return (
     <div className="space-y-4">
       <AdminPageHeader title="Catalog" subtitle={`${filtered.length} products`} actions={
