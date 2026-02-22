@@ -472,11 +472,25 @@ class WebsiteSettingsUpdate(BaseModel):
     msg_cart_empty: Optional[str] = None
     msg_quote_success: Optional[str] = None
     msg_scope_success: Optional[str] = None
-    # Payment display (checkout page labels — configurable per white-label)
+    # Payment display
     payment_gocardless_label: Optional[str] = None
     payment_gocardless_description: Optional[str] = None
     payment_stripe_label: Optional[str] = None
     payment_stripe_description: Optional[str] = None
+    # Checkout page configuration
+    checkout_zoho_enabled: Optional[bool] = None
+    checkout_zoho_title: Optional[str] = None
+    checkout_zoho_subscription_options: Optional[str] = None
+    checkout_zoho_product_options: Optional[str] = None
+    checkout_zoho_signup_note: Optional[str] = None
+    checkout_zoho_access_note: Optional[str] = None
+    checkout_zoho_access_delay_warning: Optional[str] = None
+    checkout_partner_enabled: Optional[bool] = None
+    checkout_partner_title: Optional[str] = None
+    checkout_partner_description: Optional[str] = None
+    checkout_partner_options: Optional[str] = None
+    checkout_partner_misrep_warning: Optional[str] = None
+    checkout_extra_schema: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
