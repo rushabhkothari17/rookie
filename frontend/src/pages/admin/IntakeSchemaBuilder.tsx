@@ -50,7 +50,7 @@ const labelToKey = (label: string) =>
 
 const emptyQ = (order: number): IntakeQuestion => ({
   key: "", label: "", helper_text: "", required: false, enabled: true,
-  order, affects_price: false, options: [],
+  order, affects_price: false, price_mode: "add", options: [],
 });
 
 function OptionsEditor({ options, onChange }: { options: IntakeOption[]; onChange: (v: IntakeOption[]) => void }) {
