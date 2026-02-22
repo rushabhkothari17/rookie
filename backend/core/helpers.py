@@ -28,6 +28,11 @@ def round_nearest_25(value: float) -> float:
     return float(round(value / 25) * 25)
 
 
+def round_nearest(value: float, nearest: int) -> float:
+    """Round value to the nearest multiple of `nearest`."""
+    return float(round(value / nearest) * nearest)
+
+
 def currency_for_country(country: str) -> str:
     c = (country or "").strip().lower()
     if c in ["canada", "ca"]:
