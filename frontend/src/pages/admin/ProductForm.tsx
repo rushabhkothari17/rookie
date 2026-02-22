@@ -222,13 +222,14 @@ export function ProductForm({
             <Input type="number" value={form.base_price} onChange={(e) => s("base_price")(parseFloat(e.target.value) || 0)} className="mt-1" data-testid="pf-price" />
           </div>
           <div>
-            <label className="text-xs text-slate-600">Pricing Complexity</label>
-            <Select value={form.pricing_complexity} onValueChange={s("pricing_complexity")}>
-              <SelectTrigger className="mt-1" data-testid="pf-complexity"><SelectValue /></SelectTrigger>
+            <label className="text-xs text-slate-600">Price Rounding</label>
+            <Select value={form.price_rounding || "none"} onValueChange={v => s("price_rounding")(v === "none" ? "" : v)}>
+              <SelectTrigger className="mt-1" data-testid="pf-price-rounding"><SelectValue placeholder="No rounding" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="SIMPLE">SIMPLE — Fixed Price</SelectItem>
-                <SelectItem value="COMPLEX">COMPLEX — Custom Quote</SelectItem>
-                <SelectItem value="REQUEST_FOR_QUOTE">REQUEST FOR QUOTE</SelectItem>
+                <SelectItem value="none">No rounding</SelectItem>
+                <SelectItem value="25">Round to nearest $25</SelectItem>
+                <SelectItem value="50">Round to nearest $50</SelectItem>
+                <SelectItem value="100">Round to nearest $100</SelectItem>
               </SelectContent>
             </Select>
           </div>
