@@ -101,6 +101,12 @@ Build a full-featured admin panel for "Automate Accounts" — a Zoho automation 
 - LogsTab rebuilt: actor_type filter, page-based pagination with total count, colored badges, relative time, before/after/meta JSON in detail dialog
 - Test reports: /app/test_reports/iteration_29.json (28/28 backend, all frontend pass)
 
+## Phase 5: Subscription Filter Bug Fix (Completed — Feb 2026)
+- Root cause: Frontend `SUB_STATUSES` was missing `paused` status (existed in DB & backend constants); `gocardless` payment option didn't match DB value `bank_transfer`
+- Fix: Added `paused` to `SUB_STATUSES`; removed misleading `gocardless` option from `PAYMENT_METHODS` in `SubscriptionsTab.tsx`
+- All 6 status filters and 3 payment filters now accurately reflect DB data
+- File: `/app/frontend/src/pages/admin/SubscriptionsTab.tsx`
+
 ## Known Issues / Technical Debt
 - server.py still contains old `api_router` (~6000 lines) as safety fallback. Remove after production validation.
 - HTML hydration warning in admin dropdowns (non-blocking, Radix UI issue)
