@@ -327,7 +327,16 @@ export default function Portal() {
                   <TableRow className="bg-slate-50">
                     <TableHead className="text-xs">Sub #</TableHead>
                     <TableHead className="text-xs">Plan</TableHead>
-                    <TableHead className="text-xs">Start Date</TableHead>
+                    <TableHead className="text-xs">
+                      <button
+                        className="flex items-center gap-1 hover:text-slate-700 transition-colors"
+                        onClick={() => setSubSort(s => s === "desc" ? "asc" : "desc")}
+                        data-testid="portal-subs-sort-date"
+                      >
+                        Start Date
+                        {subSort === "desc" ? <ArrowDown size={11} /> : <ArrowUp size={11} />}
+                      </button>
+                    </TableHead>
                     <TableHead className="text-xs">Renewal</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
                     <TableHead className="text-xs">Amount</TableHead>
