@@ -174,8 +174,6 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
 
 # Keys that existed in earlier versions and are now obsolete / managed elsewhere
 _OBSOLETE_KEYS = [
-    "stripe_publishable_key", "stripe_secret_key", "stripe_webhook_secret",
-    "gocardless_access_token", "gocardless_environment",
     "logo_url",  # managed by legacy flat app_settings document
     "zoho_partner_link_aus", "zoho_partner_link_nz", "zoho_partner_link_global",
 ]
