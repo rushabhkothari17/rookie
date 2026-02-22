@@ -31,6 +31,9 @@ interface WebsiteData {
   email_verification_subject: string; email_verification_body: string;
   msg_partner_tagging_prompt: string; msg_override_required: string;
   msg_cart_empty: string; msg_quote_success: string; msg_scope_success: string;
+  // Payment display labels (shown in checkout — configurable per white-label)
+  payment_gocardless_label: string; payment_gocardless_description: string;
+  payment_stripe_label: string; payment_stripe_description: string;
 }
 
 interface BrandingData {
