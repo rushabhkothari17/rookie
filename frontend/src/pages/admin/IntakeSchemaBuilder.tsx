@@ -140,15 +140,17 @@ function QuestionEditor({ q, idx, total, allKeys, hasOptions, onChange, onRemove
           <Input value={q.label} onChange={e => handleLabelChange(e.target.value)} placeholder="Question label" className="h-7 text-xs mt-0.5" />
         </div>
         <div>
-          <label className={`text-[11px] ${isDuplicate ? "text-red-500 font-semibold" : "text-slate-500"}`}>
-            Key * {isDuplicate && "(duplicate!)"}
+          <label className={`text-[11px] ${isDuplicate ? "text-red-500 font-semibold" : "text-slate-400"}`}>
+            Key (auto) {isDuplicate && <span className="text-red-500">(duplicate!)</span>}
           </label>
-          <Input
-            value={q.key}
-            onChange={e => handleKeyChange(e.target.value)}
-            placeholder="unique_key"
-            className={`h-7 text-xs font-mono mt-0.5 ${isDuplicate ? "border-red-400 ring-1 ring-red-400" : ""}`}
-          />
+          <div
+            className={`mt-0.5 h-7 flex items-center px-2 rounded border bg-slate-50 text-xs font-mono overflow-hidden ${
+              isDuplicate ? "border-red-300 text-red-500" : "border-slate-200 text-slate-400"
+            }`}
+            title="Auto-generated from label"
+          >
+            {q.key || <span className="text-slate-300 italic">auto</span>}
+          </div>
         </div>
       </div>
 
