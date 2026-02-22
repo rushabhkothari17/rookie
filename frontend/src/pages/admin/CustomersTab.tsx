@@ -90,17 +90,6 @@ export function CustomersTab() {
       .catch(() => toast.error("Export failed"));
   };
 
-  const handlePaymentToggle = async (customerId: string, field: string, value: boolean) => {
-    const customer = customers.find((c) => c.id === customerId);
-    try {
-      await api.put(`/admin/customers/${customerId}/payment-methods`, {
-        allow_bank_transfer: field === "allow_bank_transfer" ? value : customer?.allow_bank_transfer ?? true,
-        allow_card_payment: field === "allow_card_payment" ? value : customer?.allow_card_payment ?? false,
-      });
-      toast.success("Payment method updated");
-      load(page);
-    } catch (e: any) { toast.error(e.response?.data?.detail || "Update failed"); }
-  };
 
   const handleCustomerEdit = async () => {
     if (!selectedCustomer) return;
