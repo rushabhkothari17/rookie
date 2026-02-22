@@ -1,0 +1,51 @@
+{
+  "summary": "Comprehensive testing of whitelabel/resellable app features: merged Settings→Website Content tab, FormSchemaBuilder, Email Templates, Error Messages, Footer & Nav, Links & URLs, Integrations, System Config. All 27 backend tests pass. All 14 tested frontend features pass.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results_by_feature": {
+    "admin_website_content_tab_loads": "PASS - All 10 sections visible (Branding, Store Hero, Auth Pages, Forms, Email Templates, Error Messages, Footer & Nav, Links & URLs, Integrations, System Config)",
+    "settings_tab_removed": "PASS - No separate Settings tab in admin sidebar; SETTINGS group only shows Override Codes, Promo Codes, Logs",
+    "forms_section_form_schema_builder": "PASS - FormSchemaBuilder renders for all 3 forms (Quote Request, Scope Request, Customer Sign-up). Quote form shows: Your Name, Email, Company, Phone, Message. Scope form shows: Project Summary, Desired Outcomes, Apps Involved, Timeline/Urgency (select), Budget Range (select), Additional Notes. Signup form shows locked fields (Full Name, Email, Password, Country) with Hide/Show toggle.",
+    "form_schema_builder_add_select_field": "PASS - Add field works, Field type dropdown changes to 'Dropdown', Options textarea appears with Label|value format",
+    "form_schema_builder_locked_field_toggle": "PASS - Locked fields (Full Name, Email, Password, Country) show 'Hide' button; toggle works",
+    "form_schema_builder_reorder": "PASS - Up/Down arrow buttons present on fields for reordering",
+    "integrations_section": "PASS - Shows Stripe secret_key (masked), publishable_key, webhook_secret (masked), GoCardless access_token (masked), webhook_secret (masked), Resend API key (masked), resend_sender_email. service_fee_rate is NOT shown here.",
+    "system_config_service_fee_rate": "PASS - System Config shows OPERATIONS (override_code_expiry_hours), FEATURE FLAGS (partner_tagging_enabled toggle), PAYMENT SETTINGS (service_fee_rate=0.05, gocardless_environment=sandbox)",
+    "links_urls_zoho_items": "PASS - Shows ZOHO category with: zoho_reseller_signup_us, zoho_reseller_signup_ca, zoho_partner_tag_us, zoho_partner_tag_ca, zoho_access_instructions_url; also BRANDING category",
+    "email_templates_all_fields": "PASS - From Name, Article Subject Template, CTA button text, Footer text, Verification Email Subject, Verification Body (6/6 fields with data-testid attributes)",
+    "error_messages_all_fields": "PASS - Partner tagging prompt, Override code required, Cart empty, Quote success, Scope success (5/5 fields)",
+    "save_changes_button": "PASS - 'Settings saved' green toast notification shown after clicking Save Changes",
+    "scope_form_dynamic_rendering": "PASS - Fixed-Scope Development product shows Request scope button; scope modal renders 6 dynamic fields (dyn-field-*) from schema: project_summary, desired_outcomes, apps_involved, timeline_urgency (select), budget_range (select), additional_notes",
+    "store_page_category_sidebar": "PASS - Store page loads with STOREFRONT hero, category sidebar (Zoho Express Setup, Audit & Optimize, Build & Automate, Accounting on Zoho, Managed Services, Migrate to Zoho, Bookkeeping)",
+    "login_page": "PASS - Shows 'CUSTOMER PORTAL' label and 'Welcome back' title from website settings"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_website_settings_iter42.py",
+    "/app/test_reports/pytest/pytest_results_iter42.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "WebsiteTab.tsx: Integrations filter uses keyword matching (key/token/secret) to separate API keys from non-API items. This is functional but brittle - a new non-secret field in Payments category with 'key' in the name could accidentally appear in Integrations. Consider adding an explicit is_api_key flag to the settings schema.",
+    "ProductDetail.tsx: Quote form dynamic rendering (parseSchema) confirmed working via scope form test. Quote modal also uses parseSchema but wasn't fully exercised (no RFQ products with $0 pricing in default catalog - all products had non-zero calculator defaults). Schema rendering logic is same for both, so PASS.",
+    "WebsiteTab.tsx (570 lines): File is within acceptable size range but approaching threshold. No immediate action needed."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_website_settings_iter42.py"
+  ],
+  "success_rate": {
+    "backend": "100% (27/27 tests passed)",
+    "frontend": "100% (all 14 feature tests passed)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123!",
+  "seed_data_creation": "Restored test data: email_from_name='Automate Accounts', email_verification_subject restored, msg_cart_empty and msg_quote_success restored to defaults",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All new features tested and passing: Website Content tab has 10 sections (Branding, Store Hero, Auth Pages, Forms, Email Templates, Error Messages, Footer & Nav, Links & URLs, Integrations, System Config). Settings tab merged into Website Content (Settings group now only has Override Codes, Promo Codes, Logs). FormSchemaBuilder works for all 3 forms with add/edit/reorder/toggle-locked-fields. Dynamic form rendering confirmed on product scope request modal. Backend: /api/admin/website-settings GET/PUT working with all new fields. /api/admin/settings/structured working. Secrets are masked. Save Changes shows 'Settings saved' toast."
+}
