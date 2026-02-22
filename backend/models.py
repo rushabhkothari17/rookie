@@ -72,6 +72,7 @@ class CheckoutSessionRequestBody(BaseModel):
     zoho_subscription_type: Optional[str] = None
     current_zoho_product: Optional[str] = None
     zoho_account_access: Optional[str] = None
+    extra_fields: Optional[Dict[str, Any]] = None
 
 
 class BankTransferCheckoutRequest(BaseModel):
@@ -86,6 +87,7 @@ class BankTransferCheckoutRequest(BaseModel):
     zoho_subscription_type: Optional[str] = None
     current_zoho_product: Optional[str] = None
     zoho_account_access: Optional[str] = None
+    extra_fields: Optional[Dict[str, Any]] = None
 
 
 class ScopeRequestBody(BaseModel):
