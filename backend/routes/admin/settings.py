@@ -112,6 +112,7 @@ async def update_setting_by_key(
         before_json={"value": "***" if is_secret else before_val},
         after_json={"value": "***" if is_secret else value},
     )
+    await db.audit_logs.insert_one({"id": __import__("uuid").uuid4().hex, "entity_type": "setting", "entity_id": key, "action": "setting_key_updated", "actor": admin.get("email", "admin"), "details": {"key": key, "is_secret": is_secret}, "created_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()})
     return {"message": f"Setting '{key}' updated"}
 
 
