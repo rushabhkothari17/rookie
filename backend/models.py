@@ -423,23 +423,51 @@ class AppSettingsUpdate(BaseModel):
 
 
 class WebsiteSettingsUpdate(BaseModel):
+    # Store Hero
     hero_label: Optional[str] = None
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
+    # Auth Pages
     login_title: Optional[str] = None
     login_subtitle: Optional[str] = None
     login_portal_label: Optional[str] = None
     register_title: Optional[str] = None
     register_subtitle: Optional[str] = None
+    # Contact
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
     contact_address: Optional[str] = None
+    # Footer & Nav
     footer_tagline: Optional[str] = None
+    footer_copyright: Optional[str] = None
+    nav_store_label: Optional[str] = None
+    nav_articles_label: Optional[str] = None
+    nav_portal_label: Optional[str] = None
+    # Forms (text labels)
     quote_form_title: Optional[str] = None
     quote_form_subtitle: Optional[str] = None
     quote_form_response_time: Optional[str] = None
     scope_form_title: Optional[str] = None
     scope_form_subtitle: Optional[str] = None
+    signup_form_title: Optional[str] = None
+    signup_form_subtitle: Optional[str] = None
+    # Form schemas (JSON strings)
+    quote_form_schema: Optional[str] = None
+    scope_form_schema: Optional[str] = None
+    signup_form_schema: Optional[str] = None
+    # Email templates
+    email_from_name: Optional[str] = None
+    email_article_subject_template: Optional[str] = None
+    email_article_cta_text: Optional[str] = None
+    email_article_footer_text: Optional[str] = None
+    email_verification_subject: Optional[str] = None
+    email_verification_body: Optional[str] = None
+    # Error / UI messages
+    msg_partner_tagging_prompt: Optional[str] = None
+    msg_override_required: Optional[str] = None
+    msg_cart_empty: Optional[str] = None
+    msg_quote_success: Optional[str] = None
+    msg_scope_success: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
