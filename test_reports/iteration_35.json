@@ -1,0 +1,70 @@
+{
+  "summary": "Iteration 35: Comprehensive testing of Processor ID deep-link features for admin Orders & Subscriptions. All 18 backend tests pass (100%). All 13 frontend UI verification checks pass (100%). Features tested: deep-link rendering, edit dialog processor_id field, audit trail logging, ExternalLink icon, GoCardless/Stripe URL logic.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "All admin pages (console log)",
+        "issues": [
+          "Persistent console hydration warning: '<span> cannot be a child of <select>/<option>' - caused by Emergent framework VE wrapper, not application code. Non-blocking. Confirmed non-fixable at app level (as noted in review_request)."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter35_processor_id.py",
+    "/app/test_reports/pytest/pytest_results_iter35.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All features implemented correctly and working end-to-end.",
+    "getProcessorLink helper in both OrdersTab.tsx and SubscriptionsTab.tsx correctly maps all 7 prefix types: pi_/ch_->stripe/payments, sub_->stripe/subscriptions, cus_->stripe/customers, in_->stripe/invoices, PM->gocardless/payments, MD->gocardless/mandates, SB->gocardless/subscriptions",
+    "Orders table Processor ID cell: blue badge with ExternalLink icon for known prefixes, grey badge for unknown, '—' for empty",
+    "Subscriptions table Processor ID cell: fallback chain processor_id || stripe_subscription_id || gocardless_mandate_id",
+    "Edit dialogs: data-testid='admin-order-processor-input' and data-testid='admin-sub-processor-input' correctly present and pre-filled",
+    "ExternalLink icon next to processor_id input dynamically appears/updates as user types",
+    "Backend OrderUpdate and SubscriptionUpdate models include processor_id: Optional[str] = None",
+    "update_order and update_subscription routes both record processor_id changes in audit log with {old, new} format",
+    "Audit logs correctly show processor_id changes in the 'updated' action details under 'changes' key"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter35_processor_id.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (all 13 UI checks passed)"
+  },
+  "test_credentials": {
+    "admin": "admin@automateaccounts.local / ChangeMe123!"
+  },
+  "seed_data_creation": "Backend tests modified processor_id values for testing; restored order AA-9C79248E to 'ch_updated_processor_ui' and subscription to 'PM01TMJT9AV057'",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 35 fully tested Processor ID deep-link features. Summary of verified behavior: (1) Orders table: Processor ID column at index 6 (after Sub #), data-testid=admin-order-processor-{id}, shows blue ExternalLink badge for pi_/ch_/sub_/PM/MD/SB prefixes, '—' for empty. Order AA-9C79248E originally had pi_test123456, was edited to ch_updated_processor_ui during testing. (2) Subscriptions table: Processor ID at index 2 (after Sub #), data-testid=admin-sub-processor-{id}. First subscription (SUB-6F532ACA) now has PM01TMJT9AV057. (3) Both edit dialogs have processor_id input with ExternalLink icon that updates dynamically. (4) Audit logs show processor_id change with old/new values. (5) React hydration warning from Emergent VE wrapper - non-fixable, non-blocking.",
+  "feature_test_results": {
+    "Orders table - Processor ID column header": "PASS",
+    "Orders table - pi_test123456 shows as blue clickable badge": "PASS - href=https://dashboard.stripe.com/payments/pi_test123456",
+    "Orders table - empty processor_id shows '—'": "PASS",
+    "Orders Edit dialog - processor_id input field (data-testid='admin-order-processor-input')": "PASS",
+    "Orders Edit dialog - pre-filled with current value": "PASS - shows pi_test123456",
+    "Orders Edit dialog - ExternalLink icon for known prefix": "PASS - ch_ shows stripe/payments link",
+    "Orders Edit dialog - save new processor_id": "PASS - 'Order updated' toast shown",
+    "Subscriptions table - Processor ID column header": "PASS",
+    "Subscriptions table - PM01TMJT9AV057 shows as blue clickable GoCardless badge": "PASS - href=https://manage.gocardless.com/payments/PM01TMJT9AV057",
+    "Subscriptions Edit dialog - processor_id input field (data-testid='admin-sub-processor-input')": "PASS",
+    "Subscriptions Edit dialog - ExternalLink for sub_ prefix": "PASS - stripe/subscriptions link",
+    "Subscriptions Edit dialog - ExternalLink for PM prefix": "PASS - gocardless/payments link",
+    "Subscriptions Edit dialog - save new processor_id": "PASS - 'Subscription updated' toast shown",
+    "Audit log - processor_id change recorded with old/new values": "PASS - confirmed via UI and backend tests",
+    "Deep-link URL: pi_/ch_ -> stripe.com/payments": "PASS",
+    "Deep-link URL: sub_ -> stripe.com/subscriptions": "PASS",
+    "Deep-link URL: PM -> manage.gocardless.com/payments": "PASS",
+    "Deep-link URL: MD -> manage.gocardless.com/mandates": "PASS",
+    "Deep-link URL: SB -> manage.gocardless.com/subscriptions": "PASS"
+  }
+}
