@@ -1,9 +1,11 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle, ArrowRight } from "lucide-react";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
 export default function BankTransferSuccess() {
   const [searchParams] = useSearchParams();
   const orderNumber = searchParams.get("order");
+  const ws = useWebsite();
 
   return (
     <div className="space-y-6" data-testid="bank-transfer-success">
@@ -14,7 +16,7 @@ export default function BankTransferSuccess() {
           </div>
         </div>
         <h1 className="text-2xl font-semibold text-slate-900" data-testid="bank-transfer-title">
-          Order Created
+          {ws.bank_success_title}
         </h1>
         {orderNumber && (
           <p className="mt-2 text-sm text-slate-500" data-testid="bank-transfer-order-number">
@@ -22,34 +24,40 @@ export default function BankTransferSuccess() {
           </p>
         )}
         <p className="mt-4 text-sm text-slate-600" data-testid="bank-transfer-message">
-          Your order has been created and is awaiting bank transfer payment.
+          {ws.bank_success_message}
         </p>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6" data-testid="bank-transfer-instructions">
-        <h2 className="text-sm font-semibold text-slate-900">Payment Instructions</h2>
+        <h2 className="text-sm font-semibold text-slate-900">{ws.bank_instructions_title}</h2>
         <ul className="mt-3 space-y-2 text-xs text-slate-600">
-          <li className="flex items-start gap-2" data-testid="bank-instruction-1">
-            <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
-            <span>You will receive an email with bank transfer details and instructions.</span>
-          </li>
-          <li className="flex items-start gap-2" data-testid="bank-instruction-2">
-            <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
-            <span>Please complete the transfer within 7 business days.</span>
-          </li>
-          <li className="flex items-start gap-2" data-testid="bank-instruction-3">
-            <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
-            <span>Once payment is confirmed, your order will be processed and a team member will reach out.</span>
-          </li>
+          {ws.bank_instruction_1 && (
+            <li className="flex items-start gap-2" data-testid="bank-instruction-1">
+              <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+              <span>{ws.bank_instruction_1}</span>
+            </li>
+          )}
+          {ws.bank_instruction_2 && (
+            <li className="flex items-start gap-2" data-testid="bank-instruction-2">
+              <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+              <span>{ws.bank_instruction_2}</span>
+            </li>
+          )}
+          {ws.bank_instruction_3 && (
+            <li className="flex items-start gap-2" data-testid="bank-instruction-3">
+              <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+              <span>{ws.bank_instruction_3}</span>
+            </li>
+          )}
         </ul>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6" data-testid="bank-transfer-next-steps">
-        <h2 className="text-sm font-semibold text-slate-900">What Happens Next</h2>
+        <h2 className="text-sm font-semibold text-slate-900">{ws.bank_next_steps_title}</h2>
         <ul className="mt-3 space-y-2 text-xs text-slate-600">
-          <li data-testid="bank-next-step-1">1. Check your email for transfer instructions</li>
-          <li data-testid="bank-next-step-2">2. Complete the bank transfer</li>
-          <li data-testid="bank-next-step-3">3. We'll confirm receipt and begin processing your order</li>
+          {ws.bank_next_step_1 && <li data-testid="bank-next-step-1">{ws.bank_next_step_1}</li>}
+          {ws.bank_next_step_2 && <li data-testid="bank-next-step-2">{ws.bank_next_step_2}</li>}
+          {ws.bank_next_step_3 && <li data-testid="bank-next-step-3">{ws.bank_next_step_3}</li>}
         </ul>
       </div>
 
@@ -58,7 +66,7 @@ export default function BankTransferSuccess() {
         className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
         data-testid="bank-transfer-portal-link"
       >
-        Go to customer portal
+        {ws.checkout_portal_link_text}
         <ArrowRight className="h-4 w-4" />
       </Link>
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import api from "@/lib/api";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
 export default function CheckoutSuccess() {
   const [searchParams] = useSearchParams();
@@ -9,6 +10,7 @@ export default function CheckoutSuccess() {
   const [status, setStatus] = useState("pending");
   const [paymentStatus, setPaymentStatus] = useState("pending");
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const ws = useWebsite();
 
   const pollStatus = async () => {
     if (!sessionId) return;
@@ -28,14 +30,14 @@ export default function CheckoutSuccess() {
   }, [sessionId]);
 
   const displayMessage = useMemo(() => {
-    if (paymentStatus === "paid") return "Payment successful.";
-    if (status === "expired") return "Session expired.";
-    return "Checking payment status...";
-  }, [status, paymentStatus]);
+    if (paymentStatus === "paid") return ws.checkout_success_paid_msg;
+    if (status === "expired") return ws.checkout_success_expired_msg;
+    return ws.checkout_success_pending_msg;
+  }, [status, paymentStatus, ws]);
 
   return (
     <div className="space-y-6" data-testid="checkout-success">
-      <h1 className="text-2xl font-semibold text-slate-900">Checkout status</h1>
+      <h1 className="text-2xl font-semibold text-slate-900">{ws.checkout_success_title}</h1>
       <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600" data-testid="checkout-status-message">
         {displayMessage}
         {orderNumber && (
@@ -45,15 +47,15 @@ export default function CheckoutSuccess() {
         )}
       </div>
       <div className="rounded-xl border border-slate-200 bg-white p-6" data-testid="checkout-next-steps">
-        <div className="text-sm font-semibold text-slate-900">Next steps</div>
+        <div className="text-sm font-semibold text-slate-900">{ws.checkout_success_next_steps_title}</div>
         <ul className="mt-2 text-xs text-slate-500 space-y-1">
-          <li data-testid="checkout-next-steps-1">We'll send a confirmation email with intake instructions.</li>
-          <li data-testid="checkout-next-steps-2">A delivery lead will schedule your kickoff within 2 business days.</li>
-          <li data-testid="checkout-next-steps-3">You can track status and invoices in the customer portal.</li>
+          {ws.checkout_success_step_1 && <li data-testid="checkout-next-steps-1">{ws.checkout_success_step_1}</li>}
+          {ws.checkout_success_step_2 && <li data-testid="checkout-next-steps-2">{ws.checkout_success_step_2}</li>}
+          {ws.checkout_success_step_3 && <li data-testid="checkout-next-steps-3">{ws.checkout_success_step_3}</li>}
         </ul>
       </div>
       <Link to="/portal" className="text-sm text-blue-600" data-testid="checkout-portal-link">
-        Go to customer portal
+        {ws.checkout_portal_link_text}
       </Link>
     </div>
   );
