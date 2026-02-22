@@ -186,14 +186,33 @@ export default function Cart() {
       toast.error("Please accept the Terms & Conditions to proceed");
       return;
     }
-    if (!partnerTagResponse) {
-      toast.error(ws.msg_partner_tagging_prompt || "Please select whether you have tagged us as your partner");
+    // Legacy validation only when not using new checkout_sections
+    if (!checkoutSections) {
+      if (!partnerTagResponse) {
+        toast.error(ws.msg_partner_tagging_prompt || "Please select whether you have tagged us as your partner");
+        return;
+      }
+      if (partnerTagResponse === "Not yet" && !overrideCode.trim()) {
+        toast.error(ws.msg_override_required || "An override code is required when you have not yet tagged us as your partner");
+        return;
+      }
+    }
+    // New sections validation
+    if (checkoutSections && sectionRequiredFieldsMissing) {
+      toast.error("Please complete all required fields before proceeding");
       return;
     }
-    if (partnerTagResponse === "Not yet" && !overrideCode.trim()) {
-      toast.error(ws.msg_override_required || "An override code is required when you have not yet tagged us as your partner");
+    if (checkoutSections && extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim()) {
+      toast.error(ws.msg_override_required || "An override code is required");
       return;
     }
+
+    const partnerTag = checkoutSections ? (extraFields['partner_tag_response'] || null) : (partnerTagResponse || null);
+    const overrideVal = partnerTag === 'Not yet' ? overrideCode.trim() : null;
+    const zohoSubType = checkoutSections ? (extraFields['zoho_subscription_type'] || null) : zohoSubscriptionType;
+    const zohoProduct = checkoutSections ? (extraFields['current_zoho_product'] || null) : currentZohoProduct;
+    const zohoAccess = checkoutSections ? (extraFields['zoho_account_access'] || null) : zohoAccountAccess;
+
     setLoading(true);
     try {
       if (paymentMethod === "bank_transfer") {
@@ -208,11 +227,11 @@ export default function Cart() {
           terms_accepted: termsAccepted,
           terms_id: termsContent?.id || null,
           start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
-          partner_tag_response: partnerTagResponse,
-          override_code: partnerTagResponse === "Not yet" ? overrideCode.trim() : null,
-          zoho_subscription_type: zohoSubscriptionType,
-          current_zoho_product: currentZohoProduct,
-          zoho_account_access: zohoAccountAccess,
+          partner_tag_response: partnerTag,
+          override_code: overrideVal,
+          zoho_subscription_type: zohoSubType,
+          current_zoho_product: zohoProduct,
+          zoho_account_access: zohoAccess,
           extra_fields: Object.keys(extraFields).length ? extraFields : undefined,
         });
         
@@ -220,7 +239,6 @@ export default function Cart() {
         if (response.data.gocardless_redirect_url) {
           toast.success("Redirecting to Direct Debit setup...");
           clear();
-          // Redirect to GoCardless
           window.location.href = response.data.gocardless_redirect_url;
         } else {
           toast.success("Order created successfully");
@@ -240,11 +258,11 @@ export default function Cart() {
           terms_accepted: termsAccepted,
           terms_id: termsContent?.id || null,
           start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
-          partner_tag_response: partnerTagResponse,
-          override_code: partnerTagResponse === "Not yet" ? overrideCode.trim() : null,
-          zoho_subscription_type: zohoSubscriptionType,
-          current_zoho_product: currentZohoProduct,
-          zoho_account_access: zohoAccountAccess,
+          partner_tag_response: partnerTag,
+          override_code: overrideVal,
+          zoho_subscription_type: zohoSubType,
+          current_zoho_product: zohoProduct,
+          zoho_account_access: zohoAccess,
           extra_fields: Object.keys(extraFields).length ? extraFields : undefined,
         });
         window.location.href = response.data.url;
