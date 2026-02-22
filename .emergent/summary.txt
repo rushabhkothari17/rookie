@@ -1,146 +1,170 @@
 <analysis>**original_problem_statement:**
-The initial task was to enhance the Processor ID in the admin panel to be a clickable deep-link and editable. This quickly expanded into a major debugging and refactoring effort after the user reported several critical issues:
-1.  **Data Integrity:** New subscriptions and orders created via Stripe were missing crucial data (dates, subscription numbers, etc.).
-2.  **Recurring Filter Bugs:** Filters in the admin panel (especially for 'status') were repeatedly breaking. The user requested a permanent fix from the root cause.
-3.  **New Features:** The user requested new filters for Orders and Subscriptions tables, a fix for a broken customer portal link, a new webhook endpoint for GoCardless, and finally, a complete revamp of the customer portal page to include search, pagination, and sorting.
+The user's ultimate goal is to transform the application into a fully customizable, whitelabel solution that can be resold. This encompasses several large-scale requirements gathered over the session:
+
+**PRODUCT REQUIREMENTS:**
+1.  **Fully Dynamic Content:** No content (text, URLs, labels, errors, footer content) should be hardcoded. Everything must be manageable from a central admin panel.
+2.  **Central Website Module:** A new Website module in the admin panel should consolidate all site-wide configuration, completely replacing the previous Settings tab.
+3.  **Dynamic Form Builder:** All forms site-wide (e.g., Request a Quote, customer signup) must be fully customizable. Admins should be able to define form fields (text, email, phone, dropdown, checkbox).
+4.  **Dynamic Email Templates:** A new section to build and manage email templates (using rich text/HTML) for all system-triggered emails (e.g., welcome email, quote request confirmation). This includes toggles to enable/disable specific email triggers.
+5.  **Configurable Integrations:**
+    *   Admins must be able to enable/disable payment gateways (Stripe, GoCardless) via toggles.
+    *   Processing fees should be configurable per payment method, not a single global value.
+    *   Email providers (starting with Resend) should be selectable and configurable with API keys and sender details.
+6.  **Dynamic References:** A system to create and manage key-value pairs (e.g., text, emails, phone numbers, URLs) that can be referenced throughout the application's dynamic content and email templates.
+7.  **Customer-Specific Payment Modes:** On the customer admin page, there should be a multi-select dropdown to specify which of the globally-enabled payment methods an individual customer is allowed to use.
+8.  **Complete Whitelabel Audit:** After implementation, a thorough audit is required to find and remove any remaining hardcoded branding or business logic.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is in a much more stable state.
-- **Admin Panel:** A major root cause of recurring bugs has been fixed. All admin tables (Orders, Subscriptions, Bank Transactions) now fetch their filter options (like statuses, payment methods) dynamically from a new central backend endpoint (), preventing data mismatches between the frontend and database. Numerous new filters have been added as requested.
-- **Payment/Data Flow:** The checkout and webhook logic for Stripe and GoCardless has been significantly improved to correctly save all necessary data, including using the Stripe  instead of the .
-- **Customer Portal:** The customer-facing portal page () has been completely rewritten. It now features a clean, modern UI with client-side search, status filtering, and pagination for both one-time orders and subscriptions. The previous crashing bug has been resolved.
+The agent has successfully completed a massive initial refactoring, centralizing most site settings into a new Website admin tab and making all forms (signup, product quotes) and UI text dynamic. This phase included creating a  component and was validated with a 100% pass rate from the testing agent.
+
+Following that success, the agent began implementing the next set of user requirements: a centralized email service, dynamic email templates, a References system, and configurable payment/email integrations. The backend has been significantly restructured with a new , new API routes, and updated database models. The frontend work has started with the creation of new components (, ) and a major refactor of the main  to accommodate these new features.
 
 **Last working item**:
-    - Last item agent was working: Adding date sorting functionality to the 'One-Time Orders' and 'Subscriptions' tables on the customer portal page.
+    - Last item agent was working: The agent was in the middle of a large, complex frontend refactoring task. Specifically, it was updating  to integrate the newly created  and  components, and to add UI toggles and input fields for the payment integrations (Stripe, GoCardless) and their respective processing fees.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? screenshot tool
+    - Which testing method agent to use? The application is likely broken due to the incomplete refactoring. Once the current implementation pass is complete, the  must be used for a full regression test covering all the new backend services and frontend UI.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  React Hydration Warning (P2)
-
+  - Issue 1:  Application is in a broken state due to an incomplete, large-scale refactor. (P0)
+  
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: The agent looked for , couldn't find it, and correctly identified  as a potential source, but did not investigate further as it was a low-priority task.
-     - Next debug checklist: 
-       - Check the browser's developer console on page load to identify the exact component causing the server/client render mismatch.
-       - Examine  for any logic that might render differently on the server versus the client (e.g., conditional rendering based on , , or other client-side-only objects).
-     - Why fix this issue and what will be achieved with the fix?: Fixes a code quality issue and prevents potential subtle UI rendering bugs, improving application robustness.
-     - Status:  NOT STARTED
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix?: frontend
-     - Blocked on other issue: none
+     - **Description:** The agent was performing a multi-file refactor across the backend and frontend to introduce email templates, a references system, and configurable payment integrations. The work is mid-flight. The last action was editing , but the corresponding changes in other files (like the customer page for payment modes) are not yet done. This leaves the application in an inconsistent and non-functional state.
+     - Attempted fixes: None. This is the current state of development.
+     - Next debug checklist: This is not a bug to debug, but an incomplete task to finish. The next agent must resume the implementation plan. See In progress Task List.
+     - Why fix this issue and what will be achieved with the fix? Completing this task will deliver a huge part of the user's whitelabeling vision, making emails, integrations, and key-value references fully dynamic.
+     - Status:  IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Both
+     - Blocked on other issue: None.
 
 **In progress Task List**:
-  - Task 1:  Complete and Test Date Sorting on Customer Portal (P0)
-
+  - Task 1:  Complete the Whitelabeling Phase 3 implementation (P0)
+  
  Task Detail:
   - Task 1: 
-     - Where to resume: The agent has already added the state management () and sorting logic () to the  hooks in . The next step is to make the Date column headers in both the orders and subscriptions tables clickable to toggle the sort direction.
-     - What will be achieved with this?: Customers will be able to sort their orders and subscriptions by date on the portal page, completing the user's latest request.
+     - Where to resume: 
+        1. **Finish :** The file was being edited to add the new  and  and to restructure the  section. This needs to be completed and verified.
+        2. **Implement Customer Payment Modes:** Update the customer detail page (likely ) to replace the static payment toggles with a multi-select dropdown for . This dropdown should be populated with the payment methods enabled globally in the Website settings.
+        3. **Frontend Checkout Logic:** Ensure the checkout/payment flow on the frontend respects both the global integration toggles and the customer-specific .
+     - What will be achieved with this? This will finalize the implementation of dynamic email templates, the References system, and configurable payment integrations with per-method fees and per-customer permissions.
      - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix?: frontend
-     - Blocked on something: No.
+     - Should Test frontend/backend/both after fix? Both
+     - Blocked on something: None.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks**:
-    - **P0 - Implement Admin Dashboard**: A previously requested feature for visualizing key metrics. This should be the next major task after the portal sorting is complete.
-- **Future Tasks**:
-    - None currently on the backlog beyond the P2 hydration warning.
+**Upcoming Tasks:**
+-   **P0 - Comprehensive Regression Testing:** Once Task 1 is complete, run the  to perform a full end-to-end test of all the new functionality: creating references, building email templates, toggling integrations, setting fees, and assigning payment modes to customers.
+-   **P1 - Full Whitelabel Audit:** Systematically search the entire codebase (frontend and backend) for any remaining hardcoded strings, URLs, or business-specific logic and replace them with values from the  or .
+
+**Future Tasks:**
+-   **Implement Admin Dashboard:** A previously requested feature for visualizing key business metrics.
+-   **Fix React Hydration Warning:** A low-priority technical debt item identified in a previous session.
 
 **Completed work in this session**
-- **Major Filter System Refactor**: Fixed a recurring bug by creating a new backend endpoint () to dynamically supply filter dropdown values. Refactored , , and  to use this new system, removing all hardcoded constants.
-- **Admin Panel Filter Expansion**: Added new filters for 'Sub #', 'Processor ID', 'Pay Date', 'Method', 'Plan', and 'Renewal' to the Orders and Subscriptions tables.
-- **Customer Portal Rewrite**: Completely rebuilt  to include client-side search, status filtering, and pagination for both orders and subscriptions.
-- **Critical Data Integrity Fixes**:
-  - Corrected the Stripe checkout flow to save the  () instead of the volatile  ().
-  - Patched webhook and checkout logic to ensure all subscription and order fields (e.g., , , ) are correctly populated.
-  - Manually patched a broken subscription record in the database using the API.
-- **GoCardless Webhook Endpoint**: Created a new, fully functional webhook handler at  to process payment and mandate status changes.
-- **Bug Fixes**:
-  - Resolved a fatal crash on the customer portal page caused by null data ().
-  - Fixed a webpack caching issue that was causing false compilation errors after a major refactor.
-  - Made the Stripe  clickable again by adding the  prefix to the link generation logic.
+- **Whitelabeling Refactor (Phase 2):**
+  - **Functionality:** Merged the Settings tab into a new comprehensive Website module. Implemented a dynamic form builder () and integrated it into the Signup page () and Product Details page ().
+  - **Testing:** Verified with a 100% pass rate across 27 backend and 14 frontend tests using the testing agent.
+- **Initial Debugging:**
+  - Resolved the  from the previous fork, confirming it was a transient issue and the application was operational.
 
 **Earlier issues found/mentioned but not fixed**
-   - Issue 1: React Hydration Warning (Now tracked in 'All Pending/In progress Issue list').
+   - The React Hydration Warning is a known, low-priority issue.
 
 **Known issue recurrence from previous fork**
-  - **Issue:** Admin table filters breaking due to a mismatch between frontend constants and database values.
-  - **Recurrence count:** 3
-  - **Status:** RESOLVED. The root cause was addressed by replacing frontend static constants with a dynamic backend endpoint that queries the database for possible filter values.
+  - None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Client-Side Data Management**: Extensive use of React hooks (, , ) in  to manage state for client-side search, filtering, pagination, and sorting.
-- **Backend-Driven UI**: Decoupling the frontend from static data by creating a dedicated API endpoint () to provide dynamic dropdown values for filters, making the system more resilient to data changes.
-- **Data Integrity**: Tracing and fixing bugs deep in the payment lifecycle (checkout success vs. webhook callbacks) to ensure data consistency.
-- **Defensive Coding**: Adding null-safety checks (e.g., ) to prevent UI crashes from incomplete database records.
+- **Centralized Configuration:** The  collection in MongoDB, managed via , is now the single source of truth for almost all site behavior.
+- **Schema-Driven UI:** Forms across the application are now rendered dynamically based on a JSON schema defined in the admin panel.
+- **Service-Oriented Backend:** A new  was introduced to abstract email sending logic, allowing different providers (like Resend) to be plugged in and for templates to be centrally managed.
+- **Dynamic Key-Value Store:** A new References feature allows admins to create arbitrary key-value pairs that can be used throughout the app content.
+- **Layered Feature Toggles:** The application now supports both global toggles for integrations (e.g., Is GoCardless enabled?) and per-entity settings (e.g., Can this specific customer use GoCardless?).
 
 **key DB schema**
-  - No schema changes were made, but the integrity of data within the  and  collections was significantly improved.
+- ** collection:**
+    -  (e.g., , )
+    - 
+    -  (contains keys and feature toggles for Stripe, GoCardless, Resend)
+    -  (e.g., , )
+- ** collection (NEW):**
+    - 
+    - 
+    -  (e.g., 'text', 'url', 'email')
+- ** collection:**
+    - 
 
 **changes in tech stack**
-  - None.
+- No new package dependencies were added in the last implementation batch, but the application's internal architecture was significantly refactored.
 
 **All files of reference**
--  (current focus)
-- 
-- 
-- 
-- 
-- 
-- 
-- 
-- 
+- **Currently being modified:** 
+- **New Components:**
+    - 
+    - 
+- **New Backend Logic:**
+    - 
+    - 
+- **Files to be modified next:**  (or similar customer detail page).
 
 **Areas that need refactoring**:
-- None. The recent work was a major refactor that improved code quality.
+- The current in-progress task is a major refactor itself. No other areas are identified for immediate refactoring.
 
 **key api endpoints**
-- : **New endpoint** that provides dynamic values for status and method filters.
-- : Modified to support several new filter query parameters.
-- : Modified to support several new filter query parameters.
-- : **New endpoint** for handling GoCardless webhooks.
+-  (NEW)
+-  (NEW)
+-  (NEW)
+-  (NEW)
+-  (Heavily updated to support all new fields)
+-  (Updated to support )
+- All endpoints previously sending emails were refactored to use .
 
 **Critical Info for New Agent**
-- Your immediate task is to finish the date sorting feature in . This involves making the Date table headers clickable buttons that update the  state.
-- The recurring filter bug in the admin panel is considered fixed. The new architecture uses a dynamic  endpoint. Do not re-introduce hardcoded filter lists in the frontend.
-- The customer portal () now handles all its data display logic (search, filter, pagination, sorting) on the client side. The backend endpoints () simply return all records for the logged-in customer.
+- **You are picking up mid-refactor.** The last agent started a large implementation for dynamic emails, references, and payment toggles. The backend work is mostly done, but the frontend work is incomplete. The application is likely broken.
+- **Your immediate task is to complete the In progress Task List.** This means finishing the  UI, then implementing the  dropdown on the customer page.
+- **Do not start a new feature or plan.** The plan is already defined by the user's last message and the agent's work-in-progress. Your job is to complete the current implementation pass.
+- After finishing the implementation, a full regression test using the  is mandatory before finishing the task.
 
 **documents and test reports created in this job**
--  (Updated)
-- 
-- 
+-  (This report validated the dynamic forms feature before the current refactor began).
+-  (Updated after the last successful feature completion).
 
 **Last 10 User Messages and any pending HUMAN messages**
--  - **IN PROGRESS**
--  - Completed.
--  - Resolved.
--  - Completed.
--  - This large batch of critical bug reports and features has been **Completed**.
--  - Resolved.
--  - Resolved.
+1.  **User (latest):** Provided a very detailed list of new requirements: a References system, a full email template builder with triggers, toggles for email/payment providers, per-method processing fees, and customer-specific payment method permissions.
+2.  **Agent:** Finished the Dynamic Forms and Website Module task, reporting a 100% pass rate from the testing agent and updating the PRD.
+3.  **Agent:** Called the testing agent to perform a comprehensive regression test on the dynamic forms implementation.
+4.  **Agent:** Took a screenshot verifying the Integrations section of the new admin UI.
+5.  **Agent:** Took a screenshot verifying the Forms section and the  component.
+6.  **Agent:** Took a smoke-test screenshot confirming the new Website Settings page was rendering correctly after the major refactor.
+7.  **Agent:** Completed the massive implementation of dynamic forms and the consolidated Website admin tab.
+8.  **User (earlier):** Approved the agent's plan and provided detailed specifications for the dynamic form builder (field types) and expanded the scope to include all site-wide content (email templates, footer, cart page content) in the whitelabeling effort. Requested merging Settings into Website.
+9.  **Agent:** Presented a plan to the user to first verify the app's stability and then tackle the newly requested features in phases.
+10. **Agent:** Confirmed the application was operational, as the previous screenshot failure was a transient issue.
 
 **Project Health Check:**
-- **Healthy**: Major data integrity issues and recurring bugs have been resolved. The application is significantly more stable.
+- **Broken:** The application is in the middle of a major, multi-file refactoring effort and is not in a runnable state.
 
 **3rd Party Integrations**
-- **Stripe**: Functional, with improved data capture on checkout.
-- **GoCardless**: Functional, with a new webhook handler to process background status updates.
-- **Resend**: Integrated for emails.
+- Stripe
+- GoCardless
+- Resend
+- All integrations are being refactored to be dynamically configurable (on/off toggles, API keys, and other settings) from the Website admin module.
 
 **Testing status**
-  - Testing agent used after significant changes: YES. Called twice, once after the Processor ID feature and again after the major filter/data-integrity refactor. Both returned 100% pass rates.
-  - Known regressions: None. All reported regressions were fixed.
+  - Testing agent used after significant changes: YES, after the previous major feature (dynamic forms) was completed. It has not been run for the current, in-progress work.
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: None
+  - Known regressions: The entire application is considered unstable due to the incomplete refactoring.
 
 **Credentials to test flow:**
 - **Admin**:  / 
 
 **What agent forgot to execute**
-- Nothing was forgotten. The agent systematically addressed a cascade of complex, interrelated bugs and feature requests reported by the user.</analysis>
+- The agent has laid the backend groundwork for  on customers but has not yet implemented the corresponding frontend UI (the multi-select dropdown on the customer detail page). This is a critical missing piece of the current task.</analysis>

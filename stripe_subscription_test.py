@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 class StripeSubscriptionModeTester:
-    def __init__(self, base_url="https://dynamic-content-19.preview.emergentagent.com"):
+    def __init__(self, base_url="https://customize-all-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.admin_token = None
         self.user_token = None
@@ -175,7 +175,7 @@ class StripeSubscriptionModeTester:
                 "inputs": {"transactions": 100, "inventory": False, "multi_currency": False, "offshore": False}
             }],
             "checkout_type": "subscription", 
-            "origin_url": "https://dynamic-content-19.preview.emergentagent.com",
+            "origin_url": "https://customize-all-1.preview.emergentagent.com",
             "terms_accepted": True
         }
         
@@ -270,7 +270,7 @@ class StripeSubscriptionModeTester:
     def run_all_tests(self):
         """Run all critical bug fix tests"""
         print("🔥 STRIPE SUBSCRIPTION MODE & GOCARDLESS ERROR TESTING")
-        print("Backend URL: https://dynamic-content-19.preview.emergentagent.com/api")  
+        print("Backend URL: https://customize-all-1.preview.emergentagent.com/api")  
         print("Admin Credentials: admin@automateaccounts.local / ChangeMe123!")
         print("="*80)
         
