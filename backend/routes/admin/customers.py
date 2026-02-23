@@ -279,7 +279,8 @@ async def admin_set_customer_active(
     active: bool,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
