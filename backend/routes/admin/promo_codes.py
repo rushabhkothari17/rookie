@@ -29,7 +29,7 @@ async def admin_list_promo_codes(
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
     if search:
-        query["code"] = {"$regex": search, "$options": "i"}
+        query["code"] = {"$regex": _re.escape(search), "$options": "i"}
     if enabled is not None:
         query["enabled"] = enabled == "true"
     if created_from:

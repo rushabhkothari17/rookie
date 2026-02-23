@@ -75,7 +75,7 @@ async def admin_list_terms(
     if status:
         query["status"] = status
     if search:
-        query["title"] = {"$regex": search, "$options": "i"}
+        query["title"] = {"$regex": _re.escape(search), "$options": "i"}
     if created_from:
         query.setdefault("created_at", {})["$gte"] = created_from
     if created_to:
