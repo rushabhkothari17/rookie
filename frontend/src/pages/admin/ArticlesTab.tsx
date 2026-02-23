@@ -407,13 +407,17 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
         <button onClick={() => setSubTab("articles")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${subTab === "articles" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-articles">Articles</button>
         <button onClick={() => setSubTab("templates")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "templates" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-templates"><LayoutTemplate size={13} /> Templates</button>
         <button onClick={() => setSubTab("email-templates")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "email-templates" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-email-templates"><Mail size={13} /> Email Templates</button>
+        <button onClick={() => setSubTab("categories")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "categories" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-categories"><Tag size={13} /> Categories</button>
       </div>
 
       {/* Templates sub-tab */}
-      {subTab === "templates" && <ArticleTemplatesTab />}
+      {subTab === "templates" && <ArticleTemplatesTab categories={dynamicCategories} />}
 
       {/* Email Templates sub-tab */}
       {subTab === "email-templates" && <ArticleEmailTemplatesTab />}
+
+      {/* Categories sub-tab */}
+      {subTab === "categories" && <ArticleCategoriesTab />}
 
       {/* Articles sub-tab */}
       {subTab === "articles" && (<>
