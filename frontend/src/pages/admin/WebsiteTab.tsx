@@ -453,8 +453,9 @@ function getAuthSlideTitle(key: AuthSlide | null): string {
     portal: "Customer Portal", profile: "Profile Page",
     not_found: "404 Not Found Page", gocardless: "GoCardless Callback",
     checkout_builder: "Checkout Page Builder", checkout_success: "Checkout Success Page",
-    bank_transfer: "Bank Transfer Success Page", checkout_messages: "Checkout Messages",
-    form_messages: "Form Response Messages",
+    checkout_messages: "Checkout Messages", form_messages: "Form Response Messages",
+    footer_basics: "Footer Text", footer_about: "About Us Section",
+    footer_nav: "Navigation", footer_contact: "Contact Info", footer_social: "Social Media",
   };
   return key ? map[key] : "";
 }
@@ -466,9 +467,14 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
     profile: "Heading and subtitle on the profile page.", not_found: "Content for the 404 error page.",
     gocardless: "Status messages shown after direct debit setup.",
     checkout_builder: "Build and configure checkout sections. Includes legacy settings.",
-    checkout_success: "Page shown after a successful payment.", bank_transfer: "Page shown after bank transfer order is created.",
+    checkout_success: "Page shown after a successful payment or bank transfer order.",
     checkout_messages: "Customer-facing error and instruction messages during checkout.",
     form_messages: "Success messages shown after quote / scope requests.",
+    footer_basics: "Tagline and copyright text shown in the footer.",
+    footer_about: "About us section heading and descriptive text.",
+    footer_nav: "Navigation section title and link labels.",
+    footer_contact: "Contact details shown in the footer.",
+    footer_social: "Social media platform links.",
   };
   return key ? map[key] : "";
 }
