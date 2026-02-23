@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
 from db.session import db
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["admin-api-keys"])
 
