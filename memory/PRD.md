@@ -57,7 +57,64 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
-## What's Been Implemented
+## What's Been Implemented (Chronological)
+
+### Phase 1 — Core Platform (Previous Sessions)
+- Full product catalog with categories, pricing, billing cycles
+- Customer registration, email verification, login
+- Orders, subscriptions, quotes, bank transactions
+- Stripe & GoCardless payment integrations
+- Resend email service with templates
+- Admin panel with rich feature set
+
+### Phase 2 — Content & Editors (Previous Sessions)
+- Unified RichHtmlEditor (Rich Text / HTML / Preview tabs)
+- Article Categories with color badges, scope_final flag
+- Configurable admin panel content (dashboard text, form options)
+- Email articles as PDF attachments
+
+### Phase 3 — Brand Color System (Feb 2026)
+**Color Bug Fixes:**
+- Fixed hardcoded red (`bg-red-400`, `bg-red-500`) bullet dots → `var(--aa-accent)`
+- Fixed `.aa-bg` gradient red tint → neutral blue
+- Fixed default `--aa-accent` CSS variable (was red #dc2626)
+- Public `/api/website-settings` now returns all 9 brand colors
+- `WebsiteContext` now sets shadcn CSS variables (`--primary`, `--destructive`, `--background`, etc.) via hex→HSL conversion so buttons/inputs respond to brand colors
+
+**Admin Panel Color Wiring:**
+- Admin panel hero banner, Store/Articles/ProductDetail heroes → `var(--aa-primary)`
+- Sidebar active states → `var(--aa-primary)` via `.aa-tab-trigger` CSS class
+- Bullet dots, accent lines, glow effects → `var(--aa-accent)`
+- Admin color labels updated to describe where each color appears
+
+### Phase 4 — Multi-Tenant Partner Organizations (Feb 2026)
+**DB Foundation:**
+- Created `tenants` collection with: `id, name, code, status, created_at, updated_at`
+- Backfilled `tenant_id` to ALL 30+ collections
+- Created default tenant "Automate Accounts" (code: `automate-accounts`)
+- Promoted `admin@automateaccounts.local` → `platform_super_admin`
+
+**Auth System:**
+- New endpoints: `/api/auth/partner-login`, `/api/auth/customer-login`, `/api/tenant-info`
+- JWT now carries `role` + `tenant_id`
+- Login with partner_code → validates tenant active → scopes auth
+- Inactive tenant → 403 block on all logins
+- `platform_super_admin` logs in without tenant restriction
+
+**Backend Enforcement:**
+- `core/tenant.py`: `get_tenant_filter()`, `set_tenant_id()`, `tenant_id_of()` helpers
+- All admin routes: customers, orders, products, categories, articles, subscriptions, bank_transactions, promo_codes, terms, users, quote_requests, website/app settings → tenant-scoped
+- Platform super admin sees all data (`{}`); partner admins see only their tenant
+
+**Tenant Management API:**
+- `GET/POST /api/admin/tenants` — list/create tenants (platform admin only)
+- `PUT /api/admin/tenants/{id}` — update tenant
+- `POST /api/admin/tenants/{id}/activate|deactivate` — toggle status
+- `POST /api/admin/tenants/{id}/create-admin` — create partner_super_admin
+
+**Frontend:**
+- Login page: Two tabs — "Partner Login" and "Customer Login" (both require partner_code)
+- `AuthContext`: `login()` now accepts `partner_code` + `login_type` params
 
 ### Session — Iteration 53 (Feb 2026)
 - **GoCardless Callback inside card**: `PaymentProviderCard` gains `onCallbackSettings?` prop; "Callback Page Text" section renders at the bottom of the GoCardless expanded card, not as a standalone tile.
