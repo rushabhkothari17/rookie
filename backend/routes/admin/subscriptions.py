@@ -50,7 +50,8 @@ async def admin_subscriptions(
     contract_end_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if status:
         query["status"] = status
     if payment:
