@@ -30,12 +30,13 @@ async def admin_customers(
     payment_mode: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    users_all = await db.users.find({}, {"_id": 0, "id": 1, "email": 1, "full_name": 1, "is_active": 1}).to_list(10000)
+    tf = get_tenant_filter(admin)
+    users_all = await db.users.find({**tf, "is_admin": False}, {"_id": 0, "id": 1, "email": 1, "full_name": 1, "is_active": 1}).to_list(10000)
     user_map = {u["id"]: u for u in users_all}
-    addresses_all = await db.addresses.find({}, {"_id": 0}).to_list(10000)
+    addresses_all = await db.addresses.find(tf, {"_id": 0}).to_list(10000)
     addr_map = {a["customer_id"]: a for a in addresses_all}
 
-    query: Dict[str, Any] = {}
+    query: Dict[str, Any] = {**tf}
     if payment_mode == "gocardless":
         query["allow_bank_transfer"] = True
     elif payment_mode == "stripe":
