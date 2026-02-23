@@ -823,28 +823,39 @@ export default function WebsiteTab() {
 
               {/* Override Codes sub-section */}
               {(() => {
-                const opsItems = structured["Operations"] || [];
-                const overrideItem = opsItems.find((i: any) => i.key === "override_code_expiry_hours");
-                if (!overrideItem) return null;
+                const items = structured["OverrideCodes"] || [];
+                if (!items.length) return null;
                 return (
                   <div className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
                     <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Override Codes</h4>
                     <p className="text-xs text-slate-400 mb-3">Settings for the override code system used in the checkout flow.</p>
-                    <SettingRow item={overrideItem} onSaved={onStructuredSaved} />
+                    {items.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
                   </div>
                 );
               })()}
 
-              {["Operations", "FeatureFlags"].map(cat => {
-                const items = (structured[cat] || []).filter((i: any) => i.key !== "override_code_expiry_hours");
+              {["Operations"].map(cat => {
+                const items = (structured[cat] || []);
                 if (!items.length) return null;
                 return (
                   <div key={cat} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
-                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">{cat.replace("FeatureFlags", "Feature Flags")}</h4>
+                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">{cat}</h4>
                     {items.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
                   </div>
                 );
               })}
+
+              {/* FeatureFlags remaining items */}
+              {(() => {
+                const items = (structured["FeatureFlags"] || []);
+                if (!items.length) return null;
+                return (
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
+                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">Feature Flags</h4>
+                    {items.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>
