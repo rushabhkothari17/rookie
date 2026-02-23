@@ -19,6 +19,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Permissions policy — disable unused features
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
         # Remove server fingerprint
-        response.headers.pop("server", None)
-        response.headers.pop("Server", None)
+        response.headers["server"] = ""
+        response.headers["Server"] = ""
         return response
