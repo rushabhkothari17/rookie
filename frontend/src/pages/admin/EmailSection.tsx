@@ -362,9 +362,14 @@ function TemplateEditor({ template, onSave, onClose }: {
                 spellCheck={false} data-testid="template-html-editor" />
             )}
             {tab === "preview" && (
-              <div className="h-72 overflow-auto bg-white p-4" data-testid="template-html-preview">
-                <div dangerouslySetInnerHTML={{ __html: htmlBody }} />
-              </div>
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onInput={(e) => setHtmlBody(e.currentTarget.innerHTML)}
+                className="h-72 overflow-auto bg-white p-4 prose prose-sm max-w-none outline-none focus:outline-none"
+                data-testid="template-html-preview"
+                dangerouslySetInnerHTML={{ __html: htmlBody }}
+              />
             )}
           </div>
         </div>
