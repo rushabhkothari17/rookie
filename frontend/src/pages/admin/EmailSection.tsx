@@ -298,7 +298,16 @@ function ProviderSection({ settings, isActive, isValidated, onSetActive, onDeact
 
 // ─── Zoho Mail Provider Section ───────────────────────────────────────────────
 
-function ZohoMailSection() {
+interface ZohoMailSectionProps {
+  isActive: boolean;
+  isValidated: boolean;
+  onSetActive: () => void;
+  onDeactivate: () => void;
+  settingActive: boolean;
+  onRefresh: () => void;
+}
+
+function ZohoMailSection({ isActive, isValidated, onSetActive, onDeactivate, settingActive, onRefresh }: ZohoMailSectionProps) {
   const [open, setOpen] = useState(false);
   const [datacenter, setDatacenter] = useState("US");
   const [clientId, setClientId] = useState("");
@@ -306,23 +315,13 @@ function ZohoMailSection() {
   const [accessToken, setAccessToken] = useState("");
   const [saving, setSaving] = useState(false);
   const [validating, setValidating] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"connected" | "not_configured" | "error">("not_configured");
   const [validationResult, setValidationResult] = useState<any>(null);
 
   useEffect(() => {
-    loadStatus();
-  }, []);
-
-  const loadStatus = async () => {
-    try {
-      const res = await api.get("/admin/integrations/status");
-      const zoho = res.data.integrations?.zoho_mail;
-      if (zoho?.status === "connected") {
-        setConnectionStatus("connected");
-        setDatacenter(zoho.datacenter || "US");
-      }
-    } catch {}
-  };
+    if (isValidated) setConnectionStatus("connected");
+  }, [isValidated]);
 
   const saveCredentials = async () => {
     if (!clientId || !clientSecret) {
@@ -360,6 +359,7 @@ function ZohoMailSection() {
       if (res.data.success) {
         setConnectionStatus("connected");
         toast.success("Zoho Mail connected successfully");
+        onRefresh();
       } else {
         setConnectionStatus("error");
         toast.error(res.data.message || "Validation failed");
@@ -373,26 +373,38 @@ function ZohoMailSection() {
     }
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <>
       {/* Tile */}
       <div
-        className="rounded-xl border border-slate-200 bg-white p-4 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors mt-2"
+        className={`rounded-xl border p-4 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors mt-2 ${isActive ? "border-emerald-300 bg-emerald-50/50" : "border-slate-200 bg-white"}`}
         data-testid="zoho-mail-provider-tile"
         onClick={() => setOpen(true)}
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-orange-100">
-            <Mail size={15} className="text-orange-600" />
+          <div className={`p-2 rounded-lg ${isActive ? "bg-emerald-100" : "bg-orange-100"}`}>
+            <Mail size={15} className={isActive ? "text-emerald-600" : "text-orange-600"} />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-800">Zoho Mail</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-slate-800">Zoho Mail</p>
+              {isActive && <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">ACTIVE</span>}
+            </div>
             <p className="text-xs text-slate-400 mt-0.5">Transactional email via Zoho Mail API</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`text-xs px-2 py-0.5 rounded-full ${connectionStatus === "connected" ? "text-emerald-700 bg-emerald-50" : "text-slate-500 bg-slate-100"}`}>
-            {connectionStatus === "connected" ? `Connected (${datacenter})` : "Not Connected"}
+          <span className={`text-xs px-2 py-0.5 rounded-full ${isValidated ? "text-emerald-700 bg-emerald-50" : "text-slate-500 bg-slate-100"}`}>
+            {isValidated ? `Connected (${datacenter})` : "Not Connected"}
           </span>
           <Pencil size={14} className="text-slate-400" />
         </div>
@@ -408,11 +420,60 @@ function ZohoMailSection() {
                 <h3 className="text-sm font-semibold text-slate-900">Zoho Mail Integration</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Configure email via Zoho Mail API</p>
               </div>
-              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
-                <X size={16} />
-              </button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleRefresh} 
+                  disabled={refreshing}
+                  title="Refresh connection status"
+                >
+                  <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+                </Button>
+                <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                  <X size={16} />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Setup Guide */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <Info size={14} className="text-blue-500 mt-0.5 shrink-0" />
+                  <div className="text-xs text-blue-700">
+                    <p className="font-medium mb-1">Setup Guide</p>
+                    <ol className="list-decimal list-inside space-y-0.5 text-blue-600">
+                      <li>Go to <a href="https://api-console.zoho.com/" target="_blank" rel="noopener" className="underline inline-flex items-center gap-0.5">api-console.zoho.com <ExternalLink size={10} /></a></li>
+                      <li>Create a Server-based Application</li>
+                      <li>Add scope: ZohoMail.messages.ALL</li>
+                      <li>Copy Client ID and Secret below</li>
+                      <li>Complete OAuth to get access token</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              {/* Activation Status */}
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <div>
+                  <p className="text-sm font-medium text-slate-700">Provider Status</p>
+                  <p className="text-xs text-slate-400">{isActive ? "Active — emails sent via Zoho" : isValidated ? "Connected but not active" : "Not configured"}</p>
+                </div>
+                {isValidated && (
+                  <Button 
+                    size="sm" 
+                    variant={isActive ? "destructive" : "default"}
+                    onClick={(e) => { e.stopPropagation(); isActive ? onDeactivate() : onSetActive(); }}
+                    disabled={settingActive}
+                    className="text-xs"
+                    data-testid="toggle-zoho-mail-active"
+                  >
+                    <Power size={12} className="mr-1" />
+                    {settingActive ? "..." : isActive ? "Deactivate" : "Activate"}
+                  </Button>
+                )}
+              </div>
+
               {/* Datacenter selection */}
               <div>
                 <label className="text-xs font-medium text-slate-700">Datacenter</label>
