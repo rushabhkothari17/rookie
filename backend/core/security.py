@@ -89,7 +89,8 @@ async def get_current_user(
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
-    payload = decode_token(token)
+    # Use decode without type check for backward compatibility with existing tokens
+    payload = decode_token_no_type_check(token)
     user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
