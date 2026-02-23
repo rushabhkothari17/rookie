@@ -98,9 +98,13 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
           <h3 className="text-sm font-semibold text-slate-900">Article Templates</h3>
           <p className="text-xs text-slate-500 mt-0.5">{templates.length} template{templates.length !== 1 ? "s" : ""} — use these as starting points when creating articles</p>
         </div>
-        <Button size="sm" onClick={openCreate} className="gap-1.5" data-testid="template-create-btn">
-          <Plus size={14} /> New Template
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="article-templates-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="article-templates-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
+          <Button size="sm" onClick={openCreate} className="gap-1.5" data-testid="template-create-btn">
+            <Plus size={14} /> New Template
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 overflow-hidden">
