@@ -269,7 +269,9 @@ async def update_article(
     payload: ArticleUpdate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    article = await db.articles.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
@@ -290,7 +292,7 @@ async def update_article(
 
     effective_category = payload.category if payload.category is not None else article.get("category")
     if payload.category is not None:
-        if payload.category not in await _get_valid_categories():
+        if payload.category not in await _get_valid_categories(tid):
             raise HTTPException(status_code=400, detail="Invalid category")
         updates["category"] = payload.category
         changes["category"] = payload.category
