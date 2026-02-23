@@ -43,12 +43,14 @@ async def admin_list_promo_codes(
 
 @router.post("/admin/promo-codes")
 async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any] = Depends(require_admin)):
-    existing = await db.promo_codes.find_one({"code": payload.code.upper()}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    existing = await db.promo_codes.find_one({**tf, "code": payload.code.upper()}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Promo code already exists")
     code_id = make_id()
     doc = {
-        "id": code_id, "code": payload.code.upper(),
+        "id": code_id, "tenant_id": tid, "code": payload.code.upper(),
         "discount_type": payload.discount_type, "discount_value": payload.discount_value,
         "applies_to": payload.applies_to, "applies_to_products": payload.applies_to_products,
         "product_ids": payload.product_ids, "expiry_date": payload.expiry_date,
