@@ -60,7 +60,7 @@ async def admin_orders(
     if product_filter:
         order_ids = [o["id"] for o in orders]
         items = await db.order_items.find({"order_id": {"$in": order_ids}}, {"_id": 0}).to_list(1000)
-        products = await db.products.find({}, {"_id": 0}).to_list(1000)
+        products = await db.products.find(tf, {"_id": 0}).to_list(1000)
         product_ids_matching = [p["id"] for p in products if product_filter.lower() in p.get("name", "").lower()]
         matching_order_ids = {i["order_id"] for i in items if i["product_id"] in product_ids_matching}
         orders = [o for o in orders if o["id"] in matching_order_ids]
