@@ -314,22 +314,66 @@ export function ArticlesTab() {
 
   const handleEmailOpen = (article: any) => {
     setEmailTarget(article);
-    setEmailForm({ customer_ids: [], subject: `Article: ${article.title}`, message: "" });
+    setEmailForm({ to: [], cc: [], bcc: [], subject: `Article: ${article.title}`, html_body: "", attach_pdf: false });
+    setEmailToInput("");
+    setEmailCcInput("");
+    setEmailBccInput("");
+    setShowCcBcc(false);
+    setEmailEditorKey(k => k + 1);
     setShowEmailDialog(true);
   };
 
+  const addEmailChip = (field: "to" | "cc" | "bcc", inputVal: string, setInput: (v: string) => void) => {
+    const val = inputVal.trim().toLowerCase();
+    if (!val) return;
+    if (emailForm[field].includes(val)) { setInput(""); return; }
+    setEmailForm(prev => ({ ...prev, [field]: [...prev[field], val] }));
+    setInput("");
+  };
+
+  const removeEmailChip = (field: "to" | "cc" | "bcc", email: string) => {
+    setEmailForm(prev => ({ ...prev, [field]: prev[field].filter(e => e !== email) }));
+  };
+
+  const loadEmailTemplates = async () => {
+    try {
+      const res = await api.get("/article-email-templates");
+      setEmailTemplates(res.data.templates || []);
+    } catch { toast.error("Failed to load email templates"); }
+  };
+
+  const applyEmailTemplate = (tpl: any) => {
+    setEmailForm(prev => ({ ...prev, subject: tpl.subject, html_body: tpl.html_body }));
+    setEmailEditorKey(k => k + 1);
+    setShowEmailTemplatePicker(false);
+    toast.success(`Template "${tpl.name}" applied`);
+  };
+
+  const saveEmailAsTemplate = async () => {
+    const name = prompt("Save current email as template. Name:");
+    if (!name) return;
+    try {
+      await api.post("/article-email-templates", {
+        name,
+        subject: emailForm.subject,
+        html_body: emailForm.html_body,
+        description: `For article: ${emailTarget?.title || ""}`,
+      });
+      toast.success("Email template saved");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to save template");
+    }
+  };
+
   const handleSendEmail = async () => {
-    if (!emailForm.customer_ids.length) {
-      toast.error("Select at least one customer");
+    if (!emailForm.to.length) {
+      toast.error("Add at least one recipient in the To field");
       return;
     }
     setSavingEmail(true);
     try {
-      const res = await api.post(`/articles/${emailTarget.id}/email`, emailForm);
-      toast.success(res.data.message || "Emails sent");
-      if (res.data.errors?.length) {
-        toast.error(`Some emails failed: ${res.data.errors.map((e: any) => e.email).join(", ")}`);
-      }
+      const res = await api.post(`/articles/${emailTarget.id}/send-email`, emailForm);
+      toast.success(res.data.message || "Email sent");
       setShowEmailDialog(false);
     } catch (e: any) {
       toast.error(e.response?.data?.detail || "Failed to send email");
