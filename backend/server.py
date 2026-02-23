@@ -693,10 +693,37 @@ async def apply_catalog_overrides():
         await db.products.insert_one(product)
 
 
+async def ensure_db_security_indexes():
+    """Create compound indexes for tenant isolation — prevents collection scans and data leaks."""
+    idx = [
+        ("users", [("tenant_id", 1), ("email", 1)]),
+        ("customers", [("tenant_id", 1), ("user_id", 1)]),
+        ("orders", [("tenant_id", 1), ("customer_id", 1)]),
+        ("orders", [("tenant_id", 1), ("created_at", -1)]),
+        ("subscriptions", [("tenant_id", 1), ("customer_id", 1)]),
+        ("subscriptions", [("tenant_id", 1), ("created_at", -1)]),
+        ("products", [("tenant_id", 1), ("is_active", 1)]),
+        ("articles", [("tenant_id", 1), ("status", 1)]),
+        ("promo_codes", [("tenant_id", 1), ("code", 1)]),
+        ("api_keys", [("key", 1), ("is_active", 1)]),
+        ("api_keys", [("tenant_id", 1), ("is_active", 1)]),
+        ("quote_requests", [("tenant_id", 1), ("created_at", -1)]),
+        ("bank_transactions", [("tenant_id", 1), ("date", -1)]),
+        ("audit_logs", [("tenant_id", 1), ("created_at", -1)]),
+    ]
+    for collection_name, keys in idx:
+        try:
+            collection = getattr(db, collection_name)
+            await collection.create_index(keys, background=True)
+        except Exception:
+            pass
+
+
 @app.on_event("startup")
 
 async def startup_tasks():
     await ensure_audit_indexes()
+    await ensure_db_security_indexes()
     await SettingsService.cleanup_obsolete()
     await SettingsService.seed()
     await seed_admin_user()
