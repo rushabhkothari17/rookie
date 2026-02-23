@@ -160,15 +160,16 @@ async def orders_preview(
     payload: OrderPreviewRequest,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     # Use stripe_fee_rate for card payment preview (fallback to legacy service_fee_rate)
     stripe_fee = float(await SettingsService.get("stripe_fee_rate", 0.0))
     legacy_fee = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
     fee_rate = stripe_fee if stripe_fee else legacy_fee
-    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    customer = await db.customers.find_one({"tenant_id": tid, "user_id": user["id"]}, {"_id": 0})
     customer_id = customer["id"] if customer else None
     results = []
     for item in payload.items:
-        product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+        product = await db.products.find_one({"tenant_id": tid, "id": item.product_id}, {"_id": 0})
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         pricing = calculate_price(product, item.inputs, fee_rate=fee_rate)
