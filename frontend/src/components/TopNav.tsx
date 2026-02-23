@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
+import { TenantSwitcher } from "@/components/TenantSwitcher";
 
 export default function TopNav() {
   const { user, logout } = useAuth();
@@ -63,6 +64,9 @@ export default function TopNav() {
             <span className="text-sm text-slate-500 hidden md:inline" data-testid="nav-welcome">
               Hi, {user.full_name.split(" ")[0]}
             </span>
+          )}
+          {user?.role === "platform_admin" && (
+            <TenantSwitcher />
           )}
           <Link to="/cart" className="relative" data-testid="nav-cart-link">
             <Button variant="ghost" size="icon" data-testid="nav-cart-button">
