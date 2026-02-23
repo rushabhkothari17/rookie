@@ -53,13 +53,15 @@ All 13 entities support CSV import and export:
 - `X-API-Key` header supported on all public store endpoints
 - Used as alternative to partner_code for external API consumers
 
-### API Documentation Tab (NEW - Feb 2026)
+### API Documentation Tab (Updated - Feb 2026)
 - New "API" sidebar tab below "Website Content"
-- API key management section with generate/revoke UI
-- Comprehensive REST API documentation (18 endpoints across 6 categories)
-- "Try It" functionality for each endpoint
-- Base URL path guidance for subdomain-aware deployments
-- Organized by: Authentication, Catalog, Terms & Conditions, Articles, Requests, Customer Portal
+- API key management — only ACTIVE key shown (revoked/expired hidden)
+- Comprehensive REST API documentation (26 endpoints across 7 categories)
+- Unified auth model: ALL endpoints use X-API-Key; customer portal also needs Bearer JWT
+- "Try It" functionality with explicit API key input field (key never stored)
+- Base URL path guidance: API key resolves tenant — no subdomain required
+- Non-subdomain partners: use same base URL with X-API-Key header
+- Categories: Authentication, Catalog, Terms & Conditions, Articles, Quote Requests, Checkout, Customer Portal
 
 ### Partner Code in My Profile (NEW - Feb 2026)
 - `/api/me` now returns `partner_code` from the user's tenant
