@@ -89,20 +89,3 @@ async def revoke_api_key(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="API key not found")
     return {"success": True, "message": "API key revoked"}
-
-
-async def get_tenant_from_api_key(x_api_key: Optional[str]) -> Optional[str]:
-    """Resolve tenant_id from an API key. Returns None if not found/invalid."""
-    if not x_api_key:
-        return None
-    key_doc = await db.api_keys.find_one(
-        {"key": x_api_key, "is_active": True}, {"_id": 0, "tenant_id": 1, "id": 1}
-    )
-    if not key_doc:
-        return None
-    # Fire-and-forget last_used update (non-blocking)
-    await db.api_keys.update_one(
-        {"id": key_doc["id"]},
-        {"$set": {"last_used_at": now_iso()}},
-    )
-    return key_doc["tenant_id"]
