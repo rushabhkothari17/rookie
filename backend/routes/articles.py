@@ -39,10 +39,15 @@ _ALLOWED_ATTRS = {
 
 
 def _sanitize_html(html: Optional[str]) -> str:
-    """Sanitize HTML content to prevent stored XSS."""
+    """Sanitize HTML content to prevent stored XSS.
+    Strips <script> and <style> blocks entirely (including their contents)
+    before running bleach to remove any remaining disallowed tags."""
     if not html:
         return ""
-    return bleach.clean(html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
+    # Remove <script> and <style> blocks and their contents entirely
+    clean = _re.sub(r'<script[^>]*>.*?</script>', '', html, flags=_re.DOTALL | _re.IGNORECASE)
+    clean = _re.sub(r'<style[^>]*>.*?</style>', '', clean, flags=_re.DOTALL | _re.IGNORECASE)
+    return bleach.clean(clean, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
 
 
 async def _get_valid_categories(tenant_id: str = DEFAULT_TENANT_ID) -> set:

@@ -35,7 +35,11 @@ _ALLOWED_ATTRS = {
 def _sanitize_html(html: str) -> str:
     if not html:
         return ""
-    return bleach.clean(html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
+    import re as _re2
+    # Remove <script> and <style> blocks and their contents entirely
+    clean = _re2.sub(r'<script[^>]*>.*?</script>', '', html, flags=_re2.DOTALL | _re2.IGNORECASE)
+    clean = _re2.sub(r'<style[^>]*>.*?</style>', '', clean, flags=_re2.DOTALL | _re2.IGNORECASE)
+    return bleach.clean(clean, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
 
 router = APIRouter(prefix="/api", tags=["admin-terms"])
 
