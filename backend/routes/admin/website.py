@@ -112,8 +112,31 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "articles_hero_subtitle": "",
     # Checkout page
     "checkout_extra_schema": "[]",
-    # Dynamic checkout sections (new builder)
-    "checkout_sections": "[]",
+    # Dynamic checkout sections (new builder — replaces legacy Zoho/Partner sections)
+    "checkout_sections": json.dumps([
+        {
+            "id": "cs_zoho_account",
+            "title": "Zoho Account Details",
+            "description": "Please provide your Zoho account information so we can set up your services.",
+            "enabled": True,
+            "order": 0,
+            "fields_schema": json.dumps([
+                {"id": "zoho_subscription_type", "label": "Current Zoho subscription type?", "type": "select", "required": True, "options": "Paid - Annual\nPaid - Monthly\nFree / Not on Zoho", "placeholder": "-- Select --", "enabled": True},
+                {"id": "current_zoho_product", "label": "Which Zoho product are you primarily using?", "type": "text", "required": False, "options": "", "placeholder": "e.g. Zoho CRM, Zoho Books", "enabled": True},
+                {"id": "zoho_account_access", "label": "Have you granted us access to your Zoho account?", "type": "select", "required": True, "options": "Yes, I have granted access\nNo \u2014 I will do this shortly\nNo \u2014 I need help with this", "placeholder": "-- Select --", "enabled": True},
+            ]),
+        },
+        {
+            "id": "cs_partner_tagging",
+            "title": "Have you tagged us as your Zoho Partner?",
+            "description": "You can tag us as your Zoho Partner by clicking the links below.",
+            "enabled": True,
+            "order": 1,
+            "fields_schema": json.dumps([
+                {"id": "partner_tag_response", "label": "Have you tagged us as your Zoho partner?", "type": "select", "required": True, "options": "Yes\nPre-existing Customer\nNot yet", "placeholder": "-- Select --", "enabled": True},
+            ]),
+        },
+    ]),
     # Checkout success page
     "checkout_success_title": "Checkout status",
     "checkout_success_paid_msg": "Payment successful.",
