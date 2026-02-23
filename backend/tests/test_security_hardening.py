@@ -1234,10 +1234,20 @@ class TestTokenVersionInvalidation:
         password = test_token_version_user["password"]
         user_id = test_token_version_user["id"]
 
-        # Login to get a token
+        # First ensure user is in automate-accounts tenant
+        mongo_db.users.update_one(
+            {"id": user_id},
+            {"$set": {"tenant_id": AUTOMATE_ACCOUNTS_TENANT_ID, "token_version": 0}},
+        )
+
+        # Login via customer-login to get a token
         resp = requests.post(
-            f"{BASE_URL}/api/auth/login",
-            json={"email": email, "password": password},
+            f"{BASE_URL}/api/auth/customer-login",
+            json={
+                "partner_code": AUTOMATE_ACCOUNTS_PARTNER_CODE,
+                "email": email,
+                "password": password,
+            },
             timeout=15,
         )
         assert resp.status_code == 200, f"Login failed: {resp.text}"
@@ -1268,15 +1278,20 @@ class TestTokenVersionInvalidation:
         assert old_me_resp.status_code == 401, (
             f"Old token should be rejected after token_version increment, got {old_me_resp.status_code}: {old_me_resp.text}"
         )
-        assert "expired" in old_me_resp.json().get("detail", "").lower() or "session" in old_me_resp.json().get("detail", "").lower(), (
-            f"Should mention session expired: {old_me_resp.json().get('detail')}"
+        detail = old_me_resp.json().get("detail", "")
+        assert "expired" in detail.lower() or "session" in detail.lower(), (
+            f"Should mention session expired: {detail}"
         )
-        print(f"Old token rejected with 401 after token_version increment: {old_me_resp.json().get('detail')}")
+        print(f"Old token rejected with 401 after token_version increment: {detail}")
 
         # New login with new token should work
         new_login = requests.post(
-            f"{BASE_URL}/api/auth/login",
-            json={"email": email, "password": password},
+            f"{BASE_URL}/api/auth/customer-login",
+            json={
+                "partner_code": AUTOMATE_ACCOUNTS_PARTNER_CODE,
+                "email": email,
+                "password": password,
+            },
             timeout=15,
         )
         assert new_login.status_code == 200, f"New login should succeed: {new_login.text}"
