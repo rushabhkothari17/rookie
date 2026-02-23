@@ -178,7 +178,8 @@ async def get_bank_transaction_logs(
 async def export_bank_transactions(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    txns = await db.bank_transactions.find({}, {"_id": 0}).sort("date", -1).to_list(5000)
+    tf = get_tenant_filter(admin)
+    txns = await db.bank_transactions.find(tf, {"_id": 0}).sort("date", -1).to_list(5000)
     output = io.StringIO()
     fieldnames = [
         "id", "date", "source", "transaction_id", "type", "amount", "fees",
