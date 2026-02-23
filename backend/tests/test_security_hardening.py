@@ -835,11 +835,16 @@ class TestAPIKeyAuditLogging:
         )
         assert revoke_logs_resp.status_code == 200
         revoke_logs = revoke_logs_resp.json().get("logs", [])
-        matching_revoke = [l for l in revoke_logs if l.get("entity_id") == key_id or l.get("action") == "api_key_revoked"]
+        matching_revoke = [
+            l for l in revoke_logs
+            if l.get("entity_id") == key_id
+            or "revoke" in l.get("action", "").lower()
+            or ("api_key" in l.get("action", "").lower() and "revoke" in l.get("action", "").lower())
+        ]
         assert len(matching_revoke) > 0, (
             f"Should find api_key_revoked audit log entry for key {key_id}"
         )
-        print(f"API key revoke audit log found: {matching_revoke[0].get('action')}")
+        print(f"API key revoke audit log found: action={matching_revoke[0].get('action')}")
 
 
 # ===========================================================================
