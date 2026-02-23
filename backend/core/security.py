@@ -88,11 +88,17 @@ async def require_super_admin(user: Dict[str, Any] = Depends(get_current_user)) 
 
 
 async def optional_get_current_user(request: Request) -> Optional[Dict[str, Any]]:
-    auth_header = request.headers.get("Authorization", "")
-    if not auth_header.startswith("Bearer "):
-        return None
+    """Get current user if authenticated (via header or cookie), otherwise return None."""
+    token = _extract_token(request, None)
+    if not token:
+        # Check Authorization header manually
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+        else:
+            return None
+    
     try:
-        token = auth_header.split(" ", 1)[1]
         payload = decode_token(token)
         user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
         if user and user.get("is_active", True):
