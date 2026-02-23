@@ -885,14 +885,6 @@ export default function WebsiteTab() {
         {/* Checkout Builder */}
         {authSlide === "checkout_builder" && (
           <div className="space-y-5">
-            {/* Partner tagging global system setting */}
-            {(structured["Checkout"] || []).length > 0 && (
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-2">
-                <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">System Settings</p>
-                {(structured["Checkout"] || []).map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
-              </div>
-            )}
-
             <div>
               <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Dynamic Sections</p>
               <p className="text-xs text-slate-400 mb-3">Build custom sections for the checkout page. The pre-loaded Zoho and Partner sections can be edited or replaced here.</p>
