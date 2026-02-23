@@ -697,9 +697,10 @@ export default function EmailSection() {
     <div data-testid="email-section">
       {/* Provider */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-slate-700 mb-1">Integrations</h3>
+        <h3 className="text-sm font-semibold text-slate-700 mb-1">Email Providers</h3>
         <p className="text-xs text-slate-400 mb-3">Click a tile to configure the email provider settings.</p>
         <ProviderSection settings={emailSettings} />
+        <ZohoMailSection />
       </div>
 
       {/* Templates */}
