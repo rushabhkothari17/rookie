@@ -235,7 +235,8 @@ async def export_override_codes_csv(
     status: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    codes = await db.override_codes.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    tf = get_tenant_filter(admin)
+    codes = await db.override_codes.find(tf, {"_id": 0}).sort("created_at", -1).to_list(10000)
     if status:
         codes = [c for c in codes if c.get("status") == status]
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
@@ -247,7 +248,8 @@ async def export_promo_codes_csv(
     applies_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if applies_to:
         query["applies_to"] = applies_to
     codes = await db.promo_codes.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
