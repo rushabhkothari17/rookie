@@ -235,7 +235,7 @@ def idor_customers(mongo_db):
         customer_doc = {
             "id": customer_id,
             "user_id": user_id,
-            "tenant_id": tenant_id,
+            "tenant_id": effective_tenant_id,
             "company_name": "TestCo",
             "phone": "",
             "currency": "GBP",
@@ -248,7 +248,7 @@ def idor_customers(mongo_db):
         address_doc = {
             "id": _make_id(),
             "customer_id": customer_id,
-            "tenant_id": tenant_id,
+            "tenant_id": effective_tenant_id,
             "line1": "1 Test St",
             "line2": "",
             "city": "London",
@@ -265,7 +265,7 @@ def idor_customers(mongo_db):
             "password": password,
             "user_id": user_id,
             "customer_id": customer_id,
-            "tenant_id": tenant_id,
+            "tenant_id": effective_tenant_id,
         })
 
     yield customers
