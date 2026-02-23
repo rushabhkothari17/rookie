@@ -18,8 +18,9 @@ type Section = "branding" | "auth" | "forms" | "email" | "footer" | "references"
 type AuthSlide =
   | "login" | "signup" | "verify_email"
   | "portal" | "profile" | "not_found" | "gocardless"
-  | "checkout_builder" | "checkout_success" | "bank_transfer"
-  | "checkout_messages" | "form_messages";
+  | "checkout_builder" | "checkout_success"
+  | "checkout_messages" | "form_messages"
+  | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social";
 
 interface WebsiteData {
   hero_label: string; hero_title: string; hero_subtitle: string;
