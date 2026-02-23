@@ -130,7 +130,7 @@ function ArticleEditor({ value, onChange }: { value: string; onChange: (v: strin
 }
 
 export function ArticlesTab() {
-  const [subTab, setSubTab] = useState<"articles" | "templates">("articles");
+  const [subTab, setSubTab] = useState<"articles" | "templates" | "email-templates">("articles");
   const [customers, setCustomers] = useState<any[]>([]);
   // Fetch customers for visibility/email controls
   useEffect(() => {
