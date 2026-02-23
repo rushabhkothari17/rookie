@@ -300,6 +300,36 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
 
+// Convert a hex color (#rrggbb) to shadcn HSL format "H S% L%"
+function hexToHsl(hex: string): string | null {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const r = parseInt(m[1].slice(0, 2), 16) / 255;
+  const g = parseInt(m[1].slice(2, 4), 16) / 255;
+  const b = parseInt(m[1].slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0, s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6;
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+function setColor(cssVar: string, hex: string) {
+  document.documentElement.style.setProperty(cssVar, hex);
+}
+
+function setShadcnColor(cssVar: string, hex: string) {
+  const hsl = hexToHsl(hex);
+  if (hsl) document.documentElement.style.setProperty(cssVar, hsl);
+}
+
 export function WebsiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<WebsiteSettings>(DEFAULT_SETTINGS);
 
@@ -308,32 +338,54 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
       .then(res => {
         const s = res.data.settings || {};
         setSettings(prev => ({ ...prev, ...s }));
+
+        // Primary → --aa-primary (custom) + --primary (shadcn buttons/headings)
         if (s.primary_color) {
-          document.documentElement.style.setProperty("--aa-primary", s.primary_color);
+          setColor("--aa-primary", s.primary_color);
+          setShadcnColor("--primary", s.primary_color);
+          // foreground always stays white for contrast
+          document.documentElement.style.setProperty("--primary-foreground", "0 0% 98%");
         }
+        // Accent → --aa-accent (custom) + --ring (shadcn focus ring)
         if (s.accent_color) {
-          document.documentElement.style.setProperty("--aa-accent", s.accent_color);
+          setColor("--aa-accent", s.accent_color);
+          setColor("--aa-accent-hover", s.accent_color);
+          setShadcnColor("--ring", s.accent_color);
         }
+        // Danger → --aa-danger + --destructive (shadcn error buttons/badges)
         if (s.danger_color) {
-          document.documentElement.style.setProperty("--aa-danger", s.danger_color);
+          setColor("--aa-danger", s.danger_color);
+          setShadcnColor("--destructive", s.danger_color);
         }
+        // Success → --aa-success
         if (s.success_color) {
-          document.documentElement.style.setProperty("--aa-success", s.success_color);
+          setColor("--aa-success", s.success_color);
         }
+        // Warning → --aa-warning
         if (s.warning_color) {
-          document.documentElement.style.setProperty("--aa-warning", s.warning_color);
+          setColor("--aa-warning", s.warning_color);
         }
+        // Background → --aa-bg + --background (shadcn)
         if (s.background_color) {
-          document.documentElement.style.setProperty("--aa-bg", s.background_color);
+          setColor("--aa-bg", s.background_color);
+          setShadcnColor("--background", s.background_color);
         }
+        // Text → --aa-text + --foreground (shadcn)
         if (s.text_color) {
-          document.documentElement.style.setProperty("--aa-text", s.text_color);
+          setColor("--aa-text", s.text_color);
+          setShadcnColor("--foreground", s.text_color);
+          setShadcnColor("--card-foreground", s.text_color);
         }
+        // Border → --aa-border + --border (shadcn)
         if (s.border_color) {
-          document.documentElement.style.setProperty("--aa-border", s.border_color);
+          setColor("--aa-border", s.border_color);
+          setShadcnColor("--border", s.border_color);
+          setShadcnColor("--input", s.border_color);
         }
+        // Muted → --aa-muted + --muted-foreground (shadcn)
         if (s.muted_color) {
-          document.documentElement.style.setProperty("--aa-muted", s.muted_color);
+          setColor("--aa-muted", s.muted_color);
+          setShadcnColor("--muted-foreground", s.muted_color);
         }
       })
       .catch(() => {});
