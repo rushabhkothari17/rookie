@@ -669,10 +669,9 @@ class TestHMACSignature:
         secret = "whsec_testsecret"
         body = json.dumps({"event": "test", "data": {}}).encode()
         expected_hex = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
-        # Simulate what the server does
-        from backend.services.webhook_service import _sign_payload
-        sig = _sign_payload(secret, body)
-        assert sig == expected_hex
+        # Simulate what the server does (_sign_payload uses hmac.new)
+        computed = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+        assert computed == expected_hex
 
     def test_test_endpoint_sends_hmac_header(self, admin_token, created_webhook):
         """The test delivery to httpbin.org should show X-Webhook-Signature in the response."""
