@@ -76,9 +76,10 @@ async def list_articles_public(
     category: Optional[str] = None,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     customer_id = customer["id"] if customer else None
-    query: Dict[str, Any] = {"deleted_at": {"$exists": False}}
+    query: Dict[str, Any] = {"tenant_id": tid, "deleted_at": {"$exists": False}}
     if category:
         query["category"] = category
     articles = await db.articles.find(query, {"_id": 0, "content": 0}).sort("updated_at", -1).to_list(500)
@@ -96,8 +97,10 @@ async def validate_scope_article(
     article_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.articles.find_one(
         {
+            "tenant_id": tid,
             "$or": [
                 {"id": article_id},
                 {"id": {"$regex": f"^{_re.escape(article_id.lower())}"}},
