@@ -73,7 +73,7 @@ export default function Signup() {
         password: form.password,
         address: { line1: form.line1, line2: form.line2, city: form.city, region: form.region, postal: form.postal, country: form.country },
         ...(profile_meta ? { profile_meta } : {}),
-      });
+      }, partnerCode || undefined);
       setVerificationCode(response.verification_code || "");
       localStorage.setItem("aa_signup_email", form.email);
       toast.success("Verification code sent (mocked). Proceed to verify.");
@@ -82,6 +82,69 @@ export default function Signup() {
       toast.error(error.response?.data?.detail || "Signup failed");
     } finally { setLoading(false); }
   };
+
+  const handlePartnerSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPartnerLoading(true);
+    try {
+      await api.post("/auth/register-partner", partnerOrg);
+      toast.success("Partner organization created! You can now log in.");
+      navigate(`/login?partner_code=${partnerOrg.code}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Partner registration failed");
+    } finally {
+      setPartnerLoading(false);
+    }
+  };
+
+  // Partner Org Registration Mode
+  if (isPartnerMode) {
+    return (
+      <div className="min-h-screen aa-bg flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-slate-900">Register as Partner</h1>
+            <p className="text-sm text-slate-500 mt-1">Create a new partner organization</p>
+          </div>
+          <form onSubmit={handlePartnerSignup} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4" data-testid="partner-signup-form">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Organization Name</label>
+              <Input placeholder="Acme Accounting" value={partnerOrg.name} onChange={e => setPartnerOrg(p => ({ ...p, name: e.target.value }))} required data-testid="partner-org-name" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Partner Code (login slug)</label>
+              <Input placeholder="acme-accounting" value={partnerOrg.code}
+                onChange={e => setPartnerOrg(p => ({ ...p, code: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") }))}
+                required data-testid="partner-org-code" />
+              <p className="text-xs text-slate-400">Unique code used at login. Lowercase letters, numbers, hyphens only.</p>
+            </div>
+            <div className="border-t border-slate-100 pt-3 space-y-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Super Admin Account</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Admin Full Name</label>
+              <Input placeholder="Jane Smith" value={partnerOrg.admin_name} onChange={e => setPartnerOrg(p => ({ ...p, admin_name: e.target.value }))} required data-testid="partner-admin-name" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Admin Email</label>
+              <Input type="email" placeholder="admin@acme.com" value={partnerOrg.admin_email} onChange={e => setPartnerOrg(p => ({ ...p, admin_email: e.target.value }))} required data-testid="partner-admin-email" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Password</label>
+              <Input type="password" placeholder="••••••••" value={partnerOrg.admin_password} onChange={e => setPartnerOrg(p => ({ ...p, admin_password: e.target.value }))} required data-testid="partner-admin-password" />
+            </div>
+            <Button type="submit" className="w-full" disabled={partnerLoading} data-testid="partner-signup-submit">
+              {partnerLoading ? "Creating…" : "Create Partner Organization"}
+            </Button>
+            <p className="text-center text-sm text-slate-500">
+              Already have an account?{" "}
+              <Link to="/login" className="font-medium hover:underline" style={{ color: "var(--aa-accent)" }}>Sign in</Link>
+            </p>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen grid place-items-center bg-slate-50 grid-rhythm" data-testid="signup-page">
