@@ -17,8 +17,22 @@ router = APIRouter(prefix="/api", tags=["admin-terms"])
 
 
 @router.get("/terms/default")
-async def get_default_terms():
-    default = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+async def get_default_terms(
+    partner_code: Optional[str] = None,
+    user: Optional[Dict[str, Any]] = Depends(get_current_user),
+):
+    from core.tenant import resolve_tenant, DEFAULT_TENANT_ID
+    if user:
+        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    elif partner_code:
+        try:
+            tenant = await resolve_tenant(partner_code)
+            tid = tenant["id"]
+        except Exception:
+            tid = DEFAULT_TENANT_ID
+    else:
+        tid = DEFAULT_TENANT_ID
+    default = await db.terms_and_conditions.find_one({"tenant_id": tid, "is_default": True, "status": "active"}, {"_id": 0})
     if not default:
         raise HTTPException(status_code=404, detail="No default terms found")
     return default
@@ -26,14 +40,16 @@ async def get_default_terms():
 
 @router.get("/terms/for-product/{product_id}")
 async def get_terms_for_product(product_id: str, user: Dict[str, Any] = Depends(get_current_user)):
-    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    from core.tenant import DEFAULT_TENANT_ID
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    product = await db.products.find_one({"tenant_id": tid, "id": product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     terms_id = product.get("terms_id")
     if terms_id:
-        terms = await db.terms_and_conditions.find_one({"id": terms_id, "status": "active"}, {"_id": 0})
+        terms = await db.terms_and_conditions.find_one({"tenant_id": tid, "id": terms_id, "status": "active"}, {"_id": 0})
     else:
-        terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+        terms = await db.terms_and_conditions.find_one({"tenant_id": tid, "is_default": True, "status": "active"}, {"_id": 0})
     if not terms:
         raise HTTPException(status_code=404, detail="No terms found for this product")
     address = await db.addresses.find_one({"user_id": user["id"]}, {"_id": 0})
