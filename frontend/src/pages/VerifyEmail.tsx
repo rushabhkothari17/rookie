@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
+import api from "@/lib/api";
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function VerifyEmail() {
   const [email, setEmail] = useState(localStorage.getItem("aa_signup_email") || "");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -25,6 +27,21 @@ export default function VerifyEmail() {
       toast.error(error.response?.data?.detail || "Verification failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) { toast.error("Please enter your email address first"); return; }
+    setResending(true);
+    try {
+      const res = await api.post("/auth/resend-verification-email", { email });
+      const code = res.data?.verification_code;
+      toast.success("Verification code resent.");
+      if (code) setCode(code);
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to resend code");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -49,6 +66,17 @@ export default function VerifyEmail() {
             {loading ? "Verifying..." : "Verify"}
           </Button>
         </form>
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending}
+            className="text-sm text-slate-500 hover:text-slate-800 underline transition-colors"
+            data-testid="resend-verification-btn"
+          >
+            {resending ? "Sending..." : "Resend verification code"}
+          </button>
+        </div>
       </div>
     </div>
   );
