@@ -116,6 +116,9 @@ export default function Admin() {
 
         {/* Content Area */}
         <div className="flex-1 min-w-0">
+          {showChecklist && (
+            <SetupChecklistWidget onNavigate={handleChecklistNavigate} />
+          )}
           {isSuperAdmin && (
             <TabsContent value="users" className="space-y-4">
               <UsersTab />
