@@ -181,7 +181,8 @@ async def export_quote_requests_csv(
     date_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if status:
         query["status"] = status
     if email:
@@ -202,7 +203,8 @@ async def export_articles_csv(
     category: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if category:
         query["category"] = category
     articles = await db.articles.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
