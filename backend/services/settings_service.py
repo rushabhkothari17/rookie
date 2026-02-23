@@ -109,12 +109,12 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "description": "GoCardless Webhook Secret for verifying incoming webhook signatures.",
         "is_secret": True,
     },
-    # ---- Operations ----
+    # ---- Override Codes ----
     {
         "key": "override_code_expiry_hours",
         "value_json": 48,
         "value_type": "number",
-        "category": "Operations",
+        "category": "OverrideCodes",
         "description": "Default expiry in hours for newly generated override codes.",
         "is_secret": False,
     },
