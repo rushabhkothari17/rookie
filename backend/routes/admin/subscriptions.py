@@ -271,7 +271,8 @@ async def update_subscription(
     payload: SubscriptionUpdate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    subscription = await db.subscriptions.find_one({**get_tenant_filter(admin), "id": subscription_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    subscription = await db.subscriptions.find_one({**tf, "id": subscription_id}, {"_id": 0})
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
 
