@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api", tags=["settings"])
 async def get_public_settings(
     partner_code: Optional[str] = None,
 ):
-    from core.tenant import resolve_tenant, DEFAULT_TENANT_ID
+    from core.tenant import resolve_tenant
     if partner_code:
         try:
             tenant = await resolve_tenant(partner_code)
