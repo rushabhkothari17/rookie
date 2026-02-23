@@ -141,6 +141,14 @@ export interface WebsiteSettings {
   social_facebook: string;
   social_instagram: string;
   social_youtube: string;
+  // Admin panel
+  admin_page_badge: string;
+  admin_page_title: string;
+  admin_page_subtitle: string;
+  // Bank transaction form
+  bank_transaction_sources: string;
+  bank_transaction_types: string;
+  bank_transaction_statuses: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
