@@ -3,39 +3,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
-import { Eye, EyeOff, Pencil, Save, Upload, X } from "lucide-react";
+import { Eye, EyeOff, FileText, LayoutTemplate, Pencil, Save, Upload, X } from "lucide-react";
 import api from "@/lib/api";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
 import ReferencesSection from "./ReferencesSection";
 import EmailSection from "./EmailSection";
 import CheckoutSectionsBuilder from "@/components/admin/CheckoutSectionsBuilder";
+import SlideOver from "@/components/admin/SlideOver";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Section =
-  | "branding" | "hero" | "auth" | "forms" | "checkout" | "email" | "errors"
+  | "branding" | "auth" | "forms" | "checkout" | "email" | "errors"
   | "footer" | "references" | "payments" | "sysconfig" | "pages";
 
 interface WebsiteData {
+  // Store Hero
   hero_label: string; hero_title: string; hero_subtitle: string;
+  // Articles Hero
+  articles_hero_label: string; articles_hero_title: string; articles_hero_subtitle: string;
+  // Auth
   login_title: string; login_subtitle: string; login_portal_label: string;
   register_title: string; register_subtitle: string;
+  // Contact
   contact_email: string; contact_phone: string; contact_address: string;
+  // Footer & Nav
   footer_tagline: string; footer_copyright: string;
   nav_store_label: string; nav_articles_label: string; nav_portal_label: string;
+  // Forms text
   quote_form_title: string; quote_form_subtitle: string; quote_form_response_time: string;
   scope_form_title: string; scope_form_subtitle: string;
   signup_form_title: string; signup_form_subtitle: string;
+  // Form schemas
   quote_form_schema: string; scope_form_schema: string; signup_form_schema: string;
+  // Email settings (legacy fields)
   email_from_name: string; email_article_subject_template: string;
   email_article_cta_text: string; email_article_footer_text: string;
   email_verification_subject: string; email_verification_body: string;
+  // Messages
   msg_partner_tagging_prompt: string; msg_override_required: string;
   msg_cart_empty: string; msg_quote_success: string; msg_scope_success: string;
   // Payment display
   payment_gocardless_label: string; payment_gocardless_description: string;
   payment_stripe_label: string; payment_stripe_description: string;
-  // Checkout legacy fields
+  // Checkout legacy
   checkout_zoho_enabled: boolean; checkout_zoho_title: string;
   checkout_zoho_subscription_options: string; checkout_zoho_product_options: string;
   checkout_zoho_signup_note: string; checkout_zoho_access_note: string;
@@ -45,25 +56,32 @@ interface WebsiteData {
   checkout_partner_misrep_warning: string; checkout_extra_schema: string;
   // Dynamic checkout sections
   checkout_sections: string;
-  // Page content strings
+  // Checkout success page
   checkout_success_title: string; checkout_success_paid_msg: string;
   checkout_success_pending_msg: string; checkout_success_expired_msg: string;
   checkout_success_next_steps_title: string;
   checkout_success_step_1: string; checkout_success_step_2: string; checkout_success_step_3: string;
   checkout_portal_link_text: string;
+  // Bank transfer success
   bank_success_title: string; bank_success_message: string;
   bank_instructions_title: string;
   bank_instruction_1: string; bank_instruction_2: string; bank_instruction_3: string;
   bank_next_steps_title: string;
   bank_next_step_1: string; bank_next_step_2: string; bank_next_step_3: string;
+  // 404
   page_404_title: string; page_404_link_text: string;
+  // GoCardless callback
   gocardless_processing_title: string; gocardless_processing_subtitle: string;
   gocardless_success_title: string; gocardless_success_message: string;
   gocardless_error_title: string; gocardless_error_message: string;
   gocardless_return_btn_text: string;
+  // Verify email
   verify_email_label: string; verify_email_title: string; verify_email_subtitle: string;
+  // Portal
   portal_title: string; portal_subtitle: string;
+  // Profile
   profile_label: string; profile_title: string; profile_subtitle: string;
+  // Cart
   cart_title: string; cart_clear_btn_text: string;
   msg_currency_unsupported: string; msg_no_payment_methods: string;
 }
@@ -74,6 +92,7 @@ interface BrandingData {
 
 const WEB_DEFAULTS: WebsiteData = {
   hero_label: "", hero_title: "", hero_subtitle: "",
+  articles_hero_label: "", articles_hero_title: "", articles_hero_subtitle: "",
   login_title: "", login_subtitle: "", login_portal_label: "",
   register_title: "", register_subtitle: "",
   contact_email: "", contact_phone: "", contact_address: "",
@@ -98,7 +117,6 @@ const WEB_DEFAULTS: WebsiteData = {
   checkout_partner_description: "", checkout_partner_options: "",
   checkout_partner_misrep_warning: "", checkout_extra_schema: "[]",
   checkout_sections: "[]",
-  // Page content
   checkout_success_title: "", checkout_success_paid_msg: "",
   checkout_success_pending_msg: "", checkout_success_expired_msg: "",
   checkout_success_next_steps_title: "",
@@ -126,12 +144,11 @@ const WEB_DEFAULTS: WebsiteData = {
 const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
   {
     group: "Brand",
-    items: [{ key: "branding", label: "Branding" }],
+    items: [{ key: "branding", label: "Branding & Hero" }],
   },
   {
     group: "Content",
     items: [
-      { key: "hero", label: "Store Hero" },
       { key: "auth", label: "Auth Pages" },
       { key: "forms", label: "Forms" },
       { key: "checkout", label: "Checkout" },
@@ -151,7 +168,7 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
   },
 ];
 
-// ─── Small helper components ─────────────────────────────────────────────────
+// ─── Helper components ────────────────────────────────────────────────────────
 
 function Field({ label, hint, value, onChange, multiline = false, testId }: {
   label: string; hint?: string; value: string;
@@ -188,7 +205,6 @@ function ColorInput({ label, value, onChange, testId }: {
   );
 }
 
-// Reusable setting row for DB-backed structured settings
 function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, val: any) => void }) {
   const [editVal, setEditVal] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -276,9 +292,59 @@ function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, val: 
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Form Tile ─────────────────────────────────────────────────────────────────
 
-// ─── Payment Provider Card ──────────────────────────────────────────────────
+function FormTile({ title, description, fieldCount, onEdit, testId }: {
+  title: string; description: string; fieldCount: number; onEdit: () => void; testId?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 flex items-center gap-4 hover:border-slate-300 transition-colors" data-testid={testId}>
+      <div className="p-3 rounded-xl bg-slate-100 shrink-0">
+        <FileText size={18} className="text-slate-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
+        <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+        <span className="mt-1.5 inline-block text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+          {fieldCount} field{fieldCount !== 1 ? "s" : ""}
+        </span>
+      </div>
+      <button onClick={onEdit}
+        className="p-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+        data-testid={testId ? `${testId}-edit` : undefined}>
+        <Pencil size={14} />
+      </button>
+    </div>
+  );
+}
+
+// ─── Page Tile ─────────────────────────────────────────────────────────────────
+
+function PageTile({ title, description, preview, onEdit, testId }: {
+  title: string; description: string; preview?: string; onEdit: () => void; testId?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 hover:border-slate-300 transition-colors" data-testid={testId}>
+      <div className="p-2.5 rounded-xl bg-slate-100 shrink-0">
+        <LayoutTemplate size={15} className="text-slate-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-xs font-semibold text-slate-900">{title}</h4>
+        {preview
+          ? <p className="text-[11px] text-slate-500 mt-0.5 truncate">{preview}</p>
+          : <p className="text-[11px] text-slate-400 mt-0.5">{description}</p>
+        }
+      </div>
+      <button onClick={onEdit}
+        className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+        data-testid={testId ? `${testId}-edit` : undefined}>
+        <Pencil size={13} />
+      </button>
+    </div>
+  );
+}
+
+// ─── Payment Provider Card ────────────────────────────────────────────────────
 
 function PaymentProviderCard({
   title, subtitle, enabledItem, displayLabelKey, displayDescKey,
@@ -387,6 +453,8 @@ function PaymentProviderCard({
   );
 }
 
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function WebsiteTab() {
   const [activeSection, setActiveSection] = useState<Section>("branding");
   const [ws, setWs] = useState<WebsiteData>(WEB_DEFAULTS);
@@ -395,6 +463,10 @@ export default function WebsiteTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [slideSaving, setSlideSaving] = useState(false);
+  // SlideOver state
+  const [formSlideOver, setFormSlideOver] = useState<"quote" | "scope" | "signup" | null>(null);
+  const [pageSlideOver, setPageSlideOver] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -433,6 +505,22 @@ export default function WebsiteTab() {
     } finally { setSaving(false); }
   };
 
+  // Save just ws settings (used by SlideOver save buttons)
+  const saveSection = async (onDone?: () => void) => {
+    setSlideSaving(true);
+    try {
+      await api.put("/admin/website-settings", ws);
+      toast.success("Saved");
+      onDone?.();
+    } catch {
+      toast.error("Save failed");
+    } finally { setSlideSaving(false); }
+  };
+
+  const getFieldCount = (schema: string): number => {
+    try { return JSON.parse(schema || "[]").length; } catch { return 0; }
+  };
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -463,10 +551,6 @@ export default function WebsiteTab() {
       });
       return next;
     });
-  };
-
-  const structuredForCategories = (cats: string[]) => {
-    return cats.flatMap(cat => (structured[cat] || []).map(item => ({ ...item, _category: cat })));
   };
 
   if (loading) return <div className="p-8 text-slate-400 text-sm">Loading…</div>;
@@ -505,7 +589,7 @@ export default function WebsiteTab() {
         {/* Content */}
         <div className="flex-1 min-w-0 border border-slate-100 rounded-xl p-6 bg-white space-y-5">
 
-          {/* ── Branding ── */}
+          {/* ── Branding & Hero ── */}
           {activeSection === "branding" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700">Store Information</h3>
@@ -539,16 +623,26 @@ export default function WebsiteTab() {
                   <ColorInput label="Accent" value={branding.accent_color} onChange={b("accent_color")} testId="ws-accent-color" />
                 </div>
               </div>
-            </>
-          )}
 
-          {/* ── Store Hero ── */}
-          {activeSection === "hero" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3">Store Homepage Hero Banner</h3>
-              <Field label="Label (small text above title)" value={ws.hero_label} onChange={s("hero_label")} testId="ws-hero-label" />
-              <Field label="Title" hint="Main headline" value={ws.hero_title} onChange={s("hero_title")} multiline testId="ws-hero-title" />
-              <Field label="Subtitle" value={ws.hero_subtitle} onChange={s("hero_subtitle")} multiline testId="ws-hero-subtitle" />
+              <div className="border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Store Hero Banner</h3>
+                <p className="text-xs text-slate-400 mb-3">The prominent banner shown at the top of the store page.</p>
+                <div className="space-y-3">
+                  <Field label="Label (small text above title)" value={ws.hero_label} onChange={s("hero_label")} testId="ws-hero-label" />
+                  <Field label="Title" hint="Main headline" value={ws.hero_title} onChange={s("hero_title")} multiline testId="ws-hero-title" />
+                  <Field label="Subtitle" value={ws.hero_subtitle} onChange={s("hero_subtitle")} multiline testId="ws-hero-subtitle" />
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Articles Hero Banner</h3>
+                <p className="text-xs text-slate-400 mb-3">The banner shown at the top of the articles / resources page.</p>
+                <div className="space-y-3">
+                  <Field label="Label" value={ws.articles_hero_label} onChange={s("articles_hero_label")} testId="ws-articles-hero-label" />
+                  <Field label="Title" value={ws.articles_hero_title} onChange={s("articles_hero_title")} testId="ws-articles-hero-title" />
+                  <Field label="Subtitle" value={ws.articles_hero_subtitle} onChange={s("articles_hero_subtitle")} multiline testId="ws-articles-hero-subtitle" />
+                </div>
+              </div>
             </>
           )}
 
@@ -567,36 +661,35 @@ export default function WebsiteTab() {
             </>
           )}
 
-          {/* ── Forms ── */}
+          {/* ── Forms ── (tile layout) */}
           {activeSection === "forms" && (
             <>
-              <h3 className="text-sm font-semibold text-slate-700">Quote Request Form</h3>
-              <p className="text-xs text-slate-400 -mt-3">Shown when a customer requests a quote on a product.</p>
-              <Field label="Title" value={ws.quote_form_title} onChange={s("quote_form_title")} testId="ws-quote-title" />
-              <Field label="Subtitle" value={ws.quote_form_subtitle} onChange={s("quote_form_subtitle")} multiline testId="ws-quote-subtitle" />
-              <Field label="Response time message" hint='Shown at bottom of form (e.g. "We respond within 1-2 business days.")' value={ws.quote_form_response_time} onChange={s("quote_form_response_time")} testId="ws-quote-response" />
-              <div className="mt-2">
-                <FormSchemaBuilder title="Form fields" value={ws.quote_form_schema} onChange={s("quote_form_schema")} />
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold text-slate-700">Forms</h3>
               </div>
-
-              <div className="border-t border-slate-100 pt-5">
-                <h3 className="text-sm font-semibold text-slate-700">Scope Request Form</h3>
-                <p className="text-xs text-slate-400 mb-3">Shown for fixed-scope / RFQ products.</p>
-                <Field label="Title" value={ws.scope_form_title} onChange={s("scope_form_title")} testId="ws-scope-title" />
-                <Field label="Subtitle" value={ws.scope_form_subtitle} onChange={s("scope_form_subtitle")} multiline testId="ws-scope-subtitle" />
-                <div className="mt-2">
-                  <FormSchemaBuilder title="Form fields" value={ws.scope_form_schema} onChange={s("scope_form_schema")} />
-                </div>
-              </div>
-
-              <div className="border-t border-slate-100 pt-5">
-                <h3 className="text-sm font-semibold text-slate-700">Customer Sign-up Form</h3>
-                <p className="text-xs text-slate-400 mb-3">Shown on the registration page. Locked fields cannot be removed (core auth). Toggle "shown/hidden" to control optional fields.</p>
-                <Field label="Title" value={ws.signup_form_title} onChange={s("signup_form_title")} testId="ws-signup-title" />
-                <Field label="Subtitle" value={ws.signup_form_subtitle} onChange={s("signup_form_subtitle")} multiline testId="ws-signup-subtitle" />
-                <div className="mt-2">
-                  <FormSchemaBuilder title="Form fields" value={ws.signup_form_schema} onChange={s("signup_form_schema")} />
-                </div>
+              <p className="text-xs text-slate-400 -mt-3 mb-4">Click the edit icon on any form to customise its text labels and fields.</p>
+              <div className="space-y-3">
+                <FormTile
+                  title="Quote Request Form"
+                  description="Shown when a customer requests a quote on a product"
+                  fieldCount={getFieldCount(ws.quote_form_schema)}
+                  onEdit={() => setFormSlideOver("quote")}
+                  testId="form-tile-quote"
+                />
+                <FormTile
+                  title="Scope Request Form"
+                  description="Shown for fixed-scope / RFQ products"
+                  fieldCount={getFieldCount(ws.scope_form_schema)}
+                  onEdit={() => setFormSlideOver("scope")}
+                  testId="form-tile-scope"
+                />
+                <FormTile
+                  title="Customer Sign-up Form"
+                  description="Shown on the registration page"
+                  fieldCount={getFieldCount(ws.signup_form_schema)}
+                  onEdit={() => setFormSlideOver("signup")}
+                  testId="form-tile-signup"
+                />
               </div>
             </>
           )}
@@ -693,6 +786,9 @@ export default function WebsiteTab() {
             </>
           )}
 
+          {/* ── Email Templates ── P0 FIX */}
+          {activeSection === "email" && <EmailSection />}
+
           {/* ── Error Messages ── */}
           {activeSection === "errors" && (
             <>
@@ -738,80 +834,61 @@ export default function WebsiteTab() {
             </>
           )}
 
-          {/* ── Page Content ── */}
+          {/* ── Page Content ── (tile layout) */}
           {activeSection === "pages" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700 mb-1">Page Content</h3>
-              <p className="text-xs text-slate-400 mb-5">Customise headings, descriptions, and button labels on every page of the app.</p>
-
-              {/* Checkout Success */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">Checkout Success Page</h4>
-                <Field label="Page heading" value={ws.checkout_success_title} onChange={s("checkout_success_title")} testId="ws-cs-title" />
-                <Field label="'Payment successful' message" value={ws.checkout_success_paid_msg} onChange={s("checkout_success_paid_msg")} testId="ws-cs-paid" />
-                <Field label="'Checking status' message" value={ws.checkout_success_pending_msg} onChange={s("checkout_success_pending_msg")} testId="ws-cs-pending" />
-                <Field label="'Session expired' message" value={ws.checkout_success_expired_msg} onChange={s("checkout_success_expired_msg")} testId="ws-cs-expired" />
-                <Field label="Next steps heading" value={ws.checkout_success_next_steps_title} onChange={s("checkout_success_next_steps_title")} testId="ws-cs-next-title" />
-                <Field label="Next step 1" value={ws.checkout_success_step_1} onChange={s("checkout_success_step_1")} testId="ws-cs-step1" />
-                <Field label="Next step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} testId="ws-cs-step2" />
-                <Field label="Next step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} testId="ws-cs-step3" />
-                <Field label="Portal link text" value={ws.checkout_portal_link_text} onChange={s("checkout_portal_link_text")} testId="ws-cs-portal-link" />
-              </div>
-
-              {/* Bank Transfer Success */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">Bank Transfer Success Page</h4>
-                <Field label="Page heading" value={ws.bank_success_title} onChange={s("bank_success_title")} testId="ws-bt-title" />
-                <Field label="Intro message" value={ws.bank_success_message} onChange={s("bank_success_message")} multiline testId="ws-bt-message" />
-                <Field label="Instructions section heading" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bt-instr-title" />
-                <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} testId="ws-bt-i1" />
-                <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} testId="ws-bt-i2" />
-                <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} testId="ws-bt-i3" />
-                <Field label="Next steps heading" value={ws.bank_next_steps_title} onChange={s("bank_next_steps_title")} testId="ws-bt-next-title" />
-                <Field label="Next step 1" value={ws.bank_next_step_1} onChange={s("bank_next_step_1")} testId="ws-bt-ns1" />
-                <Field label="Next step 2" value={ws.bank_next_step_2} onChange={s("bank_next_step_2")} testId="ws-bt-ns2" />
-                <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} testId="ws-bt-ns3" />
-              </div>
-
-              {/* 404 Page */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">404 / Not Found Page</h4>
-                <Field label="Heading" value={ws.page_404_title} onChange={s("page_404_title")} testId="ws-404-title" />
-                <Field label="Back link text" value={ws.page_404_link_text} onChange={s("page_404_link_text")} testId="ws-404-link" />
-              </div>
-
-              {/* GoCardless Callback */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">GoCardless Callback Page</h4>
-                <Field label="Processing title" value={ws.gocardless_processing_title} onChange={s("gocardless_processing_title")} testId="ws-gc-proc-title" />
-                <Field label="Processing subtitle" value={ws.gocardless_processing_subtitle} onChange={s("gocardless_processing_subtitle")} testId="ws-gc-proc-sub" />
-                <Field label="Success title" value={ws.gocardless_success_title} onChange={s("gocardless_success_title")} testId="ws-gc-succ-title" />
-                <Field label="Success message" value={ws.gocardless_success_message} onChange={s("gocardless_success_message")} multiline testId="ws-gc-succ-msg" />
-                <Field label="Error title" value={ws.gocardless_error_title} onChange={s("gocardless_error_title")} testId="ws-gc-err-title" />
-                <Field label="Error message" value={ws.gocardless_error_message} onChange={s("gocardless_error_message")} multiline testId="ws-gc-err-msg" />
-                <Field label="Return to store button text" value={ws.gocardless_return_btn_text} onChange={s("gocardless_return_btn_text")} testId="ws-gc-return-btn" />
-              </div>
-
-              {/* Verify Email */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">Verify Email Page</h4>
-                <Field label="Step label (breadcrumb)" value={ws.verify_email_label} onChange={s("verify_email_label")} testId="ws-ve-label" />
-                <Field label="Title" value={ws.verify_email_title} onChange={s("verify_email_title")} testId="ws-ve-title" />
-                <Field label="Subtitle / instructions" value={ws.verify_email_subtitle} onChange={s("verify_email_subtitle")} multiline testId="ws-ve-subtitle" />
-              </div>
-
-              {/* Portal & Profile */}
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 mb-4">
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">Customer Portal Page</h4>
-                <Field label="Page title" value={ws.portal_title} onChange={s("portal_title")} testId="ws-portal-title" />
-                <Field label="Page subtitle" value={ws.portal_subtitle} onChange={s("portal_subtitle")} multiline testId="ws-portal-subtitle" />
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">Profile Page</h4>
-                <Field label="Step label (breadcrumb)" value={ws.profile_label} onChange={s("profile_label")} testId="ws-profile-label" />
-                <Field label="Page title" value={ws.profile_title} onChange={s("profile_title")} testId="ws-profile-title" />
-                <Field label="Page subtitle" value={ws.profile_subtitle} onChange={s("profile_subtitle")} multiline testId="ws-profile-subtitle" />
+              <p className="text-xs text-slate-400 mb-5">Click to edit headings, descriptions, and button labels on every page of the app.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <PageTile
+                  title="Checkout Success"
+                  description="After successful payment"
+                  preview={ws.checkout_success_title || undefined}
+                  onEdit={() => setPageSlideOver("checkout_success")}
+                  testId="page-tile-checkout-success"
+                />
+                <PageTile
+                  title="Bank Transfer Success"
+                  description="After bank transfer initiated"
+                  preview={ws.bank_success_title || undefined}
+                  onEdit={() => setPageSlideOver("bank_transfer")}
+                  testId="page-tile-bank-transfer"
+                />
+                <PageTile
+                  title="404 Not Found"
+                  description="Page not found error page"
+                  preview={ws.page_404_title || undefined}
+                  onEdit={() => setPageSlideOver("not_found")}
+                  testId="page-tile-404"
+                />
+                <PageTile
+                  title="GoCardless Callback"
+                  description="Direct debit setup confirmation"
+                  preview={ws.gocardless_success_title || undefined}
+                  onEdit={() => setPageSlideOver("gocardless")}
+                  testId="page-tile-gocardless"
+                />
+                <PageTile
+                  title="Verify Email"
+                  description="Email verification page"
+                  preview={ws.verify_email_title || undefined}
+                  onEdit={() => setPageSlideOver("verify_email")}
+                  testId="page-tile-verify-email"
+                />
+                <PageTile
+                  title="Customer Portal"
+                  description="Main portal page header"
+                  preview={ws.portal_title || undefined}
+                  onEdit={() => setPageSlideOver("portal")}
+                  testId="page-tile-portal"
+                />
+                <PageTile
+                  title="Profile Page"
+                  description="Customer account details page"
+                  preview={ws.profile_title || undefined}
+                  onEdit={() => setPageSlideOver("profile")}
+                  testId="page-tile-profile"
+                />
               </div>
             </>
           )}
@@ -819,7 +896,6 @@ export default function WebsiteTab() {
           {/* ── References ── */}
           {activeSection === "references" && (
             <>
-              {/* Zoho system URLs — moved here from System Config */}
               {(structured["Zoho"] || []).length > 0 && (
                 <div className="rounded-xl border border-amber-100 bg-amber-50 p-5 mb-4">
                   <h4 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">System Links (Zoho)</h4>
@@ -884,6 +960,136 @@ export default function WebsiteTab() {
 
         </div>
       </div>
+
+      {/* ── Forms SlideOver ── */}
+      <SlideOver
+        open={formSlideOver !== null}
+        onClose={() => setFormSlideOver(null)}
+        title={
+          formSlideOver === "quote" ? "Quote Request Form" :
+          formSlideOver === "scope" ? "Scope Request Form" :
+          "Customer Sign-up Form"
+        }
+        description={
+          formSlideOver === "quote" ? "Shown when a customer requests a quote on a product" :
+          formSlideOver === "scope" ? "Shown for fixed-scope / RFQ products" :
+          "Shown on the registration page. Locked fields cannot be removed."
+        }
+        onSave={() => saveSection(() => setFormSlideOver(null))}
+        saving={slideSaving}
+      >
+        {formSlideOver === "quote" && (
+          <div className="space-y-4">
+            <Field label="Form title" value={ws.quote_form_title} onChange={s("quote_form_title")} testId="ws-quote-title" />
+            <Field label="Subtitle" value={ws.quote_form_subtitle} onChange={s("quote_form_subtitle")} multiline testId="ws-quote-subtitle" />
+            <Field label="Response time message" hint='Shown at bottom of form (e.g. "We respond within 1-2 business days.")' value={ws.quote_form_response_time} onChange={s("quote_form_response_time")} testId="ws-quote-response" />
+            <div className="border-t border-slate-100 pt-3">
+              <FormSchemaBuilder title="Form fields" value={ws.quote_form_schema} onChange={s("quote_form_schema")} />
+            </div>
+          </div>
+        )}
+        {formSlideOver === "scope" && (
+          <div className="space-y-4">
+            <Field label="Form title" value={ws.scope_form_title} onChange={s("scope_form_title")} testId="ws-scope-title" />
+            <Field label="Subtitle" value={ws.scope_form_subtitle} onChange={s("scope_form_subtitle")} multiline testId="ws-scope-subtitle" />
+            <div className="border-t border-slate-100 pt-3">
+              <FormSchemaBuilder title="Form fields" value={ws.scope_form_schema} onChange={s("scope_form_schema")} />
+            </div>
+          </div>
+        )}
+        {formSlideOver === "signup" && (
+          <div className="space-y-4">
+            <Field label="Form title" value={ws.signup_form_title} onChange={s("signup_form_title")} testId="ws-signup-title" />
+            <Field label="Subtitle" value={ws.signup_form_subtitle} onChange={s("signup_form_subtitle")} multiline testId="ws-signup-subtitle" />
+            <div className="border-t border-slate-100 pt-3">
+              <FormSchemaBuilder title="Form fields" value={ws.signup_form_schema} onChange={s("signup_form_schema")} />
+            </div>
+          </div>
+        )}
+      </SlideOver>
+
+      {/* ── Pages SlideOver ── */}
+      <SlideOver
+        open={pageSlideOver !== null}
+        onClose={() => setPageSlideOver(null)}
+        title={
+          pageSlideOver === "checkout_success" ? "Checkout Success Page" :
+          pageSlideOver === "bank_transfer" ? "Bank Transfer Success Page" :
+          pageSlideOver === "not_found" ? "404 Not Found Page" :
+          pageSlideOver === "gocardless" ? "GoCardless Callback Page" :
+          pageSlideOver === "verify_email" ? "Verify Email Page" :
+          pageSlideOver === "portal" ? "Customer Portal Page" :
+          "Profile Page"
+        }
+        description="Edit headings, messages, and button labels for this page."
+        onSave={() => saveSection(() => setPageSlideOver(null))}
+        saving={slideSaving}
+      >
+        {pageSlideOver === "checkout_success" && (
+          <div className="space-y-4">
+            <Field label="Page heading" value={ws.checkout_success_title} onChange={s("checkout_success_title")} testId="ws-cs-title" />
+            <Field label="'Payment successful' message" value={ws.checkout_success_paid_msg} onChange={s("checkout_success_paid_msg")} testId="ws-cs-paid" />
+            <Field label="'Checking status' message" value={ws.checkout_success_pending_msg} onChange={s("checkout_success_pending_msg")} testId="ws-cs-pending" />
+            <Field label="'Session expired' message" value={ws.checkout_success_expired_msg} onChange={s("checkout_success_expired_msg")} testId="ws-cs-expired" />
+            <Field label="Next steps heading" value={ws.checkout_success_next_steps_title} onChange={s("checkout_success_next_steps_title")} testId="ws-cs-next-title" />
+            <Field label="Next step 1" value={ws.checkout_success_step_1} onChange={s("checkout_success_step_1")} testId="ws-cs-step1" />
+            <Field label="Next step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} testId="ws-cs-step2" />
+            <Field label="Next step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} testId="ws-cs-step3" />
+            <Field label="Portal link text" value={ws.checkout_portal_link_text} onChange={s("checkout_portal_link_text")} testId="ws-cs-portal-link" />
+          </div>
+        )}
+        {pageSlideOver === "bank_transfer" && (
+          <div className="space-y-4">
+            <Field label="Page heading" value={ws.bank_success_title} onChange={s("bank_success_title")} testId="ws-bt-title" />
+            <Field label="Intro message" value={ws.bank_success_message} onChange={s("bank_success_message")} multiline testId="ws-bt-message" />
+            <Field label="Instructions section heading" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bt-instr-title" />
+            <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} testId="ws-bt-i1" />
+            <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} testId="ws-bt-i2" />
+            <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} testId="ws-bt-i3" />
+            <Field label="Next steps heading" value={ws.bank_next_steps_title} onChange={s("bank_next_steps_title")} testId="ws-bt-next-title" />
+            <Field label="Next step 1" value={ws.bank_next_step_1} onChange={s("bank_next_step_1")} testId="ws-bt-ns1" />
+            <Field label="Next step 2" value={ws.bank_next_step_2} onChange={s("bank_next_step_2")} testId="ws-bt-ns2" />
+            <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} testId="ws-bt-ns3" />
+          </div>
+        )}
+        {pageSlideOver === "not_found" && (
+          <div className="space-y-4">
+            <Field label="Heading" value={ws.page_404_title} onChange={s("page_404_title")} testId="ws-404-title" />
+            <Field label="Back link text" value={ws.page_404_link_text} onChange={s("page_404_link_text")} testId="ws-404-link" />
+          </div>
+        )}
+        {pageSlideOver === "gocardless" && (
+          <div className="space-y-4">
+            <Field label="Processing title" value={ws.gocardless_processing_title} onChange={s("gocardless_processing_title")} testId="ws-gc-proc-title" />
+            <Field label="Processing subtitle" value={ws.gocardless_processing_subtitle} onChange={s("gocardless_processing_subtitle")} testId="ws-gc-proc-sub" />
+            <Field label="Success title" value={ws.gocardless_success_title} onChange={s("gocardless_success_title")} testId="ws-gc-succ-title" />
+            <Field label="Success message" value={ws.gocardless_success_message} onChange={s("gocardless_success_message")} multiline testId="ws-gc-succ-msg" />
+            <Field label="Error title" value={ws.gocardless_error_title} onChange={s("gocardless_error_title")} testId="ws-gc-err-title" />
+            <Field label="Error message" value={ws.gocardless_error_message} onChange={s("gocardless_error_message")} multiline testId="ws-gc-err-msg" />
+            <Field label="Return to store button text" value={ws.gocardless_return_btn_text} onChange={s("gocardless_return_btn_text")} testId="ws-gc-return-btn" />
+          </div>
+        )}
+        {pageSlideOver === "verify_email" && (
+          <div className="space-y-4">
+            <Field label="Step label (breadcrumb)" value={ws.verify_email_label} onChange={s("verify_email_label")} testId="ws-ve-label" />
+            <Field label="Title" value={ws.verify_email_title} onChange={s("verify_email_title")} testId="ws-ve-title" />
+            <Field label="Subtitle / instructions" value={ws.verify_email_subtitle} onChange={s("verify_email_subtitle")} multiline testId="ws-ve-subtitle" />
+          </div>
+        )}
+        {pageSlideOver === "portal" && (
+          <div className="space-y-4">
+            <Field label="Page title" value={ws.portal_title} onChange={s("portal_title")} testId="ws-portal-title" />
+            <Field label="Page subtitle" value={ws.portal_subtitle} onChange={s("portal_subtitle")} multiline testId="ws-portal-subtitle" />
+          </div>
+        )}
+        {pageSlideOver === "profile" && (
+          <div className="space-y-4">
+            <Field label="Step label (breadcrumb)" value={ws.profile_label} onChange={s("profile_label")} testId="ws-profile-label" />
+            <Field label="Page title" value={ws.profile_title} onChange={s("profile_title")} testId="ws-profile-title" />
+            <Field label="Page subtitle" value={ws.profile_subtitle} onChange={s("profile_subtitle")} multiline testId="ws-profile-subtitle" />
+          </div>
+        )}
+      </SlideOver>
     </div>
   );
 }
