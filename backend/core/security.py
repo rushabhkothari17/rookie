@@ -38,10 +38,27 @@ def decode_token(token: str) -> Dict[str, Any]:
 # FastAPI dependency callables
 # ---------------------------------------------------------------------------
 
+def _extract_token(request: Request, credentials: Optional[HTTPAuthorizationCredentials]) -> Optional[str]:
+    """Extract token from either Authorization header or HttpOnly cookie."""
+    # First check Authorization header
+    if credentials and credentials.credentials:
+        return credentials.credentials
+    # Then check HttpOnly cookie
+    cookie_token = request.cookies.get("aa_access_token")
+    if cookie_token:
+        return cookie_token
+    return None
+
+
 async def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> Dict[str, Any]:
-    payload = decode_token(credentials.credentials)
+    token = _extract_token(request, credentials)
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    payload = decode_token(token)
     user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
