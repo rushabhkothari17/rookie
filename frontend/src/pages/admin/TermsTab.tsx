@@ -173,7 +173,7 @@ export function TermsTab() {
             <div className="space-y-1"><label className="text-xs text-slate-500">Title</label><Input value={createForm.title} onChange={e => setCreateForm({ ...createForm, title: e.target.value })} data-testid="admin-terms-title-input" /></div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Content (supports tags)</label>
-              <Textarea value={createForm.content} onChange={e => setCreateForm({ ...createForm, content: e.target.value })} rows={8} data-testid="admin-terms-content-input" />
+              <RichHtmlEditor value={createForm.content} onChange={(v) => setCreateForm({ ...createForm, content: v })} minHeight="200px" placeholder="Enter terms content… Tags: {product_name}, {user_name}, {company_name}" />
               <p className="text-xs text-slate-400">Tags: {'{product_name}'}, {'{user_name}'}, {'{company_name}'}, {'{user_email}'}, {'{user_address_line1}'}</p>
             </div>
             <div className="flex items-center gap-2"><input type="checkbox" checked={createForm.is_default} onChange={e => setCreateForm({ ...createForm, is_default: e.target.checked })} /><label className="text-sm">Set as default T&C</label></div>
