@@ -545,6 +545,17 @@ class WebsiteSettingsUpdate(BaseModel):
     cart_clear_btn_text: Optional[str] = None
     msg_currency_unsupported: Optional[str] = None
     msg_no_payment_methods: Optional[str] = None
+    # Footer extras
+    footer_about_title: Optional[str] = None
+    footer_about_text: Optional[str] = None
+    footer_nav_title: Optional[str] = None
+    footer_contact_title: Optional[str] = None
+    footer_social_title: Optional[str] = None
+    social_twitter: Optional[str] = None
+    social_linkedin: Optional[str] = None
+    social_facebook: Optional[str] = None
+    social_instagram: Optional[str] = None
+    social_youtube: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
