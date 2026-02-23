@@ -211,10 +211,21 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
 
 
 @router.get("/website-settings")
-async def get_website_settings_public():
+async def get_website_settings_public(partner_code: Optional[str] = None):
     """Public endpoint — returns all website content + branding + payment flags."""
-    app_s = await db.app_settings.find_one({}, {"_id": 0}) or {}
-    web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
+    from fastapi import Request
+    from core.tenant import resolve_tenant
+    if partner_code:
+        try:
+            tenant = await resolve_tenant(partner_code)
+            tid = tenant["id"]
+        except Exception:
+            tid = DEFAULT_TENANT_ID
+    else:
+        tid = DEFAULT_TENANT_ID
+
+    app_s = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0}) or {}
+    web_s = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0}) or {}
 
     # Load payment provider flags from structured settings (app_settings)
     stripe_enabled = await SettingsService.get("stripe_enabled", False)
@@ -237,7 +248,7 @@ async def get_website_settings_public():
         "border_color": app_s.get("border_color") or "",
         "muted_color": app_s.get("muted_color") or "",
         # Content overrides (from website_settings)
-        **{k: v for k, v in web_s.items() if v is not None and k != "_id"},
+        **{k: v for k, v in web_s.items() if v is not None and k not in ("_id", "tenant_id")},
         # Payment flags (always from SettingsService)
         "stripe_enabled": bool(stripe_enabled),
         "gocardless_enabled": bool(gocardless_enabled),
@@ -256,7 +267,8 @@ async def get_website_settings_public():
 
 @router.get("/admin/website-settings")
 async def get_website_settings_admin(admin: Dict[str, Any] = Depends(require_admin)):
-    web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
+    tid = tenant_id_of(admin)
+    web_s = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0}) or {}
     # Migrate: inject default checkout_sections when DB has empty value
     merged = {**DEFAULT_WEBSITE_SETTINGS, **web_s}
     try:
@@ -273,10 +285,11 @@ async def update_website_settings(
     payload: WebsiteSettingsUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
+    tid = tenant_id_of(admin)
     update = {k: v for k, v in payload.dict().items() if v is not None}
     if not update:
         return {"message": "Nothing to update"}
-    await db.website_settings.update_one({}, {"$set": update}, upsert=True)
+    await db.website_settings.update_one({"tenant_id": tid}, {"$set": {**update, "tenant_id": tid}}, upsert=True)
     await create_audit_log(
         entity_type="website_settings",
         entity_id="website",
