@@ -1,9 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import ImageExt from "@tiptap/extension-image";
-import LinkExt from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,77 +6,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Bold, Italic, List, ListOrdered, Link2, Image, Heading1, Heading2, Heading3, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
-const ARTICLE_CATEGORIES = [
+const HARDCODED_CATEGORIES = [
   "Scope - Draft", "Scope - Final Lost", "Scope - Final Won",
   "Blog", "Help", "Guide", "SOP", "Other",
 ];
 
-function TemplateToolbar({ editor }: { editor: any }) {
-  const imgRef = useRef<HTMLInputElement>(null);
-  const handleImg = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; if (!f || !editor) return;
-    const r = new FileReader();
-    r.onload = () => editor.chain().focus().setImage({ src: r.result as string }).run();
-    r.readAsDataURL(f); e.target.value = "";
-  };
-  if (!editor) return null;
-  const btn = (active: boolean, onClick: () => void, icon: React.ReactNode, title: string) => (
-    <button type="button" title={title} onClick={onClick}
-      className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${active ? "bg-slate-200 text-slate-900" : "text-slate-500"}`}>
-      {icon}
-    </button>
-  );
-  return (
-    <div className="flex flex-wrap gap-0.5 p-2 border-b border-slate-200 bg-slate-50 rounded-t-lg">
-      {btn(editor.isActive("bold"), () => editor.chain().focus().toggleBold().run(), <Bold size={14} />, "Bold")}
-      {btn(editor.isActive("italic"), () => editor.chain().focus().toggleItalic().run(), <Italic size={14} />, "Italic")}
-      <div className="w-px bg-slate-200 mx-1" />
-      {btn(editor.isActive("heading", { level: 1 }), () => editor.chain().focus().toggleHeading({ level: 1 }).run(), <Heading1 size={14} />, "H1")}
-      {btn(editor.isActive("heading", { level: 2 }), () => editor.chain().focus().toggleHeading({ level: 2 }).run(), <Heading2 size={14} />, "H2")}
-      {btn(editor.isActive("heading", { level: 3 }), () => editor.chain().focus().toggleHeading({ level: 3 }).run(), <Heading3 size={14} />, "H3")}
-      <div className="w-px bg-slate-200 mx-1" />
-      {btn(editor.isActive("bulletList"), () => editor.chain().focus().toggleBulletList().run(), <List size={14} />, "Bullet list")}
-      {btn(editor.isActive("orderedList"), () => editor.chain().focus().toggleOrderedList().run(), <ListOrdered size={14} />, "Numbered list")}
-      <div className="w-px bg-slate-200 mx-1" />
-      <button type="button" title="Insert link"
-        onClick={() => { const url = prompt("Enter URL"); if (url) editor.chain().focus().setLink({ href: url }).run(); }}
-        className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${editor.isActive("link") ? "bg-slate-200 text-slate-900" : "text-slate-500"}`}>
-        <Link2 size={14} />
-      </button>
-      <button type="button" title="Insert image" onClick={() => imgRef.current?.click()}
-        className="p-1.5 rounded hover:bg-slate-100 transition-colors text-slate-500">
-        <Image size={14} />
-      </button>
-      <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={handleImg} />
-    </div>
-  );
-}
-
-function TemplateEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      ImageExt,
-      LinkExt.configure({ openOnClick: false }),
-      Placeholder.configure({ placeholder: "Write your template content here…" }),
-    ],
-    content: value,
-    onUpdate({ editor }) { onChange(editor.getHTML()); },
-  });
-  return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
-      <TemplateToolbar editor={editor} />
-      <EditorContent editor={editor}
-        className="prose prose-sm max-w-none p-4 min-h-[300px] focus:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[280px]" />
-    </div>
-  );
-}
-
 interface Template { id: string; name: string; description: string; category: string; content: string; is_default: boolean; created_at: string; }
 
-export function ArticleTemplatesTab() {
+export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
+  const categoryNames = categories && categories.length > 0
+    ? categories.map(c => c.name)
+    : HARDCODED_CATEGORIES;
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
