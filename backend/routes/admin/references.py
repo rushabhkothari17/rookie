@@ -62,6 +62,7 @@ async def list_references_public():
 
 @router.get("/admin/references")
 async def list_references(admin: Dict[str, Any] = Depends(require_admin)):
+    await _seed_zoho_refs()
     refs = await db.website_references.find({}, {"_id": 0}).sort("label", 1).to_list(500)
     return {"references": refs}
 
