@@ -111,7 +111,7 @@ function EventBuilder({ catalog, subscriptions, onChange }: {
 
   const toggleExpand = (event: string) => {
     setExpanded(prev => {
-      const next = new Set(prev);
+      const next = new Set(Array.from(prev));
       next.has(event) ? next.delete(event) : next.add(event);
       return next;
     });
