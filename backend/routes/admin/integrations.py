@@ -316,12 +316,47 @@ async def validate_zoho_mail(
     payload: ZohoValidateRequest,
     admin: Dict[str, Any] = Depends(get_tenant_admin)
 ):
-    """Validate Zoho Mail connection."""
+    """Validate Zoho Mail connection and store accounts for shared mailbox selection."""
     tid = tenant_id_of(admin)
     mail_service = ZohoMailService(tid, payload.datacenter)
     
     result = await mail_service.validate_connection(payload.access_token)
+    
+    # Store validation result and accounts
+    from datetime import datetime
+    if result.get("success"):
+        await db.integrations.update_one(
+            {"tenant_id": tid, "service": "zoho_mail"},
+            {"$set": {
+                "validated": True,
+                "validated_at": datetime.utcnow().isoformat(),
+                "accounts": result.get("accounts", []),
+                "selected_account_id": payload.account_id or (result.get("accounts", [{}])[0].get("account_id") if result.get("accounts") else None)
+            }}
+        )
+    else:
+        await db.integrations.update_one(
+            {"tenant_id": tid, "service": "zoho_mail"},
+            {"$set": {"validated": False, "error": result.get("message")}}
+        )
+    
     return result
+
+
+@router.post("/admin/integrations/zoho-mail/select-account")
+async def select_zoho_mail_account(
+    account_id: str = Query(...),
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Select a shared mailbox account for sending emails."""
+    tid = tenant_id_of(admin)
+    
+    await db.integrations.update_one(
+        {"tenant_id": tid, "service": "zoho_mail"},
+        {"$set": {"selected_account_id": account_id}}
+    )
+    
+    return {"success": True, "selected_account_id": account_id}
 
 
 @router.post("/admin/integrations/zoho-mail/refresh-token")
