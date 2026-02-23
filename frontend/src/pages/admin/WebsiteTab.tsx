@@ -532,7 +532,19 @@ export default function WebsiteTab() {
       const ws_ = webRes.data.settings || {};
       setWs({ ...WEB_DEFAULTS, ...ws_ });
       const app_ = appRes.data.settings || {};
-      setBranding({ store_name: app_.store_name || "", primary_color: app_.primary_color || "", accent_color: app_.accent_color || "", logo_url: app_.logo_url || "" });
+      setBranding({
+        store_name: app_.store_name || "",
+        primary_color: app_.primary_color || "",
+        accent_color: app_.accent_color || "",
+        danger_color: app_.danger_color || "",
+        success_color: app_.success_color || "",
+        warning_color: app_.warning_color || "",
+        background_color: app_.background_color || "",
+        text_color: app_.text_color || "",
+        border_color: app_.border_color || "",
+        muted_color: app_.muted_color || "",
+        logo_url: app_.logo_url || "",
+      });
       setStructured(structRes.data.settings || {});
     } catch { toast.error("Failed to load settings"); }
     finally { setLoading(false); }
