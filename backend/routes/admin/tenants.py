@@ -139,3 +139,66 @@ async def list_tenant_users(tenant_id: str, admin: Dict[str, Any] = Depends(requ
         {"_id": 0, "password_hash": 0, "verification_code": 0},
     ).to_list(500)
     return {"users": users}
+
+
+@router.get("/admin/tenants/{tenant_id}/customers")
+async def list_tenant_customers(tenant_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+    """List customers for a specific tenant — used by the Customer Switcher."""
+    tenant = await db.tenants.find_one({"id": tenant_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    customers = await db.customers.find({"tenant_id": tenant_id}, {"_id": 0}).to_list(500)
+    user_ids = [c["user_id"] for c in customers if c.get("user_id")]
+    users = await db.users.find(
+        {"id": {"$in": user_ids}},
+        {"_id": 0, "id": 1, "email": 1, "full_name": 1},
+    ).to_list(500)
+    user_map = {u["id"]: u for u in users}
+    result = []
+    for c in customers:
+        uid = c.get("user_id")
+        u = user_map.get(uid, {})
+        result.append({
+            "id": c["id"],
+            "user_id": uid,
+            "company_name": c.get("company_name", ""),
+            "email": u.get("email", ""),
+            "full_name": u.get("full_name", ""),
+        })
+    return {"customers": result}
+
+
+@router.get("/admin/setup-checklist")
+async def get_setup_checklist(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Return setup checklist completion status for the current tenant."""
+    tf = get_tenant_filter(admin)
+
+    website_settings = await db.website_settings.find_one(tf, {"_id": 0})
+    has_brand = bool(
+        website_settings and (
+            website_settings.get("logo_url") or
+            (website_settings.get("store_name") and website_settings.get("store_name") not in ("My Store", "Automate Accounts", ""))
+        )
+    )
+
+    product_count = await db.products.count_documents({**tf, "is_active": True})
+    has_product = product_count > 0
+
+    app_settings = await db.app_settings.find_one(tf, {"_id": 0})
+    has_payment = bool(app_settings and (app_settings.get("stripe_enabled") or app_settings.get("gocardless_enabled")))
+
+    customer_count = await db.customers.count_documents(tf)
+    has_customer = customer_count > 0
+
+    article_count = await db.articles.count_documents({**tf, "deleted_at": {"$exists": False}})
+    has_article = article_count > 0
+
+    checklist = {
+        "brand_customized": has_brand,
+        "first_product": has_product,
+        "payment_configured": has_payment,
+        "first_customer": has_customer,
+        "first_article": has_article,
+    }
+    completed = sum(checklist.values())
+    return {"checklist": checklist, "completed": completed, "total": len(checklist)}
