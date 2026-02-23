@@ -104,7 +104,7 @@ async def register(payload: RegisterRequest):
 
 
 @router.post("/auth/resend-verification-email")
-async def resend_verification_email(payload: LoginRequest):
+async def resend_verification_email(payload: VerifyEmailRequest):
     user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
