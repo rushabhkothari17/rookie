@@ -73,6 +73,8 @@ interface WebsiteData {
   portal_title: string; portal_subtitle: string;
   profile_label: string; profile_title: string; profile_subtitle: string;
   cart_title: string; cart_clear_btn_text: string;
+  admin_page_badge: string; admin_page_title: string; admin_page_subtitle: string;
+  bank_transaction_sources: string; bank_transaction_types: string; bank_transaction_statuses: string;
 }
 
 interface BrandingData {
