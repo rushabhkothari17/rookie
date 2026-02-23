@@ -164,7 +164,21 @@ export function ArticlesTab() {
   const [articleLogs, setArticleLogs] = useState<any[]>([]);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [emailTarget, setEmailTarget] = useState<any>(null);
-  const [emailForm, setEmailForm] = useState({ customer_ids: [] as string[], subject: "", message: "" });
+  const [emailForm, setEmailForm] = useState({
+    to: [] as string[],
+    cc: [] as string[],
+    bcc: [] as string[],
+    subject: "",
+    html_body: "",
+    attach_pdf: false,
+  });
+  const [emailToInput, setEmailToInput] = useState("");
+  const [emailCcInput, setEmailCcInput] = useState("");
+  const [emailBccInput, setEmailBccInput] = useState("");
+  const [showCcBcc, setShowCcBcc] = useState(false);
+  const [emailEditorKey, setEmailEditorKey] = useState(0);
+  const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
+  const [showEmailTemplatePicker, setShowEmailTemplatePicker] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState("all");
