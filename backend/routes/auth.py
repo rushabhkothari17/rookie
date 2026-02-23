@@ -3,7 +3,9 @@ Supports multi-tenant login via partner_code.
 """
 from __future__ import annotations
 
+import re
 import secrets
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -20,6 +22,80 @@ from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["auth"])
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+MAX_FAILED_ATTEMPTS = 10
+LOCKOUT_MINUTES = 15
+
+
+# ---------------------------------------------------------------------------
+# Password complexity helper
+# ---------------------------------------------------------------------------
+def _validate_password_complexity(password: str) -> Optional[str]:
+    """Return an error message if the password is too weak, else None."""
+    if len(password) < 10:
+        return "Password must be at least 10 characters long"
+    if not re.search(r"[A-Z]", password):
+        return "Password must contain at least one uppercase letter"
+    if not re.search(r"[a-z]", password):
+        return "Password must contain at least one lowercase letter"
+    if not re.search(r"[0-9]", password):
+        return "Password must contain at least one number"
+    if not re.search(r"[^A-Za-z0-9]", password):
+        return "Password must contain at least one special character"
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Brute-force lockout helpers
+# ---------------------------------------------------------------------------
+async def _check_and_record_failed_login(user_id: str) -> None:
+    """Increment failed attempts. Raise 429 if account should be locked."""
+    now = datetime.now(timezone.utc)
+    lockout_until = now + timedelta(minutes=LOCKOUT_MINUTES)
+    await db.users.update_one(
+        {"id": user_id},
+        {
+            "$inc": {"failed_login_attempts": 1},
+            "$set": {"last_failed_login": now.isoformat()},
+        },
+    )
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "failed_login_attempts": 1})
+    attempts = user.get("failed_login_attempts", 0) if user else 0
+    if attempts >= MAX_FAILED_ATTEMPTS:
+        await db.users.update_one(
+            {"id": user_id}, {"$set": {"lockout_until": lockout_until.isoformat()}}
+        )
+
+
+async def _check_lockout(user: Dict[str, Any]) -> None:
+    """Raise 429 if the user is currently locked out."""
+    lockout_until = user.get("lockout_until")
+    if not lockout_until:
+        return
+    try:
+        lockout_dt = datetime.fromisoformat(lockout_until)
+        if lockout_dt.tzinfo is None:
+            lockout_dt = lockout_dt.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) < lockout_dt:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Account temporarily locked due to too many failed login attempts. Try again after {lockout_until[:16].replace('T', ' ')} UTC, or ask an admin to unlock your account.",
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass
+
+
+async def _reset_failed_login(user_id: str) -> None:
+    """Reset failed attempts counter after successful login."""
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"failed_login_attempts": 0, "lockout_until": None}},
+    )
 
 
 @router.get("/")
