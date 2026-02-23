@@ -329,11 +329,14 @@ async def admin_create_category(
     payload: CategoryCreate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    existing = await db.categories.find_one({"name": payload.name})
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    existing = await db.categories.find_one({**tf, "name": payload.name})
     if existing:
         raise HTTPException(status_code=409, detail="Category already exists")
     cat = {
         "id": make_id(),
+        "tenant_id": tid,
         "name": payload.name,
         "description": payload.description,
         "is_active": payload.is_active,
