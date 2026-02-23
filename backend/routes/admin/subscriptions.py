@@ -16,6 +16,8 @@ from models import SubscriptionUpdate, ManualSubscriptionCreate
 from services.audit_service import create_audit_log
 from services.webhook_service import dispatch_event
 
+router = APIRouter(prefix="/api", tags=["admin-subscriptions"])
+
 
 @router.get("/admin/filter-options")
 async def get_filter_options(admin: Dict[str, Any] = Depends(get_tenant_admin)):
