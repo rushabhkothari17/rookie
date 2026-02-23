@@ -85,7 +85,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Call backend to clear HttpOnly cookie
+      await api.post("/auth/logout");
+    } catch {
+      // Ignore errors - proceed with local cleanup
+    }
     setAuthToken(undefined);
     localStorage.removeItem("aa_partner_code");
     setUser(null);
