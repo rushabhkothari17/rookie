@@ -284,13 +284,13 @@ async def auto_charge_order(
     order_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    order = await db.orders.find_one({**get_tenant_filter(admin), "id": order_id}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     if order.get("status") == "paid":
         raise HTTPException(status_code=400, detail="Order is already paid")
 
-    customer = await db.customers.find_one({"id": order["customer_id"]}, {"_id": 0})
+    customer = await db.customers.find_one({**get_tenant_filter(admin), "id": order["customer_id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
