@@ -361,7 +361,7 @@ async def update_article(
         updates["price"] = None
 
     if payload.content is not None:
-        updates["content"] = payload.content
+        updates["content"] = _sanitize_html(payload.content)
     if payload.visibility is not None:
         updates["visibility"] = payload.visibility
         changes["visibility"] = payload.visibility
