@@ -22,7 +22,7 @@ PARTNER_CODE = "automate-accounts"
 
 TENANT_B_EMAIL = "adminb@tenantb.local"
 TENANT_B_PASS = "ChangeMe123!"
-TENANT_B_PARTNER_CODE = "tenant-b"
+TENANT_B_PARTNER_CODE = "tenant-b-test"
 
 # Test webhook URL (always returns 200)
 TEST_WEBHOOK_URL = "https://httpbin.org/post"
