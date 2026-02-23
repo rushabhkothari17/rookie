@@ -1,7 +1,7 @@
 # Product Requirements Document
 
 ## Original Problem Statement
-Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). Each partner organization (tenant) must have completely isolated data, branding, and configuration. A Platform Admin can impersonate tenants via a Tenant Switcher.
+Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). Each partner organization (tenant) must have completely isolated data, branding, and configuration. A Platform Admin can impersonate tenants via a Tenant Switcher and also impersonate individual customers via a Customer Switcher.
 
 ## Architecture
 ```
@@ -14,6 +14,8 @@ Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). E
 │   ├── models.py
 │   ├── routes/
 │   │   ├── admin/             All admin CRUD routes (tenant-isolated)
+│   │   │   ├── tenants.py     Tenant management + /setup-checklist + /customers endpoints
+│   │   │   └── users.py       User management + single super_admin enforcement
 │   │   ├── articles.py        Article CRUD + public browsing (tenant-isolated)
 │   │   ├── auth.py            Login, register, register-partner + _seed_new_tenant()
 │   │   ├── store.py           Public store, checkout, orders
@@ -23,20 +25,23 @@ Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). E
 │       └── settings_service.py Global platform settings (key-based)
 └── frontend/
     └── src/
-        ├── api.ts             Axios client + X-View-As-Tenant header injection
+        ├── lib/api.ts         Axios client + X-View-As-Tenant + X-View-As-Customer header injection
         ├── pages/
-        │   ├── Admin.tsx      Admin panel, Partner Orgs tab hidden when viewing-as-tenant
-        │   └── admin/         All admin tab components
+        │   ├── Admin.tsx      Admin panel, controlled tabs, SetupChecklistWidget, Partner Orgs hidden when viewing-as
+        │   └── admin/         All admin tab components (all use /admin/* endpoints only)
         ├── components/
-        │   ├── TopNav.tsx     Top navigation with TenantSwitcher
-        │   └── TenantSwitcher.tsx  Platform admin tenant switcher + subscribeToTenantSwitch()
+        │   ├── TopNav.tsx     Top navigation with TenantSwitcher + CustomerSwitcher
+        │   ├── TenantSwitcher.tsx  Platform admin tenant switcher (search + top-5) + customer state exports
+        │   ├── CustomerSwitcher.tsx  Platform admin customer switcher (search by email)
+        │   └── admin/
+        │       └── SetupChecklistWidget.tsx  5-step setup checklist for tenant admins
         └── contexts/
             ├── AuthContext.tsx
             └── WebsiteContext.tsx  Sends X-Tenant-Slug header for tenant-specific settings
 ```
 
 ## User Personas
-- **Platform Admin**: `platform_admin` role, can see ALL data, can impersonate any tenant via Tenant Switcher
+- **Platform Admin**: `platform_admin` role, can see ALL data, can impersonate any tenant via Tenant Switcher, and any customer via Customer Switcher
 - **Tenant Super Admin**: `partner_super_admin` role, can only see their tenant's data
 - **Customer**: End-user who shops on a tenant's storefront
 
@@ -46,6 +51,8 @@ Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). E
 3. **Seed Data**: New tenants get generic sample data upon registration (no other-tenant references)
 4. **Branding**: Each tenant has independent website settings, app settings, colors, logo
 5. **Audit Logs**: Every admin action is tagged with `tenant_id` via context variable
+6. **Single Super Admin**: Only one `partner_super_admin` and one `super_admin` allowed per tenant
+7. **Setup Checklist**: Guides new tenants through 5 setup steps
 
 ## Collections with tenant_id
 - users, customers, products, categories, articles, article_categories
@@ -60,71 +67,60 @@ Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). E
 - `get_tenant_filter(admin)`: Returns `{}` for platform admin (all data), `{"tenant_id": X}` for tenant admins, `{"tenant_id": view_as}` when Tenant Switcher is active
 - `get_tenant_admin` dependency: Sets `_current_tenant_id` context variable for automatic audit log scoping
 - `set_audit_tenant(tid)`: Sets contextvars ContextVar, auto-injected into all AuditService.log() and create_audit_log() calls
+- **All admin UI tabs must use `/api/admin/*` endpoints only** — public endpoints don't respect X-View-As-Tenant
+
+## Dual Impersonation (Platform Admin)
+- **X-View-As-Tenant**: Forwarded by api.ts for all requests; handled by `get_tenant_admin` dependency
+- **X-View-As-Customer**: Also forwarded by api.ts; state stored in sessionStorage (`aa_view_as_customer_id`)
+- CustomerSwitcher only visible when a tenant is already selected (platform admin)
+- Switching tenants clears the customer selection automatically
 
 ## What's Been Implemented
-### 2026-02-23 — Critical Bug Fixes + P2 Tasks
 
-**Bug Fix: Article Tenant Isolation via X-View-As-Tenant**
-- `GET /api/articles/{id}` now accepts `X-View-As-Tenant` header
-- Platform admin + view-as-tenant can access that tenant's articles
-- No header (raw platform admin) correctly gets 404 for other tenants' articles
-- Added admin role bypass for article visibility restrictions
+### 2026-02-XX — P0 Data Leak Fix + New Features
 
-**Audit Trail 100% Coverage**
-- `get_current_user` (security.py) now calls `set_audit_tenant(user.tenant_id)` — covers ALL customer-facing routes
-- `get_tenant_admin` (tenant.py) also sets audit context — covers ALL admin routes
-- Both `AuditService.log()` and `create_audit_log()` auto-inherit `tenant_id` from request context
-- Zero call sites changed — contextvars handles it transparently
+**P0 Fix: Cross-Tenant Data Leak**
+- `ProductsTab.tsx`: Removed fallback to public `/products` endpoint (fallback was `.catch(() => api.get("/products"))` which ignored X-View-As-Tenant). Now uses only `/admin/products-all`
+- All article-related sub-tabs already used `get_tenant_admin` protected endpoints — confirmed correct
 
-**P2: Payment Fallback (Request a Quote)**
-- When `!stripe_enabled && !gocardless_enabled`, Cart shows "Request a Quote" mailto button
-- ProductDetail `ctaConfig` also returns "Request a Quote" for fixed-price products with no payment methods
-- New tenants see quote flow by default until they configure Stripe or GoCardless
+**Tenant Switcher Enhancement**
+- Added search input (by tenant name or code) inside dropdown
+- Shows top 5 active tenants by default; shows all matching tenants when searching
+- "+N more — search to find them" hint when >5 active tenants
+- Closes on outside click
 
-**P2: React Hydration Warning Fix**
-- `TenantSwitcher.tsx` module-level `sessionStorage` reads wrapped in `try/catch` + `typeof window` check
-- Warning was from Emergent VE tooling (not code), not actionable
+**Customer Switcher (Dual Impersonation)**
+- New `CustomerSwitcher.tsx` component in TopNav, only visible when platform admin is viewing a specific tenant
+- Fetches customers from `GET /api/admin/tenants/{tenant_id}/customers` (new endpoint)
+- Search by email, company name, or full name
+- Stores state in sessionStorage (`aa_view_as_customer_id`, `aa_view_as_customer_email`)
+- `api.ts` forwards `X-View-As-Customer` header alongside `X-View-As-Tenant`
+- Clear customer selection via ✕ button or switching tenant
 
-**Partner Orgs Tab Reactive Fix**
-- Uses `subscribeToTenantSwitch()` for reactive state — hides immediately when admin switches tenants, shows again on revert
-- Fixed tenant isolation in ALL routes:
-  - `override_codes.py`: Added tenant filter to list, create, update, deactivate
-  - `misc.py`: Added tenant filter to sync-logs, customer notes, partner-map
-  - `subscriptions.py`: Fixed manual subscription creation, renewal order tenant_id
-  - `terms.py`: Fixed public terms endpoints to use user's tenant
-  - `settings.py`: Fixed /settings/public and logo upload to use tenant context
-  - `store.py`: Fixed promo code validation, orders/preview, removed hardcoded "automate-accounts"
-  - `articles.py`: Fixed branding lookups; added admin bypass for visibility restriction
-  - `orders.py`: Fixed auto_charge_order tenant filter; entity logs ownership check
-  - `subscriptions.py`: Entity logs ownership check
-  - `catalog.py`: Category delete and product/category logs ownership checks
-  - `quote_requests.py`: Admin update with tenant filter
-  - `bank_transactions.py`: Logs endpoint with tenant filter
-  - `website.py`: Public endpoint reads payment flags from tenant's app_settings (not global)
-- **Audit Log Context Injection**: Added `contextvars.ContextVar` pattern so all AuditService.log() and create_audit_log() calls automatically inherit tenant_id from the request context, without changing 109 individual call sites
-- **New Tenant Seeding**: `_seed_new_tenant()` in auth.py provisions new tenants with: generic website_settings, app_settings, 1 category, 1 product, 1 article, 1 ToS, 1 email template
-- **Fix existing bad data**: Updated all non-default tenants' store_name to their actual name (removing incorrectly cloned "Automate Accounts" branding)
-- **Partner Orgs tab**: Hidden from platform admin when they are "viewing as" a tenant; hidden from non-platform_admin users
-- **TenantSwitcher**: Exported `subscribeToTenantSwitch()` for reactive state tracking
+**Setup Checklist Widget**
+- New `SetupChecklistWidget.tsx` component shown above tabs in Admin dashboard
+- 5 steps: Brand Customized, First Product, Payment Configured, First Customer, First Article
+- Clicking an incomplete step navigates to the relevant admin tab
+- Dismissible (stores `aa_checklist_dismissed` in sessionStorage)
+- Auto-hides when all steps complete
+- Only visible to tenant admins or platform admin viewing-as a specific tenant
+- Backend: `GET /api/admin/setup-checklist` returns `{checklist:{...}, completed, total}`
+
+**Single Super Admin Enforcement**
+- `POST /api/admin/users`: Rejects `partner_super_admin` or `super_admin` if one already exists for the tenant
+- `PUT /api/admin/users/{id}`: Rejects update to `super_admin` role if another user already holds it
+
+**Prior Session (2026-02-23) — Critical Bug Fixes + P2 Tasks**
+- Audit Trail 100% Coverage via contextvars
+- Payment Fallback "Request a Quote"
+- Partner Orgs Tab Reactive Fix
+- Tenant Seeding with generic data
+- Fixed tenant isolation in all routes (override_codes, misc, subscriptions, terms, settings, store, articles, orders, catalog, quote_requests, bank_transactions, website)
 
 ## Test Credentials
 - Platform Admin: `admin@automateaccounts.local` / `ChangeMe123!` / code: `automate-accounts`
 - Tenant B Admin: `adminb@tenantb.local` / `ChangeMe123!` / code: `tenant-b-test`
 - Test New Corp: `admin@test-new-corp.local` / `ChangeMe123!` / code: `test-new-corp-seed`
-
-## P0 Backlog (Resolved)
-- [x] Data leaks across all modules
-- [x] Incorrect "Automate Accounts" branding for new tenants
-- [x] Partner Orgs tab visible to wrong users
-
-## P1 Backlog (Resolved)
-- [x] New tenant seed data
-- [x] Audit logs not visible to tenant admins
-
-## P2 Remaining
-- [ ] Payment Integration Defaults: Remove hardcoded payment examples, add "Request a Quote" fallback
-- [ ] React Hydration Warning
-- [ ] Admin Dashboard with business metrics
 
 ## Key API Endpoints
 - `POST /api/auth/partner-login` → `{ token, role, tenant_id }`
@@ -132,4 +128,27 @@ Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). E
 - `GET /api/website-settings?partner_code=X` → Tenant-specific settings
 - `GET /api/products?partner_code=X` → Public store for tenant
 - `GET /api/admin/audit-logs` → Tenant-scoped audit trail
+- `GET /api/admin/setup-checklist` → Checklist status (5 items)
+- `GET /api/admin/tenants/{id}/customers` → Customer list for customer switcher
 - All `/api/admin/*` → Tenant-scoped via `get_tenant_admin` + `X-View-As-Tenant` header
+
+## P0 Backlog (Resolved)
+- [x] Data leaks across all modules
+- [x] Incorrect "Automate Accounts" branding for new tenants
+- [x] Partner Orgs tab visible to wrong users
+- [x] P0 regression: ProductsTab using public /products fallback
+- [x] Dual Impersonation (Customer Switcher)
+- [x] Tenant Switcher search + top-5 limit
+- [x] Setup Checklist Widget
+- [x] Single Super Admin enforcement
+
+## P1 Backlog
+- [x] New tenant seed data
+- [x] Audit logs not visible to tenant admins
+
+## P2 / Future
+- [ ] X-View-As-Customer support in portal/store routes (simulate full customer view)
+- [ ] /terms endpoint in ProductsTab uses public endpoint (minor - terms typically shared)
+- [ ] Admin Dashboard with business metrics widget
+- [ ] Customer Switcher: backend support for /articles/public with X-View-As-Customer header
+- [ ] Export to Github (use Emergent "Save to Github" feature)
