@@ -419,3 +419,145 @@ async def email_article(
     if sent:
         await create_audit_log(entity_type="article", entity_id=article_id, action="email_sent", actor=admin.get("email", "admin"), details={"recipients": sent, "subject": subject, "sent_count": len(sent)})
     return {"sent": sent, "errors": errors, "message": f"Sent to {len(sent)} recipient(s)"}
+
+
+@router.post("/articles/{article_id}/send-email")
+async def send_article_email(
+    article_id: str,
+    payload: ArticleSendEmailRequest,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    """Send article to arbitrary email addresses (To/CC/BCC) with optional PDF attachment."""
+    import asyncio
+    import base64
+
+    article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    if not payload.to:
+        raise HTTPException(status_code=400, detail="At least one recipient (To) is required")
+
+    # Fetch branding
+    ws = await db.website_settings.find_one({}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
+    store_name = str(ws.get("store_name") or "")
+    accent_color = str(ws.get("accent_color") or "#0f172a")
+
+    from services.settings_service import SettingsService
+
+    provider_enabled = await SettingsService.get("email_provider_enabled", False)
+    resend_key = await SettingsService.get("resend_api_key", "")
+    from_name = await SettingsService.get("email_from_name", "") or store_name
+    from_email = await SettingsService.get("resend_sender_email", "noreply@example.com")
+
+    now = now_iso()
+    sent = []
+    errors = []
+
+    # Generate PDF attachment if requested
+    attachment_data = None
+    if payload.attach_pdf:
+        try:
+            from services.document_service import generate_pdf
+            author_user = await db.users.find_one({"id": admin.get("id", "")}, {"_id": 0, "email": 1, "full_name": 1})
+            author = (author_user or {}).get("full_name") or (author_user or {}).get("email") or admin.get("email", "admin")
+            pdf_bytes = generate_pdf(
+                title=article.get("title", "Article"),
+                author=author,
+                created_at=article.get("created_at", ""),
+                updated_at=article.get("updated_at", ""),
+                html_content=article.get("content") or "",
+                store_name=store_name,
+                accent_hex=accent_color,
+            )
+            safe_name = _re.sub(r"[^a-z0-9]+", "-", article.get("title", "article").lower()).strip("-")[:60]
+            attachment_data = {
+                "filename": f"{safe_name}.pdf",
+                "content": list(pdf_bytes),
+            }
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {exc}")
+
+    log_entry: Dict[str, Any] = {
+        "id": make_id(),
+        "trigger": "article_email_direct",
+        "recipient": ", ".join(payload.to),
+        "subject": payload.subject,
+        "status": "pending",
+        "provider": "mocked",
+        "created_at": now,
+    }
+
+    if provider_enabled and resend_key:
+        log_entry["provider"] = "resend"
+        try:
+            import resend as resend_sdk
+            resend_sdk.api_key = resend_key
+            params: Dict[str, Any] = {
+                "from": f"{from_name} <{from_email}>" if from_name else from_email,
+                "to": payload.to,
+                "subject": payload.subject,
+                "html": payload.html_body,
+            }
+            if payload.cc:
+                params["cc"] = payload.cc
+            if payload.bcc:
+                params["bcc"] = payload.bcc
+            if attachment_data:
+                params["attachments"] = [attachment_data]
+            await asyncio.to_thread(resend_sdk.Emails.send, params)
+            log_entry["status"] = "sent"
+            sent = payload.to
+        except Exception as exc:
+            log_entry["status"] = "failed"
+            log_entry["error_message"] = str(exc)
+            await db.email_logs.insert_one(log_entry)
+            raise HTTPException(status_code=500, detail=f"Failed to send email: {exc}")
+    else:
+        # Mocked
+        log_entry["status"] = "mocked"
+        sent = payload.to
+        await db.email_outbox.insert_one({
+            "id": make_id(),
+            "to": payload.to,
+            "cc": payload.cc or [],
+            "bcc": payload.bcc or [],
+            "subject": payload.subject,
+            "body": payload.html_body,
+            "type": "article_email_direct",
+            "has_attachment": bool(attachment_data),
+            "status": "MOCKED",
+            "created_at": now,
+        })
+
+    await db.email_logs.insert_one(log_entry)
+
+    # Log the send action on the article
+    await db.article_logs.insert_one({
+        "id": make_id(),
+        "article_id": article_id,
+        "action": "email_sent",
+        "actor": admin.get("email", "admin"),
+        "details": {
+            "to": payload.to,
+            "cc": payload.cc or [],
+            "bcc": payload.bcc or [],
+            "subject": payload.subject,
+            "has_attachment": bool(attachment_data),
+        },
+        "created_at": now,
+    })
+    await create_audit_log(
+        entity_type="article",
+        entity_id=article_id,
+        action="email_sent",
+        actor=admin.get("email", "admin"),
+        details={"recipients": payload.to, "subject": payload.subject, "sent_count": len(sent)},
+    )
+
+    return {
+        "sent": sent,
+        "errors": errors,
+        "message": f"Sent to {len(sent)} recipient(s)" + (" (mocked)" if not (provider_enabled and resend_key) else ""),
+        "mocked": not (provider_enabled and resend_key),
+    }
