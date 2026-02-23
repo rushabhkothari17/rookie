@@ -84,3 +84,9 @@ h3,
   scrollbar-width: none;
 }
 
+/* Admin panel tab active state — uses brand primary color */
+.aa-tab-trigger[data-state="active"] {
+  background-color: var(--aa-primary) !important;
+  color: white !important;
+}
+
