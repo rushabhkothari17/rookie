@@ -62,7 +62,31 @@ Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). E
 - `set_audit_tenant(tid)`: Sets contextvars ContextVar, auto-injected into all AuditService.log() and create_audit_log() calls
 
 ## What's Been Implemented
-### 2026-02-23 — Comprehensive Multi-Tenant Security Hardening
+### 2026-02-23 — Critical Bug Fixes + P2 Tasks
+
+**Bug Fix: Article Tenant Isolation via X-View-As-Tenant**
+- `GET /api/articles/{id}` now accepts `X-View-As-Tenant` header
+- Platform admin + view-as-tenant can access that tenant's articles
+- No header (raw platform admin) correctly gets 404 for other tenants' articles
+- Added admin role bypass for article visibility restrictions
+
+**Audit Trail 100% Coverage**
+- `get_current_user` (security.py) now calls `set_audit_tenant(user.tenant_id)` — covers ALL customer-facing routes
+- `get_tenant_admin` (tenant.py) also sets audit context — covers ALL admin routes
+- Both `AuditService.log()` and `create_audit_log()` auto-inherit `tenant_id` from request context
+- Zero call sites changed — contextvars handles it transparently
+
+**P2: Payment Fallback (Request a Quote)**
+- When `!stripe_enabled && !gocardless_enabled`, Cart shows "Request a Quote" mailto button
+- ProductDetail `ctaConfig` also returns "Request a Quote" for fixed-price products with no payment methods
+- New tenants see quote flow by default until they configure Stripe or GoCardless
+
+**P2: React Hydration Warning Fix**
+- `TenantSwitcher.tsx` module-level `sessionStorage` reads wrapped in `try/catch` + `typeof window` check
+- Warning was from Emergent VE tooling (not code), not actionable
+
+**Partner Orgs Tab Reactive Fix**
+- Uses `subscribeToTenantSwitch()` for reactive state — hides immediately when admin switches tenants, shows again on revert
 - Fixed tenant isolation in ALL routes:
   - `override_codes.py`: Added tenant filter to list, create, update, deactivate
   - `misc.py`: Added tenant filter to sync-logs, customer notes, partner-map
