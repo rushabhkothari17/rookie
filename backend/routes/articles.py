@@ -459,7 +459,7 @@ async def send_article_email(
         raise HTTPException(status_code=400, detail="At least one recipient (To) is required")
 
     # Fetch branding
-    ws = await db.website_settings.find_one({}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
+    ws = await db.website_settings.find_one({"tenant_id": tenant_id_of(admin)}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
     store_name = str(ws.get("store_name") or "")
     accent_color = str(ws.get("accent_color") or "#0f172a")
 
