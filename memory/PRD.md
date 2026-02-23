@@ -212,3 +212,46 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - `/app/test_reports/iteration_73.json` - All features verified
 - Route ordering bug fixed in webhooks.py by testing agent
 
+### Phase 9: JWT Refresh & Performance (Feb 2026)
+
+**1. JWT Token Refresh Mechanism**
+- Access tokens now expire in 1 hour (was 7 days)
+- Refresh tokens last 30 days, stored in HttpOnly cookie (path=/api/auth)
+- New endpoint: `/api/auth/refresh` - exchanges refresh token for new access token
+- Frontend API interceptor auto-refreshes on 401 errors
+- Token type validation ('access' vs 'refresh') prevents token misuse
+- Modified: `backend/core/security.py`, `backend/routes/auth.py`
+- Modified: `frontend/src/lib/api.ts`
+
+**2. N+1 Query Optimization - Customers List**
+- Replaced in-memory filtering with MongoDB aggregation pipeline
+- Single query joins customers + users + addresses
+- Filters (search, country, status, payment_mode) applied in database
+- Reduced memory usage and improved response times
+- Modified: `backend/routes/admin/customers.py`
+
+**3. Non-Blocking Setup Wizard**
+- Widget is now collapsible (minimize to floating badge)
+- "Dismiss permanently" option stored in localStorage  
+- Shows only incomplete tasks (max 3 visible)
+- Compact progress indicator
+- Modified: `frontend/src/components/admin/SetupChecklistWidget.tsx`
+
+**4. Contextual Guides System**
+- Created comprehensive guide database with 15+ topics
+- Three display variants: inline, tooltip, collapsible
+- Topics covered:
+  - Customer Management (status, payment methods, currency)
+  - Orders (lifecycle, refunds)
+  - Subscriptions (billing cycles, proration)
+  - Webhooks (signatures, retries)
+  - API Keys (best practices)
+  - Products (pricing, variants)
+  - User Roles (permissions)
+  - Store (SEO)
+- New file: `frontend/src/components/admin/ContextualGuide.tsx`
+
+**Test Reports:**
+- `/app/test_reports/iteration_74.json` - 100% pass rate (19/19 tests)
+- Bug fixed: UnboundLocalError in verify_email (shadowed datetime imports)
+
