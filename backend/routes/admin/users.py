@@ -58,6 +58,12 @@ async def admin_create_admin_user(
         if existing_super:
             raise HTTPException(status_code=400, detail="A super admin already exists for this tenant. Only one super admin is allowed per tenant.")
 
+    # Enforce: only one super_admin per tenant
+    if payload.role == "super_admin":
+        existing_super = await db.users.find_one({**get_tenant_filter(admin), "role": "super_admin"}, {"_id": 0, "id": 1})
+        if existing_super:
+            raise HTTPException(status_code=400, detail="A super admin already exists for this tenant. Only one super admin is allowed per tenant.")
+
     tf = get_tenant_filter(admin)
     existing = await db.users.find_one({**tf, "email": payload.email.lower()}, {"_id": 0})
     if existing:
