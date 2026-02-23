@@ -1047,7 +1047,7 @@ export default function WebsiteTab() {
       <SlideOver
         open={formSlide !== null}
         onClose={() => setFormSlide(null)}
-        title={formSlide === "quote" ? "Quote Request Form" : "Scope Request Form"}
+        title={formSlide === "quote" ? "Quote Request Form" : formSlide === "bank_transaction" ? "Bank Transaction Form" : "Scope Request Form"}
         description={formSlide === "quote" ? "Shown when a customer requests a quote on a product." : "Shown for fixed-scope / RFQ products."}
         onSave={() => saveSection(() => setFormSlide(null))}
         saving={slideSaving}
