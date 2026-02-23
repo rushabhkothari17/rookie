@@ -838,7 +838,6 @@ async def verify_email(payload: VerifyEmailRequest):
     
     # Check if locked out
     if verification_locked_until:
-        from datetime import datetime
         try:
             locked_until = datetime.fromisoformat(verification_locked_until.replace("Z", "+00:00"))
             if datetime.now(locked_until.tzinfo) < locked_until:
@@ -853,7 +852,6 @@ async def verify_email(payload: VerifyEmailRequest):
         
         # Lock after 5 failed attempts for 15 minutes
         if new_attempts >= 5:
-            from datetime import timedelta
             lock_until = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
             update["$set"]["verification_locked_until"] = lock_until
             await db.users.update_one({"id": user["id"]}, update)
