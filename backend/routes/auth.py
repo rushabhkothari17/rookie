@@ -249,20 +249,8 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
         "updated_at": now,
     })
 
-    # Seed website/app settings from default tenant
-    existing_ws = await db.website_settings.find_one({"tenant_id": DEFAULT_TENANT_ID}, {"_id": 0})
-    if existing_ws:
-        seed = {k: v for k, v in existing_ws.items() if k != "_id"}
-        seed["tenant_id"] = tenant_id
-        await db.website_settings.insert_one(seed)
-
-    existing_app = await db.app_settings.find_one(
-        {"key": {"$exists": False}, "tenant_id": DEFAULT_TENANT_ID}, {"_id": 0}
-    )
-    if existing_app:
-        seed_app = {k: v for k, v in existing_app.items() if k != "_id"}
-        seed_app["tenant_id"] = tenant_id
-        await db.app_settings.insert_one(seed_app)
+    # Seed with generic defaults — never copy from another tenant
+    await _seed_new_tenant(tenant_id, name, now)
 
     # Create partner_super_admin user
     user_id = make_id()
