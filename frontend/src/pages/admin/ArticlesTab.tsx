@@ -65,7 +65,19 @@ interface ArticlesTabProps {
 }
 
 export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
-  const [subTab, setSubTab] = useState<"articles" | "templates" | "email-templates">("articles");
+  const [subTab, setSubTab] = useState<"articles" | "templates" | "email-templates" | "categories">("articles");
+  const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
+
+  const loadCategories = useCallback(async () => {
+    try {
+      const res = await api.get("/article-categories");
+      setDynamicCategories(res.data.categories || []);
+    } catch {
+      // silently fall back to empty (hardcoded categories shown in select)
+    }
+  }, []);
+
+  useEffect(() => { loadCategories(); }, [loadCategories]);
   const [customers, setCustomers] = useState<any[]>([]);
   // Fetch customers for visibility/email controls
   useEffect(() => {
