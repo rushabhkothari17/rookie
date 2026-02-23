@@ -69,6 +69,7 @@ from routes.article_templates import router as article_templates_router
 from routes.article_email_templates import router as article_email_templates_router
 from routes.article_categories import router as article_categories_router
 from routes.admin.tenants import router as tenants_admin_router
+from routes.admin.payment_validate import router as payment_validate_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
