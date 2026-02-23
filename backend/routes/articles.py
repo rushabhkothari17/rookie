@@ -12,9 +12,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from core.constants import ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES
 
 
-async def _get_valid_categories() -> set:
+async def _get_valid_categories(tenant_id: str = DEFAULT_TENANT_ID) -> set:
     """Get valid categories from DB, falling back to hardcoded constants."""
-    db_cats = await db.article_categories.find({}, {"_id": 0, "name": 1}).to_list(200)
+    db_cats = await db.article_categories.find({"tenant_id": tenant_id}, {"_id": 0, "name": 1}).to_list(200)
     if db_cats:
         return {c["name"] for c in db_cats}
     return set(ARTICLE_CATEGORIES)
