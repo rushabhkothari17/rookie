@@ -7,7 +7,7 @@ import re as _re
 from typing import Any, Dict, Optional
 
 import resend
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 
 from core.constants import ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES
 from core.helpers import make_id, now_iso, _slugify
