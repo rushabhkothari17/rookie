@@ -20,9 +20,11 @@ async def admin_list_users(
     page: int = 1,
     per_page: int = 20,
     search: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_super_admin),
+    admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {"role": {"$in": ["admin", "super_admin"]}}
+    tf = get_tenant_filter(admin)
+    # Show admin/partner users scoped to tenant (platform admin sees all)
+    query: Dict[str, Any] = {**tf, "is_admin": True}
     if search:
         query["$or"] = [
             {"email": {"$regex": search, "$options": "i"}},
