@@ -10,9 +10,12 @@ import resend
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.constants import ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES
+from core.helpers import make_id, now_iso, _slugify
+from core.security import get_current_user, require_admin
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID
+from db.session import db
 
-
-async def _get_valid_categories(tenant_id: str = DEFAULT_TENANT_ID) -> set:
+(tenant_id: str = DEFAULT_TENANT_ID) -> set:
     """Get valid categories from DB, falling back to hardcoded constants."""
     db_cats = await db.article_categories.find({"tenant_id": tenant_id}, {"_id": 0, "name": 1}).to_list(200)
     if db_cats:
