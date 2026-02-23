@@ -107,6 +107,7 @@ from routes.admin.tenants import router as tenants_admin_router
 from routes.admin.payment_validate import router as payment_validate_router
 from routes.admin.imports import router as imports_admin_router
 from routes.admin.api_keys import router as api_keys_admin_router
+from routes.admin.webhooks import router as webhooks_admin_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
@@ -138,6 +139,7 @@ app.include_router(tenants_admin_router)
 app.include_router(payment_validate_router)
 app.include_router(imports_admin_router)
 app.include_router(api_keys_admin_router)
+app.include_router(webhooks_admin_router)
 
 
 
