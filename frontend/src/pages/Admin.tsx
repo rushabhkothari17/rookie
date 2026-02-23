@@ -107,6 +107,7 @@ export default function Admin() {
             {/* Website */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Website</p>
             <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
+            <TabsTrigger value="crm" data-testid="admin-tab-crm" className={TAB_CLASS}>CRM</TabsTrigger>
             <TabsTrigger value="api" data-testid="admin-tab-api" className={TAB_CLASS}>API</TabsTrigger>
             <TabsTrigger value="webhooks" data-testid="admin-tab-webhooks" className={TAB_CLASS}>Webhooks</TabsTrigger>
             <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
