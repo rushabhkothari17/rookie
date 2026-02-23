@@ -17,19 +17,25 @@ router = APIRouter(prefix="/api", tags=["settings"])
 
 
 @router.get("/settings/public")
-async def get_public_settings():
-    settings = await db.app_settings.find_one({}, {"_id": 0})
+async def get_public_settings(
+    partner_code: Optional[str] = None,
+):
+    from core.tenant import resolve_tenant, DEFAULT_TENANT_ID
+    if partner_code:
+        try:
+            tenant = await resolve_tenant(partner_code)
+            tid = tenant["id"]
+        except Exception:
+            tid = DEFAULT_TENANT_ID
+    else:
+        tid = DEFAULT_TENANT_ID
+    settings = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0})
     if not settings:
         return {"settings": {}}
-    zoho_keys = [
-        "zoho_reseller_signup_us", "zoho_reseller_signup_ca",
-        "zoho_partner_tag_us", "zoho_partner_tag_ca",
-        "zoho_access_instructions_url",
-    ]
     branding_keys = ["website_url", "contact_email"]
     extra: Dict[str, Any] = {}
-    for k in zoho_keys + branding_keys:
-        extra[k] = await SettingsService.get(k, "")
+    for k in branding_keys:
+        extra[k] = settings.get(k, "")
     return {"settings": {
         "primary_color": settings.get("primary_color"),
         "secondary_color": settings.get("secondary_color"),
@@ -128,10 +134,11 @@ async def upload_logo(
     file: UploadFile = File(...),
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
+    tid = tenant_id_of(admin)
     contents = await file.read()
     b64 = base64.b64encode(contents).decode()
     content_type = file.content_type or "image/png"
     data_url = f"data:{content_type};base64,{b64}"
-    await db.app_settings.update_one({}, {"$set": {"logo_url": data_url}}, upsert=True)
+    await db.app_settings.update_one({"tenant_id": tid, "key": {"$exists": False}}, {"$set": {"logo_url": data_url}}, upsert=True)
     await create_audit_log(entity_type="setting", entity_id="logo", action="logo_uploaded", actor=admin.get("email", "admin"), details={"file_name": file.filename, "content_type": content_type})
     return {"logo_url": data_url}
