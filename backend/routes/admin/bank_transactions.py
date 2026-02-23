@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
 from db.session import db
 from models import BankTransactionCreate, BankTransactionUpdate
 from services.audit_service import AuditService, create_audit_log
