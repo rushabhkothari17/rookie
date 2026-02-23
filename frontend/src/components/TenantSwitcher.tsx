@@ -18,6 +18,8 @@ export function getViewAsTenantId(): string | null {
   return _viewAsTenantId;
 }
 
+export { _listeners as _tenantListeners };
+
 export function setViewAsTenant(id: string | null, name: string | null) {
   _viewAsTenantId = id;
   _viewAsTenantName = name;
