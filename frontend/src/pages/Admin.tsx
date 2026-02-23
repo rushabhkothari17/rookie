@@ -38,12 +38,23 @@ export default function Admin() {
   }, []);
 
   const showPartnerOrgs = isPlatformAdmin && !viewingAsTenant;
+  // Show checklist for tenant admins OR platform admin viewing as a tenant
+  const showChecklist = !isPlatformAdmin || viewingAsTenant;
+
   const [searchParams] = useSearchParams();
   const editArticleId = searchParams.get("editArticle");
   const defaultTab = editArticleId ? "articles" : "customers";
   const adminBadge = ws.admin_page_badge || "ADMIN";
   const adminTitle = ws.admin_page_title || "Control Panel";
   const adminSubtitle = ws.admin_page_subtitle || "";
+
+  // Tab navigation ref for programmatic switching (used by checklist widget)
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  const handleChecklistNavigate = (tab: string) => {
+    setActiveTab(tab);
+  };
 
   return (
     <div className="space-y-6" data-testid="admin-page">
