@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,13 +9,18 @@ import api from "@/lib/api";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { Download } from "lucide-react";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
-const SOURCES = ["manual", "bank_transfer", "stripe", "gocardless"];
-const TYPES = ["payment", "refund", "chargeback", "credit", "debit", "fee"];
-const STATUSES_FALLBACK = ["pending", "completed", "matched", "failed", "refunded"];
+const DEFAULT_SOURCES = ["manual", "bank_transfer", "stripe", "gocardless"];
+const DEFAULT_TYPES = ["payment", "refund", "chargeback", "credit", "debit", "fee"];
+const DEFAULT_STATUSES = ["pending", "completed", "matched", "failed", "refunded"];
 const EMPTY_FORM = { date: new Date().toISOString().slice(0, 10), source: "manual", transaction_id: "", type: "payment", amount: "", fees: "0", currency: "USD", status: "completed", description: "", linked_order_id: "", internal_notes: "" };
 
 export function BankTransactionsTab() {
+  const ws = useWebsite();
+  const SOURCES = useMemo(() => ws.bank_transaction_sources ? ws.bank_transaction_sources.split("\n").map(s => s.trim()).filter(Boolean) : DEFAULT_SOURCES, [ws.bank_transaction_sources]);
+  const TYPES = useMemo(() => ws.bank_transaction_types ? ws.bank_transaction_types.split("\n").map(s => s.trim()).filter(Boolean) : DEFAULT_TYPES, [ws.bank_transaction_types]);
+  const STATUSES = useMemo(() => ws.bank_transaction_statuses ? ws.bank_transaction_statuses.split("\n").map(s => s.trim()).filter(Boolean) : DEFAULT_STATUSES, [ws.bank_transaction_statuses]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
