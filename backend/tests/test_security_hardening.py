@@ -800,7 +800,8 @@ class TestAPIKeyAuditLogging:
         logs_resp = requests.get(
             f"{BASE_URL}/api/admin/audit-logs",
             headers={"Authorization": f"Bearer {admin_token}"},
-            params={"entity_type": "api_key", "action": "api_key_created"},
+            # Use "apikey" (no underscore) to match stored PascalCase "ApiKey"
+            params={"entity_type": "apikey", "action": "api_key_created"},
             timeout=15,
         )
         assert logs_resp.status_code == 200, f"Expected 200 for audit logs: {logs_resp.text}"
@@ -811,6 +812,7 @@ class TestAPIKeyAuditLogging:
             if l.get("entity_id") == key_id
             or "api_key" in l.get("action", "").lower()
             or "api_key" in l.get("entity_type", "").lower()
+            or "apikey" in l.get("entity_type", "").lower()
         ]
         assert len(matching) > 0, (
             f"Should find api_key_created audit log entry for key {key_id}, total logs: {len(logs)}"
