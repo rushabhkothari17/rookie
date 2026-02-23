@@ -53,11 +53,11 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "login_portal_label": "Customer Portal",
     "login_btn_text": "Sign In",
     "register_title": "Create your account",
-    "register_subtitle": "Join us to access all services and manage your account in one place.",
+    "register_subtitle": "",
     # Signup form labels
     "signup_label": "Get Started",
     "signup_form_title": "Create your account",
-    "signup_form_subtitle": "Fill in your details below to get started.",
+    "signup_form_subtitle": "",
     "signup_btn_text": "Create Account",
     # Verify email page
     "verify_email_label": "Verify Email",
@@ -71,15 +71,15 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "profile_label": "My Profile",
     "profile_title": "Account Details",
     "profile_subtitle": "Update your contact details. Currency is locked after your first purchase.",
-    # Contact
-    "contact_email": "hello@yourbusiness.com",
-    "contact_phone": "+1 (555) 000-0000",
+    # Contact — empty by default, each tenant fills these in
+    "contact_email": "",
+    "contact_phone": "",
     "contact_address": "",
-    # Footer & Nav
-    "footer_tagline": "Professional services tailored to your business.",
-    "footer_copyright": "© 2025 Your Business Name. All rights reserved.",
+    # Footer & Nav — empty by default
+    "footer_tagline": "",
+    "footer_copyright": "",
     "footer_about_title": "About Us",
-    "footer_about_text": "We are a dedicated team of professionals helping businesses grow and succeed. Contact us to find out how we can help.",
+    "footer_about_text": "",
     "footer_nav_title": "Navigation",
     "footer_contact_title": "Contact",
     "footer_social_title": "Follow Us",
@@ -101,8 +101,8 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "quote_form_schema": _QUOTE_FORM_SCHEMA,
     "scope_form_schema": _SCOPE_FORM_SCHEMA,
     "signup_form_schema": _SIGNUP_FORM_SCHEMA,
-    # Email templates
-    "email_from_name": "Your Business Name",
+    # Email templates — empty by default
+    "email_from_name": "",
     "email_article_subject_template": "Article: {{article_title}}",
     "email_article_cta_text": "View Article",
     "email_article_footer_text": "Your consultant has shared this document with you.",
@@ -110,7 +110,7 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "email_verification_body": "Your verification code is: {{code}}. This code expires in 24 hours.",
     # Error / UI messages
     "msg_partner_tagging_prompt": "Please confirm whether you have tagged us as your partner before continuing.",
-    "msg_override_required": "An override code is required when you have not yet tagged us as your partner.",
+    "msg_override_required": "An override code is required to proceed.",
     "msg_cart_empty": "Your cart is empty. Browse our services to get started.",
     "msg_terms_not_accepted": "Please read and accept the Terms & Conditions to proceed.",
     "msg_quote_success": "Thank you! Your quote request has been received. We'll be in touch within 1–2 business days.",
@@ -122,51 +122,27 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "payment_gocardless_description": "No processing fee. We'll set up a direct debit from your account.",
     "payment_stripe_label": "Card Payment",
     "payment_stripe_description": "Pay securely by credit or debit card. A processing fee applies.",
-    # Checkout page — legacy Zoho section (still used as fallback)
-    "checkout_zoho_enabled": True,
-    "checkout_zoho_title": "Zoho Account Details",
-    "checkout_zoho_subscription_options": "Paid - Annual\nPaid - Monthly\nFree / Not on Zoho",
-    "checkout_zoho_product_options": "Zoho One\nZoho CRM\nZoho Books\nZoho People\nNot on Zoho",
-    "checkout_zoho_signup_note": "for a free trial and onboarding session",
-    "checkout_zoho_access_note": "to understand how to provide us access to your Zoho account",
-    "checkout_zoho_access_delay_warning": "Service delays may occur if access is not granted before purchase.",
-    # Checkout page — legacy partner tagging section (still used as fallback)
-    "checkout_partner_enabled": True,
-    "checkout_partner_title": "Have you tagged us as your Partner?",
-    "checkout_partner_description": "Tag us as your partner by clicking the links below. You must be logged in to your account before tagging.",
-    "checkout_partner_options": "Yes\nPre-existing Customer\nNot yet",
-    "checkout_partner_misrep_warning": "False responses may result in cancellation of service.",
+    # Checkout page — legacy sections disabled by default
+    "checkout_zoho_enabled": False,
+    "checkout_zoho_title": "Account Details",
+    "checkout_zoho_subscription_options": "",
+    "checkout_zoho_product_options": "",
+    "checkout_zoho_signup_note": "",
+    "checkout_zoho_access_note": "",
+    "checkout_zoho_access_delay_warning": "",
+    # Checkout page — partner tagging disabled by default
+    "checkout_partner_enabled": False,
+    "checkout_partner_title": "Partner Confirmation",
+    "checkout_partner_description": "",
+    "checkout_partner_options": "Yes\nNot yet",
+    "checkout_partner_misrep_warning": "",
     # Articles hero
     "articles_hero_label": "Resources",
     "articles_hero_title": "Articles & Guides",
-    "articles_hero_subtitle": "Tips, guides, and updates from our team of experts.",
-    # Checkout extra schema (legacy)
+    "articles_hero_subtitle": "Tips, guides, and updates from our team.",
+    # Dynamic checkout sections — empty by default (no Zoho/partner examples)
     "checkout_extra_schema": "[]",
-    # Dynamic checkout sections (new builder — replaces legacy Zoho/Partner sections)
-    "checkout_sections": json.dumps([
-        {
-            "id": "cs_zoho_account",
-            "title": "Zoho Account Details",
-            "description": "Please provide your Zoho account information so we can set up your services.",
-            "enabled": True,
-            "order": 0,
-            "fields_schema": json.dumps([
-                {"id": "zoho_subscription_type", "label": "Current Zoho subscription type?", "type": "select", "required": True, "options": "Paid - Annual\nPaid - Monthly\nFree / Not on Zoho", "placeholder": "-- Select --", "enabled": True},
-                {"id": "current_zoho_product", "label": "Which Zoho product are you primarily using?", "type": "text", "required": False, "options": "", "placeholder": "e.g. Zoho CRM, Zoho Books", "enabled": True},
-                {"id": "zoho_account_access", "label": "Have you granted us access to your Zoho account?", "type": "select", "required": True, "options": "Yes, I have granted access\nNo \u2014 I will do this shortly\nNo \u2014 I need help with this", "placeholder": "-- Select --", "enabled": True},
-            ]),
-        },
-        {
-            "id": "cs_partner_tagging",
-            "title": "Have you tagged us as your Partner?",
-            "description": "Tag us as your partner by clicking the links below.",
-            "enabled": True,
-            "order": 1,
-            "fields_schema": json.dumps([
-                {"id": "partner_tag_response", "label": "Have you tagged us as your partner?", "type": "select", "required": True, "options": "Yes\nPre-existing Customer\nNot yet", "placeholder": "-- Select --", "enabled": True},
-            ]),
-        },
-    ]),
+    "checkout_sections": "[]",
     # Checkout success page
     "checkout_success_title": "Payment Confirmed",
     "checkout_success_paid_msg": "Your payment was successful.",
@@ -177,16 +153,16 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "checkout_success_step_2": "A team member will be in touch within 1–2 business days.",
     "checkout_success_step_3": "Track your order and invoices in the customer portal.",
     "checkout_portal_link_text": "Go to Customer Portal",
-    # Bank transfer success page (offline payment confirmation)
+    # Bank transfer success page
     "bank_success_title": "Order Created",
-    "bank_success_message": "Your order has been created and is awaiting bank transfer payment. You will receive an email with payment instructions shortly.",
+    "bank_success_message": "Your order has been created and is awaiting payment.",
     "bank_instructions_title": "Payment Instructions",
     "bank_instruction_1": "Transfer the exact amount shown on your order confirmation to our bank account.",
     "bank_instruction_2": "Include your order number as the payment reference.",
     "bank_instruction_3": "Your order will be activated within 1–2 business days of payment being received.",
     "bank_next_steps_title": "What Happens Next",
-    "bank_next_step_1": "Check your email for full bank transfer details and instructions.",
-    "bank_next_step_2": "Complete the bank transfer using your order number as reference.",
+    "bank_next_step_1": "Check your email for full payment details and instructions.",
+    "bank_next_step_2": "Complete the payment using your order number as reference.",
     "bank_next_step_3": "We'll confirm receipt and begin processing your order.",
     # 404 page
     "page_404_title": "Page Not Found",
@@ -196,7 +172,7 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "gocardless_processing_title": "Setting Up Your Direct Debit",
     "gocardless_processing_subtitle": "Please wait while we confirm your bank authorisation.",
     "gocardless_success_title": "Direct Debit Set Up",
-    "gocardless_success_message": "Your direct debit mandate has been set up successfully. You will be redirected shortly.",
+    "gocardless_success_message": "Your direct debit mandate has been set up successfully.",
     "gocardless_error_title": "Setup Failed",
     "gocardless_error_message": "We were unable to set up your direct debit. Please try again or contact support.",
     "gocardless_return_btn_text": "Return to Store",
