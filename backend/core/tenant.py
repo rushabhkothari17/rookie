@@ -18,11 +18,12 @@ def is_platform_admin(user: Dict[str, Any]) -> bool:
 
 def get_tenant_filter(user: Dict[str, Any], view_as: Optional[str] = None) -> Dict[str, Any]:
     """Return a MongoDB filter dict scoped to the user's tenant.
-    Platform super admins can optionally pass view_as to impersonate a tenant.
+    Platform admins can optionally pass view_as (or have _view_as injected) to impersonate a tenant.
     """
+    effective_view_as = view_as or user.get("_view_as")
     if is_platform_admin(user):
-        if view_as:
-            return {"tenant_id": view_as}
+        if effective_view_as:
+            return {"tenant_id": effective_view_as}
         return {}  # See all data by default
     tenant_id = user.get("tenant_id") or DEFAULT_TENANT_ID
     return {"tenant_id": tenant_id}
@@ -30,18 +31,19 @@ def get_tenant_filter(user: Dict[str, Any], view_as: Optional[str] = None) -> Di
 
 def set_tenant_id(doc: Dict[str, Any], user: Dict[str, Any]) -> Dict[str, Any]:
     """Inject tenant_id into a document dict before inserting."""
+    effective_view_as = user.get("_view_as")
     if not is_platform_admin(user):
         doc["tenant_id"] = user.get("tenant_id") or DEFAULT_TENANT_ID
     else:
-        if "tenant_id" not in doc:
-            doc["tenant_id"] = DEFAULT_TENANT_ID
+        doc["tenant_id"] = effective_view_as or DEFAULT_TENANT_ID
     return doc
 
 
 def tenant_id_of(user: Dict[str, Any], view_as: Optional[str] = None) -> str:
     """Return the tenant_id for a user (platform admins default to DEFAULT_TENANT_ID)."""
-    if is_platform_admin(user) and view_as:
-        return view_as
+    effective_view_as = view_as or user.get("_view_as")
+    if is_platform_admin(user) and effective_view_as:
+        return effective_view_as
     if is_platform_admin(user):
         return DEFAULT_TENANT_ID
     return user.get("tenant_id") or DEFAULT_TENANT_ID
