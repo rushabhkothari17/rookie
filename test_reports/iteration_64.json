@@ -1,0 +1,50 @@
+{
+  "summary": "Iteration 64 - Tested P0 data leak fix (products/articles tenant isolation), Tenant Switcher UI enhancements (search + top-5), Customer Switcher component, Setup Checklist Widget, Single super_admin enforcement, and Customer List API. All 23 backend tests pass. All UI flows verified with Playwright.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "TopNav - Tenant B admin login",
+        "issues": ["Store name shows 'Automate Accounts' briefly for TB admin (existing behavior - WebsiteContext loads /website-settings before auth context settles). Not a P0 issue, not related to features tested today. The store name correctly shows 'Tenant B Test' once WebsiteContext refreshes."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter64_p0_and_new_features.py",
+    "/app/test_reports/pytest/iter64_p0_new_features.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "P0 Fix CONFIRMED: ProductsTab.tsx line 67-72 now uses ONLY /admin/products-all (no fallback to /products) - verified via API: platform admin viewing Tenant B sees 1 product (TB Product), not 33 platform products.",
+    "P0 Articles CONFIRMED: /api/articles/admin/list correctly scoped to tenant via X-View-As-Tenant header - platform admin viewing TB sees 1 article only.",
+    "Tenant Switcher: Search by name/code works correctly. Top-5 default limit enforced (4 active tenants currently). '+N more' hint code is correct but will only appear when active tenants > 5.",
+    "Customer Switcher: Correctly hidden when no tenant selected (null check in CustomerSwitcher.tsx line 64). Appears after switching to Tenant B. 'All Customers (Tenant View)' option present. Search input working. Shows 'No customers for this tenant yet' correctly.",
+    "Setup Checklist Widget: Visible for TB admin (3/5 steps: brand+product+article done). Visible for platform admin viewing as Tenant B. Dismissible via sessionStorage key 'aa_checklist_dismissed'. Not visible for platform admin in All Tenants view. Progress bar at 60% (3/5).",
+    "Single super_admin enforcement: Creating 2nd super_admin returns 400 with message 'A super admin already exists for this tenant'. Creating 2nd partner_super_admin also blocked. PUT update to super_admin also checked (correctly skips if user already is super_admin).",
+    "Customer List API: GET /api/admin/tenants/{id}/customers requires platform_admin role (403 for non-platform admin). Returns {customers:[...]} with id/email/company_name/full_name. 404 for invalid tenant.",
+    "Test data artifact: second_admin@tenantb.local (role=super_admin) was created during initial manual API verification. This is test data for Tenant B that should be cleaned up.",
+    "Minor: /api/admin/products-all also loads /admin/customers and /admin/categories in ProductsTab - both are admin-prefixed endpoints that correctly respect X-View-As-Tenant header.",
+    "Minor: /terms endpoint used in ProductsTab (line 71) - uses public endpoint without admin prefix. This may not respect tenant isolation for terms, but terms data is typically shared."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter64_p0_and_new_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (23/23 tests passed)",
+    "frontend": "100% (all critical flows verified via Playwright)"
+  },
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123! / partner_code: automate-accounts",
+    "tenant_b_admin": "adminb@tenantb.local / ChangeMe123! / partner_code: tenant-b-test"
+  },
+  "seed_data_creation": "Test artifact: second_admin@tenantb.local (super_admin role) created during manual API testing of super_admin enforcement. This was intentional to verify the rule - the first creation succeeded (no prior super_admin), the second was correctly rejected with 400.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 64 tested P0 data leak fix and all new features. Key verified facts: (1) Products API: /api/admin/products-all correctly returns 1 product for Tenant B (TB Product, $200, One-time). (2) Articles API: /api/articles/admin/list returns 1 article for Tenant B (TB Article Audit Test, Blog category). (3) Setup checklist for TB: brand=true, first_product=true, payment=false, first_customer=false, first_article=true, completed=3/5. (4) Tenant B has 0 customers in /api/admin/tenants/{id}/customers. (5) Active tenants: automate-accounts, tenant-b-test, test-partner-signup, test-new-corp-seed (4 total, '+N more' hint won't show until >5 active). (6) Test data: second_admin@tenantb.local (super_admin) created in Tenant B. All 23 backend tests in test_iter64_p0_and_new_features.py pass.",
+  "rca_of_issue": "P0 Root Cause (confirmed fixed): ProductsTab.tsx previously had fallback to /products public endpoint when /admin/products-all failed. The /products public endpoint ignores X-View-As-Tenant header. Fix: removed fallback entirely, now uses only /admin/products-all which respects the header. Articles isolation was already working via /articles/admin/list which checks X-View-As-Tenant header."
+}
