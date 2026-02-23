@@ -246,7 +246,7 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "key": "partner_tagging_enabled",
         "value_json": True,
         "value_type": "bool",
-        "category": "FeatureFlags",
+        "category": "Checkout",
         "description": "Require Zoho partner tagging step at checkout.",
         "is_secret": False,
     },
