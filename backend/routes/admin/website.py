@@ -211,16 +211,24 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
 
 
 @router.get("/website-settings")
-async def get_website_settings_public(partner_code: Optional[str] = None):
+async def get_website_settings_public(
+    partner_code: Optional[str] = None,
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+):
     """Public endpoint — returns all website content + branding + payment flags."""
-    from fastapi import Request
-    from core.tenant import resolve_tenant, get_tenant_admin
-    if partner_code:
+    from core.tenant import resolve_tenant, is_platform_admin
+    # Priority: TenantSwitcher > partner_code > user JWT > default
+    if x_view_as_tenant and user and is_platform_admin(user):
+        tid = x_view_as_tenant
+    elif partner_code:
         try:
             tenant = await resolve_tenant(partner_code)
             tid = tenant["id"]
         except Exception:
             tid = DEFAULT_TENANT_ID
+    elif user and user.get("tenant_id"):
+        tid = user["tenant_id"]
     else:
         tid = DEFAULT_TENANT_ID
 
