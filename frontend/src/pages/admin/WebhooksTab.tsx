@@ -390,6 +390,7 @@ function DeliveryLogs({ webhook, onClose }: { webhook: Webhook; onClose: () => v
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Delivery | null>(null);
   const [detail, setDetail] = useState<any>(null);
+  const [replaying, setReplaying] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -410,6 +411,26 @@ function DeliveryLogs({ webhook, onClose }: { webhook: Webhook; onClose: () => v
     } catch { setDetail(null); }
   };
 
+  const replayDelivery = async (deliveryId: string) => {
+    setReplaying(deliveryId);
+    try {
+      const { data } = await api.post(`/admin/webhooks/${webhook.id}/deliveries/${deliveryId}/replay`);
+      if (data.success) {
+        toast.success(`Replay successful (HTTP ${data.status_code})`);
+      } else {
+        toast.error(data.message || "Replay failed");
+      }
+      load(); // Refresh the list
+      if (selected?.id === deliveryId) {
+        viewDetail({ ...selected, status: data.success ? "success" : "failed" } as Delivery);
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || "Replay failed");
+    } finally {
+      setReplaying(null);
+    }
+  };
+
   return (
     <Dialog open onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" data-testid="delivery-logs-panel">
@@ -422,9 +443,23 @@ function DeliveryLogs({ webhook, onClose }: { webhook: Webhook; onClose: () => v
 
         {selected && detail ? (
           <div className="space-y-3">
-            <Button variant="ghost" size="sm" onClick={() => { setSelected(null); setDetail(null); }}>
-              ← Back to list
-            </Button>
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={() => { setSelected(null); setDetail(null); }}>
+                ← Back to list
+              </Button>
+              {detail.status === "failed" && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => replayDelivery(detail.id)}
+                  disabled={replaying === detail.id}
+                  data-testid="replay-delivery-btn"
+                >
+                  <RotateCcw className={`h-3.5 w-3.5 mr-1 ${replaying === detail.id ? "animate-spin" : ""}`} />
+                  {replaying === detail.id ? "Replaying..." : "Replay Delivery"}
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="bg-slate-50 rounded p-2">
                 <p className="text-slate-400 font-medium mb-0.5">Event</p>
@@ -484,6 +519,18 @@ function DeliveryLogs({ webhook, onClose }: { webhook: Webhook; onClose: () => v
                     <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${d.response_status && d.response_status >= 200 && d.response_status < 300 ? "bg-green-100 text-green-700" : d.response_status ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-500"}`}>
                       {d.response_status ?? "—"}
                     </span>
+                    {d.status === "failed" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => { e.stopPropagation(); replayDelivery(d.id); }}
+                        disabled={replaying === d.id}
+                        title="Replay this delivery"
+                      >
+                        <RotateCcw className={`h-3 w-3 ${replaying === d.id ? "animate-spin" : ""}`} />
+                      </Button>
+                    )}
                     <span className="text-[10px] text-slate-300 w-32 text-right truncate">{d.created_at?.slice(0, 16).replace("T", " ")}</span>
                     <ChevronRight className="h-3 w-3 text-slate-300" />
                   </div>
