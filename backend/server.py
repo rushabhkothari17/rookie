@@ -1,13 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from typing import Optional, Dict, Any
 from pathlib import Path
 from datetime import datetime, timedelta
 import os
+import logging
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
+
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 # ---------------------------------------------------------------------------
 # Infrastructure imports from modules
@@ -20,24 +25,50 @@ from core.constants import ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES
 from services.audit_service import AuditService, ensure_audit_indexes, create_audit_log
 from services.settings_service import SettingsService
 from middleware.request_id import RequestIDMiddleware
+from middleware.rate_limit import RateLimitMiddleware
+from middleware.security_headers import SecurityHeadersMiddleware
 
 # Seed data and pricing helpers
 from data.seed_products import build_seed_products
 from services.pricing_service import build_price_inputs
 
-app = FastAPI()
+# ---------------------------------------------------------------------------
+# App — disable interactive docs in production
+# ---------------------------------------------------------------------------
+app = FastAPI(
+    docs_url=None if ENVIRONMENT == "production" else "/docs",
+    redoc_url=None if ENVIRONMENT == "production" else "/redoc",
+    openapi_url=None if ENVIRONMENT == "production" else "/openapi.json",
+)
 
 # ---------------------------------------------------------------------------
-# Middleware
+# Middleware (order matters — outermost first)
 # ---------------------------------------------------------------------------
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIDMiddleware)
+
+# CORS — restrict to known frontend in production, allow all in dev
+cors_origins = [FRONTEND_URL] if (ENVIRONMENT == "production" and FRONTEND_URL) else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------------------
+# Global exception handler — never expose stack traces to clients
+# ---------------------------------------------------------------------------
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logging.exception("Unhandled exception: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal error occurred. Please try again later."},
+    )
 
 # ---------------------------------------------------------------------------
 # Include new route modules
