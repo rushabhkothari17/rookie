@@ -129,6 +129,7 @@ function ArticleEditor({ value, onChange }: { value: string; onChange: (v: strin
 }
 
 export function ArticlesTab() {
+  const [subTab, setSubTab] = useState<"articles" | "templates">("articles");
   const [customers, setCustomers] = useState<any[]>([]);
   // Fetch customers for visibility/email controls
   useEffect(() => {
@@ -136,6 +137,20 @@ export function ArticlesTab() {
       .then(r => { const custs = r.data.customers || []; const usrs = r.data.users || []; const um: Record<string,any> = {}; usrs.forEach((u:any) => { um[u.id] = u; }); setCustomers(custs.map((c:any) => ({ ...c, email: um[c.user_id]?.email || '', full_name: um[c.user_id]?.full_name || '' }))); })
       .catch(() => {});
   }, []);
+
+  // Template picker state
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+
+  const loadTemplates = async () => {
+    setLoadingTemplates(true);
+    try {
+      const res = await api.get("/article-templates");
+      setAvailableTemplates(res.data.templates || []);
+    } catch { toast.error("Failed to load templates"); }
+    finally { setLoadingTemplates(false); }
+  };
 
   // Customer search for visibility typeahead
   const [custVisSearch, setCustVisSearch] = useState("");
