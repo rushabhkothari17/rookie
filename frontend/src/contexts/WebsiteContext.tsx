@@ -311,6 +311,30 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
         if (s.primary_color) {
           document.documentElement.style.setProperty("--aa-primary", s.primary_color);
         }
+        if (s.accent_color) {
+          document.documentElement.style.setProperty("--aa-accent", s.accent_color);
+        }
+        if (s.danger_color) {
+          document.documentElement.style.setProperty("--aa-danger", s.danger_color);
+        }
+        if (s.success_color) {
+          document.documentElement.style.setProperty("--aa-success", s.success_color);
+        }
+        if (s.warning_color) {
+          document.documentElement.style.setProperty("--aa-warning", s.warning_color);
+        }
+        if (s.background_color) {
+          document.documentElement.style.setProperty("--aa-bg", s.background_color);
+        }
+        if (s.text_color) {
+          document.documentElement.style.setProperty("--aa-text", s.text_color);
+        }
+        if (s.border_color) {
+          document.documentElement.style.setProperty("--aa-border", s.border_color);
+        }
+        if (s.muted_color) {
+          document.documentElement.style.setProperty("--aa-muted", s.muted_color);
+        }
       })
       .catch(() => {});
   }, []);
