@@ -426,6 +426,13 @@ class AppSettingsUpdate(BaseModel):
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
     accent_color: Optional[str] = None
+    danger_color: Optional[str] = None
+    success_color: Optional[str] = None
+    warning_color: Optional[str] = None
+    background_color: Optional[str] = None
+    text_color: Optional[str] = None
+    border_color: Optional[str] = None
+    muted_color: Optional[str] = None
     logo_url: Optional[str] = None
     store_name: Optional[str] = None
 
