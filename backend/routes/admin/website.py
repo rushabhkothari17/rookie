@@ -233,7 +233,15 @@ async def get_website_settings_public():
 @router.get("/admin/website-settings")
 async def get_website_settings_admin(admin: Dict[str, Any] = Depends(require_admin)):
     web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
-    return {"settings": {**DEFAULT_WEBSITE_SETTINGS, **web_s}}
+    # Migrate: inject default checkout_sections when DB has empty value
+    merged = {**DEFAULT_WEBSITE_SETTINGS, **web_s}
+    try:
+        cs = merged.get("checkout_sections", "[]")
+        if not cs or json.loads(cs) == []:
+            merged["checkout_sections"] = DEFAULT_WEBSITE_SETTINGS["checkout_sections"]
+    except Exception:
+        pass
+    return {"settings": merged}
 
 
 @router.put("/admin/website-settings")
