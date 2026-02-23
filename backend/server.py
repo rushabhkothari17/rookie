@@ -22,6 +22,10 @@ from core.config import ADMIN_EMAIL, ADMIN_PASSWORD
 from core.helpers import now_iso, make_id
 from core.security import pwd_context
 from core.constants import ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES
+import core.config as _cfg
+
+JWT_SECRET = _cfg.JWT_SECRET
+ADMIN_PASSWORD = _cfg.ADMIN_PASSWORD
 from services.audit_service import AuditService, ensure_audit_indexes, create_audit_log
 from services.settings_service import SettingsService
 from middleware.request_id import RequestIDMiddleware
