@@ -301,7 +301,8 @@ async def admin_list_categories(
     status: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if search:
         query["name"] = {"$regex": search, "$options": "i"}
     if status == "active":
@@ -311,7 +312,7 @@ async def admin_list_categories(
 
     cats = await db.categories.find(query, {"_id": 0}).sort("name", 1).to_list(1000)
     for cat in cats:
-        cat["product_count"] = await db.products.count_documents({"category": cat["name"]})
+        cat["product_count"] = await db.products.count_documents({**tf, "category": cat["name"]})
     total = len(cats)
     skip = (page - 1) * per_page
     return {
