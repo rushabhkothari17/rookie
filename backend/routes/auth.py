@@ -314,6 +314,61 @@ async def logout(response: Response):
 
 
 # ---------------------------------------------------------------------------
+# Token Refresh (get new access token using refresh token)
+# ---------------------------------------------------------------------------
+
+@router.post("/auth/refresh")
+async def refresh_token(request: Request, response: Response):
+    """Get a new access token using the refresh token.
+    Refresh token can be in HttpOnly cookie or request body.
+    """
+    # Get refresh token from cookie or body
+    refresh_token_value = request.cookies.get("aa_refresh_token")
+    if not refresh_token_value:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        refresh_token_value = body.get("refresh_token")
+    
+    if not refresh_token_value:
+        raise HTTPException(status_code=401, detail="Refresh token required")
+    
+    try:
+        payload = decode_token(refresh_token_value, token_type="refresh")
+    except HTTPException:
+        _clear_auth_cookie(response)  # Clear invalid cookies
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token. Please login again.")
+    
+    user_id = payload.get("sub")
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is inactive")
+    
+    # Create new access token
+    new_access_token = create_access_token({
+        "sub": user["id"],
+        "email": user["email"],
+        "role": user.get("role", "customer"),
+        "tenant_id": user.get("tenant_id"),
+        "is_admin": user.get("is_admin", False),
+        "token_version": user.get("token_version", 0),
+    })
+    
+    # Set new access token cookie
+    response.set_cookie(
+        key="aa_access_token",
+        value=new_access_token,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/"
+    )
+    
+    return {"token": new_access_token, "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60}
+
+
+# ---------------------------------------------------------------------------
 # Legacy login (backward compat — platform super admin and existing sessions)
 # ---------------------------------------------------------------------------
 
