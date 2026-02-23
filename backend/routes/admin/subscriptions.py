@@ -366,8 +366,8 @@ async def admin_cancel_subscription(
         actor=f"admin:{admin['id']}",
         details={"changes": {"status": {"old": old_status, "new": "canceled_pending"}}, "cancelled_at": cancelled_at},
     )
-    # Webhook: subscription.cancelled
-    customer = await db.customers.find_one({"id": subscription.get("customer_id", "")}, {"_id": 0}) or {}
+    # Webhook: subscription.cancelled (tenant-scoped customer lookup)
+    customer = await db.customers.find_one({**tf, "id": subscription.get("customer_id", "")}, {"_id": 0}) or {}
     await dispatch_event("subscription.cancelled", {
         "id": subscription_id,
         "subscription_number": subscription.get("subscription_number", ""),
