@@ -211,23 +211,29 @@ async def get_website_settings_public():
     stripe_fee_rate = await SettingsService.get("stripe_fee_rate", 0.05)
     gocardless_fee_rate = await SettingsService.get("gocardless_fee_rate", 0.0)
 
-    return {
-        "settings": {
-            **DEFAULT_WEBSITE_SETTINGS,
-            # Branding (from app_settings)
-            "store_name": app_s.get("store_name", ""),
-            "logo_url": app_s.get("logo_url") or "",
-            "primary_color": app_s.get("primary_color") or "",
-            "accent_color": app_s.get("accent_color") or "",
-            # Content overrides (from website_settings)
-            **{k: v for k, v in web_s.items() if v is not None and k != "_id"},
-            # Payment flags (always from SettingsService)
-            "stripe_enabled": bool(stripe_enabled),
-            "gocardless_enabled": bool(gocardless_enabled),
-            "stripe_fee_rate": float(stripe_fee_rate) if stripe_fee_rate else 0.05,
-            "gocardless_fee_rate": float(gocardless_fee_rate) if gocardless_fee_rate else 0.0,
-        }
+    settings = {
+        **DEFAULT_WEBSITE_SETTINGS,
+        # Branding (from app_settings)
+        "store_name": app_s.get("store_name", ""),
+        "logo_url": app_s.get("logo_url") or "",
+        "primary_color": app_s.get("primary_color") or "",
+        "accent_color": app_s.get("accent_color") or "",
+        # Content overrides (from website_settings)
+        **{k: v for k, v in web_s.items() if v is not None and k != "_id"},
+        # Payment flags (always from SettingsService)
+        "stripe_enabled": bool(stripe_enabled),
+        "gocardless_enabled": bool(gocardless_enabled),
+        "stripe_fee_rate": float(stripe_fee_rate) if stripe_fee_rate else 0.05,
+        "gocardless_fee_rate": float(gocardless_fee_rate) if gocardless_fee_rate else 0.0,
     }
+    # Migrate: inject default checkout_sections when DB has empty value
+    try:
+        cs = settings.get("checkout_sections", "[]")
+        if not cs or json.loads(cs) == []:
+            settings["checkout_sections"] = DEFAULT_WEBSITE_SETTINGS["checkout_sections"]
+    except Exception:
+        pass
+    return {"settings": settings}
 
 
 @router.get("/admin/website-settings")
