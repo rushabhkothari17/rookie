@@ -4,9 +4,9 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 
-from core.security import require_admin
+from core.security import require_admin, optional_get_current_user
 from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from db.session import db
 from models import WebsiteSettingsUpdate
