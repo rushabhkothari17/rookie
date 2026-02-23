@@ -24,6 +24,7 @@ from models import (
     RegisterRequest, LoginRequest, PartnerLoginRequest, CustomerLoginRequest,
     VerifyEmailRequest, UpdateProfileRequest, ResendVerificationRequest,
 )
+from pydantic import BaseModel
 from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
 import os
