@@ -40,7 +40,7 @@ export function BankTransactionsTab() {
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [notesContent, setNotesContent] = useState("");
   const [saving, setSaving] = useState(false);
-  const [btStatuses, setBtStatuses] = useState<string[]>(STATUSES_FALLBACK);
+  const [btStatuses, setBtStatuses] = useState<string[]>(STATUSES);
 
   const load = useCallback(async (p = 1) => {
     const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
