@@ -278,3 +278,150 @@ async def get_delivery_detail(
     if not delivery:
         raise HTTPException(status_code=404, detail="Delivery not found")
     return delivery
+
+
+@router.post("/admin/webhooks/{webhook_id}/deliveries/{delivery_id}/replay")
+async def replay_delivery(
+    webhook_id: str,
+    delivery_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Replay a failed webhook delivery with the original payload."""
+    import json
+    import hmac as _hmac
+    import hashlib
+    import httpx
+    
+    tf = get_tenant_filter(admin)
+    wh = await db.webhooks.find_one({**tf, "id": webhook_id}, {"_id": 0})
+    if not wh:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    
+    delivery = await db.webhook_deliveries.find_one(
+        {"id": delivery_id, "webhook_id": webhook_id}, {"_id": 0}
+    )
+    if not delivery:
+        raise HTTPException(status_code=404, detail="Delivery not found")
+    
+    # Get the original payload
+    payload = delivery.get("payload")
+    if not payload:
+        raise HTTPException(status_code=400, detail="No payload found for this delivery")
+    
+    # Mark as replaying
+    await db.webhook_deliveries.update_one(
+        {"id": delivery_id},
+        {"$set": {"status": "pending", "last_attempt_at": now_iso()}}
+    )
+    
+    # Re-send the webhook
+    body = json.dumps(payload, default=str).encode()
+    sig = _hmac.new(wh["secret"].encode(), body, hashlib.sha256).hexdigest()
+    
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                wh["url"],
+                content=body,
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Webhook-Event": delivery.get("event", "unknown"),
+                    "X-Webhook-Signature": f"sha256={sig}",
+                    "X-Webhook-Delivery": delivery_id,
+                    "X-Webhook-Replay": "true",
+                    "User-Agent": "AutomateAccounts-Webhook/1.0",
+                },
+            )
+        
+        success = 200 <= resp.status_code < 300
+        await db.webhook_deliveries.update_one(
+            {"id": delivery_id},
+            {"$set": {
+                "status": "success" if success else "failed",
+                "response_status": resp.status_code,
+                "response_body": resp.text[:1000],
+                "delivered_at": now_iso() if success else None,
+                "attempts": (delivery.get("attempts", 0) or 0) + 1,
+                "last_attempt_at": now_iso(),
+            }}
+        )
+        
+        await create_audit_log(
+            entity_type="webhook",
+            entity_id=webhook_id,
+            action="delivery_replayed",
+            actor=admin.get("email", "admin"),
+            details={"delivery_id": delivery_id, "success": success, "status_code": resp.status_code},
+        )
+        
+        return {
+            "success": success,
+            "status_code": resp.status_code,
+            "body": resp.text[:500],
+            "message": "Replay successful" if success else f"Replay failed with status {resp.status_code}"
+        }
+    except Exception as exc:
+        await db.webhook_deliveries.update_one(
+            {"id": delivery_id},
+            {"$set": {
+                "status": "failed",
+                "error": str(exc)[:500],
+                "attempts": (delivery.get("attempts", 0) or 0) + 1,
+                "last_attempt_at": now_iso(),
+            }}
+        )
+        return {"success": False, "status_code": 0, "body": str(exc)[:300], "message": "Replay failed"}
+
+
+@router.get("/admin/webhooks/delivery-stats")
+async def get_delivery_stats(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Get aggregated delivery statistics for all webhooks."""
+    tf = get_tenant_filter(admin)
+    
+    # Get all webhook IDs for this tenant
+    webhooks = await db.webhooks.find(tf, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+    webhook_ids = [w["id"] for w in webhooks]
+    
+    if not webhook_ids:
+        return {
+            "total_deliveries": 0,
+            "success_count": 0,
+            "failed_count": 0,
+            "pending_count": 0,
+            "success_rate": 0,
+            "recent_failures": []
+        }
+    
+    # Count by status
+    pipeline = [
+        {"$match": {"webhook_id": {"$in": webhook_ids}}},
+        {"$group": {"_id": "$status", "count": {"$sum": 1}}}
+    ]
+    status_counts = await db.webhook_deliveries.aggregate(pipeline).to_list(10)
+    counts = {s["_id"]: s["count"] for s in status_counts}
+    
+    total = sum(counts.values())
+    success = counts.get("success", 0)
+    failed = counts.get("failed", 0)
+    pending = counts.get("pending", 0)
+    
+    # Get recent failures
+    recent_failures = await db.webhook_deliveries.find(
+        {"webhook_id": {"$in": webhook_ids}, "status": "failed"},
+        {"_id": 0, "id": 1, "webhook_id": 1, "event": 1, "error": 1, "response_status": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    # Add webhook names
+    webhook_map = {w["id"]: w["name"] for w in webhooks}
+    for f in recent_failures:
+        f["webhook_name"] = webhook_map.get(f["webhook_id"], "Unknown")
+    
+    return {
+        "total_deliveries": total,
+        "success_count": success,
+        "failed_count": failed,
+        "pending_count": pending,
+        "success_rate": round((success / total * 100) if total > 0 else 0, 1),
+        "recent_failures": recent_failures
+    }
+
