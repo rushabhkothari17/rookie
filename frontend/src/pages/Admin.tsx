@@ -162,6 +162,9 @@ export default function Admin() {
           <TabsContent value="website" className="space-y-4">
             <WebsiteTab defaultSection={websiteSection as any} />
           </TabsContent>
+          <TabsContent value="crm" className="space-y-4">
+            <CRMTab />
+          </TabsContent>
           <TabsContent value="api" className="space-y-4">
             <ApiTab />
           </TabsContent>
