@@ -120,8 +120,9 @@ async def get_all_terms(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+    api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = _tid(user, partner_code, x_view_as_tenant)
+    tid = _tid(user, partner_code, x_view_as_tenant, api_key_tid)
     terms = await db.terms_and_conditions.find({"tenant_id": tid}, {"_id": 0}).to_list(100)
     return {"terms": terms}
 
