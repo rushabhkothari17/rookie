@@ -129,7 +129,8 @@ async def validate_promo_code(
     payload: ApplyPromoRequest,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    code = await db.promo_codes.find_one({"code": payload.code.upper()}, {"_id": 0})
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    code = await db.promo_codes.find_one({"tenant_id": tid, "code": payload.code.upper()}, {"_id": 0})
     if not code:
         raise HTTPException(status_code=404, detail="Invalid promo code")
     if not code.get("enabled"):
