@@ -466,6 +466,15 @@ export function ArticlesTab() {
                         <ExternalLink size={10} /> View
                       </Button>
                     </a>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1" onClick={() => downloadArticle(a.id, "pdf")} data-testid={`article-dl-pdf-${a.id}`}>
+                      <FileText size={10} /> PDF
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1" onClick={() => downloadArticle(a.id, "docx")} data-testid={`article-dl-docx-${a.id}`}>
+                      <Download size={10} /> DOCX
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1" onClick={() => saveAsTemplate(a)} data-testid={`article-save-template-${a.id}`}>
+                      <LayoutTemplate size={10} /> Template
+                    </Button>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1" onClick={() => handleViewLogs(a)} data-testid={`article-logs-${a.id}`}>
                       <Clock size={10} /> Logs
                     </Button>
