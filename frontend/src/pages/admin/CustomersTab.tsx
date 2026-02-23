@@ -36,7 +36,7 @@ export function CustomersTab() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const PER_PAGE = 20;
+  const PER_PAGE = 10;
 
   const ws = useWebsite();
 
