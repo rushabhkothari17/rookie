@@ -87,7 +87,7 @@ export function SetupChecklistWidget({ onNavigate }: Props) {
           return (
             <button
               key={item.key}
-              onClick={() => !done && onNavigate(item.tab)}
+              onClick={() => !done && onNavigate(item.tab, item.section)}
               className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${done ? "opacity-60 cursor-default" : "hover:bg-slate-50 cursor-pointer"}`}
               data-testid={`checklist-item-${item.key}`}
             >
