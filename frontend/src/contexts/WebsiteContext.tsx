@@ -130,6 +130,17 @@ export interface WebsiteSettings {
   cart_clear_btn_text: string;
   msg_currency_unsupported: string;
   msg_no_payment_methods: string;
+  // Footer extras
+  footer_about_title: string;
+  footer_about_text: string;
+  footer_nav_title: string;
+  footer_contact_title: string;
+  footer_social_title: string;
+  social_twitter: string;
+  social_linkedin: string;
+  social_facebook: string;
+  social_instagram: string;
+  social_youtube: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
