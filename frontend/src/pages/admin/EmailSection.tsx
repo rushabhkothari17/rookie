@@ -650,13 +650,17 @@ export default function EmailSection() {
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [showLogs, setShowLogs] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [activeProvider, setActiveProvider] = useState<string | null>(null);
+  const [integrationStatus, setIntegrationStatus] = useState<any>(null);
+  const [settingActiveProvider, setSettingActiveProvider] = useState(false);
 
   const load = async () => {
     setLoadingTemplates(true);
     try {
-      const [tmplRes, settingsRes] = await Promise.all([
+      const [tmplRes, settingsRes, integRes] = await Promise.all([
         api.get("/admin/email-templates"),
         api.get("/admin/settings/structured"),
+        api.get("/admin/integrations/status"),
       ]);
       setTemplates(tmplRes.data.templates || []);
       const emailItems: Record<string, SettingItem> = {};
@@ -664,6 +668,8 @@ export default function EmailSection() {
         emailItems[item.key] = item;
       });
       setEmailSettings(emailItems);
+      setActiveProvider(integRes.data.active_email_provider);
+      setIntegrationStatus(integRes.data.integrations);
     } catch { toast.error("Failed to load email settings"); }
     finally { setLoadingTemplates(false); }
   };
@@ -678,7 +684,29 @@ export default function EmailSection() {
   useEffect(() => { load(); }, []);
   useEffect(() => { if (showLogs) loadLogs(); }, [showLogs]);
 
+  const setProviderActive = async (provider: string) => {
+    setSettingActiveProvider(true);
+    try {
+      await api.post("/admin/integrations/email-providers/set-active", { provider });
+      setActiveProvider(provider === "none" ? null : provider);
+      toast.success(
+        provider === "none" 
+          ? "Email sending disabled. All emails will be stored in outbox only." 
+          : `${provider === "resend" ? "Resend" : "Zoho Mail"} is now your active email provider. The previous provider has been deactivated.`
+      );
+      load(); // Refresh to get updated status
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to set active provider");
+    } finally {
+      setSettingActiveProvider(false);
+    }
+  };
+
   const toggleTemplate = async (tmpl: EmailTemplate) => {
+    if (!activeProvider) {
+      toast.error("Please activate an email provider first before enabling templates");
+      return;
+    }
     try {
       await api.put(`/admin/email-templates/${tmpl.id}`, { is_enabled: !tmpl.is_enabled });
       setTemplates(prev => prev.map(t => t.id === tmpl.id ? { ...t, is_enabled: !t.is_enabled } : t));
@@ -693,14 +721,55 @@ export default function EmailSection() {
 
   if (loadingTemplates) return <div className="text-slate-400 text-sm">Loading…</div>;
 
+  const resendValidated = integrationStatus?.resend?.is_validated;
+  const zohoMailValidated = integrationStatus?.zoho_mail?.is_validated;
+
   return (
     <div data-testid="email-section">
+      {/* Active Provider Alert */}
+      {activeProvider && (
+        <div className="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
+          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+          <p className="text-sm text-emerald-700">
+            <strong>{activeProvider === "resend" ? "Resend" : "Zoho Mail"}</strong> is your active email provider. 
+            Emails will be sent through this service. Only one provider can be active at a time.
+          </p>
+        </div>
+      )}
+      {!activeProvider && (
+        <div className="mb-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+          <AlertCircle size={16} className="text-amber-600 shrink-0" />
+          <p className="text-sm text-amber-700">
+            <strong>No email provider active.</strong> Emails are stored in outbox but not sent. 
+            Configure and activate a provider below to start sending emails.
+          </p>
+        </div>
+      )}
+
       {/* Provider */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-slate-700 mb-1">Email Providers</h3>
-        <p className="text-xs text-slate-400 mb-3">Click a tile to configure the email provider settings.</p>
-        <ProviderSection settings={emailSettings} />
-        <ZohoMailSection />
+        <p className="text-xs text-slate-400 mb-3">
+          Configure your email provider. Only one provider can be active at a time. 
+          When you activate a new provider, the previous one is automatically deactivated.
+        </p>
+        <ProviderSection 
+          settings={emailSettings} 
+          isActive={activeProvider === "resend"}
+          isValidated={resendValidated}
+          onSetActive={() => setProviderActive("resend")}
+          onDeactivate={() => setProviderActive("none")}
+          settingActive={settingActiveProvider}
+          onRefresh={load}
+        />
+        <ZohoMailSection 
+          isActive={activeProvider === "zoho_mail"}
+          isValidated={zohoMailValidated}
+          onSetActive={() => setProviderActive("zoho_mail")}
+          onDeactivate={() => setProviderActive("none")}
+          settingActive={settingActiveProvider}
+          onRefresh={load}
+        />
       </div>
 
       {/* Templates */}
