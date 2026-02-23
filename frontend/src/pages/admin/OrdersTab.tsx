@@ -560,6 +560,119 @@ export function OrdersTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Refund Dialog */}
+      <Dialog open={showRefundDialog} onOpenChange={(open) => { setShowRefundDialog(open); if (!open) { setSelectedOrder(null); setRefundForm({ amount: "", reason: "requested_by_customer", provider: "manual", processViaProvider: true }); } }}>
+        <DialogContent className="max-w-md" data-testid="admin-order-refund-dialog">
+          <DialogHeader><DialogTitle>Process Refund</DialogTitle></DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-4 py-2">
+              <div className="bg-slate-50 rounded-lg p-3 text-sm">
+                <div className="flex justify-between mb-1">
+                  <span className="text-slate-500">Order</span>
+                  <span className="font-mono font-medium">{selectedOrder.order_number}</span>
+                </div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-slate-500">Order Total</span>
+                  <span className="font-medium">${selectedOrder.total?.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Already Refunded</span>
+                  <span className="font-medium text-amber-600">${((selectedOrder.refunded_amount || 0) / 100).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
+                  <span className="text-slate-700 font-medium">Available to Refund</span>
+                  <span className="font-bold text-emerald-600">
+                    ${(selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Refund Amount ($)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder={`Max: ${(selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100).toFixed(2)}`}
+                  value={refundForm.amount}
+                  onChange={(e) => setRefundForm({ ...refundForm, amount: e.target.value })}
+                  data-testid="admin-refund-amount-input"
+                />
+                <p className="text-[10px] text-slate-400">Leave empty for full refund of available balance</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Reason</label>
+                <Select value={refundForm.reason} onValueChange={(v) => setRefundForm({ ...refundForm, reason: v })}>
+                  <SelectTrigger data-testid="admin-refund-reason-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="requested_by_customer">Requested by Customer</SelectItem>
+                    <SelectItem value="duplicate">Duplicate Payment</SelectItem>
+                    <SelectItem value="fraudulent">Fraudulent</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Provider</label>
+                <Select value={refundForm.provider} onValueChange={(v) => setRefundForm({ ...refundForm, provider: v })}>
+                  <SelectTrigger data-testid="admin-refund-provider-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">Manual (Record Only)</SelectItem>
+                    <SelectItem value="stripe">Stripe</SelectItem>
+                    <SelectItem value="gocardless">GoCardless</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {refundForm.provider !== "manual" && (
+                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={refundForm.processViaProvider}
+                    onChange={(e) => setRefundForm({ ...refundForm, processViaProvider: e.target.checked })}
+                  />
+                  Process refund via {refundForm.provider} API
+                </label>
+              )}
+
+              <Button
+                onClick={async () => {
+                  if (!selectedOrder) return;
+                  setProcessingRefund(true);
+                  try {
+                    const res = await api.post(`/admin/orders/${selectedOrder.id}/refund`, {
+                      amount: refundForm.amount ? parseFloat(refundForm.amount) : null,
+                      reason: refundForm.reason,
+                      provider: refundForm.provider,
+                      process_via_provider: refundForm.provider !== "manual" && refundForm.processViaProvider
+                    });
+                    toast.success(`Refund of $${res.data.amount?.toFixed(2)} processed successfully`);
+                    setShowRefundDialog(false);
+                    setSelectedOrder(null);
+                    setRefundForm({ amount: "", reason: "requested_by_customer", provider: "manual", processViaProvider: true });
+                    load(page);
+                  } catch (e: any) {
+                    toast.error(e.response?.data?.detail || "Failed to process refund");
+                  } finally {
+                    setProcessingRefund(false);
+                  }
+                }}
+                className="w-full"
+                disabled={processingRefund}
+                data-testid="admin-refund-submit-btn"
+              >
+                {processingRefund ? "Processing..." : "Process Refund"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
