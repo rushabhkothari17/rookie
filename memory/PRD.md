@@ -24,30 +24,66 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 ### Backend
 ```
 /app/backend/
-├── models.py               # WebsiteSettingsUpdate (75+ fields), QuoteRequest, RegisterRequest
+├── models.py               # WebsiteSettingsUpdate (75+ fields), ResendVerificationRequest
 ├── routes/
-│   ├── auth.py             # profile_meta support, configurable verification email
-│   ├── articles.py         # Configurable email templates
+│   ├── auth.py             # POST /api/auth/resend-verification-email (added), configurable verification email
+│   ├── checkout.py         # Payment provider enabled checks (stripe + gocardless global flag)
 │   └── admin/
 │       └── website.py      # DEFAULT_WEBSITE_SETTINGS with 75+ field defaults
 ├── services/
-│   └── settings_service.py # Structured settings (Payments/Email/Zoho/Branding/Operations)
+│   └── settings_service.py # Structured settings - OverrideCodes/Checkout categories; seed() migrates existing DB records
 ```
 
 ### Frontend
 ```
 /app/frontend/src/
 ├── components/
-│   ├── FormSchemaBuilder.tsx          # Visual form field schema editor
+│   ├── FormSchemaBuilder.tsx
 │   ├── admin/
-│   │   └── CheckoutSectionsBuilder.tsx  # Dynamic checkout section builder (NEW)
-│   ├── IconPicker.tsx
+│   │   └── CheckoutSectionsBuilder.tsx
 │   └── TopNav.tsx
 ├── contexts/
 │   └── WebsiteContext.tsx     # 75+ dynamic fields
 ├── pages/
-│   ├── Admin.tsx              # Settings tab REMOVED, merged into Website Content
-│   ├── Cart.tsx               # Fully dynamic (new checkout_sections + legacy fallback)
+│   ├── VerifyEmail.tsx        # Added "Resend verification code" button
+│   ├── admin/
+│   │   ├── WebsiteTab.tsx     # Footer & Nav → tile layout; Bank Transfer merged into Checkout Success; Zoho amber box removed
+│   │   └── ReferencesSection.tsx  # All items get delete button (removed !ref.system guard)
+```
+
+---
+
+## What's Been Implemented
+
+### Session — Iteration 49 (Feb 2026)
+- **P0 Bug Fix**: Payment providers now properly blocked at backend when disabled in admin settings. Both `POST /api/checkout/session` (Stripe) and `POST /api/checkout/bank-transfer` (GoCardless) check global `stripe_enabled`/`gocardless_enabled` flags before processing.
+- **P0 Bug Fix**: Added `POST /api/auth/resend-verification-email` endpoint + "Resend verification code" button on `/verify` page.
+- **P1**: Removed redundant "Bank Transfer Success" admin tile. Content merged into "Checkout Success" slide-over (single place to manage both payment types).
+- **P1**: Removed special Zoho amber box from References section. All references now treated equally with delete button.
+- **Task**: `override_code_expiry_hours` moved to "OverrideCodes" category in settings_service.py, appears in its own card in System Config.
+- **Task**: `partner_tagging_enabled` moved to "Checkout" category, appears in Checkout Page Builder slide-over.
+- **Task**: Footer & Nav section refactored from long scrolling form to tile-based layout with 5 tiles + SlideOver editors.
+- **settings_service.py seed()**: Now migrates stale metadata (category/description/value_type) for existing DB settings records.
+
+### Earlier Sessions
+- Admin Panel Reorganization (Phase 1 & 2): Sidebar navigation, tile-based UI, SlideOver editors
+- Email Templates section, Store Hero merge into Branding
+- AppFooter.tsx, SlideOver.tsx components
+- Dynamic checkout sections builder
+- Full page whitelabeling (75+ settings)
+
+---
+
+## P0/P1/P2 Backlog (Remaining)
+
+### P0 — None currently
+
+### P1 — None currently (all user-reported items resolved)
+
+### P2 — Future
+- Admin Dashboard for visualizing key business metrics
+- Fix known low-priority React Hydration Warning in browser console
+
 │   ├── CheckoutSuccess.tsx    # All strings from ws.checkout_success_*
 │   ├── BankTransferSuccess.tsx # All strings from ws.bank_*
 │   ├── NotFound.tsx           # ws.page_404_title/link_text
