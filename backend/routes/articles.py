@@ -139,6 +139,54 @@ async def get_article_by_id(
     return {"article": article}
 
 
+@router.get("/articles/{article_id}/download")
+async def download_article(
+    article_id: str,
+    format: str = "pdf",
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Download an article as PDF or DOCX."""
+    from fastapi.responses import Response
+    from services.document_service import generate_pdf, generate_docx
+
+    article = await db.articles.find_one(
+        {"$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
+        {"_id": 0},
+    )
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+    if article.get("visibility") != "all" and article.get("restricted_to"):
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+        is_admin = user.get("role") in ("admin", "super_admin")
+        if not is_admin and (not customer or customer["id"] not in article.get("restricted_to", [])):
+            raise HTTPException(status_code=403, detail="You don't have access to this article")
+
+    # Resolve author email
+    author_user = await db.users.find_one({"id": user["id"]}, {"_id": 0, "email": 1, "full_name": 1})
+    author = (author_user or {}).get("full_name") or (author_user or {}).get("email") or "—"
+
+    title = article.get("title", "Article")
+    content = article.get("content") or ""
+    created_at = article.get("created_at", "")
+    updated_at = article.get("updated_at", "")
+    safe_name = _re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60]
+
+    if format == "docx":
+        data = generate_docx(title, author, created_at, updated_at, content)
+        return Response(
+            content=data,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f'attachment; filename="{safe_name}.docx"'},
+        )
+    else:
+        data = generate_pdf(title, author, created_at, updated_at, content)
+        return Response(
+            content=data,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{safe_name}.pdf"'},
+        )
+
+
 @router.post("/articles")
 async def create_article(
     payload: ArticleCreate,
