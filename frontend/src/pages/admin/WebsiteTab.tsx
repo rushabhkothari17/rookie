@@ -898,6 +898,16 @@ export default function WebsiteTab() {
           </div>
         )}
 
+        {/* Admin Panel */}
+        {authSlide === "admin_panel" && (
+          <div className="space-y-4">
+            <p className="text-xs text-slate-500">Customise the header shown at the top of the admin panel dashboard.</p>
+            <Field label="Badge text" hint='Small label above the title (e.g. "ADMINISTRATION")' value={ws.admin_page_badge} onChange={s("admin_page_badge")} testId="ws-admin-badge" />
+            <Field label="Title" hint='Main heading (e.g. "Admin Control Centre")' value={ws.admin_page_title} onChange={s("admin_page_title")} testId="ws-admin-title" />
+            <Field label="Subtitle" hint="Shown below the title" value={ws.admin_page_subtitle} onChange={s("admin_page_subtitle")} multiline testId="ws-admin-subtitle" />
+          </div>
+        )}
+
         {/* Checkout Builder */}
         {authSlide === "checkout_builder" && (
           <div className="space-y-5">
