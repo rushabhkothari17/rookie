@@ -17,14 +17,17 @@ router = APIRouter(prefix="/api", tags=["email-templates"])
 
 @router.get("/admin/email-templates")
 async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    await EmailService.ensure_seeded(db)
-    templates = await db.email_templates.find({}, {"_id": 0}).sort("trigger", 1).to_list(100)
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    await EmailService.ensure_seeded(db, tid)
+    templates = await db.email_templates.find(tf, {"_id": 0}).sort("trigger", 1).to_list(100)
     return {"templates": templates}
 
 
 @router.put("/admin/email-templates/{template_id}")
 async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    tmpl = await db.email_templates.find_one({"id": template_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tmpl = await db.email_templates.find_one({**tf, "id": template_id}, {"_id": 0})
     if not tmpl:
         raise HTTPException(status_code=404, detail="Template not found")
 
@@ -41,5 +44,6 @@ async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict
 
 @router.get("/admin/email-logs")
 async def list_email_logs(limit: int = 50, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    logs = await db.email_logs.find({}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    tf = get_tenant_filter(admin)
+    logs = await db.email_logs.find(tf, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     return {"logs": logs}
