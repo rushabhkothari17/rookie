@@ -178,8 +178,8 @@ async def create_manual_subscription(
         details={"status": payload.status, "amount": payload.amount, "renewal_date": renewal_date_dt.isoformat()},
     )
 
-    # Webhook: subscription.created
-    customer = await db.customers.find_one({"id": sub_doc.get("customer_id", "")}, {"_id": 0}) or {}
+    # Webhook: subscription.created (customer scoped by tenant)
+    customer = await db.customers.find_one({**get_tenant_filter(admin), "id": sub_doc.get("customer_id", "")}, {"_id": 0}) or {}
     await dispatch_event("subscription.created", {
         "id": sub_id,
         "subscription_number": sub_number,
