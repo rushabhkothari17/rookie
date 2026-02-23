@@ -726,6 +726,9 @@ export function WebhooksTab() {
         </Button>
       </div>
 
+      {/* Delivery Status Dashboard */}
+      <DeliveryStatsDashboard />
+
       {/* How it works */}
       <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-800">
         <div className="flex gap-2">
