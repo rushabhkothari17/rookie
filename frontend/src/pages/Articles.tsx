@@ -152,7 +152,7 @@ export default function Articles() {
                     data-testid={`article-card-${article.id}`}
                   >
                     {/* Card top accent */}
-                    <div className="h-1 bg-slate-900 group-hover:bg-red-500 transition-colors" />
+                    <div className="h-1 transition-colors" style={{ backgroundColor: "var(--aa-primary)" }} />
 
                     <div className="p-5 flex flex-col flex-1">
                       {article.category && (
