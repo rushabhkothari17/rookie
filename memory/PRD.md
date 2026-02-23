@@ -87,4 +87,11 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 ## Test Suite
 - `/app/backend/tests/test_security_hardening.py` — 35 tests, all pass (Feb 2026)
 - Previous: `/app/test_reports/iteration_231.json` — 31 tests, all pass (pre-security work)
-- Latest: `/app/test_reports/iteration_67.json` — 35 tests, all pass (security hardening)
+- Security: `/app/test_reports/iteration_67.json` — 35 tests, all pass (security hardening)
+- Webhooks: `/app/test_reports/iteration_364.json` — 49 tests, all pass (webhook system)
+- UI Bugs: `/app/test_reports/iteration_70.json` — 7 backend + frontend tests pass (login flow fix)
+
+### P0 Bug Fixes (Feb 2026)
+**Bug 1 - Admin Tab Visibility:** Fixed customer login flow. AuthContext now falls back to `/auth/customer-login` when `/auth/partner-login` returns 403 "Access denied". TopNav correctly uses `{user?.is_admin && ...}` to hide Admin tab for customers.
+
+**Bug 2 - Partner Code Display:** Partner code now displays correctly in user profile. Backend `/me` endpoint resolves `partner_code` from tenant table via `tenant_id`. Profile.tsx displays `user?.partner_code` with fallback to "—".
