@@ -750,11 +750,41 @@ async def verify_email(payload: VerifyEmailRequest):
         raise HTTPException(status_code=404, detail="User not found")
     if user.get("is_verified"):
         return {"message": "Already verified"}
+    
+    # SECURITY: Track verification attempts to prevent brute-force
+    verification_attempts = user.get("verification_attempts", 0)
+    verification_locked_until = user.get("verification_locked_until")
+    
+    # Check if locked out
+    if verification_locked_until:
+        from datetime import datetime
+        try:
+            locked_until = datetime.fromisoformat(verification_locked_until.replace("Z", "+00:00"))
+            if datetime.now(locked_until.tzinfo) < locked_until:
+                raise HTTPException(status_code=429, detail="Too many verification attempts. Try again later.")
+        except (ValueError, TypeError):
+            pass  # Invalid date format, continue
+    
     if user.get("verification_code") != payload.code:
+        # Increment attempt counter
+        new_attempts = verification_attempts + 1
+        update = {"$set": {"verification_attempts": new_attempts}}
+        
+        # Lock after 5 failed attempts for 15 minutes
+        if new_attempts >= 5:
+            from datetime import timedelta
+            lock_until = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+            update["$set"]["verification_locked_until"] = lock_until
+            await db.users.update_one({"id": user["id"]}, update)
+            raise HTTPException(status_code=429, detail="Too many verification attempts. Try again in 15 minutes.")
+        
+        await db.users.update_one({"id": user["id"]}, update)
         raise HTTPException(status_code=400, detail="Invalid code")
+    
+    # Valid code - clear verification state
     await db.users.update_one(
         {"id": user["id"]},
-        {"$set": {"is_verified": True, "verification_code": None}},
+        {"$set": {"is_verified": True, "verification_code": None, "verification_attempts": 0, "verification_locked_until": None}},
     )
     await db.email_outbox.insert_one({
         "id": make_id(),
