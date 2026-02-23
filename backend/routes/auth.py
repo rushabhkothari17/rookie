@@ -208,14 +208,17 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
 # ---------------------------------------------------------------------------
 
 @router.post("/auth/partner-login")
-async def partner_login(payload: PartnerLoginRequest):
+async def partner_login(payload: PartnerLoginRequest, response: Response):
     """Login for partner organization users (super_admin, admin, staff).
     Requires partner_code to identify the tenant.
+    Sets HttpOnly cookie with JWT token.
     """
     tenant = await resolve_tenant(payload.partner_code)
     partner_roles = ["partner_super_admin", "partner_admin", "partner_staff",
                      "platform_admin", "super_admin", "admin"]
-    return await _authenticate(payload.email, payload.password, tenant["id"], partner_roles)
+    result = await _authenticate(payload.email, payload.password, tenant["id"], partner_roles)
+    _set_auth_cookie(response, result["token"])
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -223,9 +226,10 @@ async def partner_login(payload: PartnerLoginRequest):
 # ---------------------------------------------------------------------------
 
 @router.post("/auth/customer-login")
-async def customer_login(payload: CustomerLoginRequest):
+async def customer_login(payload: CustomerLoginRequest, response: Response):
     """Login for customers belonging to a specific partner organization.
     Requires partner_code to identify the tenant.
+    Sets HttpOnly cookie with JWT token.
     """
     tenant = await resolve_tenant(payload.partner_code)
     customer_roles = ["customer", ""]
