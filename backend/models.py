@@ -35,6 +35,10 @@ class VerifyEmailRequest(BaseModel):
     code: str
 
 
+class ResendVerificationRequest(BaseModel):
+    email: str
+
+
 class UpdateProfileRequest(BaseModel):
     full_name: Optional[str] = None
     company_name: Optional[str] = None
