@@ -284,7 +284,28 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
-## Session 12 Changes (Feb 23, 2026)
+## Session 13 Changes (Feb 23, 2026)
+
+### Cart Page Fix
+- Root cause: `field.options` stored as newline-separated string in DB, Cart.tsx called `.map()` directly → crash
+- Fix: Added `parseOptions()` helper that handles both `string[]` and newline-separated string
+
+### RichHtmlEditor - Shared 3-tab Editor
+- Created `/app/frontend/src/components/ui/RichHtmlEditor.tsx`
+- 3 tabs: **Rich Text** (Tiptap WYSIWYG), **HTML** (raw textarea), **Preview** (contentEditable - read/write)
+- Applied to: Articles editor (withImages), Email Body Composer, Article Email Templates, Terms content editor
+- EmailSection.tsx: Preview tab made editable (contentEditable)
+
+### Admin Panel Text → Configurable
+- New fields: `admin_page_badge`, `admin_page_title`, `admin_page_subtitle`
+- New "Admin Panel" tile in Website Content > Auth & Pages
+- Admin.tsx reads from WebsiteContext with fallbacks
+
+### Bank Transaction Form → Configurable
+- New fields: `bank_transaction_sources`, `bank_transaction_types`, `bank_transaction_statuses`
+- New "Bank Transaction Form" tile in Website Content > Forms
+- BankTransactionsTab reads SOURCES/TYPES/STATUSES from website settings (with defaults)
+- Backend: new fields added to WebsiteSettingsUpdate model
 
 ### Article Email Features (New)
 - **Email Article Composer:** Replaced basic email dialog with a rich email composer featuring:
