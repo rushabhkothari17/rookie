@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { TenantSwitcher } from "@/components/TenantSwitcher";
+import { CustomerSwitcher } from "@/components/CustomerSwitcher";
 
 export default function TopNav() {
   const { user, logout } = useAuth();
