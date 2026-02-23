@@ -1,5 +1,6 @@
 """Authentication routes: register, verify-email, login, /me.
 Supports multi-tenant login via partner_code.
+HttpOnly cookie support for enhanced security.
 """
 from __future__ import annotations
 
@@ -8,7 +9,8 @@ import secrets
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, Request
+from fastapi.responses import JSONResponse
 
 from core.helpers import make_id, now_iso, currency_for_country
 from core.security import pwd_context, create_access_token, get_current_user
@@ -20,6 +22,7 @@ from models import (
 )
 from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
+import os
 
 router = APIRouter(prefix="/api", tags=["auth"])
 
@@ -28,6 +31,9 @@ router = APIRouter(prefix="/api", tags=["auth"])
 # ---------------------------------------------------------------------------
 MAX_FAILED_ATTEMPTS = 10
 LOCKOUT_MINUTES = 15
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "true").lower() == "true"
+COOKIE_SAMESITE = os.environ.get("COOKIE_SAMESITE", "lax")
+TOKEN_EXPIRY_HOURS = 24
 
 
 # ---------------------------------------------------------------------------
