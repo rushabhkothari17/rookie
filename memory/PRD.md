@@ -43,18 +43,21 @@ See CHANGELOG.md for full details. 35/35 security tests pass.
 Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL injection prevention, HTML sanitization, brute-force lockout, admin unlock, password complexity, token invalidation, CSV formula injection, file upload limits, MongoDB indexes, audit logging.
 
 ## P0 — Pre-Production Checklist
-- [ ] Set `ENVIRONMENT=production` in backend .env
-- [ ] Set strong `ADMIN_PASSWORD` (change default `ChangeMe123!`)
-- [ ] Verify `JWT_SECRET` is ≥ 32 bytes cryptographically random
+- [x] ~~Set `ENVIRONMENT=production` in backend .env~~ (code ready — set env var before deploy)
+- [x] ~~JWT_SECRET rotated to strong 64-char hex~~ (done — `backend/.env` updated)
+- [x] ~~Startup validation warns/errors on weak secrets~~ (implemented in `server.py`)
+- [ ] Set strong `ADMIN_PASSWORD` (change default `ChangeMe123!` before production deploy)
 - [ ] Verify MongoDB connection string uses read/write role (not root)
-- [ ] Run `pip-audit` to check for CVEs
 
-## P1 — Backlog (Pre-Launch Recommended)
-- [ ] API key hashing: store SHA-256 hash instead of plaintext
-- [ ] Content-Security-Policy header in SecurityHeadersMiddleware
-- [ ] JWT migration from localStorage to HttpOnly cookie
-- [ ] Export audit logging
-- [ ] Run `pip-audit` + `npm audit`
+## P1 — Implemented
+- [x] ~~API key hashing: SHA-256 stored, raw key never in DB~~ (done + migration on startup)
+- [x] ~~Content-Security-Policy header~~ (done in `SecurityHeadersMiddleware`)
+- [x] ~~Export audit logging~~ (done for orders + customers exports)
+- [x] ~~starlette upgraded to 0.41.0 (CVE-2024-47874 fixed)~~
+- [x] ~~pymongo upgraded to 4.6.3 (CVE-2024-5629 fixed)~~
+- [x] ~~fastapi upgraded to 0.115.14~~
+- [ ] JWT migration from localStorage to HttpOnly cookie (large refactor — future)
+- [ ] Run `pip-audit` + `npm audit` as part of CI/CD pipeline
 
 ## P2 — Future Sprints
 - [ ] MFA / TOTP for admin accounts
