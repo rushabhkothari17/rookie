@@ -215,6 +215,166 @@ async def get_tenant_info(code: str):
     return {"tenant": {"name": tenant["name"], "code": tenant["code"]}}
 
 
+async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
+    """Provision a brand-new tenant with generic sample data (no other-tenant references)."""
+    # 1. Website settings — generic, no Automate Accounts content
+    await db.website_settings.insert_one({
+        "tenant_id": tenant_id,
+        "store_name": tenant_name,
+        "hero_label": "STOREFRONT",
+        "hero_title": "Our Services",
+        "hero_subtitle": "Choose from our range of professional services tailored to your business needs.",
+        "login_title": "Welcome back",
+        "login_subtitle": "Sign in to your account to continue.",
+        "login_portal_label": "Customer Portal",
+        "login_btn_text": "Sign In",
+        "register_title": "Create your account",
+        "register_subtitle": "",
+        "signup_label": "Get Started",
+        "signup_form_title": "Create your account",
+        "signup_form_subtitle": "",
+        "signup_btn_text": "Create Account",
+        "verify_email_label": "Verify Email",
+        "verify_email_title": "Enter your code",
+        "verify_email_subtitle": "We sent a 6-digit verification code to your email address.",
+        "portal_label": "Customer Portal",
+        "portal_title": "My Account",
+        "portal_subtitle": "Track your orders, subscriptions, and manage your account.",
+        "profile_label": "My Profile",
+        "profile_title": "Account Details",
+        "profile_subtitle": "Update your contact details.",
+        "contact_email": "",
+        "contact_phone": "",
+        "contact_address": "",
+        "footer_tagline": f"Professional services by {tenant_name}.",
+        "footer_copyright": f"© {tenant_name}. All rights reserved.",
+        "footer_about_title": "About Us",
+        "footer_about_text": f"Welcome to {tenant_name}. We provide expert services to help your business grow.",
+        "footer_nav_title": "Navigation",
+        "footer_contact_title": "Contact",
+        "footer_social_title": "Follow Us",
+        "nav_store_label": "Services",
+        "nav_articles_label": "Resources",
+        "nav_portal_label": "My Account",
+        "social_twitter": "",
+        "social_linkedin": "",
+        "social_facebook": "",
+        "social_instagram": "",
+        "social_youtube": "",
+        "quote_form_title": "Request a Quote",
+        "quote_form_subtitle": "Fill in your details and we'll get back to you with a custom quote.",
+        "quote_form_response_time": "We'll respond within 1–2 business days.",
+        "scope_form_title": "Request Scope",
+        "scope_form_subtitle": "Tell us about your project and we'll get back to you with a detailed scope.",
+        "email_from_name": "",
+        "email_article_subject_template": "Article: {{article_title}}",
+        "email_article_cta_text": "View Article",
+        "email_article_footer_text": "Your consultant has shared this document with you.",
+        "email_verification_subject": "Verify your email address",
+        "email_verification_body": "Your verification code is: {{code}}. This code expires in 24 hours.",
+        "articles_hero_label": "Resources",
+        "articles_hero_title": "Articles & Guides",
+        "articles_hero_subtitle": "Tips, guides, and updates from our team.",
+        "checkout_zoho_enabled": False,
+        "checkout_partner_enabled": False,
+        "checkout_extra_schema": "[]",
+        "checkout_sections": "[]",
+        "payment_gocardless_label": "Bank Transfer (Direct Debit)",
+        "payment_gocardless_description": "No processing fee. We'll set up a direct debit from your account.",
+        "payment_stripe_label": "Card Payment",
+        "payment_stripe_description": "Pay securely by credit or debit card. A processing fee applies.",
+        "msg_cart_empty": "Your cart is empty. Browse our services to get started.",
+        "msg_terms_not_accepted": "Please read and accept the Terms & Conditions to proceed.",
+        "msg_quote_success": "Thank you! Your quote request has been received.",
+        "msg_scope_success": "Thank you! Your scope request has been received.",
+        "msg_no_payment_methods": "No payment methods are currently available. Please contact support.",
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # 2. App settings (empty, tenant fills in integration keys themselves)
+    await db.app_settings.insert_one({
+        "tenant_id": tenant_id,
+        "store_name": tenant_name,
+        "primary_color": "#2563eb",
+        "secondary_color": "#1e40af",
+        "accent_color": "#3b82f6",
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # 3. Default product category
+    cat_id = make_id()
+    await db.categories.insert_one({
+        "id": cat_id,
+        "tenant_id": tenant_id,
+        "name": "General Services",
+        "description": "General professional services.",
+        "is_active": True,
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # 4. Sample product
+    prod_id = make_id()
+    await db.products.insert_one({
+        "id": prod_id,
+        "tenant_id": tenant_id,
+        "name": "Sample Service",
+        "description": "This is a sample service. Edit or replace it from the Admin > Catalog panel.",
+        "category": "General Services",
+        "is_active": True,
+        "currency": "GBP",
+        "pricing_type": "fixed",
+        "base_price": 99.00,
+        "billing_period": "one_time",
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # 5. Sample article
+    article_id = make_id()
+    await db.articles.insert_one({
+        "id": article_id,
+        "tenant_id": tenant_id,
+        "title": "Welcome to Your Knowledge Base",
+        "slug": "welcome-to-your-knowledge-base",
+        "category": "Blog",
+        "content": "<h2>Welcome!</h2><p>This is a sample article. You can edit or delete it from the Admin &gt; Articles panel. Use articles to share guides, SOPs, and updates with your customers.</p>",
+        "visibility": "all",
+        "status": "published",
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # 6. Default Terms & Conditions
+    terms_id = make_id()
+    await db.terms_and_conditions.insert_one({
+        "id": terms_id,
+        "tenant_id": tenant_id,
+        "title": "Terms & Conditions",
+        "content": f"<h2>Terms & Conditions</h2><p>These are the default Terms & Conditions for {tenant_name}. Please update this document from Admin &gt; Terms &amp; Conditions before going live.</p><h3>1. Acceptance of Terms</h3><p>By accessing or using our services, you agree to be bound by these Terms & Conditions.</p><h3>2. Services</h3><p>We reserve the right to modify or discontinue any service at any time.</p><h3>3. Payment</h3><p>Payment is due in accordance with the pricing schedule agreed at time of purchase.</p><h3>4. Governing Law</h3><p>These terms shall be governed by the applicable laws of your jurisdiction.</p>",
+        "is_default": True,
+        "status": "active",
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # 7. Default email template (order confirmation)
+    tpl_id = make_id()
+    await db.email_templates.insert_one({
+        "id": tpl_id,
+        "tenant_id": tenant_id,
+        "trigger": "order_confirmed",
+        "name": "Order Confirmed",
+        "subject": "Your order has been confirmed — {{order_number}}",
+        "body": "<p>Hi {{customer_name}},</p><p>Thank you for your order. Your order <strong>{{order_number}}</strong> has been confirmed.</p><p>We'll be in touch soon.</p><p>Thanks,<br>{{store_name}}</p>",
+        "is_active": True,
+        "created_at": now,
+        "updated_at": now,
+    })
+
+
 @router.post("/auth/register-partner")
 async def register_partner(payload: Dict[str, Any] = Body(...)):
     """Self-service partner organization registration.
