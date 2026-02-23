@@ -622,48 +622,182 @@ async def get_all_integrations_status(admin: Dict[str, Any] = Depends(get_tenant
     ).to_list(20)
     
     # Get Resend status
-    resend_key = await db.app_settings.find_one(
-        {"tenant_id": tid, "key": "resend_api_key"},
+    resend_validated = await db.integrations.find_one(
+        {"tenant_id": tid, "service": "resend_validated"},
+        {"_id": 0}
+    )
+    
+    # Get active email provider
+    active_provider = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "active_email_provider"},
         {"_id": 0}
     )
     
     # Get Stripe status
-    stripe_key = await db.app_settings.find_one(
-        {"tenant_id": tid, "key": "stripe_secret_key"},
+    stripe_validated = await db.integrations.find_one(
+        {"tenant_id": tid, "service": "stripe_validated"},
         {"_id": 0}
     )
     
     # Get GoCardless status
-    gc_key = await db.app_settings.find_one(
-        {"tenant_id": tid, "key": "gocardless_access_token"},
+    gc_validated = await db.integrations.find_one(
+        {"tenant_id": tid, "service": "gocardless_validated"},
         {"_id": 0}
     )
     
+    zoho_mail = next((i for i in integrations if i.get("service") == "zoho_mail"), None)
+    zoho_crm = next((i for i in integrations if i.get("service") == "zoho_crm"), None)
+    
     return {
+        "active_email_provider": active_provider.get("value") if active_provider else None,
         "integrations": {
             "resend": {
-                "status": "connected" if (resend_key and resend_key.get("value")) else "not_configured",
+                "status": "connected" if (resend_validated and resend_validated.get("validated")) else "not_configured",
+                "validated_at": resend_validated.get("validated_at") if resend_validated else None,
+                "is_active": (active_provider.get("value") if active_provider else None) == "resend",
                 "type": "email"
             },
-            "zoho_mail": next(
-                ({"status": "connected" if i.get("credentials") else "credentials_only", 
-                  "datacenter": i.get("datacenter"), "type": "email"}
-                 for i in integrations if i.get("service") == "zoho_mail"),
-                {"status": "not_configured", "type": "email"}
-            ),
-            "zoho_crm": next(
-                ({"status": "connected" if i.get("credentials") else "credentials_only",
-                  "datacenter": i.get("datacenter"), "type": "crm"}
-                 for i in integrations if i.get("service") == "zoho_crm"),
-                {"status": "not_configured", "type": "crm"}
-            ),
+            "zoho_mail": {
+                "status": "connected" if (zoho_mail and zoho_mail.get("validated")) else "not_configured",
+                "datacenter": zoho_mail.get("datacenter") if zoho_mail else None,
+                "validated_at": zoho_mail.get("validated_at") if zoho_mail else None,
+                "is_active": (active_provider.get("value") if active_provider else None) == "zoho_mail",
+                "type": "email"
+            },
+            "zoho_crm": {
+                "status": "connected" if (zoho_crm and zoho_crm.get("validated")) else "not_configured",
+                "datacenter": zoho_crm.get("datacenter") if zoho_crm else None,
+                "validated_at": zoho_crm.get("validated_at") if zoho_crm else None,
+                "type": "crm"
+            },
             "stripe": {
-                "status": "connected" if (stripe_key and stripe_key.get("value")) else "not_configured",
+                "status": "connected" if (stripe_validated and stripe_validated.get("validated")) else "not_configured",
+                "validated_at": stripe_validated.get("validated_at") if stripe_validated else None,
                 "type": "payment"
             },
             "gocardless": {
-                "status": "connected" if (gc_key and gc_key.get("value")) else "not_configured",
+                "status": "connected" if (gc_validated and gc_validated.get("validated")) else "not_configured",
+                "validated_at": gc_validated.get("validated_at") if gc_validated else None,
                 "type": "payment"
             }
         }
     }
+
+
+# === Payment Provider Validation ===
+
+@router.post("/admin/integrations/stripe/validate")
+async def validate_stripe(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Validate Stripe API connection."""
+    tid = tenant_id_of(admin)
+    
+    # Get Stripe keys
+    secret_key = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "stripe_secret_key"},
+        {"_id": 0}
+    )
+    
+    if not secret_key or not secret_key.get("value"):
+        return {"success": False, "message": "Stripe secret key not configured"}
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://api.stripe.com/v1/balance",
+                auth=(secret_key["value"], "")
+            )
+            
+            from datetime import datetime
+            if response.status_code == 200:
+                balance = response.json()
+                await db.integrations.update_one(
+                    {"tenant_id": tid, "service": "stripe_validated"},
+                    {"$set": {
+                        "tenant_id": tid,
+                        "service": "stripe_validated",
+                        "validated": True,
+                        "validated_at": datetime.utcnow().isoformat(),
+                        "currency": balance.get("available", [{}])[0].get("currency", "").upper()
+                    }},
+                    upsert=True
+                )
+                return {
+                    "success": True,
+                    "message": "Stripe connection validated",
+                    "balance": balance.get("available", [])
+                }
+            else:
+                await db.integrations.update_one(
+                    {"tenant_id": tid, "service": "stripe_validated"},
+                    {"$set": {"validated": False, "error": response.text}},
+                    upsert=True
+                )
+                return {"success": False, "message": f"Validation failed: {response.status_code}"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+@router.post("/admin/integrations/gocardless/validate")
+async def validate_gocardless(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Validate GoCardless API connection."""
+    tid = tenant_id_of(admin)
+    
+    # Get GoCardless token
+    access_token = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "gocardless_access_token"},
+        {"_id": 0}
+    )
+    
+    if not access_token or not access_token.get("value"):
+        return {"success": False, "message": "GoCardless access token not configured"}
+    
+    # Get environment setting
+    env_setting = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "gocardless_environment"},
+        {"_id": 0}
+    )
+    environment = env_setting.get("value", "sandbox") if env_setting else "sandbox"
+    
+    base_url = "https://api.gocardless.com" if environment == "live" else "https://api-sandbox.gocardless.com"
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"{base_url}/creditors",
+                headers={
+                    "Authorization": f"Bearer {access_token['value']}",
+                    "GoCardless-Version": "2015-07-06"
+                }
+            )
+            
+            from datetime import datetime
+            if response.status_code == 200:
+                data = response.json()
+                creditors = data.get("creditors", [])
+                await db.integrations.update_one(
+                    {"tenant_id": tid, "service": "gocardless_validated"},
+                    {"$set": {
+                        "tenant_id": tid,
+                        "service": "gocardless_validated",
+                        "validated": True,
+                        "validated_at": datetime.utcnow().isoformat(),
+                        "environment": environment,
+                        "creditor_count": len(creditors)
+                    }},
+                    upsert=True
+                )
+                return {
+                    "success": True,
+                    "message": "GoCardless connection validated",
+                    "environment": environment,
+                    "creditors": len(creditors)
+                }
+            else:
+                await db.integrations.update_one(
+                    {"tenant_id": tid, "service": "gocardless_validated"},
+                    {"$set": {"validated": False, "error": response.text}},
+                    upsert=True
+                )
+                return {"success": False, "message": f"Validation failed: {response.status_code}"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
