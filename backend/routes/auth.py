@@ -649,6 +649,17 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         source="customer_ui",
         meta_json={"company_name": payload.company_name, "tenant_id": tenant_id},
     )
+    # Webhook: customer.registered
+    from services.webhook_service import dispatch_event as _wh_dispatch
+    await _wh_dispatch("customer.registered", {
+        "id": customer_id,
+        "email": payload.email.lower(),
+        "full_name": payload.full_name,
+        "company": payload.company_name or "",
+        "phone": payload.phone or "",
+        "country": getattr(payload.address, "country", ""),
+        "created_at": now_iso(),
+    }, tenant_id)
     return {
         "message": "Verification required",
         "verification_code": verification_code,
