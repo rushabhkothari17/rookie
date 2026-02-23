@@ -461,27 +461,28 @@ class TestSubscriptionsUpdateTenantIsolation:
 class TestBankTransactionsTenantIsolation:
     """
     Test that bank_transactions create validates linked_order_id belongs to same tenant.
-    Tenant A admin should NOT be able to link to Tenant B's order.
+    Tenant B admin should NOT be able to link to Tenant A's order.
     """
 
     @pytest.fixture(scope="class")
-    def tenant_b_order_id(self, tenant_b_admin_token):
-        """Get an order ID from Tenant B."""
+    def tenant_a_order_id(self, tenant_a_admin_token):
+        """Get an order ID from Tenant A."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/orders?per_page=1",
-            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+            f"{BASE_URL}/api/admin/orders?per_page=100",
+            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
-        assert resp.status_code == 200, f"Failed to get Tenant B orders: {resp.text}"
+        assert resp.status_code == 200, f"Failed to get orders: {resp.text}"
         orders = resp.json().get("orders", [])
-        if not orders:
-            pytest.skip("No orders available in Tenant B for testing")
-        return orders[0]["id"]
+        aa_orders = [o for o in orders if o.get("tenant_id") == TENANT_A_ID]
+        if not aa_orders:
+            pytest.skip("No orders available in Tenant A for testing")
+        return aa_orders[0]["id"]
 
-    def test_cannot_create_bank_transaction_with_tenant_b_order(
-        self, tenant_a_admin_token, tenant_b_order_id
+    def test_tenant_b_cannot_create_bank_transaction_with_tenant_a_order(
+        self, tenant_b_admin_token, tenant_a_order_id
     ):
         """
-        CRITICAL IDOR TEST: Tenant A admin cannot create bank transaction linked to Tenant B's order.
+        CRITICAL IDOR TEST: Tenant B admin cannot create bank transaction linked to Tenant A's order.
         Should return 400 with 'Invalid linked_order_id' error.
         """
         from datetime import datetime, timezone
@@ -491,19 +492,19 @@ class TestBankTransactionsTenantIsolation:
             json={
                 "date": datetime.now(timezone.utc).isoformat(),
                 "source": "manual",
-                "transaction_id": "TEST_IDOR_CHECK",
+                "transaction_id": "TEST_IDOR_CHECK_TB",
                 "type": "credit",
                 "amount": 100.00,
                 "status": "completed",
-                "description": "IDOR test transaction",
-                "linked_order_id": tenant_b_order_id,  # Cross-tenant order ID!
+                "description": "IDOR test transaction from Tenant B",
+                "linked_order_id": tenant_a_order_id,  # Cross-tenant order ID!
             },
-            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
         )
         
         # Should be blocked with 400
         assert resp.status_code == 400, (
-            f"SECURITY BUG: Tenant A admin was able to link bank transaction to Tenant B order! "
+            f"SECURITY BUG: Tenant B admin was able to link bank transaction to Tenant A order! "
             f"Expected 400, got {resp.status_code}: {resp.text}"
         )
         
