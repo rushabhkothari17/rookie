@@ -38,18 +38,18 @@ def get_admin_token() -> str:
         "partner_code": PARTNER_CODE,
     })
     assert resp.status_code == 200, f"Admin login failed: {resp.text}"
-    return resp.json()["access_token"]
+    return resp.json()["token"]
 
 
 def get_tenant_b_token() -> str:
     """Login as tenant-b admin and return JWT."""
-    resp = requests.post(f"{BASE_URL}/api/auth/partner-login", json={
+    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": TENANT_B_EMAIL,
         "password": TENANT_B_PASS,
         "partner_code": TENANT_B_PARTNER_CODE,
     })
     assert resp.status_code == 200, f"Tenant B login failed: {resp.text}"
-    return resp.json()["access_token"]
+    return resp.json()["token"]
 
 
 def auth_headers(token: str) -> dict:
