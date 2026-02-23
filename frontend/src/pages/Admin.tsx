@@ -18,9 +18,8 @@ import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
 
 const TAB_CLASS =
-  "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg " +
-  "data-[state=active]:bg-slate-900 data-[state=active]:text-white data-[state=active]:shadow-none " +
-  "data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors";
+  "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
+  "data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors data-[state=active]:shadow-none data-[state=active]:text-white";
 
 export default function Admin() {
   const { user: authUser } = useAuth();
@@ -35,13 +34,13 @@ export default function Admin() {
 
   return (
     <div className="space-y-6" data-testid="admin-page">
-      {/* Hero Banner — matches store homepage style */}
-      <section className="relative overflow-hidden rounded-3xl bg-[#0f172a] px-10 py-10 shadow-[0_30px_70px_rgba(15,23,42,0.15)]">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-red-600/10 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full bg-red-600/5 blur-2xl" />
+      {/* Hero Banner */}
+      <section className="relative overflow-hidden rounded-3xl px-10 py-10 shadow-[0_30px_70px_rgba(15,23,42,0.15)]" style={{ backgroundColor: "var(--aa-primary)" }}>
+        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
         <div className="relative space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-0.5 w-8 rounded-full bg-red-500" />
+            <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{adminBadge}</p>
           </div>
           <h1 className="text-3xl font-bold text-white">{adminTitle}</h1>
