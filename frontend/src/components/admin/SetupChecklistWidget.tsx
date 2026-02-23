@@ -24,7 +24,7 @@ const ITEMS = [
 ] as const;
 
 interface Props {
-  onNavigate: (tab: string) => void;
+  onNavigate: (tab: string, section?: string) => void;
 }
 
 export function SetupChecklistWidget({ onNavigate }: Props) {
