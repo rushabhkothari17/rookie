@@ -57,6 +57,11 @@ async def checkout_bank_transfer(
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
+
+    gocardless_globally_enabled = await SettingsService.get("gocardless_enabled", False)
+    if not gocardless_globally_enabled:
+        raise HTTPException(status_code=400, detail="Bank transfer payments are currently not available.")
+
     if not customer.get("allow_bank_transfer", True):
         raise HTTPException(status_code=403, detail="Bank transfer not enabled")
 
