@@ -13,40 +13,38 @@ import SlideOver from "@/components/admin/SlideOver";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Section =
-  | "branding" | "auth" | "forms" | "checkout" | "email" | "errors"
-  | "footer" | "references" | "payments" | "sysconfig" | "pages";
+type Section = "branding" | "auth" | "forms" | "email" | "footer" | "references" | "payments" | "sysconfig";
+
+type AuthSlide =
+  | "login" | "signup" | "verify_email"
+  | "portal" | "profile" | "not_found" | "gocardless"
+  | "checkout_builder" | "checkout_success" | "bank_transfer"
+  | "checkout_messages" | "form_messages";
 
 interface WebsiteData {
-  // Store Hero
   hero_label: string; hero_title: string; hero_subtitle: string;
-  // Articles Hero
   articles_hero_label: string; articles_hero_title: string; articles_hero_subtitle: string;
-  // Auth
   login_title: string; login_subtitle: string; login_portal_label: string;
   register_title: string; register_subtitle: string;
-  // Contact
   contact_email: string; contact_phone: string; contact_address: string;
-  // Footer & Nav
   footer_tagline: string; footer_copyright: string;
+  footer_about_title: string; footer_about_text: string;
+  footer_nav_title: string; footer_contact_title: string; footer_social_title: string;
+  social_twitter: string; social_linkedin: string; social_facebook: string;
+  social_instagram: string; social_youtube: string;
   nav_store_label: string; nav_articles_label: string; nav_portal_label: string;
-  // Forms text
   quote_form_title: string; quote_form_subtitle: string; quote_form_response_time: string;
   scope_form_title: string; scope_form_subtitle: string;
   signup_form_title: string; signup_form_subtitle: string;
-  // Form schemas
   quote_form_schema: string; scope_form_schema: string; signup_form_schema: string;
-  // Email settings (legacy fields)
   email_from_name: string; email_article_subject_template: string;
   email_article_cta_text: string; email_article_footer_text: string;
   email_verification_subject: string; email_verification_body: string;
-  // Messages
   msg_partner_tagging_prompt: string; msg_override_required: string;
   msg_cart_empty: string; msg_quote_success: string; msg_scope_success: string;
-  // Payment display
+  msg_currency_unsupported: string; msg_no_payment_methods: string;
   payment_gocardless_label: string; payment_gocardless_description: string;
   payment_stripe_label: string; payment_stripe_description: string;
-  // Checkout legacy
   checkout_zoho_enabled: boolean; checkout_zoho_title: string;
   checkout_zoho_subscription_options: string; checkout_zoho_product_options: string;
   checkout_zoho_signup_note: string; checkout_zoho_access_note: string;
@@ -54,36 +52,26 @@ interface WebsiteData {
   checkout_partner_enabled: boolean; checkout_partner_title: string;
   checkout_partner_description: string; checkout_partner_options: string;
   checkout_partner_misrep_warning: string; checkout_extra_schema: string;
-  // Dynamic checkout sections
   checkout_sections: string;
-  // Checkout success page
   checkout_success_title: string; checkout_success_paid_msg: string;
   checkout_success_pending_msg: string; checkout_success_expired_msg: string;
   checkout_success_next_steps_title: string;
   checkout_success_step_1: string; checkout_success_step_2: string; checkout_success_step_3: string;
   checkout_portal_link_text: string;
-  // Bank transfer success
   bank_success_title: string; bank_success_message: string;
   bank_instructions_title: string;
   bank_instruction_1: string; bank_instruction_2: string; bank_instruction_3: string;
   bank_next_steps_title: string;
   bank_next_step_1: string; bank_next_step_2: string; bank_next_step_3: string;
-  // 404
   page_404_title: string; page_404_link_text: string;
-  // GoCardless callback
   gocardless_processing_title: string; gocardless_processing_subtitle: string;
   gocardless_success_title: string; gocardless_success_message: string;
   gocardless_error_title: string; gocardless_error_message: string;
   gocardless_return_btn_text: string;
-  // Verify email
   verify_email_label: string; verify_email_title: string; verify_email_subtitle: string;
-  // Portal
   portal_title: string; portal_subtitle: string;
-  // Profile
   profile_label: string; profile_title: string; profile_subtitle: string;
-  // Cart
   cart_title: string; cart_clear_btn_text: string;
-  msg_currency_unsupported: string; msg_no_payment_methods: string;
 }
 
 interface BrandingData {
@@ -97,6 +85,9 @@ const WEB_DEFAULTS: WebsiteData = {
   register_title: "", register_subtitle: "",
   contact_email: "", contact_phone: "", contact_address: "",
   footer_tagline: "", footer_copyright: "",
+  footer_about_title: "", footer_about_text: "",
+  footer_nav_title: "", footer_contact_title: "", footer_social_title: "",
+  social_twitter: "", social_linkedin: "", social_facebook: "", social_instagram: "", social_youtube: "",
   nav_store_label: "", nav_articles_label: "", nav_portal_label: "",
   quote_form_title: "", quote_form_subtitle: "", quote_form_response_time: "",
   scope_form_title: "", scope_form_subtitle: "",
@@ -107,6 +98,7 @@ const WEB_DEFAULTS: WebsiteData = {
   email_verification_subject: "", email_verification_body: "",
   msg_partner_tagging_prompt: "", msg_override_required: "",
   msg_cart_empty: "", msg_quote_success: "", msg_scope_success: "",
+  msg_currency_unsupported: "", msg_no_payment_methods: "",
   payment_gocardless_label: "", payment_gocardless_description: "",
   payment_stripe_label: "", payment_stripe_description: "",
   checkout_zoho_enabled: true, checkout_zoho_title: "",
@@ -136,54 +128,41 @@ const WEB_DEFAULTS: WebsiteData = {
   portal_title: "", portal_subtitle: "",
   profile_label: "", profile_title: "", profile_subtitle: "",
   cart_title: "", cart_clear_btn_text: "",
-  msg_currency_unsupported: "", msg_no_payment_methods: "",
 };
 
-// ─── Sidebar config ───────────────────────────────────────────────────────────
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
-  {
-    group: "Brand",
-    items: [{ key: "branding", label: "Branding & Hero" }],
-  },
-  {
-    group: "Content",
-    items: [
-      { key: "auth", label: "Auth Pages" },
-      { key: "forms", label: "Forms" },
-      { key: "checkout", label: "Checkout" },
-      { key: "email", label: "Email Templates" },
-      { key: "errors", label: "Error Messages" },
-      { key: "footer", label: "Footer & Nav" },
-      { key: "pages", label: "Page Content" },
-    ],
-  },
-  {
-    group: "Configuration",
-    items: [
-      { key: "references", label: "References" },
-      { key: "payments", label: "Payments" },
-      { key: "sysconfig", label: "System Config" },
-    ],
-  },
+  { group: "Brand", items: [{ key: "branding", label: "Branding & Hero" }] },
+  { group: "Content", items: [
+    { key: "auth", label: "Auth & Pages" },
+    { key: "forms", label: "Forms" },
+    { key: "email", label: "Email Templates" },
+  ]},
+  { group: "Configuration", items: [
+    { key: "footer", label: "Footer & Nav" },
+    { key: "references", label: "References" },
+    { key: "payments", label: "Payments" },
+    { key: "sysconfig", label: "System Config" },
+  ]},
 ];
 
 // ─── Helper components ────────────────────────────────────────────────────────
 
-function Field({ label, hint, value, onChange, multiline = false, testId }: {
-  label: string; hint?: string; value: string;
-  onChange: (v: string) => void; multiline?: boolean; testId?: string;
+function Field({ label, hint, value, onChange, multiline = false, testId, placeholder }: {
+  label: string; hint?: string; value: string; onChange: (v: string) => void;
+  multiline?: boolean; testId?: string; placeholder?: string;
 }) {
   return (
     <div>
       <label className="text-xs font-medium text-slate-700">{label}</label>
-      {hint && <p className="text-[11px] text-slate-400 mb-1">{hint}</p>}
+      {hint && <p className="text-[11px] text-slate-400 mt-0.5 mb-1">{hint}</p>}
       {multiline ? (
         <Textarea value={value} onChange={e => onChange(e.target.value)} rows={2}
-          className="mt-0.5 text-sm" data-testid={testId} />
+          className="mt-0.5 text-sm" data-testid={testId} placeholder={placeholder} />
       ) : (
         <Input value={value} onChange={e => onChange(e.target.value)}
-          className="mt-0.5" data-testid={testId} />
+          className="mt-0.5" data-testid={testId} placeholder={placeholder} />
       )}
     </div>
   );
@@ -204,6 +183,78 @@ function ColorInput({ label, value, onChange, testId }: {
     </div>
   );
 }
+
+function Toggle({ label, description, checked, onChange, testId }: {
+  label: string; description?: string; checked: boolean; onChange: (v: boolean) => void; testId?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <div>
+        <p className="text-sm font-medium text-slate-700">{label}</p>
+        {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
+      </div>
+      <button role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
+        data-testid={testId}
+        className={`relative inline-flex h-5 w-9 items-center rounded-full border-2 border-transparent transition-colors ${checked ? "bg-slate-900" : "bg-slate-200"}`}>
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${checked ? "translate-x-4" : "translate-x-0"}`} />
+      </button>
+    </div>
+  );
+}
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 pt-2">
+      <div className="flex-1 h-px bg-slate-100" />
+      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</span>
+      <div className="flex-1 h-px bg-slate-100" />
+    </div>
+  );
+}
+
+// ─── Tile components ──────────────────────────────────────────────────────────
+
+function AuthTile({ title, description, preview, onEdit, testId }: {
+  title: string; description?: string; preview?: string; onEdit: () => void; testId?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 hover:border-slate-300 transition-colors cursor-pointer" onClick={onEdit} data-testid={testId}>
+      <div className="p-2.5 rounded-xl bg-slate-100 shrink-0">
+        <LayoutTemplate size={15} className="text-slate-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-xs font-semibold text-slate-900">{title}</h4>
+        {preview
+          ? <p className="text-[11px] text-slate-600 mt-0.5 truncate">{preview}</p>
+          : description && <p className="text-[11px] text-slate-400 mt-0.5">{description}</p>
+        }
+      </div>
+      <Pencil size={13} className="text-slate-400 shrink-0" />
+    </div>
+  );
+}
+
+function FormTile({ title, description, fieldCount, onEdit, testId }: {
+  title: string; description: string; fieldCount: number; onEdit: () => void; testId?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 flex items-center gap-4 hover:border-slate-300 transition-colors cursor-pointer" onClick={onEdit} data-testid={testId}>
+      <div className="p-3 rounded-xl bg-slate-100 shrink-0">
+        <FileText size={18} className="text-slate-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
+        <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+        <span className="mt-1.5 inline-block text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+          {fieldCount} field{fieldCount !== 1 ? "s" : ""}
+        </span>
+      </div>
+      <Pencil size={14} className="text-slate-400 shrink-0" />
+    </div>
+  );
+}
+
+// ─── SettingRow ───────────────────────────────────────────────────────────────
 
 function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, val: any) => void }) {
   const [editVal, setEditVal] = useState("");
@@ -292,58 +343,6 @@ function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, val: 
   );
 }
 
-// ─── Form Tile ─────────────────────────────────────────────────────────────────
-
-function FormTile({ title, description, fieldCount, onEdit, testId }: {
-  title: string; description: string; fieldCount: number; onEdit: () => void; testId?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 flex items-center gap-4 hover:border-slate-300 transition-colors" data-testid={testId}>
-      <div className="p-3 rounded-xl bg-slate-100 shrink-0">
-        <FileText size={18} className="text-slate-600" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
-        <p className="text-xs text-slate-400 mt-0.5">{description}</p>
-        <span className="mt-1.5 inline-block text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-          {fieldCount} field{fieldCount !== 1 ? "s" : ""}
-        </span>
-      </div>
-      <button onClick={onEdit}
-        className="p-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
-        data-testid={testId ? `${testId}-edit` : undefined}>
-        <Pencil size={14} />
-      </button>
-    </div>
-  );
-}
-
-// ─── Page Tile ─────────────────────────────────────────────────────────────────
-
-function PageTile({ title, description, preview, onEdit, testId }: {
-  title: string; description: string; preview?: string; onEdit: () => void; testId?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 hover:border-slate-300 transition-colors" data-testid={testId}>
-      <div className="p-2.5 rounded-xl bg-slate-100 shrink-0">
-        <LayoutTemplate size={15} className="text-slate-600" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="text-xs font-semibold text-slate-900">{title}</h4>
-        {preview
-          ? <p className="text-[11px] text-slate-500 mt-0.5 truncate">{preview}</p>
-          : <p className="text-[11px] text-slate-400 mt-0.5">{description}</p>
-        }
-      </div>
-      <button onClick={onEdit}
-        className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
-        data-testid={testId ? `${testId}-edit` : undefined}>
-        <Pencil size={13} />
-      </button>
-    </div>
-  );
-}
-
 // ─── Payment Provider Card ────────────────────────────────────────────────────
 
 function PaymentProviderCard({
@@ -400,11 +399,8 @@ function PaymentProviderCard({
         </div>
         <div className="flex items-center gap-2">
           <button onClick={toggleEnabled} disabled={toggling || !enabledItem}
-            className={`px-3 py-1 text-xs font-medium rounded-full transition-all border disabled:opacity-50 ${
-              isEnabled
-                ? "bg-green-50 text-green-700 border-green-200 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
-                : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200"
-            }`} data-testid={`payment-toggle-${enabledItem?.key}`}>
+            className={`px-3 py-1 text-xs font-medium rounded-full transition-all border disabled:opacity-50 ${isEnabled ? "bg-green-50 text-green-700 border-green-200 hover:bg-red-50 hover:text-red-700 hover:border-red-200" : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-green-50 hover:text-green-700 hover:border-green-200"}`}
+            data-testid={`payment-toggle-${enabledItem?.key}`}>
             {isEnabled ? "Enabled" : "Disabled"}
           </button>
           <button onClick={() => setOpen(v => !v)}
@@ -420,18 +416,13 @@ function PaymentProviderCard({
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Checkout Display</p>
             <div>
               <label className="text-xs text-slate-500 block mb-1">Label (shown to customers)</label>
-              <input value={label} onChange={e => setLabel(e.target.value)}
-                placeholder="e.g. Bank Transfer (GoCardless)"
-                className="w-full h-9 text-sm border border-slate-200 rounded-lg px-3 bg-white" />
+              <input value={label} onChange={e => setLabel(e.target.value)} className="w-full h-9 text-sm border border-slate-200 rounded-lg px-3 bg-white" />
             </div>
             <div>
               <label className="text-xs text-slate-500 block mb-1">Description (shown under label)</label>
-              <input value={desc} onChange={e => setDesc(e.target.value)}
-                placeholder="Short description"
-                className="w-full h-9 text-sm border border-slate-200 rounded-lg px-3 bg-white" />
+              <input value={desc} onChange={e => setDesc(e.target.value)} className="w-full h-9 text-sm border border-slate-200 rounded-lg px-3 bg-white" />
             </div>
-            <button onClick={saveLabels} disabled={saving}
-              className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors">
+            <button onClick={saveLabels} disabled={saving} className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors">
               {saving ? "Saving…" : "Save Labels"}
             </button>
           </div>
@@ -453,6 +444,34 @@ function PaymentProviderCard({
   );
 }
 
+// ─── Auth SlideOver titles & descriptions ─────────────────────────────────────
+
+function getAuthSlideTitle(key: AuthSlide | null): string {
+  const map: Record<AuthSlide, string> = {
+    login: "Login Page", signup: "Sign Up Page", verify_email: "Verify Email Page",
+    portal: "Customer Portal", profile: "Profile Page",
+    not_found: "404 Not Found Page", gocardless: "GoCardless Callback",
+    checkout_builder: "Checkout Page Builder", checkout_success: "Checkout Success Page",
+    bank_transfer: "Bank Transfer Success Page", checkout_messages: "Checkout Messages",
+    form_messages: "Form Response Messages",
+  };
+  return key ? map[key] : "";
+}
+
+function getAuthSlideDesc(key: AuthSlide | null): string {
+  const map: Record<AuthSlide, string> = {
+    login: "Text shown on the login page.", signup: "Text + custom fields on the registration page.",
+    verify_email: "Text shown when customers verify their email.", portal: "Heading and subtitle on the customer portal.",
+    profile: "Heading and subtitle on the profile page.", not_found: "Content for the 404 error page.",
+    gocardless: "Status messages shown after direct debit setup.",
+    checkout_builder: "Build and configure checkout sections. Includes legacy settings.",
+    checkout_success: "Page shown after a successful payment.", bank_transfer: "Page shown after bank transfer order is created.",
+    checkout_messages: "Customer-facing error and instruction messages during checkout.",
+    form_messages: "Success messages shown after quote / scope requests.",
+  };
+  return key ? map[key] : "";
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function WebsiteTab() {
@@ -464,9 +483,8 @@ export default function WebsiteTab() {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [slideSaving, setSlideSaving] = useState(false);
-  // SlideOver state
-  const [formSlideOver, setFormSlideOver] = useState<"quote" | "scope" | "signup" | null>(null);
-  const [pageSlideOver, setPageSlideOver] = useState<string | null>(null);
+  const [authSlide, setAuthSlide] = useState<AuthSlide | null>(null);
+  const [formSlide, setFormSlide] = useState<"quote" | "scope" | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -482,9 +500,8 @@ export default function WebsiteTab() {
       const app_ = appRes.data.settings || {};
       setBranding({ store_name: app_.store_name || "", primary_color: app_.primary_color || "", accent_color: app_.accent_color || "", logo_url: app_.logo_url || "" });
       setStructured(structRes.data.settings || {});
-    } catch {
-      toast.error("Failed to load settings");
-    } finally { setLoading(false); }
+    } catch { toast.error("Failed to load settings"); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { load(); }, []);
@@ -500,21 +517,18 @@ export default function WebsiteTab() {
         api.put("/admin/settings", branding),
       ]);
       toast.success("Settings saved");
-    } catch {
-      toast.error("Failed to save settings");
-    } finally { setSaving(false); }
+    } catch { toast.error("Failed to save settings"); }
+    finally { setSaving(false); }
   };
 
-  // Save just ws settings (used by SlideOver save buttons)
   const saveSection = async (onDone?: () => void) => {
     setSlideSaving(true);
     try {
       await api.put("/admin/website-settings", ws);
       toast.success("Saved");
       onDone?.();
-    } catch {
-      toast.error("Save failed");
-    } finally { setSlideSaving(false); }
+    } catch { toast.error("Save failed"); }
+    finally { setSlideSaving(false); }
   };
 
   const getFieldCount = (schema: string): number => {
@@ -586,7 +600,7 @@ export default function WebsiteTab() {
           ))}
         </div>
 
-        {/* Content */}
+        {/* Content panel */}
         <div className="flex-1 min-w-0 border border-slate-100 rounded-xl p-6 bg-white space-y-5">
 
           {/* ── Branding & Hero ── */}
@@ -594,7 +608,6 @@ export default function WebsiteTab() {
             <>
               <h3 className="text-sm font-semibold text-slate-700">Store Information</h3>
               <Field label="Store Name" value={branding.store_name} onChange={b("store_name")} testId="ws-store-name" />
-
               <div className="border-t border-slate-100 pt-4">
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">Logo</h3>
                 {branding.logo_url ? (
@@ -614,29 +627,24 @@ export default function WebsiteTab() {
                 )}
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} data-testid="ws-logo-input" />
               </div>
-
               <div className="border-t border-slate-100 pt-4">
                 <h3 className="text-sm font-semibold text-slate-700 mb-1">Brand Colors</h3>
-                <p className="text-xs text-slate-400 mb-3">Applied to the storefront. Primary = navbars. Accent = CTA buttons.</p>
+                <p className="text-xs text-slate-400 mb-3">Primary = navbars. Accent = CTA buttons.</p>
                 <div className="grid grid-cols-2 gap-4">
                   <ColorInput label="Primary" value={branding.primary_color} onChange={b("primary_color")} testId="ws-primary-color" />
                   <ColorInput label="Accent" value={branding.accent_color} onChange={b("accent_color")} testId="ws-accent-color" />
                 </div>
               </div>
-
               <div className="border-t border-slate-100 pt-4">
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">Store Hero Banner</h3>
-                <p className="text-xs text-slate-400 mb-3">The prominent banner shown at the top of the store page.</p>
                 <div className="space-y-3">
-                  <Field label="Label (small text above title)" value={ws.hero_label} onChange={s("hero_label")} testId="ws-hero-label" />
-                  <Field label="Title" hint="Main headline" value={ws.hero_title} onChange={s("hero_title")} multiline testId="ws-hero-title" />
+                  <Field label="Label" value={ws.hero_label} onChange={s("hero_label")} testId="ws-hero-label" />
+                  <Field label="Title" value={ws.hero_title} onChange={s("hero_title")} multiline testId="ws-hero-title" />
                   <Field label="Subtitle" value={ws.hero_subtitle} onChange={s("hero_subtitle")} multiline testId="ws-hero-subtitle" />
                 </div>
               </div>
-
               <div className="border-t border-slate-100 pt-4">
                 <h3 className="text-sm font-semibold text-slate-700 mb-3">Articles Hero Banner</h3>
-                <p className="text-xs text-slate-400 mb-3">The banner shown at the top of the articles / resources page.</p>
                 <div className="space-y-3">
                   <Field label="Label" value={ws.articles_hero_label} onChange={s("articles_hero_label")} testId="ws-articles-hero-label" />
                   <Field label="Title" value={ws.articles_hero_title} onChange={s("articles_hero_title")} testId="ws-articles-hero-title" />
@@ -646,249 +654,125 @@ export default function WebsiteTab() {
             </>
           )}
 
-          {/* ── Auth Pages ── */}
+          {/* ── Auth & Pages ── */}
           {activeSection === "auth" && (
             <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3">Login Page</h3>
-              <Field label="Portal label" hint='Small label above the title (e.g. "Customer Portal")' value={ws.login_portal_label} onChange={s("login_portal_label")} testId="ws-login-portal" />
-              <Field label="Title" value={ws.login_title} onChange={s("login_title")} testId="ws-login-title" />
-              <Field label="Subtitle" value={ws.login_subtitle} onChange={s("login_subtitle")} testId="ws-login-subtitle" />
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Register / Sign Up Page</h3>
-                <Field label="Title" value={ws.register_title} onChange={s("register_title")} testId="ws-register-title" />
-                <Field label="Subtitle" value={ws.register_subtitle} onChange={s("register_subtitle")} multiline testId="ws-register-subtitle" />
+              <div className="mb-2">
+                <h3 className="text-sm font-semibold text-slate-700">Auth & Pages</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Click any tile to edit text, forms, or page content.</p>
+              </div>
+
+              <SectionDivider label="Authentication" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <AuthTile title="Login Page" description="Login title, subtitle, portal label" preview={ws.login_title || undefined} onEdit={() => setAuthSlide("login")} testId="auth-tile-login" />
+                <AuthTile title="Sign Up Page" description={`Register page + ${getFieldCount(ws.signup_form_schema)} form fields`} preview={ws.register_title || undefined} onEdit={() => setAuthSlide("signup")} testId="auth-tile-signup" />
+                <AuthTile title="Verify Email" description="Verification page content" preview={ws.verify_email_title || undefined} onEdit={() => setAuthSlide("verify_email")} testId="auth-tile-verify-email" />
+              </div>
+
+              <SectionDivider label="App Pages" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <AuthTile title="Customer Portal" preview={ws.portal_title || undefined} description="Portal heading & subtitle" onEdit={() => setAuthSlide("portal")} testId="auth-tile-portal" />
+                <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
+                <AuthTile title="404 Not Found" preview={ws.page_404_title || undefined} description="Error page content" onEdit={() => setAuthSlide("not_found")} testId="auth-tile-404" />
+                <AuthTile title="GoCardless Callback" preview={ws.gocardless_success_title || undefined} description="Direct debit status messages" onEdit={() => setAuthSlide("gocardless")} testId="auth-tile-gocardless" />
+              </div>
+
+              <SectionDivider label="Checkout Flow" />
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 mb-2">
+                <Toggle
+                  label="Partner Tagging (Legacy)"
+                  description="Show partner tagging question at checkout (legacy mode only)"
+                  checked={ws.checkout_partner_enabled}
+                  onChange={v => setWs(p => ({ ...p, checkout_partner_enabled: v }))}
+                  testId="checkout-partner-toggle"
+                />
+                <Toggle
+                  label="Zoho Account Details (Legacy)"
+                  description="Show Zoho account questions at checkout (legacy mode only)"
+                  checked={ws.checkout_zoho_enabled}
+                  onChange={v => setWs(p => ({ ...p, checkout_zoho_enabled: v }))}
+                  testId="checkout-zoho-toggle"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <AuthTile title="Checkout Page Builder" description="Dynamic sections + legacy Zoho & partner settings" onEdit={() => setAuthSlide("checkout_builder")} testId="auth-tile-checkout-builder" />
+                <AuthTile title="Checkout Success" preview={ws.checkout_success_title || undefined} description="Page after successful payment" onEdit={() => setAuthSlide("checkout_success")} testId="auth-tile-checkout-success" />
+                <AuthTile title="Bank Transfer Success" preview={ws.bank_success_title || undefined} description="Page after bank transfer order" onEdit={() => setAuthSlide("bank_transfer")} testId="auth-tile-bank-transfer" />
+              </div>
+
+              <SectionDivider label="Messages" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <AuthTile title="Checkout Messages" description="Cart, payment errors & override prompts" onEdit={() => setAuthSlide("checkout_messages")} testId="auth-tile-checkout-messages" />
+                <AuthTile title="Form Responses" description="Quote & scope success messages" onEdit={() => setAuthSlide("form_messages")} testId="auth-tile-form-messages" />
               </div>
             </>
           )}
 
-          {/* ── Forms ── (tile layout) */}
+          {/* ── Forms ── */}
           {activeSection === "forms" && (
             <>
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold text-slate-700">Forms</h3>
-              </div>
-              <p className="text-xs text-slate-400 -mt-3 mb-4">Click the edit icon on any form to customise its text labels and fields.</p>
+              <h3 className="text-sm font-semibold text-slate-700 mb-1">Forms</h3>
+              <p className="text-xs text-slate-400 mb-4">Click to edit form text labels and custom fields.</p>
               <div className="space-y-3">
-                <FormTile
-                  title="Quote Request Form"
-                  description="Shown when a customer requests a quote on a product"
-                  fieldCount={getFieldCount(ws.quote_form_schema)}
-                  onEdit={() => setFormSlideOver("quote")}
-                  testId="form-tile-quote"
-                />
-                <FormTile
-                  title="Scope Request Form"
-                  description="Shown for fixed-scope / RFQ products"
-                  fieldCount={getFieldCount(ws.scope_form_schema)}
-                  onEdit={() => setFormSlideOver("scope")}
-                  testId="form-tile-scope"
-                />
-                <FormTile
-                  title="Customer Sign-up Form"
-                  description="Shown on the registration page"
-                  fieldCount={getFieldCount(ws.signup_form_schema)}
-                  onEdit={() => setFormSlideOver("signup")}
-                  testId="form-tile-signup"
-                />
+                <FormTile title="Quote Request Form" description="Shown when a customer requests a quote" fieldCount={getFieldCount(ws.quote_form_schema)} onEdit={() => setFormSlide("quote")} testId="form-tile-quote" />
+                <FormTile title="Scope Request Form" description="Shown for fixed-scope / RFQ products" fieldCount={getFieldCount(ws.scope_form_schema)} onEdit={() => setFormSlide("scope")} testId="form-tile-scope" />
               </div>
+              <p className="text-xs text-slate-400 mt-3">The customer Sign-up form is managed in <button onClick={() => setActiveSection("auth")} className="text-slate-600 underline">Auth &amp; Pages → Sign Up</button>.</p>
             </>
           )}
 
-          {/* ── Checkout ── */}
-          {activeSection === "checkout" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">Checkout Page Sections</h3>
-              <p className="text-xs text-slate-400 mb-4">
-                Build the sections shown on the cart/checkout page. Each section can have a title, description, and custom form fields.
-                Answers are stored with each order in <code className="font-mono bg-slate-100 px-1 rounded">extra_fields</code>.
-              </p>
-
-              <CheckoutSectionsBuilder value={ws.checkout_sections} onChange={s("checkout_sections")} />
-
-              <div className="border-t border-slate-100 pt-5 mt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-1">Legacy Sections</h3>
-                <p className="text-xs text-slate-400 mb-4">
-                  These sections use the original fixed format. They remain active if no custom sections are configured above.
-                  Use the new builder above to replace them.
-                </p>
-
-                {/* Zoho Section (Legacy) */}
-                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 mb-4 opacity-80">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-900">Zoho Account Details <span className="text-xs font-normal text-slate-400">(legacy)</span></h4>
-                      <p className="text-xs text-slate-400">Section shown before checkout for Zoho account info</p>
-                    </div>
-                    <button onClick={() => setWs(p => ({...p, checkout_zoho_enabled: !p.checkout_zoho_enabled}))}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${ws.checkout_zoho_enabled ? "bg-green-50 text-green-700 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}
-                      data-testid="checkout-zoho-toggle">
-                      {ws.checkout_zoho_enabled ? "Visible" : "Hidden"}
-                    </button>
-                  </div>
-                  <div className="space-y-3 border-t border-slate-100 pt-4">
-                    <Field label="Section title" value={ws.checkout_zoho_title} onChange={s("checkout_zoho_title")} testId="ws-zoho-title" />
-                    <div>
-                      <label className="text-xs text-slate-600 block mb-1">Subscription options <span className="text-slate-400">(one per line)</span></label>
-                      <Textarea value={ws.checkout_zoho_subscription_options} onChange={e => s("checkout_zoho_subscription_options")(e.target.value)}
-                        className="text-sm min-h-20 font-mono" data-testid="ws-zoho-sub-options" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-600 block mb-1">Product options <span className="text-slate-400">(one per line)</span></label>
-                      <Textarea value={ws.checkout_zoho_product_options} onChange={e => s("checkout_zoho_product_options")(e.target.value)}
-                        className="text-sm min-h-32 font-mono" data-testid="ws-zoho-product-options" />
-                    </div>
-                    <Field label="Signup note (shown when 'Not on Zoho')" value={ws.checkout_zoho_signup_note} onChange={s("checkout_zoho_signup_note")} />
-                    <Field label="Access instructions note" value={ws.checkout_zoho_access_note} onChange={s("checkout_zoho_access_note")} />
-                    <Field label="Access delay warning" value={ws.checkout_zoho_access_delay_warning} onChange={s("checkout_zoho_access_delay_warning")} />
-                  </div>
-                </div>
-
-                {/* Partner Tagging Section (Legacy) */}
-                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 mb-4 opacity-80">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-900">Partner Tagging <span className="text-xs font-normal text-slate-400">(legacy)</span></h4>
-                      <p className="text-xs text-slate-400">Section for "Have you tagged us as your partner?"</p>
-                    </div>
-                    <button onClick={() => setWs(p => ({...p, checkout_partner_enabled: !p.checkout_partner_enabled}))}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition-all border ${ws.checkout_partner_enabled ? "bg-green-50 text-green-700 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}
-                      data-testid="checkout-partner-toggle">
-                      {ws.checkout_partner_enabled ? "Visible" : "Hidden"}
-                    </button>
-                  </div>
-                  <div className="space-y-3 border-t border-slate-100 pt-4">
-                    <Field label="Section title / question" value={ws.checkout_partner_title} onChange={s("checkout_partner_title")} testId="ws-partner-title" />
-                    <div>
-                      <label className="text-xs text-slate-600 block mb-1">Description text</label>
-                      <Textarea value={ws.checkout_partner_description} onChange={e => s("checkout_partner_description")(e.target.value)}
-                        className="text-sm min-h-16" data-testid="ws-partner-desc" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-600 block mb-1">Response options <span className="text-slate-400">(one per line)</span></label>
-                      <Textarea value={ws.checkout_partner_options} onChange={e => s("checkout_partner_options")(e.target.value)}
-                        className="text-sm min-h-16 font-mono" data-testid="ws-partner-options" />
-                    </div>
-                    <Field label="Misrepresentation warning" value={ws.checkout_partner_misrep_warning} onChange={s("checkout_partner_misrep_warning")} />
-                  </div>
-                </div>
-
-                {/* Custom Extra Questions (Legacy) */}
-                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 opacity-80">
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-900">Custom Extra Questions <span className="text-xs font-normal text-slate-400">(legacy)</span></h4>
-                    <p className="text-xs text-slate-400 mt-0.5">Additional questions at checkout (no sections). Use the new builder above for a better experience.</p>
-                  </div>
-                  <div className="border-t border-slate-100 pt-4">
-                    <FormSchemaBuilder title="Extra checkout questions" value={ws.checkout_extra_schema} onChange={s("checkout_extra_schema")} />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ── Email Templates ── P0 FIX */}
+          {/* ── Email Templates ── */}
           {activeSection === "email" && <EmailSection />}
-
-          {/* ── Error Messages ── */}
-          {activeSection === "errors" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3">User-facing Messages</h3>
-              <p className="text-xs text-slate-400 mb-4">Customize the messages and prompts shown to customers.</p>
-              <Field label="Partner tagging prompt" hint="Shown in cart when partner tagging status is not selected." value={ws.msg_partner_tagging_prompt} onChange={s("msg_partner_tagging_prompt")} multiline testId="ws-msg-partner" />
-              <Field label="Override code required message" hint="Shown when customer hasn't tagged you as their partner." value={ws.msg_override_required} onChange={s("msg_override_required")} multiline testId="ws-msg-override" />
-              <Field label="Cart empty message" value={ws.msg_cart_empty} onChange={s("msg_cart_empty")} testId="ws-msg-cart-empty" />
-              <Field label="Quote request success" value={ws.msg_quote_success} onChange={s("msg_quote_success")} testId="ws-msg-quote-success" />
-              <Field label="Scope request success" value={ws.msg_scope_success} onChange={s("msg_scope_success")} testId="ws-msg-scope-success" />
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-2">Cart Page</h3>
-                <Field label="Cart page heading" value={ws.cart_title} onChange={s("cart_title")} testId="ws-cart-title" />
-                <Field label="Clear cart button text" value={ws.cart_clear_btn_text} onChange={s("cart_clear_btn_text")} testId="ws-cart-clear-btn" />
-                <Field label="Currency unsupported message" value={ws.msg_currency_unsupported} onChange={s("msg_currency_unsupported")} multiline testId="ws-msg-currency-unsupported" />
-                <Field label="No payment methods message" value={ws.msg_no_payment_methods} onChange={s("msg_no_payment_methods")} multiline testId="ws-msg-no-payment" />
-              </div>
-            </>
-          )}
 
           {/* ── Footer & Nav ── */}
           {activeSection === "footer" && (
             <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-3">Footer</h3>
-              <Field label="Footer tagline" hint="Short text shown in the footer" value={ws.footer_tagline} onChange={s("footer_tagline")} testId="ws-footer-tagline" />
-              <Field label="Copyright text" hint='e.g. "© 2025 Acme Inc. All rights reserved."' value={ws.footer_copyright} onChange={s("footer_copyright")} testId="ws-footer-copyright" />
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">Footer Text</h3>
+              <Field label="Tagline" hint="Short line shown under your brand name" value={ws.footer_tagline} onChange={s("footer_tagline")} testId="ws-footer-tagline" />
+              <Field label="Copyright text" hint='e.g. "© 2025 Acme Inc."' value={ws.footer_copyright} onChange={s("footer_copyright")} testId="ws-footer-copyright" />
 
               <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Navigation Labels</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <Field label="Store link label" value={ws.nav_store_label} onChange={s("nav_store_label")} testId="ws-nav-store" />
-                  <Field label="Articles link label" value={ws.nav_articles_label} onChange={s("nav_articles_label")} testId="ws-nav-articles" />
-                  <Field label="Portal link label" value={ws.nav_portal_label} onChange={s("nav_portal_label")} testId="ws-nav-portal" />
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">About Us Section</h3>
+                <div className="space-y-3">
+                  <Field label="Section title" hint='Shown as heading (e.g. "About Us")' value={ws.footer_about_title} onChange={s("footer_about_title")} placeholder="About Us" testId="ws-footer-about-title" />
+                  <Field label="About us text" value={ws.footer_about_text} onChange={s("footer_about_text")} multiline testId="ws-footer-about-text" />
                 </div>
               </div>
 
               <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Contact Info</h3>
-                <Field label="Contact Email" value={ws.contact_email} onChange={s("contact_email")} testId="ws-contact-email" />
-                <Field label="Phone Number" value={ws.contact_phone} onChange={s("contact_phone")} testId="ws-contact-phone" />
-                <Field label="Address" value={ws.contact_address} onChange={s("contact_address")} multiline testId="ws-contact-address" />
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Navigation</h3>
+                <div className="space-y-3">
+                  <Field label="Navigation section title" value={ws.footer_nav_title} onChange={s("footer_nav_title")} placeholder="Navigation" testId="ws-footer-nav-title" />
+                  <div className="grid grid-cols-3 gap-3">
+                    <Field label="Store label" value={ws.nav_store_label} onChange={s("nav_store_label")} testId="ws-nav-store" />
+                    <Field label="Articles label" value={ws.nav_articles_label} onChange={s("nav_articles_label")} testId="ws-nav-articles" />
+                    <Field label="Portal label" value={ws.nav_portal_label} onChange={s("nav_portal_label")} testId="ws-nav-portal" />
+                  </div>
+                </div>
               </div>
-            </>
-          )}
 
-          {/* ── Page Content ── (tile layout) */}
-          {activeSection === "pages" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">Page Content</h3>
-              <p className="text-xs text-slate-400 mb-5">Click to edit headings, descriptions, and button labels on every page of the app.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <PageTile
-                  title="Checkout Success"
-                  description="After successful payment"
-                  preview={ws.checkout_success_title || undefined}
-                  onEdit={() => setPageSlideOver("checkout_success")}
-                  testId="page-tile-checkout-success"
-                />
-                <PageTile
-                  title="Bank Transfer Success"
-                  description="After bank transfer initiated"
-                  preview={ws.bank_success_title || undefined}
-                  onEdit={() => setPageSlideOver("bank_transfer")}
-                  testId="page-tile-bank-transfer"
-                />
-                <PageTile
-                  title="404 Not Found"
-                  description="Page not found error page"
-                  preview={ws.page_404_title || undefined}
-                  onEdit={() => setPageSlideOver("not_found")}
-                  testId="page-tile-404"
-                />
-                <PageTile
-                  title="GoCardless Callback"
-                  description="Direct debit setup confirmation"
-                  preview={ws.gocardless_success_title || undefined}
-                  onEdit={() => setPageSlideOver("gocardless")}
-                  testId="page-tile-gocardless"
-                />
-                <PageTile
-                  title="Verify Email"
-                  description="Email verification page"
-                  preview={ws.verify_email_title || undefined}
-                  onEdit={() => setPageSlideOver("verify_email")}
-                  testId="page-tile-verify-email"
-                />
-                <PageTile
-                  title="Customer Portal"
-                  description="Main portal page header"
-                  preview={ws.portal_title || undefined}
-                  onEdit={() => setPageSlideOver("portal")}
-                  testId="page-tile-portal"
-                />
-                <PageTile
-                  title="Profile Page"
-                  description="Customer account details page"
-                  preview={ws.profile_title || undefined}
-                  onEdit={() => setPageSlideOver("profile")}
-                  testId="page-tile-profile"
-                />
+              <div className="border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Contact</h3>
+                <div className="space-y-3">
+                  <Field label="Contact section title" value={ws.footer_contact_title} onChange={s("footer_contact_title")} placeholder="Contact" testId="ws-footer-contact-title" />
+                  <Field label="Email" value={ws.contact_email} onChange={s("contact_email")} testId="ws-contact-email" />
+                  <Field label="Phone" value={ws.contact_phone} onChange={s("contact_phone")} testId="ws-contact-phone" />
+                  <Field label="Address" value={ws.contact_address} onChange={s("contact_address")} multiline testId="ws-contact-address" />
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-700 mb-3">Social Media</h3>
+                <div className="space-y-3">
+                  <Field label="Section title" value={ws.footer_social_title} onChange={s("footer_social_title")} placeholder="Follow Us" testId="ws-footer-social-title" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Field label="X / Twitter URL" value={ws.social_twitter} onChange={s("social_twitter")} placeholder="https://x.com/yourhandle" testId="ws-social-twitter" />
+                    <Field label="LinkedIn URL" value={ws.social_linkedin} onChange={s("social_linkedin")} placeholder="https://linkedin.com/company/..." testId="ws-social-linkedin" />
+                    <Field label="Facebook URL" value={ws.social_facebook} onChange={s("social_facebook")} placeholder="https://facebook.com/..." testId="ws-social-facebook" />
+                    <Field label="Instagram URL" value={ws.social_instagram} onChange={s("social_instagram")} placeholder="https://instagram.com/..." testId="ws-social-instagram" />
+                    <Field label="YouTube URL" value={ws.social_youtube} onChange={s("social_youtube")} placeholder="https://youtube.com/@..." testId="ws-social-youtube" />
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -896,10 +780,13 @@ export default function WebsiteTab() {
           {/* ── References ── */}
           {activeSection === "references" && (
             <>
+              <p className="text-xs text-slate-500 mb-4">
+                References are key-value pairs used across your app. Use <code className="font-mono bg-slate-100 px-1 rounded">{"{{ref:key}}"}</code> to reference them in content fields. Zoho system links are managed here.
+              </p>
               {(structured["Zoho"] || []).length > 0 && (
                 <div className="rounded-xl border border-amber-100 bg-amber-50 p-5 mb-4">
-                  <h4 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">System Links (Zoho)</h4>
-                  <p className="text-xs text-amber-600 mb-3">Partner tag and signup URLs used in the checkout flow. Click a value to edit.</p>
+                  <h4 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Zoho System Links</h4>
+                  <p className="text-xs text-amber-600 mb-3">Partner tag and signup URLs used in the checkout flow.</p>
                   {(structured["Zoho"] || []).map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
                 </div>
               )}
@@ -912,16 +799,14 @@ export default function WebsiteTab() {
             <>
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-sm font-semibold text-slate-700">Payment Integrations</h3>
-                <p className="text-xs text-slate-400">Enabled providers appear in the Customers module for per-customer assignment.</p>
               </div>
+              <p className="text-xs text-slate-400 mb-4">Enabled providers appear in the Customers module for per-customer assignment.</p>
               <PaymentProviderCard
                 title="GoCardless" subtitle="Direct Debit / Bank Transfer"
                 enabledItem={(structured["Payments"] || []).find((i: any) => i.key === "gocardless_enabled")}
                 displayLabelKey="payment_gocardless_label" displayDescKey="payment_gocardless_description"
                 initialLabel={ws.payment_gocardless_label} initialDesc={ws.payment_gocardless_description}
-                credItems={(structured["Payments"] || []).filter((i: any) =>
-                  i.key.startsWith("gocardless") && i.key !== "gocardless_enabled" && i.key !== "gocardless_fee_rate"
-                )}
+                credItems={(structured["Payments"] || []).filter((i: any) => i.key.startsWith("gocardless") && i.key !== "gocardless_enabled" && i.key !== "gocardless_fee_rate")}
                 feeRateItem={(structured["Payments"] || []).find((i: any) => i.key === "gocardless_fee_rate") || null}
                 onSaved={onStructuredSaved}
               />
@@ -930,13 +815,10 @@ export default function WebsiteTab() {
                 enabledItem={(structured["Payments"] || []).find((i: any) => i.key === "stripe_enabled")}
                 displayLabelKey="payment_stripe_label" displayDescKey="payment_stripe_description"
                 initialLabel={ws.payment_stripe_label} initialDesc={ws.payment_stripe_description}
-                credItems={(structured["Payments"] || []).filter((i: any) =>
-                  i.key.startsWith("stripe") && i.key !== "stripe_enabled" && i.key !== "stripe_fee_rate" && i.key !== "service_fee_rate"
-                )}
+                credItems={(structured["Payments"] || []).filter((i: any) => i.key.startsWith("stripe") && i.key !== "stripe_enabled" && i.key !== "stripe_fee_rate" && i.key !== "service_fee_rate")}
                 feeRateItem={(structured["Payments"] || []).find((i: any) => i.key === "stripe_fee_rate") || null}
                 onSaved={onStructuredSaved}
               />
-              <p className="text-xs text-slate-400 mt-1">Credentials save immediately. Checkout labels save with the "Save Changes" button above.</p>
             </>
           )}
 
@@ -944,9 +826,24 @@ export default function WebsiteTab() {
           {activeSection === "sysconfig" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700 mb-1">System Configuration</h3>
-              <p className="text-xs text-slate-400 mb-4">Database-backed settings. Click any value to edit. Zoho system links are managed in the References section.</p>
+              <p className="text-xs text-slate-400 mb-4">Click any value to edit inline.</p>
+
+              {/* Override Codes sub-section */}
+              {(() => {
+                const opsItems = structured["Operations"] || [];
+                const overrideItem = opsItems.find((i: any) => i.key === "override_code_expiry_hours");
+                if (!overrideItem) return null;
+                return (
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
+                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Override Codes</h4>
+                    <p className="text-xs text-slate-400 mb-3">Settings for the override code system used in the checkout flow.</p>
+                    <SettingRow item={overrideItem} onSaved={onStructuredSaved} />
+                  </div>
+                );
+              })()}
+
               {["Operations", "FeatureFlags"].map(cat => {
-                const items = structured[cat] || [];
+                const items = (structured[cat] || []).filter((i: any) => i.key !== "override_code_expiry_hours");
                 if (!items.length) return null;
                 return (
                   <div key={cat} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
@@ -957,92 +854,160 @@ export default function WebsiteTab() {
               })}
             </>
           )}
-
         </div>
       </div>
 
-      {/* ── Forms SlideOver ── */}
+      {/* ── Auth & Pages SlideOver ── */}
       <SlideOver
-        open={formSlideOver !== null}
-        onClose={() => setFormSlideOver(null)}
-        title={
-          formSlideOver === "quote" ? "Quote Request Form" :
-          formSlideOver === "scope" ? "Scope Request Form" :
-          "Customer Sign-up Form"
-        }
-        description={
-          formSlideOver === "quote" ? "Shown when a customer requests a quote on a product" :
-          formSlideOver === "scope" ? "Shown for fixed-scope / RFQ products" :
-          "Shown on the registration page. Locked fields cannot be removed."
-        }
-        onSave={() => saveSection(() => setFormSlideOver(null))}
+        open={authSlide !== null}
+        onClose={() => setAuthSlide(null)}
+        title={getAuthSlideTitle(authSlide)}
+        description={getAuthSlideDesc(authSlide)}
+        onSave={() => saveSection(() => setAuthSlide(null))}
         saving={slideSaving}
       >
-        {formSlideOver === "quote" && (
+        {/* Login */}
+        {authSlide === "login" && (
           <div className="space-y-4">
-            <Field label="Form title" value={ws.quote_form_title} onChange={s("quote_form_title")} testId="ws-quote-title" />
-            <Field label="Subtitle" value={ws.quote_form_subtitle} onChange={s("quote_form_subtitle")} multiline testId="ws-quote-subtitle" />
-            <Field label="Response time message" hint='Shown at bottom of form (e.g. "We respond within 1-2 business days.")' value={ws.quote_form_response_time} onChange={s("quote_form_response_time")} testId="ws-quote-response" />
-            <div className="border-t border-slate-100 pt-3">
-              <FormSchemaBuilder title="Form fields" value={ws.quote_form_schema} onChange={s("quote_form_schema")} />
-            </div>
+            <Field label="Portal label" hint='Small label above title (e.g. "Customer Portal")' value={ws.login_portal_label} onChange={s("login_portal_label")} testId="ws-login-portal" />
+            <Field label="Title" value={ws.login_title} onChange={s("login_title")} testId="ws-login-title" />
+            <Field label="Subtitle" value={ws.login_subtitle} onChange={s("login_subtitle")} testId="ws-login-subtitle" />
           </div>
         )}
-        {formSlideOver === "scope" && (
-          <div className="space-y-4">
-            <Field label="Form title" value={ws.scope_form_title} onChange={s("scope_form_title")} testId="ws-scope-title" />
-            <Field label="Subtitle" value={ws.scope_form_subtitle} onChange={s("scope_form_subtitle")} multiline testId="ws-scope-subtitle" />
-            <div className="border-t border-slate-100 pt-3">
-              <FormSchemaBuilder title="Form fields" value={ws.scope_form_schema} onChange={s("scope_form_schema")} />
-            </div>
-          </div>
-        )}
-        {formSlideOver === "signup" && (
-          <div className="space-y-4">
-            <Field label="Form title" value={ws.signup_form_title} onChange={s("signup_form_title")} testId="ws-signup-title" />
-            <Field label="Subtitle" value={ws.signup_form_subtitle} onChange={s("signup_form_subtitle")} multiline testId="ws-signup-subtitle" />
-            <div className="border-t border-slate-100 pt-3">
-              <FormSchemaBuilder title="Form fields" value={ws.signup_form_schema} onChange={s("signup_form_schema")} />
-            </div>
-          </div>
-        )}
-      </SlideOver>
 
-      {/* ── Pages SlideOver ── */}
-      <SlideOver
-        open={pageSlideOver !== null}
-        onClose={() => setPageSlideOver(null)}
-        title={
-          pageSlideOver === "checkout_success" ? "Checkout Success Page" :
-          pageSlideOver === "bank_transfer" ? "Bank Transfer Success Page" :
-          pageSlideOver === "not_found" ? "404 Not Found Page" :
-          pageSlideOver === "gocardless" ? "GoCardless Callback Page" :
-          pageSlideOver === "verify_email" ? "Verify Email Page" :
-          pageSlideOver === "portal" ? "Customer Portal Page" :
-          "Profile Page"
-        }
-        description="Edit headings, messages, and button labels for this page."
-        onSave={() => saveSection(() => setPageSlideOver(null))}
-        saving={slideSaving}
-      >
-        {pageSlideOver === "checkout_success" && (
+        {/* Sign Up */}
+        {authSlide === "signup" && (
+          <div className="space-y-4">
+            <Field label="Page title" value={ws.register_title} onChange={s("register_title")} testId="ws-register-title" />
+            <Field label="Page subtitle" value={ws.register_subtitle} onChange={s("register_subtitle")} multiline testId="ws-register-subtitle" />
+            <Field label="Form title" value={ws.signup_form_title} onChange={s("signup_form_title")} testId="ws-signup-title" />
+            <Field label="Form subtitle" value={ws.signup_form_subtitle} onChange={s("signup_form_subtitle")} multiline testId="ws-signup-subtitle" />
+            <div className="border-t border-slate-100 pt-3">
+              <FormSchemaBuilder title="Registration form fields" value={ws.signup_form_schema} onChange={s("signup_form_schema")} />
+            </div>
+          </div>
+        )}
+
+        {/* Verify Email */}
+        {authSlide === "verify_email" && (
+          <div className="space-y-4">
+            <Field label="Step label" value={ws.verify_email_label} onChange={s("verify_email_label")} testId="ws-ve-label" />
+            <Field label="Title" value={ws.verify_email_title} onChange={s("verify_email_title")} testId="ws-ve-title" />
+            <Field label="Subtitle / instructions" value={ws.verify_email_subtitle} onChange={s("verify_email_subtitle")} multiline testId="ws-ve-subtitle" />
+          </div>
+        )}
+
+        {/* Customer Portal */}
+        {authSlide === "portal" && (
+          <div className="space-y-4">
+            <Field label="Page title" value={ws.portal_title} onChange={s("portal_title")} testId="ws-portal-title" />
+            <Field label="Page subtitle" value={ws.portal_subtitle} onChange={s("portal_subtitle")} multiline testId="ws-portal-subtitle" />
+          </div>
+        )}
+
+        {/* Profile */}
+        {authSlide === "profile" && (
+          <div className="space-y-4">
+            <Field label="Breadcrumb label" value={ws.profile_label} onChange={s("profile_label")} testId="ws-profile-label" />
+            <Field label="Page title" value={ws.profile_title} onChange={s("profile_title")} testId="ws-profile-title" />
+            <Field label="Page subtitle" value={ws.profile_subtitle} onChange={s("profile_subtitle")} multiline testId="ws-profile-subtitle" />
+          </div>
+        )}
+
+        {/* 404 */}
+        {authSlide === "not_found" && (
+          <div className="space-y-4">
+            <Field label="Heading" value={ws.page_404_title} onChange={s("page_404_title")} testId="ws-404-title" />
+            <Field label="Back link text" value={ws.page_404_link_text} onChange={s("page_404_link_text")} testId="ws-404-link" />
+          </div>
+        )}
+
+        {/* GoCardless */}
+        {authSlide === "gocardless" && (
+          <div className="space-y-4">
+            <Field label="Processing title" value={ws.gocardless_processing_title} onChange={s("gocardless_processing_title")} testId="ws-gc-proc-title" />
+            <Field label="Processing subtitle" value={ws.gocardless_processing_subtitle} onChange={s("gocardless_processing_subtitle")} testId="ws-gc-proc-sub" />
+            <Field label="Success title" value={ws.gocardless_success_title} onChange={s("gocardless_success_title")} testId="ws-gc-succ-title" />
+            <Field label="Success message" value={ws.gocardless_success_message} onChange={s("gocardless_success_message")} multiline testId="ws-gc-succ-msg" />
+            <Field label="Error title" value={ws.gocardless_error_title} onChange={s("gocardless_error_title")} testId="ws-gc-err-title" />
+            <Field label="Error message" value={ws.gocardless_error_message} onChange={s("gocardless_error_message")} multiline testId="ws-gc-err-msg" />
+            <Field label="Return button text" value={ws.gocardless_return_btn_text} onChange={s("gocardless_return_btn_text")} testId="ws-gc-return-btn" />
+          </div>
+        )}
+
+        {/* Checkout Builder */}
+        {authSlide === "checkout_builder" && (
+          <div className="space-y-5">
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-3">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Visibility Toggles</p>
+              <Toggle label="Partner Tagging Question" description="Legacy checkout section" checked={ws.checkout_partner_enabled} onChange={v => setWs(p => ({ ...p, checkout_partner_enabled: v }))} testId="slide-partner-toggle" />
+              <Toggle label="Zoho Account Details" description="Legacy checkout section" checked={ws.checkout_zoho_enabled} onChange={v => setWs(p => ({ ...p, checkout_zoho_enabled: v }))} testId="slide-zoho-toggle" />
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">Dynamic Sections (New Builder)</p>
+              <p className="text-xs text-slate-400 mb-3">Build custom sections for the checkout page. Each section can have a title, description, and form fields.</p>
+              <CheckoutSectionsBuilder value={ws.checkout_sections} onChange={s("checkout_sections")} />
+            </div>
+
+            <div className="border-t border-slate-100 pt-4 space-y-3">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Zoho Account Settings</p>
+              <Field label="Section title" value={ws.checkout_zoho_title} onChange={s("checkout_zoho_title")} testId="ws-zoho-title" />
+              <div>
+                <label className="text-xs text-slate-600 block mb-1">Subscription options (one per line)</label>
+                <Textarea value={ws.checkout_zoho_subscription_options} onChange={e => s("checkout_zoho_subscription_options")(e.target.value)} className="text-sm min-h-20 font-mono" data-testid="ws-zoho-sub-options" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-600 block mb-1">Product options (one per line)</label>
+                <Textarea value={ws.checkout_zoho_product_options} onChange={e => s("checkout_zoho_product_options")(e.target.value)} className="text-sm min-h-28 font-mono" data-testid="ws-zoho-product-options" />
+              </div>
+              <Field label="Signup note" value={ws.checkout_zoho_signup_note} onChange={s("checkout_zoho_signup_note")} />
+              <Field label="Access instructions note" value={ws.checkout_zoho_access_note} onChange={s("checkout_zoho_access_note")} />
+              <Field label="Access delay warning" value={ws.checkout_zoho_access_delay_warning} onChange={s("checkout_zoho_access_delay_warning")} />
+            </div>
+
+            <div className="border-t border-slate-100 pt-4 space-y-3">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Partner Tagging Settings</p>
+              <Field label="Question text" value={ws.checkout_partner_title} onChange={s("checkout_partner_title")} testId="ws-partner-title" />
+              <Field label="Description text" value={ws.checkout_partner_description} onChange={s("checkout_partner_description")} multiline testId="ws-partner-desc" />
+              <div>
+                <label className="text-xs text-slate-600 block mb-1">Response options (one per line)</label>
+                <Textarea value={ws.checkout_partner_options} onChange={e => s("checkout_partner_options")(e.target.value)} className="text-sm min-h-16 font-mono" data-testid="ws-partner-options" />
+              </div>
+              <Field label="Misrepresentation warning" value={ws.checkout_partner_misrep_warning} onChange={s("checkout_partner_misrep_warning")} />
+            </div>
+
+            <div className="border-t border-slate-100 pt-4">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">Cart Page</p>
+              <div className="space-y-3">
+                <Field label="Cart heading" value={ws.cart_title} onChange={s("cart_title")} testId="ws-cart-title" />
+                <Field label="Clear cart button text" value={ws.cart_clear_btn_text} onChange={s("cart_clear_btn_text")} testId="ws-cart-clear-btn" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Checkout Success */}
+        {authSlide === "checkout_success" && (
           <div className="space-y-4">
             <Field label="Page heading" value={ws.checkout_success_title} onChange={s("checkout_success_title")} testId="ws-cs-title" />
-            <Field label="'Payment successful' message" value={ws.checkout_success_paid_msg} onChange={s("checkout_success_paid_msg")} testId="ws-cs-paid" />
-            <Field label="'Checking status' message" value={ws.checkout_success_pending_msg} onChange={s("checkout_success_pending_msg")} testId="ws-cs-pending" />
-            <Field label="'Session expired' message" value={ws.checkout_success_expired_msg} onChange={s("checkout_success_expired_msg")} testId="ws-cs-expired" />
+            <Field label="Payment successful message" value={ws.checkout_success_paid_msg} onChange={s("checkout_success_paid_msg")} testId="ws-cs-paid" />
+            <Field label="Checking status message" value={ws.checkout_success_pending_msg} onChange={s("checkout_success_pending_msg")} testId="ws-cs-pending" />
+            <Field label="Session expired message" value={ws.checkout_success_expired_msg} onChange={s("checkout_success_expired_msg")} testId="ws-cs-expired" />
             <Field label="Next steps heading" value={ws.checkout_success_next_steps_title} onChange={s("checkout_success_next_steps_title")} testId="ws-cs-next-title" />
-            <Field label="Next step 1" value={ws.checkout_success_step_1} onChange={s("checkout_success_step_1")} testId="ws-cs-step1" />
-            <Field label="Next step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} testId="ws-cs-step2" />
-            <Field label="Next step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} testId="ws-cs-step3" />
+            <Field label="Step 1" value={ws.checkout_success_step_1} onChange={s("checkout_success_step_1")} testId="ws-cs-step1" />
+            <Field label="Step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} testId="ws-cs-step2" />
+            <Field label="Step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} testId="ws-cs-step3" />
             <Field label="Portal link text" value={ws.checkout_portal_link_text} onChange={s("checkout_portal_link_text")} testId="ws-cs-portal-link" />
           </div>
         )}
-        {pageSlideOver === "bank_transfer" && (
+
+        {/* Bank Transfer */}
+        {authSlide === "bank_transfer" && (
           <div className="space-y-4">
             <Field label="Page heading" value={ws.bank_success_title} onChange={s("bank_success_title")} testId="ws-bt-title" />
             <Field label="Intro message" value={ws.bank_success_message} onChange={s("bank_success_message")} multiline testId="ws-bt-message" />
-            <Field label="Instructions section heading" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bt-instr-title" />
+            <Field label="Instructions heading" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bt-instr-title" />
             <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} testId="ws-bt-i1" />
             <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} testId="ws-bt-i2" />
             <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} testId="ws-bt-i3" />
@@ -1052,41 +1017,53 @@ export default function WebsiteTab() {
             <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} testId="ws-bt-ns3" />
           </div>
         )}
-        {pageSlideOver === "not_found" && (
+
+        {/* Checkout Messages */}
+        {authSlide === "checkout_messages" && (
           <div className="space-y-4">
-            <Field label="Heading" value={ws.page_404_title} onChange={s("page_404_title")} testId="ws-404-title" />
-            <Field label="Back link text" value={ws.page_404_link_text} onChange={s("page_404_link_text")} testId="ws-404-link" />
+            <Field label="Partner tagging prompt" hint="Shown at checkout when partner status not selected" value={ws.msg_partner_tagging_prompt} onChange={s("msg_partner_tagging_prompt")} multiline testId="ws-msg-partner" />
+            <Field label="Override code required message" hint="Shown when customer hasn't tagged you as partner" value={ws.msg_override_required} onChange={s("msg_override_required")} multiline testId="ws-msg-override" />
+            <Field label="Cart empty message" value={ws.msg_cart_empty} onChange={s("msg_cart_empty")} testId="ws-msg-cart-empty" />
+            <Field label="Currency unsupported message" value={ws.msg_currency_unsupported} onChange={s("msg_currency_unsupported")} multiline testId="ws-msg-currency" />
+            <Field label="No payment methods message" value={ws.msg_no_payment_methods} onChange={s("msg_no_payment_methods")} multiline testId="ws-msg-no-payment" />
           </div>
         )}
-        {pageSlideOver === "gocardless" && (
+
+        {/* Form Messages */}
+        {authSlide === "form_messages" && (
           <div className="space-y-4">
-            <Field label="Processing title" value={ws.gocardless_processing_title} onChange={s("gocardless_processing_title")} testId="ws-gc-proc-title" />
-            <Field label="Processing subtitle" value={ws.gocardless_processing_subtitle} onChange={s("gocardless_processing_subtitle")} testId="ws-gc-proc-sub" />
-            <Field label="Success title" value={ws.gocardless_success_title} onChange={s("gocardless_success_title")} testId="ws-gc-succ-title" />
-            <Field label="Success message" value={ws.gocardless_success_message} onChange={s("gocardless_success_message")} multiline testId="ws-gc-succ-msg" />
-            <Field label="Error title" value={ws.gocardless_error_title} onChange={s("gocardless_error_title")} testId="ws-gc-err-title" />
-            <Field label="Error message" value={ws.gocardless_error_message} onChange={s("gocardless_error_message")} multiline testId="ws-gc-err-msg" />
-            <Field label="Return to store button text" value={ws.gocardless_return_btn_text} onChange={s("gocardless_return_btn_text")} testId="ws-gc-return-btn" />
+            <Field label="Quote request success" hint="Shown after submitting a quote request" value={ws.msg_quote_success} onChange={s("msg_quote_success")} testId="ws-msg-quote-success" />
+            <Field label="Scope request success" hint="Shown after submitting a scope request" value={ws.msg_scope_success} onChange={s("msg_scope_success")} testId="ws-msg-scope-success" />
           </div>
         )}
-        {pageSlideOver === "verify_email" && (
+      </SlideOver>
+
+      {/* ── Forms SlideOver ── */}
+      <SlideOver
+        open={formSlide !== null}
+        onClose={() => setFormSlide(null)}
+        title={formSlide === "quote" ? "Quote Request Form" : "Scope Request Form"}
+        description={formSlide === "quote" ? "Shown when a customer requests a quote on a product." : "Shown for fixed-scope / RFQ products."}
+        onSave={() => saveSection(() => setFormSlide(null))}
+        saving={slideSaving}
+      >
+        {formSlide === "quote" && (
           <div className="space-y-4">
-            <Field label="Step label (breadcrumb)" value={ws.verify_email_label} onChange={s("verify_email_label")} testId="ws-ve-label" />
-            <Field label="Title" value={ws.verify_email_title} onChange={s("verify_email_title")} testId="ws-ve-title" />
-            <Field label="Subtitle / instructions" value={ws.verify_email_subtitle} onChange={s("verify_email_subtitle")} multiline testId="ws-ve-subtitle" />
+            <Field label="Form title" value={ws.quote_form_title} onChange={s("quote_form_title")} testId="ws-quote-title" />
+            <Field label="Subtitle" value={ws.quote_form_subtitle} onChange={s("quote_form_subtitle")} multiline testId="ws-quote-subtitle" />
+            <Field label="Response time message" hint='Shown at the bottom of the form.' value={ws.quote_form_response_time} onChange={s("quote_form_response_time")} testId="ws-quote-response" />
+            <div className="border-t border-slate-100 pt-3">
+              <FormSchemaBuilder title="Form fields" value={ws.quote_form_schema} onChange={s("quote_form_schema")} />
+            </div>
           </div>
         )}
-        {pageSlideOver === "portal" && (
+        {formSlide === "scope" && (
           <div className="space-y-4">
-            <Field label="Page title" value={ws.portal_title} onChange={s("portal_title")} testId="ws-portal-title" />
-            <Field label="Page subtitle" value={ws.portal_subtitle} onChange={s("portal_subtitle")} multiline testId="ws-portal-subtitle" />
-          </div>
-        )}
-        {pageSlideOver === "profile" && (
-          <div className="space-y-4">
-            <Field label="Step label (breadcrumb)" value={ws.profile_label} onChange={s("profile_label")} testId="ws-profile-label" />
-            <Field label="Page title" value={ws.profile_title} onChange={s("profile_title")} testId="ws-profile-title" />
-            <Field label="Page subtitle" value={ws.profile_subtitle} onChange={s("profile_subtitle")} multiline testId="ws-profile-subtitle" />
+            <Field label="Form title" value={ws.scope_form_title} onChange={s("scope_form_title")} testId="ws-scope-title" />
+            <Field label="Subtitle" value={ws.scope_form_subtitle} onChange={s("scope_form_subtitle")} multiline testId="ws-scope-subtitle" />
+            <div className="border-t border-slate-100 pt-3">
+              <FormSchemaBuilder title="Form fields" value={ws.scope_form_schema} onChange={s("scope_form_schema")} />
+            </div>
           </div>
         )}
       </SlideOver>
