@@ -81,6 +81,10 @@ async def admin_orders(
 
 @router.get("/admin/orders/{order_id}/logs")
 async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0, "id": 1})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
     logs = await db.audit_logs.find(
         {"entity_type": "order", "entity_id": order_id}, {"_id": 0}
     ).sort("created_at", -1).to_list(100)
