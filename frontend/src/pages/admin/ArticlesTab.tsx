@@ -1,9 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import ImageExt from "@tiptap/extension-image";
-import LinkExt from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,11 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Bold, Italic, List, ListOrdered, Link2, Image, Heading1, Heading2, Heading3, Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown } from "lucide-react";
+import { Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown } from "lucide-react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { ArticleTemplatesTab } from "./ArticleTemplatesTab";
 import { ArticleEmailTemplatesTab } from "./ArticleEmailTemplatesTab";
+import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 const ARTICLE_CATEGORIES = [
   "Scope - Draft",
