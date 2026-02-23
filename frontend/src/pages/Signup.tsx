@@ -159,6 +159,12 @@ export default function Signup() {
           )}
         </div>
         <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
+          {/* Partner Code */}
+          <div className="space-y-2 sm:col-span-2">
+            <label className="text-sm text-slate-600 font-medium">Partner Code</label>
+            <Input placeholder="e.g. automate-accounts" value={partnerCode} onChange={e => setPartnerCode(e.target.value)} required data-testid="signup-partner-code-input" />
+            <p className="text-xs text-slate-400">Your service provider's partner code</p>
+          </div>
           {/* Full Name - always shown (locked) */}
           <div className="space-y-2">
             <label className="text-sm text-slate-600">{(getFieldProp("full_name", "label") as string) || "Full name"}</label>
