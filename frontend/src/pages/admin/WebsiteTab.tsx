@@ -846,6 +846,15 @@ export default function WebsiteTab() {
                 feeRateItem={(structured["Payments"] || []).find((i: any) => i.key === "gocardless_fee_rate") || null}
                 onSaved={onStructuredSaved}
               />
+              <div className="rounded-xl border border-slate-200 bg-white px-5 py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-700">GoCardless Callback Page</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Processing, success &amp; error messages shown during direct debit setup</p>
+                </div>
+                <button onClick={() => setAuthSlide("gocardless_callback")} className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors" data-testid="auth-tile-gc-callback">
+                  <Pencil size={13} />
+                </button>
+              </div>
               <PaymentProviderCard
                 title="Stripe" subtitle="Credit / Debit Card"
                 enabledItem={(structured["Payments"] || []).find((i: any) => i.key === "stripe_enabled")}
