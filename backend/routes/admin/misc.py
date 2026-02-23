@@ -20,10 +20,11 @@ async def admin_currency_override(
     payload: CurrencyOverrideRequest,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    user = await db.users.find_one({"email": payload.customer_email.lower()}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    user = await db.users.find_one({**tf, "email": payload.customer_email.lower()}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    customer = await db.customers.find_one({**tf, "user_id": user["id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     await db.customers.update_one({"id": customer["id"]}, {"$set": {"currency": payload.currency, "currency_locked": True}})
