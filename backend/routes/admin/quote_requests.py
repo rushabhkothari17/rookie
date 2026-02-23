@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin, get_current_user
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import QuoteRequest
 from services.audit_service import AuditService, create_audit_log
@@ -58,7 +58,7 @@ async def admin_list_quote_requests(
     product: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
@@ -88,7 +88,7 @@ async def admin_list_quote_requests(
 @router.post("/admin/quote-requests")
 async def admin_create_quote_request(
     payload: Dict[str, Any],
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     quote: Dict[str, Any] = {
         "id": make_id(),
@@ -124,7 +124,7 @@ async def admin_create_quote_request(
 async def admin_update_quote_request(
     quote_id: str,
     payload: Dict[str, Any],
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     quote = await db.quote_requests.find_one({"id": quote_id})
     if not quote:
@@ -150,7 +150,7 @@ async def admin_update_quote_request(
 
 
 @router.get("/admin/quote-requests/{quote_id}/logs")
-async def get_quote_request_logs(quote_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_quote_request_logs(quote_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find({"entity_type": "quote_request", "entity_id": quote_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 

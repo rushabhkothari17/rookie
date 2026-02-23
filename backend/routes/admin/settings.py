@@ -7,7 +7,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from core.security import require_admin
-from core.tenant import tenant_id_of, DEFAULT_TENANT_ID
+from core.tenant import tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from db.session import db
 from models import AppSettingsUpdate
 from services.audit_service import AuditService, create_audit_log
@@ -41,7 +41,7 @@ async def get_public_settings():
 
 
 @router.get("/admin/settings")
-async def get_app_settings(admin: Dict[str, Any] = Depends(require_admin)):
+async def get_app_settings(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tid = tenant_id_of(admin)
     settings = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0})
     if not settings:
@@ -56,7 +56,7 @@ async def get_app_settings(admin: Dict[str, Any] = Depends(require_admin)):
 @router.put("/admin/settings")
 async def update_app_settings(
     payload: AppSettingsUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tid = tenant_id_of(admin)
     update = {k: v for k, v in payload.dict().items() if v is not None}
@@ -87,7 +87,7 @@ async def update_app_settings(
 
 
 @router.get("/admin/settings/structured")
-async def get_structured_settings(admin: Dict[str, Any] = Depends(require_admin)):
+async def get_structured_settings(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     items = await SettingsService.list_all(include_secrets=False)
     grouped: Dict[str, list] = {}
     for item in items:
@@ -100,7 +100,7 @@ async def get_structured_settings(admin: Dict[str, Any] = Depends(require_admin)
 async def update_setting_by_key(
     key: str,
     payload: Dict[str, Any],
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     value = payload.get("value")
     if value is None:
@@ -126,7 +126,7 @@ async def update_setting_by_key(
 @router.post("/admin/upload-logo")
 async def upload_logo(
     file: UploadFile = File(...),
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     contents = await file.read()
     b64 = base64.b64encode(contents).decode()

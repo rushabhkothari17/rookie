@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import PromoCodeCreate, PromoCodeUpdate
 from services.audit_service import create_audit_log
@@ -23,7 +23,7 @@ async def admin_list_promo_codes(
     enabled: Optional[str] = None,
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
@@ -42,7 +42,7 @@ async def admin_list_promo_codes(
 
 
 @router.post("/admin/promo-codes")
-async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any] = Depends(require_admin)):
+async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
     existing = await db.promo_codes.find_one({**tf, "code": payload.code.upper()}, {"_id": 0})
@@ -69,7 +69,7 @@ async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any
 
 
 @router.put("/admin/promo-codes/{code_id}")
-async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin: Dict[str, Any] = Depends(require_admin)):
+async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     existing = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Promo code not found")
@@ -91,7 +91,7 @@ async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin:
 
 
 @router.delete("/admin/promo-codes/{code_id}")
-async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     existing = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Promo code not found")
@@ -107,7 +107,7 @@ async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(
 
 
 @router.get("/admin/promo-codes/{promo_id}/logs")
-async def get_promo_code_logs(promo_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_promo_code_logs(promo_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find({"entity_type": "promo_code", "entity_id": promo_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import OverrideCodeCreate, OverrideCodeUpdate
 from services.audit_service import create_audit_log
@@ -28,7 +28,7 @@ async def list_override_codes(
     created_to: Optional[str] = None,
     expires_from: Optional[str] = None,
     expires_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     query: Dict[str, Any] = {}
     if customer_id:
@@ -96,7 +96,7 @@ async def list_override_codes(
 @router.post("/admin/override-codes")
 async def create_override_code(
     payload: OverrideCodeCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     existing = await db.override_codes.find_one({"code": payload.code.strip()}, {"_id": 0})
     if existing:
@@ -136,7 +136,7 @@ async def create_override_code(
 async def update_override_code(
     code_id: str,
     payload: OverrideCodeUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     oc = await db.override_codes.find_one({"id": code_id}, {"_id": 0})
     if not oc:
@@ -184,7 +184,7 @@ async def update_override_code(
 @router.delete("/admin/override-codes/{code_id}")
 async def deactivate_override_code(
     code_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     oc = await db.override_codes.find_one({"id": code_id}, {"_id": 0})
     if not oc:
@@ -201,7 +201,7 @@ async def deactivate_override_code(
 
 
 @router.get("/admin/override-codes/{code_id}/logs")
-async def get_override_code_logs(code_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_override_code_logs(code_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find({"entity_type": "override_code", "entity_id": code_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 

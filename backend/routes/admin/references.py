@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from services.audit_service import create_audit_log
 from services.settings_service import SettingsService
@@ -62,14 +62,14 @@ async def list_references_public():
 # ── Admin endpoints ──────────────────────────────────────────────────────────
 
 @router.get("/admin/references")
-async def list_references(admin: Dict[str, Any] = Depends(require_admin)):
+async def list_references(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     await _seed_zoho_refs()
     refs = await db.website_references.find({}, {"_id": 0}).sort("label", 1).to_list(500)
     return {"references": refs}
 
 
 @router.post("/admin/references")
-async def create_reference(payload: Dict[str, Any], admin: Dict[str, Any] = Depends(require_admin)):
+async def create_reference(payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
     label = (payload.get("label") or "").strip()
     key = (payload.get("key") or _slugify(label)).strip()
     value = (payload.get("value") or "").strip()
@@ -100,7 +100,7 @@ async def create_reference(payload: Dict[str, Any], admin: Dict[str, Any] = Depe
 
 
 @router.put("/admin/references/{ref_id}")
-async def update_reference(ref_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(require_admin)):
+async def update_reference(ref_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
     ref = await db.website_references.find_one({"id": ref_id}, {"_id": 0})
     if not ref:
         raise HTTPException(status_code=404, detail="Reference not found")
@@ -125,7 +125,7 @@ async def update_reference(ref_id: str, payload: Dict[str, Any], admin: Dict[str
 
 
 @router.delete("/admin/references/{ref_id}")
-async def delete_reference(ref_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def delete_reference(ref_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     ref = await db.website_references.find_one({"id": ref_id}, {"_id": 0})
     if not ref:
         raise HTTPException(status_code=404, detail="Reference not found")

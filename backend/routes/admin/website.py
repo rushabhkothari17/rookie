@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends
 
 from core.security import require_admin
-from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID
+from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from db.session import db
 from models import WebsiteSettingsUpdate
 from services.audit_service import create_audit_log
@@ -214,7 +214,7 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
 async def get_website_settings_public(partner_code: Optional[str] = None):
     """Public endpoint — returns all website content + branding + payment flags."""
     from fastapi import Request
-    from core.tenant import resolve_tenant
+    from core.tenant import resolve_tenant, get_tenant_admin
     if partner_code:
         try:
             tenant = await resolve_tenant(partner_code)
@@ -266,7 +266,7 @@ async def get_website_settings_public(partner_code: Optional[str] = None):
 
 
 @router.get("/admin/website-settings")
-async def get_website_settings_admin(admin: Dict[str, Any] = Depends(require_admin)):
+async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tid = tenant_id_of(admin)
     web_s = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0}) or {}
     app_s = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0}) or {}
@@ -299,7 +299,7 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(require_adm
 @router.put("/admin/website-settings")
 async def update_website_settings(
     payload: WebsiteSettingsUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tid = tenant_id_of(admin)
     update = {k: v for k, v in payload.dict().items() if v is not None}

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from core.constants import ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHODS, ALLOWED_ORDER_STATUSES, ALLOWED_BANK_TRANSACTION_STATUSES
 from db.session import db
 from models import SubscriptionUpdate, ManualSubscriptionCreate
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api", tags=["admin-subscriptions"])
 
 
 @router.get("/admin/filter-options")
-async def get_filter_options(admin: Dict[str, Any] = Depends(require_admin)):
+async def get_filter_options(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Single source of truth for all admin filter dropdowns."""
     return {
         "order_statuses": ALLOWED_ORDER_STATUSES,
@@ -48,7 +48,7 @@ async def admin_subscriptions(
     start_to: Optional[str] = None,
     contract_end_from: Optional[str] = None,
     contract_end_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
@@ -104,7 +104,7 @@ async def admin_subscriptions(
 
 
 @router.get("/admin/subscriptions/{subscription_id}/logs")
-async def get_subscription_logs(subscription_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_subscription_logs(subscription_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find(
         {"entity_type": "subscription", "entity_id": subscription_id}, {"_id": 0}
     ).sort("created_at", -1).to_list(100)
@@ -114,7 +114,7 @@ async def get_subscription_logs(subscription_id: str, admin: Dict[str, Any] = De
 @router.post("/admin/subscriptions/manual")
 async def create_manual_subscription(
     payload: ManualSubscriptionCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     user = await db.users.find_one({"email": payload.customer_email.lower()}, {"_id": 0})
     if not user:
@@ -180,7 +180,7 @@ async def create_manual_subscription(
 @router.post("/subscriptions/{subscription_id}/renew-now")
 async def renew_subscription_now(
     subscription_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
     if not subscription:
@@ -243,7 +243,7 @@ async def renew_subscription_now(
 async def update_subscription(
     subscription_id: str,
     payload: SubscriptionUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
     if not subscription:
@@ -311,7 +311,7 @@ async def update_subscription(
 @router.post("/admin/subscriptions/{subscription_id}/cancel")
 async def admin_cancel_subscription(
     subscription_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
     if not subscription:

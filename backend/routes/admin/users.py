@@ -7,7 +7,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_super_admin, require_admin, pwd_context
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, PLATFORM_ROLE
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, PLATFORM_ROLE, get_tenant_admin, get_tenant_super_admin
 from db.session import db
 from models import AdminCreateUserRequest
 from services.audit_service import create_audit_log
@@ -20,7 +20,7 @@ async def admin_list_users(
     page: int = 1,
     per_page: int = 20,
     search: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     # Show admin/partner users scoped to tenant (platform admin sees all)
@@ -45,7 +45,7 @@ async def admin_list_users(
 @router.post("/admin/users")
 async def admin_create_admin_user(
     payload: AdminCreateUserRequest,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tid = tenant_id_of(admin)
     valid_roles = ("partner_super_admin", "partner_admin", "partner_staff", "admin", "super_admin")
@@ -92,7 +92,7 @@ async def admin_create_admin_user(
 async def admin_update_user(
     user_id: str,
     payload: Dict[str, Any] = Body(...),
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
@@ -128,7 +128,7 @@ async def admin_update_user(
 async def admin_set_user_active(
     user_id: str,
     active: bool,
-    admin: Dict[str, Any] = Depends(require_super_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not user:
@@ -148,7 +148,7 @@ async def admin_set_user_active(
 
 
 @router.get("/admin/users/{user_id}/logs")
-async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(require_super_admin)):
+async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
     logs = await db.audit_logs.find({"entity_type": "user", "entity_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 

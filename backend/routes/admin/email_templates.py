@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from services.audit_service import create_audit_log
 from services.email_service import EmailService
@@ -16,14 +16,14 @@ router = APIRouter(prefix="/api", tags=["email-templates"])
 
 
 @router.get("/admin/email-templates")
-async def list_templates(admin: Dict[str, Any] = Depends(require_admin)):
+async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     await EmailService.ensure_seeded(db)
     templates = await db.email_templates.find({}, {"_id": 0}).sort("trigger", 1).to_list(100)
     return {"templates": templates}
 
 
 @router.put("/admin/email-templates/{template_id}")
-async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(require_admin)):
+async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tmpl = await db.email_templates.find_one({"id": template_id}, {"_id": 0})
     if not tmpl:
         raise HTTPException(status_code=404, detail="Template not found")
@@ -40,6 +40,6 @@ async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict
 
 
 @router.get("/admin/email-logs")
-async def list_email_logs(limit: int = 50, admin: Dict[str, Any] = Depends(require_admin)):
+async def list_email_logs(limit: int = 50, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.email_logs.find({}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     return {"logs": logs}

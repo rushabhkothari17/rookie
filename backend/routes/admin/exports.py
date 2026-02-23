@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 
 router = APIRouter(prefix="/api", tags=["admin-exports"])
@@ -58,7 +58,7 @@ async def export_orders_csv(
     order_number_filter: Optional[str] = None,
     status_filter: Optional[str] = None,
     email_filter: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     query: Dict[str, Any] = {}
     if not include_deleted:
@@ -93,7 +93,7 @@ async def export_orders_csv(
 
 
 @router.get("/admin/export/customers")
-async def export_customers_csv(admin: Dict[str, Any] = Depends(require_admin)):
+async def export_customers_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
     users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(10000)
     addresses = await db.addresses.find({}, {"_id": 0}).to_list(10000)
@@ -131,7 +131,7 @@ async def export_subscriptions_csv(
     sort_order: str = "desc",
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     query: Dict[str, Any] = {}
     if created_from:
@@ -160,7 +160,7 @@ async def export_subscriptions_csv(
 
 
 @router.get("/admin/export/catalog")
-async def export_catalog_csv(admin: Dict[str, Any] = Depends(require_admin)):
+async def export_catalog_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     products = await db.products.find({}, {"_id": 0}).to_list(10000)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     return _make_csv_response(products, f"catalog_{today}.csv")
@@ -173,7 +173,7 @@ async def export_quote_requests_csv(
     product: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     query: Dict[str, Any] = {}
     if status:
@@ -194,7 +194,7 @@ async def export_quote_requests_csv(
 @router.get("/admin/export/articles")
 async def export_articles_csv(
     category: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     query: Dict[str, Any] = {}
     if category:
@@ -205,7 +205,7 @@ async def export_articles_csv(
 
 
 @router.get("/admin/export/categories")
-async def export_categories_csv(admin: Dict[str, Any] = Depends(require_admin)):
+async def export_categories_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     cats = await db.categories.find({}, {"_id": 0}).sort("name", 1).to_list(1000)
     for cat in cats:
         cat["product_count"] = await db.products.count_documents({"category": cat["name"]})
@@ -214,7 +214,7 @@ async def export_categories_csv(admin: Dict[str, Any] = Depends(require_admin)):
 
 
 @router.get("/admin/export/terms")
-async def export_terms_csv(admin: Dict[str, Any] = Depends(require_admin)):
+async def export_terms_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     terms = await db.terms_and_conditions.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
     return _make_csv_response(terms, f"terms-{ts}.csv")
@@ -223,7 +223,7 @@ async def export_terms_csv(admin: Dict[str, Any] = Depends(require_admin)):
 @router.get("/admin/export/override-codes")
 async def export_override_codes_csv(
     status: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     codes = await db.override_codes.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
     if status:
@@ -235,7 +235,7 @@ async def export_override_codes_csv(
 @router.get("/admin/export/promo-codes")
 async def export_promo_codes_csv(
     applies_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     query: Dict[str, Any] = {}
     if applies_to:

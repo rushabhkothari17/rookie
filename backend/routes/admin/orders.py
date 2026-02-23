@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso, round_cents
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from core.constants import ALLOWED_ORDER_STATUSES
 from db.session import db
 from models import OrderUpdate, OrderDelete, ManualOrderCreate
@@ -32,7 +32,7 @@ async def admin_orders(
     payment_method_filter: Optional[str] = None,
     pay_date_from: Optional[str] = None,
     pay_date_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     skip = (page - 1) * per_page
     tf = get_tenant_filter(admin)
@@ -80,7 +80,7 @@ async def admin_orders(
 
 
 @router.get("/admin/orders/{order_id}/logs")
-async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find(
         {"entity_type": "order", "entity_id": order_id}, {"_id": 0}
     ).sort("created_at", -1).to_list(100)
@@ -90,7 +90,7 @@ async def get_order_logs(order_id: str, admin: Dict[str, Any] = Depends(require_
 @router.post("/admin/orders/manual")
 async def create_manual_order(
     payload: ManualOrderCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
@@ -165,7 +165,7 @@ async def create_manual_order(
 async def update_order(
     order_id: str,
     payload: OrderUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0})
@@ -258,7 +258,7 @@ async def update_order(
 async def delete_order(
     order_id: str,
     payload: OrderDelete,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0})
@@ -282,7 +282,7 @@ async def delete_order(
 @router.post("/admin/orders/{order_id}/auto-charge")
 async def auto_charge_order(
     order_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     order = await db.orders.find_one({"id": order_id}, {"_id": 0})
     if not order:

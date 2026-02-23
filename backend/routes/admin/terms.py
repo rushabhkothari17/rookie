@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin, get_current_user
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import TermsCreate, TermsUpdate
 from services.audit_service import create_audit_log
@@ -49,7 +49,7 @@ async def admin_list_terms(
     status: Optional[str] = None,
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
@@ -69,7 +69,7 @@ async def admin_list_terms(
 
 
 @router.post("/admin/terms")
-async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(require_admin)):
+async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
     if payload.is_default:
@@ -90,7 +90,7 @@ async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(req
 
 
 @router.put("/admin/terms/{terms_id}")
-async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any] = Depends(require_admin)):
+async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
     existing = await db.terms_and_conditions.find_one({**tf, "id": terms_id}, {"_id": 0})
     if not existing:
@@ -115,7 +115,7 @@ async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any
 
 
 @router.delete("/admin/terms/{terms_id}")
-async def delete_terms(terms_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def delete_terms(terms_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     existing = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Terms not found")
@@ -137,7 +137,7 @@ async def delete_terms(terms_id: str, admin: Dict[str, Any] = Depends(require_ad
 async def assign_terms_to_product(
     product_id: str,
     terms_id: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     product = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not product:
@@ -155,7 +155,7 @@ async def assign_terms_to_product(
 
 
 @router.get("/admin/terms/{terms_id}/logs")
-async def get_terms_logs(terms_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_terms_logs(terms_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find({"entity_type": "terms", "entity_id": terms_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 

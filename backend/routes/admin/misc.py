@@ -6,7 +6,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from core.helpers import now_iso
 from db.session import db
 from models import CurrencyOverrideRequest, CustomerPartnerMapUpdate
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api", tags=["admin-misc"])
 @router.post("/admin/currency-override")
 async def admin_currency_override(
     payload: CurrencyOverrideRequest,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     user = await db.users.find_one({"email": payload.customer_email.lower()}, {"_id": 0})
     if not user:
@@ -38,13 +38,13 @@ async def admin_currency_override(
 
 
 @router.get("/admin/sync-logs")
-async def admin_sync_logs(admin: Dict[str, Any] = Depends(require_admin)):
+async def admin_sync_logs(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.zoho_sync_logs.find({}, {"_id": 0}).to_list(500)
     return {"logs": logs}
 
 
 @router.post("/admin/sync-logs/{log_id}/retry")
-async def admin_retry_sync(log_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def admin_retry_sync(log_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     log_entry = await db.zoho_sync_logs.find_one({"id": log_id}, {"_id": 0})
     await db.zoho_sync_logs.update_one(
         {"id": log_id},
@@ -58,7 +58,7 @@ async def admin_retry_sync(log_id: str, admin: Dict[str, Any] = Depends(require_
 async def admin_update_customer_partner_map(
     customer_id: str,
     payload: CustomerPartnerMapUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     existing = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     if not existing:
@@ -75,7 +75,7 @@ async def admin_update_customer_partner_map(
 
 
 @router.get("/admin/customers/{customer_id}/notes")
-async def admin_get_customer_notes(customer_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def admin_get_customer_notes(customer_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
@@ -86,7 +86,7 @@ async def admin_get_customer_notes(customer_id: str, admin: Dict[str, Any] = Dep
 async def admin_add_customer_note(
     customer_id: str,
     payload: Dict[str, Any],
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
     if not customer:

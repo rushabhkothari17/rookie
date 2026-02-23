@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso, currency_for_country
 from core.security import require_admin, require_super_admin, pwd_context
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin, get_tenant_super_admin
 from db.session import db
 from models import (
     AdminCustomerPaymentUpdate,
@@ -28,7 +28,7 @@ async def admin_customers(
     country: Optional[str] = None,
     status: Optional[str] = None,
     payment_mode: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     users_all = await db.users.find({**tf, "is_admin": False}, {"_id": 0, "id": 1, "email": 1, "full_name": 1, "is_active": 1}).to_list(10000)
@@ -93,7 +93,7 @@ async def admin_customers(
 async def admin_update_customer_payment_methods(
     customer_id: str,
     payload: Dict[str, Any],
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     existing = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
@@ -134,7 +134,7 @@ async def admin_update_customer_payment_methods(
 @router.post("/admin/customers/create")
 async def admin_create_customer(
     payload: AdminCreateCustomerRequest,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tid = tenant_id_of(admin)
     existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tid}, {"_id": 0})
@@ -210,7 +210,7 @@ async def update_customer(
     customer_id: str,
     customer_data: CustomerUpdate,
     address_data: AddressUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
@@ -277,7 +277,7 @@ async def update_customer(
 async def admin_set_customer_active(
     customer_id: str,
     active: bool,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
@@ -306,7 +306,7 @@ async def admin_set_customer_active(
 
 
 @router.get("/admin/customers/{customer_id}/logs")
-async def get_customer_logs(customer_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_customer_logs(customer_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find({"entity_type": "customer", "entity_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 

@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends
 
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from services.audit_service import AuditService
 
 router = APIRouter(prefix="/api/admin/audit-logs", tags=["admin-logs"])
@@ -26,7 +26,7 @@ async def list_audit_logs(
     page: int = 1,
     limit: int = 50,
     cursor: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     success_bool: Optional[bool] = None
     if success == "true":
@@ -75,7 +75,7 @@ async def _parallel_query(common: dict, page: int, per_page: int, cursor: Option
 @router.get("/{log_id}")
 async def get_audit_log(
     log_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     from db.session import db
     log = await db.audit_trail.find_one({"id": log_id}, {"_id": 0})

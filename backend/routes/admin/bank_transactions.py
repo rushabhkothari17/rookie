@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import BankTransactionCreate, BankTransactionUpdate
 from services.audit_service import AuditService, create_audit_log
@@ -29,7 +29,7 @@ async def list_bank_transactions(
     linked_order_id: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
@@ -61,7 +61,7 @@ async def list_bank_transactions(
 @router.post("/admin/bank-transactions")
 async def create_bank_transaction(
     payload: BankTransactionCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     txn_id = make_id()
     net = payload.net_amount if payload.net_amount is not None else round(payload.amount - (payload.fees or 0.0), 2)
@@ -104,7 +104,7 @@ async def create_bank_transaction(
 async def update_bank_transaction(
     txn_id: str,
     payload: BankTransactionUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     txn = await db.bank_transactions.find_one({**tf, "id": txn_id}, {"_id": 0})
@@ -142,7 +142,7 @@ async def update_bank_transaction(
 @router.delete("/admin/bank-transactions/{txn_id}")
 async def delete_bank_transaction(
     txn_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     result = await db.bank_transactions.delete_one({"id": txn_id})
     if result.deleted_count == 0:
@@ -163,7 +163,7 @@ async def delete_bank_transaction(
 @router.get("/admin/bank-transactions/{txn_id}/logs")
 async def get_bank_transaction_logs(
     txn_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     txn = await db.bank_transactions.find_one({"id": txn_id}, {"_id": 0})
     if not txn:
@@ -176,7 +176,7 @@ async def get_bank_transaction_logs(
 
 @router.get("/admin/export/bank-transactions")
 async def export_bank_transactions(
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     txns = await db.bank_transactions.find({}, {"_id": 0}).sort("date", -1).to_list(5000)
     output = io.StringIO()

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import AdminProductCreate, AdminProductUpdate, CategoryCreate, CategoryUpdate, IntakeSchemaJson
 from services.audit_service import create_audit_log
@@ -82,7 +82,7 @@ async def admin_list_all_products(
     billing: Optional[str] = None,
     pricing_type: Optional[str] = None,
     status: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
@@ -117,7 +117,7 @@ async def admin_list_all_products(
 @router.post("/admin/products")
 async def admin_create_product(
     payload: AdminProductCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tid = tenant_id_of(admin)
     product_id = make_id()
@@ -196,7 +196,7 @@ async def admin_create_product(
 async def admin_update_product(
     product_id: str,
     payload: AdminProductUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     existing = await db.products.find_one({**tf, "id": product_id}, {"_id": 0})
@@ -299,7 +299,7 @@ async def admin_list_categories(
     per_page: int = 20,
     search: Optional[str] = None,
     status: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
@@ -327,7 +327,7 @@ async def admin_list_categories(
 @router.post("/admin/categories")
 async def admin_create_category(
     payload: CategoryCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
@@ -358,7 +358,7 @@ async def admin_create_category(
 async def admin_update_category(
     cat_id: str,
     payload: CategoryUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     cat = await db.categories.find_one({**tf, "id": cat_id}, {"_id": 0})
@@ -383,7 +383,7 @@ async def admin_update_category(
 @router.delete("/admin/categories/{cat_id}")
 async def admin_delete_category(
     cat_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     cat = await db.categories.find_one({"id": cat_id})
     if not cat:
@@ -406,12 +406,12 @@ async def admin_delete_category(
 
 
 @router.get("/admin/products/{product_id}/logs")
-async def get_product_logs(product_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_product_logs(product_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find({"entity_type": "product", "entity_id": product_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
 @router.get("/admin/categories/{cat_id}/logs")
-async def get_category_logs(cat_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def get_category_logs(cat_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     logs = await db.audit_logs.find({"entity_type": "category", "entity_id": cat_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
