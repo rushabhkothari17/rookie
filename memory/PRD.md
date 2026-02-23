@@ -19,7 +19,7 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 13. **Rich Text Editor** — Unified 3-tab editor (Rich Text / HTML / Preview) for Articles, Article Templates, Email Templates, Terms
 14. **Article Categories** — CRUD for article categories with optional color badge, linked to articles
 15. **Admin Content Management** — Admin dashboard text and Bank Transaction form options configurable from Website Content
-16. **Brand Color Management** — All brand colors (primary, accent, danger, success, warning, bg, text, border, muted) manageable from admin panel and applied dynamically via CSS variables
+16. **Brand Color Full Wiring** — All admin brand colors now visibly affect the storefront: Primary → hero banners (Store, Articles, Product Detail), sidebar active state, TopNav cart badge, shadcn buttons (via --primary HSL). Accent → bullet dots, accent lines, glow effects. Danger → shadcn destructive buttons. All via CSS variable propagation with hex→HSL conversion in WebsiteContext.
 
 ---
 
