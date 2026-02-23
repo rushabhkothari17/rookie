@@ -154,7 +154,7 @@ export default function Admin() {
             <TermsTab />
           </TabsContent>
           <TabsContent value="website" className="space-y-4">
-            <WebsiteTab />
+            <WebsiteTab defaultSection={websiteSection as any} />
           </TabsContent>
           <TabsContent value="override-codes" className="space-y-4">
             <OverrideCodesTab />
