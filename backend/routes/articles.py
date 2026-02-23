@@ -14,20 +14,14 @@ from core.helpers import make_id, now_iso, _slugify
 from core.security import get_current_user, require_admin
 from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID
 from db.session import db
-
-(tenant_id: str = DEFAULT_TENANT_ID) -> set:
-    """Get valid categories from DB, falling back to hardcoded constants."""
-    db_cats = await db.article_categories.find({"tenant_id": tenant_id}, {"_id": 0, "name": 1}).to_list(200)
-    if db_cats:
-        return {c["name"] for c in db_cats}
-    return set(ARTICLE_CATEGORIES)
-from core.helpers import make_id, now_iso, _slugify
-from core.security import get_current_user, require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID
-from db.session import db
 from models import ArticleCreate, ArticleEmailRequest, ArticleUpdate, ArticleSendEmailRequest
 from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
+
+router = APIRouter(prefix="/api", tags=["articles"])
+
+
+async def _get_valid_categories(tenant_id: str = DEFAULT_TENANT_ID) -> set:
 
 router = APIRouter(prefix="/api", tags=["articles"])
 
