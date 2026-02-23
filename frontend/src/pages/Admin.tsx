@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { useState, useEffect } from "react";
-import { getViewAsTenantId } from "@/components/TenantSwitcher";
+import { getViewAsTenantId, _tenantListeners } from "@/components/TenantSwitcher";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
 import { OrdersTab } from "./admin/OrdersTab";
