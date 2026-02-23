@@ -104,6 +104,30 @@ async def _reset_failed_login(user_id: str) -> None:
     )
 
 
+def _set_auth_cookie(response: Response, token: str):
+    """Set HttpOnly authentication cookie."""
+    response.set_cookie(
+        key="aa_access_token",
+        value=token,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=TOKEN_EXPIRY_HOURS * 3600,
+        path="/"
+    )
+
+
+def _clear_auth_cookie(response: Response):
+    """Clear authentication cookie on logout."""
+    response.delete_cookie(
+        key="aa_access_token",
+        path="/",
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE
+    )
+
+
 @router.get("/")
 async def root():
     return {"message": "Automate Accounts API"}
