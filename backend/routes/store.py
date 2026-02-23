@@ -23,14 +23,16 @@ from core.constants import SERVICE_FEE_RATE
 router = APIRouter(prefix="/api", tags=["store"])
 
 
-def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None) -> str:
-    """Resolve tenant_id: partner_code > X-View-As-Tenant (platform_admin) > user JWT > default."""
-    if partner_code:
-        return partner_code
+def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
+    """Resolve tenant_id: X-View-As-Tenant (platform_admin) > user JWT > API key > partner_code > default."""
     if x_view_as_tenant and user and user.get("role") == "platform_admin":
         return x_view_as_tenant
     if user and user.get("tenant_id"):
         return user["tenant_id"]
+    if api_key_tid:
+        return api_key_tid
+    if partner_code:
+        return partner_code
     return DEFAULT_TENANT_ID
 
 
