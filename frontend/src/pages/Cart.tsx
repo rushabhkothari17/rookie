@@ -606,7 +606,7 @@ export default function Cart() {
                                         className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-800 ${field.required && !extraFields[fKey] ? "border-red-300" : "border-slate-300"}`}
                                         data-testid={`section-field-${fKey}`}>
                                         <option value="">-- Select --</option>
-                                        {(field.options || []).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+                                        {parseOptions(field.options).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
                                       </select>
                                     ) : field.type === "checkbox" ? (
                                       <label className="flex items-center gap-2 text-sm cursor-pointer">
