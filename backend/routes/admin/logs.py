@@ -61,11 +61,14 @@ async def list_audit_logs(
     }
 
 
-async def _parallel_query(common: dict, page: int, per_page: int, cursor: Optional[str]):
+async def _parallel_query(common: dict, page: int, per_page: int, cursor: Optional[str], tenant_filter: dict = {}):
     """Run count and query in parallel."""
     import asyncio
-    total_task = AuditService.count(**common)
-    query_task = AuditService.query(**common, page=page, limit=per_page, before_cursor=cursor)
+    # Inject tenant_id filter into audit log queries
+    if tenant_filter:
+        common = {**common, "extra_filter": tenant_filter}
+    total_task = AuditService.count(**{k: v for k, v in common.items() if k != "extra_filter"})
+    query_task = AuditService.query(**{k: v for k, v in common.items() if k != "extra_filter"}, page=page, limit=per_page, before_cursor=cursor)
     return await asyncio.gather(total_task, query_task)
 
 
