@@ -142,7 +142,8 @@ async def update_override_code(
     payload: OverrideCodeUpdate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    oc = await db.override_codes.find_one({"id": code_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    oc = await db.override_codes.find_one({**tf, "id": code_id}, {"_id": 0})
     if not oc:
         raise HTTPException(status_code=404, detail="Override code not found")
 
@@ -190,7 +191,8 @@ async def deactivate_override_code(
     code_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    oc = await db.override_codes.find_one({"id": code_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    oc = await db.override_codes.find_one({**tf, "id": code_id}, {"_id": 0})
     if not oc:
         raise HTTPException(status_code=404, detail="Override code not found")
     await db.override_codes.update_one({"id": code_id}, {"$set": {"status": "inactive"}})
