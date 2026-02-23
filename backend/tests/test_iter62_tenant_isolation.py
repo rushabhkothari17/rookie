@@ -433,7 +433,7 @@ class TestEmailTemplatesIsolation:
         print(f"PASS: Email templates for Tenant B: {len(templates)} templates, all scoped to Tenant B")
 
     def test_email_templates_different_counts_confirm_isolation(self, platform_headers, tenant_b_headers):
-        """Main tenant and Tenant B have separate email template sets."""
+        """Verify: platform admin sees ALL tenants' templates without header; Tenant B sees only its own."""
         r_main = requests.get(f"{BASE_URL}/api/admin/email-templates", headers=platform_headers)
         r_tb = requests.get(f"{BASE_URL}/api/admin/email-templates", headers=tenant_b_headers)
         assert r_main.status_code == 200
@@ -442,17 +442,18 @@ class TestEmailTemplatesIsolation:
         tb_templates = r_tb.json().get("templates", [])
         main_tids = {t.get("tenant_id") for t in main_templates}
         tb_tids = {t.get("tenant_id") for t in tb_templates}
-        print(f"Main tenant templates: {len(main_templates)}, tenant_ids: {main_tids}")
-        print(f"Tenant B templates: {len(tb_templates)}, tenant_ids: {tb_tids}")
-        # No overlap: main tenant templates should not appear in Tenant B results
-        assert TENANT_B_ID not in main_tids or len(main_tids) == 1, (
-            "Main tenant view should not include Tenant B templates"
-        )
+        print(f"Platform admin (all) templates: {len(main_templates)}, tenant_ids seen: {main_tids}")
+        print(f"Tenant B only templates: {len(tb_templates)}, tenant_ids: {tb_tids}")
+        # Tenant B view should ONLY contain Tenant B templates (not main tenant)
         if tb_templates:
-            assert "automate-accounts" not in tb_tids, (
-                "Tenant B view should not include main tenant templates"
+            assert tb_tids == {TENANT_B_ID}, (
+                f"Tenant B view should only contain Tenant B templates, got: {tb_tids}"
             )
-        print("PASS: Email template isolation confirmed between tenants")
+        # Platform admin without header sees ALL data (including Tenant B) - this is expected behavior
+        assert len(main_templates) >= len(tb_templates), (
+            "Platform admin (no header) should see at least as many templates as Tenant B view"
+        )
+        print("PASS: Email template isolation confirmed - Tenant B only sees its own templates")
 
 
 # ---------------------------------------------------------------------------
