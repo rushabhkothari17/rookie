@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -14,6 +15,15 @@ from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tena
 from db.session import db
 
 router = APIRouter(prefix="/api", tags=["admin-exports"])
+
+
+def _serialize_val(v: Any) -> str:
+    """Serialize a value for CSV. Lists/dicts become JSON strings."""
+    if v is None:
+        return ""
+    if isinstance(v, (list, dict)):
+        return json.dumps(v, ensure_ascii=False)
+    return str(v)
 
 
 def _make_csv_response(rows: List[Dict[str, Any]], filename: str) -> StreamingResponse:
@@ -39,7 +49,7 @@ def _make_csv_response(rows: List[Dict[str, Any]], filename: str) -> StreamingRe
     writer = csv.DictWriter(output, fieldnames=all_keys, extrasaction="ignore")
     writer.writeheader()
     for row in rows:
-        writer.writerow({k: str(row.get(k, "")) for k in all_keys})
+        writer.writerow({k: _serialize_val(row.get(k)) for k in all_keys})
 
     output.seek(0)
     return StreamingResponse(
