@@ -17,7 +17,7 @@ type Section = "branding" | "auth" | "forms" | "email" | "footer" | "references"
 
 type AuthSlide =
   | "login" | "signup" | "verify_email"
-  | "portal" | "profile" | "not_found" | "gocardless"
+  | "portal" | "profile" | "not_found"
   | "checkout_builder" | "checkout_success"
   | "checkout_messages" | "form_messages"
   | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social";
