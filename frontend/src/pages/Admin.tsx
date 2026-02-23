@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantSwitcher";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
@@ -19,6 +19,7 @@ import { ArticlesTab } from "./admin/ArticlesTab";
 import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
 import { TenantsTab } from "./admin/TenantsTab";
+import { SetupChecklistWidget } from "@/components/admin/SetupChecklistWidget";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
