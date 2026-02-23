@@ -627,3 +627,26 @@ class ArticleEmailRequest(BaseModel):
     customer_ids: List[str]
     subject: Optional[str] = None
     message: Optional[str] = None
+
+
+class ArticleSendEmailRequest(BaseModel):
+    to: List[str]
+    cc: Optional[List[str]] = None
+    bcc: Optional[List[str]] = None
+    subject: str
+    html_body: str
+    attach_pdf: bool = False
+
+
+class ArticleEmailTemplateCreate(BaseModel):
+    name: str
+    subject: str
+    html_body: str
+    description: Optional[str] = ""
+
+
+class ArticleEmailTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    subject: Optional[str] = None
+    html_body: Optional[str] = None
+    description: Optional[str] = None
