@@ -220,7 +220,7 @@ class TestArticleTemplates:
         assert tpl["name"] == "TEST_Custom Template Iter52"
         assert tpl["is_default"] == False
         assert "_id" not in tpl
-        return tpl["id"]
+        print(f"PASS: Custom template created with id: {tpl['id']}")
 
     def test_update_custom_template(self, admin_headers):
         """PUT /api/article-templates/{id} should update the template."""
