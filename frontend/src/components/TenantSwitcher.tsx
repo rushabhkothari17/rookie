@@ -18,7 +18,10 @@ export function getViewAsTenantId(): string | null {
   return _viewAsTenantId;
 }
 
-export { _listeners as _tenantListeners };
+export function subscribeToTenantSwitch(fn: () => void): () => void {
+  _listeners.push(fn);
+  return () => { _listeners = _listeners.filter(l => l !== fn); };
+}
 
 export function setViewAsTenant(id: string | null, name: string | null) {
   _viewAsTenantId = id;
