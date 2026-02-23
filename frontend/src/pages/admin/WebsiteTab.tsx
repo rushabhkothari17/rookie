@@ -1015,6 +1015,58 @@ export default function WebsiteTab() {
             <Field label="Scope request success" hint="Shown after submitting a scope request" value={ws.msg_scope_success} onChange={s("msg_scope_success")} testId="ws-msg-scope-success" />
           </div>
         )}
+
+        {/* Footer Basics */}
+        {authSlide === "footer_basics" && (
+          <div className="space-y-4">
+            <Field label="Tagline" hint="Short line shown under your brand name" value={ws.footer_tagline} onChange={s("footer_tagline")} testId="ws-footer-tagline" />
+            <Field label="Copyright text" hint='e.g. "© 2025 Acme Inc."' value={ws.footer_copyright} onChange={s("footer_copyright")} testId="ws-footer-copyright" />
+          </div>
+        )}
+
+        {/* Footer About */}
+        {authSlide === "footer_about" && (
+          <div className="space-y-4">
+            <Field label="Section title" hint='Shown as heading (e.g. "About Us")' value={ws.footer_about_title} onChange={s("footer_about_title")} placeholder="About Us" testId="ws-footer-about-title" />
+            <Field label="About us text" value={ws.footer_about_text} onChange={s("footer_about_text")} multiline testId="ws-footer-about-text" />
+          </div>
+        )}
+
+        {/* Footer Nav */}
+        {authSlide === "footer_nav" && (
+          <div className="space-y-4">
+            <Field label="Navigation section title" value={ws.footer_nav_title} onChange={s("footer_nav_title")} placeholder="Navigation" testId="ws-footer-nav-title" />
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Store label" value={ws.nav_store_label} onChange={s("nav_store_label")} testId="ws-nav-store" />
+              <Field label="Articles label" value={ws.nav_articles_label} onChange={s("nav_articles_label")} testId="ws-nav-articles" />
+              <Field label="Portal label" value={ws.nav_portal_label} onChange={s("nav_portal_label")} testId="ws-nav-portal" />
+            </div>
+          </div>
+        )}
+
+        {/* Footer Contact */}
+        {authSlide === "footer_contact" && (
+          <div className="space-y-4">
+            <Field label="Contact section title" value={ws.footer_contact_title} onChange={s("footer_contact_title")} placeholder="Contact" testId="ws-footer-contact-title" />
+            <Field label="Email" value={ws.contact_email} onChange={s("contact_email")} testId="ws-contact-email" />
+            <Field label="Phone" value={ws.contact_phone} onChange={s("contact_phone")} testId="ws-contact-phone" />
+            <Field label="Address" value={ws.contact_address} onChange={s("contact_address")} multiline testId="ws-contact-address" />
+          </div>
+        )}
+
+        {/* Footer Social */}
+        {authSlide === "footer_social" && (
+          <div className="space-y-4">
+            <Field label="Section title" value={ws.footer_social_title} onChange={s("footer_social_title")} placeholder="Follow Us" testId="ws-footer-social-title" />
+            <div className="space-y-3">
+              <Field label="X / Twitter URL" value={ws.social_twitter} onChange={s("social_twitter")} placeholder="https://x.com/yourhandle" testId="ws-social-twitter" />
+              <Field label="LinkedIn URL" value={ws.social_linkedin} onChange={s("social_linkedin")} placeholder="https://linkedin.com/company/..." testId="ws-social-linkedin" />
+              <Field label="Facebook URL" value={ws.social_facebook} onChange={s("social_facebook")} placeholder="https://facebook.com/..." testId="ws-social-facebook" />
+              <Field label="Instagram URL" value={ws.social_instagram} onChange={s("social_instagram")} placeholder="https://instagram.com/..." testId="ws-social-instagram" />
+              <Field label="YouTube URL" value={ws.social_youtube} onChange={s("social_youtube")} placeholder="https://youtube.com/@..." testId="ws-social-youtube" />
+            </div>
+          </div>
+        )}
       </SlideOver>
 
       {/* ── Forms SlideOver ── */}
