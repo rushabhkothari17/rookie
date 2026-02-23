@@ -181,7 +181,7 @@ class TestAdminTenants:
         data = resp.json()
         assert "tenant" in data, f"No 'tenant' key in response: {data}"
         tenant = data["tenant"]
-        assert tenant["code"] == "test-iter59-tenant"
+        assert tenant["code"] == unique_code
         assert tenant["name"] == "TEST Tenant Iter59"
         assert "id" in tenant
         TestAdminTenants.created_tenant_id = tenant["id"]
