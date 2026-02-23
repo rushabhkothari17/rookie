@@ -132,13 +132,14 @@ async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any
 
 @router.delete("/admin/terms/{terms_id}")
 async def delete_terms(terms_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    existing = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.terms_and_conditions.find_one({**tf, "id": terms_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Terms not found")
     if existing.get("is_default"):
         raise HTTPException(status_code=400, detail="Cannot delete default terms")
     await db.terms_and_conditions.delete_one({"id": terms_id})
-    await db.products.update_many({"terms_id": terms_id}, {"$unset": {"terms_id": ""}})
+    await db.products.update_many({**tf, "terms_id": terms_id}, {"$unset": {"terms_id": ""}})
     await create_audit_log(
         entity_type="terms",
         entity_id=terms_id,
@@ -155,11 +156,12 @@ async def assign_terms_to_product(
     terms_id: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    product = await db.products.find_one({**tf, "id": product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     if terms_id:
-        terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+        terms = await db.terms_and_conditions.find_one({**tf, "id": terms_id}, {"_id": 0})
         if not terms:
             raise HTTPException(status_code=404, detail="Terms not found")
         await db.products.update_one({"id": product_id}, {"$set": {"terms_id": terms_id}})
