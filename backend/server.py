@@ -102,6 +102,7 @@ app.include_router(article_categories_router)
 app.include_router(tenants_admin_router)
 app.include_router(payment_validate_router)
 app.include_router(imports_admin_router)
+app.include_router(api_keys_admin_router)
 
 
 
