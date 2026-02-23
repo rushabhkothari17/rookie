@@ -94,6 +94,7 @@ app.include_router(email_templates_router)
 app.include_router(articles_router)
 app.include_router(article_templates_router)
 app.include_router(article_email_templates_router)
+app.include_router(article_categories_router)
 
 
 
