@@ -169,7 +169,7 @@ function EmailBodyComposer({ value, onChange }: { value: string; onChange: (v: s
   );
 }
 
-export function ArticlesTab() {
+export function ArticlesTab({ editArticleId }: { editArticleId?: string }) {
   const [subTab, setSubTab] = useState<"articles" | "templates" | "email-templates">("articles");
   const [customers, setCustomers] = useState<any[]>([]);
   // Fetch customers for visibility/email controls
