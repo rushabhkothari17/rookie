@@ -67,9 +67,19 @@ export default function ArticleView() {
   return (
     <AppShell activeCategory={null}>
       <div className="max-w-3xl mx-auto space-y-6" data-testid="article-view">
-        <Button variant="ghost" className="gap-1 text-slate-500 -ml-2" onClick={() => navigate("/articles")} data-testid="article-back-btn">
-          <ChevronLeft size={14} /> Back to Articles
-        </Button>
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" className="gap-1 text-slate-500 -ml-2" onClick={() => navigate("/articles")} data-testid="article-back-btn">
+            <ChevronLeft size={14} /> Back to Articles
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => downloadArticle("pdf")} data-testid="article-download-pdf">
+              <FileText size={13} /> PDF
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => downloadArticle("docx")} data-testid="article-download-docx">
+              <Download size={13} /> DOCX
+            </Button>
+          </div>
+        </div>
 
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
