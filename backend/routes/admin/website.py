@@ -106,7 +106,11 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "checkout_partner_description": "You can tag us as your Zoho Partner by clicking the links below. If the US DC link doesn't work, try the CA DC link. You must be logged in to your Zoho account before tagging us.",
     "checkout_partner_options": "Yes\nPre-existing Customer\nNot yet",
     "checkout_partner_misrep_warning": "Misrepresenting or false responses may lead to cancellation of service.",
-    # Checkout page — custom extra questions (FormSchema JSON)
+    # Articles hero
+    "articles_hero_label": "Resources",
+    "articles_hero_title": "Articles & Guides",
+    "articles_hero_subtitle": "",
+    # Checkout page
     "checkout_extra_schema": "[]",
     # Dynamic checkout sections (new builder)
     "checkout_sections": "[]",

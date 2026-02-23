@@ -62,6 +62,10 @@ export interface WebsiteSettings {
   payment_gocardless_description: string;
   payment_stripe_label: string;
   payment_stripe_description: string;
+  // Articles hero
+  articles_hero_label: string;
+  articles_hero_title: string;
+  articles_hero_subtitle: string;
   // Checkout page configuration (legacy)
   checkout_zoho_enabled: boolean;
   checkout_zoho_title: string;

@@ -477,6 +477,10 @@ class WebsiteSettingsUpdate(BaseModel):
     payment_gocardless_description: Optional[str] = None
     payment_stripe_label: Optional[str] = None
     payment_stripe_description: Optional[str] = None
+    # Articles hero
+    articles_hero_label: Optional[str] = None
+    articles_hero_title: Optional[str] = None
+    articles_hero_subtitle: Optional[str] = None
     # Checkout page configuration
     checkout_zoho_enabled: Optional[bool] = None
     checkout_zoho_title: Optional[str] = None
