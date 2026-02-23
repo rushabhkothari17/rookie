@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 from core.config import JWT_SECRET
 from db.session import db
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)  # auto_error=False allows cookie-only auth
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
