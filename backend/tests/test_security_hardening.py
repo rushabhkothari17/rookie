@@ -832,7 +832,8 @@ class TestAPIKeyAuditLogging:
         revoke_logs_resp = requests.get(
             f"{BASE_URL}/api/admin/audit-logs",
             headers={"Authorization": f"Bearer {admin_token}"},
-            params={"entity_type": "api_key", "action": "api_key_revoked"},
+            # Use "apikey" (no underscore) to match stored PascalCase "ApiKey"
+            params={"entity_type": "apikey", "action": "api_key_revoked"},
             timeout=15,
         )
         assert revoke_logs_resp.status_code == 200
