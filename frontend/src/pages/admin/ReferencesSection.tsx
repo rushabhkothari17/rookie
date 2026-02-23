@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { Plus, Pencil, Trash2, Copy, X, Save, Lock } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, X, Save } from "lucide-react";
 import api from "@/lib/api";
 
 const REF_TYPES = [
