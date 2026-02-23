@@ -269,8 +269,24 @@ async def get_website_settings_public(partner_code: Optional[str] = None):
 async def get_website_settings_admin(admin: Dict[str, Any] = Depends(require_admin)):
     tid = tenant_id_of(admin)
     web_s = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0}) or {}
+    app_s = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0}) or {}
+    # Merge: defaults → app_settings (branding/colors) → website_settings (content overrides)
+    merged = {
+        **DEFAULT_WEBSITE_SETTINGS,
+        "store_name": app_s.get("store_name", ""),
+        "logo_url": app_s.get("logo_url") or "",
+        "primary_color": app_s.get("primary_color") or "",
+        "accent_color": app_s.get("accent_color") or "",
+        "danger_color": app_s.get("danger_color") or "",
+        "success_color": app_s.get("success_color") or "",
+        "warning_color": app_s.get("warning_color") or "",
+        "background_color": app_s.get("background_color") or "",
+        "text_color": app_s.get("text_color") or "",
+        "border_color": app_s.get("border_color") or "",
+        "muted_color": app_s.get("muted_color") or "",
+        **{k: v for k, v in web_s.items() if v is not None and k not in ("_id", "tenant_id")},
+    }
     # Migrate: inject default checkout_sections when DB has empty value
-    merged = {**DEFAULT_WEBSITE_SETTINGS, **web_s}
     try:
         cs = merged.get("checkout_sections", "[]")
         if not cs or json.loads(cs) == []:
