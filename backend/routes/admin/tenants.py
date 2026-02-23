@@ -39,20 +39,9 @@ async def create_tenant(payload: TenantCreate, admin: Dict[str, Any] = Depends(r
     # Insert a copy so MongoDB _id mutation doesn't pollute our response dict
     await db.tenants.insert_one({**doc})
 
-    # Seed default website_settings and app_settings for the new tenant
-    existing_ws = await db.website_settings.find_one({"tenant_id": DEFAULT_TENANT_ID}, {"_id": 0})
-    if existing_ws:
-        new_ws = {k: v for k, v in existing_ws.items() if k != "_id"}
-        new_ws["tenant_id"] = tenant_id
-        await db.website_settings.insert_one(new_ws)
-
-    existing_app = await db.app_settings.find_one(
-        {"key": {"$exists": False}, "tenant_id": DEFAULT_TENANT_ID}, {"_id": 0}
-    )
-    if existing_app:
-        new_app = {k: v for k, v in existing_app.items() if k != "_id"}
-        new_app["tenant_id"] = tenant_id
-        await db.app_settings.insert_one(new_app)
+    # Seed generic defaults (never copy from another tenant)
+    from routes.auth import _seed_new_tenant
+    await _seed_new_tenant(tenant_id, payload.name, now_iso())
 
     return {"tenant": doc}
 
