@@ -74,6 +74,8 @@ async def optional_get_current_user(request: Request) -> Optional[Dict[str, Any]
         payload = decode_token(token)
         user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
         if user and user.get("is_active", True):
+            from services.audit_service import set_audit_tenant
+            set_audit_tenant(user.get("tenant_id"))
             return user
     except Exception:
         pass
