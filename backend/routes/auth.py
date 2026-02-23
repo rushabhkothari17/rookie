@@ -103,6 +103,36 @@ async def register(payload: RegisterRequest):
     }
 
 
+@router.post("/auth/resend-verification-email")
+async def resend_verification_email(payload: LoginRequest):
+    user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.get("is_verified"):
+        return {"message": "Already verified"}
+    verification_code = f"{secrets.randbelow(999999):06d}"
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"verification_code": verification_code}},
+    )
+    from services.email_service import EmailService
+    await EmailService.send(
+        trigger="verification",
+        recipient=user["email"],
+        variables={
+            "customer_name": user.get("full_name", ""),
+            "customer_email": user["email"],
+            "verification_code": verification_code,
+        },
+        db=db,
+    )
+    await create_audit_log(
+        entity_type="user", entity_id=user["id"],
+        action="verification_resent", actor=user["email"], details={},
+    )
+    return {"message": "Verification email resent", "verification_code": verification_code}
+
+
 @router.post("/auth/verify-email")
 async def verify_email(payload: VerifyEmailRequest):
     user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
