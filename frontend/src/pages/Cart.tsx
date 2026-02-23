@@ -755,7 +755,7 @@ export default function Cart() {
                                   <select value={extraFields[field.name] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.name]: e.target.value }))}
                                     className="w-full h-9 border border-slate-200 rounded-md px-3 text-sm bg-white">
                                     <option value="">-- Select --</option>
-                                    {(field.options || []).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+                                    {parseOptions(field.options).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
                                   </select>
                                 ) : field.type === "checkbox" ? (
                                   <label className="flex items-center gap-2 text-sm cursor-pointer">
