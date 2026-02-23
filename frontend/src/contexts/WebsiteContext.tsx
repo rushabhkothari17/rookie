@@ -258,6 +258,16 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   cart_clear_btn_text: "Clear cart",
   msg_currency_unsupported: "Purchases are not supported in your region yet. Please contact admin for an override.",
   msg_no_payment_methods: "No payment methods available. Please contact support.",
+  footer_about_title: "About Us",
+  footer_about_text: "",
+  footer_nav_title: "Navigation",
+  footer_contact_title: "Contact",
+  footer_social_title: "Follow Us",
+  social_twitter: "",
+  social_linkedin: "",
+  social_facebook: "",
+  social_instagram: "",
+  social_youtube: "",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
