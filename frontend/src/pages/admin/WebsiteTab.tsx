@@ -13,7 +13,7 @@ import SlideOver from "@/components/admin/SlideOver";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Section = "branding" | "auth" | "forms" | "email" | "footer" | "references" | "payments" | "sysconfig";
+type Section = "branding" | "auth" | "forms" | "email" | "footer" | "references" | "payments" | "sysconfig" | "domains";
 
 type AuthSlide =
   | "login" | "signup" | "verify_email"
