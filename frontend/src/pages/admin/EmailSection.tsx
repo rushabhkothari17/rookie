@@ -104,6 +104,8 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
   const [isEnabled, setIsEnabled] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [open, setOpen] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{success: boolean; message: string} | null>(null);
 
   useEffect(() => {
     const s = settings["email_provider_enabled"];
@@ -123,6 +125,25 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
       toast.success(enabled ? "Email provider enabled" : "Email provider disabled (mocked mode)");
     } catch { toast.error("Failed to update"); }
     finally { setToggling(false); }
+  };
+
+  const validateResend = async () => {
+    setValidating(true);
+    setValidationResult(null);
+    try {
+      const res = await api.post("/admin/integrations/resend/validate");
+      setValidationResult(res.data);
+      if (res.data.success) {
+        toast.success("Resend connection validated");
+      } else {
+        toast.error(res.data.message || "Validation failed");
+      }
+    } catch (err: any) {
+      setValidationResult({ success: false, message: err.response?.data?.detail || "Validation failed" });
+      toast.error("Validation failed");
+    } finally {
+      setValidating(false);
+    }
   };
 
   const fields: { key: string; label: string; isSecret?: boolean; description?: string }[] = [
@@ -189,10 +210,245 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
                   value={String(settings[f.key]?.value_json ?? "")}
                   onSave={v => saveSetting(f.key, v)} testId={`email-${f.key}`} />
               ))}
+              
+              {/* Validate Button */}
+              <div className="pt-4 border-t border-slate-100">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={validateResend} 
+                  disabled={validating}
+                  data-testid="validate-resend-btn"
+                  className="w-full"
+                >
+                  {validating ? "Validating..." : "Validate Connection"}
+                </Button>
+                {validationResult && (
+                  <div className={`mt-2 flex items-start gap-2 rounded-lg px-3 py-2 ${validationResult.success ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
+                    {validationResult.success ? (
+                      <CheckCircle2 size={14} className="text-emerald-500 mt-0.5 shrink-0" />
+                    ) : (
+                      <XCircle size={14} className="text-red-500 mt-0.5 shrink-0" />
+                    )}
+                    <p className={`text-xs ${validationResult.success ? "text-emerald-700" : "text-red-700"}`}>
+                      {validationResult.message}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
               {!isEnabled && (
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                   <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
                   <p className="text-xs text-amber-700">Email provider is off — emails are stored in the outbox (not sent). Enable the toggle above to send live emails.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── Zoho Mail Provider Section ───────────────────────────────────────────────
+
+function ZohoMailSection() {
+  const [open, setOpen] = useState(false);
+  const [datacenter, setDatacenter] = useState("US");
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<"connected" | "not_configured" | "error">("not_configured");
+  const [validationResult, setValidationResult] = useState<any>(null);
+
+  useEffect(() => {
+    loadStatus();
+  }, []);
+
+  const loadStatus = async () => {
+    try {
+      const res = await api.get("/admin/integrations/status");
+      const zoho = res.data.integrations?.zoho_mail;
+      if (zoho?.status === "connected") {
+        setConnectionStatus("connected");
+        setDatacenter(zoho.datacenter || "US");
+      }
+    } catch {}
+  };
+
+  const saveCredentials = async () => {
+    if (!clientId || !clientSecret) {
+      toast.error("Client ID and Secret are required");
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.post("/admin/integrations/zoho-mail/save-credentials", {
+        client_id: clientId,
+        client_secret: clientSecret,
+        datacenter
+      });
+      toast.success("Zoho Mail credentials saved");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const validateConnection = async () => {
+    if (!accessToken) {
+      toast.error("Access token required for validation");
+      return;
+    }
+    setValidating(true);
+    setValidationResult(null);
+    try {
+      const res = await api.post("/admin/integrations/zoho-mail/validate", {
+        access_token: accessToken,
+        datacenter
+      });
+      setValidationResult(res.data);
+      if (res.data.success) {
+        setConnectionStatus("connected");
+        toast.success("Zoho Mail connected successfully");
+      } else {
+        setConnectionStatus("error");
+        toast.error(res.data.message || "Validation failed");
+      }
+    } catch (err: any) {
+      setConnectionStatus("error");
+      setValidationResult({ success: false, message: err.response?.data?.detail || "Validation failed" });
+      toast.error("Validation failed");
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Tile */}
+      <div
+        className="rounded-xl border border-slate-200 bg-white p-4 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors mt-2"
+        data-testid="zoho-mail-provider-tile"
+        onClick={() => setOpen(true)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-orange-100">
+            <Mail size={15} className="text-orange-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-800">Zoho Mail</p>
+            <p className="text-xs text-slate-400 mt-0.5">Transactional email via Zoho Mail API</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className={`text-xs px-2 py-0.5 rounded-full ${connectionStatus === "connected" ? "text-emerald-700 bg-emerald-50" : "text-slate-500 bg-slate-100"}`}>
+            {connectionStatus === "connected" ? `Connected (${datacenter})` : "Not Connected"}
+          </span>
+          <Pencil size={14} className="text-slate-400" />
+        </div>
+      </div>
+
+      {/* Slide panel */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex justify-end" data-testid="zoho-mail-slide-panel">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
+          <div className="relative z-10 w-full max-w-md bg-white shadow-xl flex flex-col h-full">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">Zoho Mail Integration</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Configure email via Zoho Mail API</p>
+              </div>
+              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Datacenter selection */}
+              <div>
+                <label className="text-xs font-medium text-slate-700">Datacenter</label>
+                <select 
+                  value={datacenter} 
+                  onChange={(e) => setDatacenter(e.target.value)}
+                  className="mt-1 w-full h-9 px-3 text-sm border border-slate-200 rounded-md"
+                  data-testid="zoho-mail-datacenter-select"
+                >
+                  <option value="US">United States (zoho.com)</option>
+                  <option value="CA">Canada (zohocloud.ca)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-700">Client ID</label>
+                <Input 
+                  value={clientId} 
+                  onChange={(e) => setClientId(e.target.value)}
+                  placeholder="Enter Zoho Client ID"
+                  className="mt-1"
+                  data-testid="zoho-mail-client-id"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-700">Client Secret</label>
+                <Input 
+                  type="password"
+                  value={clientSecret} 
+                  onChange={(e) => setClientSecret(e.target.value)}
+                  placeholder="Enter Zoho Client Secret"
+                  className="mt-1"
+                  data-testid="zoho-mail-client-secret"
+                />
+              </div>
+
+              <Button onClick={saveCredentials} disabled={saving} size="sm" className="w-full">
+                {saving ? "Saving..." : "Save Credentials"}
+              </Button>
+
+              <div className="border-t border-slate-100 pt-4">
+                <label className="text-xs font-medium text-slate-700">Access Token</label>
+                <Input 
+                  value={accessToken} 
+                  onChange={(e) => setAccessToken(e.target.value)}
+                  placeholder="Paste access token from OAuth flow"
+                  className="mt-1"
+                  data-testid="zoho-mail-access-token"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">Get this from Zoho API Console after OAuth authorization</p>
+              </div>
+
+              <Button 
+                variant="outline" 
+                onClick={validateConnection} 
+                disabled={validating || !accessToken}
+                size="sm"
+                className="w-full"
+                data-testid="validate-zoho-mail-btn"
+              >
+                {validating ? "Validating..." : "Validate Connection"}
+              </Button>
+
+              {validationResult && (
+                <div className={`flex items-start gap-2 rounded-lg px-3 py-2 ${validationResult.success ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
+                  {validationResult.success ? (
+                    <CheckCircle2 size={14} className="text-emerald-500 mt-0.5 shrink-0" />
+                  ) : (
+                    <XCircle size={14} className="text-red-500 mt-0.5 shrink-0" />
+                  )}
+                  <div>
+                    <p className={`text-xs ${validationResult.success ? "text-emerald-700" : "text-red-700"}`}>
+                      {validationResult.message}
+                    </p>
+                    {validationResult.accounts && (
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Accounts: {validationResult.accounts.map((a: any) => a.email).join(", ")}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
