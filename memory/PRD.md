@@ -16,6 +16,10 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 10. **Settings Merge** — Settings tab removed, merged into Website Content tab
 11. **Dynamic Checkout Section Builder** — Admins define sections with custom form fields on cart page
 12. **Complete Page Whitelabeling** — All pages (CheckoutSuccess, BankTransfer, 404, GoCardless, VerifyEmail, Portal, Profile, Cart) use dynamic strings
+13. **Rich Text Editor** — Unified 3-tab editor (Rich Text / HTML / Preview) for Articles, Article Templates, Email Templates, Terms
+14. **Article Categories** — CRUD for article categories with optional color badge, linked to articles
+15. **Admin Content Management** — Admin dashboard text and Bank Transaction form options configurable from Website Content
+16. **Brand Color Management** — All brand colors (primary, accent, danger, success, warning, bg, text, border, muted) manageable from admin panel and applied dynamically via CSS variables
 
 ---
 
