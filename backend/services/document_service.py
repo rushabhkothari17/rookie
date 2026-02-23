@@ -106,15 +106,20 @@ def parse_html(html: str) -> List[_Block]:
 
 # ─── PDF Generation ──────────────────────────────────────────────────────────────
 
-def generate_pdf(title: str, author: str, created_at: str, updated_at: str, html_content: str) -> bytes:
+def generate_pdf(title: str, author: str, created_at: str, updated_at: str, html_content: str,
+                 store_name: str = "", accent_hex: str = "#0f172a") -> bytes:
     """Generate a PDF from HTML article content using reportlab."""
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch, cm
-    from reportlab.lib.colors import HexColor, black, grey
-    from reportlab.lib.enums import TA_LEFT, TA_CENTER
+    from reportlab.lib.units import cm
+    from reportlab.lib.colors import HexColor
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
-    from reportlab.platypus import ListFlowable, ListItem
+
+    # Resolve accent color safely
+    try:
+        accent = HexColor(accent_hex if accent_hex.startswith("#") else f"#{accent_hex}")
+    except Exception:
+        accent = HexColor("#0f172a")
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -126,7 +131,6 @@ def generate_pdf(title: str, author: str, created_at: str, updated_at: str, html
     styles = getSampleStyleSheet()
     dark = HexColor("#0f172a")
     muted = HexColor("#64748b")
-    accent = HexColor("#dc2626")
 
     style_meta = ParagraphStyle("meta", parent=styles["Normal"], fontSize=8, textColor=muted, spaceAfter=2)
     style_h1 = ParagraphStyle("H1", parent=styles["Heading1"], fontSize=22, textColor=dark, spaceAfter=6, spaceBefore=4)
@@ -140,9 +144,19 @@ def generate_pdf(title: str, author: str, created_at: str, updated_at: str, html
 
     story = []
 
-    # Header
-    story.append(Paragraph(f"<font color='#{accent.hexval()[2:]}'>—</font> {title}", style_h1))
-    story.append(Paragraph(f"Created: {created_at[:10] if created_at else '—'} &nbsp;|&nbsp; Last updated: {updated_at[:10] if updated_at else '—'} &nbsp;|&nbsp; Author: {author}", style_meta))
+    # Store name header (top branding line, only if set)
+    if store_name:
+        story.append(Paragraph(store_name, ParagraphStyle("brand", parent=styles["Normal"], fontSize=9, textColor=accent, spaceBefore=0, spaceAfter=4)))
+
+    # Article title
+    story.append(Paragraph(title, style_h1))
+
+    # Metadata line
+    story.append(Paragraph(
+        f"Created: {created_at[:10] if created_at else '—'} &nbsp;|&nbsp; "
+        f"Last updated: {updated_at[:10] if updated_at else '—'} &nbsp;|&nbsp; Author: {author}",
+        style_meta,
+    ))
     story.append(HRFlowable(width="100%", thickness=1, color=HexColor("#e2e8f0"), spaceAfter=12, spaceBefore=6))
 
     blocks = parse_html(html_content)
@@ -156,8 +170,6 @@ def generate_pdf(title: str, author: str, created_at: str, updated_at: str, html
             story.append(Paragraph(f"• {block.text}", style_li))
         elif block.kind == "hr":
             story.append(HRFlowable(width="100%", thickness=1, color=HexColor("#e2e8f0"), spaceAfter=8, spaceBefore=8))
-        elif block.kind == "spacer":
-            story.append(Spacer(1, 6))
 
     doc.build(story)
     return buf.getvalue()
