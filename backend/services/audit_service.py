@@ -179,12 +179,13 @@ class AuditService:
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
         q: Optional[str] = None,
+        tenant_id: Optional[str] = None,
     ) -> int:
         flt = AuditService._build_filter(
             actor=actor, actor_type=actor_type, source=source,
             entity_type=entity_type, entity_id=entity_id, action=action,
             success=success, severity=severity,
-            date_from=date_from, date_to=date_to, q=q,
+            date_from=date_from, date_to=date_to, q=q, tenant_id=tenant_id,
         )
         return await db.audit_trail.count_documents(flt)
 
@@ -205,13 +206,14 @@ class AuditService:
         before_cursor: Optional[str] = None,
         page: int = 1,
         limit: int = 50,
+        tenant_id: Optional[str] = None,
     ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
         """Keyset-paginated query. Returns (records, next_cursor | None)."""
         flt = AuditService._build_filter(
             actor=actor, actor_type=actor_type, source=source,
             entity_type=entity_type, entity_id=entity_id, action=action,
             success=success, severity=severity,
-            date_from=date_from, date_to=date_to, q=q,
+            date_from=date_from, date_to=date_to, q=q, tenant_id=tenant_id,
         )
 
         # Keyset pagination: records *older* than the cursor
