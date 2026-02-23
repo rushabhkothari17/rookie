@@ -101,67 +101,25 @@ function RichTextToolbar({ editor }: { editor: any }) {
 }
 
 function ArticleEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      ImageExt,
-      LinkExt.configure({ openOnClick: false }),
-      Placeholder.configure({ placeholder: "Write your article content here…" }),
-    ],
-    content: value,
-    onUpdate({ editor }) {
-      onChange(editor.getHTML());
-    },
-  });
-
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
-      <RichTextToolbar editor={editor} />
-      <EditorContent
-        editor={editor}
-        className="prose prose-sm max-w-none p-4 min-h-[300px] focus:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[280px]"
-      />
-    </div>
+    <RichHtmlEditor
+      value={value}
+      onChange={onChange}
+      withImages
+      minHeight="300px"
+      placeholder="Write your article content here…"
+    />
   );
 }
 
 function EmailBodyComposer({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      LinkExt.configure({ openOnClick: false }),
-      Placeholder.configure({ placeholder: "Write the email body…" }),
-    ],
-    content: value,
-    onUpdate({ editor }) { onChange(editor.getHTML()); },
-  });
-
-  if (!editor) return null;
-  const btn = (active: boolean, onClick: () => void, icon: React.ReactNode, title: string) => (
-    <button type="button" title={title} onClick={onClick}
-      className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${active ? "bg-slate-200 text-slate-900" : "text-slate-500"}`}>
-      {icon}
-    </button>
-  );
-
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
-      <div className="flex flex-wrap gap-0.5 p-2 border-b border-slate-200 bg-slate-50">
-        {btn(editor.isActive("bold"), () => editor.chain().focus().toggleBold().run(), <Bold size={14} />, "Bold")}
-        {btn(editor.isActive("italic"), () => editor.chain().focus().toggleItalic().run(), <Italic size={14} />, "Italic")}
-        <div className="w-px bg-slate-200 mx-1" />
-        {btn(editor.isActive("bulletList"), () => editor.chain().focus().toggleBulletList().run(), <List size={14} />, "Bullet list")}
-        {btn(editor.isActive("orderedList"), () => editor.chain().focus().toggleOrderedList().run(), <ListOrdered size={14} />, "Numbered list")}
-        <div className="w-px bg-slate-200 mx-1" />
-        <button type="button" title="Insert link"
-          onClick={() => { const url = prompt("Enter URL"); if (url) editor.chain().focus().setLink({ href: url }).run(); }}
-          className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${editor.isActive("link") ? "bg-slate-200 text-slate-900" : "text-slate-500"}`}>
-          <Link2 size={14} />
-        </button>
-      </div>
-      <EditorContent editor={editor}
-        className="prose prose-sm max-w-none p-4 min-h-[200px] focus:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[180px]" />
-    </div>
+    <RichHtmlEditor
+      value={value}
+      onChange={onChange}
+      minHeight="200px"
+      placeholder="Write the email body…"
+    />
   );
 }
 
