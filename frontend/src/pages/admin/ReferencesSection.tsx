@@ -292,7 +292,7 @@ export default function ReferencesSection({ systemItems = [], onSystemItemSave }
 
               {/* Custom reference rows */}
               {refs.map((ref) => (
-                <React.Fragment key={ref.id}>
+                <Fragment key={ref.id}>
                   <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
                       <span className="font-medium text-slate-800">{ref.label}</span>
