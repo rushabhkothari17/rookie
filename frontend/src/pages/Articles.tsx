@@ -49,20 +49,31 @@ export default function Articles() {
     <div className="min-h-screen aa-bg flex flex-col">
       <TopNav />
 
-      {/* Hero Banner — matches store style */}
-      <div className="bg-slate-900 text-white py-10 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-px w-6 bg-red-500" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-red-400">
-              {ws.articles_hero_label}
-            </span>
+      {/* Hero Banner — same style as Store page */}
+      <div className="max-w-7xl mx-auto w-full px-6 pt-8">
+        <section
+          className="relative overflow-hidden rounded-3xl bg-[#0f172a] px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+          data-testid="articles-hero"
+        >
+          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-red-600/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full bg-red-600/5 blur-2xl" />
+          <div className="relative space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="h-0.5 w-8 rounded-full bg-red-500" />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                {ws.articles_hero_label || "Resources"}
+              </p>
+            </div>
+            <h1 className="text-4xl font-bold text-white" data-testid="articles-hero-title">
+              {ws.articles_hero_title || "Articles & Guides"}
+            </h1>
+            {ws.articles_hero_subtitle && (
+              <p className="max-w-xl text-base text-slate-300" data-testid="articles-hero-subtitle">
+                {ws.articles_hero_subtitle}
+              </p>
+            )}
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">{ws.articles_hero_title}</h1>
-          {ws.articles_hero_subtitle && (
-            <p className="mt-2 text-slate-400 text-sm max-w-xl">{ws.articles_hero_subtitle}</p>
-          )}
-        </div>
+        </section>
       </div>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8" data-testid="articles-page">
