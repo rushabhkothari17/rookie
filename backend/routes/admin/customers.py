@@ -31,11 +31,8 @@ async def admin_customers(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
-    users_all = await db.users.find({**tf, "is_admin": False}, {"_id": 0, "id": 1, "email": 1, "full_name": 1, "is_active": 1}).to_list(10000)
-    user_map = {u["id"]: u for u in users_all}
-    addresses_all = await db.addresses.find(tf, {"_id": 0}).to_list(10000)
-    addr_map = {a["customer_id"]: a for a in addresses_all}
-
+    
+    # Build base customer query
     query: Dict[str, Any] = {**tf}
     if payment_mode == "gocardless":
         query["allow_bank_transfer"] = True
@@ -47,41 +44,124 @@ async def admin_customers(
     elif payment_mode == "none":
         query["allow_bank_transfer"] = False
         query["allow_card_payment"] = False
-
-    customers_all = await db.customers.find(query, {"_id": 0}).to_list(10000)
-    filtered = []
-    for c in customers_all:
-        user = user_map.get(c.get("user_id", ""), {})
-        addr = addr_map.get(c["id"], {})
-        if country and addr.get("country", "").upper() != country.upper():
-            continue
-        if status:
-            is_active = user.get("is_active", True)
-            if status == "active" and not is_active:
-                continue
-            if status == "inactive" and is_active:
-                continue
-        if search:
-            s = search.lower()
-            haystack = " ".join(filter(None, [
-                user.get("email", ""), user.get("full_name", ""), c.get("company_name", "")
-            ])).lower()
-            if s not in haystack:
-                continue
-        filtered.append(c)
-
-    total = len(filtered)
+    
+    # Use aggregation pipeline for efficient querying
+    pipeline: list = [
+        {"$match": query},
+        # Join with users
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "id",
+                "as": "user_data"
+            }
+        },
+        {"$unwind": {"path": "$user_data", "preserveNullAndEmptyArrays": True}},
+        # Join with addresses
+        {
+            "$lookup": {
+                "from": "addresses",
+                "localField": "id",
+                "foreignField": "customer_id",
+                "as": "address_data"
+            }
+        },
+        {"$unwind": {"path": "$address_data", "preserveNullAndEmptyArrays": True}},
+    ]
+    
+    # Add filters based on joined data
+    match_filters = []
+    if country:
+        match_filters.append({"address_data.country": {"$regex": f"^{country}$", "$options": "i"}})
+    if status:
+        if status == "active":
+            match_filters.append({"$or": [{"user_data.is_active": True}, {"user_data.is_active": {"$exists": False}}]})
+        elif status == "inactive":
+            match_filters.append({"user_data.is_active": False})
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        match_filters.append({
+            "$or": [
+                {"user_data.email": search_regex},
+                {"user_data.full_name": search_regex},
+                {"company_name": search_regex}
+            ]
+        })
+    
+    if match_filters:
+        pipeline.append({"$match": {"$and": match_filters}})
+    
+    # Count total for pagination (before skip/limit)
+    count_pipeline = pipeline + [{"$count": "total"}]
+    count_result = await db.customers.aggregate(count_pipeline).to_list(1)
+    total = count_result[0]["total"] if count_result else 0
+    
+    # Add pagination
     skip = (page - 1) * per_page
-    page_custs = filtered[skip: skip + per_page]
-    page_uid_set = {c.get("user_id") for c in page_custs}
-    page_cid_set = {c["id"] for c in page_custs}
-    page_users = [u for u in users_all if u["id"] in page_uid_set]
-    page_addrs = [a for a in addresses_all if a.get("customer_id") in page_cid_set]
-
+    pipeline.extend([
+        {"$sort": {"created_at": -1}},
+        {"$skip": skip},
+        {"$limit": per_page},
+        # Project to clean output
+        {
+            "$project": {
+                "_id": 0,
+                "customer": {
+                    "id": "$id",
+                    "user_id": "$user_id",
+                    "company_name": "$company_name",
+                    "partner_map_id": "$partner_map_id",
+                    "allow_card_payment": "$allow_card_payment",
+                    "allow_bank_transfer": "$allow_bank_transfer",
+                    "stripe_customer_id": "$stripe_customer_id",
+                    "gocardless_customer_id": "$gocardless_customer_id",
+                    "currency": "$currency",
+                    "created_at": "$created_at",
+                    "tenant_id": "$tenant_id"
+                },
+                "user": {
+                    "id": "$user_data.id",
+                    "email": "$user_data.email",
+                    "full_name": "$user_data.full_name",
+                    "is_active": "$user_data.is_active"
+                },
+                "address": {
+                    "id": "$address_data.id",
+                    "customer_id": "$address_data.customer_id",
+                    "line1": "$address_data.line1",
+                    "line2": "$address_data.line2",
+                    "city": "$address_data.city",
+                    "state": "$address_data.state",
+                    "postcode": "$address_data.postcode",
+                    "country": "$address_data.country"
+                }
+            }
+        }
+    ])
+    
+    results = await db.customers.aggregate(pipeline).to_list(per_page)
+    
+    # Flatten results for backward compatibility
+    customers = []
+    users = []
+    addresses = []
+    seen_users = set()
+    seen_addresses = set()
+    
+    for r in results:
+        customers.append(r["customer"])
+        if r.get("user", {}).get("id") and r["user"]["id"] not in seen_users:
+            users.append(r["user"])
+            seen_users.add(r["user"]["id"])
+        if r.get("address", {}).get("id") and r["address"]["id"] not in seen_addresses:
+            addresses.append(r["address"])
+            seen_addresses.add(r["address"]["id"])
+    
     return {
-        "customers": page_custs,
-        "users": page_users,
-        "addresses": page_addrs,
+        "customers": customers,
+        "users": users,
+        "addresses": addresses,
         "total": total,
         "page": page,
         "per_page": per_page,
