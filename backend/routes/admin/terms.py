@@ -70,11 +70,13 @@ async def admin_list_terms(
 
 @router.post("/admin/terms")
 async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(require_admin)):
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
     if payload.is_default:
-        await db.terms_and_conditions.update_many({"is_default": True}, {"$set": {"is_default": False}})
+        await db.terms_and_conditions.update_many({**tf, "is_default": True}, {"$set": {"is_default": False}})
     terms_id = make_id()
     await db.terms_and_conditions.insert_one({
-        "id": terms_id, "title": payload.title, "content": payload.content,
+        "id": terms_id, "tenant_id": tid, "title": payload.title, "content": payload.content,
         "is_default": payload.is_default, "status": payload.status, "created_at": now_iso(),
     })
     await create_audit_log(
