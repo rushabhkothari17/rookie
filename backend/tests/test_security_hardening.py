@@ -312,7 +312,7 @@ def idor_subscription(mongo_db, idor_customers):
     sub_id = _make_id()
     sub_doc = {
         "id": sub_id,
-        "tenant_id": cust["tenant_id"],
+        "tenant_id": AUTOMATE_ACCOUNTS_TENANT_ID,
         "subscription_number": f"SUB-{sub_id[:8].upper()}",
         "customer_id": cust["customer_id"],
         "status": "active",
