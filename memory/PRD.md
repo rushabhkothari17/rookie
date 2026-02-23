@@ -284,6 +284,25 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
+## Session 12 Changes (Feb 23, 2026)
+
+### Article Email Features (New)
+- **Email Article Composer:** Replaced basic email dialog with a rich email composer featuring:
+  - To/CC/BCC chip-style email tag inputs (type email + Enter)
+  - Rich text body editor (Tiptap) for composing email messages
+  - "Attach as PDF" checkbox - generates branded PDF and attaches it
+  - Load Template / Save Template buttons for reusing email drafts
+- **Article Email Templates Tab:** New 3rd sub-tab in Articles admin section (alongside Articles + Templates)
+  - Full CRUD: create, edit, delete email templates with name, subject, HTML body, description
+  - Backend: `GET/POST/PUT/DELETE /api/article-email-templates`
+- **Backend Email Endpoint:** `POST /api/articles/{id}/send-email`
+  - Accepts `to`, `cc`, `bcc`, `subject`, `html_body`, `attach_pdf`
+  - Generates PDF attachment via `document_service.py` when requested
+  - Sends via Resend when configured, otherwise MOCKED to `email_outbox`
+- **Admin Edit Button on Article Preview:** Admin users see an "Edit Article" button on the `ArticleView.tsx` page that links to `/admin?editArticle={id}`, auto-opening the edit dialog
+
+---
+
 ## Credentials
 - Admin: admin@automateaccounts.local / ChangeMe123!
 
