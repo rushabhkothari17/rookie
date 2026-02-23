@@ -269,18 +269,24 @@ class TestExportAuditLog:
     """Export endpoints write action='data_exported' to audit_trail."""
 
     def _get_recent_export_logs(self, admin_headers, entity_id: str) -> list:
-        """Fetch recent audit logs for export entity."""
+        """Fetch recent audit logs for export entity.
+        create_audit_log stores action as 'EXPORT_DATA_EXPORTED' in audit_trail
+        and entity_type as 'Export' (PascalCase).
+        """
         resp = requests.get(
             f"{BASE_URL}/api/admin/audit-logs",
-            params={"entity_type": "export", "limit": 20},
+            params={"entity_type": "export", "limit": 50},
             headers=admin_headers,
         )
         if resp.status_code != 200:
             return []
-        logs = resp.json().get("audit_logs", resp.json().get("logs", []))
+        data = resp.json()
+        # API returns 'logs' key (not 'audit_logs')
+        logs = data.get("logs", data.get("audit_logs", []))
         return [
             log for log in logs
-            if log.get("action") == "data_exported" and log.get("entity_id") == entity_id
+            if log.get("entity_id") == entity_id
+            and "data_exported" in log.get("action", "").lower()
         ]
 
     def test_orders_export_creates_audit_log(self, admin_headers):
