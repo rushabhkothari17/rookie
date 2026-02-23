@@ -7,6 +7,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from core.security import require_admin
+from core.tenant import tenant_id_of, DEFAULT_TENANT_ID
 from db.session import db
 from models import AppSettingsUpdate
 from services.audit_service import AuditService, create_audit_log
