@@ -43,6 +43,11 @@ declare module "@/components/ui/dialog" {
   export const DialogHeader: any;
   export const DialogTitle: any;
   export const DialogTrigger: any;
+  export const DialogFooter: any;
+  export const DialogClose: any;
+  export const DialogDescription: any;
+  export const DialogPortal: any;
+  export const DialogOverlay: any;
 }
 
 declare module "@/components/ui/table" {
