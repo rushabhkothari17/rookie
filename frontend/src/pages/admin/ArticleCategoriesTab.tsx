@@ -105,9 +105,13 @@ export function ArticleCategoriesTab() {
             {categories.length} categor{categories.length !== 1 ? "ies" : "y"} — used to organise articles on the store
           </p>
         </div>
-        <Button size="sm" onClick={openCreate} className="gap-1.5" data-testid="category-create-btn">
-          <Plus size={14} /> Add Category
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="article-categories-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="article-categories-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
+          <Button size="sm" onClick={openCreate} className="gap-1.5" data-testid="category-create-btn">
+            <Plus size={14} /> Add Category
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 overflow-hidden">
