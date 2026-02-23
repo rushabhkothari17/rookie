@@ -177,11 +177,11 @@ def generate_pdf(title: str, author: str, created_at: str, updated_at: str, html
 
 # ─── DOCX Generation ─────────────────────────────────────────────────────────────
 
-def generate_docx(title: str, author: str, created_at: str, updated_at: str, html_content: str) -> bytes:
+def generate_docx(title: str, author: str, created_at: str, updated_at: str, html_content: str,
+                  store_name: str = "") -> bytes:
     """Generate a DOCX from HTML article content using python-docx."""
     from docx import Document
-    from docx.shared import Pt, RGBColor, Inches, Cm
-    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Pt, RGBColor, Cm
 
     document = Document()
 
@@ -191,6 +191,14 @@ def generate_docx(title: str, author: str, created_at: str, updated_at: str, htm
         section.right_margin = Cm(2.5)
         section.top_margin = Cm(2.5)
         section.bottom_margin = Cm(2.5)
+
+    # Store name header
+    if store_name:
+        brand_p = document.add_paragraph()
+        brand_run = brand_p.add_run(store_name)
+        brand_run.font.size = Pt(9)
+        brand_run.font.bold = True
+        brand_run.font.color.rgb = RGBColor(0x64, 0x74, 0x8b)
 
     # Title
     title_para = document.add_heading(title, 0)
@@ -203,22 +211,20 @@ def generate_docx(title: str, author: str, created_at: str, updated_at: str, htm
     meta.runs[0].font.size = Pt(8)
     meta.runs[0].font.color.rgb = RGBColor(0x64, 0x74, 0x8b)
 
-    # Divider (simulate with empty line)
     document.add_paragraph()
 
     blocks = parse_html(html_content)
     for block in blocks:
         if block.kind == "heading":
             lvl = min(block.level, 4)
-            p = document.add_heading(block.text, level=lvl)
+            document.add_heading(block.text, level=lvl)
         elif block.kind == "paragraph":
             p = document.add_paragraph(block.text)
             p.style = document.styles["Normal"]
         elif block.kind == "list_item":
-            p = document.add_paragraph(block.text, style="List Bullet")
+            document.add_paragraph(block.text, style="List Bullet")
         elif block.kind == "hr":
             document.add_paragraph()
-        # spacer — skip
 
     buf = io.BytesIO()
     document.save(buf)
