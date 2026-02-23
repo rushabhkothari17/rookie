@@ -49,6 +49,16 @@ async def request_quote(
         meta_json={"product_id": payload.product_id, "company": payload.company},
     )
     await db.audit_logs.insert_one({"id": make_id(), "entity_type": "quote_request", "entity_id": quote["id"], "action": "submitted", "actor": user.get("email", ""), "details": {"product_name": payload.product_name, "company": payload.company}, "created_at": now_iso()})
+    # Webhook: quote_request.submitted
+    await dispatch_event("quote_request.submitted", {
+        "id": quote["id"],
+        "email": quote.get("email", ""),
+        "company": quote.get("company", ""),
+        "product_name": quote.get("product_name", ""),
+        "message": quote.get("message", ""),
+        "phone": quote.get("phone", ""),
+        "submitted_at": quote.get("created_at", ""),
+    }, user.get("tenant_id", DEFAULT_TENANT_ID))
     return {"message": "Quote request submitted. We will be in touch shortly.", "quote_id": quote["id"]}
 
 
