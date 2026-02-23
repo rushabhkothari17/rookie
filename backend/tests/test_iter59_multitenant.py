@@ -170,9 +170,10 @@ class TestAdminTenants:
 
     def test_create_tenant_as_platform_admin(self, http, platform_headers):
         """Platform admin can create a new tenant."""
+        unique_code = f"test-iter59-{int(time.time())}"
         payload = {
             "name": "TEST Tenant Iter59",
-            "code": "test-iter59-tenant",
+            "code": unique_code,
             "status": "active",
         }
         resp = http.post(f"{BASE_URL}/api/admin/tenants", json=payload, headers=platform_headers)
