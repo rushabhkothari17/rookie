@@ -26,8 +26,8 @@ ZOHO_SEED_REFS = [
 async def _seed_zoho_refs() -> None:
     """Seed Zoho links as regular (deletable) references if they don't already exist."""
     existing_keys = {r["key"] for r in await db.website_references.find({}, {"key": 1, "_id": 0}).to_list(500)}
-    settings = await SettingsService.get_all(db)
-    settings_map = {s["key"]: s.get("value_json", "") for s in settings}
+    settings_list = await SettingsService.list_all(include_secrets=True)
+    settings_map = {s["key"]: s.get("value_json", "") for s in settings_list}
     for seed in ZOHO_SEED_REFS:
         if seed["key"] in existing_keys:
             continue
