@@ -139,7 +139,7 @@ async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any
     if payload.title is not None:
         update_data["title"] = payload.title
     if payload.content is not None:
-        update_data["content"] = payload.content
+        update_data["content"] = _sanitize_html(payload.content)
     if payload.status is not None:
         update_data["status"] = payload.status
     if update_data:
