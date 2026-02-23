@@ -106,7 +106,8 @@ async def update_bank_transaction(
     payload: BankTransactionUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    txn = await db.bank_transactions.find_one({"id": txn_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    txn = await db.bank_transactions.find_one({**tf, "id": txn_id}, {"_id": 0})
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
