@@ -3,6 +3,14 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
+_CSP = (
+    "default-src 'none'; "
+    "frame-ancestors 'none'; "
+    "form-action 'none'; "
+    "base-uri 'none'"
+)
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to every response."""
 
@@ -18,6 +26,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         # Permissions policy — disable unused features
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        # Content Security Policy — API responses should never be rendered directly
+        response.headers["Content-Security-Policy"] = _CSP
         # Remove server fingerprint
         response.headers["server"] = ""
         response.headers["Server"] = ""

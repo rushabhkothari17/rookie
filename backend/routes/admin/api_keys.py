@@ -1,6 +1,7 @@
 """Admin: API key management for tenant integrations."""
 from __future__ import annotations
 
+import hashlib
 import secrets
 from typing import Any, Dict
 
@@ -18,21 +19,24 @@ def _generate_key() -> str:
     return f"ak_{secrets.token_hex(24)}"
 
 
-def _mask_key(key: str) -> str:
-    if len(key) <= 12:
-        return key[:4] + "•" * (len(key) - 4)
-    return key[:8] + "•" * 20 + key[-4:]
+def _hash_key(key: str) -> str:
+    """SHA-256 hash of the API key. Only the hash is stored in DB."""
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+def _mask_key(suffix: str) -> str:
+    """Display mask using stored suffix — never the raw key."""
+    return "ak_" + "•" * 20 + suffix[-4:]
 
 
 @router.get("/admin/api-keys")
 async def list_api_keys(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """List only active API keys for the current tenant (key value masked)."""
     tf = get_tenant_filter(admin)
-    keys = await db.api_keys.find({**tf, "is_active": True}, {"_id": 0}).sort("created_at", -1).to_list(10)
+    keys = await db.api_keys.find({**tf, "is_active": True}, {"_id": 0, "key": 0, "key_hash": 0}).sort("created_at", -1).to_list(10)
     for k in keys:
-        if k.get("key"):
-            k["key_masked"] = _mask_key(k["key"])
-            del k["key"]
+        suffix = k.pop("key_suffix", "????")
+        k["key_masked"] = _mask_key(suffix)
     return {"api_keys": keys}
 
 
@@ -57,7 +61,8 @@ async def create_api_key(
     doc = {
         "id": make_id(),
         "tenant_id": tid,
-        "key": new_key,
+        "key_hash": _hash_key(new_key),   # Only the hash persists
+        "key_suffix": new_key[-8:],        # Last 8 chars for display masking
         "name": name,
         "is_active": True,
         "created_at": now_iso(),
@@ -71,10 +76,11 @@ async def create_api_key(
         actor=admin.get("email", "admin"),
         details={"name": name, "tenant_id": tid},
     )
-    # Return full key ONCE — client must copy it now
+    # Return full key ONCE — client must copy it now; only the hash is stored
     return {
         "id": doc["id"],
         "key": new_key,
+        "key_masked": _mask_key(new_key[-8:]),
         "name": name,
         "is_active": True,
         "created_at": doc["created_at"],
