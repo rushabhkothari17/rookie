@@ -134,8 +134,19 @@ async def upload_logo(
     file: UploadFile = File(...),
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
+    # Validate file type
+    allowed_types = {"image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp", "image/svg+xml"}
+    if file.content_type and file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}")
+    
     tid = tenant_id_of(admin)
     contents = await file.read()
+    
+    # File size limit: 2 MB for logos
+    MAX_LOGO_SIZE = 2 * 1024 * 1024
+    if len(contents) > MAX_LOGO_SIZE:
+        raise HTTPException(status_code=413, detail="Logo file too large. Maximum allowed size is 2 MB.")
+    
     b64 = base64.b64encode(contents).decode()
     content_type = file.content_type or "image/png"
     data_url = f"data:{content_type};base64,{b64}"
