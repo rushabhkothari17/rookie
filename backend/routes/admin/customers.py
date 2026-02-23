@@ -157,6 +157,7 @@ async def admin_create_customer(
         "is_admin": False,
         "is_verified": payload.mark_verified,
         "role": "customer",
+        "tenant_id": tid,
         "must_change_password": True,
         "verification_code": None,
         "created_at": now_iso(),
@@ -167,6 +168,7 @@ async def admin_create_customer(
     customer_doc = {
         "id": customer_id,
         "user_id": user_id,
+        "tenant_id": tid,
         "company_name": payload.company_name or "",
         "phone": payload.phone or "",
         "currency": currency,
@@ -183,6 +185,7 @@ async def admin_create_customer(
     await db.addresses.insert_one({
         "id": make_id(),
         "customer_id": customer_id,
+        "tenant_id": tid,
         "line1": payload.line1,
         "line2": payload.line2 or "",
         "city": payload.city,
