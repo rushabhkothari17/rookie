@@ -91,7 +91,8 @@ async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(req
 
 @router.put("/admin/terms/{terms_id}")
 async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any] = Depends(require_admin)):
-    existing = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.terms_and_conditions.find_one({**tf, "id": terms_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Terms not found")
     update_data: Dict[str, Any] = {}
