@@ -558,6 +558,11 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
 
 @router.post("/auth/register")
 async def register(payload: RegisterRequest, partner_code: Optional[str] = None):
+    # Password complexity check
+    pw_error = _validate_password_complexity(payload.password)
+    if pw_error:
+        raise HTTPException(status_code=400, detail=pw_error)
+
     # Resolve tenant
     if partner_code:
         tenant = await resolve_tenant(partner_code)
