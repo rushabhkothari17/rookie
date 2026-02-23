@@ -23,10 +23,12 @@ from core.constants import SERVICE_FEE_RATE
 router = APIRouter(prefix="/api", tags=["store"])
 
 
-def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None) -> str:
-    """Resolve tenant_id: partner_code (UUID) > user JWT > default."""
+def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None) -> str:
+    """Resolve tenant_id: partner_code > X-View-As-Tenant (platform_admin) > user JWT > default."""
     if partner_code:
         return partner_code
+    if x_view_as_tenant and user and user.get("role") == "platform_admin":
+        return x_view_as_tenant
     if user and user.get("tenant_id"):
         return user["tenant_id"]
     return DEFAULT_TENANT_ID
@@ -36,8 +38,9 @@ def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = No
 async def get_categories(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = _tid(user, partner_code)
+    tid = _tid(user, partner_code, x_view_as_tenant)
     inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
     all_cats = await db.categories.find({"tenant_id": tid, "is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
@@ -55,6 +58,7 @@ async def get_categories(
 async def get_products(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
     tid = _tid(user, partner_code)
     inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
