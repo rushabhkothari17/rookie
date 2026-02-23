@@ -123,7 +123,22 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
             user = None
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Lockout check (before password verification to give consistent timing)
+    await _check_lockout(user)
+
     if not pwd_context.verify(password, user.get("password_hash", "")):
+        await _check_and_record_failed_login(user["id"])
+        await AuditService.log(
+            action="LOGIN_FAILED",
+            description=f"Failed login attempt for: {user['email']}",
+            entity_type="User",
+            entity_id=user["id"],
+            actor_type="unknown",
+            actor_email=user["email"],
+            source="api",
+            meta_json={"tenant_id": user.get("tenant_id")},
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.get("is_verified"):
         raise HTTPException(status_code=403, detail="Email verification required")
@@ -134,12 +149,16 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
     if expected_roles and role not in expected_roles:
         raise HTTPException(status_code=403, detail="Access denied for this login type")
 
+    # Successful login — reset lockout counter
+    await _reset_failed_login(user["id"])
+
     token = create_access_token({
         "sub": user["id"],
         "email": user["email"],
         "role": role,
         "tenant_id": user.get("tenant_id"),
         "is_admin": user.get("is_admin", False),
+        "token_version": user.get("token_version", 0),
     })
     await AuditService.log(
         action="USER_LOGIN",
