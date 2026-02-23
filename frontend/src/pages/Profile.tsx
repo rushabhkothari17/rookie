@@ -238,6 +238,96 @@ export default function Profile() {
           </Button>
         </div>
       </form>
+
+      {/* GDPR Data Privacy Section */}
+      <div className="mt-8 border-t border-slate-200 pt-6">
+        <h3 className="text-sm font-semibold text-slate-700 mb-1">Data Privacy (GDPR)</h3>
+        <p className="text-xs text-slate-500 mb-4">
+          Manage your personal data. You can export all your data or request account deletion.
+        </p>
+
+        <div className="space-y-4">
+          {/* Export Data */}
+          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div>
+              <p className="text-sm font-medium text-slate-700">Export my data</p>
+              <p className="text-xs text-slate-500">Download all your personal data in a ZIP file</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportData}
+              disabled={exporting}
+              data-testid="gdpr-export-btn"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {exporting ? "Exporting..." : "Export Data"}
+            </Button>
+          </div>
+
+          {/* Delete Account */}
+          <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-red-700">Delete my account</p>
+                <p className="text-xs text-red-600">Permanently anonymize all your data. This cannot be undone.</p>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+                data-testid="gdpr-delete-btn"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Account
+              </Button>
+            </div>
+
+            {showDeleteConfirm && (
+              <div className="mt-4 p-4 bg-white rounded-lg border border-red-300">
+                <div className="flex items-start gap-3 mb-3">
+                  <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-700">Are you sure?</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      This will permanently anonymize your account and all associated data. 
+                      You will be logged out and cannot recover your account.
+                    </p>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label className="text-xs font-medium text-slate-600">Reason (optional)</label>
+                  <Input
+                    value={deleteReason}
+                    onChange={(e) => setDeleteReason(e.target.value)}
+                    placeholder="Why are you leaving?"
+                    className="mt-1"
+                    data-testid="gdpr-delete-reason"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                    data-testid="gdpr-delete-confirm-btn"
+                  >
+                    {deleting ? "Deleting..." : "Yes, delete my account"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowDeleteConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
