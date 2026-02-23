@@ -40,7 +40,7 @@ export function getViewAsTenantHeader(): Record<string, string> {
 export function TenantSwitcher() {
   const { user } = useAuth();
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [currentName, setCurrentName] = useState<string | null>(null);
+  const [currentName, setCurrentName] = useState<string | null>(_viewAsTenantName);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
