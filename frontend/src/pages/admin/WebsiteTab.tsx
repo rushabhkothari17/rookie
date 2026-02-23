@@ -781,15 +781,8 @@ export default function WebsiteTab() {
           {activeSection === "references" && (
             <>
               <p className="text-xs text-slate-500 mb-4">
-                References are key-value pairs used across your app. Use <code className="font-mono bg-slate-100 px-1 rounded">{"{{ref:key}}"}</code> to reference them in content fields. Zoho system links are managed here.
+                References are key-value pairs used across your app. Use <code className="font-mono bg-slate-100 px-1 rounded">{"{{ref:key}}"}</code> to reference them in content fields.
               </p>
-              {(structured["Zoho"] || []).length > 0 && (
-                <div className="rounded-xl border border-amber-100 bg-amber-50 p-5 mb-4">
-                  <h4 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Zoho System Links</h4>
-                  <p className="text-xs text-amber-600 mb-3">Partner tag and signup URLs used in the checkout flow.</p>
-                  {(structured["Zoho"] || []).map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
-                </div>
-              )}
               <ReferencesSection />
             </>
           )}
