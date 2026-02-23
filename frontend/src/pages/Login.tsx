@@ -101,13 +101,13 @@ export default function Login() {
           <div className="pt-2 border-t border-slate-100 space-y-2 text-center text-sm text-slate-500">
             <div>
               New customer?{" "}
-              <Link to="/register" className="font-medium hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="register-customer-link">
+              <Link to="/signup" className="font-medium hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="register-customer-link">
                 Register as a customer
               </Link>
             </div>
             <div>
               New partner org?{" "}
-              <Link to="/register?type=partner" className="font-medium hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="register-partner-link">
+              <Link to="/signup?type=partner" className="font-medium hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="register-partner-link">
                 Sign up as a partner
               </Link>
             </div>
