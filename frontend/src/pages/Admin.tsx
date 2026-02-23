@@ -24,10 +24,14 @@ const TAB_CLASS =
 
 export default function Admin() {
   const { user: authUser } = useAuth();
+  const { settings: ws } = useWebsite();
   const isSuperAdmin = authUser?.role === "super_admin";
   const [searchParams] = useSearchParams();
   const editArticleId = searchParams.get("editArticle");
   const defaultTab = editArticleId ? "articles" : "customers";
+  const adminBadge = ws?.admin_page_badge || "Administration";
+  const adminTitle = ws?.admin_page_title || "Admin Control Centre";
+  const adminSubtitle = ws?.admin_page_subtitle || "Manage customers, orders, products, and website content from one place.";
 
   return (
     <div className="space-y-6" data-testid="admin-page">
