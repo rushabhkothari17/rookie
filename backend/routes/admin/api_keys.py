@@ -95,4 +95,11 @@ async def revoke_api_key(
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="API key not found")
+    await create_audit_log(
+        entity_type="api_key",
+        entity_id=key_id,
+        action="api_key_revoked",
+        actor=admin.get("email", "admin"),
+        details={"key_id": key_id, "tenant_id": tenant_id_of(admin)},
+    )
     return {"success": True, "message": "API key revoked"}
