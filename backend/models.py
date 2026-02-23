@@ -560,6 +560,14 @@ class WebsiteSettingsUpdate(BaseModel):
     social_facebook: Optional[str] = None
     social_instagram: Optional[str] = None
     social_youtube: Optional[str] = None
+    # Admin panel page
+    admin_page_badge: Optional[str] = None
+    admin_page_title: Optional[str] = None
+    admin_page_subtitle: Optional[str] = None
+    # Bank transaction form
+    bank_transaction_sources: Optional[str] = None
+    bank_transaction_types: Optional[str] = None
+    bank_transaction_statuses: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
