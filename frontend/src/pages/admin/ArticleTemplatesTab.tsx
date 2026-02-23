@@ -187,7 +187,6 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="article-templates"
         entityLabel="Article Templates"
@@ -195,5 +194,6 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }
