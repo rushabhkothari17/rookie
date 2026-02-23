@@ -84,7 +84,8 @@ async def admin_list_all_products(
     status: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if search:
         query["$or"] = [
             {"name": {"$regex": search, "$options": "i"}},
