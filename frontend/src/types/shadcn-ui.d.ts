@@ -15,6 +15,16 @@ declare module "@/components/ui/input" {
   export const Input: any;
 }
 
+declare module "@/components/ui/label" {
+  export const Label: any;
+}
+
+declare module "@/components/ui/alert" {
+  export const Alert: any;
+  export const AlertTitle: any;
+  export const AlertDescription: any;
+}
+
 declare module "@/components/ui/select" {
   export const Select: any;
   export const SelectContent: any;
