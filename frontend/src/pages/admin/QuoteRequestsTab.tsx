@@ -260,5 +260,12 @@ export function QuoteRequestsTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="quote-requests"
+        entityLabel="Quote Requests"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

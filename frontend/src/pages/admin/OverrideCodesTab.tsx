@@ -271,5 +271,12 @@ export function OverrideCodesTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="override-codes"
+        entityLabel="Override Codes"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

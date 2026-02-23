@@ -170,5 +170,12 @@ export function CategoriesTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="categories"
+        entityLabel="Categories"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

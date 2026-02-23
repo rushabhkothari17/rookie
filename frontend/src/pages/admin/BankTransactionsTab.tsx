@@ -257,5 +257,12 @@ export function BankTransactionsTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="bank-transactions"
+        entityLabel="Bank Transactions"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

@@ -421,5 +421,12 @@ export function SubscriptionsTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="subscriptions"
+        entityLabel="Subscriptions"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

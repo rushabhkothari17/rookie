@@ -398,5 +398,12 @@ function CurrencyOverrideWidget() {
         <Button onClick={handle} data-testid="admin-currency-submit">Override</Button>
       </div>
     </div>
+      <ImportModal
+        entity="customers"
+        entityLabel="Customers"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

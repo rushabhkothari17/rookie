@@ -259,5 +259,12 @@ export function PromoCodesTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="promo-codes"
+        entityLabel="Promo Codes"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

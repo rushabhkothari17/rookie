@@ -543,5 +543,12 @@ export function OrdersTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="orders"
+        entityLabel="Orders"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

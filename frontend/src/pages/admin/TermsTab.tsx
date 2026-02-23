@@ -218,5 +218,12 @@ export function TermsTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="terms"
+        entityLabel="Terms"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }
