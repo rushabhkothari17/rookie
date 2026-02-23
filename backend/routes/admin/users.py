@@ -112,6 +112,13 @@ async def admin_update_user(
     if "role" in payload:
         if payload["role"] not in allowed_roles:
             raise HTTPException(status_code=400, detail=f"Role must be one of: {allowed_roles}")
+        # Enforce: only one super_admin per tenant (skip if user already is super_admin)
+        if payload["role"] == "super_admin" and user.get("role") != "super_admin":
+            existing_super = await db.users.find_one(
+                {**tf, "role": "super_admin", "id": {"$ne": user_id}}, {"_id": 0, "id": 1}
+            )
+            if existing_super:
+                raise HTTPException(status_code=400, detail="A super admin already exists for this tenant. Only one super admin is allowed per tenant.")
         updates["role"] = payload["role"]
 
     if updates:
