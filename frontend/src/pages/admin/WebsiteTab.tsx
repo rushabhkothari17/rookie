@@ -733,13 +733,13 @@ export default function WebsiteTab() {
               <p className="text-xs text-slate-500 mb-4">
                 References are key-value pairs used across your app. Use <code className="font-mono bg-slate-100 px-1 rounded">{"{{ref:key}}"}</code> to reference them in content fields.
               </p>
-              <ReferencesSection
-                systemItems={structured["Zoho"] || []}
-                onSystemItemSave={async (key, value) => {
-                  await api.put(`/admin/settings/key/${key}`, { value });
-                  onStructuredSaved(key, value);
-                }}
-              />
+              {/* Zoho System Links — editable rows in table format */}
+              {(structured["Zoho"] || []).length > 0 && (
+                <ZohoSystemLinksTable items={structured["Zoho"]} onSaved={(k, v) => onStructuredSaved(k, v)} />
+              )}
+              <div className="mt-4">
+                <ReferencesSection />
+              </div>
             </>
           )}
 
