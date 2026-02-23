@@ -498,6 +498,11 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
     if not all([name, code, admin_name, admin_email, admin_password]):
         raise HTTPException(status_code=400, detail="All fields are required")
 
+    # Password complexity check
+    pw_error = _validate_password_complexity(admin_password)
+    if pw_error:
+        raise HTTPException(status_code=400, detail=pw_error)
+
     # Validate code uniqueness
     if await db.tenants.find_one({"code": code}):
         raise HTTPException(status_code=400, detail="Partner code already in use. Choose a different code.")
