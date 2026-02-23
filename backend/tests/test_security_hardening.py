@@ -805,11 +805,17 @@ class TestAPIKeyAuditLogging:
         )
         assert logs_resp.status_code == 200, f"Expected 200 for audit logs: {logs_resp.text}"
         logs = logs_resp.json().get("logs", [])
-        matching = [l for l in logs if l.get("entity_id") == key_id or l.get("action") == "api_key_created"]
+        # The create_audit_log action is "API_KEY_CREATED" and entity_type is "ApiKey" in audit_trail
+        matching = [
+            l for l in logs
+            if l.get("entity_id") == key_id
+            or "api_key" in l.get("action", "").lower()
+            or "api_key" in l.get("entity_type", "").lower()
+        ]
         assert len(matching) > 0, (
-            f"Should find api_key_created audit log entry for key {key_id}, logs: {logs[:3]}"
+            f"Should find api_key_created audit log entry for key {key_id}, total logs: {len(logs)}"
         )
-        print(f"API key audit log found: {matching[0].get('action')}")
+        print(f"API key audit log found: action={matching[0].get('action')}, entity_type={matching[0].get('entity_type')}")
 
         # Now revoke the key
         revoke_resp = requests.delete(
