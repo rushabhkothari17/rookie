@@ -1,3 +1,4 @@
+import { ImportModal } from "@/components/admin/ImportModal";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Plus, Pencil, Trash2, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, Upload} from "lucide-react";
 
 const PRESET_COLORS = [
   "#0f172a", "#1e40af", "#7c3aed", "#be185d", "#dc2626",
@@ -25,6 +26,7 @@ interface Category {
 const EMPTY_FORM = { name: "", description: "", color: "", is_scope_final: false };
 
 export function ArticleCategoriesTab() {
+  const [showImport, setShowImport] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -240,5 +242,12 @@ export function ArticleCategoriesTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="article-categories"
+        entityLabel="Article Categories"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }

@@ -1,3 +1,4 @@
+import { ImportModal } from "@/components/admin/ImportModal";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload} from "lucide-react";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 const HARDCODED_CATEGORIES = [
@@ -20,6 +21,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   const categoryNames = categories && categories.length > 0
     ? categories.map(c => c.name)
     : HARDCODED_CATEGORIES;
+  const [showImport, setShowImport] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -174,5 +176,12 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="article-templates"
+        entityLabel="Article Templates"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }
