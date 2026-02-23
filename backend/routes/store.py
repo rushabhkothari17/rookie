@@ -41,8 +41,9 @@ async def get_categories(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+    api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = _tid(user, partner_code, x_view_as_tenant)
+    tid = _tid(user, partner_code, x_view_as_tenant, api_key_tid)
     inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
     all_cats = await db.categories.find({"tenant_id": tid, "is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
