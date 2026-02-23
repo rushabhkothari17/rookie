@@ -65,6 +65,12 @@ export default function Cart() {
     } catch { return []; }
   };
 
+  const parseOptions = (options: any): string[] => {
+    if (Array.isArray(options)) return options.filter(Boolean);
+    if (typeof options === "string") return options.split("\n").map(s => s.trim()).filter(Boolean);
+    return [];
+  };
+
   const sectionRequiredFieldsMissing = useMemo(() => {
     if (!checkoutSections) return false;
     return checkoutSections.some((section: any) => {
