@@ -108,6 +108,8 @@ from routes.admin.payment_validate import router as payment_validate_router
 from routes.admin.imports import router as imports_admin_router
 from routes.admin.api_keys import router as api_keys_admin_router
 from routes.admin.webhooks import router as webhooks_admin_router
+from routes.admin.integrations import router as integrations_admin_router
+from routes.gdpr import router as gdpr_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
