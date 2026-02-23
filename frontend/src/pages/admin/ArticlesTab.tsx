@@ -288,6 +288,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
     try {
       const res = await api.get(`/articles/${article.id}`);
       const a = res.data.article;
+      setEditingArticle(a);
       setForm({
         title: a.title || "",
         slug: a.slug || "",
