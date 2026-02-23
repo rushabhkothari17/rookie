@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
-from core.security import require_admin
+from core.security import require_admin, get_current_user
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID
 from db.session import db
 from models import ArticleCategoryCreate, ArticleCategoryUpdate
 
@@ -22,14 +23,24 @@ def _slugify(name: str) -> str:
 async def list_article_categories(
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    cats = await db.article_categories.find({}, {"_id": 0}).sort("name", 1).to_list(200)
+    tf = get_tenant_filter(admin)
+    cats = await db.article_categories.find(tf, {"_id": 0}).sort("name", 1).to_list(200)
     return {"categories": cats}
 
 
 @router.get("/article-categories/public")
-async def list_article_categories_public():
+async def list_article_categories_public(partner_code: Optional[str] = None):
     """Public endpoint for customer-facing category lists."""
-    cats = await db.article_categories.find({}, {"_id": 0}).sort("name", 1).to_list(200)
+    from core.tenant import resolve_tenant
+    if partner_code:
+        try:
+            tenant = await resolve_tenant(partner_code)
+            tid = tenant["id"]
+        except Exception:
+            tid = DEFAULT_TENANT_ID
+    else:
+        tid = DEFAULT_TENANT_ID
+    cats = await db.article_categories.find({"tenant_id": tid}, {"_id": 0}).sort("name", 1).to_list(200)
     return {"categories": cats}
 
 
@@ -38,14 +49,17 @@ async def create_article_category(
     payload: ArticleCategoryCreate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
     if not payload.name.strip():
         raise HTTPException(status_code=400, detail="Category name is required")
-    existing = await db.article_categories.find_one({"name": payload.name.strip()}, {"_id": 0})
+    existing = await db.article_categories.find_one({**tf, "name": payload.name.strip()}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Category with this name already exists")
     now = now_iso()
     doc = {
         "id": make_id(),
+        "tenant_id": tid,
         "name": payload.name.strip(),
         "slug": _slugify(payload.name.strip()),
         "description": payload.description or "",
@@ -65,7 +79,8 @@ async def update_article_category(
     payload: ArticleCategoryUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    cat = await db.article_categories.find_one({"id": category_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    cat = await db.article_categories.find_one({**tf, "id": category_id}, {"_id": 0})
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
     updates: Dict[str, Any] = {"updated_at": now_iso()}
@@ -88,11 +103,11 @@ async def delete_article_category(
     category_id: str,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    cat = await db.article_categories.find_one({"id": category_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    cat = await db.article_categories.find_one({**tf, "id": category_id}, {"_id": 0})
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
-    # Check if any articles use this category
-    article_count = await db.articles.count_documents({"category": cat["name"], "deleted_at": {"$exists": False}})
+    article_count = await db.articles.count_documents({**tf, "category": cat["name"], "deleted_at": {"$exists": False}})
     if article_count > 0:
         raise HTTPException(status_code=400, detail=f"Cannot delete: {article_count} article(s) use this category")
     await db.article_categories.delete_one({"id": category_id})
