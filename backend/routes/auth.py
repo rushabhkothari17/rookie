@@ -254,7 +254,7 @@ async def partner_login(payload: PartnerLoginRequest, response: Response):
 async def customer_login(payload: CustomerLoginRequest, response: Response):
     """Login for customers belonging to a specific partner organization.
     Requires partner_code to identify the tenant.
-    Sets HttpOnly cookie with JWT token.
+    Sets HttpOnly cookies with JWT access and refresh tokens.
     """
     tenant = await resolve_tenant(payload.partner_code)
     # Any non-admin user is a customer
@@ -287,6 +287,7 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
         "is_admin": False,
         "token_version": user.get("token_version", 0),
     })
+    refresh_token = create_refresh_token(user["id"])
     await AuditService.log(
         action="CUSTOMER_LOGIN",
         description=f"Customer login: {user['email']}",
@@ -297,7 +298,7 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
         source="api",
         meta_json={"tenant_id": tenant["id"]},
     )
-    _set_auth_cookie(response, token)
+    _set_auth_cookie(response, token, refresh_token)
     return {"token": token, "role": "customer", "tenant_id": tenant["id"]}
 
 
