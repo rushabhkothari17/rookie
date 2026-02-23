@@ -118,6 +118,7 @@ export default function App() {
         </BrowserRouter>
         </WebsiteProvider>
         <Toaster richColors position="top-right" />
+        <CookieConsent />
       </CartProvider>
     </AuthProvider>
   );
