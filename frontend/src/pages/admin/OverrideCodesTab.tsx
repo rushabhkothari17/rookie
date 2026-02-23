@@ -129,6 +129,7 @@ export function OverrideCodesTab() {
       <AdminPageHeader title="Override Codes" subtitle={`${total} codes`} actions={
         <>
           <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-oc-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-oc-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
           <Button size="sm" onClick={() => setShowCreate(true)} data-testid="admin-oc-create-btn"><Plus size={14} className="mr-1" />Create Override Code</Button>
         </>
       } />

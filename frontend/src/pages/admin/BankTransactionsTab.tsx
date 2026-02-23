@@ -118,6 +118,7 @@ export function BankTransactionsTab() {
       <AdminPageHeader title="Bank Transactions" subtitle={`${total} records`} actions={
         <>
           <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="bt-export"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="bt-import"><Upload size={14} className="mr-1" />Import CSV</Button>
           <Button size="sm" onClick={openCreate} data-testid="bt-add">+ Add Transaction</Button>
         </>
       } />
