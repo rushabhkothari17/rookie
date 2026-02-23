@@ -104,6 +104,19 @@ export default function Profile() {
             <Input value={user?.email || ""} readOnly data-testid="profile-email-input" />
           </div>
           <div className="space-y-2">
+            <label className="text-sm text-slate-600">Partner / Tenant Code</label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={user?.partner_code || "—"}
+                readOnly
+                className="bg-slate-50 cursor-not-allowed font-mono text-sm"
+                data-testid="profile-partner-code"
+              />
+              <span className="text-xs text-slate-400 whitespace-nowrap">Read-only</span>
+            </div>
+            <p className="text-xs text-slate-400">Use this code when logging in via the partner portal.</p>
+          </div>
+          <div className="space-y-2">
             <label className="text-sm text-slate-600">Phone</label>
             <Input
               value={form.phone}
