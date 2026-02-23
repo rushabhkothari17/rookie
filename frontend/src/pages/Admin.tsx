@@ -30,9 +30,9 @@ export default function Admin() {
   const [searchParams] = useSearchParams();
   const editArticleId = searchParams.get("editArticle");
   const defaultTab = editArticleId ? "articles" : "customers";
-  const adminBadge = ws.admin_page_badge || "Administration";
-  const adminTitle = ws.admin_page_title || "Admin Control Centre";
-  const adminSubtitle = ws.admin_page_subtitle || "Manage customers, orders, products, and website content from one place.";
+  const adminBadge = ws.admin_page_badge || "ADMIN";
+  const adminTitle = ws.admin_page_title || "Control Panel";
+  const adminSubtitle = ws.admin_page_subtitle || "";
 
   return (
     <div className="space-y-6" data-testid="admin-page">
