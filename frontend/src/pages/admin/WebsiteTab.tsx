@@ -737,7 +737,7 @@ export default function WebsiteTab() {
                 systemItems={structured["Zoho"] || []}
                 onSystemItemSave={async (key, value) => {
                   await api.put(`/admin/settings/key/${key}`, { value });
-                  onStructuredSaved();
+                  onStructuredSaved(key, value);
                 }}
               />
             </>
