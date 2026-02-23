@@ -137,7 +137,8 @@ async def export_subscriptions_csv(
     created_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if created_from:
         query.setdefault("created_at", {})["$gte"] = created_from
     if created_to:
@@ -165,7 +166,8 @@ async def export_subscriptions_csv(
 
 @router.get("/admin/export/catalog")
 async def export_catalog_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    products = await db.products.find({}, {"_id": 0}).to_list(10000)
+    tf = get_tenant_filter(admin)
+    products = await db.products.find(tf, {"_id": 0}).to_list(10000)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     return _make_csv_response(products, f"catalog_{today}.csv")
 
