@@ -209,6 +209,10 @@ async def update_order(
     update_fields: Dict[str, Any] = {}
 
     if payload.customer_id is not None:
+        # Validate customer belongs to same tenant
+        new_customer = await db.customers.find_one({**tf, "id": payload.customer_id}, {"_id": 0})
+        if not new_customer:
+            raise HTTPException(status_code=400, detail="Invalid customer_id - customer not found in your tenant")
         update_fields["customer_id"] = payload.customer_id
         changes["customer_id"] = {"old": order.get("customer_id"), "new": payload.customer_id}
     if payload.status is not None:
