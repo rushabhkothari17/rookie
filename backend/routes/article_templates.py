@@ -125,15 +125,16 @@ DEFAULT_TEMPLATES = [
 ]
 
 
-async def _seed_defaults() -> None:
-    """Insert default templates if none exist in the DB."""
-    count = await db.article_templates.count_documents({"is_default": True})
+async def _seed_defaults(tid: str = DEFAULT_TENANT_ID) -> None:
+    """Insert default templates for a tenant if none exist."""
+    count = await db.article_templates.count_documents({"tenant_id": tid, "is_default": True})
     if count > 0:
         return
     now = now_iso()
     for tpl in DEFAULT_TEMPLATES:
         await db.article_templates.insert_one({
             "id": make_id(),
+            "tenant_id": tid,
             "name": tpl["name"],
             "description": tpl["description"],
             "category": tpl["category"],
