@@ -999,22 +999,21 @@ export default function WebsiteTab() {
             <Field label="Step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} testId="ws-cs-step2" />
             <Field label="Step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} testId="ws-cs-step3" />
             <Field label="Portal link text" value={ws.checkout_portal_link_text} onChange={s("checkout_portal_link_text")} testId="ws-cs-portal-link" />
-          </div>
-        )}
-
-        {/* Bank Transfer */}
-        {authSlide === "bank_transfer" && (
-          <div className="space-y-4">
-            <Field label="Page heading" value={ws.bank_success_title} onChange={s("bank_success_title")} testId="ws-bt-title" />
-            <Field label="Intro message" value={ws.bank_success_message} onChange={s("bank_success_message")} multiline testId="ws-bt-message" />
-            <Field label="Instructions heading" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bt-instr-title" />
-            <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} testId="ws-bt-i1" />
-            <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} testId="ws-bt-i2" />
-            <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} testId="ws-bt-i3" />
-            <Field label="Next steps heading" value={ws.bank_next_steps_title} onChange={s("bank_next_steps_title")} testId="ws-bt-next-title" />
-            <Field label="Next step 1" value={ws.bank_next_step_1} onChange={s("bank_next_step_1")} testId="ws-bt-ns1" />
-            <Field label="Next step 2" value={ws.bank_next_step_2} onChange={s("bank_next_step_2")} testId="ws-bt-ns2" />
-            <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} testId="ws-bt-ns3" />
+            <div className="border-t border-slate-100 pt-4">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">Bank Transfer Order Confirmation</p>
+              <div className="space-y-3">
+                <Field label="Page heading" value={ws.bank_success_title} onChange={s("bank_success_title")} testId="ws-bt-title" />
+                <Field label="Intro message" value={ws.bank_success_message} onChange={s("bank_success_message")} multiline testId="ws-bt-message" />
+                <Field label="Instructions heading" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bt-instr-title" />
+                <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} testId="ws-bt-i1" />
+                <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} testId="ws-bt-i2" />
+                <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} testId="ws-bt-i3" />
+                <Field label="Next steps heading" value={ws.bank_next_steps_title} onChange={s("bank_next_steps_title")} testId="ws-bt-next-title" />
+                <Field label="Next step 1" value={ws.bank_next_step_1} onChange={s("bank_next_step_1")} testId="ws-bt-ns1" />
+                <Field label="Next step 2" value={ws.bank_next_step_2} onChange={s("bank_next_step_2")} testId="ws-bt-ns2" />
+                <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} testId="ws-bt-ns3" />
+              </div>
+            </div>
           </div>
         )}
 
