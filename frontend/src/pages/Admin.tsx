@@ -17,7 +17,6 @@ import { ArticlesTab } from "./admin/ArticlesTab";
 import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
 import { TenantsTab } from "./admin/TenantsTab";
-import { TenantSwitcher } from "../components/TenantSwitcher";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
@@ -83,7 +82,7 @@ export default function Admin() {
             <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
             <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
 
-            {/* Platform — only for platform_super_admin */}
+            {/* Platform — only for platform_admin */}
             {isPlatformAdmin && (
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Platform</p>
