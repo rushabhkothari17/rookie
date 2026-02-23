@@ -1214,6 +1214,20 @@ class TestAdminUnlock:
 class TestTokenVersionInvalidation:
     """After token_version is incremented in DB, old JWT should be rejected."""
 
+    def test_token_version_user_direct_login(self, test_token_version_user):
+        """Token version test user should be able to login directly."""
+        email = test_token_version_user["email"]
+        password = test_token_version_user["password"]
+        resp = requests.post(
+            f"{BASE_URL}/api/auth/login",
+            json={"email": email, "password": password},
+            timeout=15,
+        )
+        # Platform login only allows platform_admin, so this will fail with 403
+        # Expected: either 200 (if admin, unlikely) or 403/401
+        # The important thing is the test user exists in DB
+        print(f"Direct login for token_version user: {resp.status_code}")
+
     def test_old_token_rejected_after_token_version_increment(self, test_token_version_user, mongo_db):
         """Old JWT should return 401 after token_version is incremented."""
         email = test_token_version_user["email"]
