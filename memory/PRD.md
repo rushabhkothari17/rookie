@@ -116,6 +116,17 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 - Login page: Two tabs — "Partner Login" and "Customer Login" (both require partner_code)
 - `AuthContext`: `login()` now accepts `partner_code` + `login_type` params
 
+### Session — Iteration 61 (Feb 2026)
+**Fixes & Enhancements:**
+- **P0 Brand Color Bug FIXED**: `GET /admin/website-settings` was only reading from `website_settings` collection. Colors are stored in `app_settings`. Fixed by merging both collections (app_settings → website_settings override) so the admin form now shows pre-populated brand colors.
+- **Role Rename**: `platform_super_admin` → `platform_admin` everywhere (DB, backend, frontend). Database migrated.
+- **TenantSwitcher moved to TopNav**: Removed from Admin hero banner (broken layout). Now rendered in the top navigation bar, only visible when `user.role === "platform_admin"`.
+- **Users Tab Badge Colors**: platform_admin = amber, super_admin = purple, admin = blue (distinct colors per role).
+- **New Test Credentials**:
+  - Platform Admin: `admin@automateaccounts.local` / `ChangeMe123!` / `automate-accounts`
+  - Super Admin: `superadmin@automateaccounts.local` / `Admin123!` / `automate-accounts`
+  - Regular Admin: `admin2@automateaccounts.local` / `Admin123!` / `automate-accounts`
+
 ### Session — Iteration 53 (Feb 2026)
 - **GoCardless Callback inside card**: `PaymentProviderCard` gains `onCallbackSettings?` prop; "Callback Page Text" section renders at the bottom of the GoCardless expanded card, not as a standalone tile.
 - **References table widths**: `table-fixed` + `w-[22%]/w-[32%]/w-[8%]` column classes prevent text overflow; Key column shows full `{{ref:key}}` tag.
