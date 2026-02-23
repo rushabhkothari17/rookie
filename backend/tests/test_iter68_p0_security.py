@@ -423,17 +423,17 @@ class TestJWTRotation:
         )
         print(f"PASS — old secret token correctly rejected with 401")
 
-    def test_old_token_rejected_on_auth_me(self):
-        """Old-secret token rejected on /api/auth/me or any user endpoint."""
+    def test_old_token_rejected_on_me(self):
+        """Old-secret token rejected on /api/me (user profile endpoint)."""
         old_token = self._make_old_token()
         resp = requests.get(
-            f"{BASE_URL}/api/auth/me",
+            f"{BASE_URL}/api/me",
             headers={"Authorization": f"Bearer {old_token}"},
         )
         assert resp.status_code == 401, (
             f"Expected 401, got {resp.status_code}: {resp.text}"
         )
-        print("PASS — old secret token rejected on /api/auth/me")
+        print("PASS — old secret token rejected on /api/me")
 
     def test_new_token_still_works(self, admin_headers):
         """Fresh token (signed with new secret) is accepted."""
