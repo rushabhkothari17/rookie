@@ -95,7 +95,8 @@ async def admin_update_customer_payment_methods(
     payload: Dict[str, Any],
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    existing = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
 
