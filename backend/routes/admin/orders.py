@@ -174,7 +174,7 @@ async def create_manual_order(
         "currency": order_doc["currency"],
         "customer_email": customer.get("email", ""),
         "customer_name": customer.get("full_name", ""),
-        "product_names": payload.product_name or "",
+        "product_names": product.get("name", payload.product_id),
         "items_count": 1,
         "payment_method": "offline",
         "created_at": order_doc["created_at"],
