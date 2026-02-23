@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ImportModal } from "@/components/admin/ImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -6,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown, Tag } from "lucide-react";
+import { Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown, Tag, Upload} from "lucide-react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { ArticleTemplatesTab } from "./ArticleTemplatesTab";
@@ -65,6 +66,7 @@ interface ArticlesTabProps {
 }
 
 export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
+  const [showImportArticles, setShowImportArticles] = useState(false);
   const [subTab, setSubTab] = useState<"articles" | "templates" | "email-templates" | "categories">("articles");
   const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
 
@@ -396,6 +398,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
           {subTab === "articles" && (
             <>
               <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="articles-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+              <Button size="sm" variant="outline" onClick={() => setShowImportArticles(true)} data-testid="articles-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
               <Button size="sm" onClick={openCreate} className="gap-2" data-testid="articles-create-btn"><Plus size={14} /> New Article</Button>
             </>
           )}
@@ -874,5 +877,12 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
       </Dialog>
     </>) /* end articles sub-tab */}
     </div>
+      <ImportModal
+        entity="articles"
+        entityLabel="Articles"
+        open={showImportArticles}
+        onClose={() => setShowImportArticles(false)}
+        onSuccess={loadArticles}
+      />
   );
 }
