@@ -60,7 +60,8 @@ async def admin_list_quote_requests(
     date_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if status:
         query["status"] = status
     if email:
