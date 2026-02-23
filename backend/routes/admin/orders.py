@@ -13,6 +13,7 @@ from core.constants import ALLOWED_ORDER_STATUSES
 from db.session import db
 from models import OrderUpdate, OrderDelete, ManualOrderCreate
 from services.audit_service import create_audit_log
+from services.webhook_service import dispatch_event
 from gocardless_helper import create_payment
 
 router = APIRouter(prefix="/api", tags=["admin-orders"])
