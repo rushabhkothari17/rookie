@@ -204,7 +204,7 @@ async def scope_request(
     subtotal = sum(i["pricing"]["subtotal"] for i in scope_items)
     order_doc = {
         "id": order_id,
-        "tenant_id": user.get("tenant_id") or "automate-accounts",
+        "tenant_id": user.get("tenant_id") or DEFAULT_TENANT_ID,
         "order_number": order_number,
         "customer_id": customer["id"],
         "type": "scope_request",
@@ -274,7 +274,7 @@ async def create_scope_request_with_form(
         })
     order = {
         "id": order_id,
-        "tenant_id": user.get("tenant_id") or "automate-accounts",
+        "tenant_id": user.get("tenant_id") or DEFAULT_TENANT_ID,
         "order_number": order_number,
         "customer_id": customer["id"],
         "type": "scope_request",
