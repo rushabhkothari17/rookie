@@ -11,6 +11,7 @@ type AuthUser = {
   is_admin: boolean;
   role: string;
   tenant_id: string | null;
+  partner_code?: string | null;
   must_change_password?: boolean;
 };
 
