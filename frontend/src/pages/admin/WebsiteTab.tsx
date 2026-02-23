@@ -954,6 +954,19 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
               })()}
             </>
           )}
+
+          {/* Custom Domains Section */}
+          {activeSection === "domains" && (
+            <>
+              <h3 className="text-sm font-semibold text-slate-700 mb-1">Custom Domains</h3>
+              <p className="text-xs text-slate-400 mb-4">
+                Host your portal on your own domain. Customers won't need to enter a partner code.
+              </p>
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                <CustomDomainsSection />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
