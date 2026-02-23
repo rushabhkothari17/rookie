@@ -220,12 +220,12 @@ async def _resolve_refs(text: str, db) -> str:
 
 class EmailService:
     @staticmethod
-    async def ensure_seeded(db) -> None:
-        """Seed default email templates if collection is empty."""
-        count = await db.email_templates.count_documents({})
+    async def ensure_seeded(db, tenant_id: str = "automate-accounts") -> None:
+        """Seed default email templates for a tenant if none exist."""
+        count = await db.email_templates.count_documents({"tenant_id": tenant_id})
         if count == 0:
             now = now_iso()
-            docs = [{"id": make_id(), "created_at": now, "updated_at": now, **t} for t in _TEMPLATES]
+            docs = [{"id": make_id(), "tenant_id": tenant_id, "created_at": now, "updated_at": now, **t} for t in _TEMPLATES]
             await db.email_templates.insert_many(docs)
 
     @staticmethod
