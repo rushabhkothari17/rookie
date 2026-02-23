@@ -8,7 +8,7 @@ Tests ALL admin endpoints for proper X-View-As-Tenant isolation:
 - Cross-tenant write protection: can't edit/delete other tenant's articles
 - Public endpoints: articles scoped by JWT tenant_id
 
-Tenant B: id=e7301988-7f0f-4b2b-a678-4e37882e385f, code=tenant-b-test
+Tenant B: id=data-leak-patch, code=tenant-b-test
 """
 import pytest
 import requests
