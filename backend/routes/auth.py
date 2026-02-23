@@ -1,6 +1,7 @@
 """Authentication routes: register, verify-email, login, /me.
 Supports multi-tenant login via partner_code.
 HttpOnly cookie support for enhanced security.
+JWT refresh token support for seamless session management.
 """
 from __future__ import annotations
 
@@ -13,7 +14,10 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Response, Request
 from fastapi.responses import JSONResponse
 
 from core.helpers import make_id, now_iso, currency_for_country
-from core.security import pwd_context, create_access_token, get_current_user
+from core.security import (
+    pwd_context, create_access_token, create_refresh_token, 
+    get_current_user, decode_token, ACCESS_TOKEN_EXPIRE_MINUTES
+)
 from core.tenant import resolve_tenant, DEFAULT_TENANT_ID, PLATFORM_ROLE
 from db.session import db
 from models import (
@@ -33,7 +37,7 @@ MAX_FAILED_ATTEMPTS = 10
 LOCKOUT_MINUTES = 15
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "true").lower() == "true"
 COOKIE_SAMESITE = os.environ.get("COOKIE_SAMESITE", "lax")
-TOKEN_EXPIRY_HOURS = 24
+TOKEN_EXPIRY_HOURS = 1  # Access token expiry (1 hour)
 
 
 # ---------------------------------------------------------------------------
