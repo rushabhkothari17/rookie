@@ -234,9 +234,9 @@ async def update_order(
     if payload.subscription_id is not None:
         update_fields["subscription_id"] = payload.subscription_id
         changes["subscription_id"] = {"old": order.get("subscription_id"), "new": payload.subscription_id}
-        # Auto-resolve subscription_number when subscription_id is set
+        # Auto-resolve subscription_number when subscription_id is set (tenant-scoped)
         if payload.subscription_id:
-            linked_sub = await db.subscriptions.find_one({"id": payload.subscription_id}, {"_id": 0})
+            linked_sub = await db.subscriptions.find_one({**tf, "id": payload.subscription_id}, {"_id": 0})
             if linked_sub and linked_sub.get("subscription_number"):
                 update_fields["subscription_number"] = linked_sub["subscription_number"]
 
