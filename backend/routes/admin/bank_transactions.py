@@ -144,7 +144,8 @@ async def delete_bank_transaction(
     txn_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    result = await db.bank_transactions.delete_one({"id": txn_id})
+    tf = get_tenant_filter(admin)
+    result = await db.bank_transactions.delete_one({**tf, "id": txn_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
     await AuditService.log(

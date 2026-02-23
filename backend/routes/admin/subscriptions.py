@@ -138,6 +138,7 @@ async def create_manual_subscription(
 
     sub_doc = {
         "id": sub_id,
+        "tenant_id": tenant_id_of(admin),
         "subscription_number": sub_number,
         "customer_id": customer["id"],
         "plan_name": product["name"],
