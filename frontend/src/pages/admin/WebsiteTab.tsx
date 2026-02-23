@@ -152,6 +152,7 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
     { key: "references", label: "References" },
     { key: "payments", label: "Payments" },
     { key: "sysconfig", label: "System Config" },
+    { key: "domains", label: "Custom Domains" },
   ]},
 ];
 
