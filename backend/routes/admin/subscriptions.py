@@ -183,7 +183,7 @@ async def create_manual_subscription(
     }
 
 
-@router.post("/subscriptions/{subscription_id}/renew-now")
+@router.post("/admin/subscriptions/{subscription_id}/renew-now")
 async def renew_subscription_now(
     subscription_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
