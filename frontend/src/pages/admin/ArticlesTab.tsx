@@ -881,7 +881,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
         entityLabel="Articles"
         open={showImportArticles}
         onClose={() => setShowImportArticles(false)}
-        onSuccess={loadArticles}
+        onSuccess={() => load()}
       />
     </div>
   );
