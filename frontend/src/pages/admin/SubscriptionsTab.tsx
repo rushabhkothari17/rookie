@@ -161,7 +161,7 @@ export function SubscriptionsTab() {
   };
 
   const handleRenew = async (subId: string) => {
-    try { await api.post(`/subscriptions/${subId}/renew-now`); toast.success("Renewal order created"); load(page); }
+    try { await api.post(`/admin/subscriptions/${subId}/renew-now`); toast.success("Renewal order created"); load(page); }
     catch (e: any) { toast.error(e.response?.data?.detail || "Failed"); }
   };
 
