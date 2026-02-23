@@ -44,7 +44,14 @@ export default function Admin() {
         <div className="relative space-y-3">
           <div className="flex items-center gap-2.5">
             <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{adminBadge}</p>
+            <div className="relative">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{adminBadge}</p>
+          {isPlatformAdmin && (
+            <div className="absolute top-0 right-0">
+              <TenantSwitcher />
+            </div>
+          )}
+        </div>
           </div>
           <h1 className="text-3xl font-bold text-white">{adminTitle}</h1>
           <p className="max-w-xl text-sm text-slate-300">{adminSubtitle}</p>
