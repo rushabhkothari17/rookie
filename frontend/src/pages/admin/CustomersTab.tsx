@@ -379,6 +379,13 @@ export function CustomersTab() {
           </div>
         </DialogContent>
       </Dialog>
+      <ImportModal
+        entity="customers"
+        entityLabel="Customers"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
     </div>
   );
 }
@@ -397,13 +404,6 @@ function CurrencyOverrideWidget() {
         <Input placeholder="Currency (USD/CAD)" value={val.currency} onChange={(e) => setVal({ ...val, currency: e.target.value })} data-testid="admin-currency-value" />
         <Button onClick={handle} data-testid="admin-currency-submit">Override</Button>
       </div>
-      <ImportModal
-        entity="customers"
-        entityLabel="Customers"
-        open={showImport}
-        onClose={() => setShowImport(false)}
-        onSuccess={load}
-      />
     </div>
   );
 }
