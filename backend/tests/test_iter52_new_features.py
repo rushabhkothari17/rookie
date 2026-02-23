@@ -14,7 +14,7 @@ import requests
 def _get_base_url():
     url = os.environ.get("REACT_APP_BACKEND_URL", "")
     if not url:
-        env_path = os.path.join(os.path.dirname(__file__), "../../../frontend/.env")
+        env_path = os.path.join(os.path.dirname(__file__), "../../frontend/.env")
         try:
             with open(env_path) as f:
                 for line in f:
