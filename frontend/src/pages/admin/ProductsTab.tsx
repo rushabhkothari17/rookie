@@ -68,7 +68,7 @@ export function ProductsTab() {
         api.get("/admin/products-all?per_page=500"),
         api.get("/admin/categories?per_page=500").catch(() => ({ data: { categories: [] } })),
         api.get("/admin/customers?per_page=1000").catch(() => ({ data: { customers: [], users: [] } })),
-        api.get("/terms").catch(() => ({ data: { terms: [] } })),
+        api.get("/admin/terms").catch(() => ({ data: { terms: [] } })),
       ]);
       setProducts(
         (prodRes.data.products || []).sort((a: any, b: any) =>
