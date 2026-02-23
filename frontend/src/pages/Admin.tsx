@@ -24,6 +24,9 @@ const TAB_CLASS =
 export default function Admin() {
   const { user: authUser } = useAuth();
   const isSuperAdmin = authUser?.role === "super_admin";
+  const [searchParams] = useSearchParams();
+  const editArticleId = searchParams.get("editArticle");
+  const defaultTab = editArticleId ? "articles" : "customers";
 
   return (
     <div className="space-y-6" data-testid="admin-page">
