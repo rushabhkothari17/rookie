@@ -489,7 +489,15 @@ function WebhookCard({ webhook, catalog, onEdit, onDelete, onViewLogs, onRefresh
           </div>
           <p className="text-xs text-slate-400 font-mono truncate mt-0.5" title={webhook.url}>{webhook.url}</p>
         </div>
-        <Switch checked={webhook.is_active} onCheckedChange={toggleActive} disabled={toggling} data-testid="webhook-toggle" />
+        <div
+          onClick={() => !toggling && toggleActive()}
+          className={`relative inline-flex h-5 w-9 cursor-pointer items-center rounded-full transition-colors ${webhook.is_active ? "bg-indigo-500" : "bg-slate-300"} ${toggling ? "opacity-50 pointer-events-none" : ""}`}
+          data-testid="webhook-toggle"
+          role="switch"
+          aria-checked={webhook.is_active}
+        >
+          <span className={`block h-4 w-4 rounded-full bg-white shadow transition-transform ${webhook.is_active ? "translate-x-4" : "translate-x-0.5"}`} />
+        </div>
       </div>
 
       {/* Event + category badges */}
