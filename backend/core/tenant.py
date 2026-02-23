@@ -99,11 +99,17 @@ async def get_tenant_admin(
 ) -> Dict[str, Any]:
     """Drop-in replacement for require_admin that injects _view_as for platform admins.
     All get_tenant_filter / tenant_id_of calls will automatically respect it.
+    Sets request-scoped tenant context for automatic audit log scoping.
     """
+    from services.audit_service import set_audit_tenant
     if x_view_as_tenant and is_platform_admin(admin):
         t = await db.tenants.find_one({"id": x_view_as_tenant}, {"_id": 0})
         if t:
+            set_audit_tenant(x_view_as_tenant)
             return {**admin, "_view_as": x_view_as_tenant}
+    # Set tenant_id from the user's own tenant
+    tid = admin.get("tenant_id") or (None if is_platform_admin(admin) else DEFAULT_TENANT_ID)
+    set_audit_tenant(tid)
     return admin
 
 
