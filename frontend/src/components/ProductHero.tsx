@@ -12,7 +12,7 @@ export default function ProductHero({ product }: { product: any }) {
 
         <div className="relative">
           <div className="mb-4 flex items-center gap-2.5">
-            <div className="h-0.5 w-8 rounded-full bg-red-500" />
+            <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
               {categoryLabel}
             </span>
