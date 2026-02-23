@@ -64,7 +64,7 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - [x] ~~starlette upgraded to 0.41.0 (CVE-2024-47874 fixed)~~
 - [x] ~~pymongo upgraded to 4.6.3 (CVE-2024-5629 fixed)~~
 - [x] ~~fastapi upgraded to 0.115.14~~
-- [ ] JWT migration from localStorage to HttpOnly cookie (large refactor — future)
+- [x] ~~JWT migration from localStorage to HttpOnly cookie~~ (completed Feb 2026)
 - [ ] Run `pip-audit` + `npm audit` as part of CI/CD pipeline
 
 ## P2 — Future Sprints
