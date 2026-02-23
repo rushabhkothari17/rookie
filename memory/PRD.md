@@ -55,6 +55,14 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ## What's Been Implemented
 
+### Session — Iteration 53 (Feb 2026)
+- **GoCardless Callback inside card**: `PaymentProviderCard` gains `onCallbackSettings?` prop; "Callback Page Text" section renders at the bottom of the GoCardless expanded card, not as a standalone tile.
+- **References table widths**: `table-fixed` + `w-[22%]/w-[32%]/w-[8%]` column classes prevent text overflow; Key column shows full `{{ref:key}}` tag.
+- **Article template apply**: Added `editorKey` state; `applyTemplate()` increments it → `<ArticleEditor key={editor-N} />` remounts with new content so Tiptap reflects the chosen template.
+- **PDF branding from website settings**: Download endpoint fetches `store_name` + `accent_color` from `db.website_settings`; passed to `generate_pdf` / `generate_docx` so exported files carry the configured brand identity.
+- **Babel plugin fix**: `visual-edits/babel-metadata-plugin.js` line 936 null-guard added; prevents the blank-page crash triggered by new JSX patterns in `ReferencesSection.tsx`.
+- **Testing**: 100% pass rate — backend 16/16, frontend 8/8 (iteration_53.json).
+
 ### Session — Iteration 52 (Feb 2026)
 - **GoCardless Callback → Payments**: GoCardless callback page fields moved from "Checkout Success" slide-over to a dedicated "GoCardless Callback Page" tile in the Payments section. Only visible/relevant when configuring GoCardless.
 - **Admin Sidebar Dark Style**: `TAB_CLASS` updated to `bg-slate-900 text-white` for active items, matching the Store homepage sidebar styling.
