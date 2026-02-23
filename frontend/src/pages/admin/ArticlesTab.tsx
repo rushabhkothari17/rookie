@@ -497,7 +497,12 @@ export function ArticlesTab() {
       <Dialog open={showForm} onOpenChange={(o) => { setShowForm(o); if (!o) setEditingArticle(null); }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="article-form-dialog">
           <DialogHeader>
-            <DialogTitle>{editingArticle ? `Edit: ${editingArticle.title}` : "New Article"}</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{editingArticle ? `Edit: ${editingArticle.title}` : "New Article"}</span>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => { loadTemplates(); setShowTemplatePicker(true); }} data-testid="article-use-template-btn">
+                <LayoutTemplate size={13} /> Use Template
+              </Button>
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
