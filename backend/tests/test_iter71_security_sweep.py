@@ -18,8 +18,9 @@ from typing import Optional
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 
 # Tenant A (default tenant) - automate-accounts
-TENANT_A_ADMIN_EMAIL = "admin@automateaccounts.local"
-TENANT_A_ADMIN_PASSWORD = "ChangeMe123!"
+# NOTE: admin@automateaccounts.local is platform_admin (sees all) - use for specific tests
+TENANT_A_PLATFORM_ADMIN_EMAIL = "admin@automateaccounts.local"
+TENANT_A_PLATFORM_ADMIN_PASSWORD = "ChangeMe123!"
 TENANT_A_PARTNER_CODE = "automate-accounts"
 TENANT_A_ID = "automate-accounts"
 
@@ -28,10 +29,14 @@ TENANT_A_CUSTOMER_EMAIL = "testcustomer@test.com"
 TENANT_A_CUSTOMER_PASSWORD = "ChangeMe123!"
 
 # Tenant B - separate tenant for cross-tenant testing
+# This is a proper tenant-scoped admin (partner_super_admin with tenant_id set)
 TENANT_B_ADMIN_EMAIL = "adminb@tenantb.local"
 TENANT_B_ADMIN_PASSWORD = "ChangeMe123!"
 TENANT_B_PARTNER_CODE = "tenant-b-test"
 TENANT_B_ID = "e7301988-7f0f-4b2b-a678-4e37882e385f"
+
+# For IDOR tests, we use Tenant B admin to try to access Tenant A data
+# This is the proper security test - a tenant-scoped admin trying cross-tenant access
 
 
 def get_admin_token(email, password, partner_code=None):
@@ -63,8 +68,8 @@ def get_customer_token(email, password, partner_code):
 
 @pytest.fixture(scope="module")
 def tenant_a_admin_token():
-    """Admin token for Tenant A (automate-accounts)."""
-    return get_admin_token(TENANT_A_ADMIN_EMAIL, TENANT_A_ADMIN_PASSWORD, TENANT_A_PARTNER_CODE)
+    """Platform admin token for Tenant A (can see all data by design)."""
+    return get_admin_token(TENANT_A_PLATFORM_ADMIN_EMAIL, TENANT_A_PLATFORM_ADMIN_PASSWORD, TENANT_A_PARTNER_CODE)
 
 
 @pytest.fixture(scope="module")
