@@ -215,6 +215,81 @@ async def get_tenant_info(code: str):
     return {"tenant": {"name": tenant["name"], "code": tenant["code"]}}
 
 
+@router.post("/auth/register-partner")
+async def register_partner(payload: Dict[str, Any] = Body(...)):
+    """Self-service partner organization registration.
+    Creates a new tenant + partner_super_admin user.
+    """
+    name = payload.get("name", "").strip()
+    code = payload.get("code", "").strip().lower().replace(" ", "-")
+    admin_name = payload.get("admin_name", "").strip()
+    admin_email = payload.get("admin_email", "").strip().lower()
+    admin_password = payload.get("admin_password", "")
+
+    if not all([name, code, admin_name, admin_email, admin_password]):
+        raise HTTPException(status_code=400, detail="All fields are required")
+
+    # Validate code uniqueness
+    if await db.tenants.find_one({"code": code}):
+        raise HTTPException(status_code=400, detail="Partner code already in use. Choose a different code.")
+
+    # Check email uniqueness across all tenants
+    if await db.users.find_one({"email": admin_email}):
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Create the tenant
+    tenant_id = make_id()
+    now = now_iso()
+    await db.tenants.insert_one({
+        "id": tenant_id,
+        "name": name,
+        "code": code,
+        "status": "active",
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # Seed website/app settings from default tenant
+    existing_ws = await db.website_settings.find_one({"tenant_id": DEFAULT_TENANT_ID}, {"_id": 0})
+    if existing_ws:
+        seed = {k: v for k, v in existing_ws.items() if k != "_id"}
+        seed["tenant_id"] = tenant_id
+        await db.website_settings.insert_one(seed)
+
+    existing_app = await db.app_settings.find_one(
+        {"key": {"$exists": False}, "tenant_id": DEFAULT_TENANT_ID}, {"_id": 0}
+    )
+    if existing_app:
+        seed_app = {k: v for k, v in existing_app.items() if k != "_id"}
+        seed_app["tenant_id"] = tenant_id
+        await db.app_settings.insert_one(seed_app)
+
+    # Create partner_super_admin user
+    user_id = make_id()
+    hashed = pwd_context.hash(admin_password)
+    await db.users.insert_one({
+        "id": user_id,
+        "email": admin_email,
+        "password_hash": hashed,
+        "full_name": admin_name,
+        "company_name": name,
+        "job_title": "",
+        "phone": "",
+        "is_admin": True,
+        "is_verified": True,
+        "role": "partner_super_admin",
+        "tenant_id": tenant_id,
+        "is_active": True,
+        "created_at": now,
+    })
+
+    return {
+        "message": "Partner organization created successfully. You can now log in.",
+        "tenant_name": name,
+        "partner_code": code,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Register
 # ---------------------------------------------------------------------------
