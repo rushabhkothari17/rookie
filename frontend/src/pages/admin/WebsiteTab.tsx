@@ -948,6 +948,14 @@ export default function WebsiteTab() {
               <Toggle label="Zoho Account Details" description="Legacy checkout section" checked={ws.checkout_zoho_enabled} onChange={v => setWs(p => ({ ...p, checkout_zoho_enabled: v }))} testId="slide-zoho-toggle" />
             </div>
 
+            {/* Partner tagging global system setting */}
+            {(structured["Checkout"] || []).length > 0 && (
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-2">
+                <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">System Settings</p>
+                {(structured["Checkout"] || []).map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
+              </div>
+            )}
+
             <div>
               <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">Dynamic Sections (New Builder)</p>
               <p className="text-xs text-slate-400 mb-3">Build custom sections for the checkout page. Each section can have a title, description, and form fields.</p>
