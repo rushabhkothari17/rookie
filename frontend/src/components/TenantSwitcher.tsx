@@ -10,8 +10,12 @@ type Tenant = { id: string; name: string; code: string; status: string };
 const _SK_ID = "aa_view_as_tenant_id";
 const _SK_NAME = "aa_view_as_tenant_name";
 
-let _viewAsTenantId: string | null = sessionStorage.getItem(_SK_ID);
-let _viewAsTenantName: string | null = sessionStorage.getItem(_SK_NAME);
+// Safe reads — module code may run before browser APIs are available
+const _safeGet = (k: string): string | null => {
+  try { return typeof window !== "undefined" ? sessionStorage.getItem(k) : null; } catch { return null; }
+};
+let _viewAsTenantId: string | null = _safeGet(_SK_ID);
+let _viewAsTenantName: string | null = _safeGet(_SK_NAME);
 let _listeners: Array<() => void> = [];
 
 export function getViewAsTenantId(): string | null {
