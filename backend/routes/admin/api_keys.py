@@ -64,6 +64,13 @@ async def create_api_key(
         "last_used_at": None,
     }
     await db.api_keys.insert_one(doc)
+    await create_audit_log(
+        entity_type="api_key",
+        entity_id=doc["id"],
+        action="api_key_created",
+        actor=admin.get("email", "admin"),
+        details={"name": name, "tenant_id": tid},
+    )
     # Return full key ONCE — client must copy it now
     return {
         "id": doc["id"],
