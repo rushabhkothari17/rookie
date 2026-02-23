@@ -12,6 +12,7 @@ from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tena
 from db.session import db
 from models import QuoteRequest
 from services.audit_service import AuditService, create_audit_log
+from services.webhook_service import dispatch_event
 
 router = APIRouter(prefix="/api", tags=["quote-requests"])
 
