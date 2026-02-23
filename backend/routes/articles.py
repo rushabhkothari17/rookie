@@ -147,9 +147,12 @@ async def get_article_by_id(
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
     if article.get("visibility") != "all" and article.get("restricted_to"):
-        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
-        if not customer or customer["id"] not in article.get("restricted_to", []):
-            raise HTTPException(status_code=403, detail="You don't have access to this article")
+        # Admins bypass visibility restrictions
+        is_admin_user = user.get("is_admin") or user.get("role") in ("admin", "super_admin", "platform_admin", "partner_super_admin", "partner_admin")
+        if not is_admin_user:
+            customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+            if not customer or customer["id"] not in article.get("restricted_to", []):
+                raise HTTPException(status_code=403, detail="You don't have access to this article")
     return {"article": article}
 
 
