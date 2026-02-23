@@ -675,27 +675,27 @@ export default function WebsiteTab() {
               </div>
               <div className="border-t border-slate-100 pt-4">
                 <h3 className="text-sm font-semibold text-slate-700 mb-1">Brand Colors</h3>
-                <p className="text-xs text-slate-400 mb-3">Primary = navbars &amp; headers · Accent = CTA buttons · Others = UI states</p>
+                <p className="text-xs text-slate-400 mb-3">Changes apply across the storefront on next page load. Save first, then refresh the store page to preview.</p>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <ColorInput label="Primary" value={branding.primary_color} onChange={b("primary_color")} testId="ws-primary-color" />
-                    <ColorInput label="Accent / Secondary" value={branding.accent_color} onChange={b("accent_color")} testId="ws-accent-color" />
+                    <ColorInput label="Primary — Hero banners, sidebar, buttons" value={branding.primary_color} onChange={b("primary_color")} testId="ws-primary-color" />
+                    <ColorInput label="Accent — Bullet dots, card accents, hover line" value={branding.accent_color} onChange={b("accent_color")} testId="ws-accent-color" />
                   </div>
                   <div className="border-t border-slate-50 pt-2">
                     <p className="text-[11px] text-slate-400 mb-2 font-medium uppercase tracking-wide">System / State Colors</p>
                     <div className="grid grid-cols-3 gap-3">
-                      <ColorInput label="Danger (Red)" value={branding.danger_color} onChange={b("danger_color")} testId="ws-danger-color" />
-                      <ColorInput label="Success (Green)" value={branding.success_color} onChange={b("success_color")} testId="ws-success-color" />
-                      <ColorInput label="Warning (Amber)" value={branding.warning_color} onChange={b("warning_color")} testId="ws-warning-color" />
+                      <ColorInput label="Danger — Errors, destructive actions" value={branding.danger_color} onChange={b("danger_color")} testId="ws-danger-color" />
+                      <ColorInput label="Success — Confirmations, success states" value={branding.success_color} onChange={b("success_color")} testId="ws-success-color" />
+                      <ColorInput label="Warning — Cautions, pending states" value={branding.warning_color} onChange={b("warning_color")} testId="ws-warning-color" />
                     </div>
                   </div>
                   <div className="border-t border-slate-50 pt-2">
                     <p className="text-[11px] text-slate-400 mb-2 font-medium uppercase tracking-wide">Surface Colors</p>
                     <div className="grid grid-cols-2 gap-3">
-                      <ColorInput label="Background" value={branding.background_color} onChange={b("background_color")} testId="ws-background-color" />
-                      <ColorInput label="Text / Foreground" value={branding.text_color} onChange={b("text_color")} testId="ws-text-color" />
-                      <ColorInput label="Border / Divider" value={branding.border_color} onChange={b("border_color")} testId="ws-border-color" />
-                      <ColorInput label="Muted / Subtle" value={branding.muted_color} onChange={b("muted_color")} testId="ws-muted-color" />
+                      <ColorInput label="Background — Page background" value={branding.background_color} onChange={b("background_color")} testId="ws-background-color" />
+                      <ColorInput label="Text — Body text, headings" value={branding.text_color} onChange={b("text_color")} testId="ws-text-color" />
+                      <ColorInput label="Border — Dividers, input borders" value={branding.border_color} onChange={b("border_color")} testId="ws-border-color" />
+                      <ColorInput label="Muted — Placeholder, subtle text" value={branding.muted_color} onChange={b("muted_color")} testId="ws-muted-color" />
                     </div>
                   </div>
                 </div>
