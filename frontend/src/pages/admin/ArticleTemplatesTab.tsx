@@ -162,7 +162,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700">Content</label>
-              <TemplateEditor value={form.content} onChange={(v) => setForm({ ...form, content: v })} />
+              <RichHtmlEditor value={form.content} onChange={(v) => setForm({ ...form, content: v })} withImages minHeight="320px" placeholder="Write your template content here…" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
