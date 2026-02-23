@@ -876,7 +876,6 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
         </DialogContent>
       </Dialog>
     </>) /* end articles sub-tab */}
-    </div>
       <ImportModal
         entity="articles"
         entityLabel="Articles"
@@ -884,5 +883,6 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
         onClose={() => setShowImportArticles(false)}
         onSuccess={loadArticles}
       />
+    </div>
   );
 }
