@@ -349,12 +349,14 @@ function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string, val: 
 function PaymentProviderCard({
   title, subtitle, enabledItem, displayLabelKey, displayDescKey,
   initialLabel, initialDesc, credItems, feeRateItem, onSaved,
+  onCallbackSettings,
 }: {
   title: string; subtitle: string; enabledItem: any;
   displayLabelKey: string; displayDescKey: string;
   initialLabel: string; initialDesc: string;
   credItems: any[]; feeRateItem: any | null;
   onSaved: (key: string, val: any) => void;
+  onCallbackSettings?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState(initialLabel);
