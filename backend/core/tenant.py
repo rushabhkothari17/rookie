@@ -9,7 +9,7 @@ from core.security import require_admin, get_current_user
 from db.session import db
 
 DEFAULT_TENANT_ID = "automate-accounts"
-PLATFORM_ROLE = "platform_super_admin"
+PLATFORM_ROLE = "platform_admin"
 
 
 def is_platform_admin(user: Dict[str, Any]) -> bool:
