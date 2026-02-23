@@ -276,6 +276,12 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   social_facebook: "",
   social_instagram: "",
   social_youtube: "",
+  admin_page_badge: "",
+  admin_page_title: "",
+  admin_page_subtitle: "",
+  bank_transaction_sources: "",
+  bank_transaction_types: "",
+  bank_transaction_statuses: "",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
