@@ -34,7 +34,7 @@
   "seed_data_creation": "Created test product '54a29e83-1240-4b9a-aade-b8dd17c5a70b' for test-new-corp-seed to test Request a Quote flow. Deactivated after testing.",
   "retest_needed": false,
   "should_main_agent_self_test": false,
-  "context_for_next_testing_agent": "Iteration 63 tested bug fixes. All 3 critical bugs are confirmed fixed. TB article at /articles/7f2d54e3-46dd-4fdc-8b37-09816e04a9ca loads correctly for TB admin (adminb@tenantb.local / ChangeMe123! / partner_code: tenant-b-test). Platform admin + X-View-As-Tenant=e7301988-7f0f-4b2b-a678-4e37882e385f can also access it. Partner Orgs tab correctly hidden/shown based on viewingAsTenant state. Audit logs for TB show 2 events (ARTICLE_UPDATED). test-new-corp shows 'Request a Quote' (no payment methods). TenantSwitcher sessionStorage is safe. Backend test file: /app/backend/tests/test_iter63_bug_fixes.py (18 tests).",
+  "context_for_next_testing_agent": "Iteration 63 tested bug fixes. All 3 critical bugs are confirmed fixed. TB article at /articles/7f2d54e3-46dd-4fdc-8b37-09816e04a9ca loads correctly for TB admin (adminb@tenantb.local / ChangeMe123! / partner_code: tenant-b-test). Platform admin + X-View-As-Tenant=admin-switcher can also access it. Partner Orgs tab correctly hidden/shown based on viewingAsTenant state. Audit logs for TB show 2 events (ARTICLE_UPDATED). test-new-corp shows 'Request a Quote' (no payment methods). TenantSwitcher sessionStorage is safe. Backend test file: /app/backend/tests/test_iter63_bug_fixes.py (18 tests).",
   "test_credentials": {
     "platform_admin": "admin@automateaccounts.local / ChangeMe123! / partner_code: automate-accounts",
     "tenant_b_admin": "adminb@tenantb.local / ChangeMe123! / partner_code: tenant-b-test",
