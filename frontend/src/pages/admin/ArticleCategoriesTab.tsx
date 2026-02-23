@@ -35,6 +35,14 @@ export function ArticleCategoriesTab() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const downloadCsv = () => {
+    const token = localStorage.getItem("aa_token") || "";
+    const base = process.env.REACT_APP_BACKEND_URL || "";
+    fetch(`${base}/api/admin/export/article-categories`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `article-categories-${new Date().toISOString().slice(0,10)}.csv`; a.click(); })
+      .catch(() => toast.error("Export failed"));
+  };
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
