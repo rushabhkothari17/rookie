@@ -263,6 +263,14 @@ export function ArticlesTab({ editArticleId }: { editArticleId?: string }) {
 
   useEffect(() => { load(1); }, [categoryFilter, searchFilter, startDate, endDate]);
 
+  // Auto-open edit dialog when navigated from article preview with editArticleId
+  useEffect(() => {
+    if (editArticleId) {
+      openEdit({ id: editArticleId });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editArticleId]);
+
   const resetForm = () => setForm({ title: "", slug: "", category: "", price: "", content: "", visibility: "all", restricted_to: [] });
 
   const openCreate = () => {
