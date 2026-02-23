@@ -90,8 +90,17 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Security: `/app/test_reports/iteration_67.json` — 35 tests, all pass (security hardening)
 - Webhooks: `/app/test_reports/iteration_364.json` — 49 tests, all pass (webhook system)
 - UI Bugs: `/app/test_reports/iteration_70.json` — 7 backend + frontend tests pass (login flow fix)
+- Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
 
 ### P0 Bug Fixes (Feb 2026)
 **Bug 1 - Admin Tab Visibility:** Fixed customer login flow. AuthContext now falls back to `/auth/customer-login` when `/auth/partner-login` returns 403 "Access denied". TopNav correctly uses `{user?.is_admin && ...}` to hide Admin tab for customers.
 
 **Bug 2 - Partner Code Display:** Partner code now displays correctly in user profile. Backend `/me` endpoint resolves `partner_code` from tenant table via `tenant_id`. Profile.tsx displays `user?.partner_code` with fallback to "—".
+
+**Bug 3 - Cross-Tab Session Sync:** Added storage event listener in AuthContext to sync login/logout across browser tabs sharing the same localStorage.
+
+### Security Hardening - IDOR Prevention (Feb 2026)
+- **orders.py:** Added tenant-scope validation for `customer_id` and `subscription_id` updates
+- **subscriptions.py:** Added tenant-scope validation for `customer_id` updates, fixed webhook customer lookups
+- **bank_transactions.py:** Added tenant-scope validation for `linked_order_id`
+- All cross-tenant access attempts now return 400/404 errors as expected
