@@ -47,6 +47,9 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
     if not user.get("is_active", True):
         raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
+    # Set request-scoped audit context so all audit writes are auto-tagged with this user's tenant
+    from services.audit_service import set_audit_tenant
+    set_audit_tenant(user.get("tenant_id"))
     return user
 
 
