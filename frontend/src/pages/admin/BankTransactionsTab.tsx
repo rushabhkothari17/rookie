@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/sonner";
 import api from "@/lib/api";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
-import { Download } from "lucide-react";
+import { Download, Upload} from "lucide-react";
 import { useWebsite } from "@/contexts/WebsiteContext";
 
 const DEFAULT_SOURCES = ["manual", "bank_transfer", "stripe", "gocardless"];

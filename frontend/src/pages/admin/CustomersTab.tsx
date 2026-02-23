@@ -11,7 +11,7 @@ import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { useAuth } from "@/contexts/AuthContext";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Upload} from "lucide-react";
 
 const PARTNER_MAP_OPTIONS = [
   { value: "", label: "Not set" },

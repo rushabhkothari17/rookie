@@ -8,7 +8,7 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Upload} from "lucide-react";
 
 const STATUS_BADGE: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700",

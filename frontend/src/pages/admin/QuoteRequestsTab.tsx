@@ -9,7 +9,7 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
-import { Download } from "lucide-react";
+import { Download, Upload} from "lucide-react";
 
 const STATUS_OPTIONS = ["pending", "responded", "closed"];
 const BLANK_FORM = { product_id: "", product_name: "", name: "", email: "", company: "", phone: "", message: "", user_id: "", status: "pending" };

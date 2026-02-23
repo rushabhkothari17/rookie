@@ -8,7 +8,7 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Upload} from "lucide-react";
 
 const INITIAL_PROMO = { code: "", discount_type: "percent", discount_value: 10, applies_to: "both", applies_to_products: "all", product_ids: [] as string[], expiry_date: "", max_uses: "", one_time_code: false, enabled: true };
 

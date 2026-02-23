@@ -9,7 +9,7 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
-import { Download } from "lucide-react";
+import { Download, Upload} from "lucide-react";
 
 export function CategoriesTab() {
   const [categories, setCategories] = useState<any[]>([]);
