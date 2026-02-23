@@ -232,7 +232,6 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
     Sets HttpOnly cookie with JWT token.
     """
     tenant = await resolve_tenant(payload.partner_code)
-    customer_roles = ["customer", ""]
     # Any non-admin user is a customer
     query: Dict[str, Any] = {"email": payload.email.lower(), "tenant_id": tenant["id"]}
     user = await db.users.find_one(query, {"_id": 0})
