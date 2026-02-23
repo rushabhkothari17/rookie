@@ -124,7 +124,7 @@ All **P0 critical** and most **P1 medium** security items have been implemented 
 
 | # | Check | Risk | Status | Mitigation & Testing |
 |---|-------|------|--------|---------------------|
-| 4.1 | API keys stored as plaintext | 🟡 | ⚠️ PARTIAL | Currently stored plaintext. Risk: if DB is compromised, keys exposed. Mitigation: store as SHA-256 hash + compare on lookup. Not yet implemented. |
+| 4.1 | API keys stored as plaintext | 🟡 | ✅ PASS | **IMPLEMENTED**: `routes/admin/api_keys.py` — Raw key never stored in DB. `key_hash = SHA-256(key)` + `key_suffix` (last 8 chars for masking) stored. **Migration**: `server.py:migrate_api_key_hashes()` runs at startup to hash any legacy plaintext keys. **Lookup**: `core/tenant.py:resolve_api_key_tenant` hashes incoming key, queries by `key_hash`. Falls back to plaintext for pre-migration legacy keys only. **Test**: `test_api_key_hash` — `key` field not in DB doc; `key_hash` is SHA-256(raw_key); list endpoint returns only `key_masked`. |
 | 4.2 | Only one active API key per tenant | 🟢 | ✅ PASS | `routes/admin/api_keys.py:create_api_key` — deactivates all existing active keys before creating new one. |
 | 4.3 | Deactivated keys cannot authenticate | 🔴 | ✅ PASS | `core/tenant.py:resolve_api_key_tenant` — query includes `"is_active": True`. |
 | 4.4 | Revoked keys permanently unusable | 🟡 | ✅ PASS | Revoke sets `is_active=False`. No reactivation endpoint. |
@@ -294,7 +294,7 @@ All **P0 critical** and most **P1 medium** security items have been implemented 
 | 13.5 | Cookies use Secure/HttpOnly flags | 🟡 | ⚠️ PARTIAL | JWT in localStorage, not cookies. Known trade-off. XSS risk mitigated by HTML sanitization. |
 | 13.6 | X-Content-Type-Options: nosniff | 🟢 | ✅ PASS | **IMPLEMENTED**: `SecurityHeadersMiddleware`. **Test**: All responses have `X-Content-Type-Options: nosniff`. |
 | 13.7 | X-Frame-Options: DENY | 🟡 | ✅ PASS | **IMPLEMENTED**: `SecurityHeadersMiddleware`. All responses have `X-Frame-Options: DENY`. |
-| 13.8 | Content-Security-Policy header | 🟡 | ⚠️ PARTIAL | Not yet implemented. Recommend adding to security headers middleware for stricter XSS protection. |
+| 13.8 | Content-Security-Policy header | 🟡 | ✅ PASS | **IMPLEMENTED**: `middleware/security_headers.py` — `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'` on every response. Strict CSP prevents any inline/external resource loading from API responses. **Test**: All 33 P1 tests check CSP header present with all 4 directives. |
 | 13.9 | Referrer-Policy header | 🟢 | ✅ PASS | **IMPLEMENTED**: `Referrer-Policy: strict-origin-when-cross-origin`. |
 | 13.10 | TLS ≥ 1.2 | 🟡 | ℹ️ N/A | Infrastructure level. |
 
@@ -329,7 +329,7 @@ All **P0 critical** and most **P1 medium** security items have been implemented 
 | 15.6 | User role changes logged | 🔴 | ✅ PASS | `routes/admin/users.py:admin_update_user` — logs `admin_user_updated` with changes dict. |
 | 15.7 | Failed authentication attempts logged | 🟡 | ✅ PASS | **IMPLEMENTED**: `routes/auth.py:_authenticate` — logs `LOGIN_FAILED` on wrong password. |
 | 15.8 | Bulk imports logged | 🟡 | ✅ PASS | `routes/admin/imports.py` — logs created/updated counts per import operation. |
-| 15.9 | Exports logged | 🟡 | ⚠️ PARTIAL | Export endpoints do not currently write audit logs. Low risk (read-only). |
+| 15.9 | Exports logged | 🟡 | ✅ PASS | **IMPLEMENTED**: `routes/admin/exports.py` — `create_audit_log(action="data_exported")` called after orders and customers export. **Test**: `test_export_audit_log` — audit entry created after export. |
 | 15.10 | Monitoring/alerting on unusual patterns | 🟡 | ❌ NOT IMPLEMENTED | External monitoring tool required (Datadog, Sentry, etc.). |
 | 15.11 | Logs stored separately from application | 🟢 | ⚠️ PARTIAL | Currently in same MongoDB. Consider shipping to external log aggregation. |
 | 15.12 | Log retention policy defined | 🟢 | ❌ NOT IMPLEMENTED | Future sprint. |
