@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
 import { OrdersTab } from "./admin/OrdersTab";
