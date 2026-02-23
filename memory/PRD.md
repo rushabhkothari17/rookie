@@ -116,6 +116,18 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 - Login page: Two tabs — "Partner Login" and "Customer Login" (both require partner_code)
 - `AuthContext`: `login()` now accepts `partner_code` + `login_type` params
 
+### Session — Iteration 62 (Feb 2026) — Comprehensive Tenant Data Isolation
+**Critical Security Fixes:**
+- Articles, article_categories, article_templates, article_email_templates: all admin endpoints now use `get_tenant_admin`; public endpoints (list, get by id, validate scope, download) scoped by user JWT tenant_id; write endpoints (update, delete) use tenant-scoped lookups (404 on cross-tenant access)
+- `article_templates._seed_defaults(tid)` now seeds per-tenant; `EmailService.ensure_seeded(db, tid)` per-tenant
+- `exports.py`: All 9 export endpoints (orders, customers, subscriptions, catalog, articles, categories, terms, override-codes, promo-codes) now apply `get_tenant_filter`
+- `email_templates.py`: list/update/logs all scoped by tenant
+- `bank_transactions.py`: export + delete endpoints scoped
+- `promo_codes.py`: update/delete now 404 on cross-tenant access
+- `subscriptions.py`: update/cancel lookups scoped; manual creation now sets `tenant_id`
+- `quote_requests.py`: customer-facing request-quote now sets `tenant_id` from user JWT; admin create sets `tenant_id` from admin context
+- `store.py`: scope_request orders now set `tenant_id` from user JWT
+
 ### Session — Iteration 61 (Feb 2026)
 **Fixes & Enhancements:**
 - **P0 Brand Color Bug FIXED**: `GET /admin/website-settings` was only reading from `website_settings` collection. Colors are stored in `app_settings`. Fixed by merging both collections (app_settings → website_settings override) so the admin form now shows pre-populated brand colors.
