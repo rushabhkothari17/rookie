@@ -92,3 +92,29 @@ async def get_tenant_ctx(
             view_as = x_view_as_tenant
     return TenantContext(admin=admin, view_as=view_as)
 
+
+async def get_tenant_admin(
+    admin: Dict[str, Any] = Depends(require_admin),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+) -> Dict[str, Any]:
+    """Drop-in replacement for require_admin that injects _view_as for platform admins.
+    All get_tenant_filter / tenant_id_of calls will automatically respect it.
+    """
+    if x_view_as_tenant and is_platform_admin(admin):
+        t = await db.tenants.find_one({"id": x_view_as_tenant}, {"_id": 0})
+        if t:
+            return {**admin, "_view_as": x_view_as_tenant}
+    return admin
+
+
+async def get_tenant_super_admin(
+    admin: Dict[str, Any] = Depends(require_super_admin),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+) -> Dict[str, Any]:
+    """Same as get_tenant_admin but requires super_admin or platform_admin role."""
+    if x_view_as_tenant and is_platform_admin(admin):
+        t = await db.tenants.find_one({"id": x_view_as_tenant}, {"_id": 0})
+        if t:
+            return {**admin, "_view_as": x_view_as_tenant}
+    return admin
+
