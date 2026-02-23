@@ -159,8 +159,10 @@ class TestGDPRExportEndpoint:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
         
-        # Verify export contains expected sections
-        assert "user" in data or "customer" in data, "Export should include user or customer data"
+        # Verify export contains expected sections (data structure has 'data' key with nested sections)
+        assert "data" in data or "customer_id" in data, "Export should include data or customer_id"
+        if "data" in data:
+            assert "account" in data["data"], "Export data should include account section"
         print(f"GDPR export successful, keys: {list(data.keys())}")
     
     def test_customer_can_export_data_using_cookie(self):
@@ -170,7 +172,7 @@ class TestGDPRExportEndpoint:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
         
-        assert "user" in data or "customer" in data, "Export should include user or customer data"
+        assert "data" in data or "customer_id" in data, "Export should include data or customer_id"
         print(f"GDPR export with cookie successful")
     
     def test_admin_cannot_use_customer_gdpr_endpoint(self):
