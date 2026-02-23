@@ -100,31 +100,25 @@ function SettingField({ label, value, onSave, isSecret, description, testId }: {
 
 // ─── ProviderSection (tile + inline slide) ───────────────────────────────────
 
-function ProviderSection({ settings }: { settings: Record<string, SettingItem> }) {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [toggling, setToggling] = useState(false);
+interface ProviderSectionProps {
+  settings: Record<string, SettingItem>;
+  isActive: boolean;
+  isValidated: boolean;
+  onSetActive: () => void;
+  onDeactivate: () => void;
+  settingActive: boolean;
+  onRefresh: () => void;
+}
+
+function ProviderSection({ settings, isActive, isValidated, onSetActive, onDeactivate, settingActive, onRefresh }: ProviderSectionProps) {
   const [open, setOpen] = useState(false);
   const [validating, setValidating] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [validationResult, setValidationResult] = useState<{success: boolean; message: string} | null>(null);
-
-  useEffect(() => {
-    const s = settings["email_provider_enabled"];
-    setIsEnabled(s?.value_json === true || s?.value_json === "true");
-  }, [settings]);
 
   const saveSetting = async (key: string, value: any) => {
     await api.put(`/admin/settings/key/${key}`, { value });
     toast.success("Saved");
-  };
-
-  const toggleProvider = async (enabled: boolean) => {
-    setToggling(true);
-    try {
-      await api.put("/admin/settings/key/email_provider_enabled", { value: enabled });
-      setIsEnabled(enabled);
-      toast.success(enabled ? "Email provider enabled" : "Email provider disabled (mocked mode)");
-    } catch { toast.error("Failed to update"); }
-    finally { setToggling(false); }
   };
 
   const validateResend = async () => {
@@ -135,6 +129,7 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
       setValidationResult(res.data);
       if (res.data.success) {
         toast.success("Resend connection validated");
+        onRefresh();
       } else {
         toast.error(res.data.message || "Validation failed");
       }
@@ -143,6 +138,15 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
       toast.error("Validation failed");
     } finally {
       setValidating(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await validateResend();
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -158,22 +162,25 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
     <>
       {/* Tile */}
       <div
-        className="rounded-xl border border-slate-200 bg-white p-4 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors"
+        className={`rounded-xl border p-4 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors ${isActive ? "border-emerald-300 bg-emerald-50/50" : "border-slate-200 bg-white"}`}
         data-testid="resend-provider-tile"
         onClick={() => setOpen(true)}
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-slate-100">
-            <Mail size={15} className="text-slate-500" />
+          <div className={`p-2 rounded-lg ${isActive ? "bg-emerald-100" : "bg-slate-100"}`}>
+            <Mail size={15} className={isActive ? "text-emerald-600" : "text-slate-500"} />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-800">Resend</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-slate-800">Resend</p>
+              {isActive && <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">ACTIVE</span>}
+            </div>
             <p className="text-xs text-slate-400 mt-0.5">Transactional email via resend.com</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`text-xs px-2 py-0.5 rounded-full ${isEnabled ? "text-emerald-700 bg-emerald-50" : "text-slate-500 bg-slate-100"}`}>
-            {isEnabled ? "Live" : "Mocked"}
+          <span className={`text-xs px-2 py-0.5 rounded-full ${isValidated ? "text-emerald-700 bg-emerald-50" : "text-slate-500 bg-slate-100"}`}>
+            {isValidated ? "Connected" : "Not Connected"}
           </span>
           <Pencil size={14} className="text-slate-400" />
         </div>
@@ -194,37 +201,75 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Setup Guide */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <Info size={14} className="text-blue-500 mt-0.5 shrink-0" />
+                  <div className="text-xs text-blue-700">
+                    <p className="font-medium mb-1">Setup Guide</p>
+                    <ol className="list-decimal list-inside space-y-0.5 text-blue-600">
+                      <li>Go to <a href="https://resend.com/api-keys" target="_blank" rel="noopener" className="underline inline-flex items-center gap-0.5">resend.com/api-keys <ExternalLink size={10} /></a></li>
+                      <li>Create a new API key with sending permissions</li>
+                      <li>Copy and paste the key below</li>
+                      <li>Add a verified domain or use onboarding@resend.dev for testing</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              {/* Activation Status */}
               <div className="flex items-center justify-between py-3 border-b border-slate-100">
                 <div>
-                  <p className="text-sm font-medium text-slate-700">Email sending</p>
-                  <p className="text-xs text-slate-400">{isEnabled ? "Live — emails are sent" : "Mocked — emails stored in outbox only"}</p>
+                  <p className="text-sm font-medium text-slate-700">Provider Status</p>
+                  <p className="text-xs text-slate-400">{isActive ? "Active — emails sent via Resend" : isValidated ? "Connected but not active" : "Not configured"}</p>
                 </div>
-                <button role="switch" aria-checked={isEnabled} onClick={() => toggleProvider(!isEnabled)}
-                  disabled={toggling} data-testid="toggle-email-provider"
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:opacity-50 ${isEnabled ? "bg-emerald-500" : "bg-slate-200"}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${isEnabled ? "translate-x-4" : "translate-x-0"}`} />
-                </button>
+                {isValidated && (
+                  <Button 
+                    size="sm" 
+                    variant={isActive ? "destructive" : "default"}
+                    onClick={(e) => { e.stopPropagation(); isActive ? onDeactivate() : onSetActive(); }}
+                    disabled={settingActive}
+                    className="text-xs"
+                    data-testid="toggle-resend-active"
+                  >
+                    <Power size={12} className="mr-1" />
+                    {settingActive ? "..." : isActive ? "Deactivate" : "Activate"}
+                  </Button>
+                )}
               </div>
+
               {fields.map(f => (
                 <SettingField key={f.key} label={f.label} isSecret={f.isSecret} description={f.description}
                   value={String(settings[f.key]?.value_json ?? "")}
                   onSave={v => saveSetting(f.key, v)} testId={`email-${f.key}`} />
               ))}
               
-              {/* Validate Button */}
-              <div className="pt-4 border-t border-slate-100">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={validateResend} 
-                  disabled={validating}
-                  data-testid="validate-resend-btn"
-                  className="w-full"
-                >
-                  {validating ? "Validating..." : "Validate Connection"}
-                </Button>
+              {/* Validate & Refresh Buttons */}
+              <div className="pt-4 border-t border-slate-100 space-y-2">
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={validateResend} 
+                    disabled={validating}
+                    data-testid="validate-resend-btn"
+                    className="flex-1"
+                  >
+                    {validating ? "Validating..." : "Validate Connection"}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleRefresh} 
+                    disabled={refreshing}
+                    data-testid="refresh-resend-btn"
+                    title="Refresh connection status"
+                  >
+                    <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+                  </Button>
+                </div>
                 {validationResult && (
-                  <div className={`mt-2 flex items-start gap-2 rounded-lg px-3 py-2 ${validationResult.success ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
+                  <div className={`flex items-start gap-2 rounded-lg px-3 py-2 ${validationResult.success ? "bg-emerald-50 border border-emerald-200" : "bg-red-50 border border-red-200"}`}>
                     {validationResult.success ? (
                       <CheckCircle2 size={14} className="text-emerald-500 mt-0.5 shrink-0" />
                     ) : (
@@ -237,10 +282,10 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
                 )}
               </div>
               
-              {!isEnabled && (
+              {!isValidated && (
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                   <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
-                  <p className="text-xs text-amber-700">Email provider is off — emails are stored in the outbox (not sent). Enable the toggle above to send live emails.</p>
+                  <p className="text-xs text-amber-700">Configure and validate your API key to start sending emails.</p>
                 </div>
               )}
             </div>
