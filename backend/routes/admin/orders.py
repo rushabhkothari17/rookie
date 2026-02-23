@@ -166,15 +166,20 @@ async def create_manual_order(
 
     # Webhook: order.created
     customer = await db.customers.find_one({"id": order_doc["customer_id"]}, {"_id": 0}) or {}
+    # email may live on users record; look it up as fallback
+    _cust_email = customer.get("email", "")
+    if not _cust_email and customer.get("user_id"):
+        _user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0, "email": 1}) or {}
+        _cust_email = _user.get("email", "")
     await dispatch_event("order.created", {
         "id": order_id,
         "order_number": order_doc["order_number"],
         "status": order_doc["status"],
         "total": total,
         "currency": order_doc["currency"],
-        "customer_email": customer.get("email", ""),
+        "customer_email": _cust_email,
         "customer_name": customer.get("full_name", ""),
-        "product_names": product.get("name", payload.product_id),
+        "product_names": product.get("name", payload.product_id) if product else payload.product_id,
         "items_count": 1,
         "payment_method": "offline",
         "created_at": order_doc["created_at"],
