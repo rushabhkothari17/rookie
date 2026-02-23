@@ -450,10 +450,14 @@ export function ArticlesTab() {
       <div className="flex gap-1 border-b border-slate-200">
         <button onClick={() => setSubTab("articles")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${subTab === "articles" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-articles">Articles</button>
         <button onClick={() => setSubTab("templates")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "templates" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-templates"><LayoutTemplate size={13} /> Templates</button>
+        <button onClick={() => setSubTab("email-templates")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "email-templates" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-email-templates"><Mail size={13} /> Email Templates</button>
       </div>
 
       {/* Templates sub-tab */}
       {subTab === "templates" && <ArticleTemplatesTab />}
+
+      {/* Email Templates sub-tab */}
+      {subTab === "email-templates" && <ArticleEmailTemplatesTab />}
 
       {/* Articles sub-tab */}
       {subTab === "articles" && (<>
