@@ -175,7 +175,14 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
-### Phase 8 — Admin Panel Reorganization + P0 Bug Fix (Feb 2026)
+### Phase 9 — Major Admin Panel Restructure + Articles Hero Fix + Footer Expansion (Feb 2026)
+- **Articles page hero**: Now matches Store page style exactly (dark rounded-3xl card, glow effects, red dash separator, identical layout and typography).
+- **Auth & Pages mega-section**: Replaced separate auth/checkout/errors/pages sidebar items with a single consolidated tile-grid section. Groups: Authentication (Login, Sign Up+Form, Verify Email), App Pages (Portal, Profile, 404, GoCardless), Checkout Flow (toggles + builder + success pages), Messages (checkout errors, form responses). Each tile opens a SlideOver.
+- **Forms section simplified**: Only Quote Request + Scope Request forms remain (Sign Up form moved to Auth & Pages → Sign Up tile).
+- **Footer & Nav expanded**: Added About Us section (title + text), customizable section titles for nav/contact/social, social media links (Twitter/X, LinkedIn, Facebook, Instagram, YouTube).
+- **System Config**: `override_code_expiry_hours` now appears in dedicated "Override Codes" sub-section, separated from Operations.
+- **Backend**: New footer fields added to `WebsiteSettingsUpdate` model and `DEFAULT_WEBSITE_SETTINGS`.
+- Tested at 100% pass rate (14/14 tests via testing_agent_v4_fork, iteration_48.json).
 - **P0 Fix**: Email Templates section was not rendering (EmailSection component was imported but never placed in JSX). Fixed.
 - **Branding & Hero merged**: Store Hero Banner and Articles Hero Banner fields moved into the Branding section. Removed separate "Store Hero" sidebar entry.
 - **Forms section — tile layout**: Each form (Quote, Scope, Signup) now shown as a card tile with field count badge. Edit opens a SlideOver panel with form labels + FormSchemaBuilder.
