@@ -213,6 +213,7 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
         "is_admin": user.get("is_admin", False),
         "token_version": user.get("token_version", 0),
     })
+    refresh_token = create_refresh_token(user["id"])
     await AuditService.log(
         action="USER_LOGIN",
         description=f"User login: {user['email']}",
@@ -223,7 +224,7 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
         source="api",
         meta_json={"role": role, "tenant_id": user.get("tenant_id")},
     )
-    return {"token": token, "role": role, "tenant_id": user.get("tenant_id")}
+    return {"token": token, "refresh_token": refresh_token, "role": role, "tenant_id": user.get("tenant_id")}
 
 
 # ---------------------------------------------------------------------------
