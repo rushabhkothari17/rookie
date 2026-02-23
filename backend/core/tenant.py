@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 
 from fastapi import Depends, HTTPException, Header, Request
 
-from core.security import require_admin, get_current_user
+from core.security import require_admin, require_super_admin, get_current_user
 from db.session import db
 
 DEFAULT_TENANT_ID = "automate-accounts"
