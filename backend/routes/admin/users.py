@@ -1,6 +1,7 @@
 """Admin: User management routes (super admin only)."""
 from __future__ import annotations
 
+import re as _re
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException
