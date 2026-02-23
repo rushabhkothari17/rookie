@@ -65,7 +65,11 @@ async def update_app_settings(
             del update[key]
     if not update:
         return {"message": "Nothing to update"}
-    await db.app_settings.update_one({}, {"$set": update}, upsert=True)
+    await db.app_settings.update_one(
+        {"tenant_id": tid, "key": {"$exists": False}},
+        {"$set": {**update, "tenant_id": tid}},
+        upsert=True,
+    )
     for k, v in update.items():
         await SettingsService.set(k, v, updated_by=admin.get("email", "admin"))
     await AuditService.log(
