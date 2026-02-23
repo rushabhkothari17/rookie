@@ -75,6 +75,11 @@ export default function ArticleView() {
             <ChevronLeft size={14} /> Back to Articles
           </Button>
           <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => navigate(`/admin?editArticle=${article.id}`)} data-testid="article-edit-admin-btn">
+                <Pencil size={13} /> Edit Article
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => downloadArticle("pdf")} data-testid="article-download-pdf">
               <FileText size={13} /> PDF
             </Button>
