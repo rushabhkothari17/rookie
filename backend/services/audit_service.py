@@ -76,11 +76,13 @@ class AuditService:
         before_json: Optional[Dict[str, Any]] = None,
         after_json: Optional[Dict[str, Any]] = None,
         meta_json: Optional[Dict[str, Any]] = None,
+        tenant_id: Optional[str] = None,
     ) -> None:
         """Fire-and-forget audit record insert."""
         doc = {
             "id": make_id(),
             "occurred_at": now_iso(),
+            "tenant_id": tenant_id,
             "actor_type": actor_type,
             "actor_id": actor_id,
             "actor_email": actor_email,
