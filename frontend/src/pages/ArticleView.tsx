@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function ArticleView() {
   const { articleId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin;
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
