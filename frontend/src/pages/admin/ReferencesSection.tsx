@@ -180,11 +180,9 @@ export default function ReferencesSection() {
                         <button onClick={() => startEdit(ref)} className="p-1.5 text-slate-400 hover:text-blue-600 rounded" data-testid={`edit-ref-${ref.key}`}>
                           <Pencil size={13} />
                         </button>
-                        {!ref.system && (
-                          <button onClick={() => deleteRef(ref)} className="p-1.5 text-slate-400 hover:text-red-500 rounded" data-testid={`delete-ref-${ref.key}`}>
-                            <Trash2 size={13} />
-                          </button>
-                        )}
+                        <button onClick={() => deleteRef(ref)} className="p-1.5 text-slate-400 hover:text-red-500 rounded" data-testid={`delete-ref-${ref.key}`}>
+                          <Trash2 size={13} />
+                        </button>
                       </div>
                     </td>
                   </tr>
