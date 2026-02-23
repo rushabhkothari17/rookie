@@ -273,7 +273,12 @@ async def login(payload: LoginRequest):
     user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Lockout check
+    await _check_lockout(user)
+
     if not pwd_context.verify(payload.password, user.get("password_hash", "")):
+        await _check_and_record_failed_login(user["id"])
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.get("is_verified"):
         raise HTTPException(status_code=403, detail="Email verification required")
@@ -282,12 +287,14 @@ async def login(payload: LoginRequest):
     if user.get("role") != PLATFORM_ROLE and not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Partner code required. Please use the Partner Login tab.")
 
+    await _reset_failed_login(user["id"])
     token = create_access_token({
         "sub": user["id"],
         "email": user["email"],
         "role": user.get("role", "admin"),
         "tenant_id": user.get("tenant_id"),
         "is_admin": user.get("is_admin", False),
+        "token_version": user.get("token_version", 0),
     })
     await AuditService.log(
         action="USER_LOGIN",
