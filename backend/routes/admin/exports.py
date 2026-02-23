@@ -60,7 +60,8 @@ async def export_orders_csv(
     email_filter: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if not include_deleted:
         query["deleted_at"] = {"$exists": False}
     if order_number_filter:
@@ -94,9 +95,12 @@ async def export_orders_csv(
 
 @router.get("/admin/export/customers")
 async def export_customers_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
-    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(10000)
-    addresses = await db.addresses.find({}, {"_id": 0}).to_list(10000)
+    tf = get_tenant_filter(admin)
+    customers = await db.customers.find(tf, {"_id": 0}).to_list(10000)
+    user_ids_all = [c.get("user_id") for c in customers if c.get("user_id")]
+    users = await db.users.find({"id": {"$in": user_ids_all}}, {"_id": 0, "password_hash": 0}).to_list(10000)
+    cust_ids_all = [c["id"] for c in customers]
+    addresses = await db.addresses.find({"customer_id": {"$in": cust_ids_all}}, {"_id": 0}).to_list(10000)
 
     user_map = {u["id"]: u for u in users}
     addr_map = {a["customer_id"]: a for a in addresses}
