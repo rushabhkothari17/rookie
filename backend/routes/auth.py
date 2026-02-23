@@ -273,7 +273,19 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
         source="api",
         meta_json={"tenant_id": tenant["id"]},
     )
+    _set_auth_cookie(response, token)
     return {"token": token, "role": "customer", "tenant_id": tenant["id"]}
+
+
+# ---------------------------------------------------------------------------
+# Logout (clears HttpOnly cookie)
+# ---------------------------------------------------------------------------
+
+@router.post("/auth/logout")
+async def logout(response: Response):
+    """Logout by clearing the HttpOnly authentication cookie."""
+    _clear_auth_cookie(response)
+    return {"success": True, "message": "Logged out successfully"}
 
 
 # ---------------------------------------------------------------------------
@@ -281,9 +293,10 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
 # ---------------------------------------------------------------------------
 
 @router.post("/auth/login")
-async def login(payload: LoginRequest):
+async def login(payload: LoginRequest, response: Response):
     """Legacy login endpoint. If partner_code provided, routes to tenant-scoped auth.
     Without partner_code, only platform_admin can log in.
+    Sets HttpOnly cookie with JWT token.
     """
     if payload.partner_code:
         # Route to tenant-scoped login
@@ -294,14 +307,14 @@ async def login(payload: LoginRequest):
                 email=payload.email,
                 password=payload.password,
             )
-            return await customer_login(cust_payload)
+            return await customer_login(cust_payload, response)
         else:
             partner_payload = PartnerLoginRequest(
                 partner_code=payload.partner_code,
                 email=payload.email,
                 password=payload.password,
             )
-            return await partner_login(partner_payload)
+            return await partner_login(partner_payload, response)
 
     # No partner_code: platform super admin only
     user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
