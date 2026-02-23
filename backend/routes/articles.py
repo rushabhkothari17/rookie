@@ -75,10 +75,20 @@ async def list_articles_admin(
 async def list_articles_public(
     category: Optional[str] = None,
     user: Dict[str, Any] = Depends(get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+    x_view_as_customer: Optional[str] = Header(default=None, alias="X-View-As-Customer"),
 ):
-    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
-    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
-    customer_id = customer["id"] if customer else None
+    # Platform admin can impersonate another tenant
+    if user.get("role") == "platform_admin" and x_view_as_tenant:
+        tid = x_view_as_tenant
+    else:
+        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    # Platform admin can impersonate a customer for visibility filtering
+    if user.get("role") == "platform_admin" and x_view_as_customer:
+        customer_id = x_view_as_customer
+    else:
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+        customer_id = customer["id"] if customer else None
     query: Dict[str, Any] = {"tenant_id": tid, "deleted_at": {"$exists": False}}
     if category:
         query["category"] = category
