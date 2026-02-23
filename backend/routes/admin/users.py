@@ -92,9 +92,10 @@ async def admin_create_admin_user(
 async def admin_update_user(
     user_id: str,
     payload: Dict[str, Any] = Body(...),
-    admin: Dict[str, Any] = Depends(require_super_admin),
+    admin: Dict[str, Any] = Depends(require_admin),
 ):
-    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
