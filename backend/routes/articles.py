@@ -138,8 +138,14 @@ async def get_article_logs(
 async def get_article_by_id(
     article_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    from core.tenant import is_platform_admin, DEFAULT_TENANT_ID as _DT
+    # Resolve tenant: platform admins respect X-View-As-Tenant; all others use their own tenant_id
+    if is_platform_admin(user) and x_view_as_tenant:
+        tid = x_view_as_tenant
+    else:
+        tid = user.get("tenant_id") or _DT
     article = await db.articles.find_one(
         {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
