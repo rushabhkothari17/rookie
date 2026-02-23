@@ -6,9 +6,12 @@ import { Badge } from "@/components/ui/badge";
 
 type Tenant = { id: string; name: string; code: string; status: string };
 
-// Global view-as tenant state
-let _viewAsTenantId: string | null = null;
-let _viewAsTenantName: string | null = null;
+// Global view-as tenant state — persisted across page reloads via sessionStorage
+const _SK_ID = "aa_view_as_tenant_id";
+const _SK_NAME = "aa_view_as_tenant_name";
+
+let _viewAsTenantId: string | null = sessionStorage.getItem(_SK_ID);
+let _viewAsTenantName: string | null = sessionStorage.getItem(_SK_NAME);
 let _listeners: Array<() => void> = [];
 
 export function getViewAsTenantId(): string | null {
@@ -18,6 +21,13 @@ export function getViewAsTenantId(): string | null {
 export function setViewAsTenant(id: string | null, name: string | null) {
   _viewAsTenantId = id;
   _viewAsTenantName = name;
+  if (id) {
+    sessionStorage.setItem(_SK_ID, id);
+    sessionStorage.setItem(_SK_NAME, name ?? "");
+  } else {
+    sessionStorage.removeItem(_SK_ID);
+    sessionStorage.removeItem(_SK_NAME);
+  }
   _listeners.forEach(fn => fn());
 }
 
