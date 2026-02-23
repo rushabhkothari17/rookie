@@ -33,11 +33,18 @@ async def root():
 
 async def _authenticate(email: str, password: str, tenant_id: Optional[str], expected_roles: list):
     """Verify credentials and return a JWT token. Raises HTTPException on failure."""
+    # First try exact tenant match
     query: Dict[str, Any] = {"email": email.lower()}
     if tenant_id:
         query["tenant_id"] = tenant_id
 
     user = await db.users.find_one(query, {"_id": 0})
+    # For platform_super_admin, also try null tenant_id
+    if not user and tenant_id:
+        user = await db.users.find_one({"email": email.lower(), "tenant_id": None}, {"_id": 0})
+        # Only accept if they are platform super admin
+        if user and user.get("role") != PLATFORM_ROLE:
+            user = None
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not pwd_context.verify(password, user.get("password_hash", "")):
