@@ -108,24 +108,43 @@ async def _reset_failed_login(user_id: str) -> None:
     )
 
 
-def _set_auth_cookie(response: Response, token: str):
-    """Set HttpOnly authentication cookie."""
+def _set_auth_cookie(response: Response, token: str, refresh_token: Optional[str] = None):
+    """Set HttpOnly authentication cookies for access and refresh tokens."""
+    # Access token cookie (short-lived)
     response.set_cookie(
         key="aa_access_token",
         value=token,
         httponly=True,
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
-        max_age=TOKEN_EXPIRY_HOURS * 3600,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/"
     )
+    # Refresh token cookie (long-lived)
+    if refresh_token:
+        response.set_cookie(
+            key="aa_refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=COOKIE_SECURE,
+            samesite=COOKIE_SAMESITE,
+            max_age=30 * 24 * 3600,  # 30 days
+            path="/api/auth"  # Only sent to auth endpoints
+        )
 
 
 def _clear_auth_cookie(response: Response):
-    """Clear authentication cookie on logout."""
+    """Clear authentication cookies on logout."""
     response.delete_cookie(
         key="aa_access_token",
         path="/",
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE
+    )
+    response.delete_cookie(
+        key="aa_refresh_token",
+        path="/api/auth",
         httponly=True,
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE
