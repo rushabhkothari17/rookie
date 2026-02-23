@@ -561,23 +561,21 @@ class TestDispatchEvent:
     @pytest.fixture(scope="class")
     def created_order_and_delivery(self, admin_token, webhook_for_dispatch):
         """Create a manual order (triggering order.created) and return webhook + delivery info."""
-        # Get a customer to attach to the order
-        customers_resp = requests.get(
-            f"{BASE_URL}/api/admin/customers?limit=1",
-            headers=auth_headers(admin_token),
-        )
-        customer_id = None
-        if customers_resp.status_code == 200:
-            customers = customers_resp.json().get("customers", [])
-            if customers:
-                customer_id = customers[0]["id"]
+        # Ensure test customer exists (register if not)
+        test_email = "TEST_webhook_customer@example.com"
+        requests.post(f"{BASE_URL}/api/auth/register", json={
+            "email": test_email,
+            "password": "TestPass123!",
+            "full_name": "Test Webhook Customer",
+            "partner_code": "automate-accounts",
+            "address": {"line1": "123 Test St", "city": "Test City", "region": "CA", "postal": "90210", "country": "US"},
+        })
 
         order_payload = {
-            "customer_id": customer_id or "test_customer",
-            "product_name": "TEST Webhook Dispatch Product",
-            "amount": 9999,
+            "customer_email": test_email,
+            "product_id": "prod_zoho_books_express",
+            "subtotal": 99.99,
             "status": "pending",
-            "notes": "TEST webhook dispatch order",
         }
         order_resp = requests.post(
             f"{BASE_URL}/api/admin/orders/manual",
@@ -586,7 +584,7 @@ class TestDispatchEvent:
         )
         assert order_resp.status_code in (200, 201), f"Create order failed: {order_resp.text}"
 
-        # Wait for async delivery to complete
+        # Wait for async delivery to complete (fire-and-forget with asyncio.create_task)
         time.sleep(5)
 
         wh_id = webhook_for_dispatch["id"]
