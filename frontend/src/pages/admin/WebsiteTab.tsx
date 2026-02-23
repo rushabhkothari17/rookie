@@ -10,6 +10,7 @@ import ReferencesSection from "./ReferencesSection";
 import EmailSection from "./EmailSection";
 import CheckoutSectionsBuilder from "@/components/admin/CheckoutSectionsBuilder";
 import SlideOver from "@/components/admin/SlideOver";
+import { CustomDomainsSection } from "@/components/admin/CustomDomainsSection";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
