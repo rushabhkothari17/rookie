@@ -168,6 +168,109 @@ async def list_tenant_customers(tenant_id: str, admin: Dict[str, Any] = Depends(
     return {"customers": result}
 
 
+# ---------------------------------------------------------------------------
+# Custom Domain Management
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel
+from typing import List
+
+class CustomDomainRequest(BaseModel):
+    domains: List[str]
+
+
+@router.get("/admin/custom-domains")
+async def get_custom_domains(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Get custom domains configured for the current tenant."""
+    tid = tenant_id_of(admin)
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "custom_domains": 1, "custom_domain": 1})
+    if not tenant:
+        return {"domains": []}
+    
+    # Support both array (new) and single (legacy) formats
+    domains = tenant.get("custom_domains", [])
+    if not domains and tenant.get("custom_domain"):
+        domains = [tenant["custom_domain"]]
+    
+    return {"domains": domains}
+
+
+@router.put("/admin/custom-domains")
+async def update_custom_domains(
+    payload: CustomDomainRequest,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """
+    Update custom domains for the current tenant.
+    
+    Domains should be fully qualified (e.g., billing.company.com).
+    Partners must configure DNS (CNAME) to point to the platform.
+    """
+    import re
+    
+    tid = tenant_id_of(admin)
+    
+    # Validate domains
+    domain_pattern = re.compile(r'^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$')
+    validated_domains = []
+    
+    for domain in payload.domains:
+        domain = domain.lower().strip()
+        if not domain:
+            continue
+        if not domain_pattern.match(domain):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid domain format: {domain}. Use format like 'billing.company.com'"
+            )
+        
+        # Check if domain is already used by another tenant
+        existing = await db.tenants.find_one({
+            "custom_domains": domain,
+            "id": {"$ne": tid}
+        })
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Domain '{domain}' is already configured for another organization"
+            )
+        
+        validated_domains.append(domain)
+    
+    # Update tenant
+    await db.tenants.update_one(
+        {"id": tid},
+        {"$set": {"custom_domains": validated_domains, "updated_at": now_iso()}}
+    )
+    
+    return {
+        "message": "Custom domains updated successfully",
+        "domains": validated_domains,
+        "setup_instructions": {
+            "step1": "Add a CNAME record for each domain pointing to your platform URL",
+            "step2": "Wait for DNS propagation (usually 5-30 minutes)",
+            "step3": "SSL certificates will be provisioned automatically",
+            "step4": "Users can now access your portal at the custom domain without partner code"
+        }
+    }
+
+
+@router.delete("/admin/custom-domains/{domain}")
+async def remove_custom_domain(domain: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Remove a specific custom domain."""
+    tid = tenant_id_of(admin)
+    
+    result = await db.tenants.update_one(
+        {"id": tid},
+        {"$pull": {"custom_domains": domain.lower()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Domain not found")
+    
+    return {"message": f"Domain '{domain}' removed successfully"}
+
+
 @router.get("/admin/setup-checklist")
 async def get_setup_checklist(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Return setup checklist completion status for the current tenant."""
