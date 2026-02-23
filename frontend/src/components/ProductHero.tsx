@@ -6,7 +6,7 @@ export default function ProductHero({ product }: { product: any }) {
   return (
     <div data-testid="product-hero">
       {/* Dark hero banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-[#0f172a] px-8 py-12 md:px-14 md:py-16">
+      <div className="relative overflow-hidden rounded-3xl px-8 py-12 md:px-14 md:py-16" style={{ backgroundColor: "var(--aa-primary)" }}>
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
         <div className="pointer-events-none absolute -bottom-16 left-12 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
 
