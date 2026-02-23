@@ -14,7 +14,7 @@ import { ArticleEmailTemplatesTab } from "./ArticleEmailTemplatesTab";
 import { ArticleCategoriesTab } from "./ArticleCategoriesTab";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
-const ARTICLE_CATEGORIES = [
+const HARDCODED_CATEGORIES = [
   "Scope - Draft",
   "Scope - Final Lost",
   "Scope - Final Won",
