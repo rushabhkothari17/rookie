@@ -55,6 +55,15 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ## What's Been Implemented
 
+### Session — Iteration 52 (Feb 2026)
+- **GoCardless Callback → Payments**: GoCardless callback page fields moved from "Checkout Success" slide-over to a dedicated "GoCardless Callback Page" tile in the Payments section. Only visible/relevant when configuring GoCardless.
+- **Admin Sidebar Dark Style**: `TAB_CLASS` updated to `bg-slate-900 text-white` for active items, matching the Store homepage sidebar styling.
+- **Unified References**: `ZohoSystemLinksTable` component removed. Zoho links seeded as regular `website_references` documents (deletable, no system flag) via `_seed_zoho_refs()` on first list call. All references shown in one unified table.
+- **Customers Pagination**: `PER_PAGE` changed from 20 to 10. Pagination now appears when > 10 customers.
+- **Article Templates System**: New `ArticleTemplatesTab.tsx` + `GET/POST/PUT/DELETE /api/article-templates`. 4 default templates seeded (Blog Post, Guide/How-To, Scope of Work, SOP). WYSIWYG Tiptap editor for template creation/editing. "Use Template" picker in article create/edit dialog.
+- **Article Download (PDF/DOCX)**: `GET /api/articles/{id}/download?format=pdf|docx`. Backend uses `reportlab` (PDF) + `python-docx` (DOCX) with custom HTML parser. Download buttons per article row in admin + PDF/DOCX buttons on customer ArticleView page.
+- **Testing**: 100% pass rate (iteration_52.json) — 12 frontend features + 20 backend tests.
+
 ### Session — Iteration 51 (Feb 2026)
 - **P0 Fixed**: Frontend build error in ReferencesSection.tsx resolved — app compiles cleanly.
 - **Zoho System Links in References**: New `ZohoSystemLinksTable` component in WebsiteTab renders 5 Zoho system links (editable) above the custom references table. Uses structured settings API (`/admin/settings/structured`, category "Zoho").
