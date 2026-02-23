@@ -1,86 +1,93 @@
 <analysis>**original_problem_statement:**
-The user initially requested fixes for two UI bugs: hiding the Admin tab from non-admin users and ensuring the  displays correctly. After those were resolved, the user requested a full security sweep, which uncovered and led to the fixing of several critical cross-tenant vulnerabilities.
+The user has requested a series of new features and improvements to be implemented in phases.
 
-Most recently, the user made a large, multi-part request for several new features and security enhancements:
-1.  **Email Provider Logic:** Refactor so only one email provider (Resend, Zoho Mail) can be active. Show Connected / Not Connected status. Disable email templates if no provider is active. Send emails only via the active provider.
-2.  **Zoho Integrations:** Implement Zoho Mail and Zoho CRM integrations. For CRM, create a new CRM tab where users can map webapp modules/fields to Zoho CRM modules/fields.
-3.  **Integration Enhancements:** Add Refresh connection buttons for all integrations (Stripe, GoCardless, Resend, Zoho). Add descriptive text explaining each integration and where to find API keys. Structure the CRM tab with a Zoho CRM tile to accommodate future CRM integrations.
-4.  **Security Enhancement:** Migrate from  JWT to  cookies.
-5.  **GDPR Compliance:** Implement Export my data and Delete my account features. The UI for this should be buried deep in the user profile to not be immediately obvious.
-6.  **Test Support:** Generate a comprehensive CSV of test cases covering all user roles and entities. Create a download endpoint for this file.
-7.  **Data Seeding:** Populate the Tenant B organization with more data across all entities for thorough testing.
+**Phase 1 (current focus):**
+1.  **Refunds:** Implement a feature to record refunds on orders in the admin panel, with a button to trigger the refund via Stripe or GoCardless.
+2.  **Terms of Service:**
+    *   Include the ToS text (which the customer agrees to during checkout) in the API response for orders and subscriptions.
+    *   Generate a PDF of the ToS and attach it to the order confirmation email by default.
+3.  **Custom Subdomains:** Allow partners to configure a custom subdomain via the admin UI. If a custom subdomain is used, the  should not be required for login.
+4.  **Zoho Books Integration:** Create a new Finance tab in the admin panel, next to the CRM tab. Set up Zoho Books integration similar to the Zoho CRM implementation, and include a Quickbooks as coming soon placeholder.
+5.  **Webhook Dashboard Improvements:** Enhance the existing webhook delivery dashboard.
+6.  **Subscription N+1 Optimization:** Optimize the subscription list query to prevent N+1 issues.
+
+**Phase 2 (upcoming):**
+1.  **Zoho OAuth Flow:** Implement the actual OAuth flow for Zoho CRM and Zoho Books.
+2.  **Guides & Tooltips:** Add contextual guides, tooltips, and help links throughout the admin pages to improve usability.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a multi-tenant SaaS platform with a FastAPI backend and React frontend. The initial UI bugs and several critical security vulnerabilities (IDORs, cross-tenant data leaks) have been fixed.
-
-The agent has begun implementing the user's large, multi-part request. Backend routes for Zoho integrations, GDPR compliance, and HttpOnly cookies have been created. The core authentication logic on the backend (, ) has been refactored to set and read HttpOnly cookies. The frontend (, ) has been updated to support cookie-based authentication. UI components for the new CRM tab and refactored email settings have been created. A comprehensive test case CSV has been generated, and Tenant B has been seeded with data. However, these recent, significant changes are largely untested.
+The application is a multi-tenant SaaS platform with a FastAPI backend, React frontend, and MongoDB. It features HttpOnly cookie-based authentication, user/partner roles, and integrations with Stripe, GoCardless, Resend, and stubs for Zoho CRM. The agent has just implemented the backend and frontend code for several major new features from Phase 1: order refunds, custom subdomain management, and a new Finance tab with a Zoho Books integration stub. This new code is extensive and completely untested.
 
 **Last working item**:
-    - Last item agent was working: The agent was in the middle of a massive feature implementation and refactoring effort. It had just completed a large batch of backend code changes, including:
-        1.  Refactoring authentication to use HttpOnly cookies.
-        2.  Creating new API routes for Zoho, GDPR, and integration management (, , etc.).
-        3.  Adding refresh and validate endpoints for various integrations.
-        4.  Creating a download endpoint for a test case file.
-        The agent had also modified frontend files to support these changes but had not yet tested the application's stability or functionality after this major overhaul. The last action was fixing linting errors in the modified backend files.
+    - Last item agent was working: The agent was creating the frontend UI for the new features. The last action was adding the state management and dialog components for the new Refund feature to the  file.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? both. The application has undergone major, untested changes to its core authentication mechanism. A full testing cycle is critical.
-        1. **Backend First:** Use  to test the login/logout endpoints to verify HttpOnly cookies are being set and cleared correctly. Test the new integration and GDPR endpoints.
-        2. **Frontend UI:** Use the  to visually verify the new UI for the CRM tab, the refactored Email section, and the collapsible GDPR section in the user profile.
-        3. **Full Regression:** Use  for a comprehensive regression test to ensure the HttpOnly cookie migration and other changes haven't broken existing functionality across different user roles.
+    - Which testing method agent to use? both. The significant backend and frontend additions require thorough testing.
+        1. **Backend API Testing:** Use  to test the new endpoints for refunds (), custom domain management (), and the new custom domain login ().
+        2. **Frontend UI Testing:** Use the  to visually verify the new UI components: the Finance tab, the Custom Domains section in the Website Content tab, and the Refund button and dialog in the Orders tab.
+        3. **Full Regression Testing:** Use  for a comprehensive regression test to ensure these major additions haven't broken existing functionality.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - **Issue 1: Application stability after major refactoring (P0)**
-     - **Attempted fixes:** The agent has written a significant amount of new code for HttpOnly cookies and new features but has not yet tested if the application runs correctly.
+  - **Issue 1: Application is in an untested state after major feature additions (P0)**
+     - **Attempted fixes:** A large amount of code for refunds, custom domains, and the finance tab has been written but not tested.
      - **Next debug checklist:**
-        1. Restart backend and frontend services and check supervisor logs for any startup errors.
-        2. Perform a  test on the login endpoint (e.g., ) with the  flag to confirm a  header is returned and the token is absent from the JSON body.
-        3. Perform a  test on an authenticated endpoint (e.g., ) using the session cookie to ensure the new auth middleware works.
-        4. If any of the above fail, review the changes in , , and .
-     - **Why fix this issue and what will be achieved with the fix?** The application is likely in a broken state due to the fundamental changes in the authentication flow. Fixing this is the highest priority to make the app usable and to continue development.
-     - **Status:** BLOCKED (until testing and stabilization are complete)
+        1.  Restart the backend and frontend services (backend: stopped
+frontend: ERROR (not running)
+backend: started
+frontend: ERROR (already started)) and check logs for startup errors (==> /var/log/supervisor/backend.err.log <==
+INFO:     Stopping reloader process [48]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [212] using WatchFiles
+INFO:     Started server process [218]
+INFO:     Waiting for application startup.
+WARNING:root:⚠️  ADMIN_PASSWORD is a known default — MUST be changed before production.
+
+==> /var/log/supervisor/backend.out.log <==).
+        2.  Perform  tests on the new backend endpoints to verify they are functional and correctly secured.
+        3.  Use the  to navigate to the Admin panel and verify the new UI components (, , Refund button) are present and don't crash the app.
+        4.  If tests fail, review the recently created/modified files: , , , , , , , .
+     - **Why fix this issue and what will be achieved with the fix?** This is critical to ensure the application is stable and the newly developed features are working correctly before moving on.
+     - **Status:** BLOCKED
      - **Is recurring issue?** N
      - **Should Test frontend/backend/both after fix?** Both
      - **Blocked on other issue:** None
 
 **In progress Task List**:
-  - **Task 1: Complete and Verify Multi-Part Feature Implementation (P0)**
-     - **Where to resume:** The immediate priority is to test and stabilize the application after the recent massive code changes. Once stable, the agent must continue implementing the remaining parts of the user's request.
-     - **What will be achieved with this?** This will bring all of the user's latest feature requests (HttpOnly cookies, Zoho integrations, GDPR UI, integration enhancements) to a functionally complete and verified state.
+  - **Task 1: Complete and Verify Phase 1 Features (P0)**
+     - **Where to resume:** Begin by testing the recently implemented features (Refunds, Custom Domains, Finance Tab) to ensure the application is stable.
+     - **What will be achieved with this?** This will deliver a large portion of the user's requested features and bring the application to a new stable checkpoint.
      - **Status:** IN PROGRESS
      - **Should Test frontend/backend/both after fix?** Both
-     - **Blocked on something:** The Application stability issue above.
+     - **Blocked on something:** Blocked on Issue 1 above. The application must be stabilized first.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   **P0 - Finalize HttpOnly Cookie Implementation:** Test the entire authentication flow (login, logout, authenticated requests, session persistence) across all user types to confirm the migration is successful.
-    *   **P0 - Finalize Email Provider Logic:** Complete the frontend UI in  to enforce that only one provider can be active. Ensure the backend email dispatch service correctly uses the designated active provider.
-    *   **P0 - Finalize CRM & Integration UI:**
-        - Refactor the  to use a tile layout for Zoho CRM.
-        - Add descriptive text and instructions for all integrations (Resend, Zoho, Stripe, GoCardless).
-        - Implement the frontend Refresh connection buttons and connect them to the new backend endpoints.
-    *   **P0 - Implement Zoho Core Logic:** Implement the actual OAuth flow and API interactions for Zoho Mail and CRM based on the fetched playbooks. This includes installing the  dependency.
-    *   **P1 - Generate and Provide Test CSV:** Make the generated  file accessible to the user via the  endpoint.
-*   **Future Tasks:**
-    *   **P1 - Penetration Testing:** User requested this. This can be framed as a final, intensive security audit before deployment.
-    *   **P1 - Webhook Delivery Status Dashboard:** Create a UI to show the status of recent webhook deliveries.
-    *   **P2 - Webhook Event Replay:** Add a button to replay failed webhook events.
+*   **Upcoming Tasks (P1):**
+    *   **PDF Generation for ToS:** Implement a service (e.g., using ) to generate a PDF of the terms of service and modify the email service to attach it to order confirmation emails.
+    *   **Add Guides:** Create a reusable guide/tooltip component and integrate it into key areas of the admin panel (e.g., Integrations, Custom Domains, Webhooks) to improve user experience.
+    *   **Subscription N+1 Optimization:** Analyze and refactor the subscription list endpoint () to use an efficient aggregation pipeline to avoid N+1 query problems.
+*   **Future Tasks (P2):**
+    *   **Implement Zoho OAuth Flow:** Implement the complete OAuth 2.0 flow for Zoho CRM and Zoho Books to make the integrations fully functional.
+    *   **Penetration Testing:** Conduct a comprehensive security audit of the application.
+    *   **Webhook Event Replay:** Add a button to replay failed webhook events.
 
 **Completed work in this session**
-- **UI Bug Fixes:** Fixed customer login flow, resolving issues with Admin tab visibility and  display.
-- **Critical Security Hardening:**
-  - Fixed a cross-tab session sync issue.
-  - Conducted a security sweep and patched multiple critical cross-tenant IDOR vulnerabilities in orders, subscriptions, and other routes.
-  - Fixed a critical tenant resolution bug in public-facing store APIs.
-  - Added file size validation to image uploads.
-- **Initial Implementation of New Features:**
-  - Created backend API routes for Zoho Mail/CRM, GDPR (export/delete), and integration management.
-  - Partially implemented HttpOnly cookies by refactoring backend auth logic and updating the frontend API config.
-  - Created initial frontend components for the CRM tab and refactored email settings UI.
-  - Generated a comprehensive test case CSV and seeded Tenant B with extensive data.
+- **JWT Refresh Token:** Implemented a secure refresh token mechanism with  cookies to improve session management. Access tokens are short-lived (1 hour), and refresh tokens are long-lived (30 days).
+- **Query Optimization:** Fixed an N+1 query issue in the customer list endpoint by using a MongoDB aggregation pipeline.
+- **Security Audit & Hardening:** Performed a code audit, fixed IDOR vulnerabilities, and added rate limiting and brute-force protection to sensitive endpoints.
+- **UI/UX Refinements:**
+  - Refactored the  for mutual exclusivity.
+  - Refactored the  to use a tile-based layout.
+  - Implemented a webhook delivery dashboard with a replay feature.
+  - Added a non-blocking cookie consent banner.
+  - Made the Quick Setup wizard collapsible and less intrusive.
+- **New Feature Implementation (Code Complete, Untested):**
+  - **Refunds:** Implemented backend routes and services to process refunds via Stripe/GoCardless, and added a Refund button and dialog to the Orders UI.
+  - **Custom Domains:** Implemented backend logic and UI for partners to manage a custom subdomain for their store.
+  - **Finance Tab:** Created the backend router and frontend component for a new Finance tab, including stubs for Zoho Books integration and a Quickbooks coming soon placeholder.
 
 **Earlier issues found/mentioned but not fixed**
 - None.
@@ -88,94 +95,96 @@ The agent has begun implementing the user's large, multi-part request. Backend r
 **Known issue recurrence from previous fork**
   - **Issue recurrence in previous fork**: Critical Cross-Tenant Data Leak.
   - **Recurrence count**: 4+
-  - **Status**: RESOLVED. The agent found and fixed several new instances during its security sweep, confirming this is a high-risk area that requires constant vigilance during development.
+  - **Status**: RESOLVED. Agent performed a security audit and fixed newly identified vulnerabilities. This remains a high-risk area requiring vigilance.
 
 **Code Architecture**
-withCredentials: true
+
 
 **Key Technical Concepts**
-- **HttpOnly Cookies:** Migrating the session JWT from  to  cookies to mitigate XSS risks. This involves backend logic to set/read cookies and frontend configuration ().
-- **Third-Party API Integration:** Using playbooks for Zoho Mail/CRM to implement OAuth flows, validation endpoints, and data mapping UIs.
-- **GDPR Compliance:** Implementing user-facing features for data portability (export) and the right to be forgotten (account deletion).
-- **Multi-tenancy Security (IDOR):** Ongoing effort to ensure all database queries are strictly filtered by  and that cross-tenant entity relationships are validated on update.
+- **JWT Refresh Tokens:** Using a long-lived refresh token stored in an  cookie to securely obtain new short-lived access tokens without requiring the user to log in again.
+- **Dynamic Tenant Resolution:** Resolving tenant context from a custom hostname in addition to the .
+- **Payment Refunds:** Interacting with Stripe and GoCardless APIs to process refunds against existing charges.
+- **API-Driven UI:** Building React components that are driven by state fetched from the backend, such as the new Finance, Custom Domain, and Refund features.
 
 **key DB schema**
-  - **settings:** This collection will be used to store new tenant-specific configurations like , , and .
+  - **tenants:**  has been added.
+  - **orders:** Will now store a list of refund transactions, likely in a  field.
 
 **changes in tech stack**
-  - None installed yet, but  will need to be added to  to complete the Zoho integrations.
+- **Pending Installation:** A PDF generation library like  or  will need to be installed in the backend to implement the ToS as PDF feature.
 
 **All files of reference**
-- **New/Critical Backend Files:**
-  -  (HttpOnly Cookie logic)
-  -  (HttpOnly Cookie logic)
+- **New Backend Files:**
+  - 
+  - 
+  - 
+- **New Frontend Files:**
+  - 
+  - 
+- **Heavily Modified Files:**
   - 
   - 
   - 
   - 
-- **New/Critical Frontend Files:**
-  -  (HttpOnly Cookie logic)
-  -  (GDPR UI)
   - 
-  - 
-- **Documents:**
   - 
 
 **Areas that need refactoring**:
-- : Contains duplicated code from a bad merge that needs to be cleaned up.
-- : Needs to be refactored to use a tile layout for different CRM providers, as requested by the user.
+- **Email Service:** Needs to be modified to support PDF attachments for the Terms of Service feature.
+- **Order/Subscription Models:** The Pydantic models for orders and subscriptions need to be updated to include the  text.
 
 **key api endpoints**
-- , : (POST) Modified to set an  cookie.
-- : (POST) New endpoint to clear the authentication cookie.
-- : (POST) New endpoint to set the tenant's active email provider.
-- : (POST) New endpoints for validating email provider credentials.
-- , : New endpoints for GDPR actions.
-- : (GET) New endpoint to download the test case file.
+- : (POST) Exchanges a valid refresh token cookie for a new access token.
+- : (POST) New login flow for tenants using a custom domain.
+- : (POST) Initiates a refund for a specific order.
+- : (POST/DELETE) Endpoints for admins to set or remove a custom domain for their tenant.
+- : (GET) New endpoint stub for Zoho Books integration status.
 
 **Critical Info for New Agent**
-1.  **The App is Likely Broken:** You are inheriting an application in the middle of a major, untested refactoring. The authentication system was migrated to  cookies, which is a fundamental change. Your absolute first priority is to get the application into a stable, testable state. Do not write new code until you have verified the existing changes.
-2.  **Test Authentication Immediately:** Start by testing the login/logout flow with  to confirm the backend is setting and clearing  cookies correctly. Then, verify that authenticated API calls work with this new cookie-based session.
-3.  **Large Feature Request In Progress:** The user has requested a large number of features at once. Refer to the Upcoming Tasks list to understand what is left to implement. Tackle them systematically after the application is stable.
-4.  **Install Missing Dependencies:** The agent fetched playbooks for Zoho but forgot to install the required  Python package. This will be necessary to complete the integration.
-5.  **Follow User UI/UX Specifications:** The user was specific about UI details like using tiles for CRM integrations, adding descriptive text, and burying the GDPR section. Pay close attention to these requirements as you complete the frontend work.
+1.  **Application State is UNTESTED:** You are inheriting an application with a significant amount of newly added, completely untested code for refunds, custom domains, and Zoho Books. Your absolute first priority is to run tests, stabilize the application, and fix any bugs that arise from these changes.
+2.  **Test Systematically:** Follow the testing plan outlined in the Last working item section. Test the new backend APIs first with , then verify the frontend UI with , and finally run a full regression with the .
+3.  **User Priority List is Clear:** The user has provided a clear, phased list of features. Once the app is stable, continue with the remaining Upcoming Tasks: PDF generation for ToS, adding guides, and optimizing the subscription query.
+4.  **Missing Dependency:** Remember to install a Python PDF library (Looking in indexes: https://pypi.org/simple, https://d33sy5i8bnduwe.cloudfront.net/simple/
+Requirement already satisfied: reportlab in /root/.venv/lib/python3.11/site-packages (4.4.10)
+Requirement already satisfied: pillow>=9.0.0 in /root/.venv/lib/python3.11/site-packages (from reportlab) (12.1.1)
+Requirement already satisfied: charset-normalizer in /root/.venv/lib/python3.11/site-packages (from reportlab) (3.4.4)) before attempting to implement the ToS PDF generation feature.
 
 **documents and test reports created in this job**
 - 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (latest):** Gave a prioritized list of tasks: fix email provider logic, refine integration UIs with tiles and descriptions, add refresh buttons, bury GDPR UI, create CSV download endpoint, and implement HttpOnly cookies.
-2.  **User:** Clarified Zoho integration should support US/CA data centers and use test keys.
-3.  **User:** Asked if the customer portal was broken, requested GDPR on the frontend, and asked for details on HttpOnly changes and file access.
-4.  **User:** Requested more test data for Tenant B and a full API audit to ensure no endpoints are open and everything is tenant-related.
-5.  **User:** Asked for test credentials.
-6.  **User:** Followed up on the security sweep, asking if the agent was satisfied.
-7.  **User:** Reported still seeing the admin tab when switching between accounts in different browser tabs.
-8.  **User:** Approved fixing the P0 bugs.
+1.  **User (latest):** Approved the agent's plan and clarified requirements: partners configure custom domains via UI, refunds should integrate with Stripe/GoCardless, and ToS PDF should be generated dynamically.
+2.  **User:** Provided a new list of prioritized tasks: Zoho OAuth, guides/tooltips, ToS in emails, custom subdomains, refunds, Zoho Books, webhook improvements, and subscription N+1 optimization.
+3.  **User:** Asked how to access test report files and suggested adding guides to more parts of the platform.
+4.  **Agent:** Proposed a plan to implement the new features, asking for clarification on several points.
+5.  **User:** Gave feedback on recent changes: turn Resend inactive, improve CRM tile layout, implement webhook dashboard, add a cookie consent banner, and perform a code audit.
+6.  **User:** Confirmed their choice for Zoho credentials (US DC) and provided the client ID and secret.
 
 **Project Health Check:**
-- **Broken:** The application is in a non-functional state due to the recent, massive, and untested changes to the core authentication system and other backend/frontend logic.
-- **Mocked:** The Zoho Mail and Zoho CRM integrations are mocked. Backend routes and frontend components exist, but the core logic (OAuth, API calls) from the playbooks has not been implemented.
+- **Broken:** The application is likely in a non-functional state due to the recent addition of large, untested features. Stability is unknown.
+- **Mocked:** The Zoho Books integration is mocked. Backend routes and a frontend tab exist, but no core logic has been implemented. The PDF generation service for Terms of Service is also not yet implemented.
 
 **3rd Party Integrations**
-- **Existing & Active:** Stripe, GoCardless, Resend, slowapi, bleach, httpx.
-- **In Progress (Not Functional):** Zoho Mail, Zoho CRM. Playbooks from  are available, but implementation is incomplete.
+- **Existing & Active:** Stripe, GoCardless, Resend, Zoho CRM (stubbed), , , .
+- **In Progress (Not Functional):** Zoho Books.
+- **Required for next steps:** A PDF generation library (e.g., ).
 
 **Testing status**
-  - Testing agent used after significant changes: NO. The last test run passed *before* the HttpOnly cookie migration and other major feature work. A full regression test is urgently needed.
+  - Testing agent used after significant changes: YES, but *before* the latest batch of features (refunds, custom domains, etc.) were added.
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: []
-  - Known regressions: The entire application's authenticated functionality is a potential regression until the HttpOnly cookie implementation is verified.
+  - Test files created: None in the last session.
+  - Known regressions: Unknown. A full regression test is urgently required.
 
 **Credentials to test flow:**
 - **Platform Admin:**  / 
+- **Tenant A Admin:**  / 
 - **Tenant A Customer:**  / 
 - **Tenant B Admin:**  / 
 - **Tenant B Customer:**  / 
 
 **What agent forgot to execute**
-- Did not install the  package required for Zoho integrations.
-- Did not implement the Refresh connection UI on the frontend for any integration, despite creating the backend endpoints.
-- Did not implement the tile layout for the CRM tab as requested by the user.
-- Did not add the descriptive help text for each integration explaining its function and where to get API keys.
-- Did not connect the backend logic for the active email provider to the actual email sending service to ensure only the selected provider is used.</analysis>
+- Did not test any of the newly implemented features (Refunds, Custom Domains, Finance Tab).
+- Did not implement the PDF generation service for Terms of Service.
+- Did not modify the email service to attach the generated PDF.
+- Did not implement the N+1 optimization for the subscriptions list.
+- Did not implement the full Zoho OAuth flow for CRM or the new Books integration.</analysis>
