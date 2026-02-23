@@ -47,7 +47,7 @@ export function PromoCodesTab() {
       if (endDate) params.append("created_to", endDate);
       const [promoRes, prodRes] = await Promise.all([
         api.get(`/admin/promo-codes?${params}`),
-        products.length ? Promise.resolve({ data: { products } }) : api.get("/products"),
+        products.length ? Promise.resolve({ data: { products } }) : api.get("/admin/products-all?per_page=500"),
       ]);
       setPromoCodes(promoRes.data.promo_codes || []);
       setTotal(promoRes.data.total || 0);

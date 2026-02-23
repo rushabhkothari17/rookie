@@ -42,7 +42,7 @@ export function TermsTab() {
       if (endDate) params.append("created_to", endDate);
       const [termsRes, prodRes] = await Promise.all([
         api.get(`/admin/terms?${params}`),
-        api.get("/products"),
+        api.get("/admin/products-all?per_page=500"),
       ]);
       setTerms(termsRes.data.terms || []);
       setTotal(termsRes.data.total || 0);

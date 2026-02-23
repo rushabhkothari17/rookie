@@ -129,7 +129,7 @@ export function SubscriptionsTab() {
       if (r.data.payment_methods) setPaymentMethods(r.data.payment_methods);
     }).catch(() => {});
     load(1);
-    api.get("/products").then(r => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/admin/products-all?per_page=500").then(r => setProducts(r.data.products || [])).catch(() => {});
     api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
   }, [email, status, payment, subNumberFilter, processorIdFilter, planFilter, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
 

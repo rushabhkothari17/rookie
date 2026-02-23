@@ -126,7 +126,7 @@ export function OrdersTab() {
     }).catch(() => {});
     Promise.all([
       api.get("/admin/customers?per_page=1000").catch(() => ({ data: { customers: [], users: [] } })),
-      api.get("/products").catch(() => ({ data: { products: [] } })),
+      api.get("/admin/products-all?per_page=500").catch(() => ({ data: { products: [] } })),
     ]).then(([custRes, prodRes]) => {
       setCustomers(custRes.data.customers || []);
       setUsers(custRes.data.users || []);
