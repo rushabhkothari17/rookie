@@ -27,6 +27,9 @@ export default function Admin() {
   const ws = useWebsite();
   const isSuperAdmin = authUser?.role === "super_admin" || authUser?.role === "platform_admin";
   const isPlatformAdmin = authUser?.role === "platform_admin";
+  // Hide Partner Orgs when platform admin is viewing as another tenant (acting as tenant admin)
+  const viewingAsTenant = typeof window !== "undefined" && !!sessionStorage.getItem("view_as_tenant_id");
+  const showPartnerOrgs = isPlatformAdmin && !viewingAsTenant;
   const [searchParams] = useSearchParams();
   const editArticleId = searchParams.get("editArticle");
   const defaultTab = editArticleId ? "articles" : "customers";
