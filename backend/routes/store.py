@@ -60,7 +60,7 @@ async def get_products(
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = _tid(user, partner_code)
+    tid = _tid(user, partner_code, x_view_as_tenant)
     inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_cat_names = {c["name"] for c in inactive_cats}
     query: Dict[str, Any] = {"tenant_id": tid, "is_active": True}
