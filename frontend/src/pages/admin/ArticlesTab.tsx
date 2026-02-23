@@ -6,15 +6,15 @@ import LinkExt from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Bold, Italic, List, ListOrdered, Link2, Image, Heading1, Heading2, Heading3, Eye, Mail, Clock, Trash2, Plus, ExternalLink, Download } from "lucide-react";
+import { Bold, Italic, List, ListOrdered, Link2, Image, Heading1, Heading2, Heading3, Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, BookTemplate } from "lucide-react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
+import { ArticleTemplatesTab } from "./ArticleTemplatesTab";
 
 const ARTICLE_CATEGORIES = [
   "Scope - Draft",
