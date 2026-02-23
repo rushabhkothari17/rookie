@@ -424,7 +424,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
           <Input placeholder="Search title or ID…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="articles-search-filter" />
           <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-8 border border-slate-200 rounded px-2 text-xs bg-white" data-testid="articles-category-filter">
             <option value="all">All categories</option>
-            {ARTICLE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {(dynamicCategories.length > 0 ? dynamicCategories.map(c => c.name) : HARDCODED_CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Created</span>
