@@ -30,6 +30,14 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", category: "", content: "" });
 
+  const downloadCsv = () => {
+    const token = localStorage.getItem("aa_token") || "";
+    const base = process.env.REACT_APP_BACKEND_URL || "";
+    fetch(`${base}/api/admin/export/article-templates`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `article-templates-${new Date().toISOString().slice(0,10)}.csv`; a.click(); })
+      .catch(() => toast.error("Export failed"));
+  };
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
