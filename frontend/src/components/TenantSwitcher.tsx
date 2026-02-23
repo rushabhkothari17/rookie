@@ -34,7 +34,7 @@ export function TenantSwitcher() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (user?.role !== "platform_super_admin") return;
+    if (user?.role !== "platform_admin") return;
     api.get("/admin/tenants").then(res => setTenants(res.data.tenants || [])).catch(() => {});
   }, [user]);
 
@@ -44,7 +44,7 @@ export function TenantSwitcher() {
     return () => { _listeners = _listeners.filter(fn => fn !== update); };
   }, []);
 
-  if (user?.role !== "platform_super_admin") return null;
+  if (user?.role !== "platform_admin") return null;
 
   const handleSwitch = (tenant: Tenant | null) => {
     setViewAsTenant(tenant?.id ?? null, tenant?.name ?? null);

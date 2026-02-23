@@ -147,7 +147,7 @@ async def customer_login(payload: CustomerLoginRequest):
 @router.post("/auth/login")
 async def login(payload: LoginRequest):
     """Legacy login endpoint. If partner_code provided, routes to tenant-scoped auth.
-    Without partner_code, only platform_super_admin can log in.
+    Without partner_code, only platform_admin can log in.
     """
     if payload.partner_code:
         # Route to tenant-scoped login
