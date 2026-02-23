@@ -450,7 +450,8 @@ async def send_article_email(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     """Send article to arbitrary email addresses (To/CC/BCC) with optional PDF attachment."""
-    article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    article = await db.articles.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
