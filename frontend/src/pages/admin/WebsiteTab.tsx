@@ -503,9 +503,14 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function WebsiteTab() {
-  const [activeSection, setActiveSection] = useState<Section>("branding");
+export default function WebsiteTab({ defaultSection }: { defaultSection?: Section }) {
+  const [activeSection, setActiveSection] = useState<Section>(defaultSection ?? "branding");
   const [ws, setWs] = useState<WebsiteData>(WEB_DEFAULTS);
+
+  // Allow external navigation to a specific section (from checklist widget)
+  useEffect(() => {
+    if (defaultSection) setActiveSection(defaultSection);
+  }, [defaultSection]);
   const [branding, setBranding] = useState<BrandingData>({
     store_name: "", primary_color: "", accent_color: "",
     danger_color: "", success_color: "", warning_color: "",
