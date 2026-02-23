@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ImportModal } from "@/components/admin/ImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +11,7 @@ import { ProductForm, ProductFormData, EMPTY_FORM } from "./ProductForm";
 import { EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
-import { Download } from "lucide-react";
+import { Download, Upload} from "lucide-react";
 
 function productToForm(p: any): ProductFormData {
   // bullets: prefer new 'bullets' field, fall back to bullets_included
@@ -44,6 +45,7 @@ function productToForm(p: any): ProductFormData {
 }
 
 export function ProductsTab() {
+  const [showImport, setShowImport] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
@@ -207,6 +209,7 @@ export function ProductsTab() {
       <AdminPageHeader title="Catalog" subtitle={`${filtered.length} products`} actions={
         <>
           <Button variant="outline" size="sm" onClick={downloadCsv} data-testid="admin-catalog-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button variant="outline" size="sm" onClick={() => setShowImport(true)} data-testid="admin-catalog-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
           <Button size="sm" onClick={openCreate} data-testid="admin-create-product-btn">+ New Product</Button>
         </>
       } />
@@ -337,5 +340,12 @@ export function ProductsTab() {
         </DialogContent>
       </Dialog>
     </div>
+      <ImportModal
+        entity="catalog"
+        entityLabel="Catalog"
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onSuccess={load}
+      />
   );
 }
