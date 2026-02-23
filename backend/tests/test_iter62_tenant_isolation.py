@@ -672,19 +672,27 @@ class TestArticleTemplatesIsolation:
     def test_article_templates_not_shared_between_tenants(
         self, platform_headers, tenant_b_headers
     ):
-        """Article templates from main tenant should not appear in Tenant B view."""
+        """Article templates for Tenant B should only appear in Tenant B view (tenant scoped)."""
         r_main = requests.get(f"{BASE_URL}/api/article-templates", headers=platform_headers)
         r_tb = requests.get(f"{BASE_URL}/api/article-templates", headers=tenant_b_headers)
         assert r_main.status_code == 200
         assert r_tb.status_code == 200
-        main_ids = {t.get("id") for t in r_main.json().get("templates", [])}
-        tb_ids = {t.get("id") for t in r_tb.json().get("templates", [])}
-        overlap = main_ids & tb_ids
-        print(f"Main tenant templates: {len(main_ids)}, Tenant B: {len(tb_ids)}, Overlap: {len(overlap)}")
-        assert len(overlap) == 0, (
-            f"Found {len(overlap)} templates shared between main tenant and Tenant B: {overlap}"
+        main_templates = r_main.json().get("templates", [])
+        tb_templates = r_tb.json().get("templates", [])
+        tb_tids = {t.get("tenant_id") for t in tb_templates}
+        print(f"Main tenant templates (all, no header): {len(main_templates)}")
+        print(f"Tenant B templates: {len(tb_templates)}, tenant_ids: {tb_tids}")
+        # Critical: Tenant B view should ONLY contain Tenant B templates
+        if tb_templates:
+            assert tb_tids == {TENANT_B_ID}, (
+                f"Tenant B view should only show Tenant B templates, got tenant_ids: {tb_tids}"
+            )
+        # Platform admin without header sees ALL templates (by design) - expected behavior
+        assert len(main_templates) > len(tb_templates), (
+            f"Platform admin (no header) should see more templates than Tenant B. "
+            f"Got main={len(main_templates)}, tb={len(tb_templates)}"
         )
-        print("PASS: Article templates not shared between tenants")
+        print("PASS: Article template isolation confirmed - Tenant B view is correctly scoped")
 
 
 # ---------------------------------------------------------------------------
