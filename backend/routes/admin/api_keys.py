@@ -13,6 +13,16 @@ from db.session import db
 router = APIRouter(prefix="/api", tags=["admin-api-keys"])
 
 
+def _generate_key() -> str:
+    return f"ak_{secrets.token_hex(24)}"
+
+
+def _mask_key(key: str) -> str:
+    if len(key) <= 12:
+        return key[:4] + "•" * (len(key) - 4)
+    return key[:8] + "•" * 20 + key[-4:]
+
+
 @router.get("/admin/api-keys")
 async def list_api_keys(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """List all API keys for the current tenant (key value masked)."""
