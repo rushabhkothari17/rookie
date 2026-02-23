@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { useState, useEffect } from "react";
-import { getViewAsTenantId, _tenantListeners } from "@/components/TenantSwitcher";
+import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantSwitcher";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
 import { OrdersTab } from "./admin/OrdersTab";
@@ -33,9 +33,7 @@ export default function Admin() {
   // Reactively track whether platform admin is viewing as another tenant
   const [viewingAsTenant, setViewingAsTenant] = useState(() => !!getViewAsTenantId());
   useEffect(() => {
-    const update = () => setViewingAsTenant(!!getViewAsTenantId());
-    _tenantListeners.push(update);
-    return () => { _tenantListeners = _tenantListeners.filter(fn => fn !== update); };
+    return subscribeToTenantSwitch(() => setViewingAsTenant(!!getViewAsTenantId()));
   }, []);
 
   const showPartnerOrgs = isPlatformAdmin && !viewingAsTenant;
