@@ -333,17 +333,69 @@ export function ArticlesTab() {
       .catch(() => toast.error("Export failed"));
   };
 
+  const downloadArticle = (articleId: string, format: "pdf" | "docx") => {
+    const token = localStorage.getItem("aa_token");
+    const base = process.env.REACT_APP_BACKEND_URL || "";
+    fetch(`${base}/api/articles/${articleId}/download?format=${format}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.blob()).then(b => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(b);
+        a.download = `article-${articleId.slice(0, 8)}.${format}`;
+        a.click();
+      }).catch(() => toast.error("Download failed"));
+  };
+
+  const saveAsTemplate = async (article: any) => {
+    const name = prompt(`Save "${article.title}" as template. Template name:`, article.title);
+    if (!name) return;
+    try {
+      const res = await api.get(`/articles/${article.id}`);
+      const a = res.data.article;
+      await api.post("/article-templates", {
+        name,
+        description: `Template created from article: ${a.title}`,
+        category: a.category,
+        content: a.content,
+      });
+      toast.success("Saved as template");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to save template");
+    }
+  };
+
+  const applyTemplate = (tpl: any) => {
+    setForm(prev => ({ ...prev, content: tpl.content, category: prev.category || tpl.category || "" }));
+    setShowTemplatePicker(false);
+    toast.success(`Template "${tpl.name}" applied`);
+  };
+
   const appUrl = (window as any).__REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL || "";
   const frontendUrl = appUrl.replace("/api", "").replace(":8001", ":3000");
 
   return (
     <div className="space-y-4" data-testid="admin-articles-tab">
-      <AdminPageHeader title="Articles" subtitle={`${total} articles`} actions={
+      <AdminPageHeader title="Articles" subtitle={subTab === "articles" ? `${total} articles` : "Manage reusable templates"} actions={
         <>
-          <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="articles-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
-          <Button size="sm" onClick={openCreate} className="gap-2" data-testid="articles-create-btn"><Plus size={14} /> New Article</Button>
+          {subTab === "articles" && (
+            <>
+              <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="articles-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+              <Button size="sm" onClick={openCreate} className="gap-2" data-testid="articles-create-btn"><Plus size={14} /> New Article</Button>
+            </>
+          )}
         </>
       } />
+
+      {/* Sub-tab switcher */}
+      <div className="flex gap-1 border-b border-slate-200">
+        <button onClick={() => setSubTab("articles")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${subTab === "articles" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-articles">Articles</button>
+        <button onClick={() => setSubTab("templates")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "templates" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-templates"><LayoutTemplate size={13} /> Templates</button>
+      </div>
+
+      {/* Templates sub-tab */}
+      {subTab === "templates" && <ArticleTemplatesTab />}
+
+      {/* Articles sub-tab */}
+      {subTab === "articles" && (<>
 
       {/* Filters */}
       <div className="rounded-xl border border-slate-200 bg-white p-3">
