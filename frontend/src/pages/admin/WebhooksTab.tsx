@@ -93,7 +93,7 @@ function EventBuilder({ catalog, subscriptions, onChange }: {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const subMap = Object.fromEntries(subscriptions.map(s => [s.event, s.fields]));
 
-  const categories = [...new Set(Object.values(catalog).map(v => v.category))];
+  const categories = Array.from(new Set(Object.values(catalog).map(v => v.category)));
 
   const toggleEvent = (event: string) => {
     if (event in subMap) {
@@ -101,7 +101,7 @@ function EventBuilder({ catalog, subscriptions, onChange }: {
     } else {
       const allFields = Object.keys(catalog[event].fields);
       onChange([...subscriptions, { event, fields: allFields }]);
-      setExpanded(prev => new Set([...prev, event]));
+      setExpanded(prev => new Set([...Array.from(prev), event]));
     }
   };
 
@@ -470,7 +470,7 @@ function WebhookCard({ webhook, catalog, onEdit, onDelete, onViewLogs, onRefresh
     onDelete();
   };
 
-  const categories = [...new Set(webhook.subscriptions.map(s => catalog[s.event]?.category).filter(Boolean))];
+  const categories = Array.from(new Set(webhook.subscriptions.map(s => catalog[s.event]?.category).filter(Boolean)));
 
   return (
     <div className={`border rounded-xl p-4 space-y-3 transition-all ${webhook.is_active ? "border-slate-200 bg-white shadow-sm" : "border-slate-100 bg-slate-50 opacity-70"}`}
