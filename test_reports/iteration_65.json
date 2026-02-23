@@ -1,0 +1,51 @@
+{
+  "summary": "Iteration 65 - Tested public endpoint tenant isolation (products/articles/terms with X-View-As-Tenant), admin terms endpoint, subscriptions renew-now endpoint path mismatch, and setup checklist navigation. 20/21 backend tests passed (1 skipped). All public endpoint isolation working correctly. Store/Articles pages show only Tenant B data. Checklist navigation working. CRITICAL BUG found: /api/admin/subscriptions/{id}/renew-now route does NOT exist in backend (frontend was updated but backend was not).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/admin/subscriptions/{id}/renew-now",
+        "issue": "CRITICAL: Route does NOT exist. Frontend SubscriptionsTab.tsx line 164 calls api.post('/admin/subscriptions/${subId}/renew-now') but backend has @router.post('/subscriptions/{subscription_id}/renew-now') (missing /admin/ prefix). OLD path /api/subscriptions/{id}/renew-now exists (returns 404 'Subscription not found'), NEW path /api/admin/subscriptions/{id}/renew-now returns 404 'Not Found' (route doesn't exist). Renew button will always fail.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter65_tenant_isolation_and_fixes.py",
+    "/app/test_reports/pytest/iter65_tenant_isolation.xml"
+  ],
+  "action_items": [
+    "CRITICAL FIX: In backend/routes/admin/subscriptions.py line 186, change @router.post('/subscriptions/{subscription_id}/renew-now') to @router.post('/admin/subscriptions/{subscription_id}/renew-now') to match the frontend's updated call path."
+  ],
+  "critical_code_review_comments": [
+    "CRITICAL: subscriptions.py line 186 route path mismatch - @router.post('/subscriptions/{subscription_id}/renew-now') should be @router.post('/admin/subscriptions/{subscription_id}/renew-now'). Frontend SubscriptionsTab.tsx calls /admin/subscriptions/{id}/renew-now but the backend route is registered without the /admin/ prefix.",
+    "PUBLIC ENDPOINT ISOLATION CONFIRMED: /api/products with X-View-As-Tenant returns only Tenant B's 1 product (TB Product). Isolation working correctly after the _tid() fix in store.py.",
+    "ARTICLES PUBLIC ENDPOINT CONFIRMED: /api/articles/public with X-View-As-Tenant returns only Tenant B's 1 article (TB Article Audit Test). Platform admin impersonation behavior correct.",
+    "TERMS ENDPOINT CONFIRMED: /api/terms with X-View-As-Tenant returns only Tenant B's terms. Default tenant and Tenant B correctly isolated.",
+    "ADMIN TERMS ENDPOINT CONFIRMED: ProductsTab.tsx now calls /admin/terms (not /terms) - correctly returns tenant-scoped terms.",
+    "SETUP CHECKLIST NAVIGATION CONFIRMED: 'Configure payment' navigates to Website Content > Payments section (Payment Integrations visible). 'Invite a customer' navigates to Customers tab. Navigation hints ('Go to Website Content > Branding & Hero', 'Go to Website Content > Payments to set up Stripe or GoCardless') visible in checklist items.",
+    "STORE PAGE ISOLATION CONFIRMED: Platform admin viewing Tenant B sees only 1 product (TB Product) on /store page and only 1 article (TB Article Audit Test) on /articles page.",
+    "Minor: categories endpoint - Tenant B returns 1 category ('Test'), default tenant returns multiple categories - isolation working correctly."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter65_tenant_isolation_and_fixes.py"
+  ],
+  "success_rate": {
+    "backend": "100% (20/20 passed, 1 skipped - no subscriptions to test renew-now)",
+    "frontend": "100% (all isolation tests confirmed visually)"
+  },
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123! / partner_code: automate-accounts",
+    "tenant_b_admin": "adminb@tenantb.local / ChangeMe123! / partner_code: tenant-b-test"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 65 confirmed: (1) Public endpoints /products, /articles/public, /terms all correctly respect X-View-As-Tenant for platform admins. (2) Store/Articles pages show only Tenant B data when platform admin is viewing as Tenant B. (3) Setup checklist navigation works - 'Configure payment' -> Website Content > Payments, 'Invite a customer' -> Customers tab. (4) Admin terms (/admin/terms) correctly scoped. (5) CRITICAL BUG: /api/admin/subscriptions/{id}/renew-now does NOT exist in backend. Frontend was updated to call this path but backend route is still at /api/subscriptions/{id}/renew-now (no /admin/ prefix). This must be fixed in backend/routes/admin/subscriptions.py line 186.",
+  "rca_of_issue": "Renew-Now Bug RCA: In SubscriptionsTab.tsx the handleRenew function was updated to call api.post('/admin/subscriptions/${subId}/renew-now') but the backend route in admin/subscriptions.py is registered as @router.post('/subscriptions/{subscription_id}/renew-now') without the /admin/ prefix. The router has prefix /api, so full path is /api/subscriptions/{id}/renew-now. The frontend expects /api/admin/subscriptions/{id}/renew-now. Fix: Change the backend route decorator to @router.post('/admin/subscriptions/{subscription_id}/renew-now')."
+}
