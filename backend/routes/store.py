@@ -174,9 +174,8 @@ async def scope_request(
     subtotal = sum(i["pricing"]["subtotal"] for i in scope_items)
     order_doc = {
         "id": order_id,
+        "tenant_id": user.get("tenant_id") or "automate-accounts",
         "order_number": order_number,
-        "customer_id": customer["id"],
-        "type": "scope_request",
         "status": "scope_requested",
         "subtotal": round_cents(subtotal),
         "fee": 0.0,
