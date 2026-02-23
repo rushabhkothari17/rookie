@@ -45,12 +45,15 @@ async def admin_list_users(
 @router.post("/admin/users")
 async def admin_create_admin_user(
     payload: AdminCreateUserRequest,
-    admin: Dict[str, Any] = Depends(require_super_admin),
+    admin: Dict[str, Any] = Depends(require_admin),
 ):
-    if payload.role not in ("admin", "super_admin"):
-        raise HTTPException(status_code=400, detail="Role must be 'admin' or 'super_admin'")
+    tid = tenant_id_of(admin)
+    valid_roles = ("partner_super_admin", "partner_admin", "partner_staff", "admin", "super_admin")
+    if payload.role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Role must be one of: {valid_roles}")
 
-    existing = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.users.find_one({**tf, "email": payload.email.lower()}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -67,6 +70,7 @@ async def admin_create_admin_user(
         "is_admin": True,
         "is_verified": True,
         "role": payload.role,
+        "tenant_id": tid,
         "must_change_password": True,
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
