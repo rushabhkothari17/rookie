@@ -665,3 +665,17 @@ class ArticleEmailTemplateUpdate(BaseModel):
     subject: Optional[str] = None
     html_body: Optional[str] = None
     description: Optional[str] = None
+
+
+class ArticleCategoryCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    color: Optional[str] = ""
+    is_scope_final: Optional[bool] = False
+
+
+class ArticleCategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    is_scope_final: Optional[bool] = None
