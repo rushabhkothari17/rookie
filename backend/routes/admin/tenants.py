@@ -36,7 +36,8 @@ async def create_tenant(payload: TenantCreate, admin: Dict[str, Any] = Depends(r
         "created_at": now_iso(),
         "updated_at": now_iso(),
     }
-    await db.tenants.insert_one(doc)
+    # Insert a copy so MongoDB _id mutation doesn't pollute our response dict
+    await db.tenants.insert_one({**doc})
 
     # Seed default website_settings and app_settings for the new tenant
     existing_ws = await db.website_settings.find_one({"tenant_id": DEFAULT_TENANT_ID}, {"_id": 0})
