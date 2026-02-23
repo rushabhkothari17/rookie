@@ -86,8 +86,8 @@ async def admin_subscriptions(
 
     if email:
         all_subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).to_list(10000)
-        users_all = await db.users.find({}, {"_id": 0, "id": 1, "email": 1}).to_list(10000)
-        custs_all = await db.customers.find({}, {"_id": 0, "id": 1, "user_id": 1}).to_list(10000)
+        users_all = await db.users.find(tf, {"_id": 0, "id": 1, "email": 1}).to_list(10000)
+        custs_all = await db.customers.find(tf, {"_id": 0, "id": 1, "user_id": 1}).to_list(10000)
         cust_to_user = {c["id"]: c.get("user_id", "") for c in custs_all}
         user_email = {u["id"]: u.get("email", "") for u in users_all}
         all_subs = [s for s in all_subs if email.lower() in user_email.get(cust_to_user.get(s.get("customer_id", ""), ""), "").lower()]
