@@ -265,3 +265,39 @@ async def export_promo_codes_csv(
     codes = await db.promo_codes.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
     return _make_csv_response(codes, f"promo-codes-{ts}.csv")
+
+
+@router.get("/admin/export/bank-transactions")
+async def export_bank_transactions_csv(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    type_filter: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
+    if date_from:
+        query.setdefault("date", {})["$gte"] = date_from
+    if date_to:
+        query.setdefault("date", {})["$lte"] = date_to
+    if type_filter:
+        query["type"] = type_filter
+    txns = await db.bank_transactions.find(query, {"_id": 0}).sort("date", -1).to_list(10000)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(txns, f"bank-transactions-{ts}.csv")
+
+
+@router.get("/admin/export/article-categories")
+async def export_article_categories_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    cats = await db.article_categories.find(tf, {"_id": 0}).sort("name", 1).to_list(1000)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(cats, f"article-categories-{ts}.csv")
+
+
+@router.get("/admin/export/article-templates")
+async def export_article_templates_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    templates = await db.article_templates.find(tf, {"_id": 0}).sort("name", 1).to_list(1000)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
+    return _make_csv_response(templates, f"article-templates-{ts}.csv")
