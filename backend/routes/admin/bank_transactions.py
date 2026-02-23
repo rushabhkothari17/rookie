@@ -166,7 +166,7 @@ async def get_bank_transaction_logs(
     txn_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    txn = await db.bank_transactions.find_one({"id": txn_id}, {"_id": 0})
+    txn = await db.bank_transactions.find_one({**get_tenant_filter(admin), "id": txn_id}, {"_id": 0})
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
     inline_logs = txn.get("logs", [])

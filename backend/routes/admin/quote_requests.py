@@ -128,7 +128,7 @@ async def admin_update_quote_request(
     payload: Dict[str, Any],
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    quote = await db.quote_requests.find_one({"id": quote_id})
+    quote = await db.quote_requests.find_one({**get_tenant_filter(admin), "id": quote_id})
     if not quote:
         raise HTTPException(status_code=404, detail="Quote request not found")
     allowed = ["product_id", "product_name", "name", "email", "company", "phone", "message", "status", "user_id"]
