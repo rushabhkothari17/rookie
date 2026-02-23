@@ -268,10 +268,12 @@ async def create_audit_log(
     action: str,
     actor: str,
     details: Optional[Dict[str, Any]] = None,
+    tenant_id: Optional[str] = None,
 ) -> None:
     """Write to legacy audit_logs collection AND the comprehensive audit_trail."""
     await db.audit_logs.insert_one({
         "id": make_id(),
+        "tenant_id": tenant_id,
         "entity_type": entity_type,
         "entity_id": entity_id,
         "action": action,
@@ -282,7 +284,6 @@ async def create_audit_log(
     actor_type = "admin" if "admin" in (actor or "").lower() else "system"
     source = "admin_ui" if actor_type == "admin" else "api"
 
-    # Build action: avoid double prefix e.g. CUSTOMER_CUSTOMER_CREATED → CUSTOMER_CREATED
     action_upper = action.upper().replace(" ", "_").replace("-", "_")
     entity_prefix = entity_type.upper().replace(" ", "_")
     if action_upper.startswith(entity_prefix + "_"):
@@ -301,4 +302,5 @@ async def create_audit_log(
         actor_email=actor if "@" in (actor or "") else None,
         source=source,
         meta_json=details or {},
+        tenant_id=tenant_id,
     )
