@@ -111,6 +111,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setLoading(false);
     }
+
+    // Listen for storage changes from other tabs (login/logout in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "aa_token") {
+        if (e.newValue) {
+          // Token changed in another tab - refresh user state
+          refresh();
+        } else {
+          // Token removed in another tab - logout this tab too
+          setUser(null);
+          setCustomer(null);
+          setAddress(null);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   return (
