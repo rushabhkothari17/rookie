@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso, round_cents
 from core.security import require_admin
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of
 from core.constants import ALLOWED_ORDER_STATUSES
 from db.session import db
 from models import OrderUpdate, OrderDelete, ManualOrderCreate
