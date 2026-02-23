@@ -25,10 +25,9 @@ def _mask_key(key: str) -> str:
 
 @router.get("/admin/api-keys")
 async def list_api_keys(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """List all API keys for the current tenant (key value masked)."""
+    """List only active API keys for the current tenant (key value masked)."""
     tf = get_tenant_filter(admin)
-    keys = await db.api_keys.find(tf, {"_id": 0}).sort("created_at", -1).to_list(100)
-    # Mask the key value for security
+    keys = await db.api_keys.find({**tf, "is_active": True}, {"_id": 0}).sort("created_at", -1).to_list(10)
     for k in keys:
         if k.get("key"):
             k["key_masked"] = _mask_key(k["key"])
