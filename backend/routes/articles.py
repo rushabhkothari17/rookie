@@ -139,8 +139,9 @@ async def get_article_by_id(
     article_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.articles.find_one(
-        {"$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
+        {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
     )
     if not article:
@@ -162,8 +163,9 @@ async def download_article(
     from fastapi.responses import Response
     from services.document_service import generate_pdf, generate_docx
 
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.articles.find_one(
-        {"$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
+        {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
     )
     if not article:
