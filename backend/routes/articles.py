@@ -187,7 +187,7 @@ async def download_article(
     safe_name = _re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60]
 
     # Fetch store branding from website settings
-    ws = await db.website_settings.find_one({}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
+    ws = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
     store_name = str(ws.get("store_name") or "")
     accent_color = str(ws.get("accent_color") or "#0f172a")
 
@@ -395,7 +395,7 @@ async def email_article(
 
     app_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
     article_url = f"{app_url}/articles/{article.get('slug') or article_id}"
-    web_s = await db.website_settings.find_one({}, {"_id": 0}) or {}
+    web_s = await db.website_settings.find_one({"tenant_id": tenant_id_of(admin)}, {"_id": 0}) or {}
     subject_tpl = web_s.get("email_article_subject_template") or "{{article_title}} — from {{store_name}}"
     subject = payload.subject or subject_tpl.replace("{{article_title}}", article["title"])
     cta_text = web_s.get("email_article_cta_text") or "View Article"
