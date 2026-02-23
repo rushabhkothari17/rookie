@@ -469,7 +469,7 @@ function ApiKeyManager() {
 
 // ── Main Tab Component ────────────────────────────────────────────────────────
 
-const ALL_TAGS = [...new Set(API_ENDPOINTS.flatMap(e => e.tags))];
+const ALL_TAGS = Array.from(new Set(API_ENDPOINTS.flatMap(e => e.tags)));
 
 export function ApiTab() {
   const [activeTag, setActiveTag] = useState<string>("All");
