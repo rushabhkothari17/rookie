@@ -7,6 +7,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends
 
 from core.security import require_admin
+from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID
 from db.session import db
 from models import WebsiteSettingsUpdate
 from services.audit_service import create_audit_log
