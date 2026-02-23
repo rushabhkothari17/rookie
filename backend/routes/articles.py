@@ -22,8 +22,11 @@ router = APIRouter(prefix="/api", tags=["articles"])
 
 
 async def _get_valid_categories(tenant_id: str = DEFAULT_TENANT_ID) -> set:
-
-router = APIRouter(prefix="/api", tags=["articles"])
+    """Get valid categories from DB, falling back to hardcoded constants."""
+    db_cats = await db.article_categories.find({"tenant_id": tenant_id}, {"_id": 0, "name": 1}).to_list(200)
+    if db_cats:
+        return {c["name"] for c in db_cats}
+    return set(ARTICLE_CATEGORIES)
 
 
 @router.get("/articles/admin/list")
