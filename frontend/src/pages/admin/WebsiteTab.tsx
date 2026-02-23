@@ -445,6 +445,91 @@ function PaymentProviderCard({
   );
 }
 
+// ─── ZohoSystemLinksTable ─────────────────────────────────────────────────────
+function ZohoSystemLinksTable({ items, onSaved }: { items: any[]; onSaved: (key: string, value: string) => void }) {
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const cancel = () => { setEditingKey(null); setDraft(""); };
+  const startEdit = (item: any) => { setEditingKey(item.key); setDraft(String(item.value_json ?? "")); };
+  const save = async (item: any) => {
+    setSaving(true);
+    try {
+      await api.put(`/admin/settings/key/${item.key}`, { value: draft });
+      onSaved(item.key, draft);
+      setEditingKey(null);
+    } catch { toast.error("Failed to save"); } finally { setSaving(false); }
+  };
+  return (
+    <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center gap-2">
+        <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Zoho System Links</span>
+        <span className="text-[10px] text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">system</span>
+      </div>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-slate-50/60 border-b border-slate-200">
+            <th className="text-left px-4 py-2 text-xs font-semibold text-slate-500">Label</th>
+            <th className="text-left px-4 py-2 text-xs font-semibold text-slate-500">Key</th>
+            <th className="text-left px-4 py-2 text-xs font-semibold text-slate-500">Type</th>
+            <th className="text-left px-4 py-2 text-xs font-semibold text-slate-500">Value</th>
+            <th className="px-4 py-2 w-16"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item: any) => (
+            <ZohoRow key={item.key} item={item} editing={editingKey === item.key}
+              draft={draft} setDraft={setDraft} saving={saving}
+              onEdit={() => startEdit(item)} onSave={() => save(item)} onCancel={cancel} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+function ZohoRow({ item, editing, draft, setDraft, saving, onEdit, onSave, onCancel }: {
+  item: any; editing: boolean; draft: string; setDraft: (v: string) => void;
+  saving: boolean; onEdit: () => void; onSave: () => void; onCancel: () => void;
+}) {
+  return (
+    <>
+      <tr className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+        <td className="px-4 py-3 font-medium text-slate-800">{item.description || item.key}</td>
+        <td className="px-4 py-3"><span className="font-mono text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{item.key}</span></td>
+        <td className="px-4 py-3"><span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{item.value_type || "url"}</span></td>
+        <td className="px-4 py-3 text-xs max-w-xs">
+          {item.value_json
+            ? <a href={String(item.value_json)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate block max-w-[220px]">{String(item.value_json)}</a>
+            : <span className="text-slate-400 italic">— not set —</span>}
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex justify-end">
+            <button onClick={onEdit} className="p-1.5 text-slate-400 hover:text-blue-600 rounded" data-testid={"edit-syslink-" + item.key}><Pencil size={13} /></button>
+          </div>
+        </td>
+      </tr>
+      {editing && (
+        <tr className="bg-blue-50/30 border-b border-slate-200">
+          <td colSpan={5} className="px-4 py-3">
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="text-xs text-slate-600 font-medium block mb-1">Value (URL)</label>
+                <Input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="https://..." className="h-8 text-sm" data-testid={"syslink-value-" + item.key} />
+              </div>
+              <button onClick={onSave} disabled={saving} className="flex items-center gap-1 h-8 px-3 text-xs font-medium bg-slate-900 text-white rounded hover:bg-slate-800 disabled:opacity-50">
+                <Save size={12} />{saving ? "Saving…" : "Save"}
+              </button>
+              <button onClick={onCancel} className="flex items-center gap-1 h-8 px-3 text-xs font-medium text-slate-600 border border-slate-200 rounded hover:bg-slate-100">
+                <X size={12} />Cancel
+              </button>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
 // ─── Auth SlideOver titles & descriptions ─────────────────────────────────────
 
 function getAuthSlideTitle(key: AuthSlide | null): string {
