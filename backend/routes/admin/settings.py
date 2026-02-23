@@ -42,7 +42,8 @@ async def get_public_settings():
 
 @router.get("/admin/settings")
 async def get_app_settings(admin: Dict[str, Any] = Depends(require_admin)):
-    settings = await db.app_settings.find_one({}, {"_id": 0})
+    tid = tenant_id_of(admin)
+    settings = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0})
     if not settings:
         return {"settings": {}}
     masked = {**settings}
@@ -57,6 +58,7 @@ async def update_app_settings(
     payload: AppSettingsUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
+    tid = tenant_id_of(admin)
     update = {k: v for k, v in payload.dict().items() if v is not None}
     for key in ["stripe_secret_key", "gocardless_token", "resend_api_key"]:
         if key in update and update[key].startswith("••"):
