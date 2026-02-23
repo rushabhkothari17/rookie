@@ -10,6 +10,14 @@ import resend
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.constants import ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES
+
+
+async def _get_valid_categories() -> set:
+    """Get valid categories from DB, falling back to hardcoded constants."""
+    db_cats = await db.article_categories.find({}, {"_id": 0, "name": 1}).to_list(200)
+    if db_cats:
+        return {c["name"] for c in db_cats}
+    return set(ARTICLE_CATEGORIES)
 from core.helpers import make_id, now_iso, _slugify
 from core.security import get_current_user, require_admin
 from db.session import db
