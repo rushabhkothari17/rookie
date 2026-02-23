@@ -212,7 +212,7 @@ export default function ReferencesSection({ systemItems = [], onSystemItemSave }
             <tbody>
               {/* System (Zoho) rows — shown first */}
               {systemItems.map((item) => (
-                <React.Fragment key={`sys_${item.key}`}>
+                <Fragment key={`sys_${item.key}`}>
                   <tr className="border-b border-slate-100 bg-slate-50/60 hover:bg-slate-100/60 transition-colors">
                     <td className="px-4 py-3">
                       <span className="font-medium text-slate-800">
