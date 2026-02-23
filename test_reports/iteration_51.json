@@ -1,0 +1,58 @@
+{
+  "summary": "Frontend regression test for whitelabel admin panel. All 9 requested features verified and PASSING. Admin hero banner, sidebar order, Zoho System Links table (5 rows), Checkout Builder without partner_tagging_enabled, default hero values, store homepage products, login/logout flow, and new reference creation all work correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Various admin tables (References, Customers filters)",
+        "issues": [
+          "Console hydration warnings: <span> nested inside <tr> and <option> inside <span> - caused by Radix UI SelectTrigger used inside table rows. Non-functional but generates React hydration warnings in browser console."
+        ]
+      }
+    ]
+  },
+  "passed_tests": [
+    "PASS: Admin panel loads with 'Admin Control Centre' hero banner (dark background, ADMINISTRATION label, subtitle)",
+    "PASS: Admin sidebar order correct - People(Users, Customers) > Commerce(Subscriptions, Orders, Promo Codes, Quote Requests, Bank Transactions) > Content(Articles, Override Codes, Categories, Catalog, Terms) > Website(Website Content, Logs) - 14 tabs total",
+    "PASS: Website > References section shows 'ZOHO SYSTEM LINKS system' table at top",
+    "PASS: 5 Zoho system link rows found (zoho_reseller_signup_us, zoho_reseller_signup_ca, zoho_partner_tag_us, zoho_partner_tag_ca, zoho_access_instructions_url)",
+    "PASS: Each Zoho row is editable - click pencil icon opens inline edit with URL input + Save/Cancel",
+    "PASS: Website > Auth & Pages > Checkout Page Builder opens slide-over with DYNAMIC SECTIONS and CART PAGE sections only",
+    "PASS: No partner_tagging_enabled toggle in Checkout Page Builder slide-over",
+    "PASS: CheckoutSectionsBuilder component present with 'Zoho Account Details' and 'Have you tagged us as Partner' sections (Visible)",
+    "PASS: Custom references table appears below Zoho table with 'New Reference' button",
+    "PASS: Creating new custom reference works - form opens with Label/Key/Type/Value/Description fields, auto-generates key from label, shows 'Reference created' toast",
+    "PASS: Website > Branding & Hero shows Store Hero Banner with default values: hero_label='STOREFRONT', hero_title='Welcome'",
+    "PASS: Store Name='Automate Accounts', Brand Colors set (Primary=#0f172a, Accent=#dc2626)",
+    "PASS: Store homepage loads with products (Zoho CRM, Zoho Books, Zoho Expense, Zoho People visible under Zoho Express Setup category)",
+    "PASS: Login flow works - admin@automateaccounts.local / ChangeMe123! logs in successfully",
+    "PASS: Logout flow works - clicking nav-user-trigger shows dropdown with My Profile/Portal/Logout; Logout redirects to /login and clears session"
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "LOW: Console hydration warnings for <span>/<tr>/<option> nesting from Radix UI components in table rows. Not blocking but could be cleaned up."
+  ],
+  "critical_code_review_comments": [
+    "HTML hydration issue: SelectTrigger (shadcn) renders a <span> inside table rows causing React hydration warnings. This is due to native <select> elements (in CustomersTab filter) and Radix UI components being inside <tr>/<tbody>. Low priority - cosmetic/non-functional.",
+    "WebsiteTab.tsx is 1100+ lines - consider splitting into smaller focused components (BrandingSection, AuthSection, etc.) for maintainability."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only test)",
+    "frontend": "100% (all 9 features verified and passing)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!"
+  },
+  "seed_data_creation": "Created and deleted a test reference 'Test Reference Label' (key: test_reference_label) during testing. Cleaned up after test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All features in this iteration fully tested and verified. Key testids: admin-tab-website, website-section-references, website-section-branding, website-section-auth, auth-tile-checkout-builder, create-reference-btn, save-reference-btn, ref-label-input, ref-key-input, ref-value-input, edit-syslink-{key}, syslink-value-{key}, checkout-sections-builder, nav-user-trigger (triggers user dropdown with Logout menuitem). The Zoho System Links table uses 'system' badge and shows 5 rows. Checkout Builder slide-over has DYNAMIC SECTIONS + CART PAGE only (no partner_tagging_enabled toggle). Store hero label defaults to 'STOREFRONT', hero title to 'Welcome'.",
+  "mocked_api_notes": "No mocked APIs per test request"
+}
