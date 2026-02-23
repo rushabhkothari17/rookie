@@ -1,4 +1,6 @@
-"""Authentication routes: register, verify-email, login, /me."""
+"""Authentication routes: register, verify-email, login, /me.
+Supports multi-tenant login via partner_code.
+"""
 from __future__ import annotations
 
 import secrets
@@ -8,8 +10,12 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso, currency_for_country
 from core.security import pwd_context, create_access_token, get_current_user
+from core.tenant import resolve_tenant, DEFAULT_TENANT_ID, PLATFORM_ROLE
 from db.session import db
-from models import RegisterRequest, LoginRequest, VerifyEmailRequest, UpdateProfileRequest, ResendVerificationRequest
+from models import (
+    RegisterRequest, LoginRequest, PartnerLoginRequest, CustomerLoginRequest,
+    VerifyEmailRequest, UpdateProfileRequest, ResendVerificationRequest,
+)
 from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
 
@@ -21,9 +27,204 @@ async def root():
     return {"message": "Automate Accounts API"}
 
 
+# ---------------------------------------------------------------------------
+# Helper: verify user credentials and build JWT
+# ---------------------------------------------------------------------------
+
+async def _authenticate(email: str, password: str, tenant_id: Optional[str], expected_roles: list):
+    """Verify credentials and return a JWT token. Raises HTTPException on failure."""
+    query: Dict[str, Any] = {"email": email.lower()}
+    if tenant_id:
+        query["tenant_id"] = tenant_id
+
+    user = await db.users.find_one(query, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not pwd_context.verify(password, user.get("password_hash", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user.get("is_verified"):
+        raise HTTPException(status_code=403, detail="Email verification required")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
+
+    role = user.get("role", "customer")
+    if expected_roles and role not in expected_roles:
+        raise HTTPException(status_code=403, detail="Access denied for this login type")
+
+    token = create_access_token({
+        "sub": user["id"],
+        "email": user["email"],
+        "role": role,
+        "tenant_id": user.get("tenant_id"),
+        "is_admin": user.get("is_admin", False),
+    })
+    await AuditService.log(
+        action="USER_LOGIN",
+        description=f"User login: {user['email']}",
+        entity_type="User",
+        entity_id=user["id"],
+        actor_type="admin" if user.get("is_admin") else "user",
+        actor_email=user["email"],
+        source="api",
+        meta_json={"role": role, "tenant_id": user.get("tenant_id")},
+    )
+    return {"token": token, "role": role, "tenant_id": user.get("tenant_id")}
+
+
+# ---------------------------------------------------------------------------
+# Partner Login (admin/staff users for a tenant)
+# ---------------------------------------------------------------------------
+
+@router.post("/auth/partner-login")
+async def partner_login(payload: PartnerLoginRequest):
+    """Login for partner organization users (super_admin, admin, staff).
+    Requires partner_code to identify the tenant.
+    """
+    tenant = await resolve_tenant(payload.partner_code)
+    partner_roles = ["partner_super_admin", "partner_admin", "partner_staff",
+                     "platform_super_admin", "super_admin", "admin"]
+    return await _authenticate(payload.email, payload.password, tenant["id"], partner_roles)
+
+
+# ---------------------------------------------------------------------------
+# Customer Login (customers scoped to a tenant)
+# ---------------------------------------------------------------------------
+
+@router.post("/auth/customer-login")
+async def customer_login(payload: CustomerLoginRequest):
+    """Login for customers belonging to a specific partner organization.
+    Requires partner_code to identify the tenant.
+    """
+    tenant = await resolve_tenant(payload.partner_code)
+    customer_roles = ["customer", ""]
+    # Any non-admin user is a customer
+    query: Dict[str, Any] = {"email": payload.email.lower(), "tenant_id": tenant["id"]}
+    user = await db.users.find_one(query, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not pwd_context.verify(payload.password, user.get("password_hash", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user.get("is_verified"):
+        raise HTTPException(status_code=403, detail="Email verification required")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
+
+    # Customers must not be admin users
+    if user.get("is_admin") or user.get("role") in ("partner_super_admin", "partner_admin", "partner_staff"):
+        raise HTTPException(status_code=403, detail="Please use Partner Login for admin accounts")
+
+    token = create_access_token({
+        "sub": user["id"],
+        "email": user["email"],
+        "role": user.get("role", "customer"),
+        "tenant_id": tenant["id"],
+        "is_admin": False,
+    })
+    await AuditService.log(
+        action="CUSTOMER_LOGIN",
+        description=f"Customer login: {user['email']}",
+        entity_type="User",
+        entity_id=user["id"],
+        actor_type="user",
+        actor_email=user["email"],
+        source="api",
+        meta_json={"tenant_id": tenant["id"]},
+    )
+    return {"token": token, "role": "customer", "tenant_id": tenant["id"]}
+
+
+# ---------------------------------------------------------------------------
+# Legacy login (backward compat — platform super admin and existing sessions)
+# ---------------------------------------------------------------------------
+
+@router.post("/auth/login")
+async def login(payload: LoginRequest):
+    """Legacy login endpoint. If partner_code provided, routes to tenant-scoped auth.
+    Without partner_code, only platform_super_admin can log in.
+    """
+    if payload.partner_code:
+        # Route to tenant-scoped login
+        tenant = await resolve_tenant(payload.partner_code)
+        if payload.login_type == "customer":
+            cust_payload = CustomerLoginRequest(
+                partner_code=payload.partner_code,
+                email=payload.email,
+                password=payload.password,
+            )
+            return await customer_login(cust_payload)
+        else:
+            partner_payload = PartnerLoginRequest(
+                partner_code=payload.partner_code,
+                email=payload.email,
+                password=payload.password,
+            )
+            return await partner_login(partner_payload)
+
+    # No partner_code: platform super admin only
+    user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not pwd_context.verify(payload.password, user.get("password_hash", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user.get("is_verified"):
+        raise HTTPException(status_code=403, detail="Email verification required")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
+    if user.get("role") != PLATFORM_ROLE and not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Partner code required. Please use the Partner Login tab.")
+
+    token = create_access_token({
+        "sub": user["id"],
+        "email": user["email"],
+        "role": user.get("role", "admin"),
+        "tenant_id": user.get("tenant_id"),
+        "is_admin": user.get("is_admin", False),
+    })
+    await AuditService.log(
+        action="USER_LOGIN",
+        description=f"Platform login: {user['email']}",
+        entity_type="User",
+        entity_id=user["id"],
+        actor_type="admin",
+        actor_email=user["email"],
+        source="api",
+        meta_json={"role": user.get("role")},
+    )
+    return {"token": token, "role": user.get("role"), "tenant_id": user.get("tenant_id")}
+
+
+# ---------------------------------------------------------------------------
+# Public: get tenant info by partner code (for login prefill)
+# ---------------------------------------------------------------------------
+
+@router.get("/tenant-info")
+async def get_tenant_info(code: str):
+    """Public endpoint to verify a partner code and get tenant display name."""
+    tenant = await db.tenants.find_one({"code": code.lower()}, {"_id": 0, "id": 1, "name": 1, "code": 1, "status": 1})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Partner code not found")
+    if tenant.get("status") != "active":
+        raise HTTPException(status_code=403, detail="Organization is inactive")
+    return {"tenant": {"name": tenant["name"], "code": tenant["code"]}}
+
+
+# ---------------------------------------------------------------------------
+# Register
+# ---------------------------------------------------------------------------
+
 @router.post("/auth/register")
-async def register(payload: RegisterRequest):
-    existing = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+async def register(payload: RegisterRequest, partner_code: Optional[str] = None):
+    # Resolve tenant
+    if partner_code:
+        tenant = await resolve_tenant(partner_code)
+        tenant_id = tenant["id"]
+    else:
+        tenant_id = DEFAULT_TENANT_ID
+
+    existing = await db.users.find_one(
+        {"email": payload.email.lower(), "tenant_id": tenant_id},
+        {"_id": 0},
+    )
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -41,6 +242,8 @@ async def register(payload: RegisterRequest):
         "phone": payload.phone,
         "is_verified": False,
         "is_admin": False,
+        "role": "customer",
+        "tenant_id": tenant_id,
         "verification_code": verification_code,
         "created_at": now_iso(),
     }
@@ -53,6 +256,7 @@ async def register(payload: RegisterRequest):
     await db.customers.insert_one({
         "id": customer_id,
         "user_id": user_id,
+        "tenant_id": tenant_id,
         "company_name": payload.company_name,
         "phone": payload.phone,
         "currency": currency,
@@ -67,6 +271,7 @@ async def register(payload: RegisterRequest):
     await db.addresses.insert_one({
         "id": make_id(),
         "customer_id": customer_id,
+        "tenant_id": tenant_id,
         "line1": payload.address.line1,
         "line2": payload.address.line2 or "",
         "city": payload.address.city,
@@ -93,9 +298,8 @@ async def register(payload: RegisterRequest):
         actor_type="user",
         actor_email=payload.email.lower(),
         source="customer_ui",
-        meta_json={"company_name": payload.company_name, "country": payload.address.country},
+        meta_json={"company_name": payload.company_name, "tenant_id": tenant_id},
     )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "user", "entity_id": user_id, "action": "registered", "actor": payload.email.lower(), "details": {"company_name": payload.company_name, "country": payload.address.country}, "created_at": now_iso()})
     return {
         "message": "Verification required",
         "verification_code": verification_code,
@@ -149,7 +353,7 @@ async def verify_email(payload: VerifyEmailRequest):
     await db.email_outbox.insert_one({
         "id": make_id(),
         "to": payload.email.lower(),
-        "subject": "Welcome to Automate Accounts",
+        "subject": "Welcome",
         "body": "Your email has been verified.",
         "type": "welcome",
         "status": "MOCKED",
@@ -157,36 +361,6 @@ async def verify_email(payload: VerifyEmailRequest):
     })
     await create_audit_log(entity_type="user", entity_id=user["id"], action="email_verified", actor=payload.email.lower(), details={})
     return {"message": "Verified"}
-
-
-@router.post("/auth/login")
-async def login(payload: LoginRequest):
-    user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    if not pwd_context.verify(payload.password, user.get("password_hash")):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    if not user.get("is_verified"):
-        raise HTTPException(status_code=403, detail="Email verification required")
-    if not user.get("is_active", True):
-        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
-    token = create_access_token({
-        "sub": user["id"],
-        "email": user["email"],
-        "is_admin": user.get("is_admin", False),
-    })
-    await AuditService.log(
-        action="USER_LOGIN",
-        description=f"User login: {user['email']}",
-        entity_type="User",
-        entity_id=user["id"],
-        actor_type="admin" if user.get("is_admin") else "user",
-        actor_email=user["email"],
-        source="api",
-        meta_json={"role": user.get("role", "customer")},
-    )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "user", "entity_id": user["id"], "action": "login", "actor": user["email"], "details": {"role": user.get("role", "customer")}, "created_at": now_iso()})
-    return {"token": token}
 
 
 @router.get("/me")
@@ -200,11 +374,12 @@ async def get_me(user: Dict[str, Any] = Depends(get_current_user)):
             "id": user["id"],
             "email": user["email"],
             "full_name": user["full_name"],
-            "company_name": user["company_name"],
-            "phone": user["phone"],
+            "company_name": user.get("company_name", ""),
+            "phone": user.get("phone", ""),
             "is_verified": user.get("is_verified", False),
             "is_admin": user.get("is_admin", False),
             "role": user.get("role", "customer"),
+            "tenant_id": user.get("tenant_id"),
             "must_change_password": user.get("must_change_password", False),
         },
         "customer": customer,
@@ -243,6 +418,9 @@ async def update_me(
         await db.customers.update_one({"id": customer["id"]}, {"$set": update_cust})
 
     if update_user or update_cust:
-        await create_audit_log(entity_type="user", entity_id=user["id"], action="profile_updated", actor=user["email"], details={k: v for k, v in {**update_user, **update_cust}.items()})
-
+        await create_audit_log(
+            entity_type="user", entity_id=user["id"],
+            action="profile_updated", actor=user["email"],
+            details={k: v for k, v in {**update_user, **update_cust}.items()},
+        )
     return {"message": "Profile updated"}
