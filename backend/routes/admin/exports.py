@@ -19,12 +19,19 @@ router = APIRouter(prefix="/api", tags=["admin-exports"])
 
 
 def _serialize_val(v: Any) -> str:
-    """Serialize a value for CSV. Lists/dicts become JSON strings."""
+    """Serialize a value for CSV. Lists/dicts become JSON strings.
+    Cells starting with formula characters are prefixed with a single quote
+    to prevent formula injection when opened in spreadsheet apps."""
     if v is None:
         return ""
     if isinstance(v, (list, dict)):
-        return json.dumps(v, ensure_ascii=False)
-    return str(v)
+        result = json.dumps(v, ensure_ascii=False)
+    else:
+        result = str(v)
+    # CSV formula injection prevention (Excel / LibreOffice)
+    if result and result[0] in ("=", "+", "-", "@", "\t", "\r"):
+        result = "'" + result
+    return result
 
 
 def _make_csv_response(rows: List[Dict[str, Any]], filename: str) -> StreamingResponse:
