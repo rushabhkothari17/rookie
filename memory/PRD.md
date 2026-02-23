@@ -99,8 +99,41 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 
 **Bug 3 - Cross-Tab Session Sync:** Added storage event listener in AuthContext to sync login/logout across browser tabs sharing the same localStorage.
 
+**Bug 4 - Partner Code Resolution:** Fixed `store.py` - partner_code was being used directly as tenant_id instead of looking up actual tenant. Now properly resolves via `_resolve_tenant_id()` async function.
+
 ### Security Hardening - IDOR Prevention (Feb 2026)
 - **orders.py:** Added tenant-scope validation for `customer_id` and `subscription_id` updates
 - **subscriptions.py:** Added tenant-scope validation for `customer_id` updates, fixed webhook customer lookups
 - **bank_transactions.py:** Added tenant-scope validation for `linked_order_id`
+- **settings.py:** Added file type and size validation for logo uploads (2MB max)
 - All cross-tenant access attempts now return 400/404 errors as expected
+
+### Phase 6: Integrations & GDPR (Feb 2026)
+**Zoho Mail Integration:**
+- OAuth2 flow with US/CA datacenter selection
+- Connection validation endpoint
+- Stored alongside Resend as alternative email provider
+
+**Zoho CRM Integration:**
+- OAuth2 flow with US/CA datacenter selection  
+- Dynamic module and field discovery
+- Field mapping UI (webapp modules → CRM modules)
+- Supports: Customers, Orders, Subscriptions, Quote Requests mapping
+
+**GDPR Compliance:**
+- Customer data export (JSON + ZIP with CSV/TXT)
+- Right-to-erasure (account anonymization)
+- Admin GDPR request tracking
+- Active subscription check before deletion
+
+**New Files:**
+- `backend/services/zoho_service.py` - Zoho Mail/CRM service classes
+- `backend/services/gdpr_service.py` - GDPR export/deletion logic
+- `backend/routes/admin/integrations.py` - Integration CRUD endpoints
+- `backend/routes/gdpr.py` - GDPR customer/admin endpoints
+- `frontend/src/pages/admin/CRMTab.tsx` - CRM integration UI
+
+### Test Data
+- Comprehensive test cases CSV: `/app/test_cases_comprehensive.csv` (121 test cases)
+- Tenant B seeded with: 5 customers, 5 products, 3 subscriptions, 5 orders, 3 articles, 3 quote requests, 2 promo codes, 3 bank transactions
+
