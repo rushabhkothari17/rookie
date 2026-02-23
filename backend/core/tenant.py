@@ -129,3 +129,22 @@ async def get_tenant_super_admin(
             return {**admin, "_view_as": x_view_as_tenant}
     return admin
 
+
+async def resolve_api_key_tenant(
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+) -> Optional[str]:
+    """FastAPI dependency: resolve tenant_id from X-API-Key header.
+    Returns None if header missing or key invalid/inactive."""
+    if not x_api_key:
+        return None
+    key_doc = await db.api_keys.find_one(
+        {"key": x_api_key, "is_active": True}, {"_id": 0, "tenant_id": 1, "id": 1}
+    )
+    if not key_doc:
+        return None
+    # Update last_used_at
+    await db.api_keys.update_one(
+        {"id": key_doc["id"]}, {"$set": {"last_used_at": _now_iso()}}
+    )
+    return key_doc["tenant_id"]
+
