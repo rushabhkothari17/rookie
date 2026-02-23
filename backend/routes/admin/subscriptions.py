@@ -14,8 +14,7 @@ from core.constants import ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHOD
 from db.session import db
 from models import SubscriptionUpdate, ManualSubscriptionCreate
 from services.audit_service import create_audit_log
-
-router = APIRouter(prefix="/api", tags=["admin-subscriptions"])
+from services.webhook_service import dispatch_event
 
 
 @router.get("/admin/filter-options")
