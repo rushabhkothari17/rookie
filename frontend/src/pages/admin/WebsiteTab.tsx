@@ -698,6 +698,7 @@ export default function WebsiteTab() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AuthTile title="Customer Portal" preview={ws.portal_title || undefined} description="Portal heading & subtitle" onEdit={() => setAuthSlide("portal")} testId="auth-tile-portal" />
                 <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
+                <AuthTile title="Admin Panel" preview={ws.admin_page_title || "Admin Control Centre"} description="Admin panel heading, subtitle, and badge text" onEdit={() => setAuthSlide("admin_panel")} testId="auth-tile-admin-panel" />
                 <AuthTile title="404 Not Found" preview={ws.page_404_title || undefined} description="Error page content" onEdit={() => setAuthSlide("not_found")} testId="auth-tile-404" />
               </div>
 
