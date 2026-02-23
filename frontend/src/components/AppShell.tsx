@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import TopNav from "@/components/TopNav";
 import CategoryTabs from "@/components/CategoryTabs";
+import AppFooter from "@/components/AppFooter";
 
 export default function AppShell({
   activeCategory,
@@ -12,7 +13,7 @@ export default function AppShell({
   showCategoryTabs?: boolean;
 }) {
   return (
-    <div className="min-h-screen aa-bg" data-testid="app-shell">
+    <div className="min-h-screen aa-bg flex flex-col" data-testid="app-shell">
       <TopNav />
       {showCategoryTabs && (
         <div
@@ -24,9 +25,10 @@ export default function AppShell({
           </div>
         </div>
       )}
-      <main className="aa-container py-10" data-testid="app-shell-main">
+      <main className="aa-container py-10 flex-1" data-testid="app-shell-main">
         {children}
       </main>
+      <AppFooter />
     </div>
   );
 }
