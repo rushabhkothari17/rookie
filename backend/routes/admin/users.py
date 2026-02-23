@@ -172,3 +172,27 @@ async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(get_tenant
     logs = await db.audit_logs.find({"entity_type": "user", "entity_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
+
+@router.post("/admin/users/{user_id}/unlock")
+async def admin_unlock_user(
+    user_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Admin override: unlock a brute-force locked account and reset failed login attempts."""
+    tf = get_tenant_filter(admin)
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "id": 1, "email": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"failed_login_attempts": 0, "lockout_until": None}},
+    )
+    await create_audit_log(
+        entity_type="user",
+        entity_id=user_id,
+        action="admin_unlock",
+        actor=admin.get("email", "admin"),
+        details={"email": user.get("email"), "unlocked_by": admin.get("email")},
+    )
+    return {"message": "User account unlocked successfully", "user_id": user_id}
+
