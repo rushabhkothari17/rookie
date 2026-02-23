@@ -109,6 +109,11 @@ async def export_orders_csv(
         enriched.append(o)
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await create_audit_log(
+        entity_type="export", entity_id="orders",
+        action="data_exported", actor=admin.get("email", "admin"),
+        details={"records": len(enriched), "tenant_id": tenant_id_of(admin)},
+    )
     return _make_csv_response(enriched, f"orders_{today}.csv")
 
 
