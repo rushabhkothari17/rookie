@@ -397,7 +397,6 @@ function CurrencyOverrideWidget() {
         <Input placeholder="Currency (USD/CAD)" value={val.currency} onChange={(e) => setVal({ ...val, currency: e.target.value })} data-testid="admin-currency-value" />
         <Button onClick={handle} data-testid="admin-currency-submit">Override</Button>
       </div>
-    </div>
       <ImportModal
         entity="customers"
         entityLabel="Customers"
@@ -405,5 +404,6 @@ function CurrencyOverrideWidget() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }

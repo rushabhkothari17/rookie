@@ -339,7 +339,6 @@ export function ProductsTab() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="catalog"
         entityLabel="Catalog"
@@ -347,5 +346,6 @@ export function ProductsTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }

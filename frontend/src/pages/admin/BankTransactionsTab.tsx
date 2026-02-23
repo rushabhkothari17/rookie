@@ -256,7 +256,6 @@ export function BankTransactionsTab() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="bank-transactions"
         entityLabel="Bank Transactions"
@@ -264,5 +263,6 @@ export function BankTransactionsTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }

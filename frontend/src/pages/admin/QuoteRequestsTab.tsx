@@ -259,7 +259,6 @@ export function QuoteRequestsTab() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="quote-requests"
         entityLabel="Quote Requests"
@@ -267,5 +266,6 @@ export function QuoteRequestsTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }

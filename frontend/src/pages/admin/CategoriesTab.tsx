@@ -169,7 +169,6 @@ export function CategoriesTab() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="categories"
         entityLabel="Categories"
@@ -177,5 +176,6 @@ export function CategoriesTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }

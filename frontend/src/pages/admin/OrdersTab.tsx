@@ -542,7 +542,6 @@ export function OrdersTab() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="orders"
         entityLabel="Orders"
@@ -550,5 +549,6 @@ export function OrdersTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }

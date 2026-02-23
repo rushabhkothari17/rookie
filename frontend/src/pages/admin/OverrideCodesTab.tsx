@@ -270,7 +270,6 @@ export function OverrideCodesTab() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="override-codes"
         entityLabel="Override Codes"
@@ -278,5 +277,6 @@ export function OverrideCodesTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }
