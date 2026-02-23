@@ -385,7 +385,7 @@ async def admin_delete_category(
     cat_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    cat = await db.categories.find_one({"id": cat_id})
+    cat = await db.categories.find_one({**get_tenant_filter(admin), "id": cat_id})
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
     product_count = await db.products.count_documents({"category": cat["name"]})
@@ -407,11 +407,19 @@ async def admin_delete_category(
 
 @router.get("/admin/products/{product_id}/logs")
 async def get_product_logs(product_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    product = await db.products.find_one({**tf, "id": product_id}, {"_id": 0, "id": 1})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
     logs = await db.audit_logs.find({"entity_type": "product", "entity_id": product_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
 @router.get("/admin/categories/{cat_id}/logs")
 async def get_category_logs(cat_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    cat = await db.categories.find_one({**tf, "id": cat_id}, {"_id": 0, "id": 1})
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
     logs = await db.audit_logs.find({"entity_type": "category", "entity_id": cat_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
