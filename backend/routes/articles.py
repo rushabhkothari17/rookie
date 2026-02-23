@@ -45,8 +45,8 @@ async def list_articles_admin(
         query["category"] = category
     if search:
         query["$or"] = [
-            {"title": {"$regex": search, "$options": "i"}},
-            {"id": {"$regex": search, "$options": "i"}},
+            {"title": {"$regex": _re.escape(search), "$options": "i"}},
+            {"id": {"$regex": _re.escape(search), "$options": "i"}},
         ]
     if created_from:
         query.setdefault("created_at", {})["$gte"] = created_from

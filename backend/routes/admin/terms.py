@@ -1,12 +1,14 @@
 """Admin: Terms & Conditions management."""
 from __future__ import annotations
 
+import re as _re
+
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
-from core.security import require_admin, get_current_user
+from core.security import require_admin
 from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import TermsCreate, TermsUpdate
