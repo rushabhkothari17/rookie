@@ -150,12 +150,14 @@ async def admin_set_user_active(
     active: bool,
     admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
-    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    # SECURITY FIX: Apply tenant filter to prevent cross-tenant user manipulation
+    tf = get_tenant_filter(admin)
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     old_state = user.get("is_active", True)
-    await db.users.update_one({"id": user_id}, {"$set": {"is_active": active, "updated_at": now_iso()}})
+    await db.users.update_one({**tf, "id": user_id}, {"$set": {"is_active": active, "updated_at": now_iso()}})
 
     await create_audit_log(
         entity_type="user",
@@ -169,6 +171,11 @@ async def admin_set_user_active(
 
 @router.get("/admin/users/{user_id}/logs")
 async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
+    # SECURITY FIX: Verify user belongs to admin's tenant before returning logs
+    tf = get_tenant_filter(admin)
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "id": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     logs = await db.audit_logs.find({"entity_type": "user", "entity_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
