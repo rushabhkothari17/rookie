@@ -705,7 +705,8 @@ async def ensure_db_security_indexes():
         ("products", [("tenant_id", 1), ("is_active", 1)]),
         ("articles", [("tenant_id", 1), ("status", 1)]),
         ("promo_codes", [("tenant_id", 1), ("code", 1)]),
-        ("api_keys", [("key", 1), ("is_active", 1)]),
+        ("api_keys", [("key_hash", 1), ("is_active", 1)]),
+        ("api_keys", [("key", 1), ("is_active", 1)]),      # legacy plaintext fallback
         ("api_keys", [("tenant_id", 1), ("is_active", 1)]),
         ("quote_requests", [("tenant_id", 1), ("created_at", -1)]),
         ("bank_transactions", [("tenant_id", 1), ("date", -1)]),
@@ -719,11 +720,54 @@ async def ensure_db_security_indexes():
             pass
 
 
+async def migrate_api_key_hashes():
+    """One-time migration: hash any plaintext API keys created before hashing was introduced."""
+    import hashlib
+    legacy_keys = await db.api_keys.find(
+        {"key": {"$exists": True}, "key_hash": {"$exists": False}}, {"_id": 0, "id": 1, "key": 1}
+    ).to_list(1000)
+    for doc in legacy_keys:
+        raw_key = doc["key"]
+        key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+        suffix = raw_key[-8:]
+        await db.api_keys.update_one(
+            {"id": doc["id"]},
+            {"$set": {"key_hash": key_hash, "key_suffix": suffix}, "$unset": {"key": ""}},
+        )
+    if legacy_keys:
+        logging.info("Migrated %d legacy API keys to SHA-256 hashes", len(legacy_keys))
+
+
+def _validate_startup_secrets():
+    """Warn loudly if weak/default secrets are detected."""
+    weak_jwt = len(JWT_SECRET) < 32 or JWT_SECRET in (
+        "change_me_super_secret", "secret", "changeme", "your-secret-key"
+    )
+    weak_admin_pw = ADMIN_PASSWORD in ("ChangeMe123!", "password", "admin123", "changeme")
+
+    if ENVIRONMENT == "production":
+        if weak_jwt:
+            raise RuntimeError(
+                "FATAL: JWT_SECRET is weak or default. Set a strong secret (≥ 32 random chars) before running in production."
+            )
+        if weak_admin_pw:
+            raise RuntimeError(
+                "FATAL: ADMIN_PASSWORD is a default/weak value. Change it before running in production."
+            )
+    else:
+        if weak_jwt:
+            logging.warning("⚠️  JWT_SECRET is weak/default — acceptable in dev but MUST be changed before production.")
+        if weak_admin_pw:
+            logging.warning("⚠️  ADMIN_PASSWORD is a known default — MUST be changed before production.")
+
+
 @app.on_event("startup")
 
 async def startup_tasks():
+    _validate_startup_secrets()
     await ensure_audit_indexes()
     await ensure_db_security_indexes()
+    await migrate_api_key_hashes()
     await SettingsService.cleanup_obsolete()
     await SettingsService.seed()
     await seed_admin_user()
