@@ -90,10 +90,12 @@ class AuditService:
         tenant_id: Optional[str] = None,
     ) -> None:
         """Fire-and-forget audit record insert."""
+        # Auto-resolve tenant_id from request context if not explicitly provided
+        resolved_tenant_id = tenant_id or _current_tenant_id.get()
         doc = {
             "id": make_id(),
             "occurred_at": now_iso(),
-            "tenant_id": tenant_id,
+            "tenant_id": resolved_tenant_id,
             "actor_type": actor_type,
             "actor_id": actor_id,
             "actor_email": actor_email,
