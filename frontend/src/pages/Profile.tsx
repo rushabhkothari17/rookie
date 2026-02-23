@@ -22,6 +22,10 @@ export default function Profile() {
     country: "",
   });
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
