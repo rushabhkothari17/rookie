@@ -697,8 +697,7 @@ export default function WebsiteTab() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AuthTile title="Checkout Page Builder" description="Dynamic sections + legacy Zoho & partner settings" onEdit={() => setAuthSlide("checkout_builder")} testId="auth-tile-checkout-builder" />
-                <AuthTile title="Checkout Success" preview={ws.checkout_success_title || undefined} description="Page after successful payment" onEdit={() => setAuthSlide("checkout_success")} testId="auth-tile-checkout-success" />
-                <AuthTile title="Bank Transfer Success" preview={ws.bank_success_title || undefined} description="Page after bank transfer order" onEdit={() => setAuthSlide("bank_transfer")} testId="auth-tile-bank-transfer" />
+                <AuthTile title="Checkout Success" preview={ws.checkout_success_title || undefined} description="Page after successful payment or bank transfer" onEdit={() => setAuthSlide("checkout_success")} testId="auth-tile-checkout-success" />
               </div>
 
               <SectionDivider label="Messages" />
