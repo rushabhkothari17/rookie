@@ -197,6 +197,7 @@ export function SubscriptionsTab() {
         actions={
           <>
             <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-subs-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-subs-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
             <Button size="sm" onClick={() => setShowManualDialog(true)} data-testid="admin-create-sub-btn">Create Manual</Button>
           </>
         }

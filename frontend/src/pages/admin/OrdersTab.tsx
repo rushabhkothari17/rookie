@@ -233,6 +233,7 @@ export function OrdersTab() {
         actions={
           <>
             <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-orders-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-orders-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
             <Button size="sm" onClick={() => setShowManualDialog(true)} data-testid="admin-create-order-btn">Create Manual Order</Button>
           </>
         }

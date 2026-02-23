@@ -128,6 +128,7 @@ export function QuoteRequestsTab() {
         actions={
           <>
             <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-quotes-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-quotes-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
             <Button size="sm" onClick={openCreate} data-testid="admin-create-quote-btn">+ New Quote Request</Button>
           </>
         }
