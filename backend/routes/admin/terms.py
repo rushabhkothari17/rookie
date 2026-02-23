@@ -116,7 +116,7 @@ async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(get
         await db.terms_and_conditions.update_many({**tf, "is_default": True}, {"$set": {"is_default": False}})
     terms_id = make_id()
     await db.terms_and_conditions.insert_one({
-        "id": terms_id, "tenant_id": tid, "title": payload.title, "content": payload.content,
+        "id": terms_id, "tenant_id": tid, "title": payload.title, "content": _sanitize_html(payload.content),
         "is_default": payload.is_default, "status": payload.status, "created_at": now_iso(),
     })
     await create_audit_log(
