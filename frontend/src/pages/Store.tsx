@@ -110,9 +110,10 @@ export default function Store() {
                     data-testid={`category-btn-${cat.name}`}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all text-left ${
                       activeCategory === cat.name
-                        ? "bg-slate-900 text-white font-semibold"
+                        ? "text-white font-semibold"
                         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                     }`}
+                    style={activeCategory === cat.name ? { backgroundColor: "var(--aa-primary)" } : undefined}
                   >
                     <span className="truncate">{cat.name}</span>
                     <span className={`text-xs shrink-0 ml-2 ${
