@@ -46,6 +46,45 @@ export default function Profile() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const response = await api.get("/me/data-export/download", {
+        responseType: "blob"
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "my_data_export.zip");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Data export downloaded");
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await api.post("/me/request-deletion", {
+        reason: deleteReason,
+        confirm: true
+      });
+      toast.success("Account deleted. You will be logged out.");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Deletion failed");
+      setDeleting(false);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
