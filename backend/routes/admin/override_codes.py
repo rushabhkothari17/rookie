@@ -30,7 +30,8 @@ async def list_override_codes(
     expires_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if customer_id:
         query["customer_id"] = customer_id
     if created_from:
@@ -98,11 +99,13 @@ async def create_override_code(
     payload: OverrideCodeCreate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
     existing = await db.override_codes.find_one({"code": payload.code.strip()}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="An override code with this value already exists.")
 
-    customer = await db.customers.find_one({"id": payload.customer_id}, {"_id": 0})
+    customer = await db.customers.find_one({**tf, "id": payload.customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
@@ -113,6 +116,7 @@ async def create_override_code(
 
     await db.override_codes.insert_one({
         "id": code_id,
+        "tenant_id": tid,
         "code": payload.code.strip(),
         "customer_id": payload.customer_id,
         "status": "active",
