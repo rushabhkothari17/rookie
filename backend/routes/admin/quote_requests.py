@@ -22,6 +22,7 @@ async def request_quote(
 ):
     quote: Dict[str, Any] = {
         "id": make_id(),
+        "tenant_id": user.get("tenant_id") or DEFAULT_TENANT_ID,
         "product_id": payload.product_id,
         "product_name": payload.product_name,
         "name": payload.name,
@@ -92,6 +93,7 @@ async def admin_create_quote_request(
 ):
     quote: Dict[str, Any] = {
         "id": make_id(),
+        "tenant_id": tenant_id_of(admin),
         "product_id": payload.get("product_id", ""),
         "product_name": payload.get("product_name", ""),
         "name": payload.get("name", ""),
