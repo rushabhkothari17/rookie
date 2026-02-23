@@ -6,6 +6,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from core.security import require_admin
 from db.session import db
 from models import ArticleEmailTemplateCreate, ArticleEmailTemplateUpdate
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/api", tags=["article-email-templates"])
 
 @router.get("/article-email-templates")
 async def list_article_email_templates(
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     templates = await db.article_email_templates.find(
         {}, {"_id": 0}
@@ -26,7 +27,7 @@ async def list_article_email_templates(
 @router.post("/article-email-templates")
 async def create_article_email_template(
     payload: ArticleEmailTemplateCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     if not payload.name.strip():
         raise HTTPException(status_code=400, detail="Template name is required")
@@ -49,7 +50,7 @@ async def create_article_email_template(
 async def update_article_email_template(
     template_id: str,
     payload: ArticleEmailTemplateUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tpl = await db.article_email_templates.find_one({"id": template_id}, {"_id": 0})
     if not tpl:
@@ -71,7 +72,7 @@ async def update_article_email_template(
 @router.delete("/article-email-templates/{template_id}")
 async def delete_article_email_template(
     template_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tpl = await db.article_email_templates.find_one({"id": template_id}, {"_id": 0})
     if not tpl:

@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from core.constants import ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES
 from core.helpers import make_id, now_iso, _slugify
 from core.security import get_current_user, require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from db.session import db
 from models import ArticleCreate, ArticleEmailRequest, ArticleUpdate, ArticleSendEmailRequest
 from services.audit_service import AuditService, create_audit_log
@@ -37,7 +37,7 @@ async def list_articles_admin(
     search: Optional[str] = None,
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf, "deleted_at": {"$exists": False}}
@@ -125,7 +125,7 @@ async def validate_scope_article(
 @router.get("/articles/{article_id}/logs")
 async def get_article_logs(
     article_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     logs = await db.article_logs.find({"article_id": article_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
@@ -205,7 +205,7 @@ async def download_article(
 @router.post("/articles")
 async def create_article(
     payload: ArticleCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
@@ -262,7 +262,7 @@ async def create_article(
 async def update_article(
     article_id: str,
     payload: ArticleUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
@@ -336,7 +336,7 @@ async def update_article(
 @router.delete("/articles/{article_id}")
 async def delete_article(
     article_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
@@ -370,7 +370,7 @@ async def delete_article(
 async def email_article(
     article_id: str,
     payload: ArticleEmailRequest,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0, "content": 0})
     if not article:
@@ -438,7 +438,7 @@ async def email_article(
 async def send_article_email(
     article_id: str,
     payload: ArticleSendEmailRequest,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     """Send article to arbitrary email addresses (To/CC/BCC) with optional PDF attachment."""
     article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})

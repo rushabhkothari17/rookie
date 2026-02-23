@@ -6,6 +6,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from core.security import require_admin
 from db.session import db
 
@@ -144,14 +145,14 @@ async def _seed_defaults() -> None:
 
 
 @router.get("/article-templates")
-async def list_templates(admin: Dict[str, Any] = Depends(require_admin)):
+async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     await _seed_defaults()
     templates = await db.article_templates.find({}, {"_id": 0}).sort("name", 1).to_list(200)
     return {"templates": templates}
 
 
 @router.post("/article-templates")
-async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depends(require_admin)):
+async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
     name = (payload.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="name is required")
@@ -171,7 +172,7 @@ async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depen
 
 
 @router.put("/article-templates/{template_id}")
-async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(require_admin)):
+async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tpl = await db.article_templates.find_one({"id": template_id}, {"_id": 0})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
@@ -185,7 +186,7 @@ async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict
 
 
 @router.delete("/article-templates/{template_id}")
-async def delete_template(template_id: str, admin: Dict[str, Any] = Depends(require_admin)):
+async def delete_template(template_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tpl = await db.article_templates.find_one({"id": template_id}, {"_id": 0})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")

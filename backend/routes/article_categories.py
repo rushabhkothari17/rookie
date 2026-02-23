@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin, get_current_user
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from db.session import db
 from models import ArticleCategoryCreate, ArticleCategoryUpdate
 
@@ -21,7 +21,7 @@ def _slugify(name: str) -> str:
 
 @router.get("/article-categories")
 async def list_article_categories(
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     cats = await db.article_categories.find(tf, {"_id": 0}).sort("name", 1).to_list(200)
@@ -31,7 +31,7 @@ async def list_article_categories(
 @router.get("/article-categories/public")
 async def list_article_categories_public(partner_code: Optional[str] = None):
     """Public endpoint for customer-facing category lists."""
-    from core.tenant import resolve_tenant
+    from core.tenant import resolve_tenant, get_tenant_admin
     if partner_code:
         try:
             tenant = await resolve_tenant(partner_code)
@@ -47,7 +47,7 @@ async def list_article_categories_public(partner_code: Optional[str] = None):
 @router.post("/article-categories")
 async def create_article_category(
     payload: ArticleCategoryCreate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
@@ -77,7 +77,7 @@ async def create_article_category(
 async def update_article_category(
     category_id: str,
     payload: ArticleCategoryUpdate,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     cat = await db.article_categories.find_one({**tf, "id": category_id}, {"_id": 0})
@@ -101,7 +101,7 @@ async def update_article_category(
 @router.delete("/article-categories/{category_id}")
 async def delete_article_category(
     category_id: str,
-    admin: Dict[str, Any] = Depends(require_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     cat = await db.article_categories.find_one({**tf, "id": category_id}, {"_id": 0})
