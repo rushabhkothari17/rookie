@@ -65,6 +65,7 @@ from routes.admin.website import router as admin_website_router
 from routes.admin.references import router as references_router
 from routes.admin.email_templates import router as email_templates_router
 from routes.articles import router as articles_router
+from routes.article_templates import router as article_templates_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
@@ -89,6 +90,7 @@ app.include_router(admin_website_router)
 app.include_router(references_router)
 app.include_router(email_templates_router)
 app.include_router(articles_router)
+app.include_router(article_templates_router)
 
 
 
