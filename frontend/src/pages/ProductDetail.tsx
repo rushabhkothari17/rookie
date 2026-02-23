@@ -412,6 +412,10 @@ export default function ProductDetail() {
       }
       return { label: "Request a Quote", onClick: () => setShowQuoteModal(true) };
     }
+    // Fallback: no payment methods configured — force quote request
+    if (!ws.stripe_enabled && !ws.gocardless_enabled && product.pricing_type === "fixed") {
+      return { label: "Request a Quote", onClick: () => setShowQuoteModal(true) };
+    }
     if (product.pricing_type === "external") {
       return { label: "Add to cart", onClick: handleAddToCart };
     }
