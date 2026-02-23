@@ -19,8 +19,8 @@ type AuthContextType = {
   customer: any;
   address: any;
   loading: boolean;
-  /** login_type: "partner" | "customer" */
-  login: (email: string, password: string, partner_code?: string, login_type?: string) => Promise<void>;
+  /** login — returns { is_admin, role } for redirect */
+  login: (email: string, password: string, partner_code?: string, login_type?: string) => Promise<{ is_admin: boolean; role: string }>;
   logout: () => void;
   register: (payload: any, partner_code?: string) => Promise<any>;
   verifyEmail: (email: string, code: string) => Promise<void>;
