@@ -281,7 +281,9 @@ class SettingsService:
 
     @staticmethod
     async def seed() -> None:
-        """On startup: insert any missing settings with default values."""
+        """On startup: insert any missing settings with default values.
+        Also migrates category/description/value_type when schema changes.
+        """
         for s in SETTINGS_DEFAULTS:
             existing = await db.app_settings.find_one({"key": s["key"]})
             if not existing:
@@ -296,6 +298,20 @@ class SettingsService:
                     "updated_at": now_iso(),
                     "updated_by": "system_seed",
                 })
+            else:
+                # Migrate metadata fields (category, description, value_type) if they changed
+                updates = {}
+                if existing.get("category") != s["category"]:
+                    updates["category"] = s["category"]
+                if existing.get("description") != s["description"]:
+                    updates["description"] = s["description"]
+                if existing.get("value_type") != s["value_type"]:
+                    updates["value_type"] = s["value_type"]
+                if updates:
+                    await db.app_settings.update_one(
+                        {"key": s["key"]},
+                        {"$set": updates},
+                    )
 
     @staticmethod
     async def cleanup_obsolete() -> None:
