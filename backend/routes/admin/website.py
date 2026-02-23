@@ -228,6 +228,13 @@ async def get_website_settings_public():
         "logo_url": app_s.get("logo_url") or "",
         "primary_color": app_s.get("primary_color") or "",
         "accent_color": app_s.get("accent_color") or "",
+        "danger_color": app_s.get("danger_color") or "",
+        "success_color": app_s.get("success_color") or "",
+        "warning_color": app_s.get("warning_color") or "",
+        "background_color": app_s.get("background_color") or "",
+        "text_color": app_s.get("text_color") or "",
+        "border_color": app_s.get("border_color") or "",
+        "muted_color": app_s.get("muted_color") or "",
         # Content overrides (from website_settings)
         **{k: v for k, v in web_s.items() if v is not None and k != "_id"},
         # Payment flags (always from SettingsService)

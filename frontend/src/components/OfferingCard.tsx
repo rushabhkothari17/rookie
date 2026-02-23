@@ -59,7 +59,7 @@ export default function OfferingCard({ product }: { product: any }) {
         <ul className="mt-4 space-y-1.5 text-sm text-slate-500" data-testid={`offering-bullets-${product.id}`}>
           {bullets.map((item: string, idx: number) => (
             <li key={idx} className="flex items-start gap-2">
-              <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-red-400" />
+              <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
               {item}
             </li>
           ))}

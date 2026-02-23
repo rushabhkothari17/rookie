@@ -38,7 +38,7 @@ export default function ProductHero({ product }: { product: any }) {
             <ul className="mt-5 space-y-1.5" data-testid="product-hero-bullets">
               {(product.bullets as string[]).map((b, i) => (
                 <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
-                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-red-500" />
+                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
                   {b}
                 </li>
               ))}
