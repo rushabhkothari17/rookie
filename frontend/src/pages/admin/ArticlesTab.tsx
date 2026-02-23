@@ -367,6 +367,7 @@ export function ArticlesTab() {
 
   const applyTemplate = (tpl: any) => {
     setForm(prev => ({ ...prev, content: tpl.content, category: prev.category || tpl.category || "" }));
+    setEditorKey(k => k + 1); // Force Tiptap editor to remount with new content
     setShowTemplatePicker(false);
     toast.success(`Template "${tpl.name}" applied`);
   };
