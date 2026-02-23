@@ -32,6 +32,7 @@ const pmColor = (pm: string | undefined) =>
 export function CustomersTab() {
   const { user: authUser } = useAuth();
   const [customers, setCustomers] = useState<any[]>([]);
+  const [showImport, setShowImport] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [page, setPage] = useState(1);

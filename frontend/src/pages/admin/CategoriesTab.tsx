@@ -13,6 +13,7 @@ import { Download } from "lucide-react";
 
 export function CategoriesTab() {
   const [categories, setCategories] = useState<any[]>([]);
+  const [showImport, setShowImport] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);

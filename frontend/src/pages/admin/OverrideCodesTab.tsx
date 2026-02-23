@@ -18,6 +18,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 export function OverrideCodesTab() {
   const [codes, setCodes] = useState<any[]>([]);
+  const [showImport, setShowImport] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [page, setPage] = useState(1);

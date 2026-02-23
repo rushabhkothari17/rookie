@@ -23,6 +23,7 @@ export function BankTransactionsTab() {
   const TYPES = useMemo(() => ws.bank_transaction_types ? ws.bank_transaction_types.split("\n").map(s => s.trim()).filter(Boolean) : DEFAULT_TYPES, [ws.bank_transaction_types]);
   const STATUSES = useMemo(() => ws.bank_transaction_statuses ? ws.bank_transaction_statuses.split("\n").map(s => s.trim()).filter(Boolean) : DEFAULT_STATUSES, [ws.bank_transaction_statuses]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [showImport, setShowImport] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);

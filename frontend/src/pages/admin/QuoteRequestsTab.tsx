@@ -16,6 +16,7 @@ const BLANK_FORM = { product_id: "", product_name: "", name: "", email: "", comp
 
 export function QuoteRequestsTab() {
   const [quotes, setQuotes] = useState<any[]>([]);
+  const [showImport, setShowImport] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);

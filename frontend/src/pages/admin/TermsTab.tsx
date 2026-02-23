@@ -13,6 +13,7 @@ import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 export function TermsTab() {
   const [terms, setTerms] = useState<any[]>([]);
+  const [showImport, setShowImport] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

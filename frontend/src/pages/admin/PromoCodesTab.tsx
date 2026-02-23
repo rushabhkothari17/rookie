@@ -14,6 +14,7 @@ const INITIAL_PROMO = { code: "", discount_type: "percent", discount_value: 10, 
 
 export function PromoCodesTab() {
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
+  const [showImport, setShowImport] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
