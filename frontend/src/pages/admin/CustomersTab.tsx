@@ -148,6 +148,7 @@ export function CustomersTab() {
         actions={
           <>
             <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-customers-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-customers-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
             <Button size="sm" onClick={() => setShowCreateDialog(true)} data-testid="admin-create-customer-btn"><Plus size={14} className="mr-1" />Create Customer</Button>
           </>
         }

@@ -154,6 +154,7 @@ export function PromoCodesTab() {
       <AdminPageHeader title="Promo Codes" subtitle={`${total} codes`} actions={
         <>
           <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-promo-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-promo-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
           <Button size="sm" onClick={() => setShowCreateDialog(true)} data-testid="admin-promo-create"><Plus size={14} className="mr-1" />Create Promo Code</Button>
         </>
       } />

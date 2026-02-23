@@ -88,6 +88,7 @@ export function CategoriesTab() {
       <AdminPageHeader title="Product Categories" subtitle={`${total} categories`} actions={
         <>
           <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-categories-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+          <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-categories-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
           <Button size="sm" onClick={openCreate} data-testid="admin-create-category-btn">+ New Category</Button>
         </>
       } />
