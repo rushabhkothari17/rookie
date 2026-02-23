@@ -69,6 +69,14 @@ export function OrdersTab() {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [noteData, setNoteData] = useState<{ notes: any[]; notes_json: any }>({ notes: [], notes_json: null });
   const [showManualDialog, setShowManualDialog] = useState(false);
+  const [showRefundDialog, setShowRefundDialog] = useState(false);
+  const [refundForm, setRefundForm] = useState({
+    amount: "",
+    reason: "requested_by_customer",
+    provider: "manual",
+    processViaProvider: true
+  });
+  const [processingRefund, setProcessingRefund] = useState(false);
   const [manualOrder, setManualOrder] = useState({
     customer_email: "", product_id: "", quantity: 1,
     subtotal: 0, discount: 0, fee: 0, status: "paid", internal_note: "",
