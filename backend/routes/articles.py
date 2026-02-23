@@ -39,7 +39,8 @@ async def list_articles_admin(
     created_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {"deleted_at": {"$exists": False}}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf, "deleted_at": {"$exists": False}}
     if category:
         query["category"] = category
     if search:
