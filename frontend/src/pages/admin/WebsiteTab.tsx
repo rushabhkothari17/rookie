@@ -681,29 +681,12 @@ export default function WebsiteTab() {
                 <AuthTile title="Customer Portal" preview={ws.portal_title || undefined} description="Portal heading & subtitle" onEdit={() => setAuthSlide("portal")} testId="auth-tile-portal" />
                 <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
                 <AuthTile title="404 Not Found" preview={ws.page_404_title || undefined} description="Error page content" onEdit={() => setAuthSlide("not_found")} testId="auth-tile-404" />
-                <AuthTile title="GoCardless Callback" preview={ws.gocardless_success_title || undefined} description="Direct debit status messages" onEdit={() => setAuthSlide("gocardless")} testId="auth-tile-gocardless" />
               </div>
 
               <SectionDivider label="Checkout Flow" />
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 mb-2">
-                <Toggle
-                  label="Partner Tagging (Legacy)"
-                  description="Show partner tagging question at checkout (legacy mode only)"
-                  checked={ws.checkout_partner_enabled}
-                  onChange={v => setWs(p => ({ ...p, checkout_partner_enabled: v }))}
-                  testId="checkout-partner-toggle"
-                />
-                <Toggle
-                  label="Zoho Account Details (Legacy)"
-                  description="Show Zoho account questions at checkout (legacy mode only)"
-                  checked={ws.checkout_zoho_enabled}
-                  onChange={v => setWs(p => ({ ...p, checkout_zoho_enabled: v }))}
-                  testId="checkout-zoho-toggle"
-                />
-              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <AuthTile title="Checkout Page Builder" description="Dynamic sections + legacy Zoho & partner settings" onEdit={() => setAuthSlide("checkout_builder")} testId="auth-tile-checkout-builder" />
-                <AuthTile title="Checkout Success" preview={ws.checkout_success_title || undefined} description="Page after successful payment or bank transfer" onEdit={() => setAuthSlide("checkout_success")} testId="auth-tile-checkout-success" />
+                <AuthTile title="Checkout Page Builder" description="Dynamic sections + cart page settings" onEdit={() => setAuthSlide("checkout_builder")} testId="auth-tile-checkout-builder" />
+                <AuthTile title="Checkout Success" preview={ws.checkout_success_title || undefined} description="Page after successful payment, bank transfer, or GoCardless" onEdit={() => setAuthSlide("checkout_success")} testId="auth-tile-checkout-success" />
               </div>
 
               <SectionDivider label="Messages" />
