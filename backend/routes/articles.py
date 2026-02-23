@@ -106,8 +106,12 @@ async def list_articles_public(
 async def validate_scope_article(
     article_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    if user.get("role") == "platform_admin" and x_view_as_tenant:
+        tid = x_view_as_tenant
+    else:
+        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.articles.find_one(
         {
             "tenant_id": tid,
