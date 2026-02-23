@@ -303,6 +303,138 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
 
 
 # ---------------------------------------------------------------------------
+# Domain-Based Login (no partner_code required for custom domains)
+# ---------------------------------------------------------------------------
+
+class DomainLoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+@router.post("/auth/domain-login")
+async def domain_login(
+    payload: DomainLoginRequest,
+    request: Request,
+    response: Response
+):
+    """
+    Login using the request's Origin/Referer domain to identify the tenant.
+    
+    This allows partners with custom domains (e.g., billing.company.com) to 
+    serve customers without requiring partner_code in the login form.
+    """
+    from core.tenant import resolve_tenant_by_domain
+    
+    # Get domain from Origin or Referer header
+    origin = request.headers.get("origin", "")
+    referer = request.headers.get("referer", "")
+    
+    domain = None
+    if origin:
+        # Extract domain from origin (e.g., https://billing.company.com -> billing.company.com)
+        domain = origin.replace("https://", "").replace("http://", "").split("/")[0]
+    elif referer:
+        domain = referer.replace("https://", "").replace("http://", "").split("/")[0]
+    
+    if not domain:
+        raise HTTPException(status_code=400, detail="Could not determine domain. Use partner-login instead.")
+    
+    # Try to resolve tenant by domain
+    tenant = await resolve_tenant_by_domain(domain)
+    
+    if not tenant:
+        raise HTTPException(
+            status_code=400,
+            detail="This domain is not configured for any organization. Please use the main login page."
+        )
+    
+    # Now authenticate the user for this tenant
+    query: Dict[str, Any] = {"email": payload.email.lower(), "tenant_id": tenant["id"]}
+    user = await db.users.find_one(query, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    await _check_lockout(user)
+    
+    if not pwd_context.verify(payload.password, user.get("password_hash", "")):
+        await _check_and_record_failed_login(user["id"])
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user.get("is_verified"):
+        raise HTTPException(status_code=403, detail="Email verification required")
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
+    
+    await _reset_failed_login(user["id"])
+    
+    # Determine role - this endpoint works for both customers and admins on custom domains
+    role = user.get("role", "customer")
+    is_admin = user.get("is_admin", False)
+    
+    token = create_access_token({
+        "sub": user["id"],
+        "email": user["email"],
+        "role": role,
+        "tenant_id": tenant["id"],
+        "is_admin": is_admin,
+        "token_version": user.get("token_version", 0),
+    })
+    refresh_token = create_refresh_token(user["id"])
+    
+    await AuditService.log(
+        action="DOMAIN_LOGIN",
+        description=f"Domain login: {user['email']} via {domain}",
+        entity_type="User",
+        entity_id=user["id"],
+        actor_type="admin" if is_admin else "user",
+        actor_email=user["email"],
+        source="api",
+        meta_json={"tenant_id": tenant["id"], "domain": domain},
+    )
+    
+    _set_auth_cookie(response, token, refresh_token)
+    return {
+        "token": token,
+        "role": role,
+        "tenant_id": tenant["id"],
+        "tenant_name": tenant.get("name"),
+        "is_admin": is_admin
+    }
+
+
+@router.get("/auth/domain-info")
+async def get_domain_info(request: Request):
+    """
+    Get tenant info for the current domain (for customizing login pages).
+    Returns tenant name, branding, etc. if domain is configured.
+    """
+    from core.tenant import resolve_tenant_by_domain
+    
+    origin = request.headers.get("origin", "")
+    domain = origin.replace("https://", "").replace("http://", "").split("/")[0] if origin else None
+    
+    if not domain:
+        return {"is_custom_domain": False}
+    
+    tenant = await resolve_tenant_by_domain(domain)
+    
+    if not tenant:
+        return {"is_custom_domain": False}
+    
+    # Get branding settings for tenant
+    branding = await db.settings.find_one(
+        {"tenant_id": tenant["id"], "key": "branding"},
+        {"_id": 0, "value_json": 1}
+    )
+    
+    return {
+        "is_custom_domain": True,
+        "tenant_name": tenant.get("name"),
+        "tenant_code": tenant.get("code"),
+        "branding": branding.get("value_json") if branding else None
+    }
+
+
+# ---------------------------------------------------------------------------
 # Logout (clears HttpOnly cookie)
 # ---------------------------------------------------------------------------
 
