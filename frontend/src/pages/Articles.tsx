@@ -52,14 +52,15 @@ export default function Articles() {
       {/* Hero Banner — same style as Store page */}
       <div className="max-w-7xl mx-auto w-full px-6 pt-8">
         <section
-          className="relative overflow-hidden rounded-3xl bg-[#0f172a] px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+          className="relative overflow-hidden rounded-3xl px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+          style={{ backgroundColor: "var(--aa-primary)" }}
           data-testid="articles-hero"
         >
-          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-red-600/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full bg-red-600/5 blur-2xl" />
+          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
           <div className="relative space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="h-0.5 w-8 rounded-full bg-red-500" />
+              <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
                 {ws.articles_hero_label || "Resources"}
               </p>
