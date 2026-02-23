@@ -441,6 +441,17 @@ function PaymentProviderCard({
               <SettingRow item={feeRateItem} onSaved={onSaved} />
             </div>
           )}
+          {onCallbackSettings && (
+            <div className="p-4 border-t border-slate-100 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-700">Callback Page Text</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Processing, success &amp; error messages shown during direct debit setup</p>
+              </div>
+              <button onClick={onCallbackSettings} className="flex items-center gap-1.5 text-xs text-slate-600 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-100 transition-colors" data-testid="gc-callback-edit-btn">
+                <Pencil size={11} /> Edit
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
