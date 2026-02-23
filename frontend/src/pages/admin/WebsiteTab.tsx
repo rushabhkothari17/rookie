@@ -1060,6 +1060,47 @@ export default function WebsiteTab() {
             </div>
           </div>
         )}
+        {formSlide === "bank_transaction" && (
+          <div className="space-y-4">
+            <p className="text-xs text-slate-500">Configure the dropdown options in the Bank Transaction add/edit form. One value per line.</p>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700">Sources (one per line)</label>
+              <p className="text-[11px] text-slate-400">Default: manual, bank_transfer, stripe, gocardless</p>
+              <textarea
+                value={ws.bank_transaction_sources}
+                onChange={e => s("bank_transaction_sources")(e.target.value)}
+                rows={5}
+                placeholder={"manual\nbank_transfer\nstripe\ngocardless"}
+                className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm resize-none"
+                data-testid="ws-bt-sources"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700">Types (one per line)</label>
+              <p className="text-[11px] text-slate-400">Default: payment, refund, chargeback, credit, debit, fee</p>
+              <textarea
+                value={ws.bank_transaction_types}
+                onChange={e => s("bank_transaction_types")(e.target.value)}
+                rows={5}
+                placeholder={"payment\nrefund\nchargeback\ncredit\ndebit\nfee"}
+                className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm resize-none"
+                data-testid="ws-bt-types"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700">Statuses (one per line)</label>
+              <p className="text-[11px] text-slate-400">Default: pending, completed, matched, failed, refunded</p>
+              <textarea
+                value={ws.bank_transaction_statuses}
+                onChange={e => s("bank_transaction_statuses")(e.target.value)}
+                rows={5}
+                placeholder={"pending\ncompleted\nmatched\nfailed\nrefunded"}
+                className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm resize-none"
+                data-testid="ws-bt-statuses"
+              />
+            </div>
+          </div>
+        )}
       </SlideOver>
     </div>
   );
