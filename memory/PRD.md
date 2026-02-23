@@ -173,6 +173,19 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ---
 
+---
+
+### Phase 8 — Admin Panel Reorganization + P0 Bug Fix (Feb 2026)
+- **P0 Fix**: Email Templates section was not rendering (EmailSection component was imported but never placed in JSX). Fixed.
+- **Branding & Hero merged**: Store Hero Banner and Articles Hero Banner fields moved into the Branding section. Removed separate "Store Hero" sidebar entry.
+- **Forms section — tile layout**: Each form (Quote, Scope, Signup) now shown as a card tile with field count badge. Edit opens a SlideOver panel with form labels + FormSchemaBuilder.
+- **Page Content section — tile layout**: 7 page tiles in a responsive grid (Checkout Success, Bank Transfer, 404, GoCardless, Verify Email, Portal, Profile). Edit opens a SlideOver panel with page-specific fields.
+- **AppFooter bug fixed**: `ws.brand_name` → `ws.store_name` (brand_name doesn't exist in WebsiteSettings interface).
+- **Articles Hero**: Added articles_hero_label/title/subtitle to WebsiteData interface and WEB_DEFAULTS (was missing from admin panel despite being in backend).
+- Tested at 100% pass rate (13/13 tests via testing_agent_v4_fork, iteration_47.json).
+
+---
+
 ## P0/P1/P2 Backlog
 
 ### P0 (Critical)
@@ -183,9 +196,9 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 - Quote/Scope requests tab should display extra_fields in detail view
 
 ### P2 (Nice to have)
-- Footer component (no global footer currently)
 - Email delivery live testing (currently mocked; configure Resend key to enable)
 - Zoho CRM/Books integration
+- SlideOver unique test IDs (cosmetic — both use same data-testid='slideover-panel')
 
 ### Backlog
 - React Hydration Warning (low priority technical debt)
