@@ -245,66 +245,6 @@ async def validate_resend(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             upsert=True
         )
         return {"success": False, "message": str(e)}
-    
-    zoho_mail = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "zoho_mail"},
-        {"_id": 0}
-    )
-    
-    return {
-        "providers": {
-            "resend": {
-                "configured": bool(resend_key and resend_key.get("value")),
-                "key_set": bool(resend_key and resend_key.get("value"))
-            },
-            "zoho_mail": {
-                "configured": bool(zoho_mail and zoho_mail.get("credentials")),
-                "datacenter": zoho_mail.get("datacenter") if zoho_mail else None,
-                "connected_at": zoho_mail.get("updated_at") if zoho_mail else None
-            }
-        }
-    }
-
-
-@router.post("/admin/integrations/resend/validate")
-async def validate_resend(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Validate Resend API key by making a test API call."""
-    import httpx
-    
-    tid = tenant_id_of(admin)
-    setting = await db.app_settings.find_one(
-        {"tenant_id": tid, "key": "resend_api_key"},
-        {"_id": 0}
-    )
-    
-    if not setting or not setting.get("value"):
-        raise HTTPException(status_code=400, detail="Resend API key not configured")
-    
-    api_key = setting["value"]
-    
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(
-                "https://api.resend.com/domains",
-                headers={"Authorization": f"Bearer {api_key}"}
-            )
-            
-            if response.status_code == 200:
-                domains = response.json().get("data", [])
-                return {
-                    "success": True,
-                    "message": "Resend connection validated",
-                    "domains_count": len(domains),
-                    "domains": [d.get("name") for d in domains]
-                }
-            else:
-                return {
-                    "success": False,
-                    "message": f"Validation failed: {response.status_code}",
-                    "error": response.text
-                }
-    except Exception as e:
-        return {"success": False, "message": str(e)}
 
 
 # === Zoho Mail Integration ===
