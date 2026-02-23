@@ -81,6 +81,14 @@ export default function Admin() {
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Website</p>
             <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
             <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
+
+            {/* Platform — only for platform_super_admin */}
+            {isPlatformAdmin && (
+              <>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Platform</p>
+                <TabsTrigger value="tenants" data-testid="admin-tab-tenants" className={TAB_CLASS}>Partner Orgs</TabsTrigger>
+              </>
+            )}
           </TabsList>
         </div>
 
