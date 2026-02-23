@@ -692,6 +692,40 @@ export function ArticlesTab() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Template Picker Dialog */}
+      <Dialog open={showTemplatePicker} onOpenChange={setShowTemplatePicker}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" data-testid="template-picker-dialog">
+          <DialogHeader><DialogTitle>Choose a Template</DialogTitle></DialogHeader>
+          <p className="text-xs text-slate-500 -mt-1 mb-3">Select a template to pre-fill the article content. Your title and category will be preserved.</p>
+          {loadingTemplates ? (
+            <div className="text-center text-slate-400 py-8 text-sm">Loading templates…</div>
+          ) : availableTemplates.length === 0 ? (
+            <div className="text-center text-slate-400 py-8 text-sm">No templates available. Create some in the Templates tab.</div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2">
+              {availableTemplates.map((tpl) => (
+                <button key={tpl.id} onClick={() => applyTemplate(tpl)}
+                  className="text-left border border-slate-200 rounded-lg p-4 hover:border-slate-900 hover:bg-slate-50 transition-all group"
+                  data-testid={`pick-template-${tpl.id}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-slate-900">{tpl.name}</span>
+                        {tpl.is_default && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">Default</span>}
+                        {tpl.category && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{tpl.category}</span>}
+                      </div>
+                      {tpl.description && <p className="text-xs text-slate-500 mt-1">{tpl.description}</p>}
+                    </div>
+                    <span className="text-xs text-slate-900 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Use this →</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>) /* end articles sub-tab */}
     </div>
   );
 }
