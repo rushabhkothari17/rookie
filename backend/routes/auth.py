@@ -6,7 +6,7 @@ from __future__ import annotations
 import secrets
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 
 from core.helpers import make_id, now_iso, currency_for_country
 from core.security import pwd_context, create_access_token, get_current_user
