@@ -70,7 +70,8 @@ export default function TopNav() {
             </Button>
             {items.length > 0 && (
               <Badge
-                className="absolute -top-2 -right-2 bg-slate-900 text-white"
+                className="absolute -top-2 -right-2 text-white"
+                style={{ backgroundColor: "var(--aa-primary)" }}
                 data-testid="nav-cart-count"
               >
                 {items.length}
