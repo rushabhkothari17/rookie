@@ -253,7 +253,6 @@ export function ArticleCategoriesTab() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
       <ImportModal
         entity="article-categories"
         entityLabel="Article Categories"
@@ -261,5 +260,6 @@ export function ArticleCategoriesTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+    </div>
   );
 }
