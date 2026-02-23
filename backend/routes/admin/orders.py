@@ -92,15 +92,17 @@ async def create_manual_order(
     payload: ManualOrderCreate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    user = await db.users.find_one({"email": payload.customer_email.lower()}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    user = await db.users.find_one({**tf, "email": payload.customer_email.lower()}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    customer = await db.customers.find_one({**tf, "user_id": user["id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer record not found")
 
-    product = await db.products.find_one({"id": payload.product_id}, {"_id": 0})
+    product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
@@ -112,6 +114,7 @@ async def create_manual_order(
         "id": order_id,
         "order_number": order_number,
         "customer_id": customer["id"],
+        "tenant_id": tid,
         "type": "manual",
         "status": payload.status,
         "subtotal": round_cents(payload.subtotal),
