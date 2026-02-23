@@ -115,15 +115,20 @@ async def pricing_calc(
 async def get_all_terms(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = _tid(user, partner_code)
+    tid = _tid(user, partner_code, x_view_as_tenant)
     terms = await db.terms_and_conditions.find({"tenant_id": tid}, {"_id": 0}).to_list(100)
     return {"terms": terms}
 
 
 @router.get("/terms/{terms_id}")
-async def get_single_terms(terms_id: str, user: Optional[Dict[str, Any]] = Depends(optional_get_current_user)):
-    tid = _tid(user)
+async def get_single_terms(
+    terms_id: str,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+):
+    tid = _tid(user, None, x_view_as_tenant)
     terms = await db.terms_and_conditions.find_one({"tenant_id": tid, "id": terms_id}, {"_id": 0})
     if not terms:
         raise HTTPException(status_code=404, detail="Terms not found")
