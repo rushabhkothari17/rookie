@@ -612,7 +612,7 @@ export function ArticlesTab() {
 
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700">Content</label>
-              <ArticleEditor value={form.content} onChange={(v) => setForm({ ...form, content: v })} />
+              <ArticleEditor key={`editor-${editorKey}`} value={form.content} onChange={(v) => setForm({ ...form, content: v })} />
             </div>
 
             <div className="flex gap-2 pt-2">
