@@ -428,9 +428,6 @@ async def send_article_email(
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     """Send article to arbitrary email addresses (To/CC/BCC) with optional PDF attachment."""
-    import asyncio
-    import base64
-
     article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
@@ -442,8 +439,6 @@ async def send_article_email(
     ws = await db.website_settings.find_one({}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
     store_name = str(ws.get("store_name") or "")
     accent_color = str(ws.get("accent_color") or "#0f172a")
-
-    from services.settings_service import SettingsService
 
     provider_enabled = await SettingsService.get("email_provider_enabled", False)
     resend_key = await SettingsService.get("resend_api_key", "")
