@@ -39,7 +39,8 @@ async def admin_currency_override(
 
 @router.get("/admin/sync-logs")
 async def admin_sync_logs(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    logs = await db.zoho_sync_logs.find({}, {"_id": 0}).to_list(500)
+    tf = get_tenant_filter(admin)
+    logs = await db.zoho_sync_logs.find(tf, {"_id": 0}).to_list(500)
     return {"logs": logs}
 
 
@@ -60,7 +61,8 @@ async def admin_update_customer_partner_map(
     payload: CustomerPartnerMapUpdate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    existing = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Customer not found")
     await db.customers.update_one({"id": customer_id}, {"$set": {"partner_map": payload.partner_map}})
@@ -76,7 +78,8 @@ async def admin_update_customer_partner_map(
 
 @router.get("/admin/customers/{customer_id}/notes")
 async def admin_get_customer_notes(customer_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return {"notes": customer.get("notes", [])}
@@ -88,7 +91,8 @@ async def admin_add_customer_note(
     payload: Dict[str, Any],
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     note = {"text": payload.get("text", ""), "timestamp": now_iso(), "actor": admin.get("email", "admin")}
