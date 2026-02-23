@@ -469,11 +469,18 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
                 <TableCell className="text-xs text-slate-500 whitespace-nowrap">{a.updated_at?.slice(0, 10)}</TableCell>
                 <TableCell>
                   <div className="text-sm font-medium text-slate-900">{a.title}</div>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                    a.category?.startsWith("Scope - Final") ? "bg-green-100 text-green-700" :
-                    a.category === "Scope - Draft" ? "bg-amber-100 text-amber-700" :
-                    "bg-slate-100 text-slate-600"
-                  }`}>{a.category}</span>
+                  {(() => {
+                    const cat = dynamicCategories.find(c => c.name === a.category);
+                    const dotColor = cat?.color;
+                    const isScope = a.category?.startsWith("Scope - Final") || cat?.is_scope_final;
+                    const isDraft = a.category === "Scope - Draft";
+                    return (
+                      <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${isScope ? "bg-green-100 text-green-700" : isDraft ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>
+                        {dotColor && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />}
+                        {a.category}
+                      </span>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="text-sm font-medium text-slate-900">
                   {a.price ? `$${a.price}` : "—"}
