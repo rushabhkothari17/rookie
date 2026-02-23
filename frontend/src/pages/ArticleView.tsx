@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import AppShell from "@/components/AppShell";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Download, FileText } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
 
 export default function ArticleView() {
   const { articleId } = useParams();
@@ -11,6 +12,22 @@ export default function ArticleView() {
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const downloadArticle = (format: "pdf" | "docx") => {
+    const token = localStorage.getItem("aa_token");
+    const base = process.env.REACT_APP_BACKEND_URL || "";
+    fetch(`${base}/api/articles/${articleId}/download?format=${format}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.blob())
+      .then(b => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(b);
+        a.download = `${article?.title || "article"}.${format}`;
+        a.click();
+      })
+      .catch(() => toast.error("Download failed"));
+  };
 
   useEffect(() => {
     const load = async () => {
