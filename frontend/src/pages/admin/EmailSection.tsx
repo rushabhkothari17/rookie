@@ -437,7 +437,7 @@ export default function EmailSection() {
       {/* Provider */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-slate-700 mb-1">Integrations</h3>
-        <p className="text-xs text-slate-400 mb-3">Only one email provider can be active at a time. Configure below.</p>
+        <p className="text-xs text-slate-400 mb-3">Click a tile to configure the email provider settings.</p>
         <ProviderSection settings={emailSettings} />
       </div>
 
