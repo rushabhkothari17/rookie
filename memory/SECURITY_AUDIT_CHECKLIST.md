@@ -14,11 +14,11 @@ All **P0 critical** and most **P1 medium** security items have been implemented 
 | # | Fix | File(s) |
 |---|-----|---------|
 | 1 | Rate limiting middleware (per-IP, sliding window) | `middleware/rate_limit.py`, `server.py` |
-| 2 | Security headers (nosniff, X-Frame, XSS-Protection, Referrer-Policy) | `middleware/security_headers.py`, `server.py` |
+| 2 | Security headers (nosniff, X-Frame, XSS-Protection, Referrer-Policy, **CSP**) | `middleware/security_headers.py`, `server.py` |
 | 3 | CORS restricted to FRONTEND_URL env var in production | `server.py` |
 | 4 | FastAPI /docs disabled in production (ENVIRONMENT=production) | `server.py` |
 | 5 | Global exception handler — no stack traces to clients | `server.py` |
-| 6 | NoSQL injection: re.escape() on all $regex queries (15+ locations) | `routes/articles.py`, `routes/admin/orders.py`, `routes/admin/subscriptions.py`, `routes/admin/users.py`, `routes/admin/catalog.py`, `routes/admin/promo_codes.py`, `routes/admin/terms.py`, `routes/admin/quote_requests.py`, `routes/admin/exports.py` |
+| 6 | NoSQL injection: re.escape() on all $regex queries (15+ locations) | Multiple route files |
 | 7 | IDOR: customer order and subscription ownership check | `routes/store.py` |
 | 8 | CSV formula injection: prefix =,+,-,@ with single quote | `routes/admin/exports.py` |
 | 9 | File upload size limit: 10 MB max, 5000 row max | `routes/admin/imports.py` |
@@ -27,8 +27,16 @@ All **P0 critical** and most **P1 medium** security items have been implemented 
 | 12 | Admin override to unlock accounts | `routes/admin/users.py` |
 | 13 | Password complexity: min 10 chars, upper, lower, number, symbol | `routes/auth.py` |
 | 14 | Token version: JWT invalidated after password changes | `core/security.py`, `routes/auth.py` |
-| 15 | Audit logging: API key create/revoke events | `routes/admin/api_keys.py` |
+| 15 | Audit logging: API key create/revoke + export events | `routes/admin/api_keys.py`, `routes/admin/exports.py` |
 | 16 | MongoDB compound indexes (14 collections) | `server.py startup` |
+| 17 | **API key hashing: SHA-256 stored, raw key never in DB** | `routes/admin/api_keys.py`, `core/tenant.py` |
+| 18 | **Content-Security-Policy header** | `middleware/security_headers.py` |
+| 19 | **Startup security validation: warns/errors on weak secrets** | `server.py` |
+| 20 | **JWT secret rotated: strong 64-char hex** | `backend/.env` |
+| 21 | **starlette upgraded: 0.37.2 → 0.41.0 (CVE-2024-47874 fixed)** | `requirements.txt` |
+| 22 | **pymongo upgraded: 4.5.0 → 4.6.3 (CVE-2024-5629 fixed)** | `requirements.txt` |
+| 23 | **fastapi upgraded: 0.110.1 → 0.115.14** | `requirements.txt` |
+| 24 | **Legacy API key migration: plaintext keys auto-hashed on startup** | `server.py` |
 
 ---
 
