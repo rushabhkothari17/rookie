@@ -1,108 +1,124 @@
 # Product Requirements Document
+## Automate Accounts — Multi-Tenant SaaS Platform
 
-## Original Problem Statement
-Multi-tenant SaaS platform for partner organizations (e.g. Automate Accounts). Each partner organization (tenant) must have completely isolated data, branding, and configuration. A Platform Admin can impersonate tenants via a Tenant Switcher and also impersonate individual customers via a Customer Switcher.
+**Original Problem Statement:**
+Multi-tenant SaaS platform for accounting/bookkeeping services. Tenant isolation is critical — every API endpoint must be tenant-specific. The platform admin can manage all tenants, impersonate them, and perform global operations.
+
+---
 
 ## Architecture
-```
-/app/
-├── backend/                   FastAPI + MongoDB
-│   ├── core/
-│   │   ├── constants.py       Generic defaults (no hardcoded tenant names)
-│   │   ├── security.py        JWT auth, require_admin, require_super_admin
-│   │   └── tenant.py          Tenant isolation: get_tenant_filter, tenant_id_of, get_tenant_admin
-│   ├── models.py
-│   ├── routes/
-│   │   ├── admin/             All admin CRUD routes (tenant-isolated)
-│   │   │   ├── tenants.py     Tenant mgmt + /setup-checklist + /customers endpoints
-│   │   │   ├── users.py       User mgmt + single super_admin enforcement
-│   │   │   └── subscriptions.py  /admin/subscriptions/{id}/renew-now (admin prefix)
-│   │   ├── articles.py        Articles CRUD + /articles/public (X-View-As-Tenant aware)
-│   │   ├── auth.py            Login, register, register-partner + _seed_new_tenant()
-│   │   ├── store.py           Public store — _tid() respects X-View-As-Tenant for platform_admin
-│   │   └── website.py         Public website settings (tenant-aware)
-│   └── services/
-│       ├── audit_service.py   AuditService + create_audit_log + context-variable tenant injection
-│       └── settings_service.py Global platform settings (key-based)
-└── frontend/
-    └── src/
-        ├── lib/api.ts         Axios client + X-View-As-Tenant + X-View-As-Customer header injection
-        ├── pages/
-        │   ├── Admin.tsx      Admin panel, controlled tabs, SetupChecklistWidget, websiteSection state
-        │   └── admin/
-        │       ├── ProductsTab.tsx      Uses /admin/products-all + /admin/terms (no public fallbacks)
-        │       ├── SubscriptionsTab.tsx Uses /admin/subscriptions/{id}/renew-now (admin prefix)
-        │       └── WebsiteTab.tsx       Accepts defaultSection prop for checklist navigation
-        ├── components/
-        │   ├── TopNav.tsx     Top nav with TenantSwitcher + CustomerSwitcher
-        │   ├── TenantSwitcher.tsx  Platform admin tenant switcher (search + top-5) + customer state
-        │   ├── CustomerSwitcher.tsx  Platform admin customer switcher (search by email)
-        │   └── admin/
-        │       └── SetupChecklistWidget.tsx  5-step checklist w/ section-aware navigation
-        └── contexts/
-            ├── AuthContext.tsx
-            └── WebsiteContext.tsx  Sends X-Tenant-Slug header for tenant-specific settings
-```
+- **Stack**: FastAPI (Python) + React (TypeScript) + MongoDB
+- **Pattern**: Multi-tenant with `tenant_id` on all data
+- **Auth**: JWT tokens + role-based access (`platform_admin`, `partner_super_admin`, `tenant_admin`, `customer`)
+- **Impersonation**: Platform admin → X-View-As-Tenant header (tenant), X-View-As-Customer header (customer)
+- **API Key Auth**: `X-API-Key` header on public endpoints as alternative to JWT
 
-## Tenant Isolation Rules
-### Admin endpoints (/api/admin/*)
-- ALL use `get_tenant_admin` dependency which reads `X-View-As-Tenant` header
-- Platform admins get data for ALL tenants unless `X-View-As-Tenant` is set
-- Returns only that tenant's data when header is present
+---
 
-### Public endpoints (/api/products, /api/articles/public, /api/terms, etc.)
-- Use `_tid()` helper (store.py) or direct tenant check (articles.py)
-- **MUST respect X-View-As-Tenant for platform_admin users**
-- `_tid(user, partner_code, x_view_as_tenant)` → prefers x_view_as_tenant over user.tenant_id for platform_admin
-- This ensures store/articles/terms pages show correct data when platform admin impersonates a tenant
+## Implemented Features (as of Feb 2026)
 
-### Frontend enforcement
-- ALL admin tab components must use `/admin/*` endpoints only
-- Public store pages must NOT use direct DB queries - always go through API
-- `api.ts` automatically injects `X-View-As-Tenant` and `X-View-As-Customer` headers
+### Core Infrastructure
+- Multi-tenant data isolation across all collections
+- JWT auth with role-based access control
+- Tenant impersonation (platform admin)
+- Customer impersonation (platform admin)
 
-## What's Been Implemented
+### Admin Panel Tabs
+- Users, Customers, Subscriptions, Orders, Promo Codes, Quote Requests, Bank Transactions
+- Articles, Article Templates, Article Categories, Override Codes, Categories, Catalog, Terms
+- Website Content (payments, domain settings, etc.)
+- API (new — see below)
+- Logs
 
-### 2026-02-XX — Comprehensive Tenant Isolation Fix + New Features
+### Import/Export System (ALL entities)
+All 13 entities support CSV import and export:
+- Customers, Subscriptions, Orders, Promo Codes, Quote Requests, Bank Transactions
+- Articles, Article Templates, Article Categories
+- Override Codes, Categories, Catalog (Products), Terms
 
-**Critical: Public Endpoint Tenant Isolation (store.py + articles.py)**
-- Updated `_tid()` in store.py to accept `x_view_as_tenant` param
-- `/categories`, `/products`, `/products/{id}`, `/pricing/calc`, `/terms`, `/terms/{id}` all respect `X-View-As-Tenant` for platform admins
-- `/articles/public` respects `X-View-As-Tenant` AND `X-View-As-Customer` for platform admins
-- `/articles/{id}/validate-scope` also updated for X-View-As-Tenant
+**Export endpoints**: `/api/admin/export/{entity}` (13 total)
+**Import endpoint**: `POST /api/admin/import/{entity_type}`
+**Sample template**: `GET /api/admin/import/template/{entity_type}`
 
-**Admin Endpoint Path Fixes**
-- `ProductsTab.tsx`: Uses `/admin/terms` instead of public `/terms`
-- `SubscriptionsTab.tsx`: Uses `/admin/subscriptions/{id}/renew-now` (admin-prefixed)
-- `backend/routes/admin/subscriptions.py`: Route updated to match: `@router.post("/admin/subscriptions/{id}/renew-now")`
+### Payment Provider Validation
+- Validate Stripe and GoCardless credentials via test API call
+- Endpoint: `POST /api/admin/payment/validate`
+- UI: "Validate Credentials" button in Website Content > Payments
 
-**Setup Checklist Navigation (section-aware)**
-- Checklist items now have `section` property ('branding' or 'payments')
-- Clicking items navigates to tab AND specific section within WebsiteTab
-- WebsiteTab accepts `defaultSection` prop with `useEffect` for reactive updates
-- Admin.tsx tracks `websiteSection` state and passes to WebsiteTab
-- Checklist items show descriptive navigation hints (e.g., "Go to Website Content > Branding & Hero")
+### API Key System (NEW - Feb 2026)
+- Each tenant can generate one active API key at a time
+- Key format: `ak_[48 hex chars]`
+- Full key shown once on generation (masked in list view)
+- Admin endpoints: `GET/POST/DELETE /api/admin/api-keys`
+- `X-API-Key` header supported on all public store endpoints
+- Used as alternative to partner_code for external API consumers
 
-**New Features (Previous Session)**
-- Tenant Switcher: search by name/code, top-5 default display
-- Customer Switcher: search by email, appears when viewing a tenant
-- Setup Checklist Widget: 5-step setup guide, dismissible
-- Single Super Admin enforcement (POST + PUT in users.py)
+### API Documentation Tab (NEW - Feb 2026)
+- New "API" sidebar tab below "Website Content"
+- API key management section with generate/revoke UI
+- Comprehensive REST API documentation (18 endpoints across 6 categories)
+- "Try It" functionality for each endpoint
+- Base URL path guidance for subdomain-aware deployments
+- Organized by: Authentication, Catalog, Terms & Conditions, Articles, Requests, Customer Portal
 
-## Test Credentials
-- Platform Admin: `admin@automateaccounts.local` / `ChangeMe123!` / code: `automate-accounts`
-- Tenant B Admin: `adminb@tenantb.local` / `ChangeMe123!` / code: `tenant-b-test`
+### Partner Code in My Profile (NEW - Feb 2026)
+- `/api/me` now returns `partner_code` from the user's tenant
+- Profile page shows read-only "Partner / Tenant Code" field for all users
+- Visible to: tenant admins, customers, all user types
 
-## P0 Backlog (All Resolved)
-- [x] Data leaks across all modules (multiple rounds)
-- [x] Public endpoints ignoring X-View-As-Tenant (store.py, articles.py)
-- [x] Dual Impersonation (Customer Switcher)
-- [x] Tenant Switcher search + top-5 limit
-- [x] Setup Checklist Widget with section-aware navigation
-- [x] Single Super Admin enforcement
-- [x] SubscriptionsTab.tsx renew-now endpoint path
+### Tenant Data Safety
+- All admin exports use `get_tenant_filter()` — tenant-isolated
+- All admin imports assign `tenant_id` from authenticated admin
+- Public endpoints support both JWT and X-API-Key for tenant resolution
+- No cross-tenant data leaks on public endpoints
 
-## P2 / Future
-- [ ] Full customer portal simulation (X-View-As-Customer in portal/checkout routes)
-- [ ] Admin Dashboard business metrics widget
-- [ ] Additional store.py endpoints (promo-codes/validate, scope-request) may need X-View-As-Tenant for platform admin edge cases
+---
+
+## Key API Endpoints
+
+### Authentication
+- `POST /api/auth/login` — Admin/partner login
+- `POST /api/auth/customer-login` — Customer login
+- `GET /api/me` — Current user profile (includes partner_code)
+
+### Public Store (tenant-aware via JWT/X-API-Key/partner_code)
+- `GET /api/categories`
+- `GET /api/products`
+- `GET /api/products/{id}`
+- `GET /api/terms`, `GET /api/terms/{id}`
+- `GET /api/articles/public`
+- `POST /api/pricing/calc`
+
+### Admin CRUD
+- `GET/POST/PUT/DELETE /api/admin/{entity}` for all 13 entities
+
+### Admin Export
+- `GET /api/admin/export/{entity}` — CSV download (13 entities)
+
+### Admin Import
+- `POST /api/admin/import/{entity_type}` — CSV/JSON upload
+- `GET /api/admin/import/template/{entity_type}` — Sample template download
+
+### API Key Management
+- `GET /api/admin/api-keys`
+- `POST /api/admin/api-keys`
+- `DELETE /api/admin/api-keys/{key_id}`
+
+---
+
+## Credentials for Testing
+- **Platform Admin**: admin@automateaccounts.local / ChangeMe123! / partner_code: automate-accounts
+- **Tenant B Admin**: adminb@tenantb.local / ChangeMe123! / partner_code: tenant-b-test
+
+---
+
+## P0 Backlog (Remaining)
+
+### Upcoming/Future
+- Full customer portal simulation (X-View-As-Customer in portal/checkout routes)
+- Admin Dashboard business metrics widget
+- Webhook system for subscription/order events
+- Email template customization per tenant
+
+### Known Design Issues (Non-blocking)
+- Console hydration warning in CustomersTab from VE tooling injecting `<span>` into `<select>` — tooling artifact, not an app bug
