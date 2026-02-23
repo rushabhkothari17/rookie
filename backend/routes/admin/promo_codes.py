@@ -25,7 +25,8 @@ async def admin_list_promo_codes(
     created_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if search:
         query["code"] = {"$regex": search, "$options": "i"}
     if enabled is not None:
