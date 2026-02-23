@@ -158,6 +158,9 @@ export default function Admin() {
           <TabsContent value="website" className="space-y-4">
             <WebsiteTab defaultSection={websiteSection as any} />
           </TabsContent>
+          <TabsContent value="api" className="space-y-4">
+            <ApiTab />
+          </TabsContent>
           <TabsContent value="override-codes" className="space-y-4">
             <OverrideCodesTab />
           </TabsContent>
