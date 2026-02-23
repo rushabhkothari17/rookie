@@ -49,7 +49,7 @@ async def list_audit_logs(
         q=q or None,
     )
 
-    total, (records, next_cursor) = await _parallel_query(common, page, per_page, cursor)
+    total, (records, next_cursor) = await _parallel_query(common, page, per_page, cursor, get_tenant_filter(admin))
 
     return {
         "logs": records,
