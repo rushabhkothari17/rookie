@@ -551,92 +551,97 @@ class TestBankTransactionsTenantIsolation:
 
 class TestCrossTenantDataAccess:
     """
-    Verify Tenant A admin cannot directly access Tenant B's resources.
+    Verify Tenant B admin cannot access Tenant A's resources.
+    NOTE: Platform admin (admin@automateaccounts.local) can see all data by design.
+    The real security test is whether tenant-scoped admin (Tenant B) can see other tenant's data.
     """
 
-    def test_tenant_a_cannot_see_tenant_b_orders(self, tenant_a_admin_token, tenant_b_admin_token):
-        """Tenant A admin should not see Tenant B's orders in their list."""
-        # Get Tenant B's orders
-        resp_b = requests.get(
-            f"{BASE_URL}/api/admin/orders?per_page=100",
-            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
-        )
-        assert resp_b.status_code == 200
-        tenant_b_order_ids = {o["id"] for o in resp_b.json().get("orders", [])}
-        
-        if not tenant_b_order_ids:
-            pytest.skip("No Tenant B orders to test")
-        
-        # Get Tenant A's orders
+    def test_tenant_b_cannot_see_tenant_a_orders(self, tenant_a_admin_token, tenant_b_admin_token):
+        """Tenant B admin should not see Tenant A's orders in their list."""
+        # Get Tenant A's orders (platform admin can see all)
         resp_a = requests.get(
             f"{BASE_URL}/api/admin/orders?per_page=100",
             headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
         assert resp_a.status_code == 200
-        tenant_a_order_ids = {o["id"] for o in resp_a.json().get("orders", [])}
+        all_orders = resp_a.json().get("orders", [])
+        tenant_a_order_ids = {o["id"] for o in all_orders if o.get("tenant_id") == TENANT_A_ID}
         
-        # Tenant B orders should NOT appear in Tenant A's list
-        leaked_orders = tenant_b_order_ids & tenant_a_order_ids
+        if not tenant_a_order_ids:
+            pytest.skip("No Tenant A orders to test")
+        
+        # Get Tenant B's orders (tenant-scoped admin)
+        resp_b = requests.get(
+            f"{BASE_URL}/api/admin/orders?per_page=100",
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+        )
+        assert resp_b.status_code == 200
+        tenant_b_visible_order_ids = {o["id"] for o in resp_b.json().get("orders", [])}
+        
+        # Tenant A orders should NOT appear in Tenant B's list
+        leaked_orders = tenant_a_order_ids & tenant_b_visible_order_ids
         assert not leaked_orders, (
-            f"SECURITY BUG: Tenant B orders leaked to Tenant A: {leaked_orders}"
+            f"SECURITY BUG: Tenant A orders leaked to Tenant B: {leaked_orders}"
         )
-        print(f"PASS - Tenant B orders ({len(tenant_b_order_ids)}) not visible to Tenant A")
+        print(f"PASS - Tenant A orders ({len(tenant_a_order_ids)}) not visible to Tenant B admin")
 
-    def test_tenant_a_cannot_see_tenant_b_customers(self, tenant_a_admin_token, tenant_b_admin_token):
-        """Tenant A admin should not see Tenant B's customers."""
-        # Get Tenant B's customers
-        resp_b = requests.get(
-            f"{BASE_URL}/api/admin/customers?per_page=100",
-            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
-        )
-        assert resp_b.status_code == 200
-        tenant_b_customer_ids = {c["id"] for c in resp_b.json().get("customers", [])}
-        
-        if not tenant_b_customer_ids:
-            pytest.skip("No Tenant B customers to test")
-        
-        # Get Tenant A's customers
+    def test_tenant_b_cannot_see_tenant_a_customers(self, tenant_a_admin_token, tenant_b_admin_token):
+        """Tenant B admin should not see Tenant A's customers."""
+        # Get all customers visible to platform admin
         resp_a = requests.get(
             f"{BASE_URL}/api/admin/customers?per_page=100",
             headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
         assert resp_a.status_code == 200
-        tenant_a_customer_ids = {c["id"] for c in resp_a.json().get("customers", [])}
+        all_customers = resp_a.json().get("customers", [])
+        tenant_a_customer_ids = {c["id"] for c in all_customers if c.get("tenant_id") == TENANT_A_ID}
         
-        # Tenant B customers should NOT appear in Tenant A's list
-        leaked_customers = tenant_b_customer_ids & tenant_a_customer_ids
+        if not tenant_a_customer_ids:
+            pytest.skip("No Tenant A customers to test")
+        
+        # Get Tenant B's view
+        resp_b = requests.get(
+            f"{BASE_URL}/api/admin/customers?per_page=100",
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+        )
+        assert resp_b.status_code == 200
+        tenant_b_visible_customer_ids = {c["id"] for c in resp_b.json().get("customers", [])}
+        
+        # Tenant A customers should NOT appear in Tenant B's list
+        leaked_customers = tenant_a_customer_ids & tenant_b_visible_customer_ids
         assert not leaked_customers, (
-            f"SECURITY BUG: Tenant B customers leaked to Tenant A: {leaked_customers}"
+            f"SECURITY BUG: Tenant A customers leaked to Tenant B: {leaked_customers}"
         )
-        print(f"PASS - Tenant B customers ({len(tenant_b_customer_ids)}) not visible to Tenant A")
+        print(f"PASS - Tenant A customers ({len(tenant_a_customer_ids)}) not visible to Tenant B admin")
 
-    def test_tenant_a_cannot_see_tenant_b_subscriptions(self, tenant_a_admin_token, tenant_b_admin_token):
-        """Tenant A admin should not see Tenant B's subscriptions."""
-        # Get Tenant B's subscriptions
-        resp_b = requests.get(
-            f"{BASE_URL}/api/admin/subscriptions?per_page=100",
-            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
-        )
-        assert resp_b.status_code == 200
-        tenant_b_sub_ids = {s["id"] for s in resp_b.json().get("subscriptions", [])}
-        
-        if not tenant_b_sub_ids:
-            pytest.skip("No Tenant B subscriptions to test")
-        
-        # Get Tenant A's subscriptions
+    def test_tenant_b_cannot_see_tenant_a_subscriptions(self, tenant_a_admin_token, tenant_b_admin_token):
+        """Tenant B admin should not see Tenant A's subscriptions."""
+        # Get all subscriptions visible to platform admin
         resp_a = requests.get(
             f"{BASE_URL}/api/admin/subscriptions?per_page=100",
             headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
         assert resp_a.status_code == 200
-        tenant_a_sub_ids = {s["id"] for s in resp_a.json().get("subscriptions", [])}
+        all_subs = resp_a.json().get("subscriptions", [])
+        tenant_a_sub_ids = {s["id"] for s in all_subs if s.get("tenant_id") == TENANT_A_ID}
         
-        # Tenant B subscriptions should NOT appear in Tenant A's list
-        leaked_subs = tenant_b_sub_ids & tenant_a_sub_ids
-        assert not leaked_subs, (
-            f"SECURITY BUG: Tenant B subscriptions leaked to Tenant A: {leaked_subs}"
+        if not tenant_a_sub_ids:
+            pytest.skip("No Tenant A subscriptions to test")
+        
+        # Get Tenant B's view
+        resp_b = requests.get(
+            f"{BASE_URL}/api/admin/subscriptions?per_page=100",
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
         )
-        print(f"PASS - Tenant B subscriptions ({len(tenant_b_sub_ids)}) not visible to Tenant A")
+        assert resp_b.status_code == 200
+        tenant_b_visible_sub_ids = {s["id"] for s in resp_b.json().get("subscriptions", [])}
+        
+        # Tenant A subscriptions should NOT appear in Tenant B's list
+        leaked_subs = tenant_a_sub_ids & tenant_b_visible_sub_ids
+        assert not leaked_subs, (
+            f"SECURITY BUG: Tenant A subscriptions leaked to Tenant B: {leaked_subs}"
+        )
+        print(f"PASS - Tenant A subscriptions ({len(tenant_a_sub_ids)}) not visible to Tenant B admin")
 
 
 # ============================================================================
