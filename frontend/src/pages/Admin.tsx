@@ -101,7 +101,7 @@ export default function Admin() {
             <BankTransactionsTab />
           </TabsContent>
           <TabsContent value="articles" className="space-y-4">
-            <ArticlesTab />
+            <ArticlesTab editArticleId={editArticleId || undefined} />
           </TabsContent>
           <TabsContent value="categories" className="space-y-4">
             <CategoriesTab />
