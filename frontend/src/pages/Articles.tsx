@@ -88,9 +88,10 @@ export default function Articles() {
                   onClick={() => setSelectedCategory(null)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
                     !selectedCategory
-                      ? "bg-slate-900 text-white"
+                      ? "text-white"
                       : "text-slate-600 hover:bg-slate-100"
                   }`}
+                  style={!selectedCategory ? { backgroundColor: "var(--aa-primary)" } : undefined}
                   data-testid="articles-filter-all"
                 >
                   <span>All</span>
