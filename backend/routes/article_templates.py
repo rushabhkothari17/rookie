@@ -146,19 +146,24 @@ async def _seed_defaults() -> None:
 
 @router.get("/article-templates")
 async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    await _seed_defaults()
-    templates = await db.article_templates.find({}, {"_id": 0}).sort("name", 1).to_list(200)
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    await _seed_defaults(tid)
+    templates = await db.article_templates.find(tf, {"_id": 0}).sort("name", 1).to_list(200)
     return {"templates": templates}
 
 
 @router.post("/article-templates")
 async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
     name = (payload.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="name is required")
     now = now_iso()
     doc = {
         "id": make_id(),
+        "tenant_id": tid,
         "name": name,
         "description": (payload.get("description") or "").strip(),
         "category": (payload.get("category") or "").strip(),
@@ -173,7 +178,8 @@ async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depen
 
 @router.put("/article-templates/{template_id}")
 async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    tpl = await db.article_templates.find_one({"id": template_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tpl = await db.article_templates.find_one({**tf, "id": template_id}, {"_id": 0})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
     update: Dict[str, Any] = {"updated_at": now_iso()}
@@ -187,7 +193,8 @@ async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict
 
 @router.delete("/article-templates/{template_id}")
 async def delete_template(template_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    tpl = await db.article_templates.find_one({"id": template_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tpl = await db.article_templates.find_one({**tf, "id": template_id}, {"_id": 0})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
     await db.article_templates.delete_one({"id": template_id})
