@@ -26,10 +26,19 @@ export default function Admin() {
 
   return (
     <div className="space-y-6" data-testid="admin-page">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Admin control center</h1>
-        <p className="text-sm text-slate-500">Manage customers, orders, promo codes, and catalog content.</p>
-      </div>
+      {/* Hero Banner — matches store homepage style */}
+      <section className="relative overflow-hidden rounded-3xl bg-[#0f172a] px-10 py-10 shadow-[0_30px_70px_rgba(15,23,42,0.15)]">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-red-600/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full bg-red-600/5 blur-2xl" />
+        <div className="relative space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-0.5 w-8 rounded-full bg-red-500" />
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Administration</p>
+          </div>
+          <h1 className="text-3xl font-bold text-white">Admin Control Centre</h1>
+          <p className="max-w-xl text-sm text-slate-300">Manage customers, orders, products, and website content from one place.</p>
+        </div>
+      </section>
 
       <Tabs defaultValue="customers" className="flex gap-0" data-testid="admin-tabs">
         {/* Left Sidebar Navigation */}
