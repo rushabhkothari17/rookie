@@ -28,6 +28,40 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+    partner_code: Optional[str] = None   # required for partner/customer login
+    login_type: Optional[str] = "partner"  # "partner" | "customer"
+
+
+class PartnerLoginRequest(BaseModel):
+    partner_code: str
+    email: str
+    password: str
+
+
+class CustomerLoginRequest(BaseModel):
+    partner_code: str
+    email: str
+    password: str
+
+
+class TenantCreate(BaseModel):
+    name: str
+    code: str  # unique slug, used at login
+    status: str = "active"
+    owner_email: Optional[str] = None  # email of initial partner_super_admin
+
+
+class TenantUpdate(BaseModel):
+    name: Optional[str] = None
+    status: Optional[str] = None
+
+
+class CreatePartnerAdminRequest(BaseModel):
+    tenant_id: str
+    email: str
+    full_name: str
+    password: str
+    role: str = "partner_super_admin"
 
 
 class VerifyEmailRequest(BaseModel):
