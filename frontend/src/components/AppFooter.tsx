@@ -18,7 +18,7 @@ export default function AppFooter() {
           {/* Brand */}
           <div className="space-y-3">
             <div className="text-white font-semibold text-base tracking-tight">
-              {ws.brand_name || "Brand"}
+              {ws.store_name || "Brand"}
             </div>
             {ws.footer_tagline && (
               <p className="text-sm text-slate-400 leading-relaxed max-w-xs">{ws.footer_tagline}</p>
