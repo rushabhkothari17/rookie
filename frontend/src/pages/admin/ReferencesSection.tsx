@@ -114,7 +114,14 @@ export default function ReferencesSection() {
             No custom references yet.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-fixed">
+            <colgroup>
+              <col style={{ width: "22%" }} />
+              <col style={{ width: "30%" }} />
+              <col style={{ width: "8%" }} />
+              <col style={{ width: "auto" }} />
+              <col style={{ width: "72px" }} />
+            </colgroup>
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Label</th>
