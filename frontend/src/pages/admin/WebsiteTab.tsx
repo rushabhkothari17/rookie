@@ -483,6 +483,7 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
     login: "Text shown on the login page.", signup: "Text + custom fields on the registration page.",
     verify_email: "Text shown when customers verify their email.", portal: "Heading and subtitle on the customer portal.",
     profile: "Heading and subtitle on the profile page.", not_found: "Content for the 404 error page.",
+    admin_panel: "Admin panel page heading, subtitle, and badge.",
     checkout_builder: "Build and configure checkout sections. Includes cart page settings.",
     checkout_success: "Success page content for Stripe and bank transfer payments.",
     gocardless_callback: "Processing, success, and error page text shown during GoCardless direct debit setup.",
