@@ -19,10 +19,21 @@ from __future__ import annotations
 
 import base64
 import json
+from contextvars import ContextVar
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.helpers import make_id, now_iso
 from db.session import db
+
+# ---------------------------------------------------------------------------
+# Request-scoped tenant context — set by get_tenant_admin dependency
+# ---------------------------------------------------------------------------
+_current_tenant_id: ContextVar[Optional[str]] = ContextVar("_current_tenant_id", default=None)
+
+
+def set_audit_tenant(tenant_id: Optional[str]) -> None:
+    """Called by get_tenant_admin to scope all audit writes to the current tenant."""
+    _current_tenant_id.set(tenant_id)
 
 # ---------------------------------------------------------------------------
 # Types
