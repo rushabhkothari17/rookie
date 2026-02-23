@@ -143,6 +143,17 @@ async def import_entity(
         raise HTTPException(status_code=400, detail="Only CSV files are supported")
 
     content = await file.read()
+
+    # File size limit: 10 MB
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large. Maximum allowed size is 10 MB.")
+
+    # Content-type sanity check (must look like text, not binary)
+    try:
+        content.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File does not appear to be a valid UTF-8 CSV.")
     try:
         rows = _parse_csv(content)
     except Exception as e:
