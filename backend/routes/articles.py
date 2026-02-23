@@ -205,7 +205,7 @@ async def create_article(
     payload: ArticleCreate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    if payload.category not in ARTICLE_CATEGORIES:
+    if payload.category not in await _get_valid_categories():
         raise HTTPException(status_code=400, detail="Invalid category")
     if payload.category in SCOPE_FINAL_CATEGORIES and not payload.price:
         raise HTTPException(status_code=400, detail="Price is required for Scope - Final articles")
@@ -280,7 +280,7 @@ async def update_article(
 
     effective_category = payload.category if payload.category is not None else article.get("category")
     if payload.category is not None:
-        if payload.category not in ARTICLE_CATEGORIES:
+        if payload.category not in await _get_valid_categories():
             raise HTTPException(status_code=400, detail="Invalid category")
         updates["category"] = payload.category
         changes["category"] = payload.category
