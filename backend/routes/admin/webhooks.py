@@ -194,7 +194,10 @@ async def test_webhook(
         raise HTTPException(status_code=404, detail="Webhook not found")
 
     event = payload.get("event", "order.created")
-    import json, hmac as _hmac, hashlib, httpx
+    import json
+    import hmac as _hmac
+    import hashlib
+    import httpx
     test_payload = {
         "event": event,
         "webhook_id": webhook_id,
