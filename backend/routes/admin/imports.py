@@ -162,6 +162,14 @@ async def import_entity(
     if not rows:
         return {"created": 0, "updated": 0, "errors": [], "total": 0}
 
+    # Row count safety limit
+    MAX_ROWS = 5000
+    if len(rows) > MAX_ROWS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"CSV has too many rows ({len(rows)}). Maximum allowed is {MAX_ROWS} rows per import."
+        )
+
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
     collection = getattr(db, collection_name)
