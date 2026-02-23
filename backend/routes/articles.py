@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 
 from core.constants import ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES
 from core.helpers import make_id, now_iso, _slugify
-from core.security import get_current_user, require_admin
+from core.security import get_current_user, require_admin, optional_get_current_user
 from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin, resolve_api_key_tenant
 from db.session import db
 from models import ArticleCreate, ArticleEmailRequest, ArticleUpdate, ArticleSendEmailRequest
