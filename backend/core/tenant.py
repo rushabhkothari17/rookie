@@ -73,6 +73,37 @@ async def resolve_tenant(partner_code: str) -> Dict[str, Any]:
     return tenant
 
 
+async def resolve_tenant_by_domain(domain: str) -> Optional[Dict[str, Any]]:
+    """
+    Look up a tenant by custom domain.
+    
+    Partners can configure custom domains (e.g., billing.company.com) to serve their
+    customers without requiring a partner_code in login forms.
+    
+    Returns None if no tenant matches the domain.
+    """
+    if not domain:
+        return None
+    
+    # Normalize domain (lowercase, remove port)
+    domain = domain.lower().split(":")[0]
+    
+    # Look up by custom_domain field
+    tenant = await db.tenants.find_one(
+        {"custom_domains": domain, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not tenant:
+        # Also check custom_domain (singular) for backwards compatibility
+        tenant = await db.tenants.find_one(
+            {"custom_domain": domain, "status": "active"},
+            {"_id": 0}
+        )
+    
+    return tenant
+
+
 class TenantContext:
     """Dependency that extracts tenant filter from request headers + JWT.
     Platform admins can send X-View-As-Tenant header to impersonate a tenant.
