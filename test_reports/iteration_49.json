@@ -1,0 +1,51 @@
+{
+  "summary": "Completed full backend + frontend testing for iteration 49 (7 items). All P0 and P1 bugs confirmed fixed. Tasks 1 and 2 required DB migration fix (stale categories from previous fork). All 9 backend tests pass (9/9). Frontend: all 7 items verified via Playwright.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter49_fixes.py",
+    "/app/test_reports/pytest/pytest_results_iter49.xml"
+  ],
+  "action_items": [
+    "INFORMATIONAL: Task 1 & 2 DB categories were stale from previous environment fork (override_code_expiry_hours was 'Operations', partner_tagging_enabled was 'FeatureFlags'). Fixed via direct MongoDB update + improved seed() function to migrate categories on startup. The seed function migration will prevent this on future forks."
+  ],
+  "critical_code_review_comments": [
+    "settings_service.py seed() only inserted missing settings but did NOT update stale metadata (category/description/value_type) on existing settings. This caused Task 1 and Task 2 to fail in fresh forks. Fixed by adding metadata migration logic to seed() - now updates category/description/value_type when they differ from SETTINGS_DEFAULTS.",
+    "checkout.py subscription checkout: allow_card_payment check (→403) comes BEFORE stripe_globally_enabled check (→400). This means customers with allow_card_payment=False get 403 instead of 400 for subscription checkout. Not a bypass concern (they're still blocked), but the error message may be misleading. For one_time checkout, order is correct (stripe check first)."
+  ],
+  "updated_files": [
+    "/app/backend/services/settings_service.py (seed() function - added category/description/value_type migration for existing settings)"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests pass)",
+    "frontend": "100% (all 7 items verified)"
+  },
+  "seed_data_creation": "Test users created during backend tests (TEST_resend_*, TEST_iter49_*). Test reference 'Test Contact Email' created in References section during UI testing.",
+  "test_credentials": "Admin: admin@automateaccounts.local / ChangeMe123!",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 7 iteration 49 items tested and confirmed working. Key fixes applied: (1) MongoDB categories updated for override_code_expiry_hours (Operations→OverrideCodes) and partner_tagging_enabled (FeatureFlags→Checkout). (2) settings_service.py seed() improved to also update metadata on future forks. Backend tests in /app/backend/tests/test_iter49_fixes.py. Admin: admin@automateaccounts.local / ChangeMe123!. Both stripe_enabled and gocardless_enabled remain FALSE in DB.",
+  "passed_tests": [
+    "P0 Bug 1: POST /api/checkout/bank-transfer returns 400 with 'Bank transfer payments are currently not available' when gocardless_enabled=false",
+    "P0 Bug 1: POST /api/checkout/session returns 400 with 'Card payments are currently not available' when stripe_enabled=false (one_time checkout)",
+    "P0 Bug 2: POST /api/auth/resend-verification-email endpoint exists (200), returns verification_code in response, works for 404 on unknown user, graceful for verified users, new code can verify email",
+    "P0 Bug 2: Frontend VerifyEmail page has data-testid='resend-verification-btn' button showing 'Resend verification code'",
+    "P1 Issue 3: 'Bank Transfer Success' tile is REMOVED from Checkout Flow section",
+    "P1 Issue 3: 'Checkout Success' tile exists with description 'Page shown after a successful payment or bank transfer order.'",
+    "P1 Issue 3: Clicking 'Checkout Success' tile opens slide-over with standard checkout fields AND 'BANK TRANSFER ORDER CONFIRMATION' section with bank transfer fields",
+    "P1 Issue 4: References section has NO Zoho amber box",
+    "P1 Issue 4: All reference items have delete button (code removed !ref.system condition)",
+    "Task 1: override_code_expiry_hours appears in 'OVERRIDE CODES' card (after DB category fix + seed migration)",
+    "Task 2: partner_tagging_enabled appears in 'SYSTEM SETTINGS' section of Checkout Page Builder slide-over (after DB category fix + seed migration)",
+    "Task 3: Footer & Nav shows 5 tiles (Footer Text, About Us, Navigation, Contact Info, Social Media) instead of long scrolling form",
+    "Task 3: Each Footer & Nav tile opens a SlideOver with correct fields"
+  ],
+  "mocked_apis": "Email sending via Resend is MOCKED. resend-verification-email endpoint returns verification_code in response body (not sent via email)."
+}
