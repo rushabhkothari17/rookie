@@ -9,6 +9,7 @@ from services.zoho_service import (
 )
 from services.audit_service import create_audit_log
 from db.session import db
+import httpx
 
 router = APIRouter(prefix="/api", tags=["admin-integrations"])
 
@@ -33,6 +34,11 @@ class ZohoTokenExchange(BaseModel):
 class ZohoValidateRequest(BaseModel):
     access_token: str
     datacenter: str = "US"
+    account_id: Optional[str] = None  # For Zoho Mail shared mailbox
+
+
+class SetActiveProviderRequest(BaseModel):
+    provider: str  # "resend", "zoho_mail", or "none"
 
 
 class CRMFieldMapping(BaseModel):
@@ -45,18 +51,200 @@ class CRMFieldMapping(BaseModel):
     is_active: bool = True
 
 
-# === Email Provider Settings (Resend + Zoho Mail) ===
+# === Email Provider Management ===
 
 @router.get("/admin/integrations/email-providers")
 async def get_email_providers(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Get configured email providers (Resend and Zoho Mail)."""
+    """Get configured email providers with validation status."""
     tid = tenant_id_of(admin)
     
-    # Get settings
+    # Get active provider setting
+    active_provider_setting = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "active_email_provider"},
+        {"_id": 0}
+    )
+    active_provider = active_provider_setting.get("value") if active_provider_setting else None
+    
+    # Get Resend settings
     resend_key = await db.app_settings.find_one(
         {"tenant_id": tid, "key": "resend_api_key"},
         {"_id": 0}
     )
+    resend_sender = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "resend_sender_email"},
+        {"_id": 0}
+    )
+    resend_validated = await db.integrations.find_one(
+        {"tenant_id": tid, "service": "resend_validated"},
+        {"_id": 0}
+    )
+    
+    # Get Zoho Mail settings
+    zoho_mail = await db.integrations.find_one(
+        {"tenant_id": tid, "service": "zoho_mail"},
+        {"_id": 0}
+    )
+    
+    return {
+        "active_provider": active_provider,
+        "providers": {
+            "resend": {
+                "has_api_key": bool(resend_key and resend_key.get("value")),
+                "has_sender_email": bool(resend_sender and resend_sender.get("value")),
+                "is_validated": bool(resend_validated and resend_validated.get("validated")),
+                "validated_at": resend_validated.get("validated_at") if resend_validated else None,
+                "domains": resend_validated.get("domains", []) if resend_validated else [],
+                "is_active": active_provider == "resend"
+            },
+            "zoho_mail": {
+                "is_configured": bool(zoho_mail and zoho_mail.get("credentials")),
+                "datacenter": zoho_mail.get("datacenter") if zoho_mail else None,
+                "is_validated": bool(zoho_mail and zoho_mail.get("validated")),
+                "validated_at": zoho_mail.get("validated_at") if zoho_mail else None,
+                "accounts": zoho_mail.get("accounts", []) if zoho_mail else [],
+                "selected_account_id": zoho_mail.get("selected_account_id") if zoho_mail else None,
+                "is_active": active_provider == "zoho_mail"
+            }
+        }
+    }
+
+
+@router.post("/admin/integrations/email-providers/set-active")
+async def set_active_email_provider(
+    payload: SetActiveProviderRequest,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Set the active email provider. Only one can be active at a time."""
+    tid = tenant_id_of(admin)
+    
+    valid_providers = ["resend", "zoho_mail", "none"]
+    if payload.provider not in valid_providers:
+        raise HTTPException(status_code=400, detail=f"Invalid provider. Must be one of: {valid_providers}")
+    
+    # Verify provider is validated before activating
+    if payload.provider == "resend":
+        resend_validated = await db.integrations.find_one(
+            {"tenant_id": tid, "service": "resend_validated"},
+            {"_id": 0}
+        )
+        if not resend_validated or not resend_validated.get("validated"):
+            raise HTTPException(status_code=400, detail="Resend must be validated before activation")
+    
+    elif payload.provider == "zoho_mail":
+        zoho_mail = await db.integrations.find_one(
+            {"tenant_id": tid, "service": "zoho_mail"},
+            {"_id": 0}
+        )
+        if not zoho_mail or not zoho_mail.get("validated"):
+            raise HTTPException(status_code=400, detail="Zoho Mail must be validated before activation")
+    
+    # Set active provider
+    await db.app_settings.update_one(
+        {"tenant_id": tid, "key": "active_email_provider"},
+        {"$set": {"tenant_id": tid, "key": "active_email_provider", "value": payload.provider if payload.provider != "none" else None}},
+        upsert=True
+    )
+    
+    # If no provider active, disable all email templates
+    if payload.provider == "none":
+        await db.email_templates.update_many(
+            {"tenant_id": tid},
+            {"$set": {"is_enabled": False}}
+        )
+    
+    await create_audit_log(
+        entity_type="integration",
+        entity_id="email_provider",
+        action="set_active",
+        actor=admin.get("email", "admin"),
+        details={"provider": payload.provider}
+    )
+    
+    return {"success": True, "active_provider": payload.provider if payload.provider != "none" else None}
+
+
+@router.post("/admin/integrations/resend/validate")
+async def validate_resend(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Validate Resend API key and sender email."""
+    tid = tenant_id_of(admin)
+    
+    # Get API key
+    api_key_setting = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "resend_api_key"},
+        {"_id": 0}
+    )
+    if not api_key_setting or not api_key_setting.get("value"):
+        return {"success": False, "message": "Resend API key not configured"}
+    
+    # Get sender email
+    sender_setting = await db.app_settings.find_one(
+        {"tenant_id": tid, "key": "resend_sender_email"},
+        {"_id": 0}
+    )
+    if not sender_setting or not sender_setting.get("value"):
+        return {"success": False, "message": "Sender email address not configured"}
+    
+    api_key = api_key_setting["value"]
+    sender_email = sender_setting["value"]
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            # Validate API key by fetching domains
+            response = await client.get(
+                "https://api.resend.com/domains",
+                headers={"Authorization": f"Bearer {api_key}"}
+            )
+            
+            if response.status_code != 200:
+                # Store validation failure
+                await db.integrations.update_one(
+                    {"tenant_id": tid, "service": "resend_validated"},
+                    {"$set": {"validated": False, "error": response.text}},
+                    upsert=True
+                )
+                return {"success": False, "message": f"API key validation failed: {response.status_code}"}
+            
+            domains_data = response.json().get("data", [])
+            domain_names = [d.get("name") for d in domains_data]
+            
+            # Check if sender email domain is in verified domains
+            sender_domain = sender_email.split("@")[-1] if "@" in sender_email else ""
+            domain_verified = sender_domain in domain_names
+            
+            from datetime import datetime
+            # Store validation success
+            await db.integrations.update_one(
+                {"tenant_id": tid, "service": "resend_validated"},
+                {"$set": {
+                    "tenant_id": tid,
+                    "service": "resend_validated",
+                    "validated": True,
+                    "validated_at": datetime.utcnow().isoformat(),
+                    "domains": domain_names,
+                    "sender_domain_verified": domain_verified
+                }},
+                upsert=True
+            )
+            
+            message = "Connection validated successfully"
+            if not domain_verified:
+                message += f". Warning: Sender domain '{sender_domain}' not in verified domains."
+            
+            return {
+                "success": True,
+                "message": message,
+                "domains_count": len(domain_names),
+                "domains": domain_names,
+                "sender_domain_verified": domain_verified
+            }
+            
+    except Exception as e:
+        await db.integrations.update_one(
+            {"tenant_id": tid, "service": "resend_validated"},
+            {"$set": {"validated": False, "error": str(e)}},
+            upsert=True
+        )
+        return {"success": False, "message": str(e)}
     
     zoho_mail = await db.integrations.find_one(
         {"tenant_id": tid, "service": "zoho_mail"},
