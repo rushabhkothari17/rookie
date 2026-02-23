@@ -88,8 +88,9 @@ async def get_products(
 async def get_product(
     product_id: str,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = _tid(user)
+    tid = _tid(user, None, x_view_as_tenant)
     product = await db.products.find_one({"tenant_id": tid, "id": product_id, "is_active": True}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
