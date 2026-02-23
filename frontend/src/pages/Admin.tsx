@@ -24,7 +24,7 @@ const TAB_CLASS =
 
 export default function Admin() {
   const { user: authUser } = useAuth();
-  const { settings: ws } = useWebsite();
+  const ws = useWebsite();
   const isSuperAdmin = authUser?.role === "super_admin";
   const [searchParams] = useSearchParams();
   const editArticleId = searchParams.get("editArticle");
