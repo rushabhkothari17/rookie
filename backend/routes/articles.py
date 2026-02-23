@@ -181,12 +181,16 @@ async def download_article(
     article_id: str,
     format: str = "pdf",
     user: Dict[str, Any] = Depends(get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
     """Download an article as PDF or DOCX."""
     from fastapi.responses import Response
     from services.document_service import generate_pdf, generate_docx
 
-    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    if user.get("role") == "platform_admin" and x_view_as_tenant:
+        tid = x_view_as_tenant
+    else:
+        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.articles.find_one(
         {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
