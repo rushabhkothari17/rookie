@@ -104,9 +104,10 @@ export default function Articles() {
                     onClick={() => setSelectedCategory(cat === selectedCategory ? null : cat)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
                       selectedCategory === cat
-                        ? "bg-slate-900 text-white"
+                        ? "text-white"
                         : "text-slate-600 hover:bg-slate-100"
                     }`}
+                    style={selectedCategory === cat ? { backgroundColor: "var(--aa-primary)" } : undefined}
                     data-testid={`articles-filter-${cat}`}
                   >
                     <span className="truncate">{cat}</span>
