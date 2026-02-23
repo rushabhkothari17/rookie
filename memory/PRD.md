@@ -55,6 +55,14 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ## What's Been Implemented
 
+### Session — Iteration 50 (Feb 2026)
+- **Zoho references restored**: Zoho system links card shown back in References section (plain styled card, no amber box).
+- **Legacy toggles removed**: Partner Tagging (Legacy) and Zoho Account Details (Legacy) toggles removed from Auth & Pages Checkout Flow section.
+- **GoCardless merged**: GoCardless Callback tile removed from App Pages; all GoCardless fields moved into "Checkout Success" slide-over as a sub-section.
+- **Email tile layout**: Resend integration in Email Templates converted to tile pattern; settings open in a slide panel.
+- **Admin nav reorder**: Promo Codes → after Orders (Commerce); Override Codes → before Categories (Content); Logs → after Website Content (Website); removed empty "Settings" section header.
+- **Checkout Builder migration**: Removed legacy Zoho/Partner static form groups and visibility toggles. Dynamic Sections pre-populated with Zoho Account Details + Partner Tagging sections. Backend injects defaults when checkout_sections DB is empty.
+
 ### Session — Iteration 49 (Feb 2026)
 - **P0 Bug Fix**: Payment providers now properly blocked at backend when disabled in admin settings. Both `POST /api/checkout/session` (Stripe) and `POST /api/checkout/bank-transfer` (GoCardless) check global `stripe_enabled`/`gocardless_enabled` flags before processing.
 - **P0 Bug Fix**: Added `POST /api/auth/resend-verification-email` endpoint + "Resend verification code" button on `/verify` page.
