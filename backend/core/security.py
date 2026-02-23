@@ -1,6 +1,7 @@
 """Security: JWT creation/decoding and FastAPI auth dependency callables."""
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
+import secrets
 
 import jwt
 from fastapi import Depends, HTTPException, Request
@@ -13,19 +14,49 @@ from db.session import db
 security = HTTPBearer(auto_error=False)  # auto_error=False allows cookie-only auth
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Token expiry times
+ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour for access tokens
+REFRESH_TOKEN_EXPIRE_DAYS = 30    # 30 days for refresh tokens
 
 # ---------------------------------------------------------------------------
 # JWT helpers
 # ---------------------------------------------------------------------------
 
-def create_access_token(payload: Dict[str, Any]) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(days=7)
+def create_access_token(payload: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+    """Create a short-lived access token (default 1 hour)."""
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     payload = dict(payload)
-    payload.update({"exp": expire})
+    payload.update({"exp": expire, "type": "access"})
     return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 
-def decode_token(token: str) -> Dict[str, Any]:
+def create_refresh_token(user_id: str) -> str:
+    """Create a long-lived refresh token (30 days)."""
+    expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    payload = {
+        "sub": user_id,
+        "exp": expire,
+        "type": "refresh",
+        "jti": secrets.token_urlsafe(16)  # Unique token ID for revocation
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+
+def decode_token(token: str, token_type: str = "access") -> Dict[str, Any]:
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        # Validate token type
+        if payload.get("type") != token_type:
+            raise HTTPException(status_code=401, detail=f"Invalid token type. Expected {token_type}")
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+def decode_token_no_type_check(token: str) -> Dict[str, Any]:
+    """Decode token without type checking (for backward compatibility)."""
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
