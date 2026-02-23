@@ -44,7 +44,7 @@ export default function Admin() {
         </div>
       </section>
 
-      <Tabs defaultValue="customers" className="flex gap-0" data-testid="admin-tabs">
+      <Tabs defaultValue={defaultTab} className="flex gap-0" data-testid="admin-tabs">
         {/* Left Sidebar Navigation */}
         <div className="w-52 shrink-0 border-r border-slate-200 pr-0 mr-6 min-h-[60vh]">
           <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
