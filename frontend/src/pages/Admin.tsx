@@ -21,6 +21,7 @@ import { LogsTab } from "./admin/LogsTab";
 import { TenantsTab } from "./admin/TenantsTab";
 import { SetupChecklistWidget } from "@/components/admin/SetupChecklistWidget";
 import { ApiTab } from "./admin/ApiTab";
+import { WebhooksTab } from "./admin/WebhooksTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
@@ -106,6 +107,7 @@ export default function Admin() {
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Website</p>
             <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
             <TabsTrigger value="api" data-testid="admin-tab-api" className={TAB_CLASS}>API</TabsTrigger>
+            <TabsTrigger value="webhooks" data-testid="admin-tab-webhooks" className={TAB_CLASS}>Webhooks</TabsTrigger>
             <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
 
             {/* Platform — only for platform_admin when NOT viewing as a tenant */}
@@ -160,6 +162,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="api" className="space-y-4">
             <ApiTab />
+          </TabsContent>
+          <TabsContent value="webhooks" className="space-y-4">
+            <WebhooksTab />
           </TabsContent>
           <TabsContent value="override-codes" className="space-y-4">
             <OverrideCodesTab />
