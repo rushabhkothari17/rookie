@@ -327,27 +327,33 @@ def idor_subscription(mongo_db, idor_customers):
 
 
 def _get_customer_token(customer: Dict[str, Any]) -> Optional[str]:
-    """Login as a customer (direct login, no partner code) via /api/auth/login."""
-    # For customers with no tenant, use the plain login
+    """Login as a customer via POST /api/auth/customer-login with partner code."""
+    partner_code = AUTOMATE_ACCOUNTS_PARTNER_CODE
     resp = requests.post(
-        f"{BASE_URL}/api/auth/login",
-        json={"email": customer["email"], "password": customer["password"]},
-        timeout=15,
-    )
-    if resp.status_code == 200:
-        return resp.json()["token"]
-    # Try partner login with automate-accounts partner code
-    resp2 = requests.post(
-        f"{BASE_URL}/api/auth/partner-login",
+        f"{BASE_URL}/api/auth/customer-login",
         json={
-            "partner_code": AUTOMATE_ACCOUNTS_PARTNER_CODE,
+            "partner_code": partner_code,
             "email": customer["email"],
             "password": customer["password"],
         },
         timeout=15,
     )
+    if resp.status_code == 200:
+        return resp.json()["token"]
+    # Fallback: try login with partner_code + login_type=customer
+    resp2 = requests.post(
+        f"{BASE_URL}/api/auth/login",
+        json={
+            "email": customer["email"],
+            "password": customer["password"],
+            "partner_code": partner_code,
+            "login_type": "customer",
+        },
+        timeout=15,
+    )
     if resp2.status_code == 200:
         return resp2.json()["token"]
+    print(f"Customer login failed: {resp.status_code} {resp.text} | {resp2.status_code} {resp2.text}")
     return None
 
 
