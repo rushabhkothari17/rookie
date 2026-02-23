@@ -892,12 +892,6 @@ export default function WebsiteTab() {
         {/* Checkout Builder */}
         {authSlide === "checkout_builder" && (
           <div className="space-y-5">
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-3">
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Visibility Toggles</p>
-              <Toggle label="Partner Tagging Question" description="Legacy checkout section" checked={ws.checkout_partner_enabled} onChange={v => setWs(p => ({ ...p, checkout_partner_enabled: v }))} testId="slide-partner-toggle" />
-              <Toggle label="Zoho Account Details" description="Legacy checkout section" checked={ws.checkout_zoho_enabled} onChange={v => setWs(p => ({ ...p, checkout_zoho_enabled: v }))} testId="slide-zoho-toggle" />
-            </div>
-
             {/* Partner tagging global system setting */}
             {(structured["Checkout"] || []).length > 0 && (
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-2">
@@ -907,36 +901,9 @@ export default function WebsiteTab() {
             )}
 
             <div>
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">Dynamic Sections (New Builder)</p>
-              <p className="text-xs text-slate-400 mb-3">Build custom sections for the checkout page. Each section can have a title, description, and form fields.</p>
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Dynamic Sections</p>
+              <p className="text-xs text-slate-400 mb-3">Build custom sections for the checkout page. The pre-loaded Zoho and Partner sections can be edited or replaced here.</p>
               <CheckoutSectionsBuilder value={ws.checkout_sections} onChange={s("checkout_sections")} />
-            </div>
-
-            <div className="border-t border-slate-100 pt-4 space-y-3">
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Zoho Account Settings</p>
-              <Field label="Section title" value={ws.checkout_zoho_title} onChange={s("checkout_zoho_title")} testId="ws-zoho-title" />
-              <div>
-                <label className="text-xs text-slate-600 block mb-1">Subscription options (one per line)</label>
-                <Textarea value={ws.checkout_zoho_subscription_options} onChange={e => s("checkout_zoho_subscription_options")(e.target.value)} className="text-sm min-h-20 font-mono" data-testid="ws-zoho-sub-options" />
-              </div>
-              <div>
-                <label className="text-xs text-slate-600 block mb-1">Product options (one per line)</label>
-                <Textarea value={ws.checkout_zoho_product_options} onChange={e => s("checkout_zoho_product_options")(e.target.value)} className="text-sm min-h-28 font-mono" data-testid="ws-zoho-product-options" />
-              </div>
-              <Field label="Signup note" value={ws.checkout_zoho_signup_note} onChange={s("checkout_zoho_signup_note")} />
-              <Field label="Access instructions note" value={ws.checkout_zoho_access_note} onChange={s("checkout_zoho_access_note")} />
-              <Field label="Access delay warning" value={ws.checkout_zoho_access_delay_warning} onChange={s("checkout_zoho_access_delay_warning")} />
-            </div>
-
-            <div className="border-t border-slate-100 pt-4 space-y-3">
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Partner Tagging Settings</p>
-              <Field label="Question text" value={ws.checkout_partner_title} onChange={s("checkout_partner_title")} testId="ws-partner-title" />
-              <Field label="Description text" value={ws.checkout_partner_description} onChange={s("checkout_partner_description")} multiline testId="ws-partner-desc" />
-              <div>
-                <label className="text-xs text-slate-600 block mb-1">Response options (one per line)</label>
-                <Textarea value={ws.checkout_partner_options} onChange={e => s("checkout_partner_options")(e.target.value)} className="text-sm min-h-16 font-mono" data-testid="ws-partner-options" />
-              </div>
-              <Field label="Misrepresentation warning" value={ws.checkout_partner_misrep_warning} onChange={s("checkout_partner_misrep_warning")} />
             </div>
 
             <div className="border-t border-slate-100 pt-4">
