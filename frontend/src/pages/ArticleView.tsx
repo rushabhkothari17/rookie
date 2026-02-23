@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import AppShell from "@/components/AppShell";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Download, FileText } from "lucide-react";
+import { ChevronLeft, Download, FileText, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ArticleView() {
   const { articleId } = useParams();
