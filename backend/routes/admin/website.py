@@ -233,7 +233,7 @@ async def get_website_settings_public(
         "muted_color": app_s.get("muted_color") or "",
         # Content overrides (from website_settings)
         **{k: v for k, v in web_s.items() if v is not None and k not in ("_id", "tenant_id")},
-        # Payment flags (always from SettingsService)
+        # Payment flags (from tenant's own app_settings)
         "stripe_enabled": bool(stripe_enabled),
         "gocardless_enabled": bool(gocardless_enabled),
         "stripe_fee_rate": float(stripe_fee_rate) if stripe_fee_rate else 0.05,
