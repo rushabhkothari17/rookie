@@ -714,24 +714,95 @@ export function ArticlesTab() {
 
       {/* Email Dialog */}
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-        <DialogContent className="max-w-md" data-testid="article-email-dialog">
-          <DialogHeader><DialogTitle>Email Article: {emailTarget?.title}</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="article-email-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between gap-2">
+              <span className="truncate">Email Article: {emailTarget?.title}</span>
+              <div className="flex gap-2 shrink-0">
+                <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => { loadEmailTemplates(); setShowEmailTemplatePicker(true); }} data-testid="email-load-template-btn">
+                  <LayoutTemplate size={12} /> Load Template
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs gap-1" onClick={saveEmailAsTemplate} data-testid="email-save-template-btn">
+                  <FileText size={12} /> Save Template
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3 py-1">
+            {/* To field */}
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Customer(s) *</label>
-              <select
-                multiple
-                className="w-full border border-slate-200 rounded p-2 text-sm h-32"
-                value={emailForm.customer_ids}
-                onChange={(e) => setEmailForm({ ...emailForm, customer_ids: Array.from(e.target.selectedOptions, (o) => o.value) })}
-                data-testid="email-customer-select"
-              >
-                {customers.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.email || c.company_name || c.full_name || c.id}</option>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-slate-700">To *</label>
+                <button type="button" onClick={() => setShowCcBcc(v => !v)} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-0.5">
+                  CC / BCC <ChevronDown size={12} className={`transition-transform ${showCcBcc ? "rotate-180" : ""}`} />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1 p-2 border border-slate-200 rounded-md min-h-[38px] bg-white focus-within:ring-1 focus-within:ring-slate-300">
+                {emailForm.to.map(e => (
+                  <span key={e} className="inline-flex items-center gap-1 bg-slate-800 text-white text-xs px-2 py-0.5 rounded-full">
+                    {e}
+                    <button onClick={() => removeEmailChip("to", e)} className="hover:text-red-300"><X size={10} /></button>
+                  </span>
                 ))}
-              </select>
-              <p className="text-xs text-slate-400">{emailForm.customer_ids.length} selected</p>
+                <input
+                  value={emailToInput}
+                  onChange={e => setEmailToInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addEmailChip("to", emailToInput, setEmailToInput); } }}
+                  onBlur={() => addEmailChip("to", emailToInput, setEmailToInput)}
+                  placeholder={emailForm.to.length === 0 ? "Type email and press Enter…" : ""}
+                  className="flex-1 min-w-[180px] outline-none text-sm bg-transparent"
+                  data-testid="email-to-input"
+                />
+              </div>
+              <p className="text-[11px] text-slate-400">{emailForm.to.length} recipient{emailForm.to.length !== 1 ? "s" : ""}</p>
             </div>
+
+            {/* CC / BCC */}
+            {showCcBcc && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">CC</label>
+                  <div className="flex flex-wrap gap-1 p-2 border border-slate-200 rounded-md min-h-[38px] bg-white focus-within:ring-1 focus-within:ring-slate-300">
+                    {emailForm.cc.map(e => (
+                      <span key={e} className="inline-flex items-center gap-1 bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full">
+                        {e} <button onClick={() => removeEmailChip("cc", e)} className="hover:text-red-500"><X size={10} /></button>
+                      </span>
+                    ))}
+                    <input
+                      value={emailCcInput}
+                      onChange={e => setEmailCcInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addEmailChip("cc", emailCcInput, setEmailCcInput); } }}
+                      onBlur={() => addEmailChip("cc", emailCcInput, setEmailCcInput)}
+                      placeholder="Type email…"
+                      className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+                      data-testid="email-cc-input"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">BCC</label>
+                  <div className="flex flex-wrap gap-1 p-2 border border-slate-200 rounded-md min-h-[38px] bg-white focus-within:ring-1 focus-within:ring-slate-300">
+                    {emailForm.bcc.map(e => (
+                      <span key={e} className="inline-flex items-center gap-1 bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full">
+                        {e} <button onClick={() => removeEmailChip("bcc", e)} className="hover:text-red-500"><X size={10} /></button>
+                      </span>
+                    ))}
+                    <input
+                      value={emailBccInput}
+                      onChange={e => setEmailBccInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addEmailChip("bcc", emailBccInput, setEmailBccInput); } }}
+                      onBlur={() => addEmailChip("bcc", emailBccInput, setEmailBccInput)}
+                      placeholder="Type email…"
+                      className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+                      data-testid="email-bcc-input"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Subject */}
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700">Subject</label>
               <Input
@@ -740,20 +811,65 @@ export function ArticlesTab() {
                 data-testid="email-subject-input"
               />
             </div>
+
+            {/* Rich text body */}
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Message (optional)</label>
-              <Textarea
-                value={emailForm.message}
-                onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })}
-                rows={3}
-                placeholder="Add a personal note…"
-                data-testid="email-message-input"
+              <label className="text-xs font-medium text-slate-700">Message Body</label>
+              <EmailBodyComposer
+                key={`email-body-${emailEditorKey}`}
+                value={emailForm.html_body}
+                onChange={(v) => setEmailForm(prev => ({ ...prev, html_body: v }))}
               />
             </div>
-            <Button className="w-full" onClick={handleSendEmail} disabled={savingEmail} data-testid="email-send-btn">
-              {savingEmail ? "Sending…" : "Send Email"}
-            </Button>
+
+            {/* Attach PDF */}
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={emailForm.attach_pdf}
+                onChange={(e) => setEmailForm(prev => ({ ...prev, attach_pdf: e.target.checked }))}
+                className="rounded border-slate-300"
+                data-testid="email-attach-pdf-checkbox"
+              />
+              <span className="text-sm text-slate-700">Attach article as PDF</span>
+              <span className="text-xs text-slate-400">(branded with store settings)</span>
+            </label>
+
+            <div className="flex gap-2 pt-1">
+              <Button className="flex-1" onClick={handleSendEmail} disabled={savingEmail} data-testid="email-send-btn">
+                {savingEmail ? "Sending…" : `Send to ${emailForm.to.length || 0} recipient${emailForm.to.length !== 1 ? "s" : ""}`}
+              </Button>
+              <Button variant="outline" onClick={() => setShowEmailDialog(false)}>Cancel</Button>
+            </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Template Picker */}
+      <Dialog open={showEmailTemplatePicker} onOpenChange={setShowEmailTemplatePicker}>
+        <DialogContent className="max-w-xl max-h-[70vh] overflow-y-auto" data-testid="email-template-picker-dialog">
+          <DialogHeader><DialogTitle>Choose Email Template</DialogTitle></DialogHeader>
+          <p className="text-xs text-slate-500 -mt-1 mb-3">Select a template to pre-fill the subject and body.</p>
+          {emailTemplates.length === 0 ? (
+            <div className="text-center text-slate-400 py-8 text-sm">No email templates yet. Create some in the Email Templates tab.</div>
+          ) : (
+            <div className="grid gap-2">
+              {emailTemplates.map((tpl) => (
+                <button key={tpl.id} onClick={() => applyEmailTemplate(tpl)}
+                  className="text-left border border-slate-200 rounded-lg p-3 hover:border-slate-900 hover:bg-slate-50 transition-all group"
+                  data-testid={`pick-email-template-${tpl.id}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900">{tpl.name}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">{tpl.subject}</div>
+                      {tpl.description && <div className="text-xs text-slate-400 mt-0.5">{tpl.description}</div>}
+                    </div>
+                    <span className="text-xs text-slate-900 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Use →</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
