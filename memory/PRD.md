@@ -42,7 +42,15 @@ Build a multi-tenant SaaS platform for managing accounts, subscriptions, orders,
 See CHANGELOG.md for full details. 35/35 security tests pass.
 Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL injection prevention, HTML sanitization, brute-force lockout, admin unlock, password complexity, token invalidation, CSV formula injection, file upload limits, MongoDB indexes, audit logging.
 
-## P0 — Pre-Production Checklist
+### Phase 5: Webhook System (Feb 2026)
+- 12 events across 5 categories (Orders, Subscriptions, Customers, Payments, Quote Requests)
+- Per-event field picker — choose exactly which fields go in each event's payload
+- HMAC-SHA256 signing (`X-Webhook-Signature: sha256=...`)
+- Async delivery with 3 retries (5s → 30s → 2min exponential backoff)
+- Full delivery log with request/response detail view
+- Test delivery, rotate secret, pause/resume per webhook
+- Admin Webhooks tab in sidebar below API (cards UI + create/edit modal + event builder)
+- Tenant-isolated (admin can only manage own webhooks)
 - [x] ~~Set `ENVIRONMENT=production` in backend .env~~ (code ready — set env var before deploy)
 - [x] ~~JWT_SECRET rotated to strong 64-char hex~~ (done — `backend/.env` updated)
 - [x] ~~Startup validation warns/errors on weak secrets~~ (implemented in `server.py`)
