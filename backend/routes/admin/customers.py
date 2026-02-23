@@ -136,7 +136,8 @@ async def admin_create_customer(
     payload: AdminCreateCustomerRequest,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    existing = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    tid = tenant_id_of(admin)
+    existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tid}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
