@@ -188,7 +188,7 @@ export function TermsTab() {
           <DialogHeader><DialogTitle>Edit Terms: {editTerm?.title}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1"><label className="text-xs text-slate-500">Title</label><Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} data-testid="admin-terms-edit-title" /></div>
-            <div className="space-y-1"><label className="text-xs text-slate-500">Content</label><Textarea value={editForm.content} onChange={e => setEditForm({ ...editForm, content: e.target.value })} rows={8} data-testid="admin-terms-edit-content" /></div>
+            <div className="space-y-1"><label className="text-xs text-slate-500">Content</label><RichHtmlEditor value={editForm.content} onChange={(v) => setEditForm({ ...editForm, content: v })} minHeight="200px" placeholder="Enter terms content…" /></div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Status</label>
               <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
