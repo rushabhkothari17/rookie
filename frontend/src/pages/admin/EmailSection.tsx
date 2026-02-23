@@ -98,9 +98,12 @@ function SettingField({ label, value, onSave, isSecret, description, testId }: {
   );
 }
 
+// ─── ProviderSection (tile + inline slide) ───────────────────────────────────
+
 function ProviderSection({ settings }: { settings: Record<string, SettingItem> }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const s = settings["email_provider_enabled"];
@@ -131,35 +134,72 @@ function ProviderSection({ settings }: { settings: Record<string, SettingItem> }
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Resend</h4>
-          <p className="text-xs text-slate-400 mt-0.5">Transactional email via resend.com</p>
+    <>
+      {/* Tile */}
+      <div
+        className="rounded-xl border border-slate-200 bg-white p-4 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors"
+        data-testid="resend-provider-tile"
+        onClick={() => setOpen(true)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-slate-100">
+            <Mail size={15} className="text-slate-500" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-800">Resend</p>
+            <p className="text-xs text-slate-400 mt-0.5">Transactional email via resend.com</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <span className={`text-xs px-2 py-0.5 rounded-full ${isEnabled ? "text-emerald-700 bg-emerald-50" : "text-slate-500 bg-slate-100"}`}>
             {isEnabled ? "Live" : "Mocked"}
           </span>
-          <button role="switch" aria-checked={isEnabled} onClick={() => toggleProvider(!isEnabled)}
-            disabled={toggling} data-testid="toggle-email-provider"
-            className={`relative inline-flex h-5 w-9 items-center rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:opacity-50 ${isEnabled ? "bg-emerald-500" : "bg-slate-200"}`}>
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${isEnabled ? "translate-x-4" : "translate-x-0"}`} />
-          </button>
+          <Pencil size={14} className="text-slate-400" />
         </div>
       </div>
-      {fields.map(f => (
-        <SettingField key={f.key} label={f.label} isSecret={f.isSecret} description={f.description}
-          value={String(settings[f.key]?.value_json ?? "")}
-          onSave={v => saveSetting(f.key, v)} testId={`email-${f.key}`} />
-      ))}
-      {!isEnabled && (
-        <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-amber-700">Email provider is off — emails are stored in the outbox (not sent). Enable the toggle above to send live emails.</p>
+
+      {/* Slide panel */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex justify-end" data-testid="resend-slide-panel">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
+          <div className="relative z-10 w-full max-w-md bg-white shadow-xl flex flex-col h-full">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">Resend Integration</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Configure transactional email via resend.com</p>
+              </div>
+              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <div>
+                  <p className="text-sm font-medium text-slate-700">Email sending</p>
+                  <p className="text-xs text-slate-400">{isEnabled ? "Live — emails are sent" : "Mocked — emails stored in outbox only"}</p>
+                </div>
+                <button role="switch" aria-checked={isEnabled} onClick={() => toggleProvider(!isEnabled)}
+                  disabled={toggling} data-testid="toggle-email-provider"
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:opacity-50 ${isEnabled ? "bg-emerald-500" : "bg-slate-200"}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${isEnabled ? "translate-x-4" : "translate-x-0"}`} />
+                </button>
+              </div>
+              {fields.map(f => (
+                <SettingField key={f.key} label={f.label} isSecret={f.isSecret} description={f.description}
+                  value={String(settings[f.key]?.value_json ?? "")}
+                  onSave={v => saveSetting(f.key, v)} testId={`email-${f.key}`} />
+              ))}
+              {!isEnabled && (
+                <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-amber-700">Email provider is off — emails are stored in the outbox (not sent). Enable the toggle above to send live emails.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
