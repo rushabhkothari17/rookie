@@ -67,7 +67,10 @@ export default function TopNav() {
             </span>
           )}
           {user?.role === "platform_admin" && (
-            <TenantSwitcher />
+            <>
+              <TenantSwitcher />
+              <CustomerSwitcher />
+            </>
           )}
           <Link to="/cart" className="relative" data-testid="nav-cart-link">
             <Button variant="ghost" size="icon" data-testid="nav-cart-button">
