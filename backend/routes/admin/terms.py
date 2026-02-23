@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re as _re
-
+import bleach
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,6 +14,28 @@ from db.session import db
 from models import TermsCreate, TermsUpdate
 from services.audit_service import create_audit_log
 from services.checkout_service import resolve_terms_tags
+
+router = APIRouter(prefix="/api", tags=["admin-terms"])
+
+# Allowed HTML for terms — same safe subset as articles
+_ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + [
+    "p", "br", "div", "span", "h1", "h2", "h3", "h4", "h5", "h6",
+    "ul", "ol", "li", "blockquote", "pre", "code", "hr",
+    "table", "thead", "tbody", "tr", "th", "td",
+]
+_ALLOWED_ATTRS = {
+    **bleach.sanitizer.ALLOWED_ATTRIBUTES,
+    "*": ["class", "id", "style"],
+    "a": ["href", "title", "target", "rel"],
+    "td": ["colspan", "rowspan"],
+    "th": ["colspan", "rowspan"],
+}
+
+
+def _sanitize_html(html: str) -> str:
+    if not html:
+        return ""
+    return bleach.clean(html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
 
 router = APIRouter(prefix="/api", tags=["admin-terms"])
 
