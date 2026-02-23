@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import pwd_context
-from core.tenant import require_platform_admin, DEFAULT_TENANT_ID
+from core.tenant import require_platform_admin, DEFAULT_TENANT_ID, get_tenant_admin, get_tenant_filter, tenant_id_of
 from db.session import db
 from models import TenantCreate, TenantUpdate, CreatePartnerAdminRequest
 
