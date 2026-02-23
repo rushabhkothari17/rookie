@@ -468,7 +468,7 @@ function getAuthSlideTitle(key: AuthSlide | null): string {
   const map: Record<AuthSlide, string> = {
     login: "Login Page", signup: "Sign Up Page", verify_email: "Verify Email Page",
     portal: "Customer Portal", profile: "Profile Page",
-    not_found: "404 Not Found Page",
+    not_found: "404 Not Found Page", admin_panel: "Admin Panel",
     checkout_builder: "Checkout Page Builder", checkout_success: "Checkout Success",
     gocardless_callback: "GoCardless Callback Page",
     checkout_messages: "Checkout Messages", form_messages: "Form Response Messages",
