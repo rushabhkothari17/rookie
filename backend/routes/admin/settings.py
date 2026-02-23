@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import base64
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
