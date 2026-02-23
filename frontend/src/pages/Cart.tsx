@@ -435,7 +435,23 @@ export default function Cart() {
                 )}
               </div>
               {!allowBankTransfer && !allowCardPayment && (
-                <p className="text-sm text-amber-600">{ws.msg_no_payment_methods || "No payment methods available. Please contact support."}</p>
+                <div className="space-y-3">
+                  <p className="text-sm text-amber-600" data-testid="no-payment-msg">{ws.msg_no_payment_methods || "No payment methods available. Please contact support."}</p>
+                  {!ws.stripe_enabled && !ws.gocardless_enabled && (
+                    <button
+                      data-testid="cart-request-quote-fallback"
+                      className="w-full bg-slate-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-slate-800 transition-colors"
+                      onClick={() => {
+                        const email = ws.contact_email || "";
+                        const subject = encodeURIComponent("Quote Request");
+                        const body = encodeURIComponent("Hi,\n\nI'd like to request a quote for my cart items.\n\nThank you.");
+                        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+                      }}
+                    >
+                      Request a Quote
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
