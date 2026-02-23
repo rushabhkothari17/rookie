@@ -1,0 +1,79 @@
+{
+  "summary": "Security hardening comprehensive test suite — all 35 tests pass across 20 security features including rate limiting, security headers, IDOR, NoSQL injection, CSV formula injection, file/row limits, HTML sanitization, API key audit logging, password complexity, brute force lockout, admin unlock, token version invalidation, tenant isolation.",
+  "iteration": 67,
+  "test_type": "backend_only",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/audit-logs?entity_type=api_key",
+        "issue": "Querying with entity_type='api_key' (snake_case) returns 0 results because audit_trail stores entity_type as 'ApiKey' (PascalCase). The underscore in 'api_key' doesn't match 'ApiKey' as a regex substring. Use 'apikey' (no underscore) or 'ApiKey' to correctly query API key audit logs.",
+        "priority": "LOW",
+        "note": "The audit logs ARE being written correctly — this is only a query format mismatch. The fix is to use entity_type=apikey instead of entity_type=api_key when filtering."
+      },
+      {
+        "component": "HTML Sanitization (articles, terms)",
+        "issue": "bleach.clean with strip=True removes <script> tags but retains the inner text (e.g., 'alert(xss)' remains as plain text). This does NOT enable XSS execution — the <script> tag is removed so the code won't run — but leaves garbage text in content. Consider using strip_comments=True or a pre-pass to remove <script> and <style> tag CONTENTS before running bleach.clean.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_security_hardening.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/iter67_security.xml",
+    "/app/test_reports/pytest/iter67_security_full.xml"
+  ],
+  "test_results": {
+    "total_tests": 35,
+    "passed": 35,
+    "failed": 0,
+    "features_verified": [
+      "Admin login (POST /api/auth/login): PASS - admin@automateaccounts.local logs in successfully, wrong password returns 401",
+      "Security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy): PASS - all present on both public and authenticated endpoints",
+      "Swagger/ReDoc in dev: PASS - /docs and /redoc return 200 (ENVIRONMENT != production)",
+      "Password complexity: PASS - 'password123', no-uppercase, no-special-char, too-short all return 400",
+      "HTML sanitization articles: PASS - <script> tag stripped (inner text 'alert' remains as plain text but is harmless)",
+      "HTML sanitization terms: PASS - <script> tag stripped (same behavior as articles)",
+      "CSV formula injection: PASS - _serialize_val prefixes =, +, -, @ with single quote (verified via direct import)",
+      "File size limit (10MB): PASS - file over 10MB returns 413",
+      "Row count limit (5000 rows): PASS - CSV with 5001 rows returns 400 with message referencing 5000",
+      "API key audit logging: PASS - creating API key writes API_KEY_CREATED to audit_trail; revoking writes API_KEY_REVOKED",
+      "Admin settings masking: PASS - GET /api/admin/settings returns 200 (resend_api_key masked with bullets when present)",
+      "NoSQL injection prevention: PASS - search with .*, (.*), $where returns 200 safely (treated as literal)",
+      "IDOR order access: PASS - customer2 gets 404 accessing customer1's order; customer1 gets 200 for own order",
+      "IDOR subscription cancel: PASS - customer2 gets 404 cancelling customer1's subscription; customer1 gets 200",
+      "Tenant isolation (customers): PASS - tenant-b admin's customer list has 0 overlap with automate-accounts customers",
+      "Tenant isolation (orders): PASS - tenant-b admin's order list has 0 overlap with automate-accounts orders",
+      "Brute force lockout: PASS - preloaded 9 failed attempts + 1 failed login triggers lockout_until, next login returns 429",
+      "Admin unlock: PASS - POST /api/admin/users/{id}/unlock resets failed_login_attempts=0 and lockout_until=None in DB",
+      "Token version invalidation: PASS - old JWT rejected with 401 after token_version incremented in DB; new login works",
+      "Rate limit register (5/min): PASS - 7 rapid requests to /api/auth/register produces 429",
+      "Rate limit login (10/min): PASS - 13 rapid requests to /api/auth/login produces 429"
+    ]
+  },
+  "action_items": [
+    "LOW PRIORITY: Consider fixing HTML sanitization to also strip <script> tag CONTENTS (not just the tag), e.g., use regex pre-pass to remove <script>...</script> blocks entirely before bleach.clean",
+    "LOW PRIORITY: Document that GET /api/admin/audit-logs query uses regex matching, so entity_type should use 'apikey' (no underscore) not 'api_key' to match PascalCase stored format 'ApiKey'. Frontend audit log filter UI should account for this."
+  ],
+  "critical_code_review_comments": [
+    "HTML sanitization: bleach.clean(strip=True) removes <script> tag but not its text content. For <script> tags specifically, the inner content (JavaScript) is left as plain text. This is technically safe (no code execution) but leaves garbage text in content. Consider: pre_clean = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE) before bleach.clean().",
+    "Audit log query format mismatch: audit_trail stores entity_type in PascalCase (e.g., 'ApiKey') but the query regex with 'api_key' (underscore) fails to match 'ApiKey'. This could confuse developers/UI when filtering logs. Consider normalizing entity_type to PascalCase in the query builder OR storing entity_type in both formats."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_security_hardening.py",
+    "/app/backend/tests/conftest.py"
+  ],
+  "success_rate": {
+    "backend": "100% (35/35 tests passed)"
+  },
+  "seed_data_creation": "Created test users directly in MongoDB (bypassing API rate limits): test_lockout_user, test_token_version_user, 2x idor_customers (all cleaned up after session). Created idor_order and idor_subscription in MongoDB.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Security tests are in /app/backend/tests/test_security_hardening.py (35 tests, all pass). Run with: pytest backend/tests/test_security_hardening.py -v -k 'not RateLimit' for fast tests (14s), add 'RateLimit' tests to check rate limiting (adds 130s for sleep). Tenant B partner code is 'tenant-b-test' (not 'tenant-b') in the DB. The audit_trail stores entity_type in PascalCase (ApiKey, not api_key). Rate limit tests sleep 65s before firing rapid requests to ensure clean window."
+}
