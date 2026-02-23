@@ -114,7 +114,11 @@ All 13 entities support CSV import and export:
 
 ---
 
-## P0 Backlog (Remaining)
+## Security Audit
+A comprehensive security audit checklist is at `/app/memory/SECURITY_AUDIT_CHECKLIST.md`.
+- 125+ checklist items across 20 security domains
+- Top 10 critical fixes identified (rate limiting, CORS, token storage, etc.)
+- Includes codebase-specific references for each item
 
 ### Upcoming/Future
 - Full customer portal simulation (X-View-As-Customer in portal/checkout routes)
