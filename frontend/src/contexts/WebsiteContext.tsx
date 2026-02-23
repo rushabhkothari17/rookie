@@ -7,6 +7,13 @@ export interface WebsiteSettings {
   logo_url: string;
   primary_color: string;
   accent_color: string;
+  danger_color: string;
+  success_color: string;
+  warning_color: string;
+  background_color: string;
+  text_color: string;
+  border_color: string;
+  muted_color: string;
   // Store hero
   hero_label: string;
   hero_title: string;
