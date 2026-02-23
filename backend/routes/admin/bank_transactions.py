@@ -63,6 +63,13 @@ async def create_bank_transaction(
     payload: BankTransactionCreate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
+    tf = get_tenant_filter(admin)
+    # Validate linked_order_id belongs to this tenant
+    if payload.linked_order_id:
+        linked_order = await db.orders.find_one({**tf, "id": payload.linked_order_id}, {"_id": 0, "id": 1})
+        if not linked_order:
+            raise HTTPException(status_code=400, detail="Invalid linked_order_id - order not found in your tenant")
+    
     txn_id = make_id()
     net = payload.net_amount if payload.net_amount is not None else round(payload.amount - (payload.fees or 0.0), 2)
     txn = {
