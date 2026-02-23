@@ -285,7 +285,7 @@ def idor_order(mongo_db, idor_customers):
     order_id = _make_id()
     order_doc = {
         "id": order_id,
-        "tenant_id": cust["tenant_id"],
+        "tenant_id": AUTOMATE_ACCOUNTS_TENANT_ID,
         "order_number": f"TEST-{order_id[:8].upper()}",
         "customer_id": cust["customer_id"],
         "type": "one_time",
