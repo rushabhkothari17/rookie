@@ -69,8 +69,8 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 
 ## P2 — Future Sprints
 - [ ] MFA / TOTP for admin accounts
-- [ ] GDPR: customer self-service data export
-- [ ] GDPR: customer right-to-erasure self-service
+- [x] ~~GDPR: customer self-service data export~~ (completed Feb 2026)
+- [x] ~~GDPR: customer right-to-erasure self-service~~ (completed Feb 2026)
 - [ ] Cookie consent banner
 - [ ] Data retention policy automation
 - [ ] Per-API-key rate limits
