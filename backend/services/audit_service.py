@@ -284,9 +284,10 @@ async def create_audit_log(
     tenant_id: Optional[str] = None,
 ) -> None:
     """Write to legacy audit_logs collection AND the comprehensive audit_trail."""
+    resolved_tenant_id = tenant_id or _current_tenant_id.get()
     await db.audit_logs.insert_one({
         "id": make_id(),
-        "tenant_id": tenant_id,
+        "tenant_id": resolved_tenant_id,
         "entity_type": entity_type,
         "entity_id": entity_id,
         "action": action,
