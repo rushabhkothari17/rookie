@@ -150,6 +150,11 @@ async def export_customers_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)
         rows.append(row)
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await create_audit_log(
+        entity_type="export", entity_id="customers",
+        action="data_exported", actor=admin.get("email", "admin"),
+        details={"records": len(rows), "tenant_id": tenant_id_of(admin)},
+    )
     return _make_csv_response(rows, f"customers_{today}.csv")
 
 
