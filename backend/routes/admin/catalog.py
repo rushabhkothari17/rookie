@@ -119,10 +119,12 @@ async def admin_create_product(
     payload: AdminProductCreate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
+    tid = tenant_id_of(admin)
     product_id = make_id()
     sku = f"CUSTOM-{product_id[:8].upper()}"
     product: Dict[str, Any] = {
         "id": product_id,
+        "tenant_id": tid,
         "sku": sku,
         "name": payload.name,
         "short_description": payload.short_description,
