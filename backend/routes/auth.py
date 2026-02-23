@@ -599,6 +599,13 @@ async def get_me(user: Dict[str, Any] = Depends(get_current_user)):
     address = None
     if customer:
         address = await db.addresses.find_one({"customer_id": customer["id"]}, {"_id": 0})
+    # Resolve partner_code from tenant
+    partner_code = None
+    tenant_id = user.get("tenant_id")
+    if tenant_id:
+        tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "code": 1})
+        if tenant:
+            partner_code = tenant.get("code")
     return {
         "user": {
             "id": user["id"],
@@ -609,7 +616,8 @@ async def get_me(user: Dict[str, Any] = Depends(get_current_user)):
             "is_verified": user.get("is_verified", False),
             "is_admin": user.get("is_admin", False),
             "role": user.get("role", "customer"),
-            "tenant_id": user.get("tenant_id"),
+            "tenant_id": tenant_id,
+            "partner_code": partner_code,
             "must_change_password": user.get("must_change_password", False),
         },
         "customer": customer,
