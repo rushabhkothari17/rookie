@@ -214,16 +214,18 @@ async def export_articles_csv(
 
 @router.get("/admin/export/categories")
 async def export_categories_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    cats = await db.categories.find({}, {"_id": 0}).sort("name", 1).to_list(1000)
+    tf = get_tenant_filter(admin)
+    cats = await db.categories.find(tf, {"_id": 0}).sort("name", 1).to_list(1000)
     for cat in cats:
-        cat["product_count"] = await db.products.count_documents({"category": cat["name"]})
+        cat["product_count"] = await db.products.count_documents({**tf, "category": cat["name"]})
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
     return _make_csv_response(cats, f"categories-{ts}.csv")
 
 
 @router.get("/admin/export/terms")
 async def export_terms_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    terms = await db.terms_and_conditions.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    tf = get_tenant_filter(admin)
+    terms = await db.terms_and_conditions.find(tf, {"_id": 0}).sort("created_at", -1).to_list(1000)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
     return _make_csv_response(terms, f"terms-{ts}.csv")
 
