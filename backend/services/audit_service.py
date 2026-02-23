@@ -129,8 +129,11 @@ class AuditService:
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
         q: Optional[str] = None,
+        tenant_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         flt: Dict[str, Any] = {}
+        if tenant_id:
+            flt["tenant_id"] = tenant_id
         if actor:
             flt["$or"] = [
                 {"actor_email": {"$regex": actor, "$options": "i"}},
