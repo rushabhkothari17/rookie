@@ -360,7 +360,8 @@ async def admin_update_category(
     payload: CategoryUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    cat = await db.categories.find_one({"id": cat_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    cat = await db.categories.find_one({**tf, "id": cat_id}, {"_id": 0})
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
     update = {k: v for k, v in payload.dict().items() if v is not None}
