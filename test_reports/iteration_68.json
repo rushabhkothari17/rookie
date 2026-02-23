@@ -1,0 +1,79 @@
+{
+  "summary": "P0/P1/Enhancement security feature tests — all 33 tests pass. Covers CSP header, API key hashing, API key lookup, migration, export audit logs, startup validation, JWT rotation, regressions, and CVE package versions.",
+  "iteration": 68,
+  "test_type": "backend_only",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/audit-logs (action filter for exports)",
+        "issue": "create_audit_log transforms action 'data_exported' into 'EXPORT_DATA_EXPORTED' in audit_trail. If frontend/consumers query with action='data_exported' (exact), it won't match. Use regex/partial match instead. Functionally correct — tests use substring match and pass.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter68_p0_security.py",
+    "/app/test_reports/pytest/iter68_p0_security.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "create_audit_log() converts action='data_exported' to stored action='EXPORT_DATA_EXPORTED' (entity prefix prepended) in audit_trail. The legacy audit_logs collection retains the original 'data_exported'. This dual-storage inconsistency may confuse downstream consumers querying audit_trail with exact action matches.",
+    "ecdsa CVE-2024-23342 accepted risk is correctly documented — app uses HS256 exclusively, so EC key vulnerability is not applicable."
+  ],
+  "test_results": {
+    "total_tests": 33,
+    "passed": 33,
+    "failed": 0,
+    "features_verified": [
+      "CSP header: Content-Security-Policy present on ALL responses (public + authenticated) — PASS",
+      "CSP default-src directive: present — PASS",
+      "CSP frame-ancestors 'none': present — PASS",
+      "CSP all 4 directives (default-src, frame-ancestors, form-action, base-uri): PASS",
+      "API key hash: POST /api/admin/api-keys — raw 'key' field NOT stored in MongoDB — PASS",
+      "API key hash: key_hash (SHA-256) stored in MongoDB — PASS",
+      "API key hash: stored key_hash == SHA-256(raw_key) — PASS",
+      "API key suffix: key_suffix (last 8 chars) stored correctly — PASS",
+      "API key response: raw key returned once in POST response for user to copy — PASS",
+      "API key list: GET /api/admin/api-keys hides raw key and key_hash, exposes only key_masked — PASS",
+      "API key lookup: X-API-Key with new hashed key resolves tenant on GET /api/products (200) — PASS",
+      "API key lookup: invalid X-API-Key doesn't crash (200/404) — PASS",
+      "API key migration: 0 documents with 'key' field and no 'key_hash' in api_keys — PASS",
+      "API key migration: all active keys have key_hash — PASS",
+      "Export audit log orders: GET /api/admin/export/orders creates audit entry with data_exported action — PASS",
+      "Export audit log customers: GET /api/admin/export/customers creates audit entry with data_exported action — PASS",
+      "Export audit log action field: 'data_exported' substring found in stored action — PASS",
+      "Startup validation (dev): server running with ENVIRONMENT=development + ChangeMe123! — PASS",
+      "Startup validation (dev): /docs accessible — server didn't crash — PASS",
+      "Startup validation (dev): backend logs show WARNING not FATAL — PASS",
+      "JWT rotation: token signed with old 'change_me_super_secret' → 401 on /api/admin/api-keys — PASS",
+      "JWT rotation: old token → 401 on /api/me — PASS",
+      "JWT rotation: fresh token (new secret) accepted — PASS",
+      "Regression admin login: admin@automateaccounts.local / ChangeMe123! → 200 + token — PASS",
+      "Regression admin login: wrong password → 401 — PASS",
+      "Regression list API keys: key_masked present, raw key absent — PASS",
+      "Regression list API keys: key_hash not exposed — PASS",
+      "Regression security headers: X-Frame-Options: DENY — PASS",
+      "Regression security headers: X-Content-Type-Options: nosniff — PASS",
+      "Regression security headers: All 4 CSP directives — PASS",
+      "Regression rate limiting: login endpoint triggers 429 after rapid requests — PASS",
+      "pip-audit starlette: 0.41.0 >= 0.41.0 (CVE-2024-47874 fixed) — PASS",
+      "pip-audit pymongo: 4.6.3 >= 4.6.3 (CVE-2024-5629 fixed) — PASS"
+    ]
+  },
+  "updated_files": [
+    "/app/backend/tests/test_iter68_p0_security.py"
+  ],
+  "success_rate": {
+    "backend": "100% (33/33 tests passed)"
+  },
+  "seed_data_creation": "Created and cleaned up test API keys (TEST_hashing_test_key, TEST_lookup_test_key, TEST_list_regression_key) during test run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "P0/P1/Enhancement security tests are in /app/backend/tests/test_iter68_p0_security.py (33 tests, all pass). Run with: pytest backend/tests/test_iter68_p0_security.py -v (10s). JWT secret is now 64-char hex in backend/.env. Old secret 'change_me_super_secret' correctly rejected. Audit log action for exports is stored as 'EXPORT_DATA_EXPORTED' in audit_trail (not 'data_exported'). Rate limit regression test fires 12 rapid requests — no need to sleep since it uses a non-existent email that will rate-limit quickly."
+}
