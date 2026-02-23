@@ -106,9 +106,9 @@ export default function Admin() {
             <TabsTrigger value="terms" data-testid="admin-tab-terms" className={TAB_CLASS}>Terms</TabsTrigger>
 
             {/* Website */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Website</p>
-            <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Integrations</p>
             <TabsTrigger value="crm" data-testid="admin-tab-crm" className={TAB_CLASS}>CRM</TabsTrigger>
+            <TabsTrigger value="finance" data-testid="admin-tab-finance" className={TAB_CLASS}>Finance</TabsTrigger>
             <TabsTrigger value="api" data-testid="admin-tab-api" className={TAB_CLASS}>API</TabsTrigger>
             <TabsTrigger value="webhooks" data-testid="admin-tab-webhooks" className={TAB_CLASS}>Webhooks</TabsTrigger>
             <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
