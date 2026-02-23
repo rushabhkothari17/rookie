@@ -333,6 +333,181 @@ async def delete_order(
     return {"message": "Order deleted successfully"}
 
 
+# ---------------------------------------------------------------------------
+# Refunds
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel
+from services.refund_service import process_stripe_refund, process_gocardless_refund, record_refund
+
+
+class RefundRequest(BaseModel):
+    amount: Optional[float] = None  # Amount in currency units (e.g., 10.50). None = full refund
+    reason: str = "requested_by_customer"
+    provider: str  # "stripe", "gocardless", or "manual"
+    process_via_provider: bool = True  # If True, actually process refund via provider
+
+
+@router.post("/admin/orders/{order_id}/refund")
+async def refund_order(
+    order_id: str,
+    payload: RefundRequest,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """
+    Process a refund for an order.
+    
+    - provider: "stripe", "gocardless", or "manual"
+    - amount: Amount to refund in currency units. Leave empty for full refund.
+    - process_via_provider: If True, actually processes refund via payment provider.
+                           If False, just records the refund locally.
+    """
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    
+    order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    if order.get("status") not in ("paid", "partially_refunded"):
+        raise HTTPException(status_code=400, detail="Can only refund paid orders")
+    
+    # Calculate refund amount
+    total_cents = int(order.get("total", 0) * 100)
+    already_refunded_cents = int(order.get("refunded_amount", 0))
+    available_to_refund = total_cents - already_refunded_cents
+    
+    if available_to_refund <= 0:
+        raise HTTPException(status_code=400, detail="Order has already been fully refunded")
+    
+    if payload.amount:
+        refund_amount_cents = int(payload.amount * 100)
+        if refund_amount_cents > available_to_refund:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Refund amount exceeds available balance. Max refundable: {available_to_refund / 100:.2f}"
+            )
+    else:
+        refund_amount_cents = available_to_refund
+    
+    provider_refund_id = None
+    
+    # Process via payment provider if requested
+    if payload.process_via_provider and payload.provider != "manual":
+        if payload.provider == "stripe":
+            # Get Stripe payment ID from order
+            processor_id = order.get("processor_id") or order.get("stripe_payment_intent_id")
+            if not processor_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="No Stripe payment ID found on this order. Use manual refund instead."
+                )
+            
+            result = await process_stripe_refund(
+                tenant_id=tid,
+                payment_intent_id=processor_id,
+                amount_cents=refund_amount_cents,
+                reason=payload.reason
+            )
+            
+            if not result["success"]:
+                raise HTTPException(status_code=400, detail=result.get("error", "Stripe refund failed"))
+            
+            provider_refund_id = result.get("refund_id")
+            
+        elif payload.provider == "gocardless":
+            # Get GoCardless payment ID from order
+            gc_payment_id = order.get("gocardless_payment_id") or order.get("processor_id")
+            if not gc_payment_id or not gc_payment_id.startswith("PM"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="No GoCardless payment ID found on this order. Use manual refund instead."
+                )
+            
+            result = await process_gocardless_refund(
+                tenant_id=tid,
+                payment_id=gc_payment_id,
+                amount_cents=refund_amount_cents,
+                reference=f"Refund for order {order.get('order_number')}"
+            )
+            
+            if not result["success"]:
+                raise HTTPException(status_code=400, detail=result.get("error", "GoCardless refund failed"))
+            
+            provider_refund_id = result.get("refund_id")
+    
+    # Record the refund
+    refund_result = await record_refund(
+        tenant_id=tid,
+        order_id=order_id,
+        amount_cents=refund_amount_cents,
+        reason=payload.reason,
+        provider=payload.provider,
+        provider_refund_id=provider_refund_id,
+        processed_by=f"admin:{admin['id']}"
+    )
+    
+    # Audit log
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="refunded",
+        actor=f"admin:{admin['id']}",
+        details={
+            "amount": refund_amount_cents / 100,
+            "reason": payload.reason,
+            "provider": payload.provider,
+            "provider_refund_id": provider_refund_id,
+            "processed_via_provider": payload.process_via_provider
+        }
+    )
+    
+    # Dispatch webhook
+    customer = await db.customers.find_one({"id": order["customer_id"]}, {"_id": 0}) or {}
+    _cust_email = customer.get("email", "")
+    if not _cust_email and customer.get("user_id"):
+        _user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0, "email": 1}) or {}
+        _cust_email = _user.get("email", "")
+    
+    await dispatch_event("order.refunded", {
+        "id": order_id,
+        "order_number": order.get("order_number", ""),
+        "refund_amount": refund_amount_cents / 100,
+        "total_refunded": (already_refunded_cents + refund_amount_cents) / 100,
+        "reason": payload.reason,
+        "provider": payload.provider,
+        "customer_email": _cust_email,
+        "refunded_at": now_iso()
+    }, tid)
+    
+    return {
+        "message": "Refund processed successfully",
+        "refund_id": refund_result["refund_id"],
+        "amount": refund_amount_cents / 100,
+        "provider": payload.provider,
+        "provider_refund_id": provider_refund_id
+    }
+
+
+@router.get("/admin/orders/{order_id}/refunds")
+async def get_order_refunds(
+    order_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Get all refunds for an order."""
+    tf = get_tenant_filter(admin)
+    order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0, "id": 1})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    refunds = await db.refunds.find(
+        {"order_id": order_id, "tenant_id": tenant_id_of(admin)},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    return {"refunds": refunds}
+
+
 @router.post("/admin/orders/{order_id}/auto-charge")
 async def auto_charge_order(
     order_id: str,
