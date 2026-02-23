@@ -415,7 +415,13 @@ async def get_orders(user: Dict[str, Any] = Depends(get_current_user)):
 
 @router.get("/orders/{order_id}")
 async def get_order(order_id: str, user: Dict[str, Any] = Depends(get_current_user)):
-    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Order not found")
+    # IDOR check: ensure order belongs to this customer within this tenant
+    order = await db.orders.find_one(
+        {"id": order_id, "customer_id": customer["id"]}, {"_id": 0}
+    )
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(200)
@@ -437,7 +443,13 @@ async def cancel_subscription(
     payload: CancelSubscriptionBody,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    # IDOR check: ensure subscription belongs to this customer
+    subscription = await db.subscriptions.find_one(
+        {"id": subscription_id, "customer_id": customer["id"]}, {"_id": 0}
+    )
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
     await db.subscriptions.update_one(
