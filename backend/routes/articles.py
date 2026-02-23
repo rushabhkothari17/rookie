@@ -345,7 +345,8 @@ async def delete_article(
     article_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    article = await db.articles.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
@@ -379,7 +380,8 @@ async def email_article(
     payload: ArticleEmailRequest,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    article = await db.articles.find_one({"id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0, "content": 0})
+    tf = get_tenant_filter(admin)
+    article = await db.articles.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0, "content": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
