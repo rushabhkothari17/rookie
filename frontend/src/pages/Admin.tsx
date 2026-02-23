@@ -22,6 +22,7 @@ import { TenantsTab } from "./admin/TenantsTab";
 import { SetupChecklistWidget } from "@/components/admin/SetupChecklistWidget";
 import { ApiTab } from "./admin/ApiTab";
 import { WebhooksTab } from "./admin/WebhooksTab";
+import { CRMTab } from "./admin/CRMTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
