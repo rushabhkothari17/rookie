@@ -6,11 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown } from "lucide-react";
+import { Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown, Tag } from "lucide-react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { ArticleTemplatesTab } from "./ArticleTemplatesTab";
 import { ArticleEmailTemplatesTab } from "./ArticleEmailTemplatesTab";
+import { ArticleCategoriesTab } from "./ArticleCategoriesTab";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 const ARTICLE_CATEGORIES = [
