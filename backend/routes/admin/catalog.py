@@ -88,8 +88,8 @@ async def admin_list_all_products(
     query: Dict[str, Any] = {**tf}
     if search:
         query["$or"] = [
-            {"name": {"$regex": search, "$options": "i"}},
-            {"sku": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": re.escape(search), "$options": "i"}},
+            {"sku": {"$regex": re.escape(search), "$options": "i"}},
         ]
     if category:
         query["category"] = category
@@ -304,7 +304,7 @@ async def admin_list_categories(
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
     if search:
-        query["name"] = {"$regex": search, "$options": "i"}
+        query["name"] = {"$regex": re.escape(search), "$options": "i"}
     if status == "active":
         query["is_active"] = True
     elif status == "inactive":
