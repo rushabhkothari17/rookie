@@ -167,7 +167,8 @@ async def update_order(
     payload: OrderUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
