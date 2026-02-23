@@ -31,7 +31,8 @@ async def list_bank_transactions(
     date_to: Optional[str] = None,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if source:
         query["source"] = source
     if status:
