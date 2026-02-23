@@ -7,43 +7,12 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
-from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
+from core.security import require_admin, optional_get_current_user
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin, DEFAULT_TENANT_ID
 from db.session import db
 from services.audit_service import create_audit_log
-from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["references"])
-
-ZOHO_SEED_REFS = [
-    {"key": "zoho_reseller_signup_us", "label": "Zoho Reseller Signup (US)", "description": "Zoho Reseller Customer Signup link shown at checkout (US data center)", "type": "url"},
-    {"key": "zoho_reseller_signup_ca", "label": "Zoho Reseller Signup (Canada)", "description": "Zoho Reseller Customer Signup link shown at checkout (Canada data center)", "type": "url"},
-    {"key": "zoho_partner_tag_us", "label": "Zoho Partner Tag (US)", "description": "Partner tagging link shown at checkout (US data center)", "type": "url"},
-    {"key": "zoho_partner_tag_ca", "label": "Zoho Partner Tag (Canada)", "description": "Partner tagging link shown at checkout (Canada data center)", "type": "url"},
-    {"key": "zoho_access_instructions_url", "label": "Zoho Access Instructions URL", "description": "URL explaining how customers should provide Zoho account access", "type": "url"},
-]
-
-
-async def _seed_zoho_refs() -> None:
-    """Seed Zoho links as regular (deletable) references if they don't already exist."""
-    existing_keys = {r["key"] for r in await db.website_references.find({}, {"key": 1, "_id": 0}).to_list(500)}
-    settings_list = await SettingsService.list_all(include_secrets=True)
-    settings_map = {s["key"]: s.get("value_json", "") for s in settings_list}
-    for seed in ZOHO_SEED_REFS:
-        if seed["key"] in existing_keys:
-            continue
-        doc = {
-            "id": make_id(),
-            "key": seed["key"],
-            "label": seed["label"],
-            "type": seed["type"],
-            "value": str(settings_map.get(seed["key"]) or ""),
-            "description": seed["description"],
-            "system": False,
-            "created_at": now_iso(),
-            "updated_at": now_iso(),
-        }
-        await db.website_references.insert_one(doc)
 
 
 def _slugify(text: str) -> str:
@@ -53,9 +22,16 @@ def _slugify(text: str) -> str:
 # ── Public endpoint ─────────────────────────────────────────────────────────
 
 @router.get("/references")
-async def list_references_public():
+async def list_references_public(
+    partner_code: Optional[str] = None,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+):
     """Return all references for use in frontend editors."""
-    refs = await db.website_references.find({}, {"_id": 0}).sort("label", 1).to_list(500)
+    if user and user.get("tenant_id"):
+        tid = user["tenant_id"]
+    else:
+        tid = DEFAULT_TENANT_ID
+    refs = await db.website_references.find({"tenant_id": tid}, {"_id": 0}).sort("label", 1).to_list(500)
     return {"references": refs}
 
 
@@ -63,13 +39,15 @@ async def list_references_public():
 
 @router.get("/admin/references")
 async def list_references(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    await _seed_zoho_refs()
-    refs = await db.website_references.find({}, {"_id": 0}).sort("label", 1).to_list(500)
+    tf = get_tenant_filter(admin)
+    refs = await db.website_references.find(tf, {"_id": 0}).sort("label", 1).to_list(500)
     return {"references": refs}
 
 
 @router.post("/admin/references")
 async def create_reference(payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
     label = (payload.get("label") or "").strip()
     key = (payload.get("key") or _slugify(label)).strip()
     value = (payload.get("value") or "").strip()
@@ -79,12 +57,13 @@ async def create_reference(payload: Dict[str, Any], admin: Dict[str, Any] = Depe
     if not key or not label:
         raise HTTPException(status_code=400, detail="label and key are required")
 
-    existing = await db.website_references.find_one({"key": key}, {"_id": 0})
+    existing = await db.website_references.find_one({**tf, "key": key}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail=f"A reference with key '{key}' already exists")
 
     doc = {
         "id": make_id(),
+        "tenant_id": tid,
         "key": key,
         "label": label,
         "type": ref_type,
@@ -95,13 +74,14 @@ async def create_reference(payload: Dict[str, Any], admin: Dict[str, Any] = Depe
         "updated_at": now_iso(),
     }
     await db.website_references.insert_one(doc)
-    await create_audit_log(entity_type="reference", entity_id=doc["id"], action="created", actor=admin.get("email", "admin"), details={"key": key, "type": ref_type})
+    await create_audit_log(entity_type="reference", entity_id=doc["id"], action="created", actor=admin.get("email", "admin"), details={"key": key, "type": ref_type}, tenant_id=tid)
     return {"reference": {k: v for k, v in doc.items() if k != "_id"}}
 
 
 @router.put("/admin/references/{ref_id}")
 async def update_reference(ref_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    ref = await db.website_references.find_one({"id": ref_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    ref = await db.website_references.find_one({**tf, "id": ref_id}, {"_id": 0})
     if not ref:
         raise HTTPException(status_code=404, detail="Reference not found")
 
@@ -109,28 +89,28 @@ async def update_reference(ref_id: str, payload: Dict[str, Any], admin: Dict[str
     for field in ["label", "value", "type", "description"]:
         if field in payload:
             update[field] = payload[field]
-    # Allow key update only for non-system refs
     if not ref.get("system") and "key" in payload:
         new_key = (payload["key"] or "").strip()
         if new_key and new_key != ref["key"]:
-            existing = await db.website_references.find_one({"key": new_key, "id": {"$ne": ref_id}}, {"_id": 0})
+            existing = await db.website_references.find_one({**tf, "key": new_key, "id": {"$ne": ref_id}}, {"_id": 0})
             if existing:
                 raise HTTPException(status_code=400, detail=f"Key '{new_key}' is already in use")
             update["key"] = new_key
 
     await db.website_references.update_one({"id": ref_id}, {"$set": update})
     updated = await db.website_references.find_one({"id": ref_id}, {"_id": 0})
-    await create_audit_log(entity_type="reference", entity_id=ref_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(update.keys())})
+    await create_audit_log(entity_type="reference", entity_id=ref_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(update.keys())}, tenant_id=tenant_id_of(admin))
     return {"reference": updated}
 
 
 @router.delete("/admin/references/{ref_id}")
 async def delete_reference(ref_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    ref = await db.website_references.find_one({"id": ref_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    ref = await db.website_references.find_one({**tf, "id": ref_id}, {"_id": 0})
     if not ref:
         raise HTTPException(status_code=404, detail="Reference not found")
     if ref.get("system"):
         raise HTTPException(status_code=403, detail="System references cannot be deleted")
     await db.website_references.delete_one({"id": ref_id})
-    await create_audit_log(entity_type="reference", entity_id=ref_id, action="deleted", actor=admin.get("email", "admin"), details={"key": ref.get("key")})
+    await create_audit_log(entity_type="reference", entity_id=ref_id, action="deleted", actor=admin.get("email", "admin"), details={"key": ref.get("key")}, tenant_id=tenant_id_of(admin))
     return {"message": "Deleted"}
