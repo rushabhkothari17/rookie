@@ -155,7 +155,6 @@ export default function ReferencesSection() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <span className="font-medium text-slate-800">{ref.label}</span>
-                        {ref.system && <Lock size={11} className="text-amber-500" />}
                       </div>
                       {ref.description && <p className="text-[11px] text-slate-400 mt-0.5">{ref.description}</p>}
                     </td>
