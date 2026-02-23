@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Plus, Pencil, Trash2, Tag, Upload} from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, Upload, Download } from "lucide-react";
 
 const PRESET_COLORS = [
   "#0f172a", "#1e40af", "#7c3aed", "#be185d", "#dc2626",
