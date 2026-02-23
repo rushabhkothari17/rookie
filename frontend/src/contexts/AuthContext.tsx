@@ -59,10 +59,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     partner_code?: string,
     login_type?: string,
   ): Promise<{ is_admin: boolean; role: string }> => {
-    const endpoint = "/auth/partner-login";
     const payload: Record<string, string> = { email, password, partner_code: partner_code || "" };
 
-    const response = await api.post(endpoint, payload);
+    let response;
+    try {
+      // First try partner-login (for admin/staff users)
+      response = await api.post("/auth/partner-login", payload);
+    } catch (err: any) {
+      // If partner-login fails with 403 (wrong login type), try customer-login
+      if (err.response?.status === 403 && err.response?.data?.detail?.includes("Access denied")) {
+        response = await api.post("/auth/customer-login", payload);
+      } else {
+        throw err;
+      }
+    }
+
     setAuthToken(response.data.token);
     if (partner_code) {
       localStorage.setItem("aa_partner_code", partner_code);
