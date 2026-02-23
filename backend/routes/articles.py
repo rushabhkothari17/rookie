@@ -207,13 +207,15 @@ async def create_article(
     payload: ArticleCreate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    if payload.category not in await _get_valid_categories():
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    if payload.category not in await _get_valid_categories(tid):
         raise HTTPException(status_code=400, detail="Invalid category")
     if payload.category in SCOPE_FINAL_CATEGORIES and not payload.price:
         raise HTTPException(status_code=400, detail="Price is required for Scope - Final articles")
 
     slug = payload.slug or _slugify(payload.title)
-    existing = await db.articles.find_one({"slug": slug, "deleted_at": {"$exists": False}})
+    existing = await db.articles.find_one({**tf, "slug": slug, "deleted_at": {"$exists": False}})
     if existing:
         slug = f"{slug}-{make_id()[:4]}"
 
@@ -221,6 +223,7 @@ async def create_article(
     now = now_iso()
     doc = {
         "id": article_id,
+        "tenant_id": tid,
         "title": payload.title,
         "slug": slug,
         "category": payload.category,
