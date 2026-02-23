@@ -242,6 +242,7 @@ async def create_scope_request_with_form(
         })
     order = {
         "id": order_id,
+        "tenant_id": user.get("tenant_id") or "automate-accounts",
         "order_number": order_number,
         "customer_id": customer["id"],
         "type": "scope_request",
