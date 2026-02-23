@@ -138,6 +138,11 @@ export default function Admin() {
           <TabsContent value="sync" className="space-y-4">
             <LogsTab />
           </TabsContent>
+          {isPlatformAdmin && (
+            <TabsContent value="tenants" className="space-y-4">
+              <TenantsTab />
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </div>
