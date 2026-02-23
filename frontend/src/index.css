@@ -7,11 +7,14 @@
 :root {
   --aa-primary: #0f172a;
   --aa-primary-hover: #1e293b;
-  --aa-accent: #dc2626;
-  --aa-accent-hover: #b91c1c;
+  --aa-accent: #1e40af;
+  --aa-accent-hover: #1d4ed8;
   --aa-bg: #f8fafc;
   --aa-card: #ffffff;
   --aa-border: #e2e8f0;
+  --aa-danger: #dc2626;
+  --aa-success: #16a34a;
+  --aa-warning: #d97706;
 }
 
 body {
