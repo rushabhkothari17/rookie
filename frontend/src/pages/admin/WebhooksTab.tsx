@@ -296,6 +296,91 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
   );
 }
 
+// ─── Delivery Stats Dashboard ─────────────────────────────────────────────────
+
+function DeliveryStatsDashboard() {
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get("/admin/webhooks/delivery-stats");
+      setStats(data);
+    } catch {
+      // Ignore
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-4 gap-3 animate-pulse">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="bg-slate-100 rounded-xl h-20" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!stats) return null;
+
+  return (
+    <div className="space-y-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-4">
+          <p className="text-xs text-slate-500 font-medium">Total Deliveries</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">{stats.total_deliveries}</p>
+        </div>
+        <div className="bg-white border border-emerald-200 rounded-xl p-4">
+          <p className="text-xs text-emerald-600 font-medium">Successful</p>
+          <p className="text-2xl font-bold text-emerald-700 mt-1">{stats.success_count}</p>
+        </div>
+        <div className="bg-white border border-red-200 rounded-xl p-4">
+          <p className="text-xs text-red-600 font-medium">Failed</p>
+          <p className="text-2xl font-bold text-red-700 mt-1">{stats.failed_count}</p>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4">
+          <p className="text-xs text-slate-500 font-medium">Success Rate</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">{stats.success_rate}%</p>
+        </div>
+      </div>
+
+      {/* Recent Failures */}
+      {stats.recent_failures && stats.recent_failures.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <p className="text-sm font-semibold text-red-700">Recent Failures</p>
+          </div>
+          <div className="space-y-2">
+            {stats.recent_failures.slice(0, 5).map((f: any) => (
+              <div key={f.id} className="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-red-100">
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-slate-700">{f.webhook_name}</span>
+                  <span className="font-mono text-slate-500">{f.event}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {f.response_status && (
+                    <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-mono">{f.response_status}</span>
+                  )}
+                  <span className="text-slate-400">{new Date(f.created_at).toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Delivery Logs Panel ──────────────────────────────────────────────────────
 
 function DeliveryLogs({ webhook, onClose }: { webhook: Webhook; onClose: () => void }) {
