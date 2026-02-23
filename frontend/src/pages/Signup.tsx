@@ -20,8 +20,17 @@ const countries = [
 
 export default function Signup() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPartnerMode = searchParams.get("type") === "partner";
   const { register } = useAuth();
   const ws = useWebsite();
+
+  // Partner org signup state
+  const [partnerOrg, setPartnerOrg] = useState({ name: "", code: "", admin_name: "", admin_email: "", admin_password: "" });
+  const [partnerLoading, setPartnerLoading] = useState(false);
+
+  // Customer signup state
+  const [partnerCode, setPartnerCode] = useState("");
   const [form, setForm] = useState({
     full_name: "", job_title: "", company_name: "",
     email: "", phone: "", password: "",
