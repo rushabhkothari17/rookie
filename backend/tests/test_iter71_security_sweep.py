@@ -650,97 +650,99 @@ class TestCrossTenantDataAccess:
 
 class TestDirectResourceAccessIDOR:
     """
-    Test that Tenant A admin cannot access Tenant B's resources directly by ID.
+    Test that Tenant B admin cannot access Tenant A's resources directly by ID.
     """
 
     @pytest.fixture(scope="class")
-    def tenant_b_order_id(self, tenant_b_admin_token):
-        """Get an order ID from Tenant B."""
+    def tenant_a_order_id(self, tenant_a_admin_token):
+        """Get an order ID from Tenant A."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/orders?per_page=1",
-            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+            f"{BASE_URL}/api/admin/orders?per_page=100",
+            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
         assert resp.status_code == 200
         orders = resp.json().get("orders", [])
-        if not orders:
-            pytest.skip("No Tenant B orders for IDOR test")
-        return orders[0]["id"]
+        aa_orders = [o for o in orders if o.get("tenant_id") == TENANT_A_ID]
+        if not aa_orders:
+            pytest.skip("No Tenant A orders for IDOR test")
+        return aa_orders[0]["id"]
 
     @pytest.fixture(scope="class")
-    def tenant_b_subscription_id(self, tenant_b_admin_token):
-        """Get a subscription ID from Tenant B."""
+    def tenant_a_subscription_id(self, tenant_a_admin_token):
+        """Get a subscription ID from Tenant A."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/subscriptions?per_page=1",
-            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+            f"{BASE_URL}/api/admin/subscriptions?per_page=100",
+            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
         assert resp.status_code == 200
         subs = resp.json().get("subscriptions", [])
-        if not subs:
-            pytest.skip("No Tenant B subscriptions for IDOR test")
-        return subs[0]["id"]
+        aa_subs = [s for s in subs if s.get("tenant_id") == TENANT_A_ID]
+        if not aa_subs:
+            pytest.skip("No Tenant A subscriptions for IDOR test")
+        return aa_subs[0]["id"]
 
-    def test_tenant_a_cannot_update_tenant_b_order(self, tenant_a_admin_token, tenant_b_order_id):
+    def test_tenant_b_cannot_update_tenant_a_order(self, tenant_b_admin_token, tenant_a_order_id):
         """
-        IDOR TEST: Tenant A admin cannot update Tenant B's order by ID.
+        IDOR TEST: Tenant B admin cannot update Tenant A's order by ID.
         """
         resp = requests.put(
-            f"{BASE_URL}/api/admin/orders/{tenant_b_order_id}",
+            f"{BASE_URL}/api/admin/orders/{tenant_a_order_id}",
             json={"internal_note": "IDOR attack attempt"},
-            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
         )
         
         assert resp.status_code == 404, (
-            f"SECURITY BUG: Tenant A admin could access Tenant B order! "
+            f"SECURITY BUG: Tenant B admin could access Tenant A order! "
             f"Expected 404, got {resp.status_code}: {resp.text}"
         )
-        print(f"PASS - Tenant A blocked from updating Tenant B order: 404")
+        print(f"PASS - Tenant B blocked from updating Tenant A order: 404")
 
-    def test_tenant_a_cannot_delete_tenant_b_order(self, tenant_a_admin_token, tenant_b_order_id):
+    def test_tenant_b_cannot_delete_tenant_a_order(self, tenant_b_admin_token, tenant_a_order_id):
         """
-        IDOR TEST: Tenant A admin cannot delete Tenant B's order by ID.
+        IDOR TEST: Tenant B admin cannot delete Tenant A's order by ID.
         """
         resp = requests.delete(
-            f"{BASE_URL}/api/admin/orders/{tenant_b_order_id}",
+            f"{BASE_URL}/api/admin/orders/{tenant_a_order_id}",
             json={"reason": "IDOR attack attempt"},
-            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
         )
         
         assert resp.status_code == 404, (
-            f"SECURITY BUG: Tenant A admin could delete Tenant B order! "
+            f"SECURITY BUG: Tenant B admin could delete Tenant A order! "
             f"Expected 404, got {resp.status_code}: {resp.text}"
         )
-        print(f"PASS - Tenant A blocked from deleting Tenant B order: 404")
+        print(f"PASS - Tenant B blocked from deleting Tenant A order: 404")
 
-    def test_tenant_a_cannot_update_tenant_b_subscription(self, tenant_a_admin_token, tenant_b_subscription_id):
+    def test_tenant_b_cannot_update_tenant_a_subscription(self, tenant_b_admin_token, tenant_a_subscription_id):
         """
-        IDOR TEST: Tenant A admin cannot update Tenant B's subscription by ID.
+        IDOR TEST: Tenant B admin cannot update Tenant A's subscription by ID.
         """
         resp = requests.put(
-            f"{BASE_URL}/api/admin/subscriptions/{tenant_b_subscription_id}",
+            f"{BASE_URL}/api/admin/subscriptions/{tenant_a_subscription_id}",
             json={"new_note": "IDOR attack attempt"},
-            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
         )
         
         assert resp.status_code == 404, (
-            f"SECURITY BUG: Tenant A admin could access Tenant B subscription! "
+            f"SECURITY BUG: Tenant B admin could access Tenant A subscription! "
             f"Expected 404, got {resp.status_code}: {resp.text}"
         )
-        print(f"PASS - Tenant A blocked from updating Tenant B subscription: 404")
+        print(f"PASS - Tenant B blocked from updating Tenant A subscription: 404")
 
-    def test_tenant_a_cannot_cancel_tenant_b_subscription(self, tenant_a_admin_token, tenant_b_subscription_id):
+    def test_tenant_b_cannot_cancel_tenant_a_subscription(self, tenant_b_admin_token, tenant_a_subscription_id):
         """
-        IDOR TEST: Tenant A admin cannot cancel Tenant B's subscription by ID.
+        IDOR TEST: Tenant B admin cannot cancel Tenant A's subscription by ID.
         """
         resp = requests.post(
-            f"{BASE_URL}/api/admin/subscriptions/{tenant_b_subscription_id}/cancel",
-            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
+            f"{BASE_URL}/api/admin/subscriptions/{tenant_a_subscription_id}/cancel",
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
         )
         
         assert resp.status_code == 404, (
-            f"SECURITY BUG: Tenant A admin could cancel Tenant B subscription! "
+            f"SECURITY BUG: Tenant B admin could cancel Tenant A subscription! "
             f"Expected 404, got {resp.status_code}: {resp.text}"
         )
-        print(f"PASS - Tenant A blocked from canceling Tenant B subscription: 404")
+        print(f"PASS - Tenant B blocked from canceling Tenant A subscription: 404")
 
 
 # ============================================================================
