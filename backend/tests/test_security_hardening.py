@@ -395,26 +395,27 @@ class TestAdminLogin:
 # ===========================================================================
 
 class TestSecurityHeaders:
-    """Every API response should include OWASP security headers."""
+    """Every API response should include OWASP security headers.
+    Using public endpoints to avoid consuming login rate limit tokens.
+    """
 
-    def test_x_content_type_options_on_login_endpoint(self):
-        resp = requests.post(
-            f"{BASE_URL}/api/auth/login",
-            json={"email": "check@headers.com", "password": "any"},
-            timeout=15,
-        )
+    def _check_headers(self, url: str, method: str = "get", **kwargs):
+        """Helper to make a request and return headers."""
+        fn = getattr(requests, method)
+        return fn(url, timeout=15, **kwargs)
+
+    def test_x_content_type_options_on_public_endpoint(self):
+        """X-Content-Type-Options: nosniff on a public endpoint."""
+        resp = requests.get(f"{BASE_URL}/api/tenant-info?code=automate-accounts", timeout=15)
         header_val = resp.headers.get("X-Content-Type-Options", "")
         assert header_val == "nosniff", (
             f"Expected 'nosniff', got '{header_val}'"
         )
         print(f"X-Content-Type-Options: {header_val}")
 
-    def test_x_frame_options_on_login_endpoint(self):
-        resp = requests.post(
-            f"{BASE_URL}/api/auth/login",
-            json={"email": "check@headers.com", "password": "any"},
-            timeout=15,
-        )
+    def test_x_frame_options_on_public_endpoint(self):
+        """X-Frame-Options: DENY on a public endpoint."""
+        resp = requests.get(f"{BASE_URL}/api/tenant-info?code=automate-accounts", timeout=15)
         header_val = resp.headers.get("X-Frame-Options", "")
         assert header_val == "DENY", (
             f"Expected 'DENY', got '{header_val}'"
@@ -422,27 +423,19 @@ class TestSecurityHeaders:
         print(f"X-Frame-Options: {header_val}")
 
     def test_x_xss_protection_header(self):
-        resp = requests.post(
-            f"{BASE_URL}/api/auth/login",
-            json={"email": "check@headers.com", "password": "any"},
-            timeout=15,
-        )
+        resp = requests.get(f"{BASE_URL}/api/tenant-info?code=automate-accounts", timeout=15)
         header_val = resp.headers.get("X-XSS-Protection", "")
         assert header_val, "X-XSS-Protection header should be present"
         print(f"X-XSS-Protection: {header_val}")
 
     def test_referrer_policy_header(self):
-        resp = requests.post(
-            f"{BASE_URL}/api/auth/login",
-            json={"email": "check@headers.com", "password": "any"},
-            timeout=15,
-        )
+        resp = requests.get(f"{BASE_URL}/api/tenant-info?code=automate-accounts", timeout=15)
         header_val = resp.headers.get("Referrer-Policy", "")
         assert header_val, "Referrer-Policy header should be present"
         print(f"Referrer-Policy: {header_val}")
 
-    def test_security_headers_on_get_endpoint(self, admin_token):
-        """Security headers also present on GET endpoints."""
+    def test_security_headers_on_authenticated_get_endpoint(self, admin_token):
+        """Security headers also present on authenticated GET endpoints."""
         resp = requests.get(
             f"{BASE_URL}/api/me",
             headers={"Authorization": f"Bearer {admin_token}"},
