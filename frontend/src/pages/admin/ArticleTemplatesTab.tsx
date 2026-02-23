@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Plus, Trash2, Upload} from "lucide-react";
+import { Plus, Trash2, Upload, Download } from "lucide-react";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 const HARDCODED_CATEGORIES = [
