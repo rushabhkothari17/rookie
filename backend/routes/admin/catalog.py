@@ -198,7 +198,8 @@ async def admin_update_product(
     payload: AdminProductUpdate,
     admin: Dict[str, Any] = Depends(require_admin),
 ):
-    existing = await db.products.find_one({"id": product_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.products.find_one({**tf, "id": product_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Product not found")
 
