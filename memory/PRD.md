@@ -137,3 +137,23 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Comprehensive test cases CSV: `/app/test_cases_comprehensive.csv` (121 test cases)
 - Tenant B seeded with: 5 customers, 5 products, 3 subscriptions, 5 orders, 3 articles, 3 quote requests, 2 promo codes, 3 bank transactions
 
+### Phase 7: HttpOnly Cookie Authentication (Feb 2026)
+**Security Enhancement - HttpOnly Cookies:**
+- Migrated JWT tokens from localStorage to HttpOnly cookies
+- Login endpoints now set `aa_access_token` cookie with proper security flags:
+  - `httponly=True` (XSS protection)
+  - `secure=True` (HTTPS only in production)
+  - `samesite=lax` (CSRF protection)
+- Token extraction supports both Authorization header and cookie for backward compatibility
+- Logout endpoint (`/api/auth/logout`) properly clears the cookie
+- Frontend AuthContext updated to call logout endpoint
+- API client configured with `withCredentials: true` for cookie support
+
+**Files Modified:**
+- `backend/routes/auth.py` - Cookie set/clear helpers, login endpoints updated
+- `backend/core/security.py` - `HTTPBearer(auto_error=False)` to allow cookie-only auth
+- `frontend/src/contexts/AuthContext.tsx` - Logout calls API endpoint
+- `frontend/src/lib/api.ts` - `withCredentials: true` added
+
+**Test Report:** `/app/test_reports/iteration_72.json` - 100% pass rate, all auth flows verified
+
