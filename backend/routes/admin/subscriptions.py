@@ -58,11 +58,11 @@ async def admin_subscriptions(
     if payment:
         query["payment_method"] = payment
     if sub_number:
-        query["subscription_number"] = {"$regex": sub_number, "$options": "i"}
+        query["subscription_number"] = {"$regex": _re.escape(sub_number), "$options": "i"}
     if processor_id_filter:
-        query["processor_id"] = {"$regex": processor_id_filter, "$options": "i"}
+        query["processor_id"] = {"$regex": _re.escape(processor_id_filter), "$options": "i"}
     if plan_name_filter:
-        query["plan_name"] = {"$regex": plan_name_filter, "$options": "i"}
+        query["plan_name"] = {"$regex": _re.escape(plan_name_filter), "$options": "i"}
     if renewal_from:
         query.setdefault("renewal_date", {})["$gte"] = renewal_from
     if renewal_to:

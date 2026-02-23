@@ -28,8 +28,8 @@ async def admin_list_users(
     query: Dict[str, Any] = {**tf, "is_admin": True}
     if search:
         query["$or"] = [
-            {"email": {"$regex": search, "$options": "i"}},
-            {"full_name": {"$regex": search, "$options": "i"}},
+            {"email": {"$regex": _re.escape(search), "$options": "i"}},
+            {"full_name": {"$regex": _re.escape(search), "$options": "i"}},
         ]
     total = await db.users.count_documents(query)
     skip = (page - 1) * per_page

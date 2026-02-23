@@ -41,13 +41,13 @@ async def admin_orders(
     if not include_deleted:
         query["deleted_at"] = {"$exists": False}
     if order_number_filter:
-        query["order_number"] = {"$regex": order_number_filter, "$options": "i"}
+        query["order_number"] = {"$regex": _re.escape(order_number_filter), "$options": "i"}
     if status_filter:
         query["status"] = status_filter
     if sub_number_filter:
-        query["subscription_number"] = {"$regex": sub_number_filter, "$options": "i"}
+        query["subscription_number"] = {"$regex": _re.escape(sub_number_filter), "$options": "i"}
     if processor_id_filter:
-        query["processor_id"] = {"$regex": processor_id_filter, "$options": "i"}
+        query["processor_id"] = {"$regex": _re.escape(processor_id_filter), "$options": "i"}
     if payment_method_filter:
         query["payment_method"] = payment_method_filter
     if pay_date_from:
