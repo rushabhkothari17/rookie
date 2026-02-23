@@ -275,9 +275,13 @@ export default function Signup() {
             Mocked verification code: {verificationCode}
           </div>
         )}
-        <div className="mt-6 text-sm text-slate-500">
-          Already have access?{" "}
-          <Link to="/login" className="text-blue-600" data-testid="signup-login-link">Sign in</Link>
+        <div className="mt-6 space-y-1 text-sm text-slate-500">
+          <div>Already have access?{" "}
+            <Link to="/login" className="font-medium hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="signup-login-link">Sign in</Link>
+          </div>
+          <div>Registering a new organization?{" "}
+            <Link to="/signup?type=partner" className="font-medium hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="partner-signup-link">Sign up as a partner</Link>
+          </div>
         </div>
       </div>
     </div>
