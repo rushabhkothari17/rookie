@@ -55,6 +55,15 @@ Build a fully customizable "whitelabel" solution that can be resold. No content 
 
 ## What's Been Implemented
 
+### Session — Iteration 51 (Feb 2026)
+- **P0 Fixed**: Frontend build error in ReferencesSection.tsx resolved — app compiles cleanly.
+- **Zoho System Links in References**: New `ZohoSystemLinksTable` component in WebsiteTab renders 5 Zoho system links (editable) above the custom references table. Uses structured settings API (`/admin/settings/structured`, category "Zoho").
+- **Admin hero banner**: Dark hero section with "Admin Control Centre" heading added to admin panel dashboard.
+- **Sidebar reorder verified**: People > Commerce (Subscriptions, Orders, Promo Codes, Quote Requests, Bank Transactions) > Content (Articles, Override Codes, Categories, Catalog, Terms) > Website (Website Content, Logs).
+- **partner_tagging_enabled toggle removed**: Checkout Page Builder slide-over no longer shows this redundant toggle.
+- **Default values**: `DEFAULT_WEBSITE_SETTINGS` dict in `routes/admin/website.py` provides 75+ defaults for all settings.
+- **Testing**: 100% pass rate (iteration_51.json), all 9 features verified.
+
 ### Session — Iteration 50 (Feb 2026)
 - **Zoho references restored**: Zoho system links card shown back in References section (plain styled card, no amber box).
 - **Legacy toggles removed**: Partner Tagging (Legacy) and Zoho Account Details (Legacy) toggles removed from Auth & Pages Checkout Flow section.
