@@ -171,15 +171,20 @@ async def download_article(
     updated_at = article.get("updated_at", "")
     safe_name = _re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60]
 
+    # Fetch store branding from website settings
+    ws = await db.website_settings.find_one({}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
+    store_name = str(ws.get("store_name") or "")
+    accent_color = str(ws.get("accent_color") or "#0f172a")
+
     if format == "docx":
-        data = generate_docx(title, author, created_at, updated_at, content)
+        data = generate_docx(title, author, created_at, updated_at, content, store_name=store_name)
         return Response(
             content=data,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             headers={"Content-Disposition": f'attachment; filename="{safe_name}.docx"'},
         )
     else:
-        data = generate_pdf(title, author, created_at, updated_at, content)
+        data = generate_pdf(title, author, created_at, updated_at, content, store_name=store_name, accent_hex=accent_color)
         return Response(
             content=data,
             media_type="application/pdf",
