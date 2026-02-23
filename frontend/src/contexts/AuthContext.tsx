@@ -56,28 +56,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: string,
     password: string,
     partner_code?: string,
-    login_type: string = "partner",
-  ) => {
-    let endpoint = "/auth/login";
-    let payload: Record<string, string> = { email, password };
-
-    if (partner_code) {
-      if (login_type === "customer") {
-        endpoint = "/auth/customer-login";
-        payload = { email, password, partner_code };
-      } else {
-        endpoint = "/auth/partner-login";
-        payload = { email, password, partner_code };
-      }
-    }
+    login_type?: string,
+  ): Promise<{ is_admin: boolean; role: string }> => {
+    const endpoint = "/auth/partner-login";
+    const payload: Record<string, string> = { email, password, partner_code: partner_code || "" };
 
     const response = await api.post(endpoint, payload);
     setAuthToken(response.data.token);
-    // Store partner code for future API calls
     if (partner_code) {
       localStorage.setItem("aa_partner_code", partner_code);
     }
     await refresh();
+    return {
+      is_admin: response.data.role !== "customer",
+      role: response.data.role,
+    };
   };
 
   const logout = () => {
