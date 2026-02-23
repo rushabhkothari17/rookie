@@ -261,6 +261,29 @@ async def update_order(
             actor=f"admin:{admin['id']}",
             details={"changes": changes},
         )
+        # Webhook: order.updated + order.status_changed
+        updated_order = await db.orders.find_one({"id": order_id}, {"_id": 0}) or {}
+        customer = await db.customers.find_one({"id": updated_order.get("customer_id", "")}, {"_id": 0}) or {}
+        await dispatch_event("order.updated", {
+            "id": order_id,
+            "order_number": updated_order.get("order_number", ""),
+            "status": updated_order.get("status", ""),
+            "total": updated_order.get("total", 0),
+            "currency": updated_order.get("currency", ""),
+            "customer_email": customer.get("email", ""),
+            "customer_name": customer.get("full_name", ""),
+            "updated_at": update_fields.get("updated_at", ""),
+        }, tenant_id_of(admin))
+        if "status" in changes:
+            await dispatch_event("order.status_changed", {
+                "id": order_id,
+                "order_number": updated_order.get("order_number", ""),
+                "previous_status": changes["status"]["old"],
+                "new_status": changes["status"]["new"],
+                "customer_email": customer.get("email", ""),
+                "customer_name": customer.get("full_name", ""),
+                "changed_at": update_fields.get("updated_at", ""),
+            }, tenant_id_of(admin))
 
     if payload.new_note:
         note_entry = {"text": payload.new_note, "timestamp": now_iso(), "actor": f"admin:{admin['id']}"}
