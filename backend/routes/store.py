@@ -428,7 +428,22 @@ async def get_order(order_id: str, user: Dict[str, Any] = Depends(get_current_us
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(200)
-    return {"order": order, "items": items}
+    
+    # Include terms of service if applicable
+    terms = None
+    if order.get("terms_id"):
+        terms = await db.terms_and_conditions.find_one(
+            {"id": order["terms_id"]},
+            {"_id": 0, "id": 1, "title": 1, "content": 1}
+        )
+    elif order.get("tenant_id"):
+        # Get default terms for tenant
+        terms = await db.terms_and_conditions.find_one(
+            {"tenant_id": order["tenant_id"], "is_default": True, "status": "active"},
+            {"_id": 0, "id": 1, "title": 1, "content": 1}
+        )
+    
+    return {"order": order, "items": items, "terms": terms}
 
 
 @router.get("/subscriptions")
