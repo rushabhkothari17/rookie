@@ -52,7 +52,7 @@ export default function Login() {
             <label className="text-sm text-slate-600" htmlFor="password">Password</label>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} data-testid="login-password-input" required />
           </div>
-          <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800" disabled={loading} data-testid="login-submit-button">
+          <Button type="submit" className="w-full" disabled={loading} data-testid="login-submit-button">
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
