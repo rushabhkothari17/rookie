@@ -18,8 +18,9 @@ router = APIRouter(prefix="/api", tags=["article-email-templates"])
 async def list_article_email_templates(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
+    tf = get_tenant_filter(admin)
     templates = await db.article_email_templates.find(
-        {}, {"_id": 0}
+        tf, {"_id": 0}
     ).sort("created_at", 1).to_list(200)
     return {"templates": templates}
 
@@ -31,9 +32,11 @@ async def create_article_email_template(
 ):
     if not payload.name.strip():
         raise HTTPException(status_code=400, detail="Template name is required")
+    tid = tenant_id_of(admin)
     now = now_iso()
     doc = {
         "id": make_id(),
+        "tenant_id": tid,
         "name": payload.name.strip(),
         "subject": payload.subject,
         "html_body": payload.html_body,
@@ -52,7 +55,8 @@ async def update_article_email_template(
     payload: ArticleEmailTemplateUpdate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    tpl = await db.article_email_templates.find_one({"id": template_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tpl = await db.article_email_templates.find_one({**tf, "id": template_id}, {"_id": 0})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
     updates: Dict[str, Any] = {"updated_at": now_iso()}
@@ -74,7 +78,8 @@ async def delete_article_email_template(
     template_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    tpl = await db.article_email_templates.find_one({"id": template_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    tpl = await db.article_email_templates.find_one({**tf, "id": template_id}, {"_id": 0})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
     await db.article_email_templates.delete_one({"id": template_id})
