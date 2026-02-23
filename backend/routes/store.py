@@ -23,8 +23,8 @@ from core.constants import SERVICE_FEE_RATE
 router = APIRouter(prefix="/api", tags=["store"])
 
 
-def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
-    """Resolve tenant_id: X-View-As-Tenant (platform_admin) > user JWT > API key > partner_code > default."""
+async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
+    """Resolve tenant_id: X-View-As-Tenant (platform_admin) > user JWT > API key > partner_code lookup > default."""
     if x_view_as_tenant and user and user.get("role") == "platform_admin":
         return x_view_as_tenant
     if user and user.get("tenant_id"):
@@ -32,7 +32,10 @@ def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = No
     if api_key_tid:
         return api_key_tid
     if partner_code:
-        return partner_code
+        # Look up tenant by code to get actual tenant_id
+        tenant = await db.tenants.find_one({"code": partner_code.lower()}, {"_id": 0, "id": 1})
+        if tenant:
+            return tenant["id"]
     return DEFAULT_TENANT_ID
 
 
@@ -43,7 +46,7 @@ async def get_categories(
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = _tid(user, partner_code, x_view_as_tenant, api_key_tid)
+    tid = await _resolve_tenant_id(user, partner_code, x_view_as_tenant, api_key_tid)
     inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
     all_cats = await db.categories.find({"tenant_id": tid, "is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
