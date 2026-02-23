@@ -235,14 +235,15 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
 async def partner_login(payload: PartnerLoginRequest, response: Response):
     """Login for partner organization users (super_admin, admin, staff).
     Requires partner_code to identify the tenant.
-    Sets HttpOnly cookie with JWT token.
+    Sets HttpOnly cookies with JWT access and refresh tokens.
     """
     tenant = await resolve_tenant(payload.partner_code)
     partner_roles = ["partner_super_admin", "partner_admin", "partner_staff",
                      "platform_admin", "super_admin", "admin"]
     result = await _authenticate(payload.email, payload.password, tenant["id"], partner_roles)
-    _set_auth_cookie(response, result["token"])
-    return result
+    _set_auth_cookie(response, result["token"], result.get("refresh_token"))
+    # Don't expose refresh token in response body
+    return {"token": result["token"], "role": result["role"], "tenant_id": result["tenant_id"]}
 
 
 # ---------------------------------------------------------------------------
