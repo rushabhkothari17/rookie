@@ -83,7 +83,7 @@ async def export_orders_csv(
     if not include_deleted:
         query["deleted_at"] = {"$exists": False}
     if order_number_filter:
-        query["order_number"] = {"$regex": order_number_filter, "$options": "i"}
+        query["order_number"] = {"$regex": _re.escape(order_number_filter), "$options": "i"}
     if status_filter:
         query["status"] = status_filter
 
@@ -204,9 +204,9 @@ async def export_quote_requests_csv(
     if status:
         query["status"] = status
     if email:
-        query["email"] = {"$regex": email, "$options": "i"}
+        query["email"] = {"$regex": _re.escape(email), "$options": "i"}
     if product:
-        query["product_name"] = {"$regex": product, "$options": "i"}
+        query["product_name"] = {"$regex": _re.escape(product), "$options": "i"}
     if date_from:
         query.setdefault("created_at", {})["$gte"] = date_from
     if date_to:
