@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import LinkExt from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { Bold, Italic, List, ListOrdered, Link2, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 function EmailBodyEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const editor = useEditor({
