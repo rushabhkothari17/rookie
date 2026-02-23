@@ -67,9 +67,9 @@ async def admin_list_quote_requests(
     if status:
         query["status"] = status
     if email:
-        query["email"] = {"$regex": email, "$options": "i"}
+        query["email"] = {"$regex": _re.escape(email), "$options": "i"}
     if product:
-        query["product_name"] = {"$regex": product, "$options": "i"}
+        query["product_name"] = {"$regex": _re.escape(product), "$options": "i"}
     if date_from:
         query.setdefault("created_at", {})["$gte"] = date_from
     if date_to:
