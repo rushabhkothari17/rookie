@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight, Plus, Trash2, RefreshCw, Send, Eye, Copy, RotateCcw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
