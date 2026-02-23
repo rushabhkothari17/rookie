@@ -214,6 +214,8 @@ def idor_customers(mongo_db):
         user_id = _make_id()
         customer_id = _make_id()
         hashed = pwd_context.hash(password)
+        # Always use the automate-accounts tenant so partner login works
+        effective_tenant_id = AUTOMATE_ACCOUNTS_TENANT_ID
 
         user_doc = {
             "id": user_id,
@@ -226,7 +228,7 @@ def idor_customers(mongo_db):
             "is_active": True,
             "is_admin": False,
             "role": "customer",
-            "tenant_id": tenant_id,
+            "tenant_id": effective_tenant_id,
             "token_version": 0,
             "created_at": _now_iso(),
         }
