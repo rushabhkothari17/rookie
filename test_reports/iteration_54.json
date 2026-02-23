@@ -1,0 +1,48 @@
+{
+  "summary": "Comprehensive testing of Article Email features: Email Templates CRUD, Article Email Dialog with rich composer, and Admin Edit button on ArticleView. All 19 backend tests passed (100%). All frontend flows verified working. Email sending correctly MOCKED when Resend not configured.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ArticlesTab - Edit Article Dialog",
+        "issue": "Dialog title shows 'Edit: undefined' when opened via /admin?editArticle={id} URL param. Root cause: openEdit() is called with {id: editArticleId} only (no title), and the dialog renders editingArticle.title before the async API fetch completes. Fix: set editingArticle with full article data after the API call in openEdit(), e.g. setEditingArticle(a) after the GET response.",
+        "selector": "[data-testid='article-form-dialog']",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_article_email_features.py",
+    "/app/test_reports/pytest/pytest_article_email_iter54.xml"
+  ],
+  "action_items": [
+    "Fix 'Edit: undefined' dialog title in ArticlesTab.tsx: In openEdit(), call setEditingArticle(a) after the API GET response so that editingArticle.title is populated before dialog renders. Change: 'const a = res.data.article; setForm({...})' to 'const a = res.data.article; setEditingArticle(a); setForm({...})'"
+  ],
+  "critical_code_review_comments": [
+    "openEdit() in ArticlesTab.tsx sets editingArticle to the shallow passed-in object first (line ~287), then fetches full article data but only updates `form` state. The dialog title uses editingArticle.title which is undefined when called with just {id: ...}. Should also call setEditingArticle(a) with the full API response.",
+    "ArticleSendEmailRequest model has subject as required (str) - frontend correctly sends it. attach_pdf defaults to False. All clean.",
+    "Both article_email_templates routes and articles/send-email route are correctly registered in server.py (lines 69, 95).",
+    "Email body in templates is stored as HTML (html_body field) - consistent between create and display. Correct.",
+    "Mocked email correctly saved to email_outbox collection with full metadata (to, cc, bcc, subject, body, has_attachment status)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_article_email_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (19/19 tests passed)",
+    "frontend": "95% (all critical flows pass, 1 minor cosmetic bug: 'Edit: undefined' dialog title)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123!",
+  "seed_data_creation": "Backend tests created and cleaned up TEST_EmailTemplate_Basic, TEST_ToUpdate, TEST_ToDelete, and TEST_EmailFeatureArticle (all deleted after tests). Frontend test created TEST_UI_Template (deleted during test).",
+  "mocked_apis": [
+    "POST /api/articles/{id}/send-email - email sending via Resend is MOCKED, responses stored in email_outbox collection. Response includes mocked:true field."
+  ],
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "New features fully tested and working: (1) Email Templates 3rd sub-tab in Articles admin section with full CRUD; (2) Article Email Dialog with To chip input, CC/BCC toggle, rich Tiptap body editor, PDF attachment checkbox, Load/Save template functionality; (3) Admin Edit button on ArticleView that navigates to /admin?editArticle={id} and opens the edit dialog. Backend: GET/POST/PUT/DELETE /api/article-email-templates all working. POST /api/articles/{id}/send-email working with mocked=true. One minor bug: edit dialog title shows 'Edit: undefined' when opened via URL param. Fix in ArticlesTab.tsx openEdit() function."
+}
