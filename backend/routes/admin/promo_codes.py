@@ -70,7 +70,8 @@ async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any
 
 @router.put("/admin/promo-codes/{code_id}")
 async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    existing = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.promo_codes.find_one({**tf, "id": code_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Promo code not found")
     update: Dict[str, Any] = {}
@@ -92,7 +93,8 @@ async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin:
 
 @router.delete("/admin/promo-codes/{code_id}")
 async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    existing = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
+    tf = get_tenant_filter(admin)
+    existing = await db.promo_codes.find_one({**tf, "id": code_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Promo code not found")
     await db.promo_codes.delete_one({"id": code_id})
