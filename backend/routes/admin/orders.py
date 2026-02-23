@@ -35,7 +35,8 @@ async def admin_orders(
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     skip = (page - 1) * per_page
-    query: Dict[str, Any] = {}
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf}
     if not include_deleted:
         query["deleted_at"] = {"$exists": False}
     if order_number_filter:
