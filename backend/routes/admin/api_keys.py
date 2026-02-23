@@ -2,8 +2,7 @@
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -12,18 +11,6 @@ from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
 from db.session import db
 
 router = APIRouter(prefix="/api", tags=["admin-api-keys"])
-
-
-def _generate_key() -> str:
-    """Generate a secure API key in format: ak_<32 random hex chars>"""
-    return f"ak_{secrets.token_hex(24)}"
-
-
-def _mask_key(key: str) -> str:
-    """Return masked version of key for display."""
-    if len(key) <= 12:
-        return key[:4] + "•" * (len(key) - 4)
-    return key[:8] + "•" * 20 + key[-4:]
 
 
 @router.get("/admin/api-keys")
