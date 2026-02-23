@@ -7,6 +7,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { WebsiteProvider } from "@/contexts/WebsiteContext";
 import TopNav from "@/components/TopNav";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { CookieConsent } from "@/components/CookieConsent";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import VerifyEmail from "@/pages/VerifyEmail";
