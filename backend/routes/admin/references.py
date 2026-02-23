@@ -10,8 +10,39 @@ from core.helpers import make_id, now_iso
 from core.security import require_admin
 from db.session import db
 from services.audit_service import create_audit_log
+from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["references"])
+
+ZOHO_SEED_REFS = [
+    {"key": "zoho_reseller_signup_us", "label": "Zoho Reseller Signup (US)", "description": "Zoho Reseller Customer Signup link shown at checkout (US data center)", "type": "url"},
+    {"key": "zoho_reseller_signup_ca", "label": "Zoho Reseller Signup (Canada)", "description": "Zoho Reseller Customer Signup link shown at checkout (Canada data center)", "type": "url"},
+    {"key": "zoho_partner_tag_us", "label": "Zoho Partner Tag (US)", "description": "Partner tagging link shown at checkout (US data center)", "type": "url"},
+    {"key": "zoho_partner_tag_ca", "label": "Zoho Partner Tag (Canada)", "description": "Partner tagging link shown at checkout (Canada data center)", "type": "url"},
+    {"key": "zoho_access_instructions_url", "label": "Zoho Access Instructions URL", "description": "URL explaining how customers should provide Zoho account access", "type": "url"},
+]
+
+
+async def _seed_zoho_refs() -> None:
+    """Seed Zoho links as regular (deletable) references if they don't already exist."""
+    existing_keys = {r["key"] for r in await db.website_references.find({}, {"key": 1, "_id": 0}).to_list(500)}
+    settings = await SettingsService.get_all(db)
+    settings_map = {s["key"]: s.get("value_json", "") for s in settings}
+    for seed in ZOHO_SEED_REFS:
+        if seed["key"] in existing_keys:
+            continue
+        doc = {
+            "id": make_id(),
+            "key": seed["key"],
+            "label": seed["label"],
+            "type": seed["type"],
+            "value": str(settings_map.get(seed["key"]) or ""),
+            "description": seed["description"],
+            "system": False,
+            "created_at": now_iso(),
+            "updated_at": now_iso(),
+        }
+        await db.website_references.insert_one(doc)
 
 
 def _slugify(text: str) -> str:
