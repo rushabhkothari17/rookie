@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import api from "@/lib/api";
+import { Download, Trash2, AlertTriangle } from "lucide-react";
 
 export default function Profile() {
   const { user, customer, address, refresh } = useAuth();
