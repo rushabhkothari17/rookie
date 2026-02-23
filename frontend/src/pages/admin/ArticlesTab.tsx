@@ -143,6 +143,7 @@ export function ArticlesTab() {
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
 
   const loadTemplates = async () => {
     setLoadingTemplates(true);
