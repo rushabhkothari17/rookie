@@ -506,7 +506,12 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
 export default function WebsiteTab() {
   const [activeSection, setActiveSection] = useState<Section>("branding");
   const [ws, setWs] = useState<WebsiteData>(WEB_DEFAULTS);
-  const [branding, setBranding] = useState<BrandingData>({ store_name: "", primary_color: "", accent_color: "", logo_url: "" });
+  const [branding, setBranding] = useState<BrandingData>({
+    store_name: "", primary_color: "", accent_color: "",
+    danger_color: "", success_color: "", warning_color: "",
+    background_color: "", text_color: "", border_color: "", muted_color: "",
+    logo_url: "",
+  });
   const [structured, setStructured] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
