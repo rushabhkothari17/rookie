@@ -21,6 +21,29 @@ from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["articles"])
 
+# Allowed HTML tags/attributes for sanitized content (rich text editor output)
+_ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + [
+    "p", "br", "div", "span", "h1", "h2", "h3", "h4", "h5", "h6",
+    "ul", "ol", "li", "blockquote", "pre", "code", "hr",
+    "table", "thead", "tbody", "tr", "th", "td",
+    "img", "figure", "figcaption",
+]
+_ALLOWED_ATTRS = {
+    **bleach.sanitizer.ALLOWED_ATTRIBUTES,
+    "*": ["class", "id", "style"],
+    "a": ["href", "title", "target", "rel"],
+    "img": ["src", "alt", "width", "height", "title"],
+    "td": ["colspan", "rowspan"],
+    "th": ["colspan", "rowspan"],
+}
+
+
+def _sanitize_html(html: Optional[str]) -> str:
+    """Sanitize HTML content to prevent stored XSS."""
+    if not html:
+        return ""
+    return bleach.clean(html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
+
 
 async def _get_valid_categories(tenant_id: str = DEFAULT_TENANT_ID) -> set:
     """Get valid categories from DB, falling back to hardcoded constants."""
