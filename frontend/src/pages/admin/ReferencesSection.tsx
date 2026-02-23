@@ -169,20 +169,20 @@ function RefRow({ ref_, editing, draft, setDraft, saving, onEdit, onDelete, onCo
         </td>
         <td className="px-4 py-3">
           <button onClick={onCopy} title="Click to copy"
-            className="flex items-center gap-1 font-mono text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded transition-colors"
+            className="flex items-center gap-1 font-mono text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded transition-colors break-all"
             data-testid={"copy-ref-" + ref_.key}>
-            {"{{ref:" + ref_.key + "}}"}<Copy size={10} />
+            {"{{ref:" + ref_.key + "}}"}<Copy size={10} className="flex-shrink-0 ml-0.5" />
           </button>
         </td>
         <td className="px-4 py-3">
           <span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{ref_.type}</span>
         </td>
-        <td className="px-4 py-3 text-slate-600 max-w-xs truncate text-xs">
+        <td className="px-4 py-3 text-slate-600 text-xs break-all">
           {ref_.type === "email" ? (
             <a href={"mailto:" + ref_.value} className="text-blue-600 hover:underline">{ref_.value}</a>
           ) : ref_.type === "url" ? (
             <a href={ref_.value} target="_blank" rel="noopener noreferrer"
-              className="text-blue-600 hover:underline truncate block max-w-[220px]">{ref_.value}</a>
+              className="text-blue-600 hover:underline">{ref_.value}</a>
           ) : ref_.value}
         </td>
         <td className="px-4 py-3">
