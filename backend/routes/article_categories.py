@@ -1,0 +1,99 @@
+"""Article Categories routes: CRUD for article category management."""
+from __future__ import annotations
+
+import re
+from typing import Any, Dict
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from core.helpers import make_id, now_iso
+from core.security import require_admin
+from db.session import db
+from models import ArticleCategoryCreate, ArticleCategoryUpdate
+
+router = APIRouter(prefix="/api", tags=["article-categories"])
+
+
+def _slugify(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+@router.get("/article-categories")
+async def list_article_categories(
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    cats = await db.article_categories.find({}, {"_id": 0}).sort("name", 1).to_list(200)
+    return {"categories": cats}
+
+
+@router.get("/article-categories/public")
+async def list_article_categories_public():
+    """Public endpoint for customer-facing category lists."""
+    cats = await db.article_categories.find({}, {"_id": 0}).sort("name", 1).to_list(200)
+    return {"categories": cats}
+
+
+@router.post("/article-categories")
+async def create_article_category(
+    payload: ArticleCategoryCreate,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    if not payload.name.strip():
+        raise HTTPException(status_code=400, detail="Category name is required")
+    existing = await db.article_categories.find_one({"name": payload.name.strip()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Category with this name already exists")
+    now = now_iso()
+    doc = {
+        "id": make_id(),
+        "name": payload.name.strip(),
+        "slug": _slugify(payload.name.strip()),
+        "description": payload.description or "",
+        "color": payload.color or "",
+        "is_scope_final": bool(payload.is_scope_final),
+        "created_at": now,
+        "updated_at": now,
+    }
+    await db.article_categories.insert_one(doc)
+    doc.pop("_id", None)
+    return {"category": doc}
+
+
+@router.put("/article-categories/{category_id}")
+async def update_article_category(
+    category_id: str,
+    payload: ArticleCategoryUpdate,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    cat = await db.article_categories.find_one({"id": category_id}, {"_id": 0})
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    updates: Dict[str, Any] = {"updated_at": now_iso()}
+    if payload.name is not None:
+        updates["name"] = payload.name.strip()
+        updates["slug"] = _slugify(payload.name.strip())
+    if payload.description is not None:
+        updates["description"] = payload.description
+    if payload.color is not None:
+        updates["color"] = payload.color
+    if payload.is_scope_final is not None:
+        updates["is_scope_final"] = payload.is_scope_final
+    await db.article_categories.update_one({"id": category_id}, {"$set": updates})
+    updated = await db.article_categories.find_one({"id": category_id}, {"_id": 0})
+    return {"category": updated}
+
+
+@router.delete("/article-categories/{category_id}")
+async def delete_article_category(
+    category_id: str,
+    admin: Dict[str, Any] = Depends(require_admin),
+):
+    cat = await db.article_categories.find_one({"id": category_id}, {"_id": 0})
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    # Check if any articles use this category
+    article_count = await db.articles.count_documents({"category": cat["name"], "deleted_at": {"$exists": False}})
+    if article_count > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete: {article_count} article(s) use this category")
+    await db.article_categories.delete_one({"id": category_id})
+    return {"message": "Category deleted"}
