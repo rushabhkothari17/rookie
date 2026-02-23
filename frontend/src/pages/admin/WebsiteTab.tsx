@@ -373,9 +373,52 @@ function PaymentProviderCard({
     enabledItem?.value_json === "true" || enabledItem?.value_json === true
   );
   const [toggling, setToggling] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [validationStatus, setValidationStatus] = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => { setLabel(initialLabel); }, [initialLabel]);
   useEffect(() => { setDesc(initialDesc); }, [initialDesc]);
+
+  const providerType = enabledItem?.key === "stripe_enabled" ? "stripe"
+    : enabledItem?.key === "gocardless_enabled" ? "gocardless"
+    : null;
+
+  const credHelp = providerType === "stripe"
+    ? { url: "https://dashboard.stripe.com/apikeys", label: "Find your keys at dashboard.stripe.com/apikeys" }
+    : providerType === "gocardless"
+    ? { url: "https://manage.gocardless.com/developers/access-tokens", label: "Find your token at manage.gocardless.com/developers/access-tokens" }
+    : null;
+
+  const handleValidate = async () => {
+    if (!providerType) return;
+    setValidating(true);
+    setValidationStatus(null);
+    try {
+      const credMap: Record<string, string> = {};
+      for (const item of credItems) {
+        credMap[item.key] = item.value_json ?? "";
+      }
+      const payload: Record<string, string> = { provider: providerType };
+      if (providerType === "stripe") {
+        payload.secret_key = credMap["stripe_secret_key"] ?? "";
+      } else if (providerType === "gocardless") {
+        payload.access_token = credMap["gocardless_token"] ?? "";
+        payload.environment = credMap["gocardless_environment"] ?? "sandbox";
+      }
+      const res = await api.post("/admin/payment/validate", payload);
+      const data = res.data;
+      setValidationStatus({ ok: data.success, message: data.success ? data.message : data.error });
+      if (data.success && !isEnabled) {
+        toast.success(`${title} credentials validated. You can now enable it.`);
+      } else if (!data.success) {
+        toast.error(data.error);
+      }
+    } catch (e: any) {
+      setValidationStatus({ ok: false, message: e?.response?.data?.detail || "Validation failed" });
+    } finally {
+      setValidating(false);
+    }
+  };
 
   const toggleEnabled = async () => {
     const next = !isEnabled;
@@ -438,8 +481,42 @@ function PaymentProviderCard({
           </div>
           {credItems.length > 0 && (
             <div className="p-4 border-t border-slate-100 space-y-1">
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Credentials & Config</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Credentials & Config</p>
+                {credHelp && (
+                  <a href={credHelp.url} target="_blank" rel="noopener noreferrer"
+                    className="text-[11px] text-blue-600 hover:text-blue-800 underline flex items-center gap-1">
+                    Where to find these?
+                  </a>
+                )}
+              </div>
               {credItems.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onSaved} />)}
+              {/* Validate button */}
+              {providerType && (
+                <div className="pt-3 border-t border-slate-100 mt-3">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleValidate}
+                      disabled={validating}
+                      className="flex items-center gap-1.5 text-xs bg-slate-800 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                      data-testid={`payment-validate-${providerType}`}
+                    >
+                      {validating ? "Validating…" : "Validate Credentials"}
+                    </button>
+                    {validationStatus && (
+                      <span className={`text-xs font-medium flex items-center gap-1 ${validationStatus.ok ? "text-green-600" : "text-red-600"}`}>
+                        <span>{validationStatus.ok ? "✓" : "✗"}</span>
+                        {validationStatus.message}
+                      </span>
+                    )}
+                  </div>
+                  {!isEnabled && validationStatus?.ok && (
+                    <p className="text-[11px] text-slate-500 mt-2">
+                      Credentials look good! Use the <strong>Disabled</strong> toggle above to enable this payment method.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
           {feeRateItem && (
