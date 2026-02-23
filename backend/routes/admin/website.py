@@ -211,11 +211,11 @@ async def get_website_settings_public(
     app_s = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0}) or {}
     web_s = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0}) or {}
 
-    # Load payment provider flags from structured settings (app_settings)
-    stripe_enabled = await SettingsService.get("stripe_enabled", False)
-    gocardless_enabled = await SettingsService.get("gocardless_enabled", False)
-    stripe_fee_rate = await SettingsService.get("stripe_fee_rate", 0.05)
-    gocardless_fee_rate = await SettingsService.get("gocardless_fee_rate", 0.0)
+    # Load payment provider flags from this tenant's app_settings (NOT global SettingsService)
+    stripe_enabled = bool(app_s.get("stripe_enabled", False))
+    gocardless_enabled = bool(app_s.get("gocardless_enabled", False))
+    stripe_fee_rate = float(app_s.get("stripe_fee_rate") or 0.05)
+    gocardless_fee_rate = float(app_s.get("gocardless_fee_rate") or 0.0)
 
     settings = {
         **DEFAULT_WEBSITE_SETTINGS,
