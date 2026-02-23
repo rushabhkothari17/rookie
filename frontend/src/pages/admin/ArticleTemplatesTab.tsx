@@ -151,7 +151,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger data-testid="template-category-select"><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent>
-                    {ARTICLE_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {categoryNames.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
