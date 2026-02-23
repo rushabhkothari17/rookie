@@ -39,10 +39,10 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
         query["tenant_id"] = tenant_id
 
     user = await db.users.find_one(query, {"_id": 0})
-    # For platform_super_admin, also try null tenant_id
+    # For platform_admin, also try null tenant_id
     if not user and tenant_id:
         user = await db.users.find_one({"email": email.lower(), "tenant_id": None}, {"_id": 0})
-        # Only accept if they are platform super admin
+        # Only accept if they are platform admin
         if user and user.get("role") != PLATFORM_ROLE:
             user = None
     if not user:
@@ -89,7 +89,7 @@ async def partner_login(payload: PartnerLoginRequest):
     """
     tenant = await resolve_tenant(payload.partner_code)
     partner_roles = ["partner_super_admin", "partner_admin", "partner_staff",
-                     "platform_super_admin", "super_admin", "admin"]
+                     "platform_admin", "super_admin", "admin"]
     return await _authenticate(payload.email, payload.password, tenant["id"], partner_roles)
 
 
