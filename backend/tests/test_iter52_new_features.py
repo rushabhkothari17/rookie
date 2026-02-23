@@ -10,7 +10,23 @@ import os
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+# Load env from frontend/.env if not set
+def _get_base_url():
+    url = os.environ.get("REACT_APP_BACKEND_URL", "")
+    if not url:
+        env_path = os.path.join(os.path.dirname(__file__), "../../../frontend/.env")
+        try:
+            with open(env_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("REACT_APP_BACKEND_URL="):
+                        url = line.split("=", 1)[1].strip()
+                        break
+        except FileNotFoundError:
+            pass
+    return url.rstrip("/")
+
+BASE_URL = _get_base_url()
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"
 # Test article ID from context (starts with 32c38143)
