@@ -10,6 +10,7 @@ type AuthUser = {
   is_verified: boolean;
   is_admin: boolean;
   role: string;
+  tenant_id: string | null;
   must_change_password?: boolean;
 };
 
@@ -18,9 +19,10 @@ type AuthContextType = {
   customer: any;
   address: any;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** login_type: "partner" | "customer" */
+  login: (email: string, password: string, partner_code?: string, login_type?: string) => Promise<void>;
   logout: () => void;
-  register: (payload: any) => Promise<any>;
+  register: (payload: any, partner_code?: string) => Promise<any>;
   verifyEmail: (email: string, code: string) => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -50,21 +52,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const login = async (email: string, password: string) => {
-    const response = await api.post("/auth/login", { email, password });
+  const login = async (
+    email: string,
+    password: string,
+    partner_code?: string,
+    login_type: string = "partner",
+  ) => {
+    let endpoint = "/auth/login";
+    let payload: Record<string, string> = { email, password };
+
+    if (partner_code) {
+      if (login_type === "customer") {
+        endpoint = "/auth/customer-login";
+        payload = { email, password, partner_code };
+      } else {
+        endpoint = "/auth/partner-login";
+        payload = { email, password, partner_code };
+      }
+    }
+
+    const response = await api.post(endpoint, payload);
     setAuthToken(response.data.token);
+    // Store partner code for future API calls
+    if (partner_code) {
+      localStorage.setItem("aa_partner_code", partner_code);
+    }
     await refresh();
   };
 
   const logout = () => {
     setAuthToken(undefined);
+    localStorage.removeItem("aa_partner_code");
     setUser(null);
     setCustomer(null);
     setAddress(null);
   };
 
-  const register = async (payload: any) => {
-    const response = await api.post("/auth/register", payload);
+  const register = async (payload: any, partner_code?: string) => {
+    const params = partner_code ? `?partner_code=${encodeURIComponent(partner_code)}` : "";
+    const response = await api.post(`/auth/register${params}`, payload);
     return response.data;
   };
 
