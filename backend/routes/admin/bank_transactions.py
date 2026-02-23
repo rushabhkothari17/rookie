@@ -67,6 +67,7 @@ async def create_bank_transaction(
     net = payload.net_amount if payload.net_amount is not None else round(payload.amount - (payload.fees or 0.0), 2)
     txn = {
         "id": txn_id,
+        "tenant_id": tenant_id_of(admin),
         "date": payload.date,
         "source": payload.source,
         "transaction_id": payload.transaction_id,
