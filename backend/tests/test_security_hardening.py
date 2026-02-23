@@ -48,11 +48,12 @@ DB_NAME = os.environ.get("DB_NAME", "test_database")
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"
 
-TENANT_B_PARTNER_CODE = "tenant-b"
+TENANT_B_PARTNER_CODE = "tenant-b-test"  # actual code in DB (not 'tenant-b')
 TENANT_B_EMAIL = "adminb@tenantb.local"
 TENANT_B_PASSWORD = "ChangeMe123!"
 
 AUTOMATE_ACCOUNTS_PARTNER_CODE = "automate-accounts"
+AUTOMATE_ACCOUNTS_TENANT_ID = "automate-accounts"  # string ID, not UUID
 
 # ---------------------------------------------------------------------------
 # Synchronous pymongo connection (for direct DB setup only)
