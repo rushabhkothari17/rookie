@@ -368,51 +368,82 @@ class TestOrdersUpdateTenantIsolation:
 class TestSubscriptionsUpdateTenantIsolation:
     """
     Test that subscriptions.update validates customer_id belongs to same tenant.
-    Tenant A admin should NOT be able to set customer_id to Tenant B's customer.
+    Tenant B admin should NOT be able to access/modify Tenant A's subscriptions.
     """
 
     @pytest.fixture(scope="class")
     def tenant_a_subscription_id(self, tenant_a_admin_token):
         """Get an existing subscription ID from Tenant A."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/subscriptions?per_page=1",
+            f"{BASE_URL}/api/admin/subscriptions?per_page=100",
             headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
         assert resp.status_code == 200, f"Failed to get subscriptions: {resp.text}"
         subs = resp.json().get("subscriptions", [])
-        if not subs:
+        aa_subs = [s for s in subs if s.get("tenant_id") == TENANT_A_ID]
+        if not aa_subs:
             pytest.skip("No subscriptions available in Tenant A for testing")
-        return subs[0]["id"]
+        return aa_subs[0]["id"]
 
     @pytest.fixture(scope="class")
-    def tenant_b_customer_id(self, tenant_b_admin_token):
-        """Get a customer ID from Tenant B."""
+    def tenant_a_customer_id(self, tenant_a_admin_token):
+        """Get a customer ID from Tenant A."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/customers?per_page=1",
-            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+            f"{BASE_URL}/api/admin/customers?per_page=100",
+            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
         )
-        assert resp.status_code == 200, f"Failed to get Tenant B customers: {resp.text}"
+        assert resp.status_code == 200, f"Failed to get customers: {resp.text}"
         customers = resp.json().get("customers", [])
-        if not customers:
-            pytest.skip("No customers available in Tenant B for testing")
-        return customers[0]["id"]
+        aa_customers = [c for c in customers if c.get("tenant_id") == TENANT_A_ID]
+        if not aa_customers:
+            pytest.skip("No customers available in Tenant A for testing")
+        return aa_customers[0]["id"]
 
-    def test_cannot_update_subscription_with_tenant_b_customer_id(
-        self, tenant_a_admin_token, tenant_a_subscription_id, tenant_b_customer_id
+    def test_tenant_b_cannot_update_tenant_a_subscription(
+        self, tenant_b_admin_token, tenant_a_subscription_id
     ):
         """
-        CRITICAL IDOR TEST: Tenant A admin cannot assign Tenant B's customer_id to Tenant A subscription.
-        Should return 400 with 'Invalid customer_id' error.
+        CRITICAL IDOR TEST: Tenant B admin cannot update Tenant A's subscription.
+        Should return 404 (not found in tenant scope).
         """
         resp = requests.put(
             f"{BASE_URL}/api/admin/subscriptions/{tenant_a_subscription_id}",
-            json={"customer_id": tenant_b_customer_id},
-            headers={"Authorization": f"Bearer {tenant_a_admin_token}"}
+            json={"new_note": "IDOR attack from Tenant B"},
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
         )
         
-        # Should be blocked with 400
+        assert resp.status_code == 404, (
+            f"SECURITY BUG: Tenant B admin was able to update Tenant A subscription! "
+            f"Expected 404, got {resp.status_code}: {resp.text}"
+        )
+        print(f"PASS - Tenant B blocked from updating Tenant A subscription: 404")
+
+    def test_tenant_b_cannot_update_subscription_with_tenant_a_customer_id(
+        self, tenant_b_admin_token, tenant_a_customer_id
+    ):
+        """
+        CRITICAL IDOR TEST: Tenant B admin cannot assign Tenant A's customer_id to Tenant B subscription.
+        Should return 400 with 'Invalid customer_id' error.
+        """
+        # First get a Tenant B subscription
+        resp = requests.get(
+            f"{BASE_URL}/api/admin/subscriptions?per_page=1",
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+        )
+        subs = resp.json().get("subscriptions", [])
+        if not subs:
+            pytest.skip("No Tenant B subscriptions for testing")
+        
+        tenant_b_sub_id = subs[0]["id"]
+        
+        resp = requests.put(
+            f"{BASE_URL}/api/admin/subscriptions/{tenant_b_sub_id}",
+            json={"customer_id": tenant_a_customer_id},
+            headers={"Authorization": f"Bearer {tenant_b_admin_token}"}
+        )
+        
         assert resp.status_code == 400, (
-            f"SECURITY BUG: Tenant A admin was able to set Tenant B customer_id on subscription! "
+            f"SECURITY BUG: Tenant B admin was able to set Tenant A customer_id on subscription! "
             f"Expected 400, got {resp.status_code}: {resp.text}"
         )
         
