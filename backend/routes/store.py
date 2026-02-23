@@ -101,8 +101,9 @@ async def get_product(
 async def pricing_calc(
     payload: PricingCalcRequest,
     user: Dict[str, Any] = Depends(get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = _tid(user)
+    tid = _tid(user, None, x_view_as_tenant)
     product = await db.products.find_one({"tenant_id": tid, "id": payload.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
