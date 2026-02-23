@@ -23,13 +23,26 @@ from core.constants import SERVICE_FEE_RATE
 router = APIRouter(prefix="/api", tags=["store"])
 
 
+def _tid(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None) -> str:
+    """Resolve tenant_id: partner_code (UUID) > user JWT > default."""
+    if partner_code:
+        return partner_code
+    if user and user.get("tenant_id"):
+        return user["tenant_id"]
+    return DEFAULT_TENANT_ID
+
+
 @router.get("/categories")
-async def get_categories():
-    inactive_cats = await db.categories.find({"is_active": False}, {"_id": 0, "name": 1}).to_list(500)
+async def get_categories(
+    partner_code: Optional[str] = None,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+):
+    tid = _tid(user, partner_code)
+    inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
-    all_cats = await db.categories.find({"is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
+    all_cats = await db.categories.find({"tenant_id": tid, "is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
     cat_map = {c["name"]: c.get("description", "") for c in all_cats}
-    products = await db.products.find({"is_active": True}, {"_id": 0, "category": 1}).to_list(1000)
+    products = await db.products.find({"tenant_id": tid, "is_active": True}, {"_id": 0, "category": 1}).to_list(1000)
     categories = sorted({
         p["category"] for p in products
         if p.get("category") and p["category"] not in inactive_names
@@ -39,10 +52,14 @@ async def get_categories():
 
 
 @router.get("/products")
-async def get_products(user: Optional[Dict[str, Any]] = Depends(optional_get_current_user)):
-    inactive_cats = await db.categories.find({"is_active": False}, {"_id": 0, "name": 1}).to_list(500)
+async def get_products(
+    partner_code: Optional[str] = None,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+):
+    tid = _tid(user, partner_code)
+    inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_cat_names = {c["name"] for c in inactive_cats}
-    query: Dict[str, Any] = {"is_active": True}
+    query: Dict[str, Any] = {"tenant_id": tid, "is_active": True}
     if inactive_cat_names:
         query["category"] = {"$nin": list(inactive_cat_names)}
     all_products = await db.products.find(query, {"_id": 0}).to_list(1000)
@@ -64,8 +81,12 @@ async def get_products(user: Optional[Dict[str, Any]] = Depends(optional_get_cur
 
 
 @router.get("/products/{product_id}")
-async def get_product(product_id: str):
-    product = await db.products.find_one({"id": product_id, "is_active": True}, {"_id": 0})
+async def get_product(
+    product_id: str,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+):
+    tid = _tid(user)
+    product = await db.products.find_one({"tenant_id": tid, "id": product_id, "is_active": True}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return {"product": product}
@@ -76,7 +97,8 @@ async def pricing_calc(
     payload: PricingCalcRequest,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    product = await db.products.find_one({"id": payload.product_id}, {"_id": 0})
+    tid = _tid(user)
+    product = await db.products.find_one({"tenant_id": tid, "id": payload.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     result = calculate_price(product, payload.inputs)
@@ -84,14 +106,19 @@ async def pricing_calc(
 
 
 @router.get("/terms")
-async def get_all_terms():
-    terms = await db.terms_and_conditions.find({}, {"_id": 0}).to_list(100)
+async def get_all_terms(
+    partner_code: Optional[str] = None,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+):
+    tid = _tid(user, partner_code)
+    terms = await db.terms_and_conditions.find({"tenant_id": tid}, {"_id": 0}).to_list(100)
     return {"terms": terms}
 
 
 @router.get("/terms/{terms_id}")
-async def get_single_terms(terms_id: str):
-    terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+async def get_single_terms(terms_id: str, user: Optional[Dict[str, Any]] = Depends(optional_get_current_user)):
+    tid = _tid(user)
+    terms = await db.terms_and_conditions.find_one({"tenant_id": tid, "id": terms_id}, {"_id": 0})
     if not terms:
         raise HTTPException(status_code=404, detail="Terms not found")
     return {"terms": terms}
