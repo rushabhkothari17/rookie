@@ -356,15 +356,15 @@ export default function Portal() {
                 data-testid="portal-subs-search"
               />
             </div>
-            <select
-              value={subStatusFilter}
-              onChange={e => setSubStatusFilter(e.target.value)}
-              className="h-8 text-xs border border-slate-200 rounded px-2 bg-white"
-              data-testid="portal-subs-status-filter"
-            >
-              <option value="">All statuses</option>
-              {subUniqueStatuses.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
-            </select>
+            <Select value={subStatusFilter || "all"} onValueChange={v => setSubStatusFilter(v === "all" ? "" : v)}>
+              <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="portal-subs-status-filter">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                {subUniqueStatuses.map(s => <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
