@@ -210,13 +210,13 @@ export function SubscriptionsTab() {
           <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-sub-number" />
           <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-processor-id" />
           <Input placeholder="Plan name" value={planFilter} onChange={e => setPlanFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-sub-filter-plan" />
-          <Select value={status} onValueChange={setStatus}>
+          <Select value={status || "all"} onValueChange={v => setStatus(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-sub-filter-status"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Statuses</SelectItem>{subStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            <SelectContent><SelectItem value="all">All Statuses</SelectItem>{subStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
           </Select>
-          <Select value={payment} onValueChange={setPayment}>
+          <Select value={payment || "all"} onValueChange={v => setPayment(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-sub-filter-payment"><SelectValue placeholder="All Methods" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+            <SelectContent><SelectItem value="all">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
           </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Renewal</span>

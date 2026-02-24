@@ -257,13 +257,13 @@ export function OrdersTab() {
           <Input placeholder="Order # (AA-...)" value={orderNumberFilter} onChange={e => setOrderNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-number-filter" />
           <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-sub-number-filter" />
           <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-processor-filter" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-orders-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Statuses</SelectItem>{orderStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            <SelectContent><SelectItem value="all">All Statuses</SelectItem>{orderStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
           </Select>
-          <Select value={payMethodFilter} onValueChange={setPayMethodFilter}>
+          <Select value={payMethodFilter || "all"} onValueChange={v => setPayMethodFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-orders-method-filter"><SelectValue placeholder="All Methods" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+            <SelectContent><SelectItem value="all">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
           </Select>
           <Input placeholder="Product name" value={productFilter} onChange={e => setProductFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-orders-product-filter" />
           <div className="flex items-center gap-1">
