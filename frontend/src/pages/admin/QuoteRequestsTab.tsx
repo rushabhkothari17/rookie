@@ -43,6 +43,7 @@ export function QuoteRequestsTab() {
   const [customerSearch, setCustomerSearch] = useState("");
   const [entityLogs, setEntityLogs] = useState<any[]>([]);
   const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [confirmDeleteQuote, setConfirmDeleteQuote] = useState<any>(null);
 
   const userMap: Record<string, any> = {};
   users.forEach((u) => { userMap[u.id] = u; });
