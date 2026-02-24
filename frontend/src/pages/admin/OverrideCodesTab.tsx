@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { Download, Plus, Upload} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STATUS_BADGE: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700",
