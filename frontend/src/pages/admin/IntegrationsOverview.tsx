@@ -391,14 +391,7 @@ export function IntegrationsOverview() {
         <Info size={14} className="text-blue-500 mt-0.5 shrink-0" />
         <div className="text-xs text-blue-700">
           <p className="font-medium">One-Click Connection</p>
-          <p>Click "Connect" to authorize access. For Zoho services, select your data center first.</p>
-          <p className="mt-1 text-blue-600">
-            <strong>OAuth Callback URL:</strong>{" "}
-            <code className="bg-blue-100 px-1 py-0.5 rounded text-[11px]">
-              {window.location.origin}/api/oauth/callback
-            </code>
-            <span className="text-blue-500 ml-1">(Configure this in your provider's developer console)</span>
-          </p>
+          <p>Click "Connect" to authorize access. For Zoho services, select your data center first, then log in to your Zoho account and approve the connection.</p>
         </div>
       </div>
 
