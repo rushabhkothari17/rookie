@@ -934,6 +934,24 @@ export function IntegrationsOverview() {
                       
                       {integration.is_validated && (
                         <>
+                          {/* Test Connection button for payment providers */}
+                          {(integration.id === "stripe" || integration.id === "gocardless" || integration.id === "gocardless_sandbox") && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 text-slate-600 border-slate-200 hover:bg-slate-50 text-xs"
+                              onClick={(e) => handleValidate(integration.id, e)}
+                              disabled={validating === integration.id}
+                              data-testid={`test-connection-${integration.id}`}
+                              title="Test connection"
+                            >
+                              {validating === integration.id ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <><RefreshCw size={12} className="mr-1" /> Test</>
+                              )}
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="ghost"
