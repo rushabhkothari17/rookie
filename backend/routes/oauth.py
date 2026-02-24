@@ -456,7 +456,7 @@ async def validate_connection(
                                     return r, api_domain  # real error, stop here
                             except Exception:
                                 return r, api_domain
-                        return (last_resp or test_resp), dc_config["api_domain"]
+                        return (last_resp or None), dc_config["api_domain"]
 
                     # Test API access based on provider
                     if provider == "zoho_mail":
