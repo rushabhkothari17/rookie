@@ -148,6 +148,7 @@ async def admin_create_product(
         "pricing_complexity": payload.pricing_complexity,
         "is_active": payload.is_active,
         "visible_to_customers": payload.visible_to_customers,
+        "restricted_to": payload.restricted_to,
         "price_rounding": payload.price_rounding or None,
         "pricing_type": "fixed",
         "pricing_rules": {},
@@ -256,6 +257,8 @@ async def admin_update_product(
         update_fields["pricing_rules"] = payload.pricing_rules
     if payload.visible_to_customers is not None:
         update_fields["visible_to_customers"] = payload.visible_to_customers
+    if payload.restricted_to is not None:
+        update_fields["restricted_to"] = payload.restricted_to
     if payload.price_rounding is not None:
         update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
     if payload.intake_schema_json is not None:
