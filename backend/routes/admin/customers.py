@@ -398,7 +398,10 @@ async def admin_set_customer_active(
 
 
 @router.get("/admin/customers/{customer_id}/logs")
-async def get_customer_logs(customer_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    logs = await db.audit_logs.find({"entity_type": "customer", "entity_id": customer_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
-    return {"logs": logs}
+async def get_customer_logs(customer_id: str, page: int = 1, limit: int = 20, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    flt = {"entity_type": "customer", "entity_id": customer_id}
+    total = await db.audit_logs.count_documents(flt)
+    skip = (page - 1) * limit
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
 

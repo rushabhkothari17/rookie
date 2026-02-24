@@ -203,14 +203,17 @@ async def admin_set_user_active(
 
 
 @router.get("/admin/users/{user_id}/logs")
-async def get_user_logs(user_id: str, admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
+async def get_user_logs(user_id: str, page: int = 1, limit: int = 20, admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
     # SECURITY FIX: Verify user belongs to admin's tenant before returning logs
     tf = get_tenant_filter(admin)
     user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "id": 1})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    logs = await db.audit_logs.find({"entity_type": "user", "entity_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
-    return {"logs": logs}
+    flt = {"entity_type": "user", "entity_id": user_id}
+    total = await db.audit_logs.count_documents(flt)
+    skip = (page - 1) * limit
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
 
 
 @router.post("/admin/users/{user_id}/unlock")
