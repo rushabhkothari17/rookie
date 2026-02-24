@@ -1011,6 +1011,104 @@ async def verify_email(payload: VerifyEmailRequest):
     return {"message": "Verified"}
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+    partner_code: str = ""
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    partner_code: str = ""
+    code: str
+    new_password: str
+
+
+@router.post("/auth/forgot-password")
+async def forgot_password(payload: ForgotPasswordRequest):
+    """Request a password reset code. Always returns success to prevent email enumeration."""
+    try:
+        tenant_id = await resolve_tenant(payload.partner_code) if payload.partner_code else None
+        query: Dict[str, Any] = {"email": payload.email.lower()}
+        if tenant_id:
+            query["tenant_id"] = tenant_id
+        user = await db.users.find_one(query, {"_id": 0})
+        if user:
+            reset_code = f"{secrets.randbelow(999999):06d}"
+            expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+            await db.users.update_one(
+                {"id": user["id"]},
+                {"$set": {"password_reset_code": reset_code, "password_reset_expires": expiry}},
+            )
+            # Ensure password_reset template is enabled
+            await db.email_templates.update_many(
+                {"trigger": "password_reset"},
+                {"$set": {"is_enabled": True}},
+            )
+            from services.email_service import EmailService
+            await EmailService.send(
+                trigger="password_reset",
+                recipient=user["email"],
+                variables={
+                    "customer_name": user.get("full_name", ""),
+                    "customer_email": user["email"],
+                    "reset_code": reset_code,
+                },
+                db=db,
+                tenant_id=user.get("tenant_id"),
+            )
+            await create_audit_log(
+                entity_type="user", entity_id=user["id"],
+                action="password_reset_requested", actor=user["email"], details={},
+            )
+    except Exception:
+        pass  # Never reveal if the email exists
+    return {"message": "If an account with that email exists, a reset code has been sent."}
+
+
+@router.post("/auth/reset-password")
+async def reset_password(payload: ResetPasswordRequest):
+    """Validate reset code and set new password."""
+    tenant_id = await resolve_tenant(payload.partner_code) if payload.partner_code else None
+    query: Dict[str, Any] = {"email": payload.email.lower()}
+    if tenant_id:
+        query["tenant_id"] = tenant_id
+    user = await db.users.find_one(query, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+
+    stored_code = user.get("password_reset_code")
+    expires_str = user.get("password_reset_expires")
+
+    if not stored_code or stored_code != payload.code.strip():
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+
+    if expires_str:
+        try:
+            expiry_dt = datetime.fromisoformat(expires_str.replace("Z", "+00:00"))
+            if datetime.now(timezone.utc) > expiry_dt:
+                raise HTTPException(status_code=400, detail="Reset code has expired. Please request a new one.")
+        except ValueError:
+            pass
+
+    err = _validate_password_complexity(payload.new_password)
+    if err:
+        raise HTTPException(status_code=400, detail=err)
+
+    hashed = pwd_context.hash(payload.new_password)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {"password": hashed, "updated_at": now_iso()},
+            "$unset": {"password_reset_code": "", "password_reset_expires": ""},
+        },
+    )
+    await create_audit_log(
+        entity_type="user", entity_id=user["id"],
+        action="password_reset_completed", actor=user["email"], details={},
+    )
+    return {"message": "Password reset successfully. You can now sign in with your new password."}
+
+
 @router.get("/me")
 async def get_me(user: Dict[str, Any] = Depends(get_current_user)):
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
