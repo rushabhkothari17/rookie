@@ -1205,6 +1205,46 @@ export function IntegrationsOverview() {
                     )}
                   </div>
 
+                  {/* Last sync result */}
+                  {lastSyncResult && selectedIntegration?.id === "zoho_crm" && (
+                    <div className={`p-3 rounded-lg border text-xs ${
+                      lastSyncResult.success 
+                        ? "bg-green-50 border-green-200" 
+                        : "bg-red-50 border-red-200"
+                    }`} data-testid="sync-result-panel">
+                      <div className="flex items-center gap-2 mb-1">
+                        {lastSyncResult.success ? (
+                          <Check size={14} className="text-green-600" />
+                        ) : (
+                          <AlertCircle size={14} className="text-red-600" />
+                        )}
+                        <span className={`font-medium ${lastSyncResult.success ? "text-green-800" : "text-red-800"}`}>
+                          {lastSyncResult.message}
+                        </span>
+                      </div>
+                      {Object.keys(lastSyncResult.synced).length > 0 && (
+                        <div className="mt-2 text-slate-600">
+                          <span className="font-medium">Records synced:</span>
+                          <ul className="ml-4 mt-1">
+                            {Object.entries(lastSyncResult.synced).map(([key, count]) => (
+                              <li key={key}>{key}: {count}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {lastSyncResult.errors.length > 0 && (
+                        <div className="mt-2">
+                          <span className="font-medium text-red-700">Errors:</span>
+                          <ul className="ml-4 mt-1 text-red-600 space-y-1">
+                            {lastSyncResult.errors.map((err, idx) => (
+                              <li key={idx} className="break-words">{err}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Existing mappings */}
                   {crmMappings.length > 0 ? (
                     <div className="space-y-2">
