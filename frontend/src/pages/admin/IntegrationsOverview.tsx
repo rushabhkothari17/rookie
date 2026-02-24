@@ -466,6 +466,7 @@ export function IntegrationsOverview() {
     setPanelMode("mapping");
     setAddingMapping(false);
     setMappingForm({ webapp_module: "", crm_module: "", field_mappings: [] });
+    setZohoModuleFields([]);
     // Load mappings (local DB) and modules (Zoho API) independently
     try {
       const mappingsRes = await api.get(`/admin/integrations/crm-mappings?provider=${integration.id}`);
@@ -480,6 +481,28 @@ export function IntegrationsOverview() {
     } catch {
       toast.error("Failed to load Zoho modules — you can still manage existing mappings");
     }
+  };
+
+  const fetchModuleFields = async (moduleName: string) => {
+    if (!selectedIntegration || !moduleName) {
+      setZohoModuleFields([]);
+      return;
+    }
+    setLoadingFields(true);
+    try {
+      const res = await api.get(`/oauth/${selectedIntegration.id}/modules/${moduleName}/fields`);
+      setZohoModuleFields(res.data.fields || []);
+    } catch {
+      toast.error("Failed to load module fields");
+      setZohoModuleFields([]);
+    } finally {
+      setLoadingFields(false);
+    }
+  };
+
+  const handleCrmModuleChange = (moduleName: string) => {
+    setMappingForm(prev => ({ ...prev, crm_module: moduleName, field_mappings: [] }));
+    fetchModuleFields(moduleName);
   };
 
   const handleSaveMapping = async () => {
