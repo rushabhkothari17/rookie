@@ -322,6 +322,42 @@ export default function Cart() {
     }
   };
 
+  const handleValidateCartScopeId = async () => {
+    if (!cartScopeId.trim()) return;
+    setCartScopeValidating(true);
+    setCartScopeError("");
+    setCartScopeUnlock(null);
+    try {
+      const res = await api.get(`/articles/${cartScopeId.trim()}/validate-scope`);
+      setCartScopeUnlock(res.data);
+    } catch (e: any) {
+      setCartScopeError(e.response?.data?.detail || "Invalid Scope ID");
+    } finally {
+      setCartScopeValidating(false);
+    }
+  };
+
+  const handleApplyScopeToCart = () => {
+    if (!cartScopeUnlock) return;
+    grouped.scope.forEach((item: any) => {
+      updateItem(item.product.id, {
+        inputs: {
+          ...item.inputs,
+          _scope_unlock: {
+            scope_id: cartScopeUnlock.article_id,
+            article_title: cartScopeUnlock.title,
+            category: cartScopeUnlock.category,
+            price: cartScopeUnlock.price,
+          },
+        },
+        price_override: cartScopeUnlock.price,
+      });
+    });
+    setCartScopeUnlock(null);
+    setCartScopeId("");
+    toast.success("Scope unlocked! Item updated in cart.");
+  };
+
   const handleScopeRequest = async () => {
     setLoading(true);
     try {
