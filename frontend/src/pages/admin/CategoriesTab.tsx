@@ -32,6 +32,8 @@ export function CategoriesTab() {
   const [saving, setSaving] = useState(false);
   const [entityLogs, setEntityLogs] = useState<any[]>([]);
   const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [confirmToggleCat, setConfirmToggleCat] = useState<any>(null);
+  const [confirmDeleteCat, setConfirmDeleteCat] = useState<any>(null);
 
   const load = useCallback(async (p = 1) => {
     try {
