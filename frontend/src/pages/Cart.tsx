@@ -632,15 +632,23 @@ export default function Cart() {
                               <div key={fKey} className="space-y-1">
                                 <label className="text-sm font-medium text-slate-700">{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
                                 {field.type === "select" ? (
-                                  <select value={extraFields[fKey] || ""} onChange={e => setExtraFields(p => ({ ...p, [fKey]: e.target.value }))}
-                                    className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-900 ${field.required && !extraFields[fKey] ? "border-red-300" : "border-slate-300"}`}
-                                    data-testid={`section-field-${fKey}`}>
-                                    <option value="">-- Select --</option>
-                                    {parseOptions(field.options).map((opt: string) => {
-                                      const { label, value } = parseOptionItem(opt);
-                                      return <option key={value} value={value}>{label}</option>;
-                                    })}
-                                  </select>
+                                  <Select
+                                    value={extraFields[fKey] || undefined}
+                                    onValueChange={(v) => setExtraFields(p => ({ ...p, [fKey]: v }))}
+                                  >
+                                    <SelectTrigger
+                                      className={`w-full bg-white text-slate-900 ${field.required && !extraFields[fKey] ? "border-red-300" : "border-slate-300"}`}
+                                      data-testid={`section-field-${fKey}`}
+                                    >
+                                      <SelectValue placeholder="-- Select --" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {parseOptions(field.options).map((opt: string) => {
+                                        const { label, value } = parseOptionItem(opt);
+                                        return <SelectItem key={value} value={value}>{label}</SelectItem>;
+                                      })}
+                                    </SelectContent>
+                                  </Select>
                                 ) : field.type === "checkbox" ? (
                                   <div className="flex items-center gap-2">
                                     <input type="checkbox" checked={extraFields[fKey] === "true"} onChange={e => setExtraFields(p => ({ ...p, [fKey]: String(e.target.checked) }))} className="h-4 w-4" data-testid={`section-field-${fKey}`} />
