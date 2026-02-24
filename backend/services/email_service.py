@@ -140,6 +140,31 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "is_system": True,
     },
     {
+        "trigger": "refund_processed",
+        "label": "Refund Processed (Customer)",
+        "description": "Sent to the customer when a refund is processed for their order.",
+        "subject": "Refund Processed — {{order_number}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 16px">Refund Processed</h2>
+  <p style="color:#475569;">Hi {{customer_name}},</p>
+  <p style="color:#475569;">We've processed a refund for your order <strong>{{order_number}}</strong>.</p>
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0">
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:140px">Refund Amount</td><td style="padding:4px 0;color:#15803d;font-weight:700;font-size:18px">{{refund_currency}}{{refund_amount}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px">Reason</td><td style="padding:4px 0;color:#1e293b">{{refund_reason}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px">Processing Time</td><td style="padding:4px 0;color:#1e293b">{{processing_time}}</td></tr>
+    </table>
+  </div>
+  <p style="color:#475569;font-size:13px">The refund will be credited back to your original payment method. If you have any questions, please don't hesitate to contact us.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{order_number}}", "{{customer_name}}", "{{customer_email}}", "{{refund_amount}}", "{{refund_currency}}", "{{refund_reason}}", "{{processing_time}}", "{{payment_method}}"],
+        "is_system": True,
+    },
+    {
         "trigger": "subscription_created",
         "label": "Subscription Started (Customer)",
         "description": "Sent to the customer when a new subscription is created.",
