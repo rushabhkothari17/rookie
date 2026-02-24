@@ -232,7 +232,56 @@ class CredentialRequest(BaseModel):
 
 
 class SettingsRequest(BaseModel):
-    settings: Dict[str, str]
+    settings: Dict[str, Any]
+
+
+@router.post("/oauth/{provider}/save-settings")
+async def save_provider_settings(
+    provider: str,
+    payload: SettingsRequest,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Save UI settings (labels, text, fee rates) for a provider in oauth_connections."""
+    if provider not in INTEGRATIONS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    tid = tenant_id_of(admin)
+    
+    # Update or create the settings field in oauth_connections
+    result = await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": provider},
+        {
+            "$set": {
+                "settings": payload.settings,
+                "updated_at": now_iso(),
+            },
+            "$setOnInsert": {
+                "tenant_id": tid,
+                "provider": provider,
+                "status": "not_connected",
+                "is_validated": False,
+                "credentials": {},
+                "created_at": now_iso(),
+            }
+        },
+        upsert=True
+    )
+    
+    return {"success": True, "message": f"Settings saved for {provider}"}
+
+
+@router.get("/oauth/{provider}/settings")
+async def get_provider_settings(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Get UI settings for a provider."""
+    tid = tenant_id_of(admin)
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": provider},
+        {"_id": 0, "settings": 1}
+    )
+    return {"settings": conn.get("settings", {}) if conn else {}}
 
 
 @router.get("/oauth/integrations")
