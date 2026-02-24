@@ -54,6 +54,7 @@ export function UsersTab() {
   });
   const [entityLogs, setEntityLogs] = useState<any[]>([]);
   const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [confirmToggleUser, setConfirmToggleUser] = useState<{id: string, active: boolean} | null>(null);
 
   const load = useCallback(async (p = 1) => {
     try {
