@@ -239,15 +239,15 @@ export default function Portal() {
                 data-testid="portal-orders-search"
               />
             </div>
-            <select
-              value={orderStatusFilter}
-              onChange={e => setOrderStatusFilter(e.target.value)}
-              className="h-8 text-xs border border-slate-200 rounded px-2 bg-white"
-              data-testid="portal-orders-status-filter"
-            >
-              <option value="">All statuses</option>
-              {ORDER_STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
-            </select>
+            <Select value={orderStatusFilter || "all"} onValueChange={v => setOrderStatusFilter(v === "all" ? "" : v)}>
+              <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="portal-orders-status-filter">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                {ORDER_STATUSES.map(s => <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
