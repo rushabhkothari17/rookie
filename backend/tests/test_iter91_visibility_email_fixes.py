@@ -42,7 +42,7 @@ def test_customer(admin_headers):
     import secrets
     suffix = secrets.token_hex(4)
     email = f"test_vis_{suffix}@example.com"
-    resp = requests.post(f"{BASE_URL}/api/admin/customers", json={
+    resp = requests.post(f"{BASE_URL}/api/admin/customers/create", json={
         "full_name": "Test Vis Customer",
         "email": email,
         "company_name": "TEST_VisComp",
