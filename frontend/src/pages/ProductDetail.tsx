@@ -630,7 +630,7 @@ export default function ProductDetail() {
                 }}
                 cta={ctaConfig}
                 currency={customer?.currency}
-                isRFQ={isRFQ}
+                isRFQ={isRFQ || !!pricing?.is_scope_request}
                 disabled={requiresStripePrice}
                 warning={
                   requiresStripePrice
