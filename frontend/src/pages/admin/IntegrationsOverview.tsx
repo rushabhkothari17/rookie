@@ -180,8 +180,9 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
     ],
     tips: [
       "Use 'Self Client' type — not 'Server-based Application'",
+      "Each service (CRM, Mail, Books) needs its OWN authorization code with its own scopes",
       "The Authorization Code expires in minutes — paste and save immediately",
-      "Use the correct data center URL matching your Zoho account region",
+      "Scope mismatch? Re-generate the code with the exact scopes above",
     ],
   },
   zoho_books: {
