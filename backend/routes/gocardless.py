@@ -204,7 +204,7 @@ async def complete_gocardless_redirect(
                         pass
                 payment = create_payment(
                     amount=subscription["amount"],
-                    currency="USD",
+                    currency=scheme_currency_map.get(scheme, subscription.get("currency", "GBP")),
                     mandate_id=mandate_id,
                     description=f"Subscription Payment - {subscription['plan_name']}",
                     metadata={"subscription_id": subscription["id"]},
