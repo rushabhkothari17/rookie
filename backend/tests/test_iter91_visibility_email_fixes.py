@@ -232,8 +232,10 @@ class TestProductModelRestrictedTo:
         assert test_customer["customer_id"] in product["restricted_to"], \
             f"Customer ID should be in restricted_to, got: {product['restricted_to']}"
         print(f"PASS: restricted_to field saved on product create: {product['restricted_to']}")
-        # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{product['id']}", headers=admin_headers)
+        # Cleanup: deactivate since no DELETE endpoint
+        requests.put(f"{BASE_URL}/api/admin/products/{product['id']}", json={
+            "name": product['name'], "is_active": False
+        }, headers=admin_headers)
 
     def test_update_product_restricted_to(self, admin_headers, test_customer):
         """PUT /api/admin/products/{id} saves restricted_to field."""
