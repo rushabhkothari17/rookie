@@ -11,6 +11,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import VerifyEmail from "@/pages/VerifyEmail";
+import ForgotPassword from "@/pages/ForgotPassword";
 import Store from "@/pages/Store";
 import ProductDetail from "@/pages/ProductDetail";
 import Cart from "@/pages/Cart";
