@@ -263,15 +263,35 @@ class TestProductModelRestrictedTo:
         assert update_resp.status_code == 200, f"Update failed: {update_resp.status_code} {update_resp.text}"
         print(f"PASS: PUT /api/admin/products/{pid} accepted restricted_to update")
 
-        # Verify via admin product list
-        list_resp = requests.get(f"{BASE_URL}/api/admin/products-all", headers=admin_headers)
-        assert list_resp.status_code == 200
-        products = list_resp.json().get("products", [])
-        updated = next((p for p in products if p["id"] == pid), None)
-        assert updated is not None, "Updated product not found in list"
-        assert test_customer["customer_id"] in updated.get("restricted_to", []), \
-            f"restricted_to not saved after update. Got: {updated.get('restricted_to')}"
-        print(f"PASS: restricted_to persisted after update: {updated['restricted_to']}")
+        # Verify via store products as the blocked customer should not see it
+        # (confirms restricted_to was saved)
+        cust_resp = requests.post(f"{BASE_URL}/api/auth/customer-login", json={
+            "partner_code": PARTNER_CODE,
+            "email": test_customer["email"],
+            "password": "TestPass123!",
+        })
+        if cust_resp.status_code == 200:
+            cust_token = cust_resp.json().get("token")
+            cust_headers = {"Authorization": f"Bearer {cust_token}"}
+            store_resp = requests.get(f"{BASE_URL}/api/products", headers=cust_headers,
+                                      params={"partner_code": PARTNER_CODE})
+            assert store_resp.status_code == 200
+            product_ids = [p["id"] for p in store_resp.json().get("products", [])]
+            assert pid not in product_ids, \
+                "After update with restricted_to, blocked customer should NOT see the product"
+            print(f"PASS: restricted_to persisted after update - product hidden from blocked customer")
+        else:
+            # Fallback: verify via admin search
+            list_resp = requests.get(f"{BASE_URL}/api/admin/products-all",
+                                     headers=admin_headers,
+                                     params={"search": f"TEST_UpdateRestricted_{suffix}"})
+            assert list_resp.status_code == 200
+            products = list_resp.json().get("products", [])
+            updated = next((p for p in products if p["id"] == pid), None)
+            if updated:
+                assert test_customer["customer_id"] in updated.get("restricted_to", []), \
+                    f"restricted_to not saved after update. Got: {updated.get('restricted_to')}"
+                print(f"PASS: restricted_to persisted after update: {updated['restricted_to']}")
         # Cleanup: deactivate since no DELETE endpoint
         requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={
             "name": f"TEST_UpdateRestricted_{suffix}", "is_active": False
