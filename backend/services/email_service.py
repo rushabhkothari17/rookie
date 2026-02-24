@@ -373,8 +373,10 @@ class EmailService:
         # Try Resend first if connected
         if resend_conn:
             creds = resend_conn.get("credentials", {})
+            resend_settings = resend_conn.get("settings", {})
             resend_key = creds.get("api_key", "")
-            from_email = creds.get("sender_email", "") or creds.get("from_email", "noreply@example.com")
+            # from_email is stored in settings for Resend
+            from_email = resend_settings.get("from_email", "") or creds.get("sender_email", "") or creds.get("from_email", "noreply@example.com")
             
             if resend_key:
                 from_name = await SettingsService.get("email_from_name", "") or store_name
