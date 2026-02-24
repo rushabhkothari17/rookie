@@ -231,6 +231,7 @@ async def validate_resend(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             if not domain_verified:
                 message += f". Warning: Sender domain '{sender_domain}' not in verified domains."
             
+            await create_audit_log(entity_type="integration", entity_id="resend", action="connection_validated", actor=admin.get("email", "admin"), details={"success": True, "sender_domain_verified": domain_verified})
             return {
                 "success": True,
                 "message": message,
@@ -307,6 +308,7 @@ async def exchange_zoho_mail_token(
             "token_type": tokens.get("token_type")
         })
         
+        await create_audit_log(entity_type="integration", entity_id="zoho_mail", action="token_exchanged", actor=admin.get("email", "admin"), details={"datacenter": payload.datacenter})
         return {"success": True, "message": "Zoho Mail connected successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -335,6 +337,7 @@ async def validate_zoho_mail(
                 "selected_account_id": payload.account_id or (result.get("accounts", [{}])[0].get("account_id") if result.get("accounts") else None)
             }}
         )
+        await create_audit_log(entity_type="integration", entity_id="zoho_mail", action="connection_validated", actor=admin.get("email", "admin"), details={"success": True})
     else:
         await db.integrations.update_one(
             {"tenant_id": tid, "service": "zoho_mail"},
@@ -357,6 +360,7 @@ async def select_zoho_mail_account(
         {"$set": {"selected_account_id": account_id}}
     )
     
+    await create_audit_log(entity_type="integration", entity_id="zoho_mail", action="account_selected", actor=admin.get("email", "admin"), details={"account_id": account_id})
     return {"success": True, "selected_account_id": account_id}
 
 
@@ -388,6 +392,7 @@ async def refresh_zoho_mail_token(admin: Dict[str, Any] = Depends(get_tenant_adm
             "expires_in": new_tokens.get("expires_in")
         })
         
+        await create_audit_log(entity_type="integration", entity_id="zoho_mail", action="token_refreshed", actor=admin.get("email", "admin"), details={})
         return {"success": True, "access_token": new_tokens.get("access_token")}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -451,6 +456,7 @@ async def exchange_zoho_crm_token(
             "token_type": tokens.get("token_type")
         })
         
+        await create_audit_log(entity_type="integration", entity_id="zoho_crm", action="token_exchanged", actor=admin.get("email", "admin"), details={"datacenter": payload.datacenter})
         return {"success": True, "message": "Zoho CRM connected successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
