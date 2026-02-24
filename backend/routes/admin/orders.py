@@ -522,6 +522,96 @@ async def get_order_refunds(
     return {"refunds": refunds}
 
 
+@router.get("/admin/orders/{order_id}/refund-providers")
+async def get_refund_providers(
+    order_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """
+    Get available refund providers for an order.
+    
+    Returns providers based on:
+    1. The original payment method used for the order
+    2. Whether that payment provider is still active for the tenant
+    """
+    tf = get_tenant_filter(admin)
+    order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Get active payment settings
+    app_settings = await db.app_settings.find(
+        {"key": {"$in": ["stripe_enabled", "gocardless_enabled"]}},
+        {"_id": 0, "key": 1, "value_json": 1}
+    ).to_list(10)
+    
+    settings_map = {s["key"]: s.get("value_json", False) for s in app_settings}
+    stripe_enabled = settings_map.get("stripe_enabled", False)
+    gocardless_enabled = settings_map.get("gocardless_enabled", False)
+    
+    # Determine original payment method
+    payment_method = order.get("payment_method", "")
+    processor_id = order.get("processor_id", "") or ""
+    gc_payment_id = order.get("gocardless_payment_id", "") or ""
+    
+    providers = []
+    
+    # Always allow manual refund
+    providers.append({
+        "id": "manual",
+        "name": "Manual (Record Only)",
+        "description": "Record refund without processing through payment provider",
+        "available": True,
+        "is_original": False
+    })
+    
+    # Check if originally paid via Stripe
+    is_stripe_order = (
+        payment_method == "card" or
+        processor_id.startswith("pi_") or
+        processor_id.startswith("ch_") or
+        order.get("stripe_payment_intent_id")
+    )
+    
+    if is_stripe_order:
+        providers.append({
+            "id": "stripe",
+            "name": "Stripe",
+            "description": "Refund via Stripe API" if stripe_enabled else "Stripe is currently disabled",
+            "available": stripe_enabled,
+            "is_original": True,
+            "processor_id": processor_id or order.get("stripe_payment_intent_id")
+        })
+    
+    # Check if originally paid via GoCardless
+    is_gocardless_order = (
+        payment_method == "bank_transfer" or
+        processor_id.startswith("PM") or
+        gc_payment_id.startswith("PM")
+    )
+    
+    if is_gocardless_order:
+        providers.append({
+            "id": "gocardless",
+            "name": "GoCardless",
+            "description": "Refund via GoCardless API" if gocardless_enabled else "GoCardless is currently disabled",
+            "available": gocardless_enabled,
+            "is_original": True,
+            "processor_id": gc_payment_id or processor_id
+        })
+    
+    # If neither Stripe nor GoCardless, it's likely a manual/offline order
+    if not is_stripe_order and not is_gocardless_order:
+        providers[0]["is_original"] = True  # Manual is original for offline orders
+    
+    return {
+        "order_id": order_id,
+        "original_payment_method": payment_method,
+        "providers": providers
+    }
+
+
+
 @router.post("/admin/orders/{order_id}/auto-charge")
 async def auto_charge_order(
     order_id: str,
