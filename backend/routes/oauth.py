@@ -424,12 +424,12 @@ async def validate_connection(
                     elif provider == "zoho_crm":
                         # /crm/v3/leads requires ZohoCRM.modules.ALL (from setup guide)
                         test_resp = await client.get(
-                            f"{dc_config['api_domain']}/crm/v3/leads?per_page=1",
+                            f"{zoho_api_domain}/crm/v3/leads?per_page=1",
                             headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
                         )
                     else:  # zoho_books
                         test_resp = await client.get(
-                            f"{dc_config['api_domain']}/books/v3/organizations",
+                            f"{zoho_api_domain}/books/v3/organizations",
                             headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
                         )
                     
