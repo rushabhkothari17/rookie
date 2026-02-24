@@ -232,6 +232,7 @@ export function PromoCodesTab() {
                 <TableCell>
                   <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(promo)} data-testid={`admin-promo-edit-${promo.id}`}>Edit</Button>
                   <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/promo-codes/${promo.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-promo-logs-${promo.id}`}>Logs</Button>
+                  <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] text-red-500 hover:text-red-700" onClick={() => setConfirmDeletePromo(promo)} data-testid={`admin-promo-delete-${promo.id}`}>Delete</Button>
                 </TableCell>
               </TableRow>
             ))}
