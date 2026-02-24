@@ -68,6 +68,7 @@ export function CustomersTab() {
   const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "GB", mark_verified: true });
   const [entityLogs, setEntityLogs] = useState<any[]>([]);
   const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [confirmToggleCustomer, setConfirmToggleCustomer] = useState<{id: string, active: boolean} | null>(null);
 
   const userMap: Record<string, any> = {};
   users.forEach((u) => { userMap[u.id] = u; });
