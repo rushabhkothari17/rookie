@@ -223,7 +223,8 @@ async def scope_request(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    order_items = await build_order_items(payload.items)
+    tenant_id = customer.get("tenant_id", "") or user.get("tenant_id") or DEFAULT_TENANT_ID
+    order_items = await build_order_items(payload.items, tenant_id)
     scope_items = [i for i in order_items if i["pricing"].get("is_scope_request")]
     if not scope_items:
         raise HTTPException(status_code=400, detail="No scope request items found")
