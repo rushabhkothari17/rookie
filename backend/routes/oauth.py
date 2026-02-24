@@ -517,7 +517,10 @@ async def validate_connection(
                                 )
                                 if tok_r.status_code != 200:
                                     continue
-                                mail_token = tok_r.json().get("access_token", "")
+                                tok_body = tok_r.json()
+                                if tok_body.get("error"):
+                                    continue  # Zoho soft error
+                                mail_token = tok_body.get("access_token", "")
                                 if not mail_token:
                                     continue
                             r = await client.get(
