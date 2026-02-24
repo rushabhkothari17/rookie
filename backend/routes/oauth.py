@@ -995,6 +995,20 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
         "quote_requests": db.quote_requests,
     }
 
+    # For customers, we need to join with users to get email and full_name
+    async def enrich_customer_records(docs: List[Dict]) -> List[Dict]:
+        enriched = []
+        for doc in docs:
+            record = dict(doc)
+            user_id = record.get("user_id")
+            if user_id:
+                user = await db.users.find_one({"id": user_id}, {"_id": 0, "email": 1, "full_name": 1})
+                if user:
+                    record["email"] = user.get("email")
+                    record["full_name"] = user.get("full_name")
+            enriched.append(record)
+        return enriched
+
     async with httpx.AsyncClient(timeout=60.0) as client:
         for mapping in mappings:
             webapp_module = mapping.get("webapp_module")
