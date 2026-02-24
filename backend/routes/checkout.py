@@ -46,6 +46,20 @@ except ImportError:
 router = APIRouter(prefix="/api", tags=["checkout"])
 
 
+async def get_gocardless_creds(tenant_id: str) -> Tuple[Optional[str], str]:
+    """Get GoCardless credentials from oauth_connections."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": {"$in": ["gocardless", "gocardless_sandbox"]}, "is_validated": True},
+        {"_id": 0, "credentials": 1, "provider": 1}
+    )
+    if not conn:
+        return None, "sandbox"
+    creds = conn.get("credentials", {})
+    token = creds.get("access_token", "")
+    env = "sandbox" if conn.get("provider") == "gocardless_sandbox" else "live"
+    return token, env
+
+
 @router.post("/checkout/bank-transfer")
 async def checkout_bank_transfer(
     payload: BankTransferCheckoutRequest,
