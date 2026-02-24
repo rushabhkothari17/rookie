@@ -29,10 +29,12 @@ import {
   Power,
   Trash2,
   Settings,
-  ChevronRight,
-  AlertCircle,
+  Pencil,
+  Link,
   CheckCircle2,
   Clock,
+  AlertCircle,
+  LayoutGrid,
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -75,11 +77,14 @@ interface DataCenter {
   name: string;
 }
 
-const CATEGORY_CONFIG: Record<string, { title: string; icon: any; color: string }> = {
-  payments: { title: "Payment Providers", icon: CreditCard, color: "emerald" },
-  email: { title: "Email Providers", icon: Mail, color: "blue" },
-  crm: { title: "CRM", icon: Users, color: "purple" },
-  accounting: { title: "Accounting", icon: Receipt, color: "amber" },
+type CategoryFilter = "all" | "payments" | "email" | "crm" | "accounting";
+
+const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
+  all: { label: "All Integrations", icon: LayoutGrid, color: "text-slate-600", bgColor: "bg-slate-100" },
+  payments: { label: "Payments", icon: CreditCard, color: "text-emerald-600", bgColor: "bg-emerald-100" },
+  email: { label: "Email", icon: Mail, color: "text-blue-600", bgColor: "bg-blue-100" },
+  crm: { label: "CRM", icon: Users, color: "text-purple-600", bgColor: "bg-purple-100" },
+  accounting: { label: "Accounting", icon: Receipt, color: "text-amber-600", bgColor: "bg-amber-100" },
 };
 
 const ICON_MAP: Record<string, any> = {
@@ -97,6 +102,7 @@ export function IntegrationsOverview() {
   const [dataCenters, setDataCenters] = useState<DataCenter[]>([]);
   const [activeEmailProvider, setActiveEmailProvider] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
   
   // Dialog states
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
@@ -131,13 +137,11 @@ export function IntegrationsOverview() {
     setSettings({});
     setDataCenter(integration.data_center || "us");
     
-    // Pre-fill settings with stored values or defaults
     const settingsObj: Record<string, string> = {};
     integration.settings.forEach(s => {
       settingsObj[s.key] = integration.stored_settings[s.key] || s.default || "";
     });
     setSettings(settingsObj);
-    
     setShowConfigDialog(true);
   };
 
@@ -153,7 +157,6 @@ export function IntegrationsOverview() {
 
   const handleSaveCredentials = async () => {
     if (!selectedIntegration) return;
-    
     setSaving(true);
     try {
       await api.post(`/oauth/${selectedIntegration.id}/save-credentials`, {
@@ -171,7 +174,8 @@ export function IntegrationsOverview() {
     }
   };
 
-  const handleValidate = async (providerId: string) => {
+  const handleValidate = async (providerId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setValidating(providerId);
     try {
       const res = await api.post(`/oauth/${providerId}/validate`);
@@ -188,7 +192,8 @@ export function IntegrationsOverview() {
     }
   };
 
-  const handleActivate = async (providerId: string) => {
+  const handleActivate = async (providerId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     try {
       await api.post(`/oauth/${providerId}/activate`);
       toast.success("Provider activated");
@@ -198,7 +203,8 @@ export function IntegrationsOverview() {
     }
   };
 
-  const handleDeactivate = async (providerId: string) => {
+  const handleDeactivate = async (providerId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     try {
       await api.post(`/oauth/${providerId}/deactivate`);
       toast.success("Provider deactivated");
@@ -208,9 +214,9 @@ export function IntegrationsOverview() {
     }
   };
 
-  const handleDisconnect = async (providerId: string) => {
+  const handleDisconnect = async (providerId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!confirm("Are you sure you want to disconnect this integration?")) return;
-    
     try {
       await api.delete(`/oauth/${providerId}/disconnect`);
       toast.success("Disconnected");
@@ -222,7 +228,6 @@ export function IntegrationsOverview() {
 
   const handleSaveSettings = async () => {
     if (!selectedIntegration) return;
-    
     setSaving(true);
     try {
       await api.post(`/oauth/${selectedIntegration.id}/update-settings`, { settings });
@@ -236,245 +241,320 @@ export function IntegrationsOverview() {
     }
   };
 
-  const getStatusBadge = (integration: Integration) => {
-    if (integration.is_coming_soon) {
-      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">COMING SOON</span>;
-    }
-    if (integration.is_validated && integration.is_active) {
-      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium flex items-center gap-1"><CheckCircle2 size={10} /> ACTIVE</span>;
-    }
-    if (integration.is_validated) {
-      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium flex items-center gap-1"><Check size={10} /> VALIDATED</span>;
-    }
-    if (integration.status === "pending") {
-      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1"><Clock size={10} /> PENDING</span>;
-    }
-    if (integration.status === "failed") {
-      return <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1"><X size={10} /> FAILED</span>;
-    }
-    return <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">NOT CONNECTED</span>;
+  const filteredIntegrations = activeCategory === "all" 
+    ? integrations 
+    : integrations.filter(i => i.category === activeCategory);
+
+  const getCategoryCounts = () => {
+    const counts: Record<string, number> = { all: integrations.length };
+    integrations.forEach(i => {
+      counts[i.category] = (counts[i.category] || 0) + 1;
+    });
+    return counts;
   };
+
+  const counts = getCategoryCounts();
 
   if (loading) {
     return <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin text-slate-400" /></div>;
   }
 
-  // Group by category
-  const grouped = integrations.reduce((acc, int) => {
-    if (!acc[int.category]) acc[int.category] = [];
-    acc[int.category].push(int);
-    return acc;
-  }, {} as Record<string, Integration[]>);
-
-  const categoryOrder = ["payments", "email", "crm", "accounting"];
-
   return (
-    <div className="space-y-8" data-testid="integrations-overview">
-      {/* Active Email Provider Banner */}
-      {activeEmailProvider ? (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <Mail size={18} className="text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-emerald-800">
-                {integrations.find(i => i.id === activeEmailProvider)?.name} is your active email provider
-              </p>
-              <p className="text-xs text-emerald-600">All transactional emails will be sent through this service</p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle size={18} className="text-amber-600" />
-          <div>
-            <p className="text-sm font-medium text-amber-800">No email provider active</p>
-            <p className="text-xs text-amber-600">Emails will be stored but not sent. Connect and activate a provider below.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Integration Categories */}
-      {categoryOrder.map(category => {
-        const items = grouped[category];
-        if (!items?.length) return null;
-        
-        const config = CATEGORY_CONFIG[category];
-        const CategoryIcon = config.icon;
-        
-        return (
-          <div key={category} className="space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <CategoryIcon size={16} className="text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-700">{config.title}</h3>
-              {category === "email" && (
-                <span className="text-[10px] text-slate-400 ml-2">(Only one can be active)</span>
-              )}
-            </div>
+    <div className="flex gap-6" data-testid="integrations-overview">
+      {/* Sidebar */}
+      <div className="w-48 shrink-0">
+        <div className="sticky top-4 space-y-1">
+          {(["all", "payments", "email", "crm", "accounting"] as CategoryFilter[]).map(cat => {
+            const config = CATEGORY_CONFIG[cat];
+            const Icon = config.icon;
+            const isActive = activeCategory === cat;
             
-            <div className="grid gap-3">
-              {items.map(integration => {
-                const Icon = ICON_MAP[integration.icon] || CreditCard;
-                const isConfigured = integration.status !== "not_connected";
-                const canValidate = integration.status === "pending" || integration.status === "failed";
-                
-                return (
-                  <div
-                    key={integration.id}
-                    className={`rounded-xl border p-4 transition-all ${
-                      integration.is_coming_soon 
-                        ? "bg-slate-50 border-slate-200 opacity-60"
-                        : integration.is_validated && integration.is_active
-                        ? "bg-emerald-50/50 border-emerald-200"
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all ${
+                  isActive 
+                    ? `${config.bgColor} ${config.color} font-medium`
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
+                data-testid={`category-${cat}`}
+              >
+                <Icon size={18} className={isActive ? config.color : "text-slate-400"} />
+                <span className="text-sm flex-1">{config.label}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded ${isActive ? "bg-white/50" : "bg-slate-100"}`}>
+                  {counts[cat] || 0}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        
+        {/* Active Email Provider Status */}
+        {activeEmailProvider && (
+          <div className="mt-6 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle2 size={14} className="text-emerald-600" />
+              <span className="text-xs font-medium text-emerald-700">Active Email</span>
+            </div>
+            <p className="text-xs text-emerald-600">
+              {integrations.find(i => i.id === activeEmailProvider)?.name}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Main Content - Tile Grid */}
+      <div className="flex-1">
+        {/* Header */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-slate-800">
+            {CATEGORY_CONFIG[activeCategory].label}
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            {activeCategory === "all" 
+              ? "Manage all your third-party integrations"
+              : activeCategory === "email"
+              ? "Only one email provider can be active at a time"
+              : `Configure your ${activeCategory} integrations`
+            }
+          </p>
+        </div>
+
+        {/* No Email Provider Warning */}
+        {!activeEmailProvider && (activeCategory === "all" || activeCategory === "email") && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
+            <AlertCircle size={18} className="text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800">No email provider active</p>
+              <p className="text-xs text-amber-600">Emails will be stored but not sent. Connect and activate an email provider.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Tiles Grid */}
+        <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredIntegrations.map(integration => {
+            const Icon = ICON_MAP[integration.icon] || CreditCard;
+            const catConfig = CATEGORY_CONFIG[integration.category];
+            const isConfigured = integration.status !== "not_connected";
+            const canValidate = integration.status === "pending" || integration.status === "failed";
+            
+            return (
+              <div
+                key={integration.id}
+                className={`relative rounded-xl border-2 p-5 transition-all ${
+                  integration.is_coming_soon 
+                    ? "bg-slate-50 border-slate-200 opacity-60"
+                    : integration.is_validated && integration.is_active
+                    ? "bg-gradient-to-br from-emerald-50 to-white border-emerald-300 shadow-sm"
+                    : integration.is_validated
+                    ? "bg-gradient-to-br from-blue-50 to-white border-blue-200"
+                    : isConfigured
+                    ? "bg-white border-slate-200 hover:border-slate-300"
+                    : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                }`}
+                data-testid={`tile-${integration.id}`}
+              >
+                {/* Status Badge - Top Right */}
+                <div className="absolute top-3 right-3">
+                  {integration.is_coming_soon ? (
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-slate-200 text-slate-600 font-medium">
+                      COMING SOON
+                    </span>
+                  ) : integration.is_validated && integration.is_active ? (
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500 text-white font-medium flex items-center gap-1">
+                      <Check size={10} /> ACTIVE
+                    </span>
+                  ) : integration.is_validated ? (
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-blue-500 text-white font-medium flex items-center gap-1">
+                      <Check size={10} /> VALIDATED
+                    </span>
+                  ) : integration.status === "pending" ? (
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1">
+                      <Clock size={10} /> PENDING
+                    </span>
+                  ) : integration.status === "failed" ? (
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1">
+                      <X size={10} /> FAILED
+                    </span>
+                  ) : null}
+                </div>
+
+                {/* Icon & Name */}
+                <div className="flex items-start gap-3 mb-3">
+                  <div className={`p-3 rounded-xl ${
+                    integration.is_validated && integration.is_active
+                      ? "bg-emerald-100"
+                      : integration.is_validated
+                      ? "bg-blue-100"
+                      : catConfig.bgColor
+                  }`}>
+                    <Icon size={22} className={
+                      integration.is_validated && integration.is_active
+                        ? "text-emerald-600"
                         : integration.is_validated
-                        ? "bg-blue-50/30 border-blue-200"
-                        : "bg-white border-slate-200 hover:border-slate-300"
-                    }`}
-                    data-testid={`integration-${integration.id}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2.5 rounded-lg ${
-                          integration.is_validated && integration.is_active
-                            ? "bg-emerald-100"
-                            : integration.is_validated
-                            ? "bg-blue-100"
-                            : "bg-slate-100"
-                        }`}>
-                          <Icon size={18} className={
-                            integration.is_validated && integration.is_active
-                              ? "text-emerald-600"
-                              : integration.is_validated
-                              ? "text-blue-600"
-                              : "text-slate-500"
-                          } />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-slate-800">{integration.name}</p>
-                            {getStatusBadge(integration)}
-                            {integration.is_zoho && integration.data_center && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
-                                {integration.data_center.toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5">{integration.description}</p>
-                          {integration.error_message && (
-                            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                              <AlertCircle size={10} /> {integration.error_message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        {integration.is_coming_soon ? (
-                          <span className="text-xs text-slate-400">Coming Soon</span>
-                        ) : !isConfigured ? (
+                        ? "text-blue-600"
+                        : catConfig.color
+                    } />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-800 truncate">{integration.name}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{integration.description}</p>
+                  </div>
+                </div>
+
+                {/* Data Center Badge for Zoho */}
+                {integration.is_zoho && integration.data_center && (
+                  <div className="mb-3">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-500 font-medium">
+                      DC: {integration.data_center.toUpperCase()}
+                    </span>
+                  </div>
+                )}
+
+                {/* Error Message */}
+                {integration.error_message && (
+                  <div className="mb-3 p-2 bg-red-50 rounded-lg">
+                    <p className="text-[11px] text-red-600 flex items-start gap-1">
+                      <AlertCircle size={12} className="shrink-0 mt-0.5" />
+                      <span className="line-clamp-2">{integration.error_message}</span>
+                    </p>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
+                  {integration.is_coming_soon ? (
+                    <span className="text-xs text-slate-400 italic">Coming Soon</span>
+                  ) : !isConfigured ? (
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => openConfigDialog(integration)}
+                      data-testid={`connect-${integration.id}`}
+                    >
+                      <Link size={14} className="mr-1.5" /> Connect
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-1.5 w-full">
+                      {/* Validate / Cancel */}
+                      {canValidate && (
+                        <>
                           <Button
                             size="sm"
-                            onClick={() => openConfigDialog(integration)}
-                            data-testid={`configure-${integration.id}`}
+                            variant="outline"
+                            className="flex-1"
+                            onClick={(e) => handleValidate(integration.id, e)}
+                            disabled={validating === integration.id}
+                            data-testid={`validate-${integration.id}`}
                           >
-                            Configure <ChevronRight size={14} className="ml-1" />
+                            {validating === integration.id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <>
+                                <Check size={14} className="mr-1" /> Validate
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-slate-400 hover:text-red-500 px-2"
+                            onClick={(e) => handleDisconnect(integration.id, e)}
+                            data-testid={`cancel-${integration.id}`}
+                            title="Cancel / Disconnect"
+                          >
+                            <X size={16} />
+                          </Button>
+                        </>
+                      )}
+                      
+                      {/* Activate / Deactivate for validated email providers */}
+                      {integration.is_validated && integration.category === "email" && (
+                        integration.is_active ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 text-amber-600 border-amber-200 hover:bg-amber-50"
+                            onClick={(e) => handleDeactivate(integration.id, e)}
+                            data-testid={`deactivate-${integration.id}`}
+                          >
+                            <Power size={14} className="mr-1" /> Deactivate
                           </Button>
                         ) : (
-                          <>
-                            {canValidate && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleValidate(integration.id)}
-                                disabled={validating === integration.id}
-                                data-testid={`validate-${integration.id}`}
-                              >
-                                {validating === integration.id ? (
-                                  <><Loader2 size={12} className="mr-1 animate-spin" /> Validating</>
-                                ) : (
-                                  <>Validate</>
-                                )}
-                              </Button>
-                            )}
-                            
-                            {integration.is_validated && integration.category === "email" && (
-                              integration.is_active ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDeactivate(integration.id)}
-                                  className="text-amber-600 border-amber-200 hover:bg-amber-50"
-                                  data-testid={`deactivate-${integration.id}`}
-                                >
-                                  <Power size={12} className="mr-1" /> Deactivate
-                                </Button>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleActivate(integration.id)}
-                                  className="bg-emerald-600 hover:bg-emerald-700"
-                                  data-testid={`activate-${integration.id}`}
-                                >
-                                  <Power size={12} className="mr-1" /> Activate
-                                </Button>
-                              )
-                            )}
-                            
-                            {integration.settings.length > 0 && integration.is_validated && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => openSettingsDialog(integration)}
-                                data-testid={`settings-${integration.id}`}
-                              >
-                                <Settings size={14} />
-                              </Button>
-                            )}
-                            
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                            onClick={(e) => handleActivate(integration.id, e)}
+                            data-testid={`activate-${integration.id}`}
+                          >
+                            <Power size={14} className="mr-1" /> Activate
+                          </Button>
+                        )
+                      )}
+                      
+                      {/* Edit Button */}
+                      {integration.is_validated && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-slate-400 hover:text-slate-600 px-2"
+                            onClick={() => openConfigDialog(integration)}
+                            data-testid={`edit-${integration.id}`}
+                            title="Edit credentials"
+                          >
+                            <Pencil size={14} />
+                          </Button>
+                          
+                          {/* Settings Button */}
+                          {integration.settings.length > 0 && (
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => openConfigDialog(integration)}
-                              className="text-slate-500"
-                              data-testid={`edit-${integration.id}`}
+                              className="text-slate-400 hover:text-slate-600 px-2"
+                              onClick={() => openSettingsDialog(integration)}
+                              data-testid={`settings-${integration.id}`}
+                              title="Settings"
                             >
-                              Edit
+                              <Settings size={14} />
                             </Button>
-                            
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDisconnect(integration.id)}
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                              data-testid={`disconnect-${integration.id}`}
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                          )}
+                          
+                          {/* Disconnect Button */}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-slate-400 hover:text-red-500 px-2"
+                            onClick={(e) => handleDisconnect(integration.id, e)}
+                            data-testid={`disconnect-${integration.id}`}
+                            title="Disconnect"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Configure Dialog */}
       <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
         <DialogContent className="max-w-md" data-testid="config-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              Configure {selectedIntegration?.name}
+              {selectedIntegration?.status !== "not_connected" ? "Edit" : "Configure"} {selectedIntegration?.name}
             </DialogTitle>
           </DialogHeader>
           
           {selectedIntegration && (
-            <div className="space-y-4 py-2">
+            <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto">
               {/* Zoho Data Center Selection */}
               {selectedIntegration.is_zoho && (
                 <div>
@@ -510,27 +590,25 @@ export function IntegrationsOverview() {
                 </div>
               ))}
               
-              {/* Settings Fields (shown during initial config) */}
+              {/* Settings Fields */}
               {selectedIntegration.settings.length > 0 && (
-                <>
-                  <div className="border-t border-slate-100 pt-4 mt-4">
-                    <p className="text-xs font-semibold text-slate-600 mb-3">Settings</p>
-                    {selectedIntegration.settings.map(setting => (
-                      <div key={setting.key} className="mb-3">
-                        <label className="text-xs font-medium text-slate-700 mb-1.5 block">{setting.label}</label>
-                        <Input
-                          value={settings[setting.key] || ""}
-                          onChange={e => setSettings(prev => ({ ...prev, [setting.key]: e.target.value }))}
-                          placeholder={setting.default || ""}
-                          data-testid={`setting-${setting.key}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </>
+                <div className="border-t border-slate-100 pt-4 mt-4">
+                  <p className="text-xs font-semibold text-slate-600 mb-3">Settings</p>
+                  {selectedIntegration.settings.map(setting => (
+                    <div key={setting.key} className="mb-3">
+                      <label className="text-xs font-medium text-slate-700 mb-1.5 block">{setting.label}</label>
+                      <Input
+                        value={settings[setting.key] || ""}
+                        onChange={e => setSettings(prev => ({ ...prev, [setting.key]: e.target.value }))}
+                        placeholder={setting.default || ""}
+                        data-testid={`setting-${setting.key}`}
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
               
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-white">
                 <Button variant="ghost" onClick={() => setShowConfigDialog(false)}>Cancel</Button>
                 <Button onClick={handleSaveCredentials} disabled={saving} data-testid="save-credentials">
                   {saving ? <><Loader2 size={14} className="mr-1 animate-spin" /> Saving</> : "Save & Continue"}
