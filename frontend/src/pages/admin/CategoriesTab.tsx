@@ -98,9 +98,9 @@ export function CategoriesTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex gap-2 items-center">
           <Input placeholder="Search by name…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-categories-search" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-categories-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+            <SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
           </Select>
           <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setStatusFilter(""); }} className="h-8 text-xs" data-testid="admin-categories-clear-filters">Clear</Button>
         </div>

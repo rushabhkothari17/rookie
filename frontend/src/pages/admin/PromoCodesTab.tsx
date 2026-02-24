@@ -167,13 +167,13 @@ export function PromoCodesTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Filter by code…" value={codeFilter} onChange={e => setCodeFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-promo-code-filter" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-promo-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem><SelectItem value="Expired">Expired</SelectItem></SelectContent>
+            <SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem><SelectItem value="Expired">Expired</SelectItem></SelectContent>
           </Select>
-          <Select value={appliesToFilter} onValueChange={setAppliesToFilter}>
+          <Select value={appliesToFilter || "all"} onValueChange={v => setAppliesToFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-promo-applies-filter"><SelectValue placeholder="All Types" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Types</SelectItem><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time</SelectItem><SelectItem value="subscription">Subscription</SelectItem></SelectContent>
+            <SelectContent><SelectItem value="all">All Types</SelectItem><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time</SelectItem><SelectItem value="subscription">Subscription</SelectItem></SelectContent>
           </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Created</span>
