@@ -1189,7 +1189,7 @@ export function IntegrationsOverview() {
                         </label>
                         <Select
                           value={mappingForm.crm_module}
-                          onValueChange={v => setMappingForm(prev => ({ ...prev, crm_module: v }))}
+                          onValueChange={handleCrmModuleChange}
                         >
                           <SelectTrigger data-testid="module-select">
                             <SelectValue placeholder="Select module..." />
@@ -1216,24 +1216,45 @@ export function IntegrationsOverview() {
                               Pre-fill defaults
                             </button>
                           </div>
-                          <div className="space-y-1.5">
-                            {webappModules.find(wm => wm.name === mappingForm.webapp_module)?.fields.map(wf => {
-                              const current = mappingForm.field_mappings.find(f => f.webapp_field === wf);
-                              return (
-                                <div key={wf} className="flex items-center gap-2">
-                                  <span className="text-xs text-slate-500 font-mono w-32 truncate shrink-0">{wf}</span>
-                                  <ChevronRight size={12} className="text-slate-300 shrink-0" />
-                                  <Input
-                                    className="h-7 text-xs flex-1"
-                                    placeholder={`${selectedIntegration.name} field...`}
-                                    value={current?.crm_field || ""}
-                                    onChange={e => setFieldMap(wf, e.target.value)}
-                                    data-testid={`field-${wf}`}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
+                          {loadingFields ? (
+                            <div className="flex items-center justify-center py-4">
+                              <Loader2 size={16} className="animate-spin text-slate-400" />
+                              <span className="ml-2 text-xs text-slate-500">Loading fields...</span>
+                            </div>
+                          ) : (
+                            <div className="space-y-1.5">
+                              {webappModules.find(wm => wm.name === mappingForm.webapp_module)?.fields.map(wf => {
+                                const current = mappingForm.field_mappings.find(f => f.webapp_field === wf);
+                                return (
+                                  <div key={wf} className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-500 font-mono w-32 truncate shrink-0">{wf}</span>
+                                    <ChevronRight size={12} className="text-slate-300 shrink-0" />
+                                    <Select
+                                      value={current?.crm_field || ""}
+                                      onValueChange={(val) => setFieldMap(wf, val)}
+                                    >
+                                      <SelectTrigger className="h-7 text-xs flex-1" data-testid={`field-${wf}`}>
+                                        <SelectValue placeholder={`Select ${selectedIntegration.name} field...`} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="">-- None --</SelectItem>
+                                        {zohoModuleFields.map(zf => (
+                                          <SelectItem key={zf.api_name} value={zf.api_name}>
+                                            {zf.field_label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                );
+                              })}
+                              {zohoModuleFields.length === 0 && !loadingFields && (
+                                <p className="text-xs text-amber-600 py-2">
+                                  No fields loaded. Try selecting the module again or check your Zoho connection.
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
 
