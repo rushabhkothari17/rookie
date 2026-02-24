@@ -16,27 +16,34 @@ PLATFORM_ADMIN_EMAIL = "admin@automateaccounts.local"
 PLATFORM_ADMIN_PASS = "ChangeMe123!"
 PLATFORM_ADMIN_PARTNER = "automate-accounts"
 
-TENANT_ADMIN_EMAIL = "admin@tenant-b-test.com"
+TENANT_ADMIN_EMAIL = "adminb@tenantb.local"
 TENANT_ADMIN_PASS = "ChangeMe123!"
+TENANT_ADMIN_PARTNER = "tenant-b-test"
 
 CUSTOMER_EMAIL = "testcustomer@test.com"
 CUSTOMER_PASS = "ChangeMe123!"
 CUSTOMER_PARTNER = "automate-accounts"
 
 
-def login(email: str, password: str, partner_code: str = None) -> dict:
-    """Helper to login and return cookies + data."""
+def partner_login(email: str, password: str, partner_code: str) -> tuple:
+    """Login as partner/admin using partner-login endpoint."""
     session = requests.Session()
-    payload = {"email": email, "password": password}
-    if partner_code:
-        payload["partner_code"] = partner_code
-    resp = session.post(f"{BASE_URL}/api/auth/login", json=payload)
+    payload = {"email": email, "password": password, "partner_code": partner_code}
+    resp = session.post(f"{BASE_URL}/api/auth/partner-login", json=payload)
+    return session, resp
+
+
+def customer_login(email: str, password: str, partner_code: str) -> tuple:
+    """Login as customer using customer-login endpoint."""
+    session = requests.Session()
+    payload = {"email": email, "password": password, "partner_code": partner_code}
+    resp = session.post(f"{BASE_URL}/api/auth/customer-login", json=payload)
     return session, resp
 
 
 @pytest.fixture(scope="module")
 def platform_admin_session():
-    session, resp = login(PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_PASS, PLATFORM_ADMIN_PARTNER)
+    session, resp = partner_login(PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_PASS, PLATFORM_ADMIN_PARTNER)
     if resp.status_code != 200:
         pytest.skip(f"Platform admin login failed: {resp.status_code} {resp.text}")
     return session
@@ -44,7 +51,7 @@ def platform_admin_session():
 
 @pytest.fixture(scope="module")
 def tenant_admin_session():
-    session, resp = login(TENANT_ADMIN_EMAIL, TENANT_ADMIN_PASS)
+    session, resp = partner_login(TENANT_ADMIN_EMAIL, TENANT_ADMIN_PASS, TENANT_ADMIN_PARTNER)
     if resp.status_code != 200:
         pytest.skip(f"Tenant admin login failed: {resp.status_code} {resp.text}")
     return session
@@ -52,7 +59,7 @@ def tenant_admin_session():
 
 @pytest.fixture(scope="module")
 def customer_session():
-    session, resp = login(CUSTOMER_EMAIL, CUSTOMER_PASS, CUSTOMER_PARTNER)
+    session, resp = customer_login(CUSTOMER_EMAIL, CUSTOMER_PASS, CUSTOMER_PARTNER)
     if resp.status_code != 200:
         pytest.skip(f"Customer login failed: {resp.status_code} {resp.text}")
     return session
