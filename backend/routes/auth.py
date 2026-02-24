@@ -1027,7 +1027,10 @@ class ResetPasswordRequest(BaseModel):
 async def forgot_password(payload: ForgotPasswordRequest):
     """Request a password reset code. Always returns success to prevent email enumeration."""
     try:
-        tenant_id = await resolve_tenant(payload.partner_code) if payload.partner_code else None
+        tenant_id = None
+        if payload.partner_code:
+            tenant = await resolve_tenant(payload.partner_code)
+            tenant_id = tenant.get("id") if tenant else None
         query: Dict[str, Any] = {"email": payload.email.lower()}
         if tenant_id:
             query["tenant_id"] = tenant_id
