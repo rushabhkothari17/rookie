@@ -618,7 +618,7 @@ export default function Cart() {
                               <p className="text-sm font-semibold text-slate-700">{section.title}</p>
                               {section.description && <p className="text-xs text-slate-500">{section.description}</p>}
                               {sectionFields.map((field: any) => {
-                                const fKey = field.key || field.name || field.id;
+                                const fKey = field.id || field.key || field.name;
                                 return (
                                   <div key={fKey} className="space-y-1">
                                     <label className="text-xs font-medium text-slate-600 block">
