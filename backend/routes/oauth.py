@@ -292,6 +292,10 @@ async def save_credentials(
         if field.get("required") and field["key"] != "auth_code" and not merged_creds.get(field["key"]):
             raise HTTPException(status_code=400, detail=f"{field['label']} is required")
     
+    # For Zoho: require auth_code on first connection (needed to get refresh_token)
+    if config.get("is_zoho") and not merged_creds.get("refresh_token") and not merged_creds.get("auth_code"):
+        raise HTTPException(status_code=400, detail="Authorization Code is required to establish the connection")
+    
     await db.oauth_connections.update_one(
         {"tenant_id": tid, "provider": provider},
         {"$set": {
