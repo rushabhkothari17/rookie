@@ -365,7 +365,7 @@ async def validate_connection(
                     # Test API access based on provider
                     if provider == "zoho_mail":
                         test_resp = await client.get(
-                            f"{dc_config['api_domain']}/mail/accounts",
+                            f"{dc_config['mail_api']}/accounts",
                             headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
                         )
                     elif provider == "zoho_crm":
