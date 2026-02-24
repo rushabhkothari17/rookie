@@ -377,3 +377,44 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 **Test Reports:**
 - `/app/test_reports/iteration_76.json` - 94% backend, 90% frontend
 
+### Phase 12: OAuth Integrations & Refund Notifications (Feb 2026)
+
+**1. Refund Email Notifications**
+- Automatic email to customers when refund is processed
+- Template includes: refund amount, reason, processing time based on provider
+- Processing times: Stripe (5-10 days), GoCardless (3-5 days), Manual (as communicated)
+- New email template: `refund_processed` with professional styling
+- EmailService.ensure_seeded() now adds missing templates to existing tenants
+- Modified: `backend/routes/admin/orders.py` (refund endpoint sends email)
+- Modified: `backend/services/email_service.py` (new template + improved seeding)
+
+**2. OAuth Connect Flow for Integrations**
+- One-click OAuth connection for third-party services
+- Status tracking: connected, connecting, not_connected, failed, expired
+- Token refresh and disconnect functionality
+- New "Connect Services" tab in Admin panel
+- Supported providers:
+  - Zoho CRM, Zoho Books, Zoho Mail (OAuth 2.0)
+  - Stripe Live, Stripe Test Mode (Stripe Connect OAuth)
+  - GoCardless Live, GoCardless Sandbox (OAuth 2.0)
+  - Resend (API key - non-OAuth)
+- New endpoints:
+  - `GET /api/oauth/integrations` - List all integrations with status
+  - `GET /api/oauth/{provider}/connect` - Initiate OAuth flow
+  - `GET /api/oauth/{provider}/callback` - OAuth callback handler
+  - `POST /api/oauth/{provider}/refresh` - Refresh access token
+  - `DELETE /api/oauth/{provider}/disconnect` - Disconnect integration
+  - `GET /api/oauth/{provider}/status` - Get detailed connection status
+- New files:
+  - `backend/routes/oauth.py` - OAuth service and endpoints
+  - `frontend/src/components/admin/OAuthIntegrationTile.tsx` - OAuth tile component
+  - `frontend/src/pages/admin/IntegrationsOverview.tsx` - Integrations page
+- Modified: `frontend/src/pages/Admin.tsx` - Added "Connect Services" tab
+
+**Test Reports:**
+- `/app/test_reports/iteration_77.json` - 91% backend (10/11), 100% frontend
+
+**MOCKED APIs:**
+- OAuth providers: Endpoints implemented but OAuth flows require real credentials
+- Email provider: In mocked mode (emails go to email_outbox)
+
