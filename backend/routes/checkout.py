@@ -60,6 +60,24 @@ async def get_gocardless_creds(tenant_id: str) -> Tuple[Optional[str], str]:
     return token, env
 
 
+async def is_stripe_enabled(tenant_id: str) -> bool:
+    """Check if Stripe is connected and validated from oauth_connections."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": "stripe", "is_validated": True},
+        {"_id": 0}
+    )
+    return conn is not None
+
+
+async def is_gocardless_enabled(tenant_id: str) -> bool:
+    """Check if GoCardless is connected and validated from oauth_connections."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": {"$in": ["gocardless", "gocardless_sandbox"]}, "is_validated": True},
+        {"_id": 0}
+    )
+    return conn is not None
+
+
 @router.post("/checkout/bank-transfer")
 async def checkout_bank_transfer(
     payload: BankTransferCheckoutRequest,
