@@ -401,8 +401,6 @@ async def validate_connection(
                 else:
                     token_data = token_resp.json()
                     access_token = token_data.get("access_token")
-                    # Start with the api_domain from the token response
-                    zoho_api_domain = token_data.get("api_domain", dc_config["api_domain"])
 
                     # Helper: try all DC combinations (accounts_url → token → api_domain)
                     # This handles cross-DC accounts where token DC must match API DC
