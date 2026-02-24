@@ -4,15 +4,12 @@ import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "../lib/api";
 
-interface AuditLogDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  logsUrl: string;
-}
-
-export function AuditLogDialog({ open, onOpenChange, title, logsUrl }: AuditLogDialogProps) {
-  const [logs, setLogs] = useState<any[]>([]);
+export function AuditLogDialog({ open, onOpenChange, title, logsUrl }) {
+  const [logs, setLogs] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
