@@ -418,16 +418,25 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Consolidated all integrations into single "Connect Services" page
 - Removed redundant CRM and Finance tabs from admin sidebar
 - Zoho Data Center selection: All 6 DCs supported (US, EU, IN, AU, JP, CA)
-- Fixes "Redirect URI passed does not match" error by using correct DC-specific URLs
-- Resend remains as API-key-based connection
+- **Stripe/GoCardless**: Changed from OAuth to API key entry (since OAuth client credentials not available)
+- **Resend**: API-key-based connection
+- **Zoho services**: OAuth flow - requires redirect URI configured in Zoho developer console
+- Removed duplicate email provider config from Website Content > Email Templates
+- Email Templates now shows "Connect a Provider" link when no provider active
 - Deleted: `frontend/src/pages/admin/CRMTab.tsx`, `frontend/src/pages/admin/FinanceTab.tsx`
 - Modified: `frontend/src/pages/Admin.tsx` - Removed CRM/Finance tabs from sidebar
+
+**IMPORTANT: Zoho OAuth Setup (Platform Owner)**
+To fix "Redirect URI passed does not match" error:
+1. Go to https://api-console.zoho.com/
+2. Find the app using ZOHO_CLIENT_ID from backend/.env
+3. Set Redirect URI to: `https://integration-center-1.preview.emergentagent.com/api/oauth/callback`
 
 **Test Reports:**
 - `/app/test_reports/iteration_77.json` - 91% backend (10/11), 100% frontend
 - `/app/test_reports/iteration_78.json` - 100% backend (12/12), 100% frontend (Connect Services consolidation)
 
 **MOCKED APIs:**
-- OAuth providers: Endpoints implemented but OAuth flows require real credentials
+- OAuth providers: Zoho OAuth requires redirect URI configured in Zoho console
 - Email provider: In mocked mode (emails go to email_outbox)
 
