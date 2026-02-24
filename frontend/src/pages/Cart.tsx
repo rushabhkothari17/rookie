@@ -750,14 +750,15 @@ export default function Cart() {
                         <div key={field.name} className="space-y-1">
                           <label className="text-sm font-medium text-slate-700">{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
                           {field.type === "select" ? (
-                            <select value={extraFields[field.name] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.name]: e.target.value }))}
-                              className="w-full h-9 border border-slate-200 rounded-md px-3 text-sm bg-white text-slate-900">
-                              <option value="">-- Select --</option>
-                              {parseOptions(field.options).map((opt: string) => {
-                                const { label, value } = parseOptionItem(opt);
-                                return <option key={value} value={value}>{label}</option>;
-                              })}
-                            </select>
+                            <Select value={extraFields[field.name] || undefined} onValueChange={v => setExtraFields(p => ({ ...p, [field.name]: v }))}>
+                              <SelectTrigger className="w-full bg-white text-slate-900"><SelectValue placeholder="-- Select --" /></SelectTrigger>
+                              <SelectContent>
+                                {parseOptions(field.options).map((opt: string) => {
+                                  const { label, value } = parseOptionItem(opt);
+                                  return <SelectItem key={value} value={value}>{label}</SelectItem>;
+                                })}
+                              </SelectContent>
+                            </Select>
                           ) : field.type === "checkbox" ? (
                             <div className="flex items-center gap-2">
                               <input type="checkbox" checked={extraFields[field.name] === "true"} onChange={e => setExtraFields(p => ({ ...p, [field.name]: String(e.target.checked) }))} />
