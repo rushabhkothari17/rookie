@@ -195,7 +195,7 @@ export function TermsTab() {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) setEditTerm(null); }}>
-        <DialogContent className="max-w-2xl" data-testid="admin-terms-edit-dialog">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="admin-terms-edit-dialog">
           <DialogHeader><DialogTitle>Edit Terms: {editTerm?.title}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1"><label className="text-xs text-slate-500">Title</label><Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} data-testid="admin-terms-edit-title" /></div>
