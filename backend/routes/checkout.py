@@ -60,6 +60,25 @@ async def get_gocardless_creds(tenant_id: str) -> Tuple[Optional[str], str]:
     return token, env
 
 
+async def get_stripe_creds(tenant_id: str) -> Tuple[Optional[str], Optional[str], float]:
+    """Get Stripe credentials and settings from oauth_connections.
+    
+    Returns: (api_key, publishable_key, fee_rate)
+    """
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": "stripe", "is_validated": True},
+        {"_id": 0, "credentials": 1, "settings": 1}
+    )
+    if not conn:
+        return STRIPE_API_KEY, None, SERVICE_FEE_RATE
+    creds = conn.get("credentials", {})
+    settings = conn.get("settings", {})
+    api_key = creds.get("api_key") or STRIPE_API_KEY
+    publishable_key = creds.get("publishable_key")
+    fee_rate = float(settings.get("fee_rate", SERVICE_FEE_RATE))
+    return api_key, publishable_key, fee_rate
+
+
 async def is_stripe_enabled(tenant_id: str) -> bool:
     """Check if Stripe is connected and validated from oauth_connections."""
     conn = await db.oauth_connections.find_one(
