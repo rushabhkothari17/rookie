@@ -79,6 +79,41 @@ interface DataCenter {
   name: string;
 }
 
+interface ZohoModule {
+  api_name: string;
+  plural_label: string;
+  singular_label?: string;
+}
+
+interface FieldMapping {
+  webapp_field: string;
+  crm_field: string;
+}
+
+interface CrmMapping {
+  id: string;
+  webapp_module: string;
+  crm_module: string;
+  provider?: string;
+  field_mappings: FieldMapping[];
+  is_active: boolean;
+  sync_on_create: boolean;
+  sync_on_update: boolean;
+}
+
+interface WebappModule {
+  name: string;
+  label: string;
+  fields: string[];
+}
+
+interface MappingFormState {
+  id?: string;
+  webapp_module: string;
+  crm_module: string;
+  field_mappings: FieldMapping[];
+}
+
 type CategoryFilter = "all" | "payments" | "email" | "crm" | "accounting";
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
