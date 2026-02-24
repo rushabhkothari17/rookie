@@ -34,8 +34,10 @@ async def validate_payment_credentials(
             if r.status_code == 200:
                 data = r.json()
                 mode = "live" if secret_key.startswith("sk_live") else "test"
+                await create_audit_log(entity_type="integration", entity_id="stripe", action="credentials_validated", actor=admin.get("email", "admin"), details={"provider": "stripe", "mode": mode, "success": True})
                 return {"success": True, "mode": mode, "message": f"Stripe connected ({mode} mode)"}
             elif r.status_code == 401:
+                await create_audit_log(entity_type="integration", entity_id="stripe", action="credentials_validated", actor=admin.get("email", "admin"), details={"provider": "stripe", "success": False})
                 return {"success": False, "error": "Invalid Stripe secret key. Check your key at dashboard.stripe.com/apikeys"}
             else:
                 return {"success": False, "error": f"Stripe returned status {r.status_code}"}
@@ -68,8 +70,10 @@ async def validate_payment_credentials(
                 data = r.json()
                 creditors = data.get("creditors", [])
                 name = creditors[0].get("name", "Account") if creditors else "Account"
+                await create_audit_log(entity_type="integration", entity_id="gocardless", action="credentials_validated", actor=admin.get("email", "admin"), details={"provider": "gocardless", "environment": environment, "success": True})
                 return {"success": True, "mode": environment, "message": f"GoCardless connected — {name} ({environment})"}
             elif r.status_code == 401:
+                await create_audit_log(entity_type="integration", entity_id="gocardless", action="credentials_validated", actor=admin.get("email", "admin"), details={"provider": "gocardless", "success": False})
                 return {"success": False, "error": "Invalid access token. Get yours at manage.gocardless.com/developers/access-tokens"}
             else:
                 return {"success": False, "error": f"GoCardless returned status {r.status_code}"}
