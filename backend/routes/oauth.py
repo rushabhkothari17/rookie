@@ -265,25 +265,43 @@ async def save_credentials(
             merged_creds[k] = v
     
     # Auto-exchange Zoho authorization code → refresh token (server-side, one-time)
+    # Try every DC's accounts URL — auth codes are DC-specific, so we probe to find the right one
     if merged_creds.get("auth_code") and config.get("is_zoho"):
         dc = payload.data_center or "us"
-        dc_config = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+        # Build ordered list: selected DC first, then all others
+        selected_dc_cfg = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+        all_accounts_urls = [selected_dc_cfg["accounts_url"]] + [
+            v["accounts_url"] for k, v in ZOHO_DATA_CENTERS.items()
+            if v["accounts_url"] != selected_dc_cfg["accounts_url"]
+        ]
+
+        token_data = None
         async with httpx.AsyncClient(timeout=15) as client:
-            token_resp = await client.post(
-                f"{dc_config['accounts_url']}/oauth/v2/token",
-                data={
-                    "grant_type": "authorization_code",
-                    "client_id": merged_creds.get("client_id", ""),
-                    "client_secret": merged_creds.get("client_secret", ""),
-                    "code": merged_creds["auth_code"],
-                    "redirect_uri": "https://www.zoho.com",
-                }
+            for accounts_url in all_accounts_urls:
+                resp = await client.post(
+                    f"{accounts_url}/oauth/v2/token",
+                    data={
+                        "grant_type": "authorization_code",
+                        "client_id": merged_creds.get("client_id", ""),
+                        "client_secret": merged_creds.get("client_secret", ""),
+                        "code": merged_creds["auth_code"],
+                        "redirect_uri": "https://www.zoho.com",
+                    }
+                )
+                td = resp.json()
+                if resp.status_code == 200 and "refresh_token" in td:
+                    token_data = td
+                    break  # found the right DC
+
+        if not token_data:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed to exchange authorization code — check your Client ID, Client Secret, and that the code hasn't expired"
             )
-        token_data = token_resp.json()
-        if token_resp.status_code != 200 or "refresh_token" not in token_data:
-            err = token_data.get("error", token_data.get("message", "Invalid or expired authorization code"))
-            raise HTTPException(status_code=400, detail=f"Failed to exchange authorization code: {err}")
         merged_creds["refresh_token"] = token_data["refresh_token"]
+        # Also store the api_domain from the token response if provided
+        if token_data.get("api_domain"):
+            merged_creds["_api_domain"] = token_data["api_domain"]
         # Remove the consumed one-time auth_code — never store it
         merged_creds.pop("auth_code", None)
     
