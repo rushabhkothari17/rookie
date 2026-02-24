@@ -161,7 +161,6 @@ export function SubscriptionsTab() {
   };
 
   const handleCancel = async (subId: string) => {
-    if (!confirm("Cancel this subscription?")) return;
     try { await api.post(`/admin/subscriptions/${subId}/cancel`); toast.success("Cancellation scheduled"); load(page); }
     catch (e: any) { toast.error(e.response?.data?.detail || "Failed"); }
   };
