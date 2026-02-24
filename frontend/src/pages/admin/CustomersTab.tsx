@@ -334,7 +334,7 @@ export function CustomersTab() {
 
       {/* Notes Dialog */}
       <Dialog open={!!viewNotesCustomer} onOpenChange={(open) => !open && setViewNotesCustomer(null)}>
-        <DialogContent><DialogHeader><DialogTitle>Notes — {viewNotesCustomer?.company_name || "Customer"}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto"><DialogHeader><DialogTitle>Notes — {viewNotesCustomer?.company_name || "Customer"}</DialogTitle></DialogHeader>
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {customerNotes.length === 0 ? <p className="text-xs text-slate-400">No notes</p> : customerNotes.map((n: any, i: number) => (
               <div key={i} className="text-xs bg-slate-50 rounded p-2"><span className="text-slate-400">{n.timestamp?.slice(0, 10)}</span> <span>{n.text || n.note || String(n)}</span></div>
