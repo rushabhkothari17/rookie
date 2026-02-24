@@ -392,7 +392,7 @@ async def validate_connection(
     except Exception as e:
         result = {"success": False, "message": str(e)[:100]}
     
-    # Update status
+    # Update status in oauth_connections
     await db.oauth_connections.update_one(
         {"tenant_id": tid, "provider": provider},
         {"$set": {
@@ -403,6 +403,24 @@ async def validate_connection(
             "updated_at": now_iso(),
         }}
     )
+    
+    # Sync to legacy app_settings so checkout.py / email_service.py pick them up
+    if result["success"]:
+        creds = conn.get("credentials", {})
+        if provider == "stripe":
+            await _sync_to_settings("stripe_secret_key", creds.get("api_key", ""))
+            if creds.get("publishable_key"):
+                await _sync_to_settings("stripe_publishable_key", creds.get("publishable_key", ""))
+            await _sync_to_settings("stripe_enabled", True)
+        
+        elif provider in ("gocardless", "gocardless_sandbox"):
+            await _sync_to_settings("gocardless_access_token", creds.get("access_token", ""))
+            gc_env = "sandbox" if "sandbox" in provider else "live"
+            await _sync_to_settings("gocardless_environment", gc_env)
+            await _sync_to_settings("gocardless_enabled", True)
+        
+        elif provider == "resend":
+            await _sync_to_settings("resend_api_key", creds.get("api_key", ""))
     
     return result
 
