@@ -52,6 +52,34 @@ async def complete_gocardless_redirect(
 ):
     """Complete GoCardless redirect flow and update order/subscription status."""
     try:
+        # Idempotency check — if the flow has already been processed for this order/subscription,
+        # return success immediately to handle page refreshes gracefully
+        if payload.order_id:
+            existing_order = await db.orders.find_one(
+                {"id": payload.order_id},
+                {"_id": 0, "gocardless_payment_id": 1, "gocardless_mandate_id": 1}
+            )
+            if existing_order and existing_order.get("gocardless_payment_id"):
+                return {
+                    "message": "Direct Debit setup already completed.",
+                    "mandate_id": existing_order.get("gocardless_mandate_id"),
+                    "payment_id": existing_order.get("gocardless_payment_id"),
+                    "payment_created": True,
+                }
+
+        if payload.subscription_id:
+            existing_sub = await db.subscriptions.find_one(
+                {"id": payload.subscription_id},
+                {"_id": 0, "gocardless_payment_id": 1, "gocardless_mandate_id": 1}
+            )
+            if existing_sub and existing_sub.get("gocardless_payment_id"):
+                return {
+                    "message": "Direct Debit setup already completed.",
+                    "mandate_id": existing_sub.get("gocardless_mandate_id"),
+                    "payment_id": existing_sub.get("gocardless_payment_id"),
+                    "payment_created": True,
+                }
+
         # Get tenant_id from customer/user
         customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0, "tenant_id": 1})
         tenant_id = customer.get("tenant_id", "") if customer else ""
