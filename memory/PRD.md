@@ -104,7 +104,7 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
 - Zoho Mappings: `/app/test_reports/iteration_81.json` — 21 backend + all frontend features pass (mapping UI)
 - Iter83 Bug Fixes: `/app/test_reports/iteration_83.json` — 15/15 backend tests pass (Portal 404, dropdown labels, email dedup, Test Connection button)
-- Iter84 P0 Bug Fixes: `/app/test_reports/iteration_84.json` — 20/20 backend tests pass (Cart TypeScript fix, all P0 flows verified)
+- Iter86 Select Overhaul: `/app/test_reports/iteration_86.json` — 10/10 flows pass. All native `<select>` eliminated, SearchableSelect with search bars for products/countries, Shadcn Select for short lists.
 
 ### Iter84 P0 Bug Fixes (Feb 2026)
 **Root Cause — Cart Checkout Dropdowns:** Cart.tsx refactor (1222→980 lines) added 6+ new `WebsiteSettings` property references that were missing from the interface in `WebsiteContext.tsx`. This caused TypeScript compilation errors ("Compiled with problems" overlay in dev mode) blocking user interaction. Fixed by adding `checkout_zoho_description`, `checkout_zoho_subscription_type_label`, `checkout_zoho_product_label`, `checkout_zoho_access_label`, `checkout_zoho_access_options`, `checkout_partner_question`, `checkout_terms_enabled` to interface + DEFAULT_SETTINGS. Also fixed boolean type comparison (`extraFields[fKey] === true` → `=== 'true'`).
