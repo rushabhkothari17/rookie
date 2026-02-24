@@ -117,10 +117,13 @@ async def stripe_webhook(request: Request):
                     {"order_id": order_id, "status": "active"}, {"_id": 0}
                 )
                 if subscription:
+                    # Get tenant_id from customer for fee rate lookup
+                    customer_for_fee = await db.customers.find_one({"id": original_order["customer_id"]}, {"_id": 0, "tenant_id": 1})
+                    tenant_id = customer_for_fee.get("tenant_id", "") if customer_for_fee else ""
                     renewal_order_id = make_id()
                     renewal_order_number = f"AA-{renewal_order_id.split('-')[0].upper()}"
                     renewal_amount = subscription.get("amount", 0)
-                    fee_rate = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
+                    fee_rate = await get_stripe_fee_rate_for_tenant(tenant_id)
                     renewal_fee = round_cents(renewal_amount * fee_rate)
                     renewal_total = round_cents(renewal_amount + renewal_fee)
                     renewal_doc = {
