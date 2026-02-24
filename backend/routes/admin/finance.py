@@ -259,6 +259,7 @@ async def create_zoho_books_mapping(
                 "updated_at": now_iso()
             }}
         )
+        await create_audit_log(entity_type="finance_mapping", entity_id=existing["id"], action="updated", actor=admin.get("email", "admin"), details={"provider": "zoho_books", "webapp_entity": payload.webapp_entity})
         return {"success": True, "mapping_id": existing["id"], "updated": True}
     
     # Create new
@@ -274,6 +275,7 @@ async def create_zoho_books_mapping(
     }
     await db.finance_mappings.insert_one(doc)
     
+    await create_audit_log(entity_type="finance_mapping", entity_id=mapping_id, action="created", actor=admin.get("email", "admin"), details={"provider": "zoho_books", "webapp_entity": payload.webapp_entity})
     return {"success": True, "mapping_id": mapping_id, "updated": False}
 
 
@@ -294,6 +296,7 @@ async def delete_zoho_books_mapping(
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Mapping not found")
     
+    await create_audit_log(entity_type="finance_mapping", entity_id=mapping_id, action="deleted", actor=admin.get("email", "admin"), details={"provider": "zoho_books"})
     return {"success": True, "message": "Mapping deleted"}
 
 
