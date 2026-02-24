@@ -899,6 +899,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
             "verification_code": verification_code,
         },
         db=db,
+        tenant_id=tenant_id,
     )
     await AuditService.log(
         action="USER_REGISTERED",
