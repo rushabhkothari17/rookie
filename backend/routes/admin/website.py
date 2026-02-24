@@ -220,9 +220,12 @@ async def get_website_settings_public(
     stripe_enabled = bool(stripe_conn)
     gocardless_enabled = bool(gocardless_conn)
     
-    # Fee rates from oauth_connections credentials (or fallback to default)
-    stripe_fee_rate = float(stripe_conn.get("credentials", {}).get("fee_rate", 0.05)) if stripe_conn else 0.05
-    gocardless_fee_rate = float(gocardless_conn.get("credentials", {}).get("fee_rate", 0.0)) if gocardless_conn else 0.0
+    # Fee rates and UI settings from oauth_connections settings field
+    stripe_settings = stripe_conn.get("settings", {}) if stripe_conn else {}
+    gocardless_settings = gocardless_conn.get("settings", {}) if gocardless_conn else {}
+    
+    stripe_fee_rate = float(stripe_settings.get("fee_rate", 0.05))
+    gocardless_fee_rate = float(gocardless_settings.get("fee_rate", 0.0))
 
     settings = {
         **DEFAULT_WEBSITE_SETTINGS,
@@ -240,11 +243,24 @@ async def get_website_settings_public(
         "muted_color": app_s.get("muted_color") or "",
         # Content overrides (from website_settings)
         **{k: v for k, v in web_s.items() if v is not None and k not in ("_id", "tenant_id")},
-        # Payment flags (from tenant's own app_settings)
+        # Payment flags (from oauth_connections)
         "stripe_enabled": bool(stripe_enabled),
         "gocardless_enabled": bool(gocardless_enabled),
-        "stripe_fee_rate": float(stripe_fee_rate) if stripe_fee_rate else 0.05,
-        "gocardless_fee_rate": float(gocardless_fee_rate) if gocardless_fee_rate else 0.0,
+        "stripe_fee_rate": float(stripe_fee_rate),
+        "gocardless_fee_rate": float(gocardless_fee_rate),
+        # Stripe UI settings
+        "payment_stripe_label": stripe_settings.get("label", DEFAULT_WEBSITE_SETTINGS.get("payment_stripe_label", "Card Payment")),
+        "payment_stripe_description": stripe_settings.get("description", DEFAULT_WEBSITE_SETTINGS.get("payment_stripe_description", "Pay securely by credit or debit card.")),
+        # GoCardless UI settings
+        "payment_gocardless_label": gocardless_settings.get("label", DEFAULT_WEBSITE_SETTINGS.get("payment_gocardless_label", "Bank Transfer (Direct Debit)")),
+        "payment_gocardless_description": gocardless_settings.get("description", DEFAULT_WEBSITE_SETTINGS.get("payment_gocardless_description", "No processing fee. We'll set up a direct debit.")),
+        "gocardless_processing_title": gocardless_settings.get("processing_title", DEFAULT_WEBSITE_SETTINGS.get("gocardless_processing_title", "Setting Up Your Direct Debit")),
+        "gocardless_processing_subtitle": gocardless_settings.get("processing_subtitle", DEFAULT_WEBSITE_SETTINGS.get("gocardless_processing_subtitle", "Please wait while we confirm your bank authorisation.")),
+        "gocardless_success_title": gocardless_settings.get("success_title", DEFAULT_WEBSITE_SETTINGS.get("gocardless_success_title", "Direct Debit Set Up")),
+        "gocardless_success_message": gocardless_settings.get("success_message", DEFAULT_WEBSITE_SETTINGS.get("gocardless_success_message", "Your direct debit mandate has been set up successfully.")),
+        "gocardless_error_title": gocardless_settings.get("error_title", DEFAULT_WEBSITE_SETTINGS.get("gocardless_error_title", "Setup Failed")),
+        "gocardless_error_message": gocardless_settings.get("error_message", DEFAULT_WEBSITE_SETTINGS.get("gocardless_error_message", "We were unable to set up your direct debit. Please try again.")),
+        "gocardless_return_btn_text": gocardless_settings.get("return_btn_text", DEFAULT_WEBSITE_SETTINGS.get("gocardless_return_btn_text", "Return to Store")),
     }
     # Migrate: inject default checkout_sections when DB has empty value
     try:
