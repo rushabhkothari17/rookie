@@ -49,6 +49,7 @@ class CRMFieldMapping(BaseModel):
     sync_on_create: bool = True
     sync_on_update: bool = True
     is_active: bool = True
+    provider: Optional[str] = "zoho_crm"  # zoho_crm or zoho_books
 
 
 # === Email Provider Management ===
