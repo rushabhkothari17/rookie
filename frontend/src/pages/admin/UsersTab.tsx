@@ -250,20 +250,62 @@ export function UsersTab() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg" data-testid="admin-create-user-dialog">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-create-user-dialog">
           <DialogHeader><DialogTitle>Create Admin User</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><label className="text-xs text-slate-500">Full Name *</label><Input value={newUser.full_name} onChange={e => setNewUser({ ...newUser, full_name: e.target.value })} data-testid="admin-new-user-name" /></div>
               <div className="space-y-1"><label className="text-xs text-slate-500">Email *</label><Input type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} data-testid="admin-new-user-email" /></div>
-              <div className="space-y-1"><label className="text-xs text-slate-500">Password *</label><Input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} data-testid="admin-new-user-password" /></div>
-              <div className="space-y-1"><label className="text-xs text-slate-500">Role</label>
-                <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-new-user-role">
-                  <option value="admin">Admin</option><option value="super_admin">Super Admin</option>
-                </select>
+              <div className="space-y-1 col-span-2"><label className="text-xs text-slate-500">Password *</label><Input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} data-testid="admin-new-user-password" /></div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Role Template</label>
+              <Select value={newUser.preset_role || "custom"} onValueChange={applyPresetRole}>
+                <SelectTrigger data-testid="admin-new-user-preset">
+                  <SelectValue placeholder="Select a preset role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="custom">Custom (configure below)</SelectItem>
+                  {presetRoles.map(role => (
+                    <SelectItem key={role.key} value={role.key}>{role.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Access Level</label>
+              <Select value={newUser.access_level} onValueChange={v => setNewUser({ ...newUser, access_level: v, preset_role: "" })}>
+                <SelectTrigger data-testid="admin-new-user-access">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full_access">
+                    <div className="flex items-center gap-2"><ShieldCheck size={14} className="text-emerald-500" /> Full Access</div>
+                  </SelectItem>
+                  <SelectItem value="read_only">
+                    <div className="flex items-center gap-2"><Eye size={14} className="text-amber-500" /> Read Only</div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Module Access ({newUser.modules.length} selected)</label>
+              <div className="border border-slate-200 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
+                {modules.map(mod => (
+                  <label key={mod.key} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-slate-50 rounded px-1">
+                    <Checkbox
+                      checked={newUser.modules.includes(mod.key)}
+                      onCheckedChange={() => toggleModule(mod.key, true)}
+                    />
+                    <span className="text-xs text-slate-700">{mod.name}</span>
+                  </label>
+                ))}
               </div>
             </div>
-            <p className="text-xs text-amber-600">User will be required to change password on first login.</p>
+
             <Button onClick={handleCreate} className="w-full" data-testid="admin-new-user-submit">Create Admin User</Button>
           </div>
         </DialogContent>
@@ -271,18 +313,46 @@ export function UsersTab() {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) setEditUser(null); }}>
-        <DialogContent className="max-w-lg" data-testid="admin-edit-user-dialog">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-edit-user-dialog">
           <DialogHeader><DialogTitle>Edit User: {editUser?.email}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><label className="text-xs text-slate-500">Full Name</label><Input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} data-testid="admin-edit-user-name" /></div>
-              <div className="space-y-1"><label className="text-xs text-slate-500">Email</label><Input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} data-testid="admin-edit-user-email" /></div>
-              <div className="space-y-1"><label className="text-xs text-slate-500">Role</label>
-                <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-edit-user-role">
-                  <option value="admin">Admin</option><option value="super_admin">Super Admin</option>
-                </select>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Full Name</label>
+              <Input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} data-testid="admin-edit-user-name" />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Access Level</label>
+              <Select value={editForm.access_level} onValueChange={v => setEditForm({ ...editForm, access_level: v })}>
+                <SelectTrigger data-testid="admin-edit-user-access">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full_access">
+                    <div className="flex items-center gap-2"><ShieldCheck size={14} className="text-emerald-500" /> Full Access</div>
+                  </SelectItem>
+                  <SelectItem value="read_only">
+                    <div className="flex items-center gap-2"><Eye size={14} className="text-amber-500" /> Read Only</div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Module Access ({editForm.modules.length} selected)</label>
+              <div className="border border-slate-200 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
+                {modules.map(mod => (
+                  <label key={mod.key} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-slate-50 rounded px-1">
+                    <Checkbox
+                      checked={editForm.modules.includes(mod.key)}
+                      onCheckedChange={() => toggleModule(mod.key, false)}
+                    />
+                    <span className="text-xs text-slate-700">{mod.name}</span>
+                  </label>
+                ))}
               </div>
             </div>
+
             <Button onClick={handleEdit} className="w-full" data-testid="admin-edit-user-save">Save Changes</Button>
           </div>
         </DialogContent>
