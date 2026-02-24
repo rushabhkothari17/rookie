@@ -12,6 +12,7 @@ import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Download, Upload } from "lucide-react";
 
 export function CategoriesTab() {
   const [categories, setCategories] = useState<any[]>([]);
