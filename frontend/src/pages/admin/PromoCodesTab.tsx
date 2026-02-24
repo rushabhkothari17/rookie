@@ -279,6 +279,22 @@ export function PromoCodesTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Delete Promo Code Confirmation */}
+      <AlertDialog open={!!confirmDeletePromo} onOpenChange={(open) => !open && setConfirmDeletePromo(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Promo Code</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete the promo code "{confirmDeletePromo?.code}"? This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => { handleDelete(confirmDeletePromo.id); setConfirmDeletePromo(null); }} data-testid="confirm-promo-delete">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
