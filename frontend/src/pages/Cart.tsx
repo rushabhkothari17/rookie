@@ -12,7 +12,7 @@ import PriceSummary from "@/components/PriceSummary";
 
 export default function Cart() {
   const navigate = useNavigate();
-  const { items, removeItem, clear } = useCart();
+  const { items, removeItem, clear, updateItem } = useCart();
   const { customer, address } = useAuth();
   const ws = useWebsite();
   const [preview, setPreview] = useState<any>(null);
