@@ -427,6 +427,10 @@ export default function ProductDetail() {
       };
     }
     if (pricing?.is_scope_request || product.pricing_type === "scope_request") {
+      // If a Scope ID has been validated, switch CTA to Add to cart with the unlocked price
+      if (scopeUnlock) {
+        return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
+      }
       return { label: "Request scope", onClick: handleScopeRequest };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
