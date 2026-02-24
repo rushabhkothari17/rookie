@@ -53,45 +53,76 @@ def get_first_entity(auth_headers, endpoint):
 class TestBackendImports:
     """Verify all modified route files load without Python import errors."""
 
+    FILES_TO_CHECK = [
+        "/app/backend/routes/article_categories.py",
+        "/app/backend/routes/admin/orders.py",
+        "/app/backend/routes/admin/subscriptions.py",
+        "/app/backend/routes/admin/customers.py",
+        "/app/backend/routes/admin/users.py",
+        "/app/backend/routes/admin/catalog.py",
+        "/app/backend/routes/admin/permissions.py",
+        "/app/backend/routes/admin/tenants.py",
+        "/app/backend/routes/oauth.py",
+        "/app/backend/routes/admin/integrations.py",
+    ]
+
+    def _check_syntax(self, filepath):
+        import subprocess
+        result = subprocess.run(
+            ["python", "-c", f"import ast; ast.parse(open('{filepath}').read())"],
+            capture_output=True, text=True
+        )
+        return result.returncode == 0, result.stderr
+
     def test_article_categories_import(self):
-        import routes.article_categories  # noqa: F401
-        print("PASS: routes.article_categories imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/article_categories.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: article_categories.py syntax OK")
 
     def test_admin_orders_import(self):
-        import routes.admin.orders  # noqa: F401
-        print("PASS: routes.admin.orders imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/orders.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/orders.py syntax OK")
 
     def test_admin_subscriptions_import(self):
-        import routes.admin.subscriptions  # noqa: F401
-        print("PASS: routes.admin.subscriptions imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/subscriptions.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/subscriptions.py syntax OK")
 
     def test_admin_customers_import(self):
-        import routes.admin.customers  # noqa: F401
-        print("PASS: routes.admin.customers imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/customers.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/customers.py syntax OK")
 
     def test_admin_users_import(self):
-        import routes.admin.users  # noqa: F401
-        print("PASS: routes.admin.users imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/users.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/users.py syntax OK")
 
     def test_admin_catalog_import(self):
-        import routes.admin.catalog  # noqa: F401
-        print("PASS: routes.admin.catalog imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/catalog.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/catalog.py syntax OK")
 
     def test_admin_permissions_import(self):
-        import routes.admin.permissions  # noqa: F401
-        print("PASS: routes.admin.permissions imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/permissions.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/permissions.py syntax OK")
 
     def test_admin_tenants_import(self):
-        import routes.admin.tenants  # noqa: F401
-        print("PASS: routes.admin.tenants imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/tenants.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/tenants.py syntax OK")
 
     def test_oauth_import(self):
-        import routes.oauth  # noqa: F401
-        print("PASS: routes.oauth imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/oauth.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: oauth.py syntax OK")
 
     def test_admin_integrations_import(self):
-        import routes.admin.integrations  # noqa: F401
-        print("PASS: routes.admin.integrations imports OK")
+        ok, err = self._check_syntax("/app/backend/routes/admin/integrations.py")
+        assert ok, f"Syntax error: {err}"
+        print("PASS: admin/integrations.py syntax OK")
 
 
 # ─── Article Category Audit Logging ──────────────────────────────────────────
