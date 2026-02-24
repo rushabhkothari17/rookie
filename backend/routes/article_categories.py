@@ -112,3 +112,18 @@ async def delete_article_category(
         raise HTTPException(status_code=400, detail=f"Cannot delete: {article_count} article(s) use this category")
     await db.article_categories.delete_one({"id": category_id})
     return {"message": "Category deleted"}
+
+
+@router.get("/article-categories/{category_id}/logs")
+async def get_article_category_logs(
+    category_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tf = get_tenant_filter(admin)
+    cat = await db.article_categories.find_one({**tf, "id": category_id}, {"_id": 0, "id": 1})
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    logs = await db.audit_logs.find(
+        {"entity_type": "article_category", "entity_id": category_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return {"logs": logs}
