@@ -232,8 +232,6 @@ export function ProductForm({
           <BulletsList bullets={form.bullets} onChange={s("bullets")} />
 
           {/* Visibility */}
-          <div className="space-y-2 border-t border-slate-100 pt-4">
-          {/* Visibility */}
           <div className="space-y-3 border-t border-slate-100 pt-4">
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 cursor-pointer text-sm">
