@@ -163,6 +163,30 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 
 **Test Report:** `/app/test_reports/iteration_72.json` - 100% pass rate, all auth flows verified
 
+### Phase 13: Connect Services — Dependency Remapping & UX Fixes (Feb 2026)
+
+**1. Dependency Remapping**
+- `oauth.py` `validate_connection` now syncs credentials to legacy `app_settings` on success:
+  - Stripe validated → `stripe_secret_key`, `stripe_enabled=True`
+  - GoCardless validated → `gocardless_access_token`, `gocardless_environment`, `gocardless_enabled=True`
+  - Resend validated → `resend_api_key`
+- `activate_provider` for Resend syncs → `email_provider_enabled=True`, `resend_sender_email`, `email_from_name`, `email_reply_to`
+- `deactivate_provider` → `email_provider_enabled=False`
+- `disconnect_provider` → clears credentials and sets enabled=False in app_settings
+- `update_settings` for active Resend → syncs from_email/from_name/reply_to to app_settings
+- `checkout.py` and `email_service.py` unchanged (reads from app_settings as before)
+
+**2. UX Fixes**
+- Added `pb-20` to IntegrationsOverview container to prevent "Made with Emergent" badge from overlapping Connect buttons on bottom-row tiles
+- Updated Zoho setup guides (Mail, CRM, Books) with accurate Self Client workflow:
+  - Corrected: "Server-based Application" → "Self Client"
+  - Added accurate scopes for each service
+  - Added actual curl command to exchange auth code for refresh token
+  - Updated tips to clarify Self Client vs Server-based
+
+**Test Reports:**
+- `/app/test_reports/iteration_79.json` — 35/35 backend tests pass, all frontend tests pass
+
 ### Phase 8: Multi-Feature Implementation (Feb 2026)
 
 **1. Cookie Consent Banner (GDPR)**
