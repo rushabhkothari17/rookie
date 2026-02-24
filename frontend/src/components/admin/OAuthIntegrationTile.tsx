@@ -20,7 +20,7 @@ interface OAuthIntegrationProps {
   onStatusChange?: () => void;
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { icon: any; color: string; bg: string; border: string; label: string; animate?: boolean }> = {
   connected: { icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200", label: "Connected" },
   connecting: { icon: Loader2, color: "text-blue-500", bg: "bg-blue-50", border: "border-blue-200", label: "Connecting...", animate: true },
   not_connected: { icon: Link2Off, color: "text-slate-400", bg: "bg-slate-50", border: "border-slate-200", label: "Not Connected" },
