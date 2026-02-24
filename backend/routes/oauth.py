@@ -869,21 +869,8 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     if not mappings:
         return {"success": False, "message": "No active mappings configured. Set up entity mappings first."}
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        token_resp = await client.post(
-            f"{dc_config['accounts_url']}/oauth/v2/token",
-            data={
-                "grant_type": "refresh_token",
-                "client_id": creds.get("client_id", ""),
-                "client_secret": creds.get("client_secret", ""),
-                "refresh_token": creds.get("refresh_token", ""),
-            },
-        )
-        if token_resp.status_code != 200 or token_resp.json().get("error"):
-            raise HTTPException(status_code=400, detail="Token refresh failed — please reconnect Zoho CRM")
-
-        access_token = token_resp.json()["access_token"]
-        api_domain = creds.get("_api_domain", dc_config["api_domain"])
+    access_token = await _get_zoho_access_token_cached(tid, "zoho_crm", creds, dc_config)
+    api_domain = creds.get("_api_domain", dc_config["api_domain"])
 
         synced_counts: Dict[str, int] = {}
         errors: List[str] = []
