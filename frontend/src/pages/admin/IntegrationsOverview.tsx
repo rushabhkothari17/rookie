@@ -324,6 +324,14 @@ function FieldCombobox({ fields, value, onChange, placeholder = "Select field...
   const [open, setOpen] = useState(false);
   const selectedField = fields.find(f => f.api_name === value);
 
+  // Cast components to any to avoid JSX type conflicts with cmdk library
+  const CmdInput = CommandInput as any;
+  const CmdEmpty = CommandEmpty as any;
+  const CmdGroup = CommandGroup as any;
+  const CmdItem = CommandItem as any;
+  const CmdList = CommandList as any;
+  const Cmd = Command as any;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -341,12 +349,12 @@ function FieldCombobox({ fields, value, onChange, placeholder = "Select field...
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[250px] p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search fields..." className="h-8 text-xs" />
-          <CommandList>
-            <CommandEmpty className="py-3 text-xs">No field found.</CommandEmpty>
-            <CommandGroup>
-              <CommandItem
+        <Cmd>
+          <CmdInput placeholder="Search fields..." className="h-8 text-xs" />
+          <CmdList>
+            <CmdEmpty className="py-3 text-xs">No field found.</CmdEmpty>
+            <CmdGroup>
+              <CmdItem
                 value="__clear__"
                 onSelect={() => {
                   onChange("");
@@ -356,9 +364,9 @@ function FieldCombobox({ fields, value, onChange, placeholder = "Select field...
               >
                 <Check className={`mr-2 h-3 w-3 ${!value ? "opacity-100" : "opacity-0"}`} />
                 -- None --
-              </CommandItem>
+              </CmdItem>
               {fields.map(field => (
-                <CommandItem
+                <CmdItem
                   key={field.api_name}
                   value={field.field_label}
                   onSelect={() => {
@@ -369,11 +377,11 @@ function FieldCombobox({ fields, value, onChange, placeholder = "Select field...
                 >
                   <Check className={`mr-2 h-3 w-3 ${value === field.api_name ? "opacity-100" : "opacity-0"}`} />
                   {field.field_label}
-                </CommandItem>
+                </CmdItem>
               ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+            </CmdGroup>
+          </CmdList>
+        </Cmd>
       </PopoverContent>
     </Popover>
   );
