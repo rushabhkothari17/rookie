@@ -101,6 +101,7 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Webhooks: `/app/test_reports/iteration_364.json` — 49 tests, all pass (webhook system)
 - UI Bugs: `/app/test_reports/iteration_70.json` — 7 backend + frontend tests pass (login flow fix)
 - Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
+- Zoho Mappings: `/app/test_reports/iteration_81.json` — 21 backend + all frontend features pass (mapping UI)
 
 ### P0 Bug Fixes (Feb 2026)
 **Bug 1 - Admin Tab Visibility:** Fixed customer login flow. AuthContext now falls back to `/auth/customer-login` when `/auth/partner-login` returns 403 "Access denied". TopNav correctly uses `{user?.is_admin && ...}` to hide Admin tab for customers.
