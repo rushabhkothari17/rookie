@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { Download, Upload} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function CategoriesTab() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -97,11 +98,10 @@ export function CategoriesTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex gap-2 items-center">
           <Input placeholder="Search by name…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-categories-search" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-categories-status-filter">
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-categories-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+          </Select>
           <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setStatusFilter(""); }} className="h-8 text-xs" data-testid="admin-categories-clear-filters">Clear</Button>
         </div>
       </div>
