@@ -189,6 +189,7 @@ async def create_admin_user(
     # Remove sensitive fields from response
     del user_doc["password_hash"]
     
+    await create_audit_log(entity_type="admin_user", entity_id=user_id, action="created", actor=admin.get("email", "admin"), details={"email": payload.email, "role": role, "access_level": access_level})
     return {"user": user_doc, "message": "Admin user created successfully"}
 
 
@@ -240,6 +241,7 @@ async def update_admin_user(
         {"_id": 0, "password_hash": 0, "verification_code": 0}
     )
     
+    await create_audit_log(entity_type="admin_user", entity_id=user_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(updates.keys())})
     return {"user": updated, "message": "User updated successfully"}
 
 
@@ -266,6 +268,7 @@ async def delete_admin_user(
         {"$set": {"is_active": False, "deactivated_at": now_iso(), "deactivated_by": admin.get("id")}}
     )
     
+    await create_audit_log(entity_type="admin_user", entity_id=user_id, action="deactivated", actor=admin.get("email", "admin"), details={"email": user.get("email")})
     return {"message": "User deactivated successfully"}
 
 
@@ -289,6 +292,7 @@ async def reactivate_admin_user(
         {"$set": {"is_active": True}, "$unset": {"deactivated_at": "", "deactivated_by": ""}}
     )
     
+    await create_audit_log(entity_type="admin_user", entity_id=user_id, action="reactivated", actor=admin.get("email", "admin"), details={"email": user.get("email")})
     return {"message": "User reactivated successfully"}
 
 
