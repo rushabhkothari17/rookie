@@ -404,29 +404,61 @@ async def validate_connection(
                     # Start with the api_domain from the token response
                     zoho_api_domain = token_data.get("api_domain", dc_config["api_domain"])
 
-                    # Helper: try a Zoho API endpoint, auto-detecting correct DC on INVALID_URL_PATTERN
+                    # Helper: try all DC combinations (accounts_url → token → api_domain)
+                    # This handles cross-DC accounts where token DC must match API DC
                     async def _zoho_api_get(path: str) -> tuple:
-                        """Returns (response, working_api_domain). Tries all DC domains on INVALID_URL_PATTERN."""
-                        all_domains = [zoho_api_domain] + [
-                            v["api_domain"] for v in ZOHO_DATA_CENTERS.values()
-                            if v["api_domain"] != zoho_api_domain
+                        """
+                        Returns (response, working_api_domain).
+                        Tries each DC's accounts_url + api_domain pair until one succeeds.
+                        INVALID_URL_PATTERN or invalid token = wrong DC, try next.
+                        """
+                        # Build ordered list: selected DC first, then all others
+                        ordered = [(dc_config["accounts_url"], dc_config["api_domain"])] + [
+                            (v["accounts_url"], v["api_domain"])
+                            for v in ZOHO_DATA_CENTERS.values()
+                            if v["api_domain"] != dc_config["api_domain"]
                         ]
                         last_resp = None
-                        for domain in all_domains:
+                        for accts_url, api_domain in ordered:
+                            # Get a fresh access token from this DC's accounts server
+                            if accts_url == dc_config["accounts_url"]:
+                                current_token = access_token  # already obtained
+                            else:
+                                tok_r = await client.post(
+                                    f"{accts_url}/oauth/v2/token",
+                                    data={
+                                        "grant_type": "refresh_token",
+                                        "client_id": creds.get("client_id", ""),
+                                        "client_secret": creds.get("client_secret", ""),
+                                        "refresh_token": creds.get("refresh_token", ""),
+                                    }
+                                )
+                                if tok_r.status_code != 200:
+                                    continue  # this accounts server doesn't know this token
+                                current_token = tok_r.json().get("access_token", "")
+                                if not current_token:
+                                    continue
+
                             r = await client.get(
-                                f"{domain}{path}",
-                                headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                                f"{api_domain}{path}",
+                                headers={"Authorization": f"Zoho-oauthtoken {current_token}"}
                             )
                             last_resp = r
                             if r.status_code == 200:
-                                return r, domain
-                            # INVALID_URL_PATTERN means wrong DC — try next
+                                return r, api_domain
+                            # Wrong DC indicators — try next
                             try:
-                                if r.json().get("code") != "INVALID_URL_PATTERN":
-                                    return r, domain  # real error (scope etc) — stop here
+                                err_code = r.json().get("code", "")
+                                if err_code not in (
+                                    "INVALID_URL_PATTERN",
+                                    "INVALID_OAUTH_TOKEN",
+                                    "invalid_token",
+                                    "AUTHENTICATION_FAILURE",
+                                ):
+                                    return r, api_domain  # real error, stop here
                             except Exception:
-                                return r, domain
-                        return last_resp, zoho_api_domain
+                                return r, api_domain
+                        return (last_resp or test_resp), dc_config["api_domain"]
 
                     # Test API access based on provider
                     if provider == "zoho_mail":
