@@ -76,17 +76,24 @@ export interface WebsiteSettings {
   // Checkout page configuration (legacy)
   checkout_zoho_enabled: boolean;
   checkout_zoho_title: string;
+  checkout_zoho_description: string;
   checkout_zoho_subscription_options: string;
+  checkout_zoho_subscription_type_label: string;
   checkout_zoho_product_options: string;
+  checkout_zoho_product_label: string;
+  checkout_zoho_access_options: string;
+  checkout_zoho_access_label: string;
   checkout_zoho_signup_note: string;
   checkout_zoho_access_note: string;
   checkout_zoho_access_delay_warning: string;
   checkout_partner_enabled: boolean;
   checkout_partner_title: string;
   checkout_partner_description: string;
+  checkout_partner_question: string;
   checkout_partner_options: string;
   checkout_partner_misrep_warning: string;
   checkout_extra_schema: string;
+  checkout_terms_enabled: boolean;
   // Dynamic checkout sections (new builder)
   checkout_sections: string;
   // Checkout success page
