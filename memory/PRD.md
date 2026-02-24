@@ -323,3 +323,57 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Zoho Books integration is stubbed - no actual Zoho API calls yet
 - QuickBooks is a placeholder ("Coming Soon")
 
+### Phase 11: Admin Permissions, Domain Verification & Enhancements (Feb 2026)
+
+**1. Admin User Permissions System**
+- Module-based access control: 14 modules (customers, orders, subscriptions, products, promo_codes, quote_requests, bank_transactions, content, integrations, webhooks, settings, users, reports, logs)
+- Access levels: `full_access` (CRUD), `read_only` (view only)
+- 6 preset roles: Super Admin, Manager, Support Agent, Viewer, Accountant, Content Editor
+- Custom role with manual module selection
+- User creation with permissions: `POST /api/admin/users` accepts `access_level`, `modules`, `preset_role`
+- User update with permissions: `PUT /api/admin/users/{id}` accepts `access_level`, `modules`
+- Permissions query: `GET /api/admin/permissions/modules` returns all modules and roles
+- My permissions: `GET /api/admin/my-permissions`
+- New file: `backend/routes/admin/permissions.py`
+- Modified: `backend/routes/admin/users.py` to support permissions
+- Modified: `frontend/src/pages/admin/UsersTab.tsx` with permissions UI
+
+**2. Custom Domain Verification**
+- DNS CNAME verification using `dnspython` library
+- Domain statuses: `pending`, `verified`, `failed`, `incorrect`
+- Real-time DNS lookup with detailed error messages
+- New endpoints:
+  - `POST /api/admin/custom-domains` - Add domain with pending status
+  - `POST /api/admin/custom-domains/{domain}/verify` - Verify DNS configuration
+- Frontend shows status badges and "Verify Now" button
+- Modified: `backend/routes/admin/tenants.py`
+- Modified: `frontend/src/components/admin/CustomDomainsSection.tsx`
+
+**3. Refund Provider Selection**
+- Smart provider dropdown based on original payment method
+- Only shows original provider (Stripe/GoCardless) + Manual option
+- Disabled providers shown with "Disabled" badge
+- Provider response messages displayed on success/failure
+- New endpoint: `GET /api/admin/orders/{id}/refund-providers`
+- Modified: `backend/routes/admin/orders.py`
+- Modified: `frontend/src/pages/admin/OrdersTab.tsx`
+
+**4. Email Providers Enhancement**
+- Gmail: "Coming Soon" tile added
+- Outlook/Microsoft 365: "Coming Soon" tile added
+- Modified: `frontend/src/pages/admin/EmailSection.tsx`
+
+**5. Subscription N+1 Optimization**
+- Refactored subscription list to use MongoDB aggregation pipeline
+- Joins with customers and users collections in single query
+- Customer email populated via `$lookup` instead of N+1 queries
+- Supports email filter in aggregation
+- Modified: `backend/routes/admin/subscriptions.py`
+
+**6. Bug Fixes**
+- Fixed Users tab visibility for `partner_super_admin` role
+- Fixed: `frontend/src/pages/Admin.tsx` - isSuperAdmin check now includes `partner_super_admin`
+
+**Test Reports:**
+- `/app/test_reports/iteration_76.json` - 94% backend, 90% frontend
+
