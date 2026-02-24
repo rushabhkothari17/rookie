@@ -425,14 +425,14 @@ export function SubscriptionsTab() {
               </datalist>
             </div>
             <div className="space-y-1"><label className="text-xs text-slate-500">Product</label>
-              <Select value={manualSub.product_id || undefined} onValueChange={v => setManualSub({ ...manualSub, product_id: v })}>
-                <SelectTrigger className="w-full bg-white" data-testid="manual-sub-product-select">
-                  <SelectValue placeholder="Select product" />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={manualSub.product_id || undefined}
+                onValueChange={v => setManualSub({ ...manualSub, product_id: v })}
+                options={products.map((p: any) => ({ value: p.id, label: p.name }))}
+                placeholder="Select product"
+                searchPlaceholder="Search products..."
+                data-testid="manual-sub-product-select"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><label className="text-xs text-slate-500">Amount</label><Input type="number" step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} /></div>
