@@ -420,34 +420,67 @@ class EmailService:
                     return {"status": "failed", "error": str(exc)}
         # Try Zoho Mail if connected and Resend not available
         elif zoho_mail_conn:
-            from services.zoho_service import ZohoMailService
+            from services.zoho_service import ZohoMailService, ZohoOAuthService
             creds = zoho_mail_conn.get("credentials", {})
-            
-            zoho_service = ZohoMailService(
-                tenant_id=tenant_id or "",
-                account_id=creds.get("account_id", ""),
-                refresh_token=creds.get("refresh_token", ""),
-                client_id=creds.get("client_id", ""),
-                client_secret=creds.get("client_secret", ""),
-                datacenter=creds.get("datacenter", "US"),
-            )
-            
-            from_email = creds.get("from_email", "") or creds.get("sender_email", "")
-            if from_email:
-                log_entry["provider"] = "zoho_mail"
-                result = await zoho_service.send_email(
-                    from_email=from_email,
-                    to_email=recipient,
+            # from_email is stored in settings, not credentials
+            settings = zoho_mail_conn.get("settings", {})
+            from_email = settings.get("from_email", "") or settings.get("sender_email", "")
+            from_name = settings.get("from_name", "")
+            account_id = creds.get("account_id", "")
+            datacenter = (zoho_mail_conn.get("data_center") or "US").upper()
+
+            if from_email and account_id:
+                # Refresh the access token using stored credentials
+                oauth_svc = ZohoOAuthService(tenant_id or "", datacenter)
+                try:
+                    token_result = await oauth_svc.refresh_access_token(
+                        creds.get("refresh_token", ""),
+                        creds.get("client_id", ""),
+                        creds.get("client_secret", ""),
+                    )
+                    access_token = token_result.get("access_token", "")
+                except Exception as exc:
+                    log_entry["status"] = "failed"
+                    log_entry["error_message"] = f"Zoho token refresh failed: {exc}"
+                    await db.email_logs.insert_one(log_entry)
+                    return {"status": "failed", "error": str(exc)}
+
+                if not access_token:
+                    log_entry["status"] = "failed"
+                    log_entry["error_message"] = "Zoho token refresh returned no access_token"
+                    await db.email_logs.insert_one(log_entry)
+                    return {"status": "failed", "error": "Failed to refresh Zoho access token"}
+
+                from_address = f"{from_name} <{from_email}>" if from_name else from_email
+                zoho_mail_svc = ZohoMailService(tenant_id or "", datacenter)
+                result = await zoho_mail_svc.send_email(
+                    access_token=access_token,
+                    account_id=account_id,
+                    from_address=from_address,
+                    to_addresses=[recipient],
                     subject=subject,
-                    html_body=body,
+                    content=body,
+                    content_type="html",
                 )
+                log_entry["provider"] = "zoho_mail"
                 if result.get("success"):
                     log_entry["status"] = "sent"
                 else:
                     log_entry["status"] = "failed"
-                    log_entry["error_message"] = result.get("error", "Unknown error")
+                    log_entry["error_message"] = result.get("error", "Unknown Zoho Mail error")
                     await db.email_logs.insert_one(log_entry)
                     return {"status": "failed", "error": result.get("error")}
+            else:
+                # Missing from_email or account_id — fall through to mocked
+                log_entry["status"] = "mocked"
+                log_entry["error_message"] = "Zoho Mail configured but from_email or account_id missing"
+                outbox_entry = {
+                    "id": make_id(), "to": recipient, "subject": subject, "body": body,
+                    "type": trigger, "status": "MOCKED", "created_at": now_iso(),
+                }
+                if tenant_id:
+                    outbox_entry["tenant_id"] = tenant_id
+                await db.email_outbox.insert_one(outbox_entry)
         else:
             # Mocked — write to outbox
             log_entry["status"] = "mocked"
