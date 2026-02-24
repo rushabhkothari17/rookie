@@ -638,27 +638,43 @@ export function OrdersTab() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Provider</label>
-                <Select value={refundForm.provider} onValueChange={(v) => setRefundForm({ ...refundForm, provider: v })}>
-                  <SelectTrigger data-testid="admin-refund-provider-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manual">Manual (Record Only)</SelectItem>
-                    <SelectItem value="stripe">Stripe</SelectItem>
-                    <SelectItem value="gocardless">GoCardless</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label className="text-xs font-medium text-slate-600">Refund Method</label>
+                {loadingProviders ? (
+                  <div className="text-xs text-slate-400 py-2">Loading payment providers...</div>
+                ) : (
+                  <Select value={refundForm.provider} onValueChange={(v) => {
+                    const provider = refundProviders.find(p => p.id === v);
+                    setRefundForm({ ...refundForm, provider: v, processViaProvider: v !== "manual" && provider?.available });
+                  }}>
+                    <SelectTrigger data-testid="admin-refund-provider-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {refundProviders.map((p) => (
+                        <SelectItem key={p.id} value={p.id} disabled={!p.available && p.id !== "manual"}>
+                          <div className="flex items-center gap-2">
+                            <span>{p.name}</span>
+                            {p.is_original && <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Original</span>}
+                            {!p.available && p.id !== "manual" && <span className="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Disabled</span>}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {refundForm.provider !== "manual" && refundProviders.find(p => p.id === refundForm.provider)?.description && (
+                  <p className="text-[10px] text-slate-400">{refundProviders.find(p => p.id === refundForm.provider)?.description}</p>
+                )}
               </div>
 
-              {refundForm.provider !== "manual" && (
+              {refundForm.provider !== "manual" && refundProviders.find(p => p.id === refundForm.provider)?.available && (
                 <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={refundForm.processViaProvider}
                     onChange={(e) => setRefundForm({ ...refundForm, processViaProvider: e.target.checked })}
                   />
-                  Process refund via {refundForm.provider} API
+                  Process refund via {refundForm.provider === "stripe" ? "Stripe" : refundForm.provider === "gocardless" ? "GoCardless" : refundForm.provider} API
                 </label>
               )}
 
@@ -673,10 +689,17 @@ export function OrdersTab() {
                       provider: refundForm.provider,
                       process_via_provider: refundForm.provider !== "manual" && refundForm.processViaProvider
                     });
-                    toast.success(`Refund of $${res.data.amount?.toFixed(2)} processed successfully`);
+                    // Show detailed success message with provider response
+                    const providerMsg = res.data.provider_response?.message;
+                    if (providerMsg) {
+                      toast.success(`Refund of $${res.data.amount?.toFixed(2)} processed. ${providerMsg}`);
+                    } else {
+                      toast.success(`Refund of $${res.data.amount?.toFixed(2)} processed successfully`);
+                    }
                     setShowRefundDialog(false);
                     setSelectedOrder(null);
                     setRefundForm({ amount: "", reason: "requested_by_customer", provider: "manual", processViaProvider: true });
+                    setRefundProviders([]);
                     load(page);
                   } catch (e: any) {
                     toast.error(e.response?.data?.detail || "Failed to process refund");
@@ -685,7 +708,7 @@ export function OrdersTab() {
                   }
                 }}
                 className="w-full"
-                disabled={processingRefund}
+                disabled={processingRefund || loadingProviders}
                 data-testid="admin-refund-submit-btn"
               >
                 {processingRefund ? "Processing..." : "Process Refund"}
