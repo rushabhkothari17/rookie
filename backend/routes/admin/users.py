@@ -126,8 +126,9 @@ async def admin_update_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    allowed_roles = ("admin", "super_admin")
-    updates: Dict[str, Any] = {}
+    allowed_roles = ("admin", "super_admin", "partner_super_admin", "partner_admin", "partner_staff")
+    updates: Dict[str, Any] = {"updated_at": now_iso()}
+    
     if "full_name" in payload and payload["full_name"]:
         updates["full_name"] = payload["full_name"].strip()
     if "role" in payload:
@@ -141,21 +142,39 @@ async def admin_update_user(
             if existing_super:
                 raise HTTPException(status_code=400, detail="A super admin already exists for this tenant. Only one super admin is allowed per tenant.")
         updates["role"] = payload["role"]
+    
+    # Handle permission updates
+    if "access_level" in payload:
+        if payload["access_level"] not in ("full_access", "read_only"):
+            raise HTTPException(status_code=400, detail="access_level must be 'full_access' or 'read_only'")
+        updates["access_level"] = payload["access_level"]
+    
+    if "modules" in payload:
+        from routes.admin.permissions import ADMIN_MODULES
+        invalid = [m for m in payload["modules"] if m not in ADMIN_MODULES]
+        if invalid:
+            raise HTTPException(status_code=400, detail=f"Invalid modules: {', '.join(invalid)}")
+        updates["permissions.modules"] = payload["modules"]
+        updates["role"] = "custom"  # Reset to custom when modules manually changed
+    
+    if "is_active" in payload:
+        # Can't deactivate self
+        if user_id == admin.get("id") and not payload["is_active"]:
+            raise HTTPException(status_code=400, detail="You cannot deactivate your own account")
+        updates["is_active"] = payload["is_active"]
 
-    if updates:
+    if len(updates) > 1:  # More than just updated_at
         await db.users.update_one({"id": user_id}, {"$set": updates})
         await create_audit_log(
             entity_type="user",
             entity_id=user_id,
             action="admin_user_updated",
             actor=f"admin:{admin['id']}",
-            details=updates,
+            details={k: v for k, v in updates.items() if k != "updated_at"},
         )
 
-    user.update(updates)
-    user.pop("password_hash", None)
-    user.pop("_id", None)
-    return {"message": "User updated", "user": user}
+    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    return {"message": "User updated", "user": updated_user}
 
 
 @router.patch("/admin/users/{user_id}/active")
