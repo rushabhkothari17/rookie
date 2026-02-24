@@ -125,7 +125,6 @@ export function CustomersTab() {
   };
 
   const handleToggleActive = async (customerId: string, currentActive: boolean) => {
-    if (!confirm(`${!currentActive ? "Activate" : "Deactivate"} this customer?`)) return;
     try {
       await api.patch(`/admin/customers/${customerId}/active?active=${!currentActive}`);
       toast.success(`Customer ${!currentActive ? "activated" : "deactivated"}`); load(page);
