@@ -172,17 +172,19 @@ export default function Cart() {
   };
 
   const grouped = useMemo(() => {
-    if (!preview?.items) return { oneTime: [], subscriptions: [], scope: [], external: [], inquiry: [] };
+    if (!preview?.items) return { oneTime: [], subscriptions: [], scope: [], external: [], inquiry: [], rfq: [] };
     return preview.items.reduce(
       (acc: any, item: any) => {
         if (item.product.pricing_type === "external") acc.external.push(item);
         else if (item.product.pricing_type === "inquiry") acc.inquiry.push(item);
         else if (item.pricing.is_scope_request) acc.scope.push(item);
         else if (item.pricing.is_subscription) acc.subscriptions.push(item);
+        // Zero-price one-time items without a scope unlock are RFQ items
+        else if (item.pricing.subtotal === 0 && !item.inputs?._scope_unlock) acc.rfq.push(item);
         else acc.oneTime.push(item);
         return acc;
       },
-      { oneTime: [], subscriptions: [], scope: [], external: [], inquiry: [] },
+      { oneTime: [], subscriptions: [], scope: [], external: [], inquiry: [], rfq: [] },
     );
   }, [preview]);
 
