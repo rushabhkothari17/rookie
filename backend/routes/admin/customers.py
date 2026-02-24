@@ -17,7 +17,7 @@ from models import (
     AddressUpdate,
 )
 from services.audit_service import create_audit_log
-from services.zoho_service import auto_sync_to_zoho_crm
+from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 
 router = APIRouter(prefix="/api", tags=["admin-customers"])
 
