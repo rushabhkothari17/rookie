@@ -407,11 +407,19 @@ export default function ProductDetail() {
       };
     }
     if (isRFQ) {
-      // If scope has been unlocked, show Add to cart instead
+      // If scope has been unlocked, switch CTA to Add to cart with the unlocked price
       if (scopeUnlock) {
         return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
       }
-      return { label: "Request a Quote", onClick: () => setShowQuoteModal(true) };
+      // Otherwise navigate to cart — the cart page has Scope ID unlock + Request a Quote
+      return {
+        label: "Proceed to checkout",
+        onClick: () => {
+          addItem({ product_id: product.id, quantity: 1, inputs: { ...inputs, ...intakeAnswers } });
+          toast.success("Added to cart");
+          navigate("/cart");
+        },
+      };
     }
     // Fallback: no payment methods configured — force quote request
     if (!ws.stripe_enabled && !ws.gocardless_enabled && product.pricing_type === "fixed") {
