@@ -352,7 +352,7 @@ export function OrdersTab() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-nowrap items-center">
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/orders/${order.id}/logs`); setOrderLogs(r.data.logs || []); setShowLogsDialog(true); }} data-testid={`admin-order-logs-${order.id}`}>Logs</Button>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/orders/${order.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-order-logs-${order.id}`}>Logs</Button>
                       <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setNoteData({ notes: order.notes || [], notes_json: order.notes_json || null }); setShowNotesDialog(true); }} data-testid={`admin-order-notes-${order.id}`}>Notes{order.notes?.length ? ` (${order.notes.length})` : ""}</Button>
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedOrder({ ...order, order_date_edit: order.created_at?.slice(0, 10) }); setShowEditDialog(true); }} data-testid={`admin-order-edit-${order.id}`}>Edit</Button>
                       {order.status === "unpaid" && (
