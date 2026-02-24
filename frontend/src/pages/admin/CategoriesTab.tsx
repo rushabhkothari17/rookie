@@ -178,6 +178,44 @@ export function CategoriesTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Toggle Category Confirmation */}
+      <AlertDialog open={!!confirmToggleCat} onOpenChange={(open) => !open && setConfirmToggleCat(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmToggleCat?.is_active ? "Deactivate Category" : "Activate Category"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {confirmToggleCat?.is_active ? "deactivate" : "activate"} "{confirmToggleCat?.name}"?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={confirmToggleCat?.is_active ? "bg-red-600 hover:bg-red-700" : ""}
+              onClick={() => { handleToggle(confirmToggleCat); setConfirmToggleCat(null); }}
+              data-testid="confirm-cat-toggle"
+            >
+              {confirmToggleCat?.is_active ? "Deactivate" : "Activate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Category Confirmation */}
+      <AlertDialog open={!!confirmDeleteCat} onOpenChange={(open) => !open && setConfirmDeleteCat(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Category</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete "{confirmDeleteCat?.name}"? This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => { handleDelete(confirmDeleteCat); setConfirmDeleteCat(null); }} data-testid="confirm-cat-delete">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
