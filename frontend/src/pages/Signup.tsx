@@ -111,7 +111,7 @@ export default function Signup() {
     }
   };
 
-  const storeName = ws.store_name || ws.company_name || "Portal";
+  const storeName = ws.store_name || "Portal";
 
   // Partner mode
   if (isPartnerMode) {
