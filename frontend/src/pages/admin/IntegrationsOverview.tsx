@@ -612,23 +612,41 @@ export function IntegrationsOverview() {
       <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
         <DialogContent className="max-w-sm" data-testid="api-key-dialog">
           <DialogHeader>
-            <DialogTitle>Enter API Key</DialogTitle>
+            <DialogTitle>
+              {(() => {
+                const provider = integrations.find(i => i.id === apiKeyProvider);
+                return provider ? `Connect ${provider.name}` : "Enter API Key";
+              })()}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <p className="text-xs text-slate-500">
-              Enter your API key from the provider's dashboard. This will be securely stored.
-            </p>
-            <Input
-              type="password"
-              value={apiKey}
-              onChange={e => setApiKey(e.target.value)}
-              placeholder="Enter API key..."
-              data-testid="api-key-input"
-            />
+            {(() => {
+              const provider = integrations.find(i => i.id === apiKeyProvider);
+              return (
+                <>
+                  <div>
+                    <label className="text-xs font-medium text-slate-700">
+                      {provider?.api_key_label || "API Key"}
+                    </label>
+                    <Input
+                      type="password"
+                      value={apiKey}
+                      onChange={e => setApiKey(e.target.value)}
+                      placeholder={`Enter ${provider?.api_key_label?.toLowerCase() || "API key"}...`}
+                      className="mt-1"
+                      data-testid="api-key-input"
+                    />
+                    {provider?.api_key_hint && (
+                      <p className="text-[11px] text-slate-400 mt-1">{provider.api_key_hint}</p>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setShowApiKeyDialog(false)}>Cancel</Button>
               <Button onClick={handleSaveApiKey} disabled={savingApiKey || !apiKey.trim()} data-testid="api-key-save">
-                {savingApiKey ? "Saving..." : "Save API Key"}
+                {savingApiKey ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>
