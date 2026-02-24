@@ -1,6 +1,7 @@
 """Admin: Customer management routes."""
 from __future__ import annotations
 
+import asyncio
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,6 +17,7 @@ from models import (
     AddressUpdate,
 )
 from services.audit_service import create_audit_log
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["admin-customers"])
 
