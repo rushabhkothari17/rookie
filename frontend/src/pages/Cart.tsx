@@ -989,6 +989,60 @@ export default function Cart() {
               )}
             </div>
 
+            {/* RFQ (Quote Request) section — for zero-price products */}
+            {grouped.rfq.length > 0 && (
+              <div className="space-y-3" data-testid="cart-rfq-section">
+                <h2 className="text-lg font-semibold text-slate-900">Quote Requests</h2>
+                <div className="space-y-3">
+                  {grouped.rfq.map((item: any) => (
+                    <div key={item.product.id} className="rounded-xl border border-slate-200 bg-white p-4 space-y-3" data-testid={`cart-rfq-item-${item.product.id}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900" data-testid={`cart-rfq-name-${item.product.id}`}>{item.product.name}</div>
+                          <div className="text-xs text-slate-500">Price to be confirmed</div>
+                        </div>
+                        <button onClick={() => removeItem(item.product.id)} className="text-xs text-red-500 hover:text-red-700" data-testid={`cart-rfq-remove-${item.product.id}`}>Remove</button>
+                      </div>
+                      {/* Scope ID unlock */}
+                      <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 space-y-2" data-testid="cart-rfq-scope-section">
+                        <p className="text-xs font-medium text-slate-700">Have a Scope ID? Enter it to unlock your quote price instantly.</p>
+                        <div className="flex gap-2">
+                          <Input
+                            value={cartScopeId}
+                            onChange={(e) => { setCartScopeId(e.target.value); setCartScopeUnlock(null); setCartScopeError(""); }}
+                            placeholder="Enter Scope ID"
+                            className="flex-1 font-mono text-sm"
+                            data-testid="cart-rfq-scope-id-input"
+                          />
+                          <Button variant="outline" size="sm" onClick={handleValidateCartScopeId} disabled={cartScopeValidating || !cartScopeId.trim()} data-testid="cart-rfq-scope-validate-btn">
+                            {cartScopeValidating ? "Checking…" : "Validate"}
+                          </Button>
+                        </div>
+                        {cartScopeError && <p className="text-xs text-red-600" data-testid="cart-rfq-scope-error">{cartScopeError}</p>}
+                        {cartScopeUnlock && (
+                          <div className="rounded-lg bg-green-50 border border-green-200 p-3 space-y-2" data-testid="cart-rfq-scope-success">
+                            <p className="text-sm font-semibold text-green-800">Scope unlocked: {cartScopeUnlock.title}</p>
+                            <p className="text-sm font-bold text-green-800">${cartScopeUnlock.price}</p>
+                            <Button onClick={handleApplyScopeToCart} className="w-full" size="sm" data-testid="cart-rfq-scope-apply-btn">
+                              Apply Scope &amp; Proceed to Checkout
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full border-slate-300"
+                        onClick={() => { setCartQuoteProduct(item.product); setShowCartQuoteModal(true); }}
+                        data-testid={`cart-rfq-request-quote-btn-${item.product.id}`}
+                      >
+                        Request a Quote
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-slate-900">External checkouts</h2>
               {grouped.external.length === 0 ? (
