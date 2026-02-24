@@ -635,7 +635,10 @@ async def checkout_status(
     session_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
 ):
-    stripe_checkout = StripeCheckout(api_key=await SettingsService.get("stripe_secret_key") or STRIPE_API_KEY, webhook_url="")
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    tenant_id = customer.get("tenant_id", "") if customer else ""
+    stripe_api_key, _, _ = await get_stripe_creds(tenant_id)
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
     status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
     transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
     if transaction:
@@ -650,8 +653,7 @@ async def checkout_status(
             payment_intent_id = session_id  # fallback to session id
             stripe_sub_id = None
             try:
-                _stripe_key = await SettingsService.get("stripe_secret_key") or STRIPE_API_KEY
-                stripe_sdk.api_key = _stripe_key
+                stripe_sdk.api_key = stripe_api_key
                 session_obj = stripe_sdk.checkout.Session.retrieve(
                     session_id, expand=["payment_intent", "subscription"]
                 )
