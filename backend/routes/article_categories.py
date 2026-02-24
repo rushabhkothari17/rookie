@@ -121,13 +121,16 @@ async def delete_article_category(
 @router.get("/article-categories/{category_id}/logs")
 async def get_article_category_logs(
     category_id: str,
+    page: int = 1,
+    limit: int = 20,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     cat = await db.article_categories.find_one({**tf, "id": category_id}, {"_id": 0, "id": 1})
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
-    logs = await db.audit_logs.find(
-        {"entity_type": "article_category", "entity_id": category_id}, {"_id": 0}
-    ).sort("created_at", -1).to_list(100)
-    return {"logs": logs}
+    flt = {"entity_type": "article_category", "entity_id": category_id}
+    total = await db.audit_logs.count_documents(flt)
+    skip = (page - 1) * limit
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}

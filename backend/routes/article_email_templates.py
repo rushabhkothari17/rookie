@@ -93,13 +93,16 @@ async def delete_article_email_template(
 @router.get("/article-email-templates/{template_id}/logs")
 async def get_article_email_template_logs(
     template_id: str,
+    page: int = 1,
+    limit: int = 20,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     tpl = await db.article_email_templates.find_one({**tf, "id": template_id}, {"_id": 0, "id": 1})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
-    logs = await db.audit_logs.find(
-        {"entity_type": "article_email_template", "entity_id": template_id}, {"_id": 0}
-    ).sort("created_at", -1).to_list(100)
-    return {"logs": logs}
+    flt = {"entity_type": "article_email_template", "entity_id": template_id}
+    total = await db.audit_logs.count_documents(flt)
+    skip = (page - 1) * limit
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
