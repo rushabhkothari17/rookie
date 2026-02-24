@@ -97,6 +97,11 @@ export function QuoteRequestsTab() {
     } catch (e: any) { toast.error(e?.response?.data?.detail || "Failed to save"); }
   };
 
+  const handleDelete = async (quoteId: string) => {
+    try { await api.delete(`/admin/quote-requests/${quoteId}`); toast.success("Quote request deleted"); load(page); }
+    catch (e: any) { toast.error(e.response?.data?.detail || "Failed to delete"); }
+  };
+
   const clearFilters = () => { setEmailFilter(""); setProductFilter(""); setStatusFilter(""); setStartDate(""); setEndDate(""); };
 
   const downloadCsv = () => {
