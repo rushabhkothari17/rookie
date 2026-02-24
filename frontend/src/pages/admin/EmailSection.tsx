@@ -832,23 +832,31 @@ export default function EmailSection() {
 
   return (
     <div data-testid="email-section">
-      {/* Active Provider Alert */}
+      {/* Active Provider Status */}
       {activeProvider && (
-        <div className="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
-          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
-          <p className="text-sm text-emerald-700">
-            <strong>{activeProvider === "resend" ? "Resend" : "Zoho Mail"}</strong> is your active email provider. 
-            Emails will be sent through this service. Only one provider can be active at a time.
-          </p>
+        <div className="mb-4 flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+            <p className="text-sm text-emerald-700">
+              <strong>{activeProvider === "resend" ? "Resend" : "Zoho Mail"}</strong> is your active email provider.
+            </p>
+          </div>
+          <a href="/admin?tab=integrations" className="text-xs text-emerald-700 hover:text-emerald-800 underline">
+            Manage in Connect Services →
+          </a>
         </div>
       )}
       {!activeProvider && (
-        <div className="mb-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-          <AlertCircle size={16} className="text-amber-600 shrink-0" />
-          <p className="text-sm text-amber-700">
-            <strong>No email provider active.</strong> Emails are stored in outbox but not sent. 
-            Configure and activate a provider below to start sending emails.
-          </p>
+        <div className="mb-4 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="text-amber-600 shrink-0" />
+            <p className="text-sm text-amber-700">
+              <strong>No email provider active.</strong> Emails are stored but not sent.
+            </p>
+          </div>
+          <a href="/admin?tab=integrations" className="text-xs text-amber-700 hover:text-amber-800 underline font-medium">
+            Connect a Provider →
+          </a>
         </div>
       )}
 
