@@ -268,12 +268,14 @@ export function TenantsTab() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Role</label>
-              <select value={newAdmin.role} onChange={e => setNewAdmin(p => ({ ...p, role: e.target.value }))}
-                className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm" data-testid="new-admin-role">
-                <option value="partner_super_admin">Partner Super Admin</option>
-                <option value="partner_admin">Partner Admin</option>
-                <option value="partner_staff">Partner Staff</option>
-              </select>
+              <Select value={newAdmin.role} onValueChange={v => setNewAdmin(p => ({ ...p, role: v }))}>
+                <SelectTrigger className="w-full bg-white" data-testid="new-admin-role"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="partner_super_admin">Partner Super Admin</SelectItem>
+                  <SelectItem value="partner_admin">Partner Admin</SelectItem>
+                  <SelectItem value="partner_staff">Partner Staff</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowCreateAdmin(null)}>Cancel</Button>
