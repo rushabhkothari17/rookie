@@ -77,6 +77,8 @@ export function OrdersTab() {
     processViaProvider: true
   });
   const [processingRefund, setProcessingRefund] = useState(false);
+  const [refundProviders, setRefundProviders] = useState<any[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
   const [manualOrder, setManualOrder] = useState({
     customer_email: "", product_id: "", quantity: 1,
     subtotal: 0, discount: 0, fee: 0, status: "paid", internal_note: "",
