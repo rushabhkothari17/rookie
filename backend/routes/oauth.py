@@ -111,7 +111,7 @@ OAUTH_CONFIGS = {
 
 def get_frontend_url() -> str:
     """Get the frontend URL for OAuth callbacks."""
-    return os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:3000")
+    return os.environ.get("FRONTEND_URL", os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:3000"))
 
 
 def get_zoho_urls(dc: str = "us") -> Dict[str, str]:
