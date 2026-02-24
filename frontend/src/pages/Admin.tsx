@@ -24,6 +24,7 @@ import { ApiTab } from "./admin/ApiTab";
 import { WebhooksTab } from "./admin/WebhooksTab";
 import { CRMTab } from "./admin/CRMTab";
 import { FinanceTab } from "./admin/FinanceTab";
+import { IntegrationsOverview } from "./admin/IntegrationsOverview";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
