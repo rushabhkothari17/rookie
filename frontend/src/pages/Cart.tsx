@@ -37,6 +37,11 @@ export default function Cart() {
   const [cartScopeValidating, setCartScopeValidating] = useState(false);
   const [cartScopeUnlock, setCartScopeUnlock] = useState<any>(null);
   const [cartScopeError, setCartScopeError] = useState("");
+  // Quote modal for RFQ (zero-price) items
+  const [showCartQuoteModal, setShowCartQuoteModal] = useState(false);
+  const [cartQuoteProduct, setCartQuoteProduct] = useState<any>(null);
+  const [cartQuoteForm, setCartQuoteForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
+  const [submittingCartQuote, setSubmittingCartQuote] = useState(false);
   const [zohoUrls, setZohoUrls] = useState({
     reseller_signup_us: "",
     reseller_signup_ca: "",
