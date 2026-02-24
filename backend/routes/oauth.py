@@ -105,14 +105,13 @@ INTEGRATIONS = {
         "icon": "mail",
         "is_zoho": True,
         "fields": [
-            {"key": "client_id", "label": "Client ID", "hint": "From Zoho API Console", "secret": False, "required": True},
-            {"key": "client_secret", "label": "Client Secret", "hint": "From Zoho API Console", "secret": True, "required": True},
-            {"key": "refresh_token", "label": "Refresh Token", "hint": "Generated after OAuth", "secret": True, "required": True},
-            {"key": "account_id", "label": "Account ID", "hint": "Your Zoho Mail account ID", "secret": False, "required": True},
+            {"key": "client_id",    "label": "Client ID",           "hint": "From Zoho API Console",                                          "secret": False, "required": True},
+            {"key": "client_secret","label": "Client Secret",       "hint": "From Zoho API Console",                                          "secret": True,  "required": True},
+            {"key": "auth_code",    "label": "Authorization Code",  "hint": "One-time code from API Console → Generate Code tab (expires fast)","secret": False, "required": False},
         ],
         "settings": [
             {"key": "from_email", "label": "From Email", "default": ""},
-            {"key": "from_name", "label": "From Name", "default": ""},
+            {"key": "from_name",  "label": "From Name",  "default": ""},
         ],
     },
     
@@ -124,9 +123,9 @@ INTEGRATIONS = {
         "icon": "users",
         "is_zoho": True,
         "fields": [
-            {"key": "client_id", "label": "Client ID", "hint": "From Zoho API Console", "secret": False, "required": True},
-            {"key": "client_secret", "label": "Client Secret", "hint": "From Zoho API Console", "secret": True, "required": True},
-            {"key": "refresh_token", "label": "Refresh Token", "hint": "Generated after OAuth", "secret": True, "required": True},
+            {"key": "client_id",    "label": "Client ID",          "hint": "From Zoho API Console",                                          "secret": False, "required": True},
+            {"key": "client_secret","label": "Client Secret",      "hint": "From Zoho API Console",                                          "secret": True,  "required": True},
+            {"key": "auth_code",    "label": "Authorization Code", "hint": "One-time code from API Console → Generate Code tab (expires fast)","secret": False, "required": False},
         ],
     },
     
@@ -138,10 +137,10 @@ INTEGRATIONS = {
         "icon": "receipt",
         "is_zoho": True,
         "fields": [
-            {"key": "client_id", "label": "Client ID", "hint": "From Zoho API Console", "secret": False, "required": True},
-            {"key": "client_secret", "label": "Client Secret", "hint": "From Zoho API Console", "secret": True, "required": True},
-            {"key": "refresh_token", "label": "Refresh Token", "hint": "Generated after OAuth", "secret": True, "required": True},
-            {"key": "organization_id", "label": "Organization ID", "hint": "Your Zoho Books org ID", "secret": False, "required": True},
+            {"key": "client_id",    "label": "Client ID",          "hint": "From Zoho API Console",                                          "secret": False, "required": True},
+            {"key": "client_secret","label": "Client Secret",      "hint": "From Zoho API Console",                                          "secret": True,  "required": True},
+            {"key": "auth_code",    "label": "Authorization Code", "hint": "One-time code from API Console → Generate Code tab (expires fast)","secret": False, "required": False},
+            {"key": "organization_id","label": "Organization ID",  "hint": "Zoho Books → Settings → Organization Profile",                   "secret": False, "required": True},
         ],
     },
     
