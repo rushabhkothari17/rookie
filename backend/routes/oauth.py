@@ -460,20 +460,37 @@ async def validate_connection(
 
                     # Test API access based on provider
                     if provider == "zoho_mail":
-                        # Zoho Mail has its own subdomain per DC — try all mail DCs
-                        all_mail_apis = [dc_config["mail_api"]] + [
-                            v["mail_api"] for v in ZOHO_DATA_CENTERS.values()
+                        # Try each DC's mail_api — use matching accounts_url to get a valid token
+                        all_mail_dcs = [(dc_config["accounts_url"], dc_config["mail_api"])] + [
+                            (v["accounts_url"], v["mail_api"])
+                            for v in ZOHO_DATA_CENTERS.values()
                             if v["mail_api"] != dc_config["mail_api"]
                         ]
                         test_resp = None
-                        for mail_api in all_mail_apis:
+                        for accts_url, mail_api in all_mail_dcs:
+                            if accts_url == dc_config["accounts_url"]:
+                                mail_token = access_token
+                            else:
+                                tok_r = await client.post(
+                                    f"{accts_url}/oauth/v2/token",
+                                    data={
+                                        "grant_type": "refresh_token",
+                                        "client_id": creds.get("client_id", ""),
+                                        "client_secret": creds.get("client_secret", ""),
+                                        "refresh_token": creds.get("refresh_token", ""),
+                                    }
+                                )
+                                if tok_r.status_code != 200:
+                                    continue
+                                mail_token = tok_r.json().get("access_token", "")
+                                if not mail_token:
+                                    continue
                             r = await client.get(
                                 f"{mail_api}/accounts",
-                                headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                                headers={"Authorization": f"Zoho-oauthtoken {mail_token}"}
                             )
                             test_resp = r
                             if r.status_code == 200:
-                                # Auto-store account_id from first account
                                 accounts = r.json().get("data", [])
                                 if accounts:
                                     auto_account_id = str(accounts[0].get("accountId", ""))
