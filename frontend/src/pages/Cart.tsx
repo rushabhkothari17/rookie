@@ -71,11 +71,18 @@ export default function Cart() {
     return [];
   };
 
+  // Parse a "Label|value" option string into {label, value}
+  const parseOptionItem = (opt: string): { label: string; value: string } => {
+    const pipeIdx = opt.indexOf("|");
+    if (pipeIdx === -1) return { label: opt.trim(), value: opt.trim() };
+    return { label: opt.slice(0, pipeIdx).trim(), value: opt.slice(pipeIdx + 1).trim() || opt.slice(0, pipeIdx).trim() };
+  };
+
   const sectionRequiredFieldsMissing = useMemo(() => {
     if (!checkoutSections) return false;
     return checkoutSections.some((section: any) => {
       const fields = parseSectionFields(section.fields_schema);
-      return fields.some((f: any) => f.required && !extraFields[f.key || f.name]);
+      return fields.some((f: any) => f.required && !extraFields[f.id || f.key || f.name]);
     });
   }, [checkoutSections, extraFields]);
 
