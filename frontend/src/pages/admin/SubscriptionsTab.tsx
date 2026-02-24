@@ -300,8 +300,8 @@ export function SubscriptionsTab() {
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/subscriptions/${sub.id}/logs`); setSubLogs(r.data.logs || []); setShowLogsDialog(true); }}>Logs</Button>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSubNotes(sub.notes || []); setSubNotesJson(sub.notes_json || null); setShowNotesDialog(true); }}>Notes</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSub(sub); setShowEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
-                    <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleRenew(sub.id)}>Renew</Button>
-                    {sub.status === "active" && <Button variant="destructive" size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleCancel(sub.id)}>Cancel</Button>}
+                    <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmRenewId(sub.id)}>Renew</Button>
+                    {sub.status === "active" && <Button variant="destructive" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmCancelId(sub.id)}>Cancel</Button>}
                   </div>
                 </TableCell>
               </TableRow>
