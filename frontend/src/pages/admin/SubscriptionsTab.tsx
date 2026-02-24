@@ -356,9 +356,10 @@ export function SubscriptionsTab() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Method</label>
-                  <select value={selectedSub.payment_method} onChange={e => setSelectedSub({ ...selectedSub, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-sub-payment-select">
-                    {paymentMethods.map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
+                  <Select value={selectedSub.payment_method} onValueChange={v => setSelectedSub({ ...selectedSub, payment_method: v })} data-testid="admin-sub-payment-select">
+                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
               </div>
               {/* Processor ID */}
