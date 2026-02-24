@@ -9,14 +9,23 @@ const formatTag = (product: any) => {
   return "Project based";
 };
 
+const formatPrice = (product: any) => {
+  const price = product.base_price;
+  if (!price && price !== 0) return null;
+  if (price === 0) return "Contact us";
+  const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(price);
+  return product.is_subscription ? `${formatted}/mo` : `from ${formatted}`;
+};
+
 export default function OfferingCard({ product }: { product: any }) {
   const bullets = product.card_bullets || product.bullets || product.bullets_included || [];
   const description = product.short_description || product.card_description || product.tagline;
+  const priceLabel = formatPrice(product);
 
   return (
     <Link
       to={`/product/${product.id}`}
-      className="group block rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-200"
+      className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-200"
       data-testid={`offering-card-${product.id}`}
     >
       <div className="flex items-center justify-between">
@@ -32,7 +41,7 @@ export default function OfferingCard({ product }: { product: any }) {
         />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex-1">
         <div
           className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400"
           data-testid={`offering-category-${product.id}`}
@@ -66,12 +75,22 @@ export default function OfferingCard({ product }: { product: any }) {
         </ul>
       )}
 
-      <div
-        className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-slate-700"
-        data-testid={`offering-cta-${product.id}`}
-      >
-        View details
-        <ArrowUpRight size={14} />
+      {/* Pricing + CTA row */}
+      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+        {priceLabel ? (
+          <div data-testid={`offering-price-${product.id}`}>
+            <span className="text-lg font-bold text-slate-900">{priceLabel}</span>
+          </div>
+        ) : (
+          <div />
+        )}
+        <div
+          className="flex items-center gap-1.5 text-sm font-semibold text-slate-700"
+          data-testid={`offering-cta-${product.id}`}
+        >
+          View details
+          <ArrowUpRight size={14} />
+        </div>
       </div>
     </Link>
   );
