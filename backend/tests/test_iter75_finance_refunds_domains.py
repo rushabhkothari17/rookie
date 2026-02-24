@@ -14,7 +14,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://integration-center-1.preview.emergentagent.com")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://cred-manager-13.preview.emergentagent.com")
 
 # Test credentials
 TENANT_B_ADMIN = {
