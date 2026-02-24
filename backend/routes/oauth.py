@@ -100,6 +100,11 @@ INTEGRATIONS = {
             {"key": "api_key", "label": "Secret Key", "hint": "Starts with sk_live_ or sk_test_", "secret": True, "required": True},
             {"key": "publishable_key", "label": "Publishable Key", "hint": "Starts with pk_live_ or pk_test_", "secret": False, "required": False},
         ],
+        "settings": [
+            {"key": "label", "label": "Payment Method Label", "default": "Card Payment (Stripe)"},
+            {"key": "description", "label": "Payment Method Description", "default": "Pay securely by credit or debit card."},
+            {"key": "fee_rate", "label": "Processing Fee Rate", "default": "0.05"},
+        ],
     },
     "gocardless": {
         "name": "GoCardless",
@@ -110,9 +115,16 @@ INTEGRATIONS = {
             {"key": "access_token", "label": "Access Token", "hint": "From GoCardless Dashboard → Developers", "secret": True, "required": True},
         ],
         "settings": [
-            {"key": "success_title", "label": "Success Page Title", "default": "Payment Setup Complete"},
-            {"key": "success_message", "label": "Success Message", "default": "Your Direct Debit has been set up successfully."},
-            {"key": "success_button_text", "label": "Button Text", "default": "Return to Dashboard"},
+            {"key": "label", "label": "Payment Method Label", "default": "Bank Transfer (Direct Debit)"},
+            {"key": "description", "label": "Payment Method Description", "default": "No processing fee. We'll set up a direct debit."},
+            {"key": "fee_rate", "label": "Processing Fee Rate", "default": "0.00"},
+            {"key": "processing_title", "label": "Processing Page Title", "default": "Setting Up Your Direct Debit"},
+            {"key": "processing_subtitle", "label": "Processing Subtitle", "default": "Please wait while we confirm your bank authorisation."},
+            {"key": "success_title", "label": "Success Page Title", "default": "Direct Debit Set Up"},
+            {"key": "success_message", "label": "Success Message", "default": "Your direct debit mandate has been set up successfully."},
+            {"key": "error_title", "label": "Error Page Title", "default": "Setup Failed"},
+            {"key": "error_message", "label": "Error Message", "default": "We were unable to set up your direct debit. Please try again."},
+            {"key": "return_btn_text", "label": "Return Button Text", "default": "Return to Store"},
         ],
     },
     "gocardless_sandbox": {
@@ -122,6 +134,18 @@ INTEGRATIONS = {
         "icon": "landmark",
         "fields": [
             {"key": "access_token", "label": "Sandbox Access Token", "hint": "From GoCardless Sandbox Dashboard", "secret": True, "required": True},
+        ],
+        "settings": [
+            {"key": "label", "label": "Payment Method Label", "default": "Bank Transfer (Direct Debit)"},
+            {"key": "description", "label": "Payment Method Description", "default": "No processing fee. We'll set up a direct debit."},
+            {"key": "fee_rate", "label": "Processing Fee Rate", "default": "0.00"},
+            {"key": "processing_title", "label": "Processing Page Title", "default": "Setting Up Your Direct Debit"},
+            {"key": "processing_subtitle", "label": "Processing Subtitle", "default": "Please wait while we confirm your bank authorisation."},
+            {"key": "success_title", "label": "Success Page Title", "default": "Direct Debit Set Up"},
+            {"key": "success_message", "label": "Success Message", "default": "Your direct debit mandate has been set up successfully."},
+            {"key": "error_title", "label": "Error Page Title", "default": "Setup Failed"},
+            {"key": "error_message", "label": "Error Message", "default": "We were unable to set up your direct debit. Please try again."},
+            {"key": "return_btn_text", "label": "Return Button Text", "default": "Return to Store"},
         ],
     },
     
