@@ -648,24 +648,29 @@ export function IntegrationsOverview() {
 
   const handleBulkSync = async () => {
     setSyncing(true);
+    setLastSyncResult(null);
     try {
       const res = await api.post("/oauth/zoho_crm/bulk-sync");
+      setLastSyncResult({
+        success: res.data.success,
+        message: res.data.message,
+        errors: res.data.errors || [],
+        synced: res.data.synced || {},
+      });
       if (res.data.success) {
         toast.success(res.data.message);
       } else {
-        // Show the main message
         toast.error(res.data.message || "Sync failed");
-        // Show individual errors if any
-        if (res.data.errors && res.data.errors.length > 0) {
-          res.data.errors.forEach((err: string, idx: number) => {
-            setTimeout(() => {
-              toast.error(`Error ${idx + 1}: ${err}`, { duration: 8000 });
-            }, (idx + 1) * 500);
-          });
-        }
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Sync failed");
+      const errorMsg = err.response?.data?.detail || "Sync failed";
+      setLastSyncResult({
+        success: false,
+        message: errorMsg,
+        errors: [errorMsg],
+        synced: {},
+      });
+      toast.error(errorMsg);
     } finally {
       setSyncing(false);
     }
