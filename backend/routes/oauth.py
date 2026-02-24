@@ -399,7 +399,11 @@ async def validate_connection(
                         err = f"HTTP {token_resp.status_code}"
                     result = {"success": False, "message": f"Token refresh failed: {err}"}
                 else:
-                    access_token = token_resp.json().get("access_token")
+                    token_data = token_resp.json()
+                    access_token = token_data.get("access_token")
+                    # Use the api_domain from Zoho's token response — it's authoritative
+                    # and always points to the correct DC regardless of user selection
+                    zoho_api_domain = token_data.get("api_domain", dc_config["api_domain"])
                     
                     # Test API access based on provider
                     if provider == "zoho_mail":
