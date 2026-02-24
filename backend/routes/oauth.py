@@ -415,8 +415,9 @@ async def validate_connection(
                                         {"$set": {"credentials.account_id": auto_account_id}}
                                     )
                     elif provider == "zoho_crm":
+                        # /crm/v3/leads requires ZohoCRM.modules.ALL (from setup guide)
                         test_resp = await client.get(
-                            f"{dc_config['api_domain']}/crm/v3/users?type=CurrentUser",
+                            f"{dc_config['api_domain']}/crm/v3/leads?per_page=1",
                             headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
                         )
                     else:  # zoho_books
@@ -428,7 +429,18 @@ async def validate_connection(
                     if test_resp.status_code == 200:
                         result = {"success": True, "message": f"{config['name']} connection validated successfully"}
                     else:
-                        result = {"success": False, "message": f"Could not access {config['name']} API"}
+                        # Expose the actual Zoho error for easier debugging
+                        try:
+                            err_body = test_resp.json()
+                            zoho_code = err_body.get("code", "")
+                            zoho_msg  = err_body.get("message", "")
+                            if zoho_code == "OAUTH_SCOPE_MISMATCH":
+                                detail = f"Scope mismatch — re-generate the Authorization Code with the correct scopes (see Setup Guide)"
+                            else:
+                                detail = zoho_msg or zoho_code or f"HTTP {test_resp.status_code}"
+                        except Exception:
+                            detail = f"HTTP {test_resp.status_code}"
+                        result = {"success": False, "message": f"Could not access {config['name']} API: {detail}"}
             
             else:
                 result = {"success": False, "message": "Validation not implemented"}
