@@ -539,7 +539,7 @@ async def validate_connection(
                                         )
                                 break
                     elif provider == "zoho_crm":
-                        test_resp, _ = await _zoho_api_get("/crm/v3/leads?per_page=1")
+                        test_resp, _ = await _zoho_api_get("/crm/v3/Leads?per_page=1&fields=id")
                     else:  # zoho_books
                         test_resp, _ = await _zoho_api_get("/books/v3/organizations")
 
