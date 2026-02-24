@@ -571,14 +571,14 @@ export function OrdersTab() {
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Product</label>
-              <Select value={manualOrder.product_id || undefined} onValueChange={v => setManualOrder({ ...manualOrder, product_id: v })} data-testid="manual-order-product-select">
-                <SelectTrigger className="w-full bg-white" data-testid="manual-order-product-select">
-                  <SelectValue placeholder="Select product" />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={manualOrder.product_id || undefined}
+                onValueChange={v => setManualOrder({ ...manualOrder, product_id: v })}
+                options={products.map((p: any) => ({ value: p.id, label: p.name }))}
+                placeholder="Select product"
+                searchPlaceholder="Search products..."
+                data-testid="manual-order-product-select"
+              />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1"><label className="text-xs text-slate-500">Subtotal</label><Input type="number" step="0.01" value={manualOrder.subtotal} onChange={e => setManualOrder({ ...manualOrder, subtotal: parseFloat(e.target.value) || 0 })} /></div>
