@@ -1081,6 +1081,159 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     }
 
 
+@router.post("/oauth/zoho_books/bulk-sync")
+async def bulk_sync_zoho_books(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """
+    Bulk sync existing records to Zoho Books based on active mappings.
+    Similar to CRM sync but uses Zoho Books API endpoints.
+    """
+    tid = tenant_id_of(admin)
+    
+    # Get Books connection
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": "zoho_books", "is_validated": True},
+        {"_id": 0}
+    )
+    if not conn:
+        raise HTTPException(status_code=400, detail="Zoho Books is not connected or validated")
+    
+    creds = conn.get("credentials", {})
+    refresh_token = creds.get("refresh_token")
+    client_id = creds.get("client_id")
+    client_secret = creds.get("client_secret")
+    api_domain = creds.get("_api_domain", "https://www.zohoapis.com")
+    accounts_url = creds.get("_accounts_url", "https://accounts.zoho.com")
+    organization_id = creds.get("organization_id", "")
+    
+    if not all([refresh_token, client_id, client_secret]):
+        raise HTTPException(status_code=400, detail="Incomplete Zoho Books credentials")
+    
+    # Get access token
+    access_token = await _get_zoho_access_token_cached(tid, "zoho_books", creds, {
+        "api_domain": api_domain,
+        "accounts_url": accounts_url,
+    })
+    
+    # Get mappings for Zoho Books
+    mappings = await db.crm_mappings.find({"tenant_id": tid, "provider": "zoho_books", "is_active": True}, {"_id": 0}).to_list(50)
+    if not mappings:
+        return {"success": True, "message": "No active Zoho Books mappings found", "synced": {}, "errors": []}
+    
+    collection_map = {
+        "customers": db.customers,
+        "orders": db.orders,
+        "subscriptions": db.subscriptions,
+        "quote_requests": db.quote_requests,
+    }
+    
+    # Zoho Books module to API endpoint mapping
+    books_endpoint_map = {
+        "contacts": "contacts",
+        "invoices": "invoices",
+        "estimates": "estimates",
+        "bills": "bills",
+        "recurringinvoices": "recurringinvoices",
+    }
+    
+    async def enrich_customer_records(docs: List[Dict]) -> List[Dict]:
+        enriched = []
+        for doc in docs:
+            record = dict(doc)
+            user_id = record.get("user_id")
+            if user_id:
+                user = await db.users.find_one({"id": user_id}, {"_id": 0, "email": 1, "full_name": 1})
+                if user:
+                    record["email"] = user.get("email")
+                    record["full_name"] = user.get("full_name")
+            enriched.append(record)
+        return enriched
+    
+    synced_counts: Dict[str, int] = {}
+    errors: List[str] = []
+    
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        for mapping in mappings:
+            webapp_module = mapping.get("webapp_module")
+            books_module = mapping.get("crm_module")  # reusing crm_module field for books module
+            field_maps = mapping.get("field_mappings", [])
+            
+            if not webapp_module or not books_module or not field_maps:
+                continue
+            
+            coll = collection_map.get(webapp_module)
+            if not coll:
+                continue
+            
+            docs = await coll.find({"tenant_id": tid}, {"_id": 0}).to_list(500)
+            
+            if webapp_module == "customers":
+                docs = await enrich_customer_records(docs)
+            
+            books_records = []
+            for record in docs:
+                zoho_record: Dict[str, Any] = {}
+                for fm in field_maps:
+                    wf = fm.get("webapp_field")
+                    cf = fm.get("crm_field")
+                    if wf and cf:
+                        val = record.get(wf)
+                        if val is not None:
+                            zoho_record[cf] = val if isinstance(val, (int, float, bool)) else str(val)
+                if zoho_record:
+                    books_records.append(zoho_record)
+            
+            if not books_records:
+                continue
+            
+            endpoint = books_endpoint_map.get(books_module, books_module)
+            synced = 0
+            
+            # Zoho Books API sends one record at a time for most endpoints
+            for record in books_records:
+                try:
+                    url = f"{api_domain}/books/v3/{endpoint}"
+                    params = {"organization_id": organization_id} if organization_id else {}
+                    
+                    resp = await client.post(
+                        url,
+                        json=record,
+                        params=params,
+                        headers={
+                            "Authorization": f"Zoho-oauthtoken {access_token}",
+                            "Content-Type": "application/json",
+                        },
+                    )
+                    if resp.status_code in [200, 201]:
+                        resp_data = resp.json()
+                        if resp_data.get("code") == 0:  # Zoho Books uses code 0 for success
+                            synced += 1
+                        else:
+                            errors.append(f"{webapp_module}→{books_module}: {resp_data.get('message', 'Unknown error')[:80]}")
+                    else:
+                        try:
+                            err = resp.json()
+                            errors.append(f"{webapp_module}→{books_module}: {err.get('message', str(err))[:80]}")
+                        except Exception:
+                            errors.append(f"{webapp_module}→{books_module}: HTTP {resp.status_code}")
+                except Exception as e:
+                    errors.append(f"{webapp_module}→{books_module}: {str(e)[:80]}")
+            
+            synced_counts[f"{webapp_module}→{books_module}"] = synced
+    
+    total = sum(synced_counts.values())
+    return {
+        "success": len(errors) == 0,
+        "synced": synced_counts,
+        "total_synced": total,
+        "errors": errors[:10],  # Return more errors for debugging
+        "message": (
+            f"Sync completed. {total} records synced."
+            if not errors
+            else f"Sync completed with {len(errors)} error(s). {total} records synced."
+        ),
+    }
+
+
 @router.get("/oauth/{provider}/status")
 async def get_provider_status(
     provider: str,
