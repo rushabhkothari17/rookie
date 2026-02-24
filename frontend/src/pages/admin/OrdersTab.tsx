@@ -257,14 +257,14 @@ export function OrdersTab() {
           <Input placeholder="Order # (AA-...)" value={orderNumberFilter} onChange={e => setOrderNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-number-filter" />
           <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-sub-number-filter" />
           <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-processor-filter" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-orders-status-filter">
-            <option value="">All Statuses</option>
-            {orderStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select value={payMethodFilter} onChange={e => setPayMethodFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-orders-method-filter">
-            <option value="">All Methods</option>
-            {paymentMethods.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-orders-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem>{orderStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+          </Select>
+          <Select value={payMethodFilter} onValueChange={setPayMethodFilter}>
+            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-orders-method-filter"><SelectValue placeholder="All Methods" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          </Select>
           <Input placeholder="Product name" value={productFilter} onChange={e => setProductFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-orders-product-filter" />
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Pay date</span>
@@ -414,9 +414,10 @@ export function OrdersTab() {
                 {/* Status */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
-                  <select value={selectedOrder.status || ""} onChange={e => setSelectedOrder({ ...selectedOrder, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-order-status-select">
-                    {orderStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <Select value={selectedOrder.status || ""} onValueChange={v => setSelectedOrder({ ...selectedOrder, status: v })} data-testid="admin-order-status-select">
+                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>{orderStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
                 {/* Payment Method */}
                 <div className="space-y-1">
