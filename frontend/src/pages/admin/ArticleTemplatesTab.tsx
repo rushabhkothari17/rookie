@@ -141,7 +141,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={() => openEdit(tpl)} data-testid={`template-edit-${tpl.id}`}>Edit</Button>
-                    <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={async () => { try { const r = await api.get(`/article-templates/${tpl.id}/logs`); setEntityLogs(r.data.logs || []); setShowLogsDialog(true); } catch { toast.error("Failed to load logs"); } }} data-testid={`template-logs-${tpl.id}`}><Clock size={11} /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={() => { setLogsUrl(`/article-templates/${tpl.id}/logs`); setShowAuditLogs(true); }} data-testid={`template-logs-${tpl.id}`}><Clock size={11} /></Button>
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] text-red-500 hover:text-red-700" onClick={() => setConfirmDeleteTpl(tpl.id)} disabled={deleting === tpl.id} data-testid={`template-delete-${tpl.id}`}>
                       <Trash2 size={11} />
                     </Button>

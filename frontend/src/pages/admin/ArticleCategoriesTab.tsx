@@ -159,7 +159,7 @@ export function ArticleCategoriesTab() {
                     <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEdit(cat)} data-testid={`category-edit-${cat.id}`}>
                       <Pencil size={12} />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={async () => { try { const r = await api.get(`/article-categories/${cat.id}/logs`); setEntityLogs(r.data.logs || []); setShowLogsDialog(true); } catch { toast.error("Failed to load logs"); } }} data-testid={`category-logs-${cat.id}`}>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={() => { setLogsUrl(`/article-categories/${cat.id}/logs`); setShowAuditLogs(true); }} data-testid={`category-logs-${cat.id}`}>
                       <Clock size={11} />
                     </Button>
                     <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => setConfirmDeleteCat(cat)} disabled={deleting === cat.id} data-testid={`category-delete-${cat.id}`}>
