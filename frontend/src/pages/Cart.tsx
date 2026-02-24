@@ -1129,6 +1129,46 @@ export default function Cart() {
         </div>
       )}
 
+      {/* Quote Request Modal for RFQ items */}
+      {showCartQuoteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-200">
+              <h2 className="text-xl font-semibold text-slate-900">Request a Quote</h2>
+              {cartQuoteProduct && <p className="text-sm text-slate-500 mt-1">{cartQuoteProduct.name}</p>}
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">Your Name</label>
+                <Input value={cartQuoteForm.name} onChange={e => setCartQuoteForm(f => ({ ...f, name: e.target.value }))} placeholder="John Smith" data-testid="cart-quote-name" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">Email</label>
+                <Input type="email" value={cartQuoteForm.email} onChange={e => setCartQuoteForm(f => ({ ...f, email: e.target.value }))} placeholder="john@company.com" data-testid="cart-quote-email" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">Company</label>
+                <Input value={cartQuoteForm.company} onChange={e => setCartQuoteForm(f => ({ ...f, company: e.target.value }))} placeholder="Your Company" data-testid="cart-quote-company" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">Phone (optional)</label>
+                <Input value={cartQuoteForm.phone} onChange={e => setCartQuoteForm(f => ({ ...f, phone: e.target.value }))} placeholder="+1 555 000 0000" data-testid="cart-quote-phone" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">Message (optional)</label>
+                <textarea value={cartQuoteForm.message} onChange={e => setCartQuoteForm(f => ({ ...f, message: e.target.value }))} placeholder="Describe your requirements…" rows={4} className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm bg-white text-slate-900 resize-none" data-testid="cart-quote-message" />
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-200 flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setShowCartQuoteModal(false)}>Cancel</Button>
+              <Button className="flex-1 bg-slate-900 hover:bg-slate-800" onClick={handleSubmitCartQuote} disabled={submittingCartQuote || !cartQuoteForm.name || !cartQuoteForm.email} data-testid="cart-quote-submit">
+                {submittingCartQuote ? "Submitting…" : "Submit Request"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Terms & Conditions Modal */}
       {showTermsModal && termsContent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
