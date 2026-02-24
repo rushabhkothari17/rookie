@@ -85,6 +85,8 @@ export function OrdersTab() {
     customer_email: "", product_id: "", quantity: 1,
     subtotal: 0, discount: 0, fee: 0, status: "paid", internal_note: "",
   });
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmChargeId, setConfirmChargeId] = useState<string | null>(null);
 
   // Build lookup maps
   const userMap: Record<string, any> = {};
