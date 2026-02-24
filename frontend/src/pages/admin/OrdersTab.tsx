@@ -66,8 +66,8 @@ export function OrdersTab() {
   // Dialogs
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [orderLogs, setOrderLogs] = useState<any[]>([]);
-  const [showLogsDialog, setShowLogsDialog] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [noteData, setNoteData] = useState<{ notes: any[]; notes_json: any }>({ notes: [], notes_json: null });
   const [showManualDialog, setShowManualDialog] = useState(false);
