@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -31,6 +31,20 @@ from datetime import datetime, timezone
 router = APIRouter(prefix="/api", tags=["gocardless"])
 
 
+async def get_gocardless_creds_for_tenant(tenant_id: str) -> Tuple[str, str]:
+    """Get GoCardless credentials from oauth_connections for tenant."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": {"$in": ["gocardless", "gocardless_sandbox"]}, "is_validated": True},
+        {"_id": 0, "credentials": 1, "provider": 1}
+    )
+    if not conn:
+        return GOCARDLESS_ACCESS_TOKEN, GOCARDLESS_ENVIRONMENT
+    creds = conn.get("credentials", {})
+    token = creds.get("access_token") or GOCARDLESS_ACCESS_TOKEN
+    env = "sandbox" if conn.get("provider") == "gocardless_sandbox" else "live"
+    return token, env
+
+
 @router.post("/gocardless/complete-redirect")
 async def complete_gocardless_redirect(
     payload: CompleteGoCardlessRedirect,
@@ -38,8 +52,10 @@ async def complete_gocardless_redirect(
 ):
     """Complete GoCardless redirect flow and update order/subscription status."""
     try:
-        gc_token = await SettingsService.get("gocardless_access_token") or GOCARDLESS_ACCESS_TOKEN
-        gc_env = await SettingsService.get("gocardless_environment", GOCARDLESS_ENVIRONMENT)
+        # Get tenant_id from customer/user
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0, "tenant_id": 1})
+        tenant_id = customer.get("tenant_id", "") if customer else ""
+        gc_token, gc_env = await get_gocardless_creds_for_tenant(tenant_id)
 
         redirect_flow = complete_redirect_flow(
             payload.redirect_flow_id, session_token=payload.session_token or "",
