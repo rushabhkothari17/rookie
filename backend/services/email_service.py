@@ -214,7 +214,7 @@ _TEMPLATES: list[Dict[str, Any]] = [
   </div>
   <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
 </div></body></html>""",
-        "is_enabled": False,
+        "is_enabled": True,
         "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{reset_code}}"],
         "is_system": True,
     },
