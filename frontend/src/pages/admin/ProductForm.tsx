@@ -233,6 +233,8 @@ export function ProductForm({
 
           {/* Visibility */}
           <div className="space-y-2 border-t border-slate-100 pt-4">
+          {/* Visibility */}
+          <div className="space-y-3 border-t border-slate-100 pt-4">
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 cursor-pointer text-sm">
                 <input
@@ -245,52 +247,96 @@ export function ProductForm({
                 Active (visible on storefront)
               </label>
             </div>
+
+            {/* Visibility mode selector */}
             <div>
-              <label className="text-xs text-slate-600">
-                Restrict to specific customers — leave empty for all
-              </label>
-              <div className="mt-1.5 relative">
-                <Input
-                  placeholder="Search by email…"
-                  value={visSearch}
-                  onChange={e => setVisSearch(e.target.value)}
-                  className="h-8 text-sm"
-                  data-testid="pf-vis-search"
-                />
-                {filteredVisCustomers.length > 0 && (
-                  <div className="absolute z-10 w-full border border-slate-200 rounded bg-white shadow-md max-h-40 overflow-y-auto mt-1">
-                    {filteredVisCustomers.map(c => (
-                      <div
-                        key={c.id}
-                        onClick={() => addVisibleCustomer(c.id)}
-                        className="px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm"
-                        data-testid={`pf-vis-option-${c.id}`}
-                      >
-                        <span className="font-medium">{c.email || c.company_name || c.id.slice(0, 8)}</span>
-                        {c.company_name && c.email && <span className="text-slate-400"> — {c.company_name}</span>}
-                      </div>
-                    ))}
+              <label className="text-xs font-semibold text-slate-700 block mb-2">Customer Visibility</label>
+              <div className="space-y-2">
+                <label className="flex items-start gap-2.5 cursor-pointer rounded-lg border border-slate-200 p-3 hover:bg-slate-50 transition-colors" data-testid="pf-vis-all">
+                  <input type="radio" name="visMode" checked={visMode === "all"} onChange={() => setVisMode("all")} className="mt-0.5 w-4 h-4 accent-slate-800" />
+                  <div>
+                    <div className="text-sm font-medium text-slate-800">All customers</div>
+                    <div className="text-xs text-slate-500">Everyone can see this product on the store</div>
+                  </div>
+                </label>
+                <label className="flex items-start gap-2.5 cursor-pointer rounded-lg border border-slate-200 p-3 hover:bg-slate-50 transition-colors" data-testid="pf-vis-restricted">
+                  <input type="radio" name="visMode" checked={visMode === "restricted"} onChange={() => setVisMode("restricted")} className="mt-0.5 w-4 h-4 accent-slate-800" />
+                  <div>
+                    <div className="text-sm font-medium text-slate-800">Restrict from specific customers</div>
+                    <div className="text-xs text-slate-500">Selected customers cannot see this product; everyone else can</div>
+                  </div>
+                </label>
+                <label className="flex items-start gap-2.5 cursor-pointer rounded-lg border border-slate-200 p-3 hover:bg-slate-50 transition-colors" data-testid="pf-vis-specific">
+                  <input type="radio" name="visMode" checked={visMode === "show_to_specific"} onChange={() => setVisMode("show_to_specific")} className="mt-0.5 w-4 h-4 accent-slate-800" />
+                  <div>
+                    <div className="text-sm font-medium text-slate-800">Show only to specific customers</div>
+                    <div className="text-xs text-slate-500">Only selected customers can see this product</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Customer search for restricted/specific modes */}
+            {visMode !== "all" && (
+              <div>
+                <label className="text-xs text-slate-600">
+                  {visMode === "restricted" ? "Customers to block:" : "Customers who can see it:"}
+                </label>
+                <div className="mt-1.5 relative">
+                  <Input
+                    placeholder="Search by email or company…"
+                    value={visSearch}
+                    onChange={e => setVisSearch(e.target.value)}
+                    className="h-8 text-sm"
+                    data-testid="pf-vis-search"
+                  />
+                  {filteredVisCustomers.length > 0 && (
+                    <div className="absolute z-10 w-full border border-slate-200 rounded bg-white shadow-md max-h-40 overflow-y-auto mt-1">
+                      {filteredVisCustomers.map(c => (
+                        <div
+                          key={c.id}
+                          onClick={() => visMode === "restricted" ? addRestrictedCustomer(c.id) : addVisibleCustomer(c.id)}
+                          className="px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm"
+                          data-testid={`pf-vis-option-${c.id}`}
+                        >
+                          <span className="font-medium">{c.email || c.company_name || c.id.slice(0, 8)}</span>
+                          {c.company_name && c.email && <span className="text-slate-400"> — {c.company_name}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {/* Selected customers chips */}
+                {visMode === "restricted" && form.restricted_to.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1" data-testid="pf-restricted-list">
+                    {form.restricted_to.map(custId => {
+                      const c = customers.find(x => x.id === custId);
+                      return (
+                        <span key={custId} className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 text-xs px-2 py-1 rounded-full">
+                          {c?.email || c?.company_name || custId.slice(0, 8)}
+                          <button type="button" onClick={() => removeRestrictedCustomer(custId)} className="text-red-400 hover:text-red-600 font-bold" data-testid={`pf-restricted-remove-${custId}`}>×</button>
+                        </span>
+                      );
+                    })}
+                    <button type="button" onClick={() => s("restricted_to")([])} className="text-xs text-slate-400 hover:text-red-500 underline ml-1">Clear all</button>
+                  </div>
+                )}
+                {visMode === "show_to_specific" && form.visible_to_customers.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1" data-testid="pf-visibility-list">
+                    {form.visible_to_customers.map(custId => {
+                      const c = customers.find(x => x.id === custId);
+                      return (
+                        <span key={custId} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2 py-1 rounded-full">
+                          {c?.email || c?.company_name || custId.slice(0, 8)}
+                          <button type="button" onClick={() => removeVisibleCustomer(custId)} className="text-blue-400 hover:text-red-500 font-bold" data-testid={`pf-vis-remove-${custId}`}>×</button>
+                        </span>
+                      );
+                    })}
+                    <button type="button" onClick={() => s("visible_to_customers")([])} className="text-xs text-slate-400 hover:text-red-500 underline ml-1">Clear all</button>
                   </div>
                 )}
               </div>
-              {form.visible_to_customers.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1" data-testid="pf-visibility-list">
-                  {form.visible_to_customers.map(custId => {
-                    const c = customers.find(x => x.id === custId);
-                    return (
-                      <span key={custId} className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-xs px-2 py-1 rounded-full">
-                        {c?.email || c?.company_name || custId.slice(0, 8)}
-                        <button type="button" onClick={() => removeVisibleCustomer(custId)} className="text-slate-400 hover:text-red-500 font-bold" data-testid={`pf-vis-remove-${custId}`}>×</button>
-                      </span>
-                    );
-                  })}
-                  <button type="button" onClick={() => s("visible_to_customers")([])} className="text-xs text-slate-400 hover:text-red-500 underline ml-1">Clear all</button>
-                </div>
-              )}
-              {form.visible_to_customers.length > 0 && (
-                <p className="text-xs text-blue-600 font-medium mt-1">{form.visible_to_customers.length} customer(s) selected — product hidden from all others</p>
-              )}
-            </div>
+            )}
           </div>
         </div>
       )}
