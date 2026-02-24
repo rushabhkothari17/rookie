@@ -229,22 +229,51 @@ class EmailService:
             await db.email_templates.insert_many(docs)
 
     @staticmethod
-    async def send(trigger: str, recipient: str, variables: Dict[str, Any], db, admin_notify: bool = False) -> Dict[str, Any]:
+    async def send(
+        trigger: str,
+        recipient: str,
+        variables: Dict[str, Any],
+        db,
+        admin_notify: bool = False,
+        attachments: Optional[list[Dict[str, Any]]] = None,
+        tenant_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Send an email using the configured provider.
         Falls back to email_outbox (mocked) when provider is disabled.
         Logs all attempts to email_logs.
+        
+        Args:
+            trigger: Email template trigger name
+            recipient: Email address to send to
+            variables: Template variables to substitute
+            db: Database instance
+            admin_notify: Whether this is an admin notification
+            attachments: Optional list of attachments. Each dict should have:
+                - filename: str - Name of the file
+                - content: bytes - File content
+                - content_type: str - MIME type (e.g., "application/pdf")
+            tenant_id: Optional tenant ID for tenant-scoped settings
         """
-        await EmailService.ensure_seeded(db)
+        await EmailService.ensure_seeded(db, tenant_id or "automate-accounts")
 
-        template = await db.email_templates.find_one({"trigger": trigger}, {"_id": 0})
+        # Look for template in tenant scope first, then fall back to global
+        template = None
+        if tenant_id:
+            template = await db.email_templates.find_one(
+                {"trigger": trigger, "tenant_id": tenant_id},
+                {"_id": 0}
+            )
+        if not template:
+            template = await db.email_templates.find_one({"trigger": trigger}, {"_id": 0})
+        
         if not template:
             return {"status": "skipped", "reason": f"no template for trigger: {trigger}"}
         if not template.get("is_enabled", True):
             return {"status": "skipped", "reason": "template disabled"}
 
         # Resolve store_name
-        store_name = await SettingsService.get("store_name", "") or ""
+        store_name = await SettingsService.get("store_name", "", tenant_id=tenant_id) or ""
         all_vars = {"store_name": store_name, **variables}
 
         subject = _resolve_vars(template["subject"], all_vars)
@@ -261,22 +290,27 @@ class EmailService:
             "subject": subject,
             "status": "pending",
             "provider": "mocked",
+            "has_attachments": bool(attachments),
+            "attachment_count": len(attachments) if attachments else 0,
             "created_at": now_iso(),
         }
+        if tenant_id:
+            log_entry["tenant_id"] = tenant_id
 
-        provider_enabled = await SettingsService.get("email_provider_enabled", False)
-        resend_key = await SettingsService.get("resend_api_key", "")
+        provider_enabled = await SettingsService.get("email_provider_enabled", False, tenant_id=tenant_id)
+        resend_key = await SettingsService.get("resend_api_key", "", tenant_id=tenant_id)
 
         if provider_enabled and resend_key:
-            from_name = await SettingsService.get("email_from_name", "") or store_name
-            from_email = await SettingsService.get("resend_sender_email", "noreply@example.com")
-            reply_to = await SettingsService.get("email_reply_to", "") or None
-            cc_str = await SettingsService.get("email_cc", "") or ""
-            bcc_str = await SettingsService.get("email_bcc", "") or ""
+            from_name = await SettingsService.get("email_from_name", "", tenant_id=tenant_id) or store_name
+            from_email = await SettingsService.get("resend_sender_email", "noreply@example.com", tenant_id=tenant_id)
+            reply_to = await SettingsService.get("email_reply_to", "", tenant_id=tenant_id) or None
+            cc_str = await SettingsService.get("email_cc", "", tenant_id=tenant_id) or ""
+            bcc_str = await SettingsService.get("email_bcc", "", tenant_id=tenant_id) or ""
 
             log_entry["provider"] = "resend"
             try:
                 import resend as resend_sdk
+                import base64
                 resend_sdk.api_key = resend_key
                 params: Dict[str, Any] = {
                     "from": f"{from_name} <{from_email}>" if from_name else from_email,
@@ -290,6 +324,18 @@ class EmailService:
                     params["cc"] = [e.strip() for e in cc_str.split(",") if e.strip()]
                 if bcc_str:
                     params["bcc"] = [e.strip() for e in bcc_str.split(",") if e.strip()]
+                
+                # Add attachments if provided
+                if attachments:
+                    params["attachments"] = [
+                        {
+                            "filename": att["filename"],
+                            "content": base64.b64encode(att["content"]).decode("utf-8"),
+                            "content_type": att.get("content_type", "application/octet-stream")
+                        }
+                        for att in attachments
+                    ]
+                
                 await asyncio.to_thread(resend_sdk.Emails.send, params)
                 log_entry["status"] = "sent"
             except Exception as exc:
@@ -300,15 +346,20 @@ class EmailService:
         else:
             # Mocked — write to outbox
             log_entry["status"] = "mocked"
-            await db.email_outbox.insert_one({
+            outbox_entry = {
                 "id": make_id(),
                 "to": recipient,
                 "subject": subject,
                 "body": body,
                 "type": trigger,
                 "status": "MOCKED",
+                "has_attachments": bool(attachments),
+                "attachment_names": [att["filename"] for att in attachments] if attachments else [],
                 "created_at": now_iso(),
-            })
+            }
+            if tenant_id:
+                outbox_entry["tenant_id"] = tenant_id
+            await db.email_outbox.insert_one(outbox_entry)
 
         await db.email_logs.insert_one(log_entry)
         return {"status": log_entry["status"]}
