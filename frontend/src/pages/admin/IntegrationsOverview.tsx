@@ -85,6 +85,13 @@ interface ZohoModule {
   singular_label?: string;
 }
 
+interface ZohoField {
+  api_name: string;
+  field_label: string;
+  data_type?: string;
+  read_only?: boolean;
+}
+
 interface FieldMapping {
   webapp_field: string;
   crm_field: string;
