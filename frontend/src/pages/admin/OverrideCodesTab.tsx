@@ -245,7 +245,7 @@ export function OverrideCodesTab() {
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700">Status</label>
-                <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
+                <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
                   <option value="active">Active</option><option value="inactive">Inactive</option>
                 </select>
               </div>

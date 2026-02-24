@@ -233,7 +233,7 @@ export function QuoteRequestsTab() {
             <div className="space-y-1"><label className="text-xs text-slate-500">Message</label><Textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={3} data-testid="admin-quote-message" /></div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Status</label>
-              <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-quote-status">
+              <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-quote-status">
                 <option value="pending">Pending</option><option value="responded">Responded</option><option value="closed">Closed</option>
               </select>
             </div>

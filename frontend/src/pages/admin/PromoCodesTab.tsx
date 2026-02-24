@@ -115,19 +115,19 @@ export function PromoCodesTab() {
       <div className="space-y-1"><label className="text-xs text-slate-500">Code</label><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase() })} /></div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1"><label className="text-xs text-slate-500">Discount Type</label>
-          <select value={form.discount_type} onChange={e => setF({ ...form, discount_type: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
+          <select value={form.discount_type} onChange={e => setF({ ...form, discount_type: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
             <option value="percent">Percent (%)</option><option value="fixed">Fixed ($)</option>
           </select>
         </div>
         <div className="space-y-1"><label className="text-xs text-slate-500">Value</label><Input type="number" value={form.discount_value} onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })} /></div>
       </div>
       <div className="space-y-1"><label className="text-xs text-slate-500">Applies To</label>
-        <select value={form.applies_to} onChange={e => setF({ ...form, applies_to: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
+        <select value={form.applies_to} onChange={e => setF({ ...form, applies_to: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
           <option value="both">Both</option><option value="one-time">One-time only</option><option value="subscription">Subscription only</option>
         </select>
       </div>
       <div className="space-y-1"><label className="text-xs text-slate-500">Product Eligibility</label>
-        <select value={form.applies_to_products} onChange={e => setF({ ...form, applies_to_products: e.target.value, product_ids: e.target.value === "all" ? [] : form.product_ids })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
+        <select value={form.applies_to_products} onChange={e => setF({ ...form, applies_to_products: e.target.value, product_ids: e.target.value === "all" ? [] : form.product_ids })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
           <option value="all">All Products</option><option value="selected">Selected Products</option>
         </select>
       </div>
