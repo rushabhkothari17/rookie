@@ -100,8 +100,10 @@ def test_product_restricted(admin_headers, test_customer):
     pid = resp.json().get("product", {}).get("id")
     assert pid, "No product id returned"
     yield pid
-    # Cleanup
-    requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=admin_headers)
+    # Cleanup: deactivate since no DELETE endpoint for products
+    requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={
+        "name": "TEST_Restricted_Product_91", "is_active": False
+    }, headers=admin_headers)
 
 
 @pytest.fixture(scope="module")
@@ -121,8 +123,10 @@ def test_product_whitelist(admin_headers, test_customer):
     pid = resp.json().get("product", {}).get("id")
     assert pid, "No product id returned"
     yield pid
-    # Cleanup
-    requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=admin_headers)
+    # Cleanup: deactivate since no DELETE endpoint for products
+    requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={
+        "name": "TEST_Whitelist_Product_91", "is_active": False
+    }, headers=admin_headers)
 
 
 # ─── Tests ───────────────────────────────────────────────────────────────────
