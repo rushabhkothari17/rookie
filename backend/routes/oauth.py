@@ -428,12 +428,19 @@ async def validate_connection(
                         Tries each DC's accounts_url + api_domain pair until one succeeds.
                         INVALID_URL_PATTERN or invalid token = wrong DC, try next.
                         """
-                        # Build ordered list: selected DC first, then all others
+                        # If we stored _api_domain hint during auth code exchange, try it first
+                        hint_domain = creds.get("_api_domain")
                         ordered = [(dc_config["accounts_url"], dc_config["api_domain"])] + [
                             (v["accounts_url"], v["api_domain"])
                             for v in ZOHO_DATA_CENTERS.values()
                             if v["api_domain"] != dc_config["api_domain"]
                         ]
+                        # Promote the hinted domain to front
+                        if hint_domain:
+                            ordered = (
+                                [(v["accounts_url"], v["api_domain"]) for v in ZOHO_DATA_CENTERS.values() if v["api_domain"] == hint_domain]
+                                + [(au, ad) for au, ad in ordered if ad != hint_domain]
+                            )
                         last_resp = None
                         for accts_url, api_domain in ordered:
                             # Get a fresh access token from this DC's accounts server
