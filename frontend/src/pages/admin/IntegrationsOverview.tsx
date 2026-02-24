@@ -544,6 +544,10 @@ export function IntegrationsOverview() {
   const handleEditMapping = (m: CrmMapping) => {
     setMappingForm({ id: m.id, webapp_module: m.webapp_module, crm_module: m.crm_module, field_mappings: m.field_mappings || [] });
     setAddingMapping(true);
+    // Fetch fields for the selected CRM module
+    if (m.crm_module) {
+      fetchModuleFields(m.crm_module);
+    }
   };
 
   const handleBulkSync = async () => {
