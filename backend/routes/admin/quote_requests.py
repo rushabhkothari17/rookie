@@ -166,6 +166,10 @@ async def admin_update_quote_request(
         after_json=update,
     )
     await db.audit_logs.insert_one({"id": make_id(), "entity_type": "quote_request", "entity_id": quote_id, "action": "updated", "actor": admin.get("email", "admin"), "details": update, "created_at": now_iso()})
+    
+    # Auto-sync to Zoho CRM on update (fire and forget)
+    asyncio.create_task(auto_sync_to_zoho_crm(tenant_id_of(admin), "quote_requests", quote, "update"))
+    
     return {"quote": quote}
 
 
