@@ -126,7 +126,9 @@ async def pricing_calc(
     product = await db.products.find_one({"tenant_id": tid, "id": payload.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    result = calculate_price(product, payload.inputs)
+    # Product page shows base price without card processing fee
+    # (fee is only added at checkout when user selects card payment)
+    result = calculate_price(product, payload.inputs, fee_rate=0.0)
     return {"product_id": product["id"], **result}
 
 
