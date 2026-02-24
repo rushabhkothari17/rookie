@@ -1,156 +1,186 @@
 <analysis>**original_problem_statement:**
-The user wants to refactor the application's third-party integration management. The initial goal was to consolidate all integrations into a central Connect Services hub. This involved abandoning a previous OAuth 2.0 approach in favor of a simpler, direct API key/credential entry model. The user also requested the restoration of a previously existing feature for mapping web app entities to Zoho CRM and Zoho Books modules, to be integrated into the new UI.
+The user's primary goal is to refactor the application's third-party integration management into a centralized Connect Services hub. This involves moving all integration-related settings—credentials, API keys, UI text, and business logic like fee rates—out of the general Website Content settings and into the dedicated configuration for each service.
 
-**PRODUCT REQUIREMENTS:**
-1.  **Centralized Credential Management:** All third-party integrations (Zoho services, Stripe, GoCardless, Resend) must be managed from a single Connect Services page using a direct API key entry model.
-2.  **Modern User Interface:**
-    *   A two-part layout: a left sidebar for filtering integrations by category and a main content area displaying integrations as a grid of tiles.
-    *   A slide-in side panel for configuration, containing a setup guide and credential forms.
-3.  **Simplified Zoho Authentication:** The user should be able to paste a short-lived Authorization Code from the Zoho Developer Console, and the backend should automatically handle exchanging it for a refresh token and detecting the correct Data Center (DC). The manual  step and fields for  and  should be removed from the UI.
-4.  **Integration Lifecycle and Validation:**
-    *   Each integration must have a Validate button.
-    *   The UI must clearly show the status: , , , .
-    *   Implement  (pencil icon) and  actions.
-5.  **Zoho Module Mapping:**
-    *   Once a Zoho service (CRM or Books) is connected and validated, the slide-in panel should display a UI for mapping web app entities (e.g., Customers, Orders) to the corresponding Zoho modules (e.g., Leads, Invoices).
-    *   This mapping UI should replace the credential settings view for connected services.
-    *   The UI should include a button to trigger an initial bulk sync of existing data to Zoho CRM.
+During the session, the user also requested several enhancements and bug fixes:
+1.  The Zoho module mapping UI should use searchable dropdowns instead of text inputs.
+2.  Zoho sync errors must be displayed in the UI.
+3.  A failed sync due to a missing  field needed to be fixed.
+4.  A real-time, automatic sync feature was requested for all mapped Zoho modules upon data creation or updates.
+5.  All Zoho CRM features (bulk sync, auto-sync, error logging) should be replicated for Zoho Books.
+6.  A runtime error (404) in the customer portal needs to be fixed.
+7.  All logic for payment providers (Stripe, GoCardless) and email providers must be updated to source their configuration exclusively from Connect Services, and the old settings locations must be deleted.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has successfully implemented the highest priority tasks: rebuilding the Zoho CRM/Books module mapping feature and adding a bulk sync capability for Zoho CRM. The backend now has endpoints for fetching Zoho modules, managing mappings, and triggering a sync. The frontend has been updated to include a Mappings UI within the slide-in panel for connected Zoho services, allowing users to define how application data maps to Zoho modules.
+The agent successfully implemented the Zoho-related feature requests. The Zoho mapping UI now uses searchable comboboxes, sync errors are displayed, the data model mismatch for syncs has been resolved, and both Zoho CRM and Zoho Books now support bulk and real-time automatic syncing.
 
-Following implementation, the  was used, which identified two issues: a potential for Zoho API rate-limiting and a minor frontend robustness issue. The agent has fixed both by implementing access token caching on the backend and refactoring the frontend panel logic to be more resilient. The entire feature set is now implemented, tested by the agent, and ready for user verification.
+However, the agent started but did not complete the most critical refactoring task: centralizing all integration settings. They began moving settings for Stripe, GoCardless, and email providers from the Website Content configuration to the Connect Services module. This refactor is incomplete, leaving payment processing, email sending, and the customer portal in a broken state.
 
 **Last working item**:
-    - Last item agent was working: The agent finished the implementation and testing of the Zoho module mapping and bulk sync features. The final actions were to fix issues identified by the testing agent (implementing Zoho token caching and improving frontend error handling) and then verifying these fixes with . The agent was preparing to present the completed work to the user.
-    - Status: USER VERIFICATION PENDING
-    - Agent Testing Done: Y
-    - Which testing method agent to use? NA
+    - Last item agent was working: The agent was in the middle of a major refactoring effort to move all GoCardless and Stripe settings (including UI text and fee rates) from  () to  (). They had created a backend endpoint to save these new settings but had not finished updating the frontend UI or remapping all the backend services that consume these settings.
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use? both
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  **Edit Article button visibility for customers (P2)**
+  - Issue 1:  **Uncaught runtime errors in Customer Portal (P0)**
+  - Issue 2:  **No email provider active banner shows incorrectly and link needs update (P1)**
+  - Issue 3:  **Edit Article button visibility for customers (P2)**
   
   Issues Detail:
   - Issue 1: 
+     - **Description:** The user reported that the customer portal () fails to load and shows Uncaught runtime errors: Request failed with status code 404. The agent investigated but did not resolve the issue, which is a critical blocker for all customer-facing functionality.
+     - **Attempted fixes:** The agent confirmed the API endpoints exist but suspected an authentication issue where the user is not correctly logged in before the page attempts to fetch data.
+     - **Next debug checklist:**
+        1.  Examine  to see how authentication state is handled.
+        2.  Ensure that API calls are only made *after* confirming the user is authenticated.
+        3.  Use browser developer tools (via screenshot tool's  feature) to inspect network requests and console errors on the  page.
+     - **Why fix this issue and what will be achieved with the fix?** This will restore the primary interface for the application's end-users (customers).
+     - **Status:**  NOT STARTED
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** frontend
+     - **Blocked on other issue:** None
+  - Issue 2: 
+     - **Description:** The user reported three interconnected issues:
+        1.  The No email provider active banner appears even when an email service is connected.
+        2.  The banner's link should redirect to the Connect Services tab.
+        3.  The logic for activating an email template also fails to detect the connected provider.
+     - **Attempted fixes:** The agent started refactoring the backend status endpoint () and the  to read from , but the work is incomplete.
+     - **Next debug checklist:**
+        1.  Complete the refactor of  to exclusively use  to find the active provider and its credentials.
+        2.  Verify the endpoint at  correctly reports the email provider status.
+        3.  Confirm the link in the frontend banner component () points to .
+     - **Why fix this issue and what will be achieved with the fix?** This will ensure system-wide emails can be sent and that the admin UI provides accurate status and navigation.
+     - **Status:**  IN PROGRESS
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** both
+     - **Blocked on other issue:** Blocked on In progress Task 1 (completing the settings centralization).
+  - Issue 3: 
      - **Description:** A recurring, low-priority task to verify that non-admin users (e.g., customers) cannot see the Edit Article button on public articles.
-     - **Attempted fixes:** None in this session as it was out of scope.
-     - **Next debug checklist:** Log in as a standard customer (), navigate to a public article, and use the  to confirm the Edit Article button is not visible.
-     - **Why fix this issue and what will be achieved with the fix?** To confirm role-based access control is working correctly and close out a user-reported concern.
+     - **Attempted fixes:** None in this session.
+     - **Next debug checklist:** Log in as , navigate to a public article, and use the  to confirm the button is absent.
+     - **Why fix this issue and what will be achieved with the fix?** To confirm role-based access control is working as expected.
      - **Status:**  NOT STARTED
      - **Is recurring issue?** Y
      - **Should Test frontend/backend/both after fix?** frontend
      - **Blocked on other issue:** None
 
 **In progress Task List**:
-- None. The P0 tasks were completed.
+  - Task 1:  **Complete the centralization of all integration settings (P0)**
+
+ Task Detail:
+  - Task 1: 
+     - **Where to resume:** The user wants all settings (credentials, UI text, fee rates) for Stripe and GoCardless moved from Website Content to Connect Services.
+        1.  **Frontend:** In , add form fields to the slide-in configuration panel for Stripe and GoCardless to manage their respective UI text and fee rates. Hook this up to the new  endpoint.
+        2.  **Backend:** Finish refactoring all services that read these settings (, , ) to source them *exclusively* from the  field within the  document.
+        3.  **Deletion:** Once all references are remapped, completely remove the Payments section and its fields from  and .
+     - **What will be achieved with this?** This will finalize the core architectural goal of making Connect Services the single source of truth for all integrations, eliminating duplicate settings and bugs.
+     - **Status:**  IN PROGRESS
+     - **Should Test frontend/backend/both after fix?** both
+     - **Blocked on something:** None. This is the highest priority task.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks (P1):**
     *   **Implement Coming Soon integrations:** Build out the credential forms and validation logic for Gmail, Microsoft Outlook, HubSpot, Salesforce, and QuickBooks.
-    *   **Full Dependency Remapping:** After the integration system is fully functional, trace all parts of the application that rely on these services (e.g., payment processing) and ensure they correctly use the new centralized service.
 *   **Future Tasks (P2):**
     *   **Penetration Testing:** Conduct a comprehensive security audit of the application.
 
 **Completed work in this session**
-- **Restored Zoho Module Mapping Feature (P0):**
-  - **Backend (, ):** Implemented endpoints to fetch Zoho modules, and to get/save mappings to the database.
-  - **Frontend ():** Created a new UI view within the slide-in panel for creating and editing field mappings between the app and Zoho services. This UI replaces the settings view for connected Zoho integrations.
-- **Implemented Initial Bulk Sync for Zoho CRM (P0):**
-  - **Backend ():** Created a  endpoint to push existing application data to Zoho CRM based on user-defined mappings.
-  - **Frontend ():** Added a Sync Now button to the mapping UI to trigger the bulk sync.
-- **Improved Integration Stability & Robustness:**
-  - **Zoho Rate-Limit Prevention:** Implemented an in-memory caching mechanism for Zoho access tokens in  to prevent hitting API rate limits.
-  - **Frontend Resilience:** Refactored the mapping panel logic in  to ensure the UI loads local data correctly even if the external Zoho API call fails.
+- **Zoho Mapping UI Enhancement:** Replaced text inputs with a searchable  component for field mappings in .
+- **Zoho Sync Error Reporting:** Implemented a UI panel to display detailed error messages from Zoho sync operations, improving debuggability.
+- **Fixed Zoho CRM Bulk Sync:** Corrected the sync logic in  to enrich customer data with user data (, ), resolving  errors.
+- **Implemented Real-Time Auto-Sync:** Added  background jobs to , , etc., to automatically sync records to both Zoho CRM and Zoho Books on creation/update.
+- **Implemented Zoho Books Sync Features:** Added bulk sync, auto-sync, and error logging capabilities for Zoho Books, achieving feature parity with the Zoho CRM integration.
 
 **Earlier issues found/mentioned but not fixed**
-   - **Issue 1: Edit Article button visibility for customers.**
-     - **Debug checklist:** Log in as a standard customer (), navigate to a public article, and use the  to confirm the Edit Article button is not visible.
-     - **Why to solve this issue and what will be achieved with this?** To confirm that non-admin users cannot access administrative functions.
-     - **Should Test frontend/backend/both after fix:** frontend
-     - **Is recurring issue?** Y
+   - The Edit Article button visibility issue for customers remains unresolved.
 
 **Known issue recurrence from previous fork**
-  - The Edit Article button visibility issue was carried over and remains unfixed, as it was deprioritized in favor of the major integration refactor.
+  - **Issue recurrence in previous fork:** Edit Article button visibility for customers.
+  - **Recurrence count:** 2+
+  - **Status:** NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Credential-Based Integration:** All integrations use a direct API key/credential model.
-- **Dynamic Data Center (DC) Auto-Detection:** The backend intelligently probes all possible Zoho regional endpoints to find the correct one for the user's account.
-- **Stateful UI Panels:** The slide-in panel in  now shows different views (settings vs. mappings) based on the integration's status and type.
-- **Access Token Caching:** A simple in-memory cache was added to  to store and reuse Zoho API access tokens, improving performance and preventing rate-limiting.
+- **Real-time Fire-and-Forget Sync:** Using  to run sync operations in the background without blocking API responses.
+- **Centralized Integration Settings (Refactor in Progress):** The core architectural change to make the  collection the single source of truth for all integration configurations, including credentials, UI text, and business rules.
+- **Data Enrichment for Sync:** The sync process now joins data from multiple collections ( and ) before sending it to external APIs.
+- **Searchable Combobox:** A custom UI component built with Shadcn's  and  for improved UX in selecting from long lists of fields.
 
 **key DB schema**
   - **connections:**
-    - 
     -  (e.g., 'stripe', 'zoho_crm')
-    -  ('not_connected', 'failed', 'validated', 'active')
-    -  (encrypted keys, now includes , , )
+    -  (Encrypted API keys, tokens)
+    -  (NEW, IN-PROGRESS): Intended to store UI text, fee rates, and other non-credential configurations.
   - **zoho_mappings:**
-    - 
     -  (e.g., 'zoho_crm')
     - 
     - 
-    -  (e.g., )
+    - 
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
-- : Core logic for Zoho mapping, sync, and token caching.
-- : Routes for the Zoho mapping API endpoints.
-- : The single-page component handling the entire integration UI.
-- : Test report from the testing agent.
+- : Contains the legacy settings that need to be removed.
+- : Contains the new endpoints for managing centralized settings.
+- : The main UI where new settings forms need to be added.
+- : The broken customer portal page.
+- : Contains all the recently completed Zoho sync logic.
+- : A key file that needs to be updated to read payment settings from the new location.
 
-**Areas that need refactoring**
-- The new Zoho mapping and module endpoints were added to . For better separation of concerns, these admin-level data management routes should be moved to , leaving  to handle only authentication-related flows.
+**Areas that need refactoring**:
+- **Critical Refactor:** The highest priority is to complete the in-progress refactor of moving all payment and email settings out of  and  and into the  collection.
+- **Customer Portal:** The  component needs to be fixed to handle authentication state correctly and prevent runtime 404 errors.
 
 **key api endpoints**
-- : Fetches available modules from a specific Zoho service.
-- : Retrieves saved mappings for a Zoho service.
-- : Saves or updates mappings for a Zoho service.
-- : Triggers a one-time sync of existing data to Zoho CRM.
+- : **(New)** Endpoint to save UI/business settings for a provider.
+- : Triggers bulk sync for Zoho CRM or Books.
+- : Returns status of all integrations (refactored to use ).
+- : (Modified) Now triggers Zoho auto-sync in the background.
 
 **Critical Info for New Agent**
-1.  **P0 Tasks are Complete:** The primary goal of restoring the Zoho module mapping feature is finished and tested. The next agent should present this to the user for verification before moving on.
-2.  **Next Priority is P1:** Once the user approves the current work, the next tasks are to implement the Coming Soon integrations (Stripe, GoCardless, etc.) as per the backlog.
-3.  **Token Caching is Live:** Be aware of the new access token caching logic in . This is critical for the stability of the Zoho integration.
+1.  **Application is Partially Broken:** The top priority is to finish the incomplete refactor of centralizing integration settings. Payment processing (Stripe, GoCardless) and email sending are likely non-functional until this is complete. Do not start other tasks before this is done.
+2.  **Customer Portal is Down:** The second priority is to fix the critical 404 runtime errors on the customer portal page (). This is a major bug blocking all end-user access.
+3.  **Auto-Sync is Active:** Be aware that creating or updating customers, orders, subscriptions, or quotes will automatically trigger a background sync to Zoho. This is important for testing and debugging.
 
 **documents and test reports created in this job**
--  (updated)
-- 
+- None.
 
 **Last 10 User Messages and any pending HUMAN messages** 
-- User's last instruction was: do P0 only for now. The agent followed this instruction.
+- **User:** Move GoCardless and Stripe UI/fee settings from Website Content to Connected Services and delete the old location.
+- **User:** Fix email provider detection; it's not working for templates and the no provider banner is wrong.
+- **User:** Fix uncaught 404 runtime errors on the customer portal.
+- **User:** Why didn't my new customer sync? (Agent explained manual sync vs. auto-sync).
+- **User:** Implement automatic syncing for all mapped modules.
+- **User:** Fix Zoho sync failing due to missing . (Agent fixed data enrichment).
+- **User:** Where can I see sync errors? (Agent added an error display panel).
+- **User:** Can the mapping dropdown have a search box? (Agent implemented a searchable combobox).
+- **User:** I have a compilation error. (Agent fixed it).
+- **User:** Zoho mapping fields should be dropdowns, not text inputs.
 
 **Project Health Check:**
-- **Broken:** None. The previously broken Zoho module mapping UI has been restored and enhanced.
-- **Mocked:** The Coming Soon integrations (Gmail, HubSpot, Salesforce, etc.) remain UI placeholders with no backend logic.
+- **Broken:**
+    - **Payment Processing:** Assumed broken due to the incomplete settings refactor.
+    - **Email Sending:** Assumed broken for the same reason.
+    - **Customer Portal:** Unusable due to critical runtime 404 errors.
+- **Mocked:**
+    - Coming Soon integrations (Gmail, HubSpot, Salesforce, etc.) are still UI placeholders.
 
 **3rd Party Integrations**
-- **Configured:**
-    - Zoho CRM
-    - Zoho Books
-    - Zoho Mail
-- **To Be Configured (Placeholders Exist):**
-    - Stripe
-    - GoCardless
-    - Resend
-    - Gmail
-    - Microsoft Outlook
-    - HubSpot
-    - Salesforce
-    - QuickBooks
+- **Configured & Working:** Zoho CRM, Zoho Books, Zoho Mail (with advanced sync features).
+- **Partially Configured & Broken:** Stripe, GoCardless (undergoing a critical settings refactor).
+- **Placeholders:** Resend, Gmail, Microsoft Outlook, HubSpot, Salesforce, QuickBooks.
 
 **Testing status**
-  - Testing agent used after significant changes: YES
+  - Testing agent used after significant changes: NO (The latest major refactor was not tested).
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
-  - Known regressions: The known regression (missing Zoho mapping UI) has been resolved.
+  - Known regressions: Payment processing, email functionality, and the customer portal have regressed and are likely broken.
 
 **Credentials to test flow:**
 - **Platform Admin:**  / 
@@ -158,4 +188,5 @@ Following implementation, the  was used, which identified two issues: a potentia
 - **Tenant A Customer:**  / 
 
 **What agent forgot to execute**
-- The agent correctly followed the user's directive to focus only on P0 tasks and did not work on the lower-priority Edit Article button issue. Nothing was forgotten.</analysis>
+- The agent did not complete the critical refactoring task of centralizing all integration settings, leaving the application in a broken state before finishing the session.
+- The agent did not resolve the critical runtime errors on the customer portal.</analysis>
