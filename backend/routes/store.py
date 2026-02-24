@@ -23,6 +23,18 @@ from core.constants import SERVICE_FEE_RATE
 router = APIRouter(prefix="/api", tags=["store"])
 
 
+async def get_stripe_fee_rate(tenant_id: str) -> float:
+    """Get Stripe fee rate from oauth_connections, fallback to SERVICE_FEE_RATE."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": "stripe", "is_validated": True},
+        {"_id": 0, "settings": 1}
+    )
+    if conn:
+        settings = conn.get("settings", {})
+        return float(settings.get("fee_rate", SERVICE_FEE_RATE))
+    return SERVICE_FEE_RATE
+
+
 async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
     """Resolve tenant_id: X-View-As-Tenant (platform_admin) > user JWT > API key > partner_code lookup > default."""
     if x_view_as_tenant and user and user.get("role") == "platform_admin":
