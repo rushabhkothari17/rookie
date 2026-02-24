@@ -142,6 +142,7 @@ def create_payment(amount: float, currency: str, mandate_id: str, description: s
         )
         if response.status_code == 201:
             return response.json()["payments"]
+        print(f"GoCardless payment creation failed: status={response.status_code}, body={response.text[:500]}")
     except Exception as e:
         print(f"GoCardless payment creation failed: {e}")
     return None
