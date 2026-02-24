@@ -471,6 +471,16 @@ async def activate_provider(
         upsert=True
     )
     
+    # Sync credentials to legacy app_settings so email_service.py sends live emails
+    creds = conn.get("credentials", {})
+    stored_settings = conn.get("settings", {})
+    if provider == "resend":
+        await _sync_to_settings("resend_api_key", creds.get("api_key", ""))
+        await _sync_to_settings("resend_sender_email", stored_settings.get("from_email", ""))
+        await _sync_to_settings("email_from_name", stored_settings.get("from_name", ""))
+        await _sync_to_settings("email_reply_to", stored_settings.get("reply_to", ""))
+        await _sync_to_settings("email_provider_enabled", True)
+    
     return {"success": True, "message": f"{config['name']} is now your active email provider"}
 
 
@@ -491,6 +501,8 @@ async def deactivate_provider(
         {"key": "active_email_provider"},
         {"$set": {"value_json": None, "updated_at": now_iso()}}
     )
+    # Disable live email sending
+    await _sync_to_settings("email_provider_enabled", False)
     
     return {"success": True, "message": "Email provider deactivated. Emails will be stored but not sent."}
 
@@ -507,7 +519,7 @@ async def disconnect_provider(
     config = INTEGRATIONS[provider]
     tid = tenant_id_of(admin)
     
-    # If active email provider, deactivate first
+    # If active email provider, deactivate first and clear legacy settings
     if config["category"] == "email":
         active = await db.app_settings.find_one({"key": "active_email_provider"})
         if active and active.get("value_json") == provider:
@@ -515,6 +527,15 @@ async def disconnect_provider(
                 {"key": "active_email_provider"},
                 {"$set": {"value_json": None}}
             )
+            await _sync_to_settings("email_provider_enabled", False)
+    
+    # Disable the payment provider in legacy settings when disconnected
+    if provider == "stripe":
+        await _sync_to_settings("stripe_enabled", False)
+        await _sync_to_settings("stripe_secret_key", "")
+    elif provider in ("gocardless", "gocardless_sandbox"):
+        await _sync_to_settings("gocardless_enabled", False)
+        await _sync_to_settings("gocardless_access_token", "")
     
     await db.oauth_connections.delete_one({"tenant_id": tid, "provider": provider})
     
