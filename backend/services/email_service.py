@@ -344,53 +344,110 @@ class EmailService:
         if tenant_id:
             log_entry["tenant_id"] = tenant_id
 
-        # Global email provider settings
-        provider_enabled = await SettingsService.get("email_provider_enabled", False)
-        resend_key = await SettingsService.get("resend_api_key", "")
+        # Check for email provider in oauth_connections (Connected Services)
+        resend_conn = None
+        zoho_mail_conn = None
+        
+        if tenant_id:
+            resend_conn = await db.oauth_connections.find_one(
+                {"tenant_id": tenant_id, "provider": "resend", "is_validated": True},
+                {"_id": 0}
+            )
+            zoho_mail_conn = await db.oauth_connections.find_one(
+                {"tenant_id": tenant_id, "provider": "zoho_mail", "is_validated": True},
+                {"_id": 0}
+            )
+        
+        # Also check global/tenant-less connections
+        if not resend_conn:
+            resend_conn = await db.oauth_connections.find_one(
+                {"provider": "resend", "is_validated": True, "$or": [{"tenant_id": {"$exists": False}}, {"tenant_id": None}]},
+                {"_id": 0}
+            )
+        if not zoho_mail_conn:
+            zoho_mail_conn = await db.oauth_connections.find_one(
+                {"provider": "zoho_mail", "is_validated": True, "$or": [{"tenant_id": {"$exists": False}}, {"tenant_id": None}]},
+                {"_id": 0}
+            )
+        
+        # Try Resend first if connected
+        if resend_conn:
+            creds = resend_conn.get("credentials", {})
+            resend_key = creds.get("api_key", "")
+            from_email = creds.get("sender_email", "") or creds.get("from_email", "noreply@example.com")
+            
+            if resend_key:
+                from_name = await SettingsService.get("email_from_name", "") or store_name
+                reply_to = await SettingsService.get("email_reply_to", "") or None
+                cc_str = await SettingsService.get("email_cc", "") or ""
+                bcc_str = await SettingsService.get("email_bcc", "") or ""
 
-        if provider_enabled and resend_key:
-            from_name = await SettingsService.get("email_from_name", "") or store_name
-            from_email = await SettingsService.get("resend_sender_email", "noreply@example.com")
-            reply_to = await SettingsService.get("email_reply_to", "") or None
-            cc_str = await SettingsService.get("email_cc", "") or ""
-            bcc_str = await SettingsService.get("email_bcc", "") or ""
-
-            log_entry["provider"] = "resend"
-            try:
-                import resend as resend_sdk
-                import base64
-                resend_sdk.api_key = resend_key
-                params: Dict[str, Any] = {
-                    "from": f"{from_name} <{from_email}>" if from_name else from_email,
-                    "to": [recipient],
-                    "subject": subject,
-                    "html": body,
-                }
-                if reply_to:
-                    params["reply_to"] = reply_to
-                if cc_str:
-                    params["cc"] = [e.strip() for e in cc_str.split(",") if e.strip()]
-                if bcc_str:
-                    params["bcc"] = [e.strip() for e in bcc_str.split(",") if e.strip()]
-                
-                # Add attachments if provided
-                if attachments:
-                    params["attachments"] = [
-                        {
-                            "filename": att["filename"],
-                            "content": base64.b64encode(att["content"]).decode("utf-8"),
-                            "content_type": att.get("content_type", "application/octet-stream")
-                        }
-                        for att in attachments
-                    ]
-                
-                await asyncio.to_thread(resend_sdk.Emails.send, params)
-                log_entry["status"] = "sent"
-            except Exception as exc:
-                log_entry["status"] = "failed"
-                log_entry["error_message"] = str(exc)
-                await db.email_logs.insert_one(log_entry)
-                return {"status": "failed", "error": str(exc)}
+                log_entry["provider"] = "resend"
+                try:
+                    import resend as resend_sdk
+                    import base64
+                    resend_sdk.api_key = resend_key
+                    params: Dict[str, Any] = {
+                        "from": f"{from_name} <{from_email}>" if from_name else from_email,
+                        "to": [recipient],
+                        "subject": subject,
+                        "html": body,
+                    }
+                    if reply_to:
+                        params["reply_to"] = reply_to
+                    if cc_str:
+                        params["cc"] = [e.strip() for e in cc_str.split(",") if e.strip()]
+                    if bcc_str:
+                        params["bcc"] = [e.strip() for e in bcc_str.split(",") if e.strip()]
+                    
+                    # Add attachments if provided
+                    if attachments:
+                        params["attachments"] = [
+                            {
+                                "filename": att["filename"],
+                                "content": base64.b64encode(att["content"]).decode("utf-8"),
+                                "content_type": att.get("content_type", "application/octet-stream")
+                            }
+                            for att in attachments
+                        ]
+                    
+                    await asyncio.to_thread(resend_sdk.Emails.send, params)
+                    log_entry["status"] = "sent"
+                except Exception as exc:
+                    log_entry["status"] = "failed"
+                    log_entry["error_message"] = str(exc)
+                    await db.email_logs.insert_one(log_entry)
+                    return {"status": "failed", "error": str(exc)}
+        # Try Zoho Mail if connected and Resend not available
+        elif zoho_mail_conn:
+            from services.zoho_service import ZohoMailService
+            creds = zoho_mail_conn.get("credentials", {})
+            
+            zoho_service = ZohoMailService(
+                tenant_id=tenant_id or "",
+                account_id=creds.get("account_id", ""),
+                refresh_token=creds.get("refresh_token", ""),
+                client_id=creds.get("client_id", ""),
+                client_secret=creds.get("client_secret", ""),
+                datacenter=creds.get("datacenter", "US"),
+            )
+            
+            from_email = creds.get("from_email", "") or creds.get("sender_email", "")
+            if from_email:
+                log_entry["provider"] = "zoho_mail"
+                result = await zoho_service.send_email(
+                    from_email=from_email,
+                    to_email=recipient,
+                    subject=subject,
+                    html_body=body,
+                )
+                if result.get("success"):
+                    log_entry["status"] = "sent"
+                else:
+                    log_entry["status"] = "failed"
+                    log_entry["error_message"] = result.get("error", "Unknown error")
+                    await db.email_logs.insert_one(log_entry)
+                    return {"status": "failed", "error": result.get("error")}
         else:
             # Mocked — write to outbox
             log_entry["status"] = "mocked"
