@@ -81,8 +81,12 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - [x] ~~Complete Zoho OAuth flow (CRM + Books)~~ (completed Feb 2026)
 - [x] ~~Refund notification emails to customers~~ (completed Feb 2026)
 - [x] ~~Integration consolidation (Connect Services hub)~~ (completed Feb 2026)
+- [x] ~~Zoho CRM & Books Module Mapping UI~~ (completed Feb 2026)
+- [x] ~~Zoho CRM Bulk Sync~~ (completed Feb 2026)
 - [ ] Contextual guides/tooltips for Connect Services and Custom Domains
 - [ ] Connection health monitoring (background token validation)
+- [ ] Implement "Coming Soon" integrations: Gmail, HubSpot, Salesforce, QuickBooks (credential forms + validation)
+- [ ] "Edit Article" button visibility fix for non-admin customers (P2 verification)
 
 ## Credentials (Dev/Test)
 - Platform admin: `admin@automateaccounts.local` / `ChangeMe123!`
