@@ -3,12 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus } from "lucide-react";
+import { Plus, Shield, ShieldCheck, Eye } from "lucide-react";
+
+interface ModuleInfo {
+  key: string;
+  name: string;
+  description: string;
+}
+
+interface PresetRole {
+  key: string;
+  name: string;
+  description: string;
+  access_level: string;
+  modules: string[];
+}
 
 export function UsersTab() {
   const { user: authUser } = useAuth();
@@ -19,12 +35,22 @@ export function UsersTab() {
   const PER_PAGE = 20;
   const [searchFilter, setSearchFilter] = useState("");
 
+  // Permission system data
+  const [modules, setModules] = useState<ModuleInfo[]>([]);
+  const [presetRoles, setPresetRoles] = useState<PresetRole[]>([]);
+
   // Dialogs
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editUser, setEditUser] = useState<any>(null);
-  const [newUser, setNewUser] = useState({ email: "", full_name: "", password: "", role: "admin" });
-  const [editForm, setEditForm] = useState({ full_name: "", email: "", role: "admin" });
+  const [newUser, setNewUser] = useState({ 
+    email: "", full_name: "", password: "", 
+    preset_role: "", access_level: "read_only", modules: [] as string[]
+  });
+  const [editForm, setEditForm] = useState({ 
+    full_name: "", email: "", 
+    access_level: "read_only", modules: [] as string[]
+  });
   const [entityLogs, setEntityLogs] = useState<any[]>([]);
   const [showEntityLogs, setShowEntityLogs] = useState(false);
 
@@ -40,24 +66,56 @@ export function UsersTab() {
     } catch { toast.error("Failed to load admin users"); }
   }, [searchFilter]);
 
-  useEffect(() => { load(1); }, [searchFilter]);
+  const loadPermissionsData = async () => {
+    try {
+      const res = await api.get("/admin/permissions/modules");
+      setModules(res.data.modules || []);
+      setPresetRoles(res.data.preset_roles || []);
+    } catch { /* ignore */ }
+  };
+
+  useEffect(() => { load(1); loadPermissionsData(); }, [searchFilter]);
 
   const handleCreate = async () => {
     try {
-      await api.post("/admin/users", newUser);
+      const payload: any = {
+        email: newUser.email,
+        password: newUser.password,
+        full_name: newUser.full_name
+      };
+      if (newUser.preset_role) {
+        payload.preset_role = newUser.preset_role;
+      } else {
+        payload.access_level = newUser.access_level;
+        payload.modules = newUser.modules;
+      }
+      await api.post("/admin/users", payload);
       toast.success(`Admin user ${newUser.email} created`);
       setShowCreateDialog(false);
-      setNewUser({ email: "", full_name: "", password: "", role: "admin" });
+      setNewUser({ email: "", full_name: "", password: "", preset_role: "", access_level: "read_only", modules: [] });
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create user"); }
   };
 
-  const openEdit = (u: any) => { setEditUser(u); setEditForm({ full_name: u.full_name || "", email: u.email || "", role: u.role || "admin" }); setShowEditDialog(true); };
+  const openEdit = (u: any) => { 
+    setEditUser(u); 
+    setEditForm({ 
+      full_name: u.full_name || "", 
+      email: u.email || "", 
+      access_level: u.access_level || "full_access",
+      modules: u.permissions?.modules || []
+    }); 
+    setShowEditDialog(true); 
+  };
 
   const handleEdit = async () => {
     if (!editUser) return;
     try {
-      await api.put(`/admin/users/${editUser.id}`, editForm);
+      await api.put(`/admin/users/${editUser.id}`, {
+        full_name: editForm.full_name,
+        access_level: editForm.access_level,
+        modules: editForm.modules
+      });
       toast.success("User updated");
       setShowEditDialog(false);
       setEditUser(null);
@@ -69,10 +127,58 @@ export function UsersTab() {
     const newState = !currentActive;
     if (!confirm(`${newState ? "Activate" : "Deactivate"} this user?`)) return;
     try {
-      await api.patch(`/admin/users/${userId}/active?active=${newState}`);
+      if (newState) {
+        await api.post(`/admin/users/${userId}/reactivate`);
+      } else {
+        await api.delete(`/admin/users/${userId}`);
+      }
       toast.success(`User ${newState ? "activated" : "deactivated"}`);
       load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
+  };
+
+  const applyPresetRole = (roleKey: string) => {
+    if (roleKey === "custom") {
+      setNewUser(prev => ({ ...prev, preset_role: "" }));
+      return;
+    }
+    const preset = presetRoles.find(r => r.key === roleKey);
+    if (preset) {
+      setNewUser(prev => ({
+        ...prev,
+        preset_role: roleKey,
+        access_level: preset.access_level,
+        modules: preset.modules
+      }));
+    }
+  };
+
+  const toggleModule = (key: string, isCreate: boolean) => {
+    if (isCreate) {
+      setNewUser(prev => ({
+        ...prev,
+        preset_role: "",
+        modules: prev.modules.includes(key) 
+          ? prev.modules.filter(m => m !== key)
+          : [...prev.modules, key]
+      }));
+    } else {
+      setEditForm(prev => ({
+        ...prev,
+        modules: prev.modules.includes(key)
+          ? prev.modules.filter(m => m !== key)
+          : [...prev.modules, key]
+      }));
+    }
+  };
+
+  const getRoleDisplay = (u: any) => {
+    if (u.role === "platform_super_admin" || u.role === "partner_super_admin" || u.role === "super_admin") {
+      return { label: "Super Admin", color: "bg-purple-100 text-purple-700" };
+    }
+    const preset = presetRoles.find(r => r.key === u.role);
+    if (preset) return { label: preset.name, color: "bg-blue-100 text-blue-700" };
+    return { label: "Custom", color: "bg-slate-100 text-slate-700" };
   };
 
   return (
