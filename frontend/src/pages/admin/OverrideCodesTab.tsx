@@ -139,12 +139,10 @@ export function OverrideCodesTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Customer email…" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-oc-email-filter" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-oc-status-filter">
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="expired">Expired</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-oc-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem><SelectItem value="expired">Expired</SelectItem></SelectContent>
+          </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Created</span>
             <Input type="date" value={createdFrom} onChange={e => setCreatedFrom(e.target.value)} className="h-8 text-xs w-32" />
@@ -246,9 +244,10 @@ export function OverrideCodesTab() {
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700">Status</label>
-                <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
-                  <option value="active">Active</option><option value="inactive">Inactive</option>
-                </select>
+                <Select value={editForm.status} onValueChange={v => setEditForm({ ...editForm, status: v })}>
+                  <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+                </Select>
               </div>
               <div className="space-y-1"><label className="text-xs font-medium text-slate-700">Expires At</label><Input type="date" value={editForm.expires_at} onChange={e => setEditForm({ ...editForm, expires_at: e.target.value })} /></div>
               <div className="flex gap-2 justify-end"><Button variant="outline" type="button" onClick={() => setEditingCode(null)}>Cancel</Button><Button type="submit">Save Changes</Button></div>
