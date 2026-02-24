@@ -125,6 +125,23 @@ export function ProductForm({
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [visSearch, setVisSearch] = useState("");
 
+  // Derive visibility mode from form data
+  const visMode = form.visible_to_customers.length > 0
+    ? "show_to_specific"
+    : form.restricted_to.length > 0
+      ? "restricted"
+      : "all";
+
+  const setVisMode = (mode: "all" | "restricted" | "show_to_specific") => {
+    if (mode === "all") {
+      setForm({ ...form, visible_to_customers: [], restricted_to: [] });
+    } else if (mode === "restricted") {
+      setForm({ ...form, visible_to_customers: [], restricted_to: form.restricted_to });
+    } else {
+      setForm({ ...form, restricted_to: [], visible_to_customers: form.visible_to_customers });
+    }
+  };
+
   const s = (key: keyof ProductFormData) => (v: any) => setForm({ ...form, [key]: v });
 
   const addVisibleCustomer = (id: string) => {
@@ -138,10 +155,22 @@ export function ProductForm({
     setForm({ ...form, visible_to_customers: form.visible_to_customers.filter(c => c !== id) });
   };
 
+  const addRestrictedCustomer = (id: string) => {
+    if (!form.restricted_to.includes(id)) {
+      setForm({ ...form, restricted_to: [...form.restricted_to, id] });
+    }
+    setVisSearch("");
+  };
+
+  const removeRestrictedCustomer = (id: string) => {
+    setForm({ ...form, restricted_to: form.restricted_to.filter(c => c !== id) });
+  };
+
   const filteredVisCustomers = visSearch
     ? customers.filter(c => {
         const q = visSearch.toLowerCase();
-        return (c.email?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q)) && !form.visible_to_customers.includes(c.id);
+        const activeList = visMode === "show_to_specific" ? form.visible_to_customers : form.restricted_to;
+        return (c.email?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q)) && !activeList.includes(c.id);
       }).slice(0, 10)
     : [];
 
