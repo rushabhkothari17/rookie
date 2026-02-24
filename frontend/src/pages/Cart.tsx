@@ -918,6 +918,38 @@ export default function Cart() {
                       </div>
                     </div>
                   ))}
+                  {/* Scope ID Unlock — allows customers with a pre-approved scope to skip the request step */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3" data-testid="cart-scope-id-section">
+                    <p className="text-sm font-medium text-slate-700">Already have a Scope ID?</p>
+                    <p className="text-xs text-slate-500">If you received a finalized scope document, enter the Scope ID to unlock pricing and proceed directly to checkout.</p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={cartScopeId}
+                        onChange={(e) => { setCartScopeId(e.target.value); setCartScopeUnlock(null); setCartScopeError(""); }}
+                        placeholder="Enter Scope ID"
+                        className="flex-1 font-mono text-sm"
+                        data-testid="cart-scope-id-input"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleValidateCartScopeId}
+                        disabled={cartScopeValidating || !cartScopeId.trim()}
+                        data-testid="cart-scope-id-validate-btn"
+                      >
+                        {cartScopeValidating ? "Checking…" : "Validate"}
+                      </Button>
+                    </div>
+                    {cartScopeError && <p className="text-sm text-red-600" data-testid="cart-scope-id-error">{cartScopeError}</p>}
+                    {cartScopeUnlock && (
+                      <div className="rounded-lg bg-green-50 border border-green-200 p-3 space-y-2" data-testid="cart-scope-id-success">
+                        <p className="text-sm font-semibold text-green-800">Scope unlocked: {cartScopeUnlock.title}</p>
+                        <p className="text-sm font-bold text-green-800">${cartScopeUnlock.price}</p>
+                        <Button onClick={handleApplyScopeToCart} className="w-full" size="sm" data-testid="cart-scope-apply-btn">
+                          Apply Scope &amp; Proceed to Checkout
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     onClick={handleScopeRequest}
