@@ -22,13 +22,19 @@ async def get_stripe_secret_key(tenant_id: str) -> Optional[str]:
     return setting.get("value_json") if setting else None
 
 
-async def get_gocardless_token(tenant_id: str) -> Optional[str]:
-    """Get GoCardless access token for tenant."""
-    setting = await db.settings.find_one(
-        {"tenant_id": tenant_id, "key": "gocardless_access_token"},
-        {"_id": 0, "value_json": 1}
+async def get_gocardless_credentials(tenant_id: str) -> Optional[Dict[str, str]]:
+    """Get GoCardless credentials for tenant from oauth_connections."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": {"$in": ["gocardless", "gocardless_sandbox"]}, "is_validated": True},
+        {"_id": 0, "credentials": 1, "provider": 1}
     )
-    return setting.get("value_json") if setting else None
+    if not conn:
+        return None
+    creds = conn.get("credentials", {})
+    return {
+        "access_token": creds.get("access_token", ""),
+        "environment": "sandbox" if conn.get("provider") == "gocardless_sandbox" else "live",
+    }
 
 
 async def process_stripe_refund(
