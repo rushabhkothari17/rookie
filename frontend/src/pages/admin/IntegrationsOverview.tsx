@@ -457,16 +457,19 @@ export function IntegrationsOverview() {
     setPanelMode("mapping");
     setAddingMapping(false);
     setMappingForm({ webapp_module: "", crm_module: "", field_mappings: [] });
+    // Load mappings (local DB) and modules (Zoho API) independently
     try {
-      const [mappingsRes, modulesRes] = await Promise.all([
-        api.get(`/admin/integrations/crm-mappings?provider=${integration.id}`),
-        api.get(`/oauth/${integration.id}/modules`),
-      ]);
+      const mappingsRes = await api.get(`/admin/integrations/crm-mappings?provider=${integration.id}`);
       setCrmMappings(mappingsRes.data.mappings || []);
       setWebappModules(mappingsRes.data.webapp_modules || []);
+    } catch {
+      toast.error("Failed to load mappings");
+    }
+    try {
+      const modulesRes = await api.get(`/oauth/${integration.id}/modules`);
       setZohoModules(modulesRes.data.modules || []);
-    } catch (err: any) {
-      toast.error("Failed to load mapping data");
+    } catch {
+      toast.error("Failed to load Zoho modules — you can still manage existing mappings");
     }
   };
 
