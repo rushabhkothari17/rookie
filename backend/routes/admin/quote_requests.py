@@ -1,6 +1,7 @@
 """Admin: Quote requests routes."""
 from __future__ import annotations
 
+import asyncio
 import re as _re
 from typing import Any, Dict, Optional
 
@@ -13,6 +14,7 @@ from db.session import db
 from models import QuoteRequest
 from services.audit_service import AuditService, create_audit_log
 from services.webhook_service import dispatch_event
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["quote-requests"])
 
