@@ -169,30 +169,184 @@ async def list_tenant_customers(tenant_id: str, admin: Dict[str, Any] = Depends(
 
 
 # ---------------------------------------------------------------------------
-# Custom Domain Management
+# Custom Domain Management with Verification
 # ---------------------------------------------------------------------------
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+import socket
+import asyncio
+
+class CustomDomainAdd(BaseModel):
+    domain: str
 
 class CustomDomainRequest(BaseModel):
     domains: List[str]
 
 
+async def check_dns_cname(domain: str, expected_target: str) -> dict:
+    """
+    Check if a domain has a CNAME record pointing to the expected target.
+    
+    Returns:
+        {
+            "verified": bool,
+            "status": "verified" | "pending" | "failed" | "incorrect",
+            "message": str,
+            "cname_found": str | None
+        }
+    """
+    import dns.resolver
+    
+    try:
+        answers = await asyncio.to_thread(lambda: dns.resolver.resolve(domain, 'CNAME'))
+        for rdata in answers:
+            cname = str(rdata.target).rstrip('.')
+            if expected_target.lower() in cname.lower() or cname.lower().endswith(expected_target.lower()):
+                return {
+                    "verified": True,
+                    "status": "verified",
+                    "message": f"CNAME correctly points to {cname}",
+                    "cname_found": cname
+                }
+            else:
+                return {
+                    "verified": False,
+                    "status": "incorrect",
+                    "message": f"CNAME points to {cname}, expected {expected_target}",
+                    "cname_found": cname
+                }
+    except dns.resolver.NXDOMAIN:
+        return {
+            "verified": False,
+            "status": "failed",
+            "message": "Domain not found (NXDOMAIN). Check if the domain exists.",
+            "cname_found": None
+        }
+    except dns.resolver.NoAnswer:
+        # Try A record as fallback
+        try:
+            a_answers = await asyncio.to_thread(lambda: dns.resolver.resolve(domain, 'A'))
+            return {
+                "verified": False,
+                "status": "pending",
+                "message": "No CNAME record found. Please add a CNAME record pointing to the platform.",
+                "cname_found": None
+            }
+        except Exception:
+            pass
+        return {
+            "verified": False,
+            "status": "pending",
+            "message": "No DNS records found for this domain yet.",
+            "cname_found": None
+        }
+    except dns.resolver.Timeout:
+        return {
+            "verified": False,
+            "status": "pending",
+            "message": "DNS lookup timed out. DNS may still be propagating.",
+            "cname_found": None
+        }
+    except Exception as e:
+        return {
+            "verified": False,
+            "status": "pending",
+            "message": f"Could not verify DNS: {str(e)}",
+            "cname_found": None
+        }
+
+
 @router.get("/admin/custom-domains")
 async def get_custom_domains(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Get custom domains configured for the current tenant."""
+    """Get custom domains configured for the current tenant with verification status."""
     tid = tenant_id_of(admin)
-    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "custom_domains": 1, "custom_domain": 1})
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "custom_domains_data": 1, "custom_domains": 1, "custom_domain": 1})
     if not tenant:
         return {"domains": []}
     
-    # Support both array (new) and single (legacy) formats
-    domains = tenant.get("custom_domains", [])
-    if not domains and tenant.get("custom_domain"):
-        domains = [tenant["custom_domain"]]
+    # Return the full domain data with verification status
+    domains_data = tenant.get("custom_domains_data", [])
     
-    return {"domains": domains}
+    # Migrate legacy format if needed
+    if not domains_data:
+        legacy_domains = tenant.get("custom_domains", [])
+        if not legacy_domains and tenant.get("custom_domain"):
+            legacy_domains = [tenant["custom_domain"]]
+        # Convert legacy to new format with pending status
+        domains_data = [
+            {"domain": d, "status": "pending", "verified_at": None, "added_at": now_iso()}
+            for d in legacy_domains
+        ]
+    
+    return {"domains": domains_data}
+
+
+@router.post("/admin/custom-domains")
+async def add_custom_domain(
+    payload: CustomDomainAdd,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """
+    Add a new custom domain with pending verification status.
+    
+    Domain will need to be verified before it becomes active.
+    """
+    import re
+    
+    tid = tenant_id_of(admin)
+    domain = payload.domain.lower().strip()
+    
+    # Validate domain format
+    domain_pattern = re.compile(r'^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$')
+    if not domain_pattern.match(domain):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid domain format: {domain}. Use format like 'billing.company.com'"
+        )
+    
+    # Check if domain is already used by another tenant
+    existing = await db.tenants.find_one({
+        "custom_domains_data.domain": domain,
+        "id": {"$ne": tid}
+    })
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Domain '{domain}' is already configured for another organization"
+        )
+    
+    # Check if already added for this tenant
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "custom_domains_data": 1})
+    existing_domains = [d["domain"] for d in (tenant.get("custom_domains_data") or [])]
+    if domain in existing_domains:
+        raise HTTPException(status_code=400, detail=f"Domain '{domain}' is already added")
+    
+    # Add domain with pending status
+    domain_data = {
+        "domain": domain,
+        "status": "pending",
+        "verified_at": None,
+        "added_at": now_iso(),
+        "last_check_at": None,
+        "last_check_message": None
+    }
+    
+    await db.tenants.update_one(
+        {"id": tid},
+        {"$push": {"custom_domains_data": domain_data}}
+    )
+    
+    return {
+        "message": f"Domain '{domain}' added. Please verify DNS configuration.",
+        "domain": domain_data,
+        "setup_instructions": {
+            "cname_target": "preview.emergentagent.com",
+            "step1": f"Add a CNAME record: {domain} → preview.emergentagent.com",
+            "step2": "Wait for DNS propagation (usually 5-30 minutes)",
+            "step3": "Click 'Verify Now' to check the configuration"
+        }
+    }
 
 
 @router.put("/admin/custom-domains")
@@ -201,7 +355,7 @@ async def update_custom_domains(
     admin: Dict[str, Any] = Depends(get_tenant_admin)
 ):
     """
-    Update custom domains for the current tenant.
+    Update custom domains for the current tenant (legacy endpoint).
     
     Domains should be fully qualified (e.g., billing.company.com).
     Partners must configure DNS (CNAME) to point to the platform.
@@ -252,6 +406,46 @@ async def update_custom_domains(
             "step3": "SSL certificates will be provisioned automatically",
             "step4": "Users can now access your portal at the custom domain without partner code"
         }
+    }
+
+
+@router.post("/admin/custom-domains/{domain}/verify")
+async def verify_custom_domain(domain: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Verify DNS configuration for a custom domain."""
+    tid = tenant_id_of(admin)
+    domain = domain.lower().strip()
+    
+    # Check domain exists for this tenant
+    tenant = await db.tenants.find_one(
+        {"id": tid, "custom_domains_data.domain": domain},
+        {"_id": 0}
+    )
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Domain not found")
+    
+    # Perform DNS verification
+    expected_target = "preview.emergentagent.com"  # Or get from settings
+    result = await check_dns_cname(domain, expected_target)
+    
+    # Update domain status
+    update_data = {
+        "custom_domains_data.$.status": result["status"],
+        "custom_domains_data.$.last_check_at": now_iso(),
+        "custom_domains_data.$.last_check_message": result["message"]
+    }
+    
+    if result["verified"]:
+        update_data["custom_domains_data.$.verified_at"] = now_iso()
+    
+    await db.tenants.update_one(
+        {"id": tid, "custom_domains_data.domain": domain},
+        {"$set": update_data}
+    )
+    
+    return {
+        "domain": domain,
+        "verification": result,
+        "expected_cname": expected_target
     }
 
 
