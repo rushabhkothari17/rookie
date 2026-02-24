@@ -876,6 +876,50 @@ export default function EmailSection() {
           settingActive={settingActiveProvider}
           onRefresh={load}
         />
+        
+        {/* Gmail - Coming Soon */}
+        <div
+          className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex items-center justify-between mt-2 opacity-60"
+          data-testid="gmail-provider-tile"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-red-100">
+              <Mail size={15} className="text-red-600" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-slate-800">Gmail</p>
+                <span className="text-[10px] font-semibold text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">COMING SOON</span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Send emails via Gmail SMTP or API</p>
+            </div>
+          </div>
+          <span className="text-xs px-2 py-0.5 rounded-full text-slate-500 bg-slate-100">
+            Not Available
+          </span>
+        </div>
+        
+        {/* Outlook - Coming Soon */}
+        <div
+          className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex items-center justify-between mt-2 opacity-60"
+          data-testid="outlook-provider-tile"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100">
+              <Mail size={15} className="text-blue-600" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-slate-800">Outlook / Microsoft 365</p>
+                <span className="text-[10px] font-semibold text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">COMING SOON</span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Send emails via Microsoft Graph API</p>
+            </div>
+          </div>
+          <span className="text-xs px-2 py-0.5 rounded-full text-slate-500 bg-slate-100">
+            Not Available
+          </span>
+        </div>
       </div>
 
       {/* Templates */}
