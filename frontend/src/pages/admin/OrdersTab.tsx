@@ -356,7 +356,26 @@ export function OrdersTab() {
                         <Button size="sm" variant="secondary" className="h-6 px-2 text-[11px]" onClick={() => handleAutoCharge(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
                       )}
                       {(order.status === "paid" || order.status === "partially_refunded") && (
-                        <Button size="sm" variant="outline" className="h-6 px-2 text-[11px] text-amber-600 border-amber-200 hover:bg-amber-50" onClick={() => { setSelectedOrder(order); setShowRefundDialog(true); }} data-testid={`admin-order-refund-${order.id}`}>Refund</Button>
+                        <Button size="sm" variant="outline" className="h-6 px-2 text-[11px] text-amber-600 border-amber-200 hover:bg-amber-50" onClick={async () => {
+                          setSelectedOrder(order);
+                          setLoadingProviders(true);
+                          try {
+                            const res = await api.get(`/admin/orders/${order.id}/refund-providers`);
+                            setRefundProviders(res.data.providers || []);
+                            // Default to original provider if available, else manual
+                            const originalProvider = res.data.providers?.find((p: any) => p.is_original && p.available);
+                            setRefundForm(prev => ({
+                              ...prev,
+                              provider: originalProvider?.id || "manual",
+                              processViaProvider: originalProvider?.id !== "manual"
+                            }));
+                          } catch {
+                            setRefundProviders([{ id: "manual", name: "Manual (Record Only)", available: true, is_original: true }]);
+                          } finally {
+                            setLoadingProviders(false);
+                          }
+                          setShowRefundDialog(true);
+                        }} data-testid={`admin-order-refund-${order.id}`}>Refund</Button>
                       )}
                       <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleDelete(order.id)} data-testid={`admin-order-delete-${order.id}`}>Delete</Button>
                     </div>
