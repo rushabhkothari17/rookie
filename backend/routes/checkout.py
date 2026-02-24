@@ -504,7 +504,7 @@ async def create_checkout_session(
                     discount_amount = min(round_cents(promo["discount_value"]), subtotal)
                 promo_code_data = promo
 
-    _fee_rate = float(await SettingsService.get("stripe_fee_rate", float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))))
+    _stripe_api_key, _, _fee_rate = await get_stripe_creds(tenant_id)
     discounted_subtotal = subtotal - discount_amount
     fee = round_cents(discounted_subtotal * _fee_rate)
     total = round_cents(discounted_subtotal + fee)
