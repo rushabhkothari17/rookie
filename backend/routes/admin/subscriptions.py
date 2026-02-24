@@ -250,6 +250,7 @@ async def create_manual_subscription(
 
     # Auto-sync to Zoho CRM (fire and forget)
     asyncio.create_task(auto_sync_to_zoho_crm(tenant_id_of(admin), "subscriptions", sub_doc, "create"))
+    asyncio.create_task(auto_sync_to_zoho_books(tenant_id_of(admin), "subscriptions", sub_doc, "create"))
 
     return {
         "message": "Manual subscription created",
