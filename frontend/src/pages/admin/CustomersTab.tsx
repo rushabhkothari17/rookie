@@ -281,18 +281,14 @@ export function CustomersTab() {
               ))}
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Country</label>
-                <select value={selectedCustomer.country || ""} onChange={e => setSelectedCustomer({ ...selectedCustomer, country: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-customer-country-select">
-                  <option value="">Select country…</option>
-                  <option value="AU">Australia</option>
-                  <option value="CA">Canada</option>
-                  <option value="GB">United Kingdom</option>
-                  <option value="US">United States</option>
-                  <option value="NZ">New Zealand</option>
-                  <option value="IN">India</option>
-                  <option value="SG">Singapore</option>
-                  <option value="ZA">South Africa</option>
-                  <option value="OTHER">Other</option>
-                </select>
+                <SearchableSelect
+                  value={selectedCustomer.country || undefined}
+                  onValueChange={v => setSelectedCustomer({ ...selectedCustomer, country: v })}
+                  options={[{value:"AU",label:"Australia"},{value:"CA",label:"Canada"},{value:"GB",label:"United Kingdom"},{value:"US",label:"United States"},{value:"NZ",label:"New Zealand"},{value:"IN",label:"India"},{value:"SG",label:"Singapore"},{value:"ZA",label:"South Africa"},{value:"OTHER",label:"Other"}]}
+                  placeholder="Select country…"
+                  searchPlaceholder="Search country..."
+                  data-testid="admin-customer-country-select"
+                />
               </div>
               <hr />
               <div>
@@ -353,9 +349,13 @@ export function CustomersTab() {
             {[["Full Name", "full_name"], ["Email", "email"], ["Password", "password"], ["Company", "company_name"], ["Job Title", "job_title"], ["Phone", "phone"], ["Address Line 1", "line1"], ["City", "city"], ["Region", "region"], ["Postal", "postal"]].map(([label, key]) => (
               <div key={key} className="space-y-1"><label className="text-xs text-slate-500">{label}</label><Input value={(newCustomer as any)[key]} onChange={(e) => setNewCustomer({ ...newCustomer, [key]: e.target.value })} /></div>
             ))}
-            <select value={newCustomer.country} onChange={(e) => setNewCustomer({ ...newCustomer, country: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
-              <option value="GB">United Kingdom</option><option value="AU">Australia</option><option value="NZ">New Zealand</option><option value="CA">Canada</option><option value="USA">USA</option>
-            </select>
+            <SearchableSelect
+              value={newCustomer.country || undefined}
+              onValueChange={v => setNewCustomer({ ...newCustomer, country: v })}
+              options={[{value:"GB",label:"United Kingdom"},{value:"AU",label:"Australia"},{value:"NZ",label:"New Zealand"},{value:"CA",label:"Canada"},{value:"US",label:"United States"}]}
+              placeholder="Select country…"
+              searchPlaceholder="Search country..."
+            />
             <Button onClick={handleCreateCustomer} className="w-full" data-testid="admin-create-customer-save-btn">Create</Button>
           </div>
         </DialogContent>
