@@ -170,7 +170,7 @@ export function CustomersTab() {
             <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-customers-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
           </Select>
-          <Select value={paymentModeFilter} onValueChange={setPaymentModeFilter}>
+          <Select value={paymentModeFilter || "all_modes"} onValueChange={v => setPaymentModeFilter(v === "all_modes" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="admin-customers-payment-filter"><SelectValue placeholder="All Methods" /></SelectTrigger>
             <SelectContent>{paymentFilterOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
           </Select>
