@@ -32,6 +32,11 @@ export default function Cart() {
   const [currentZohoProduct, setCurrentZohoProduct] = useState("");
   const [zohoAccountAccess, setZohoAccountAccess] = useState("");
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
+  // Scope ID unlock for scope_request items in cart
+  const [cartScopeId, setCartScopeId] = useState("");
+  const [cartScopeValidating, setCartScopeValidating] = useState(false);
+  const [cartScopeUnlock, setCartScopeUnlock] = useState<any>(null);
+  const [cartScopeError, setCartScopeError] = useState("");
   const [zohoUrls, setZohoUrls] = useState({
     reseller_signup_us: "",
     reseller_signup_ca: "",
