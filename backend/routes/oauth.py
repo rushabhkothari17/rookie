@@ -749,6 +749,7 @@ async def update_settings(
             if "reply_to" in payload.settings:
                 await _sync_to_settings("email_reply_to", payload.settings["reply_to"])
     
+    await create_audit_log(entity_type="integration", entity_id=provider, action="settings_updated", actor=admin.get("email", "admin"), details={"provider": provider, "settings_keys": list(payload.settings.keys())}, tenant_id=tid)
     return {"success": True, "message": "Settings updated"}
 
 
