@@ -327,20 +327,7 @@ export function ProductsTab() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showEntityLogs} onOpenChange={setShowEntityLogs}>
-        <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Product Audit Logs</DialogTitle></DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto space-y-2">
-            {entityLogs.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No logs found</p>}
-            {entityLogs.map((log: any, i: number) => (
-              <div key={log.id || i} className="border border-slate-200 rounded p-3">
-                <div className="flex justify-between items-start mb-1"><span className="text-sm font-semibold text-slate-900">{log.action}</span><span className="text-xs text-slate-500">{new Date(log.created_at).toLocaleString()}</span></div>
-                <div className="text-xs text-slate-600">Actor: {log.actor}</div>
-                {log.details && Object.keys(log.details).length > 0 && <pre className="text-xs text-slate-500 mt-1 bg-slate-50 p-2 rounded overflow-x-auto">{JSON.stringify(log.details, null, 2)}</pre>}
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Product Audit Logs" logsUrl={logsUrl} />
       <ImportModal
         entity="catalog"
         entityLabel="Catalog"
