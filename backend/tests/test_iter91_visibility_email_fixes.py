@@ -38,7 +38,9 @@ def admin_headers(admin_token):
 
 @pytest.fixture(scope="module")
 def test_customer(admin_headers):
-    """Create a customer for visibility tests via admin API."""
+    """Create a customer for visibility tests via admin API.
+    Response format: {"message": "Customer created", "customer_id": "...", "user_id": "..."}
+    """
     import secrets
     suffix = secrets.token_hex(4)
     email = f"test_vis_{suffix}@example.com"
@@ -57,8 +59,10 @@ def test_customer(admin_headers):
     }, headers=admin_headers)
     assert resp.status_code in [200, 201], f"Failed to create test customer: {resp.status_code} {resp.text}"
     data = resp.json()
-    customer_id = data.get("customer", {}).get("id") or data.get("id")
-    user_id = data.get("user", {}).get("id") or data.get("user_id")
+    # Response is flat: {"message": ..., "customer_id": ..., "user_id": ...}
+    customer_id = data.get("customer_id") or data.get("customer", {}).get("id")
+    user_id = data.get("user_id") or data.get("user", {}).get("id")
+    assert customer_id, f"Could not extract customer_id from response: {data}"
     return {"email": email, "customer_id": customer_id, "user_id": user_id}
 
 
