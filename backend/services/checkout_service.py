@@ -169,9 +169,21 @@ async def validate_and_consume_partner_tag(
     return override_code_id
 
 
-async def build_order_items(items: list) -> List[Dict[str, Any]]:
+async def get_stripe_fee_rate(tenant_id: str) -> float:
+    """Get Stripe fee rate from oauth_connections, fallback to SERVICE_FEE_RATE."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": "stripe", "is_validated": True},
+        {"_id": 0, "settings": 1}
+    )
+    if conn:
+        settings = conn.get("settings", {})
+        return float(settings.get("fee_rate", SERVICE_FEE_RATE))
+    return SERVICE_FEE_RATE
+
+
+async def build_order_items(items: list, tenant_id: str = "") -> List[Dict[str, Any]]:
     """Build enriched order items with pricing from cart items."""
-    fee_rate = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
+    fee_rate = await get_stripe_fee_rate(tenant_id) if tenant_id else SERVICE_FEE_RATE
     order_items = []
     for item in items:
         product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
