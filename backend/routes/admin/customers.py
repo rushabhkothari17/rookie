@@ -355,6 +355,11 @@ async def update_customer(
         details={"changes": changes},
     )
 
+    # Auto-sync to Zoho CRM on update (fire and forget)
+    updated_customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    if updated_customer:
+        asyncio.create_task(auto_sync_to_zoho_crm(tf.get("tenant_id", ""), "customers", updated_customer, "update"))
+
     return {"message": "Customer updated successfully"}
 
 
