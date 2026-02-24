@@ -264,9 +264,32 @@ async def save_credentials(
         if v:  # non-empty value replaces existing
             merged_creds[k] = v
     
-    # Validate required fields against the merged result
+    # Auto-exchange Zoho authorization code → refresh token (server-side, one-time)
+    if merged_creds.get("auth_code") and config.get("is_zoho"):
+        dc = payload.data_center or "us"
+        dc_config = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+        async with httpx.AsyncClient(timeout=15) as client:
+            token_resp = await client.post(
+                f"{dc_config['accounts_url']}/oauth/v2/token",
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": merged_creds.get("client_id", ""),
+                    "client_secret": merged_creds.get("client_secret", ""),
+                    "code": merged_creds["auth_code"],
+                    "redirect_uri": "https://www.zoho.com",
+                }
+            )
+        token_data = token_resp.json()
+        if token_resp.status_code != 200 or "refresh_token" not in token_data:
+            err = token_data.get("error", token_data.get("message", "Invalid or expired authorization code"))
+            raise HTTPException(status_code=400, detail=f"Failed to exchange authorization code: {err}")
+        merged_creds["refresh_token"] = token_data["refresh_token"]
+        # Remove the consumed one-time auth_code — never store it
+        merged_creds.pop("auth_code", None)
+    
+    # Validate required fields against the merged result (skip auth_code — it's optional on edit)
     for field in config.get("fields", []):
-        if field.get("required") and not merged_creds.get(field["key"]):
+        if field.get("required") and field["key"] != "auth_code" and not merged_creds.get(field["key"]):
             raise HTTPException(status_code=400, detail=f"{field['label']} is required")
     
     await db.oauth_connections.update_one(
