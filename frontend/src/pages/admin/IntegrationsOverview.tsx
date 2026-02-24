@@ -27,6 +27,8 @@ interface Integration {
   is_api_key: boolean;
   is_zoho: boolean;
   data_center?: string;
+  api_key_label?: string;
+  api_key_hint?: string;
 }
 
 interface DataCenter {
