@@ -389,6 +389,29 @@ export function CustomersTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Deactivate/Activate Customer Confirmation */}
+      <AlertDialog open={!!confirmToggleCustomer} onOpenChange={(open) => !open && setConfirmToggleCustomer(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmToggleCustomer?.active ? "Deactivate Customer" : "Activate Customer"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {confirmToggleCustomer?.active ? "deactivate" : "activate"} this customer?
+              {confirmToggleCustomer?.active && " They will no longer be able to log in."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={confirmToggleCustomer?.active ? "bg-red-600 hover:bg-red-700" : ""}
+              onClick={() => { handleToggleActive(confirmToggleCustomer!.id, confirmToggleCustomer!.active); setConfirmToggleCustomer(null); }}
+              data-testid="confirm-customer-toggle"
+            >
+              {confirmToggleCustomer?.active ? "Deactivate" : "Activate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
