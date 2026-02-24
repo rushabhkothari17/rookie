@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/sonner";
 import api from "@/lib/api";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
+import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Upload} from "lucide-react";
 import { useWebsite } from "@/contexts/WebsiteContext";
 
@@ -36,9 +37,9 @@ export function BankTransactionsTab() {
   const [showForm, setShowForm] = useState(false);
   const [editTxn, setEditTxn] = useState<any>(null);
   const [form, setForm] = useState<any>(EMPTY_FORM);
-  const [showLogs, setShowLogs] = useState(false);
-  const [logsData, setLogsData] = useState<any[]>([]);
-  const [logsTitle, setLogsTitle] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
+  const [auditLogsUrl, setAuditLogsUrl] = useState("");
+  const [auditLogsTitle, setAuditLogsTitle] = useState("");
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [notesContent, setNotesContent] = useState("");
   const [saving, setSaving] = useState(false);
@@ -86,9 +87,10 @@ export function BankTransactionsTab() {
     toast.success("Deleted"); load(page);
   };
 
-  const openLogs = async (txn: any) => {
-    const res = await api.get(`/admin/bank-transactions/${txn.id}/logs`);
-    setLogsData(res.data.logs || []); setLogsTitle(`Logs: ${txn.description || txn.id.slice(0, 8)}`); setShowLogs(true);
+  const openLogs = (txn: any) => {
+    setAuditLogsUrl(`/admin/bank-transactions/${txn.id}/logs`);
+    setAuditLogsTitle(`Logs: ${txn.description || txn.id.slice(0, 8)}`);
+    setShowAuditLogs(true);
   };
 
   const openNotes = (txn: any) => { setNotesContent(txn.internal_notes || "No notes"); setShowNotesModal(true); };
@@ -242,20 +244,7 @@ export function BankTransactionsTab() {
       </Dialog>
 
       {/* Logs Modal */}
-      <Dialog open={showLogs} onOpenChange={setShowLogs}>
-        <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto"><DialogHeader><DialogTitle>{logsTitle}</DialogTitle></DialogHeader>
-          <div className="space-y-2 py-2">
-            {logsData.length === 0 && <p className="text-sm text-slate-400">No logs yet</p>}
-            {logsData.map((log, i) => (
-              <div key={i} className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs">
-                <div className="flex justify-between mb-1"><span className="font-semibold capitalize">{log.action}</span><span className="text-slate-400">{log.timestamp?.slice(0,19).replace("T"," ")}</span></div>
-                <div className="text-slate-500">by {log.actor}</div>
-                {Object.keys(log.details||{}).length > 0 && <pre className="mt-1 text-xs text-slate-500 whitespace-pre-wrap">{JSON.stringify(log.details,null,2)}</pre>}
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title={auditLogsTitle} logsUrl={auditLogsUrl} />
       <ImportModal
         entity="bank-transactions"
         entityLabel="Bank Transactions"
