@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/sonner";
 import { ProductForm, ProductFormData, EMPTY_FORM } from "./ProductForm";
 import { EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
+import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Upload} from "lucide-react";
 
