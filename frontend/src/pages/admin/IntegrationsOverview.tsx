@@ -551,9 +551,20 @@ export function IntegrationsOverview() {
                           <Button
                             size="sm"
                             variant="ghost"
+                            className="text-slate-400 hover:text-slate-600 px-2"
+                            onClick={() => openConfigPanel(integration)}
+                            data-testid={`edit-pending-${integration.id}`}
+                            title="Edit credentials"
+                          >
+                            <Pencil size={14} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="text-slate-400 hover:text-red-500 px-2"
                             onClick={(e) => handleDisconnect(integration.id, e)}
                             data-testid={`cancel-${integration.id}`}
+                            title="Disconnect"
                           >
                             <X size={16} />
                           </Button>
