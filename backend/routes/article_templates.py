@@ -175,6 +175,7 @@ async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depen
         "updated_at": now,
     }
     await db.article_templates.insert_one(doc)
+    await create_audit_log(entity_type="article_template", entity_id=doc["id"], action="created", actor=admin.get("email", "admin"), details={"name": name})
     return {"template": {k: v for k, v in doc.items() if k != "_id"}}
 
 
@@ -190,6 +191,7 @@ async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict
             update[field] = payload[field]
     await db.article_templates.update_one({"id": template_id}, {"$set": update})
     updated = await db.article_templates.find_one({"id": template_id}, {"_id": 0})
+    await create_audit_log(entity_type="article_template", entity_id=template_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(update.keys())})
     return {"template": updated}
 
 
@@ -200,6 +202,7 @@ async def delete_template(template_id: str, admin: Dict[str, Any] = Depends(get_
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
     await db.article_templates.delete_one({"id": template_id})
+    await create_audit_log(entity_type="article_template", entity_id=template_id, action="deleted", actor=admin.get("email", "admin"), details={"name": tpl.get("name")})
     return {"message": "Deleted"}
 
 
