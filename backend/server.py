@@ -110,6 +110,7 @@ from routes.admin.api_keys import router as api_keys_admin_router
 from routes.admin.webhooks import router as webhooks_admin_router
 from routes.admin.integrations import router as integrations_admin_router
 from routes.admin.finance import router as finance_admin_router
+from routes.admin.permissions import router as permissions_admin_router
 from routes.gdpr import router as gdpr_router
 from routes.downloads import router as downloads_router
 
