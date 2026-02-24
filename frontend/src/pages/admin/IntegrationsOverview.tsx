@@ -451,6 +451,96 @@ export function IntegrationsOverview() {
     toast.success("Copied to clipboard");
   };
 
+  // ---- Mapping panel handlers ----
+  const openMappingPanel = async (integration: Integration) => {
+    setSelectedIntegration(integration);
+    setPanelMode("mapping");
+    setAddingMapping(false);
+    setMappingForm({ webapp_module: "", crm_module: "", field_mappings: [] });
+    try {
+      const [mappingsRes, modulesRes] = await Promise.all([
+        api.get(`/admin/integrations/crm-mappings?provider=${integration.id}`),
+        api.get(`/oauth/${integration.id}/modules`),
+      ]);
+      setCrmMappings(mappingsRes.data.mappings || []);
+      setWebappModules(mappingsRes.data.webapp_modules || []);
+      setZohoModules(modulesRes.data.modules || []);
+    } catch (err: any) {
+      toast.error("Failed to load mapping data");
+    }
+  };
+
+  const handleSaveMapping = async () => {
+    if (!selectedIntegration || !mappingForm.webapp_module || !mappingForm.crm_module) return;
+    setSavingMapping(true);
+    try {
+      await api.post("/admin/integrations/crm-mappings", {
+        ...mappingForm,
+        provider: selectedIntegration.id,
+        sync_on_create: true,
+        sync_on_update: true,
+        is_active: true,
+      });
+      toast.success("Mapping saved");
+      setAddingMapping(false);
+      setMappingForm({ webapp_module: "", crm_module: "", field_mappings: [] });
+      const res = await api.get(`/admin/integrations/crm-mappings?provider=${selectedIntegration.id}`);
+      setCrmMappings(res.data.mappings || []);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to save mapping");
+    } finally {
+      setSavingMapping(false);
+    }
+  };
+
+  const handleDeleteMapping = async (mappingId: string) => {
+    if (!selectedIntegration) return;
+    if (!confirm("Delete this mapping?")) return;
+    try {
+      await api.delete(`/admin/integrations/crm-mappings/${mappingId}`);
+      toast.success("Mapping deleted");
+      const res = await api.get(`/admin/integrations/crm-mappings?provider=${selectedIntegration.id}`);
+      setCrmMappings(res.data.mappings || []);
+    } catch (err: any) {
+      toast.error("Failed to delete mapping");
+    }
+  };
+
+  const handleEditMapping = (m: CrmMapping) => {
+    setMappingForm({ id: m.id, webapp_module: m.webapp_module, crm_module: m.crm_module, field_mappings: m.field_mappings || [] });
+    setAddingMapping(true);
+  };
+
+  const handleBulkSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await api.post("/oauth/zoho_crm/bulk-sync");
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message || "Sync failed");
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const setFieldMap = (webapp_field: string, crm_field: string) => {
+    setMappingForm(prev => {
+      const rest = prev.field_mappings.filter(f => f.webapp_field !== webapp_field);
+      if (crm_field) return { ...prev, field_mappings: [...rest, { webapp_field, crm_field }] };
+      return { ...prev, field_mappings: rest };
+    });
+  };
+
+  const applyDefaultFieldMaps = () => {
+    const defaults = DEFAULT_FIELD_MAPS[mappingForm.webapp_module]?.[mappingForm.crm_module];
+    if (defaults) setMappingForm(prev => ({ ...prev, field_mappings: defaults }));
+    else toast.info("No defaults for this combination — fill fields manually");
+  };
+
   const filteredIntegrations = activeCategory === "all" 
     ? integrations 
     : integrations.filter(i => i.category === activeCategory);
