@@ -420,7 +420,7 @@ export function OrdersTab() {
                 {/* Payment Method */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Method</label>
-                  <select value={selectedOrder.payment_method || ""} onChange={e => setSelectedOrder({ ...selectedOrder, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-order-payment-select">
+                  <select value={selectedOrder.payment_method || ""} onChange={e => setSelectedOrder({ ...selectedOrder, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-order-payment-select">
                     <option value="card">Card</option>
                     <option value="bank_transfer">Bank Transfer</option>
                     <option value="offline">Offline / Manual</option>
