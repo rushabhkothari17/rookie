@@ -178,7 +178,7 @@ export function TermsTab() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl" data-testid="admin-terms-dialog">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="admin-terms-dialog">
           <DialogHeader><DialogTitle>Create Terms & Conditions</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1"><label className="text-xs text-slate-500">Title</label><Input value={createForm.title} onChange={e => setCreateForm({ ...createForm, title: e.target.value })} data-testid="admin-terms-title-input" /></div>
