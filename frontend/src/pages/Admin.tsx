@@ -32,7 +32,7 @@ const TAB_CLASS =
 export default function Admin() {
   const { user: authUser } = useAuth();
   const ws = useWebsite();
-  const isSuperAdmin = authUser?.role === "super_admin" || authUser?.role === "platform_admin";
+  const isSuperAdmin = authUser?.role === "super_admin" || authUser?.role === "platform_admin" || authUser?.role === "partner_super_admin";
   const isPlatformAdmin = authUser?.role === "platform_admin";
 
   // Reactively track whether platform admin is viewing as another tenant
