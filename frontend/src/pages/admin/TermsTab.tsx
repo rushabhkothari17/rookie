@@ -233,6 +233,22 @@ export function TermsTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Delete Terms Confirmation */}
+      <AlertDialog open={!!confirmDeleteTerm} onOpenChange={(open) => !open && setConfirmDeleteTerm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Terms</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete "{confirmDeleteTerm?.title}"? This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => { handleDelete(confirmDeleteTerm.id); setConfirmDeleteTerm(null); }} data-testid="confirm-terms-delete">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
