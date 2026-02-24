@@ -141,9 +141,9 @@ export function QuoteRequestsTab() {
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Contact email…" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-quotes-email-filter" />
           <Input placeholder="Product name…" value={productFilter} onChange={e => setProductFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-quotes-product-filter" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-quotes-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="">All Statuses</SelectItem>{STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            <SelectContent><SelectItem value="all">All Statuses</SelectItem>{STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
           </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">From</span>
