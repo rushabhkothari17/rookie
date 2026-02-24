@@ -417,6 +417,7 @@ async def create_checkout_session(
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
+    tenant_id = customer.get("tenant_id", "")
     if customer.get("currency") not in ["USD", "CAD"]:
         raise HTTPException(status_code=400, detail="Purchases not supported in your region yet")
 
@@ -434,7 +435,7 @@ async def create_checkout_session(
         order_id=None,
     )
 
-    order_items = await build_order_items(payload.items)
+    order_items = await build_order_items(payload.items, tenant_id)
 
     if any(i["product"].get("sku") == "MIG-CRM" for i in order_items) and any(
         i["product"].get("sku") == "START-ZOHO-CRM-EXP" for i in order_items
