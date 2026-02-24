@@ -186,7 +186,6 @@ export function OrdersTab() {
   };
 
   const handleDelete = async (orderId: string) => {
-    if (!confirm("Are you sure you want to delete this order?")) return;
     try {
       await api.delete(`/admin/orders/${orderId}`, { data: { reason: "Deleted by admin" } });
       toast.success("Order deleted");
