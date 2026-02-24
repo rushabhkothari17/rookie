@@ -22,63 +22,16 @@ from db.session import db
 SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
     # ---- Payments ----
     {
-        "key": "stripe_enabled",
-        "value_json": False,
-        "value_type": "bool",
-        "category": "Payments",
-        "description": "Enable Stripe credit/debit card payments.",
-        "is_secret": False,
-    },
-    {
-        "key": "stripe_fee_rate",
-        "value_json": 0.05,
-        "value_type": "number",
-        "category": "Payments",
-        "description": "Processing fee rate for Stripe card payments (0.05 = 5%).",
-        "is_secret": False,
-    },
-    {
-        "key": "gocardless_fee_rate",
-        "value_json": 0.0,
-        "value_type": "number",
-        "category": "Payments",
-        "description": "Processing fee rate for GoCardless bank transfer payments (0.0 = no fee).",
-        "is_secret": False,
-    },
+    # Note: Payment provider credentials (Stripe keys, GoCardless tokens) are now managed 
+    # via Connected Services (oauth_connections collection). Only general business settings remain here.
     {
         "key": "service_fee_rate",
         "value_json": 0.05,
         "value_type": "number",
         "category": "Payments",
-        "description": "Legacy fallback service fee rate (0.05 = 5%).",
+        "description": "Default service fee rate (0.05 = 5%). Individual provider rates are in Connected Services.",
         "is_secret": False,
     },
-    {
-        "key": "stripe_secret_key",
-        "value_json": os.environ.get("STRIPE_API_KEY", ""),
-        "value_type": "secret",
-        "category": "Payments",
-        "description": "Stripe Secret Key (sk_test_... or sk_live_...). Used for all Stripe API calls.",
-        "is_secret": True,
-    },
-    {
-        "key": "stripe_publishable_key",
-        "value_json": "",
-        "value_type": "string",
-        "category": "Payments",
-        "description": "Stripe Publishable Key (pk_test_... or pk_live_...). Used in storefront for Stripe.js.",
-        "is_secret": False,
-    },
-    {
-        "key": "stripe_webhook_secret",
-        "value_json": "",
-        "value_type": "secret",
-        "category": "Payments",
-        "description": "Stripe Webhook Secret (whsec_...). Used to verify incoming webhook signatures.",
-        "is_secret": True,
-    },
-    # Note: GoCardless credentials (access_token, environment, webhook_secret) are now managed 
-    # via Connected Services (oauth_connections collection) - not in these settings
     # ---- Override Codes ----
     {
         "key": "override_code_expiry_hours",
