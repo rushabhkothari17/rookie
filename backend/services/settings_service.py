@@ -97,28 +97,14 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "description": "Active email provider. Currently supported: 'resend'.",
         "is_secret": False,
     },
+    # Note: Email provider settings (resend_api_key, resend_sender_email) are now managed
+    # via Connected Services (oauth_connections collection). Only general email options remain here.
     {
-        "key": "email_provider_enabled",
-        "value_json": False,
-        "value_type": "bool",
-        "category": "Email",
-        "description": "Enable live email sending. When off, emails are stored in outbox (mocked).",
-        "is_secret": False,
-    },
-    {
-        "key": "resend_api_key",
-        "value_json": "",
-        "value_type": "secret",
-        "category": "Email",
-        "description": "Resend API key for transactional email.",
-        "is_secret": True,
-    },
-    {
-        "key": "resend_sender_email",
+        "key": "email_from_name",
         "value_json": "",
         "value_type": "string",
         "category": "Email",
-        "description": "From address used for all outgoing emails.",
+        "description": "Display name for outgoing emails.",
         "is_secret": False,
     },
     {
