@@ -743,7 +743,7 @@ export default function Cart() {
                             </select>
                           ) : field.type === "checkbox" ? (
                             <div className="flex items-center gap-2">
-                              <input type="checkbox" checked={extraFields[field.name] === "true" || extraFields[field.name] === true} onChange={e => setExtraFields(p => ({ ...p, [field.name]: String(e.target.checked) }))} />
+                              <input type="checkbox" checked={extraFields[field.name] === "true"} onChange={e => setExtraFields(p => ({ ...p, [field.name]: String(e.target.checked) }))} />
                               <span className="text-sm text-slate-600">{field.placeholder}</span>
                             </div>
                           ) : (
