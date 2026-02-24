@@ -207,6 +207,15 @@ async def import_entity(
         except Exception as e:
             errors.append({"row": i, "error": str(e), "data": row})
 
+    import_id = make_id()
+    await create_audit_log(
+        entity_type="import",
+        entity_id=import_id,
+        action="bulk_imported",
+        actor=admin.get("email", "admin"),
+        details={"entity": entity, "created": created, "updated": updated, "errors": len(errors), "total": len(rows)},
+        tenant_id=tid,
+    )
     return {
         "created": created,
         "updated": updated,
