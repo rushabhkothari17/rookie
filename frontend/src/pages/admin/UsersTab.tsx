@@ -234,9 +234,9 @@ export function UsersTab() {
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(u)} data-testid={`admin-user-edit-${u.id}`}>Edit</Button>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/users/${u.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-user-logs-${u.id}`}>Logs</Button>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { try { const r = await api.get(`/admin/users/${u.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to load logs"); } }} data-testid={`admin-user-logs-${u.id}`}>Logs</Button>
                       {u.id !== authUser?.id && (
-                        <Button variant={isActive ? "destructive" : "outline"} size="sm" className="h-6 px-2 text-[11px]" onClick={() => handleToggleActive(u.id, isActive)} data-testid={`admin-user-toggle-${u.id}`}>{isActive ? "Deactivate" : "Activate"}</Button>
+                        <Button variant={isActive ? "destructive" : "outline"} size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmToggleUser({id: u.id, active: isActive})} data-testid={`admin-user-toggle-${u.id}`}>{isActive ? "Deactivate" : "Activate"}</Button>
                       )}
                     </div>
                   </TableCell>
