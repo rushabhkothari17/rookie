@@ -104,6 +104,7 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
 - Zoho Mappings: `/app/test_reports/iteration_81.json` — 21 backend + all frontend features pass (mapping UI)
 - Iter83 Bug Fixes: `/app/test_reports/iteration_83.json` — 15/15 backend tests pass (Portal 404, dropdown labels, email dedup, Test Connection button)
+- Iter84 P0 Bug Fixes: `/app/test_reports/iteration_84.json` — 20/20 backend tests pass (Cart TypeScript fix, all P0 flows verified)
 
 ### Iter83 Bug Fixes (Feb 2026)
 **Bug 1 - Customer Portal 404:** Portal.tsx `load()` function now has proper try-catch with friendly error messages for 404, 401, 403 responses. Admin users visiting `/portal` see "No customer account found" instead of crashing.
