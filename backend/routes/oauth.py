@@ -187,8 +187,10 @@ def get_zoho_urls(dc: str = "us") -> Dict[str, str]:
     }
 
 
-class OAuthConnectRequest(BaseModel):
+class CredentialRequest(BaseModel):
+    credentials: Dict[str, str]
     data_center: Optional[str] = "us"  # For Zoho providers
+    settings: Optional[Dict[str, str]] = None
 
 
 class ApiKeyRequest(BaseModel):
@@ -208,40 +210,22 @@ async def list_integrations(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     
     conn_map = {c["provider"]: c for c in connections}
     
-    # Get app settings for API key based integrations
-    settings = await db.app_settings.find(
-        {"key": {"$in": ["resend_api_key", "stripe_enabled", "gocardless_enabled", "active_email_provider"]}},
-        {"_id": 0}
-    ).to_list(10)
-    settings_map = {s["key"]: s.get("value_json") or s.get("value", "") for s in settings}
+    # Get active email provider setting
+    active_email = await db.app_settings.find_one({"key": "active_email_provider"}, {"_id": 0})
+    active_email_provider = active_email.get("value_json") if active_email else None
     
     integrations = []
     for provider_id, config in OAUTH_CONFIGS.items():
         conn = conn_map.get(provider_id, {})
         
-        # Check credentials
-        if config.get("is_api_key"):
-            # API key based - check if key is set
-            api_key = settings_map.get(config.get("api_key_setting", ""), "")
-            has_credentials = bool(api_key)
-            status = "connected" if has_credentials else "not_connected"
-            can_connect = True  # Always can enter API key
-        else:
-            # OAuth based - check if OAuth credentials are configured
-            client_id = os.environ.get(config.get("client_id_env", ""), "")
-            has_credentials = bool(client_id)
-            status = conn.get("status", "not_connected")
-            can_connect = has_credentials
+        is_coming_soon = config.get("is_coming_soon", False)
+        is_validated = conn.get("is_validated", False)
+        status = conn.get("status", "not_connected")
         
-        # Check if this provider is active (for email/payments)
+        # Check if this provider is active (for email providers only)
         is_active = False
-        if config["category"] == "email":
-            is_active = settings_map.get("active_email_provider") == provider_id
-        elif config["category"] == "payments":
-            if "stripe" in provider_id:
-                is_active = settings_map.get("stripe_enabled", False)
-            elif "gocardless" in provider_id:
-                is_active = settings_map.get("gocardless_enabled", False)
+        if config["category"] == "email" and not is_coming_soon:
+            is_active = active_email_provider == provider_id
         
         integrations.append({
             "id": provider_id,
@@ -250,84 +234,361 @@ async def list_integrations(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             "description": config.get("description", ""),
             "status": status,
             "is_active": is_active,
+            "is_validated": is_validated,
             "connected_at": conn.get("connected_at"),
-            "last_refresh": conn.get("last_refresh"),
-            "expires_at": conn.get("expires_at"),
+            "validated_at": conn.get("validated_at"),
             "error_message": conn.get("error_message"),
-            "has_credentials": has_credentials,
-            "can_connect": can_connect,
-            "is_api_key": config.get("is_api_key", False),
             "is_zoho": config.get("is_zoho", False),
+            "is_coming_soon": is_coming_soon,
             "data_center": conn.get("data_center"),
-            "api_key_label": config.get("api_key_label", "API Key"),
-            "api_key_hint": config.get("api_key_hint", ""),
+            "fields": config.get("fields", []),
+            "settings": config.get("settings", []),
+            "stored_settings": conn.get("settings", {}),
         })
     
     return {
         "integrations": integrations,
-        "zoho_data_centers": [{"id": k, "name": v["name"]} for k, v in ZOHO_DATA_CENTERS.items()]
+        "zoho_data_centers": [{"id": k, "name": v["name"]} for k, v in ZOHO_DATA_CENTERS.items()],
+        "active_email_provider": active_email_provider,
     }
 
 
-@router.post("/oauth/{provider}/connect")
-async def initiate_oauth(
+@router.post("/oauth/{provider}/save-credentials")
+async def save_credentials(
     provider: str,
-    payload: OAuthConnectRequest = Body(default=OAuthConnectRequest()),
+    payload: CredentialRequest,
     admin: Dict[str, Any] = Depends(get_tenant_admin)
 ):
-    """
-    Initiate OAuth flow for a provider.
-    
-    For Zoho providers, specify data_center (us, eu, in, au, jp, ca).
-    """
+    """Save credentials for an integration (does not validate)."""
     if provider not in OAUTH_CONFIGS:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
     
     config = OAUTH_CONFIGS[provider]
     
-    if config.get("is_api_key"):
-        raise HTTPException(status_code=400, detail=f"{config['name']} uses API key authentication, not OAuth")
+    if config.get("is_coming_soon"):
+        raise HTTPException(status_code=400, detail=f"{config['name']} is coming soon")
     
     tid = tenant_id_of(admin)
     
-    # Get OAuth credentials from environment
-    client_id = os.environ.get(config.get("client_id_env", ""), "")
-    if not client_id:
-        raise HTTPException(
-            status_code=400,
-            detail=f"OAuth not configured for {config['name']}. Please contact support to enable this integration."
-        )
+    # Validate required fields
+    required_fields = [f["key"] for f in config.get("fields", []) if f.get("required")]
+    for field in required_fields:
+        if not payload.credentials.get(field):
+            field_label = next((f["label"] for f in config["fields"] if f["key"] == field), field)
+            raise HTTPException(status_code=400, detail=f"{field_label} is required")
     
-    # Generate state token for CSRF protection
-    state = secrets.token_urlsafe(32)
-    
-    # Determine URLs based on provider type
-    data_center = payload.data_center or "us"
-    if config.get("is_zoho"):
-        urls = get_zoho_urls(data_center)
-        authorize_url = urls["authorize_url"]
-        token_url = urls["token_url"]
-    else:
-        authorize_url = config["authorize_url"]
-        token_url = config["token_url"]
-    
-    # Store state in database with tenant association
-    await db.oauth_states.insert_one({
-        "state": state,
+    # Save connection
+    update_data = {
         "tenant_id": tid,
         "provider": provider,
-        "admin_id": admin["id"],
-        "data_center": data_center,
-        "token_url": token_url,
-        "created_at": now_iso(),
-        "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
-    })
+        "status": "not_connected",
+        "is_validated": False,
+        "credentials": payload.credentials,
+        "data_center": payload.data_center if config.get("is_zoho") else None,
+        "settings": payload.settings or {},
+        "updated_at": now_iso(),
+    }
     
-    # Update connection status to "connecting"
     await db.oauth_connections.update_one(
         {"tenant_id": tid, "provider": provider},
-        {"$set": {
-            "tenant_id": tid,
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"success": True, "message": f"{config['name']} credentials saved. Click Validate to test the connection."}
+
+
+@router.post("/oauth/{provider}/validate")
+async def validate_connection(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Validate stored credentials for an integration."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    config = OAUTH_CONFIGS[provider]
+    tid = tenant_id_of(admin)
+    
+    # Get stored connection
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": provider},
+        {"_id": 0}
+    )
+    
+    if not conn or not conn.get("credentials"):
+        raise HTTPException(status_code=400, detail="No credentials found. Please save credentials first.")
+    
+    credentials = conn["credentials"]
+    validation_result = {"success": False, "message": "Validation failed"}
+    
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            if provider == "stripe":
+                # Validate Stripe API key
+                resp = await client.get(
+                    "https://api.stripe.com/v1/balance",
+                    auth=(credentials.get("api_key", ""), "")
+                )
+                if resp.status_code == 200:
+                    validation_result = {"success": True, "message": "Stripe connection validated"}
+                else:
+                    error = resp.json().get("error", {}).get("message", "Invalid API key")
+                    validation_result = {"success": False, "message": error}
+            
+            elif provider in ["gocardless", "gocardless_sandbox"]:
+                # Validate GoCardless access token
+                base_url = "https://api-sandbox.gocardless.com" if "sandbox" in provider else "https://api.gocardless.com"
+                resp = await client.get(
+                    f"{base_url}/creditors",
+                    headers={
+                        "Authorization": f"Bearer {credentials.get('access_token', '')}",
+                        "GoCardless-Version": "2015-07-06"
+                    }
+                )
+                if resp.status_code == 200:
+                    validation_result = {"success": True, "message": "GoCardless connection validated"}
+                else:
+                    validation_result = {"success": False, "message": "Invalid access token"}
+            
+            elif provider == "resend":
+                # Validate Resend API key
+                resp = await client.get(
+                    "https://api.resend.com/domains",
+                    headers={"Authorization": f"Bearer {credentials.get('api_key', '')}"}
+                )
+                if resp.status_code == 200:
+                    validation_result = {"success": True, "message": "Resend connection validated"}
+                else:
+                    validation_result = {"success": False, "message": "Invalid API key"}
+            
+            elif provider == "zoho_mail":
+                # Validate Zoho Mail
+                dc = conn.get("data_center", "us")
+                dc_config = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+                
+                # First refresh the access token
+                refresh_resp = await client.post(
+                    f"{dc_config['accounts_url']}/oauth/v2/token",
+                    data={
+                        "grant_type": "refresh_token",
+                        "client_id": credentials.get("client_id", ""),
+                        "client_secret": credentials.get("client_secret", ""),
+                        "refresh_token": credentials.get("refresh_token", ""),
+                    }
+                )
+                
+                if refresh_resp.status_code == 200:
+                    token_data = refresh_resp.json()
+                    access_token = token_data.get("access_token")
+                    
+                    # Test the connection by getting account info
+                    test_resp = await client.get(
+                        f"{dc_config['api_domain']}/mail/accounts",
+                        headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                    )
+                    
+                    if test_resp.status_code == 200:
+                        validation_result = {"success": True, "message": "Zoho Mail connection validated"}
+                    else:
+                        validation_result = {"success": False, "message": "Could not access Zoho Mail account"}
+                else:
+                    error = refresh_resp.json().get("error", "Invalid credentials")
+                    validation_result = {"success": False, "message": f"Token refresh failed: {error}"}
+            
+            elif provider == "zoho_crm":
+                # Validate Zoho CRM
+                dc = conn.get("data_center", "us")
+                dc_config = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+                
+                refresh_resp = await client.post(
+                    f"{dc_config['accounts_url']}/oauth/v2/token",
+                    data={
+                        "grant_type": "refresh_token",
+                        "client_id": credentials.get("client_id", ""),
+                        "client_secret": credentials.get("client_secret", ""),
+                        "refresh_token": credentials.get("refresh_token", ""),
+                    }
+                )
+                
+                if refresh_resp.status_code == 200:
+                    token_data = refresh_resp.json()
+                    access_token = token_data.get("access_token")
+                    
+                    test_resp = await client.get(
+                        f"{dc_config['api_domain']}/crm/v3/users?type=CurrentUser",
+                        headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                    )
+                    
+                    if test_resp.status_code == 200:
+                        validation_result = {"success": True, "message": "Zoho CRM connection validated"}
+                    else:
+                        validation_result = {"success": False, "message": "Could not access Zoho CRM"}
+                else:
+                    error = refresh_resp.json().get("error", "Invalid credentials")
+                    validation_result = {"success": False, "message": f"Token refresh failed: {error}"}
+            
+            elif provider == "zoho_books":
+                # Validate Zoho Books
+                dc = conn.get("data_center", "us")
+                dc_config = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+                
+                refresh_resp = await client.post(
+                    f"{dc_config['accounts_url']}/oauth/v2/token",
+                    data={
+                        "grant_type": "refresh_token",
+                        "client_id": credentials.get("client_id", ""),
+                        "client_secret": credentials.get("client_secret", ""),
+                        "refresh_token": credentials.get("refresh_token", ""),
+                    }
+                )
+                
+                if refresh_resp.status_code == 200:
+                    token_data = refresh_resp.json()
+                    access_token = token_data.get("access_token")
+                    org_id = credentials.get("organization_id", "")
+                    
+                    test_resp = await client.get(
+                        f"{dc_config['api_domain']}/books/v3/organizations",
+                        headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                    )
+                    
+                    if test_resp.status_code == 200:
+                        validation_result = {"success": True, "message": "Zoho Books connection validated"}
+                    else:
+                        validation_result = {"success": False, "message": "Could not access Zoho Books"}
+                else:
+                    error = refresh_resp.json().get("error", "Invalid credentials")
+                    validation_result = {"success": False, "message": f"Token refresh failed: {error}"}
+            
+            else:
+                validation_result = {"success": False, "message": "Validation not implemented for this provider"}
+    
+    except httpx.TimeoutException:
+        validation_result = {"success": False, "message": "Connection timed out. Please try again."}
+    except Exception as e:
+        validation_result = {"success": False, "message": f"Validation error: {str(e)}"}
+    
+    # Update connection status
+    update_data = {
+        "is_validated": validation_result["success"],
+        "status": "connected" if validation_result["success"] else "failed",
+        "validated_at": now_iso() if validation_result["success"] else None,
+        "error_message": None if validation_result["success"] else validation_result["message"],
+    }
+    
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": provider},
+        {"$set": update_data}
+    )
+    
+    return validation_result
+
+
+@router.post("/oauth/{provider}/update-settings")
+async def update_provider_settings(
+    provider: str,
+    settings: Dict[str, str] = Body(...),
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Update settings for an integration (e.g., success page text)."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    tid = tenant_id_of(admin)
+    
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": provider},
+        {"$set": {"settings": settings, "updated_at": now_iso()}}
+    )
+    
+    return {"success": True, "message": "Settings updated"}
+
+
+@router.post("/oauth/{provider}/activate")
+async def activate_provider(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Activate an email provider. Only one email provider can be active at a time."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    config = OAUTH_CONFIGS[provider]
+    
+    if config["category"] != "email":
+        raise HTTPException(status_code=400, detail="Only email providers can be activated/deactivated")
+    
+    tid = tenant_id_of(admin)
+    
+    # Check if connection is validated
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": provider},
+        {"_id": 0}
+    )
+    
+    if not conn or not conn.get("is_validated"):
+        raise HTTPException(status_code=400, detail="Please validate the connection before activating")
+    
+    # Set as active email provider
+    await db.app_settings.update_one(
+        {"key": "active_email_provider"},
+        {"$set": {"key": "active_email_provider", "value_json": provider, "updated_at": now_iso()}},
+        upsert=True
+    )
+    
+    return {"success": True, "message": f"{config['name']} is now your active email provider"}
+
+
+@router.post("/oauth/{provider}/deactivate")
+async def deactivate_provider(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Deactivate an email provider."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    config = OAUTH_CONFIGS[provider]
+    
+    if config["category"] != "email":
+        raise HTTPException(status_code=400, detail="Only email providers can be activated/deactivated")
+    
+    # Clear active email provider
+    await db.app_settings.update_one(
+        {"key": "active_email_provider"},
+        {"$set": {"key": "active_email_provider", "value_json": None, "updated_at": now_iso()}},
+        upsert=True
+    )
+    
+    return {"success": True, "message": f"{config['name']} has been deactivated. Emails will be stored but not sent."}
+
+
+@router.delete("/oauth/{provider}/disconnect")
+async def disconnect_provider(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Remove stored credentials for an integration."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    config = OAUTH_CONFIGS[provider]
+    tid = tenant_id_of(admin)
+    
+    # If this is the active email provider, deactivate it first
+    if config["category"] == "email":
+        active = await db.app_settings.find_one({"key": "active_email_provider"})
+        if active and active.get("value_json") == provider:
+            await db.app_settings.update_one(
+                {"key": "active_email_provider"},
+                {"$set": {"value_json": None}}
+            )
+    
+    # Delete the connection
+    await db.oauth_connections.delete_one({"tenant_id": tid, "provider": provider})
+    
+    return {"success": True, "message": f"{config['name']} disconnected"}
             "provider": provider,
             "status": "connecting",
             "data_center": data_center,
