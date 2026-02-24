@@ -429,10 +429,10 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Search title or ID…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="articles-search-filter" />
-          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="h-8 border border-slate-200 rounded px-2 text-xs bg-white" data-testid="articles-category-filter">
-            <option value="all">All categories</option>
-            {(dynamicCategories.length > 0 ? dynamicCategories.map(c => c.name) : HARDCODED_CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="articles-category-filter"><SelectValue placeholder="All categories" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All categories</SelectItem>{(dynamicCategories.length > 0 ? dynamicCategories.map(c => c.name) : HARDCODED_CATEGORIES).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+          </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Created</span>
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="articles-start-date" />

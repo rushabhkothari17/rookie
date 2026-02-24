@@ -228,10 +228,10 @@ export function ProductsTab() {
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-          <select value={categoryFilter} onChange={e => { setCategoryFilter(e.target.value); setPage(1); }} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-catalog-category-filter">
-            <option value="all">All Categories</option>
-            {categories.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
+          <Select value={categoryFilter} onValueChange={v => { setCategoryFilter(v); setPage(1); }}>
+            <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="admin-catalog-category-filter"><SelectValue placeholder="All Categories" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All Categories</SelectItem>{categories.map((c: any) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
+          </Select>
           <Button size="sm" variant="outline" onClick={() => { setSearchText(""); setCatalogFilter("all"); setCategoryFilter("all"); setPage(1); }} className="h-8 text-xs" data-testid="admin-catalog-clear-filters">Clear</Button>
         </div>
       </div>
