@@ -1,0 +1,53 @@
+{
+  "summary": "Tested all 6 iter91 fixes: email tenant_id fix, product visibility (blacklist/whitelist), pricing on store cards, signup redesign, and ProductForm 3-mode visibility UI. Found and fixed 1 critical bug: AdminProductUpdate model was missing 'restricted_to' field causing 500 on PUT /api/admin/products/{id}. All 12 backend tests pass. All frontend tests pass.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "PUT /api/admin/products/{id}",
+        "issue": "AdminProductUpdate model was missing 'restricted_to: Optional[List[str]] = None' field, causing AttributeError 500. FIXED by adding the field to AdminProductUpdate in models.py",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter91_visibility_email_fixes.py",
+    "/app/test_reports/pytest/pytest_iter91.xml"
+  ],
+  "action_items": [
+    "FIXED (in this iteration): Add 'restricted_to: Optional[List[str]] = None' to AdminProductUpdate model in models.py - was causing 500 on PUT /api/admin/products/{id}"
+  ],
+  "critical_code_review_comments": [
+    "FIXED: AdminProductUpdate model was missing restricted_to field while AdminProductCreate had it - this caused PUT endpoint to 500 with AttributeError. Fix applied in /app/backend/models.py",
+    "Email fix verified: EmailService.send() now correctly gets from_email from resend_settings (not credentials) at line 379",
+    "Auth fix verified: POST /api/auth/register passes tenant_id=tenant_id to EmailService.send() at line 902",
+    "Store visibility logic verified: restricted_to works as blacklist, visible_to_customers as whitelist, admins bypass both checks"
+  ],
+  "updated_files": [
+    "/app/backend/models.py (added restricted_to field to AdminProductUpdate)",
+    "/app/backend/tests/test_iter91_visibility_email_fixes.py (new test file)"
+  ],
+  "success_rate": {
+    "backend": "12/12 (100%)",
+    "frontend": "5/5 checks passed (100%)"
+  },
+  "test_credentials": {
+    "admin": "admin@automateaccounts.local / ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "Created test customer + two products (restricted and whitelist) via fixtures; cleaned up by deactivating products after tests",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 6 iter91 fixes verified working. Key fix applied: AdminProductUpdate model in models.py now has restricted_to field. Backend: visibility filtering (blacklist/whitelist + admin bypass) fully tested. Frontend: signup split-panel layout works, store cards show pricing (from $X format), ProductForm shows 3 radio visibility modes correctly (All customers / Restrict from specific / Show only to specific). Test file: /app/backend/tests/test_iter91_visibility_email_fixes.py",
+  "rca_of_issue": {
+    "bug": "PUT /api/admin/products/{id} returned 500 when updating a product with restricted_to field",
+    "root_cause": "AdminProductUpdate Pydantic model in /app/backend/models.py did not include the 'restricted_to' field, while AdminProductCreate did have it. The catalog.py update handler (line 257) tried to access payload.restricted_to which caused AttributeError since the field didn't exist on the model.",
+    "fix": "Added 'restricted_to: Optional[List[str]] = None' to AdminProductUpdate class in /app/backend/models.py",
+    "reproduction": "POST /api/admin/products to create product, then PUT /api/admin/products/{id} with restricted_to in body => was giving 500 AttributeError"
+  }
+}
