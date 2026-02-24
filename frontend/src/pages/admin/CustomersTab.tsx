@@ -364,7 +364,7 @@ export function CustomersTab() {
 
       {/* Customer Audit Logs Dialog */}
       <Dialog open={showEntityLogs} onOpenChange={setShowEntityLogs}>
-        <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Customer Audit Logs</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Customer Audit Logs</DialogTitle></DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto space-y-2">
             {entityLogs.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No logs found</p>}
             {entityLogs.map((log: any, i: number) => (
