@@ -220,9 +220,9 @@ async def get_website_settings_public(
     stripe_enabled = bool(stripe_conn)
     gocardless_enabled = bool(gocardless_conn)
     
-    # Fee rates from app_settings (these are business settings, not connection settings)
-    stripe_fee_rate = float(app_s.get("stripe_fee_rate") or 0.05)
-    gocardless_fee_rate = float(app_s.get("gocardless_fee_rate") or 0.0)
+    # Fee rates from oauth_connections credentials (or fallback to default)
+    stripe_fee_rate = float(stripe_conn.get("credentials", {}).get("fee_rate", 0.05)) if stripe_conn else 0.05
+    gocardless_fee_rate = float(gocardless_conn.get("credentials", {}).get("fee_rate", 0.0)) if gocardless_conn else 0.0
 
     settings = {
         **DEFAULT_WEBSITE_SETTINGS,
