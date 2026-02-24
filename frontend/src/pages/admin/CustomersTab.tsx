@@ -263,7 +263,7 @@ export function CustomersTab() {
 
       {/* Edit Customer Dialog */}
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && setSelectedCustomer(null)}>
-        <DialogContent data-testid="admin-customer-edit-dialog">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-customer-edit-dialog">
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           {selectedCustomer && (
             <div className="space-y-3">
