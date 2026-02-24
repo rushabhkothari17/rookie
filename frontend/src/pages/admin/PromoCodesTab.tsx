@@ -38,8 +38,8 @@ export function PromoCodesTab() {
   const [editPromo, setEditPromo] = useState<any>(null);
   const [newPromo, setNewPromo] = useState(INITIAL_PROMO);
   const [editForm, setEditForm] = useState({ code: "", discount_type: "percent", discount_value: 10, applies_to: "both", applies_to_products: "all", product_ids: [] as string[], expiry_date: "", max_uses: "", one_time_code: false, enabled: true });
-  const [entityLogs, setEntityLogs] = useState<any[]>([]);
-  const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmDeletePromo, setConfirmDeletePromo] = useState<any>(null);
 
   const load = useCallback(async (p = 1) => {

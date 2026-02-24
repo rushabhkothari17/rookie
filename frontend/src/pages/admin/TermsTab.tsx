@@ -35,8 +35,8 @@ export function TermsTab() {
   const [editTerm, setEditTerm] = useState<any>(null);
   const [createForm, setCreateForm] = useState({ title: "", content: "", is_default: false, status: "active" });
   const [editForm, setEditForm] = useState({ title: "", content: "", status: "active" });
-  const [entityLogs, setEntityLogs] = useState<any[]>([]);
-  const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmDeleteTerm, setConfirmDeleteTerm] = useState<any>(null);
 
   const load = useCallback(async (p = 1) => {

@@ -42,8 +42,8 @@ export function QuoteRequestsTab() {
   const [editQuote, setEditQuote] = useState<any>(null);
   const [form, setForm] = useState({ ...BLANK_FORM });
   const [customerSearch, setCustomerSearch] = useState("");
-  const [entityLogs, setEntityLogs] = useState<any[]>([]);
-  const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmDeleteQuote, setConfirmDeleteQuote] = useState<any>(null);
 
   const userMap: Record<string, any> = {};

@@ -30,8 +30,8 @@ export function CategoriesTab() {
   const [editCat, setEditCat] = useState<any>(null);
   const [form, setForm] = useState({ name: "", description: "", is_active: true });
   const [saving, setSaving] = useState(false);
-  const [entityLogs, setEntityLogs] = useState<any[]>([]);
-  const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmToggleCat, setConfirmToggleCat] = useState<any>(null);
   const [confirmDeleteCat, setConfirmDeleteCat] = useState<any>(null);
 
