@@ -47,6 +47,7 @@ async def create_article_email_template(
     }
     await db.article_email_templates.insert_one(doc)
     doc.pop("_id", None)
+    await create_audit_log(entity_type="article_email_template", entity_id=doc["id"], action="created", actor=admin.get("email", "admin"), details={"name": doc["name"]})
     return {"template": doc}
 
 
@@ -71,6 +72,7 @@ async def update_article_email_template(
         updates["description"] = payload.description
     await db.article_email_templates.update_one({"id": template_id}, {"$set": updates})
     updated = await db.article_email_templates.find_one({"id": template_id}, {"_id": 0})
+    await create_audit_log(entity_type="article_email_template", entity_id=template_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(updates.keys())})
     return {"template": updated}
 
 
@@ -84,6 +86,7 @@ async def delete_article_email_template(
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
     await db.article_email_templates.delete_one({"id": template_id})
+    await create_audit_log(entity_type="article_email_template", entity_id=template_id, action="deleted", actor=admin.get("email", "admin"), details={"name": tpl.get("name")})
     return {"message": "Template deleted"}
 
 
