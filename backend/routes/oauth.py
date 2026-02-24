@@ -730,6 +730,209 @@ async def disconnect_provider(
     return {"success": True, "message": f"{config['name']} disconnected"}
 
 
+# ---------------------------------------------------------------------------
+# Helper: get Zoho connection credentials
+# ---------------------------------------------------------------------------
+
+async def _get_zoho_conn_info(tid: str, provider: str):
+    """Return (credentials dict, dc_config dict) for a validated Zoho provider."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": provider}, {"_id": 0}
+    )
+    if not conn or not conn.get("is_validated"):
+        raise HTTPException(status_code=400, detail=f"{provider} is not connected or validated")
+    dc = conn.get("data_center", "us")
+    return conn["credentials"], ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+
+
+# ---------------------------------------------------------------------------
+# Zoho Module Discovery (for mapping UI)
+# ---------------------------------------------------------------------------
+
+@router.get("/oauth/zoho_crm/modules")
+async def get_zoho_crm_modules_for_mapping(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Fetch available Zoho CRM modules using stored credentials."""
+    tid = tenant_id_of(admin)
+    creds, dc_config = await _get_zoho_conn_info(tid, "zoho_crm")
+
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        token_resp = await client.post(
+            f"{dc_config['accounts_url']}/oauth/v2/token",
+            data={
+                "grant_type": "refresh_token",
+                "client_id": creds.get("client_id", ""),
+                "client_secret": creds.get("client_secret", ""),
+                "refresh_token": creds.get("refresh_token", ""),
+            },
+        )
+        if token_resp.status_code != 200 or token_resp.json().get("error"):
+            raise HTTPException(status_code=400, detail="Token refresh failed — please reconnect Zoho CRM")
+
+        access_token = token_resp.json()["access_token"]
+        api_domain = creds.get("_api_domain", dc_config["api_domain"])
+
+        modules_resp = await client.get(
+            f"{api_domain}/crm/v3/settings/modules",
+            headers={"Authorization": f"Zoho-oauthtoken {access_token}"},
+        )
+        if modules_resp.status_code != 200:
+            # fallback to v6
+            modules_resp = await client.get(
+                f"{api_domain}/crm/v6/settings/modules",
+                headers={"Authorization": f"Zoho-oauthtoken {access_token}"},
+            )
+
+        if modules_resp.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to fetch Zoho CRM modules")
+
+        modules = modules_resp.json().get("modules", [])
+        return {
+            "modules": [
+                {
+                    "api_name": m.get("api_name"),
+                    "plural_label": m.get("plural_label") or m.get("api_name"),
+                    "singular_label": m.get("singular_label") or m.get("api_name"),
+                }
+                for m in modules
+                if m.get("api_supported") and m.get("api_name")
+            ]
+        }
+
+
+@router.get("/oauth/zoho_books/modules")
+async def get_zoho_books_modules_for_mapping(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Return fixed list of Zoho Books modules (Books uses resource-based URLs, not module API)."""
+    tid = tenant_id_of(admin)
+    conn = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_books"}, {"_id": 0})
+    if not conn or not conn.get("is_validated"):
+        raise HTTPException(status_code=400, detail="Zoho Books is not connected or validated")
+    return {
+        "modules": [
+            {"api_name": "contacts", "plural_label": "Contacts", "singular_label": "Contact"},
+            {"api_name": "invoices", "plural_label": "Invoices", "singular_label": "Invoice"},
+            {"api_name": "estimates", "plural_label": "Estimates", "singular_label": "Estimate"},
+            {"api_name": "bills", "plural_label": "Bills", "singular_label": "Bill"},
+            {"api_name": "recurringinvoices", "plural_label": "Recurring Invoices", "singular_label": "Recurring Invoice"},
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
+# Zoho CRM Bulk Sync
+# ---------------------------------------------------------------------------
+
+@router.post("/oauth/zoho_crm/bulk-sync")
+async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Bulk sync existing webapp records to Zoho CRM using saved field mappings."""
+    tid = tenant_id_of(admin)
+    creds, dc_config = await _get_zoho_conn_info(tid, "zoho_crm")
+
+    # Load active CRM mappings (include legacy mappings without provider field)
+    mappings = await db.crm_mappings.find(
+        {
+            "tenant_id": tid,
+            "is_active": True,
+            "$or": [{"provider": "zoho_crm"}, {"provider": {"$exists": False}}],
+        },
+        {"_id": 0},
+    ).to_list(20)
+
+    if not mappings:
+        return {"success": False, "message": "No active mappings configured. Set up entity mappings first."}
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        token_resp = await client.post(
+            f"{dc_config['accounts_url']}/oauth/v2/token",
+            data={
+                "grant_type": "refresh_token",
+                "client_id": creds.get("client_id", ""),
+                "client_secret": creds.get("client_secret", ""),
+                "refresh_token": creds.get("refresh_token", ""),
+            },
+        )
+        if token_resp.status_code != 200 or token_resp.json().get("error"):
+            raise HTTPException(status_code=400, detail="Token refresh failed — please reconnect Zoho CRM")
+
+        access_token = token_resp.json()["access_token"]
+        api_domain = creds.get("_api_domain", dc_config["api_domain"])
+
+        synced_counts: Dict[str, int] = {}
+        errors: List[str] = []
+
+        collection_map: Dict[str, Any] = {
+            "customers": db.customers,
+            "orders": db.orders,
+            "subscriptions": db.subscriptions,
+            "quote_requests": db.quote_requests,
+        }
+
+        for mapping in mappings:
+            webapp_module = mapping.get("webapp_module")
+            crm_module = mapping.get("crm_module")
+            field_maps = mapping.get("field_mappings", [])
+
+            if not webapp_module or not crm_module or not field_maps:
+                continue
+
+            coll = collection_map.get(webapp_module)
+            if coll is None:
+                continue
+
+            docs = await coll.find({"tenant_id": tid}, {"_id": 0}).to_list(500)
+
+            zoho_records = []
+            for record in docs:
+                zoho_record: Dict[str, Any] = {}
+                for fm in field_maps:
+                    wf = fm.get("webapp_field")
+                    cf = fm.get("crm_field")
+                    if wf and cf:
+                        val = record.get(wf)
+                        if val is not None:
+                            zoho_record[cf] = val if isinstance(val, (int, float, bool)) else str(val)
+                if zoho_record:
+                    zoho_records.append(zoho_record)
+
+            synced = 0
+            for i in range(0, len(zoho_records), 100):
+                batch = zoho_records[i : i + 100]
+                resp = await client.post(
+                    f"{api_domain}/crm/v3/{crm_module}",
+                    json={"data": batch},
+                    headers={
+                        "Authorization": f"Zoho-oauthtoken {access_token}",
+                        "Content-Type": "application/json",
+                    },
+                )
+                if resp.status_code in [200, 201]:
+                    resp_data = resp.json().get("data", [])
+                    if resp_data and isinstance(resp_data[0], dict) and "code" in resp_data[0]:
+                        synced += sum(1 for d in resp_data if d.get("code") in ("SUCCESS", "RECORD_ADDED"))
+                    else:
+                        synced += len(batch)
+                else:
+                    try:
+                        err = resp.json()
+                        errors.append(f"{webapp_module}→{crm_module}: {err.get('message', str(err))[:80]}")
+                    except Exception:
+                        errors.append(f"{webapp_module}→{crm_module}: HTTP {resp.status_code}")
+
+            synced_counts[f"{webapp_module}→{crm_module}"] = synced
+
+    total = sum(synced_counts.values())
+    return {
+        "success": len(errors) == 0,
+        "synced": synced_counts,
+        "total_synced": total,
+        "errors": errors[:5],
+        "message": (
+            f"Sync completed. {total} records synced."
+            if not errors
+            else f"Sync completed with {len(errors)} error(s). {total} records synced."
+        ),
+    }
+
+
 @router.get("/oauth/{provider}/status")
 async def get_provider_status(
     provider: str,
