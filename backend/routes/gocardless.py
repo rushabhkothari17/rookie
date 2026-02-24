@@ -237,32 +237,20 @@ async def complete_gocardless_redirect(
                 )
                 if payment:
                     payment_id = payment["id"]
+                    # When payment is created, mandate is in place — set subscription active immediately.
+                    # GoCardless bank mandates authorize recurring collection; active status is appropriate
+                    # even when first payment is still pending_submission (charge_date may be future).
                     await db.subscriptions.update_one(
                         {"id": payload.subscription_id},
-                        {"$set": {"status": "pending_payment", "processor_id": mandate_id, "gocardless_mandate_id": mandate_id, "gocardless_payment_id": payment_id, "updated_at": now_iso()}},
+                        {"$set": {"status": "active", "processor_id": mandate_id, "gocardless_mandate_id": mandate_id, "gocardless_payment_id": payment_id, "updated_at": now_iso()}},
                     )
                     await create_audit_log(
                         entity_type="subscription",
                         entity_id=payload.subscription_id,
                         action="payment_initiated",
                         actor="customer",
-                        details={"mandate_id": mandate_id, "payment_id": payment_id},
+                        details={"mandate_id": mandate_id, "payment_id": payment_id, "status_set": "active"},
                     )
-                    import time
-                    time.sleep(2)
-                    payment_status = get_payment_status(payment_id, gc_token=gc_token, gc_env=gc_env)
-                    if payment_status and payment_status.get("status") in ["confirmed", "paid_out", "submitted"]:
-                        await db.subscriptions.update_one(
-                            {"id": payload.subscription_id},
-                            {"$set": {"status": "active", "updated_at": now_iso()}},
-                        )
-                        await create_audit_log(
-                            entity_type="subscription",
-                            entity_id=payload.subscription_id,
-                            action="payment_confirmed",
-                            actor="gocardless",
-                            details={"payment_status": payment_status.get("status")},
-                        )
 
         return {
             "message": "Direct Debit setup completed. Payment initiated.",
