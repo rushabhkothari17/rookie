@@ -102,7 +102,14 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Webhooks: `/app/test_reports/iteration_364.json` — 49 tests, all pass (webhook system)
 - UI Bugs: `/app/test_reports/iteration_70.json` — 7 backend + frontend tests pass (login flow fix)
 - Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
-- Iter90 Comprehensive Audit Logging + Pagination: `/app/test_reports/iteration_90.json` — 27/27 backend tests pass, frontend AuditLogDialog works (Feb 2026)
+- Iter91 Email+Visibility+UI Fixes: `/app/test_reports/iteration_91.json` — 12/12 backend + 5/5 frontend pass (Feb 2026)
+
+### Iter91: Email, Visibility & UI Fixes (Feb 2026)
+- **Email verification fix**: `auth.py` now passes `tenant_id` to `EmailService.send()` so Zoho Mail connection is found. `email_service.py` now reads Resend `from_email` from `settings` not `credentials`.
+- **Product visibility redesign**: 3-mode system in `ProductForm.tsx` — All / Restrict from specific (blacklist) / Show only to specific (whitelist). Admins bypass visibility checks in `store.py`.
+- **Store card pricing**: `OfferingCard.tsx` now shows formatted price (e.g., "from $99" or "$49/mo") at the bottom of every product card.
+- **Signup UI redesign**: `Signup.tsx` rebuilt with modern split-panel layout (branded left panel + grouped form on right).
+- **Bug fix**: `AdminProductUpdate` model was missing `restricted_to` field (caught by testing agent, fixed).
 
 ### Iter90: Comprehensive Audit Logging + Pagination (Feb 2026)
 - Added `create_audit_log` calls to **all state-changing endpoints** across every route file:
