@@ -803,6 +803,7 @@ async def validate_gocardless(admin: Dict[str, Any] = Depends(get_tenant_admin))
                     }},
                     upsert=True
                 )
+                await create_audit_log(entity_type="integration", entity_id="gocardless", action="connection_validated", actor=admin.get("email", "admin"), details={"success": True, "environment": environment})
                 return {
                     "success": True,
                     "message": "GoCardless connection validated",
