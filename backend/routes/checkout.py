@@ -90,7 +90,8 @@ async def checkout_bank_transfer(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    gocardless_globally_enabled = await SettingsService.get("gocardless_enabled", False)
+    tenant_id = customer.get("tenant_id", "")
+    gocardless_globally_enabled = await is_gocardless_enabled(tenant_id)
     if not gocardless_globally_enabled:
         raise HTTPException(status_code=400, detail="Bank transfer payments are currently not available.")
 
