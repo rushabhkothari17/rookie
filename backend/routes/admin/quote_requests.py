@@ -170,6 +170,7 @@ async def admin_update_quote_request(
     
     # Auto-sync to Zoho CRM on update (fire and forget)
     asyncio.create_task(auto_sync_to_zoho_crm(tenant_id_of(admin), "quote_requests", quote, "update"))
+    asyncio.create_task(auto_sync_to_zoho_books(tenant_id_of(admin), "quote_requests", quote, "update"))
     
     return {"quote": quote}
 
