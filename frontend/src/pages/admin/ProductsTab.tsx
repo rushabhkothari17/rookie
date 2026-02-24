@@ -348,6 +348,29 @@ export function ProductsTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Deactivate/Activate Product Confirmation */}
+      <AlertDialog open={!!confirmToggleProduct} onOpenChange={(open) => !open && setConfirmToggleProduct(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmToggleProduct?.is_active ? "Deactivate Product" : "Activate Product"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {confirmToggleProduct?.is_active ? "deactivate" : "activate"} "{confirmToggleProduct?.name}"?
+              {confirmToggleProduct?.is_active && " It will no longer be visible in the store."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={confirmToggleProduct?.is_active ? "bg-red-600 hover:bg-red-700" : ""}
+              onClick={() => { handleToggleActive(confirmToggleProduct); setConfirmToggleProduct(null); }}
+              data-testid="confirm-product-toggle"
+            >
+              {confirmToggleProduct?.is_active ? "Deactivate" : "Activate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
