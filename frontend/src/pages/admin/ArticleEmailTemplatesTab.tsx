@@ -72,7 +72,6 @@ export function ArticleEmailTemplatesTab() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this email template?")) return;
     setDeleting(id);
     try {
       await api.delete(`/article-email-templates/${id}`);
