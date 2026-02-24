@@ -790,6 +790,19 @@ export function IntegrationsOverview() {
                             <Pencil size={14} />
                           </Button>
                           
+                          {(integration.id === "zoho_crm" || integration.id === "zoho_books") && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-slate-400 hover:text-purple-600 px-2"
+                              onClick={() => openMappingPanel(integration)}
+                              data-testid={`mappings-${integration.id}`}
+                              title="Configure mappings"
+                            >
+                              <ArrowRightLeft size={14} />
+                            </Button>
+                          )}
+                          
                           {integration.settings.length > 0 && (
                             <Button
                               size="sm"
