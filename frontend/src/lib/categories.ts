@@ -1,57 +1,28 @@
-export const CATEGORY_ORDER = [
-  "Zoho Express Setup",
-  "Migrate to Zoho",
-  "Managed Services",
-  "Build & Automate",
-  "Accounting on Zoho",
-  "Audit & Optimize",
-];
+/**
+ * Category utilities — fully dynamic, no hardcoded service or product names.
+ * Category names and display order come from the admin panel (database).
+ */
 
-export const CATEGORY_SLUGS: Record<string, string> = {
-  "Zoho Express Setup": "start-here",
-  "Migrate to Zoho": "migrations",
-  "Managed Services": "ongoing-plans",
-  "Build & Automate": "build-automate",
-  "Accounting on Zoho": "accounting-on-zoho",
-  "Audit & Optimize": "audit-optimize",
-};
+/** Convert a category name to a URL-safe slug */
+export function slugFromCategory(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
-export const displayCategory = (category: string) => {
-  if (category === "Start Here") return "Zoho Express Setup";
-  if (category === "Migrations") return "Migrate to Zoho";
-  if (category === "Ongoing Plans" || category === "Manages Services") {
-    return "Managed Services";
-  }
-  return category;
-};
-
-export const slugFromCategory = (category: string) => {
-  const label = displayCategory(category);
-  return CATEGORY_SLUGS[label] || label.toLowerCase().replace(/\s+/g, "-");
-};
-
-export const categoryFromSlug = (slug: string | null, available: string[]) => {
-  if (!slug) {
-    return available[0] || CATEGORY_ORDER[0];
-  }
+/** Find a category name that matches a URL slug from the available list */
+export function categoryFromSlug(slug: string | null, available: string[]): string | null {
+  if (!slug) return available[0] || null;
   const normalized = slug.toLowerCase();
-  if (normalized === "start-here") {
-    return "Zoho Express Setup";
-  }
-  if (normalized === "migrations") {
-    return "Migrate to Zoho";
-  }
-  if (normalized === "ongoing-plans") {
-    return "Managed Services";
-  }
-  const fromSlug = Object.entries(CATEGORY_SLUGS).find(
-    ([, value]) => value === normalized,
-  );
-  if (fromSlug) {
-    return fromSlug[0];
-  }
-  const directMatch = available.find(
-    (category) => category.toLowerCase().replace(/\s+/g, "-") === normalized,
-  );
-  return displayCategory(directMatch || available[0] || CATEGORY_ORDER[0]);
-};
+  return available.find((c) => slugFromCategory(c) === normalized) || available[0] || null;
+}
+
+/** Return category name as-is — no hardcoded remapping */
+export function displayCategory(name: string): string {
+  return name || "";
+}
+
+// Keep for backward compatibility with any remaining imports
+export const CATEGORY_ORDER: string[] = [];
