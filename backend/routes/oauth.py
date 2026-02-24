@@ -828,6 +828,51 @@ async def get_zoho_crm_modules_for_mapping(admin: Dict[str, Any] = Depends(get_t
     }
 
 
+@router.get("/oauth/zoho_crm/modules/{module_name}/fields")
+async def get_zoho_crm_module_fields(
+    module_name: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Fetch fields for a specific Zoho CRM module."""
+    tid = tenant_id_of(admin)
+    creds, dc_config = await _get_zoho_conn_info(tid, "zoho_crm")
+
+    access_token = await _get_zoho_access_token_cached(tid, "zoho_crm", creds, dc_config)
+    api_domain = creds.get("_api_domain", dc_config["api_domain"])
+
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        # Try v3 first, fall back to v6
+        fields_resp = await client.get(
+            f"{api_domain}/crm/v3/settings/fields",
+            params={"module": module_name},
+            headers={"Authorization": f"Zoho-oauthtoken {access_token}"},
+        )
+        if fields_resp.status_code != 200:
+            fields_resp = await client.get(
+                f"{api_domain}/crm/v6/settings/fields",
+                params={"module": module_name},
+                headers={"Authorization": f"Zoho-oauthtoken {access_token}"},
+            )
+
+    if fields_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch fields for module {module_name}")
+
+    fields = fields_resp.json().get("fields", [])
+    return {
+        "module": module_name,
+        "fields": [
+            {
+                "api_name": f.get("api_name"),
+                "field_label": f.get("field_label") or f.get("display_label") or f.get("api_name"),
+                "data_type": f.get("data_type"),
+                "read_only": f.get("read_only", False),
+            }
+            for f in fields
+            if f.get("api_name") and not f.get("read_only", False)
+        ]
+    }
+
+
 @router.get("/oauth/zoho_books/modules")
 async def get_zoho_books_modules_for_mapping(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Return fixed list of Zoho Books modules (Books uses resource-based URLs, not module API)."""
