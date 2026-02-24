@@ -17,10 +17,9 @@ router = APIRouter(prefix="/api", tags=["email-templates"])
 
 @router.get("/admin/email-templates")
 async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
     await EmailService.ensure_seeded(db, tid)
-    templates = await db.email_templates.find(tf, {"_id": 0}).sort("trigger", 1).to_list(100)
+    templates = await db.email_templates.find({"tenant_id": tid}, {"_id": 0}).sort("trigger", 1).to_list(100)
     return {"templates": templates}
 
 
