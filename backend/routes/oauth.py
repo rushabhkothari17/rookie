@@ -789,6 +789,7 @@ async def activate_provider(
         await _sync_to_settings("email_reply_to", stored_settings.get("reply_to", ""))
         await _sync_to_settings("email_provider_enabled", True)
     
+    await create_audit_log(entity_type="integration", entity_id=provider, action="provider_activated", actor=admin.get("email", "admin"), details={"provider": provider}, tenant_id=tid)
     return {"success": True, "message": f"{config['name']} is now your active email provider"}
 
 
@@ -812,6 +813,8 @@ async def deactivate_provider(
     # Disable live email sending
     await _sync_to_settings("email_provider_enabled", False)
     
+    tid = tenant_id_of(admin)
+    await create_audit_log(entity_type="integration", entity_id=provider, action="provider_deactivated", actor=admin.get("email", "admin"), details={"provider": provider}, tenant_id=tid)
     return {"success": True, "message": "Email provider deactivated. Emails will be stored but not sent."}
 
 
@@ -847,6 +850,7 @@ async def disconnect_provider(
     
     await db.oauth_connections.delete_one({"tenant_id": tid, "provider": provider})
     
+    await create_audit_log(entity_type="integration", entity_id=provider, action="disconnected", actor=admin.get("email", "admin"), details={"provider": provider}, tenant_id=tid)
     return {"success": True, "message": f"{config['name']} disconnected"}
 
 
