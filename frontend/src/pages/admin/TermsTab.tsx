@@ -82,6 +82,11 @@ export function TermsTab() {
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update terms"); }
   };
 
+  const handleDelete = async (termId: string) => {
+    try { await api.delete(`/admin/terms/${termId}`); toast.success("Terms deleted"); load(page); }
+    catch (e: any) { toast.error(e.response?.data?.detail || "Failed to delete"); }
+  };
+
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
     const base = process.env.REACT_APP_BACKEND_URL || "";
