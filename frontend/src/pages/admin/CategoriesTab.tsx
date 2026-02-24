@@ -129,8 +129,8 @@ export function CategoriesTab() {
                 <TableCell>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => openEdit(cat)} data-testid={`admin-edit-cat-${cat.id}`}>Edit</Button>
-                    <Button variant={cat.is_active ? "destructive" : "outline"} size="sm" onClick={() => handleToggle(cat)} data-testid={`admin-toggle-cat-${cat.id}`}>{cat.is_active ? "Deactivate" : "Activate"}</Button>
-                    <Button variant="ghost" size="sm" className={`${(cat.product_count ?? 0) > 0 ? "text-slate-300 cursor-not-allowed" : "text-red-500 hover:text-red-700"}`} onClick={() => handleDelete(cat)} data-testid={`admin-delete-cat-${cat.id}`}>Delete</Button>
+                    <Button variant={cat.is_active ? "destructive" : "outline"} size="sm" onClick={() => setConfirmToggleCat(cat)} data-testid={`admin-toggle-cat-${cat.id}`}>{cat.is_active ? "Deactivate" : "Activate"}</Button>
+                    <Button variant="ghost" size="sm" className={`${(cat.product_count ?? 0) > 0 ? "text-slate-300 cursor-not-allowed" : "text-red-500 hover:text-red-700"}`} onClick={() => { if ((cat.product_count ?? 0) > 0) { toast.error(`Cannot delete: ${cat.product_count} product(s) linked. Reassign first.`); return; } setConfirmDeleteCat(cat); }} data-testid={`admin-delete-cat-${cat.id}`}>Delete</Button>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/categories/${cat.id}/logs`); setEntityLogs(r.data.logs || []); setShowEntityLogs(true); }} data-testid={`admin-cat-logs-${cat.id}`}>Logs</Button>
                   </div>
                 </TableCell>
