@@ -255,3 +255,68 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - `/app/test_reports/iteration_74.json` - 100% pass rate (19/19 tests)
 - Bug fixed: UnboundLocalError in verify_email (shadowed datetime imports)
 
+### Phase 10: Refunds, Custom Domains & Finance (Feb 2026)
+
+**1. Order Refunds System**
+- New endpoint: `POST /api/admin/orders/{order_id}/refund`
+- Supports three providers: Stripe, GoCardless, Manual (record only)
+- Partial refunds supported with running total tracking
+- Order status auto-updates: `paid` → `partially_refunded` → `refunded`
+- Audit logging and webhook dispatch on refund
+- New endpoint: `GET /api/admin/orders/{order_id}/refunds` - refund history
+- Frontend: Refund button on paid/partially_refunded orders in Orders tab
+- Refund dialog with amount, reason, provider selection
+- New file: `backend/services/refund_service.py`
+- Modified: `backend/routes/admin/orders.py`
+- Modified: `frontend/src/pages/admin/OrdersTab.tsx`
+
+**2. Custom Domains Management**
+- Partners can configure custom subdomains (e.g., billing.company.com)
+- DNS CNAME instructions displayed in admin UI
+- Domain validation with regex and duplicate checking
+- New endpoints:
+  - `GET /api/admin/custom-domains`
+  - `PUT /api/admin/custom-domains`
+  - `DELETE /api/admin/custom-domains/{domain}`
+- Frontend: Custom Domains section in Website Content tab
+- New file: `frontend/src/components/admin/CustomDomainsSection.tsx`
+- Modified: `backend/routes/admin/tenants.py`
+
+**3. Finance Tab (Zoho Books & QuickBooks)**
+- New admin tab under Integrations section
+- Zoho Books tile with slide-out configuration panel:
+  - Setup guide with API Console link
+  - Datacenter selector (US/EU/IN/AU/CA)
+  - Client ID/Secret credentials
+  - Access token validation
+  - Account mappings management
+  - Sync now button and sync history
+- QuickBooks tile with "Coming Soon" badge
+- New endpoints:
+  - `GET /api/admin/finance/status`
+  - `POST /api/admin/finance/zoho-books/save-credentials`
+  - `POST /api/admin/finance/zoho-books/validate`
+  - `GET/POST /api/admin/finance/zoho-books/account-mappings`
+  - `POST /api/admin/finance/zoho-books/sync-now`
+  - `GET /api/admin/finance/sync-history`
+- New file: `backend/routes/admin/finance.py`
+- New file: `frontend/src/pages/admin/FinanceTab.tsx`
+- Modified: `frontend/src/pages/Admin.tsx` (added Finance tab)
+
+**4. Terms of Service PDF Generation**
+- Auto-generated PDF of ToS attached to order confirmation emails
+- Uses ReportLab for PDF generation
+- Includes: store name, order number, customer name, agreement timestamp
+- Properly parses HTML ToS content into paragraphs
+- Professional styling with headers, body text, footer
+- New file: `backend/services/pdf_service.py`
+- Modified: `backend/services/email_service.py` (added attachment support)
+- Modified: `backend/routes/checkout.py` (ToS PDF attached to order email)
+
+**Test Reports:**
+- `/app/test_reports/iteration_75.json` - 100% pass rate (Finance, Refunds, Custom Domains)
+
+**MOCKED APIs:**
+- Zoho Books integration is stubbed - no actual Zoho API calls yet
+- QuickBooks is a placeholder ("Coming Soon")
+
