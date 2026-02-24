@@ -345,7 +345,7 @@ export function CustomersTab() {
 
       {/* Create Customer Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent><DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
           <div className="space-y-3 max-h-[60vh] overflow-y-auto">
             {[["Full Name", "full_name"], ["Email", "email"], ["Password", "password"], ["Company", "company_name"], ["Job Title", "job_title"], ["Phone", "phone"], ["Address Line 1", "line1"], ["City", "city"], ["Region", "region"], ["Postal", "postal"]].map(([label, key]) => (
               <div key={key} className="space-y-1"><label className="text-xs text-slate-500">{label}</label><Input value={(newCustomer as any)[key]} onChange={(e) => setNewCustomer({ ...newCustomer, [key]: e.target.value })} /></div>
