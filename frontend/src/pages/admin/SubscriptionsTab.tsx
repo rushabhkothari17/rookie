@@ -63,8 +63,8 @@ export function SubscriptionsTab() {
   // Dialogs
   const [selectedSub, setSelectedSub] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [subLogs, setSubLogs] = useState<any[]>([]);
-  const [showLogsDialog, setShowLogsDialog] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [subNotes, setSubNotes] = useState<any[]>([]);
   const [subNotesJson, setSubNotesJson] = useState<any>(null);
@@ -297,7 +297,7 @@ export function SubscriptionsTab() {
                 <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${statusColor(sub.status)}`}>{sub.status}</span></TableCell>
                 <TableCell>
                   <div className="flex gap-1 flex-nowrap">
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { try { const r = await api.get(`/admin/subscriptions/${sub.id}/logs`); setSubLogs(r.data.logs || []); setShowLogsDialog(true); } catch { toast.error("Failed to load logs"); } }} data-testid={`admin-subs-logs-${sub.id}`}>Logs</Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/subscriptions/${sub.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-subs-logs-${sub.id}`}>Logs</Button>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSubNotes(sub.notes || []); setSubNotesJson(sub.notes_json || null); setShowNotesDialog(true); }}>Notes</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSub(sub); setShowEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmRenewId(sub.id)}>Renew</Button>
@@ -388,25 +388,7 @@ export function SubscriptionsTab() {
       </Dialog>
 
       {/* Logs Dialog */}
-      <Dialog open={showLogsDialog} onOpenChange={setShowLogsDialog}>
-        <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Subscription Logs</DialogTitle></DialogHeader>
-          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-            {subLogs.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No logs found</p>}
-            {subLogs.map((l: any, i: number) => (
-              <div key={l.id || i} className="border border-slate-200 rounded p-3">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-sm font-semibold text-slate-900">{l.action}</span>
-                  <span className="text-xs text-slate-500">{l.created_at ? new Date(l.created_at).toLocaleString() : "—"}</span>
-                </div>
-                <div className="text-xs text-slate-600">Actor: {l.actor || "—"}</div>
-                {l.details && Object.keys(l.details).length > 0 && (
-                  <pre className="text-xs text-slate-500 mt-1 bg-slate-50 p-2 rounded overflow-x-auto">{JSON.stringify(l.details, null, 2)}</pre>
-                )}
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Subscription Audit Logs" logsUrl={logsUrl} />
 
       {/* Cancel Confirmation */}
       <AlertDialog open={!!confirmCancelId} onOpenChange={(open) => !open && setConfirmCancelId(null)}>
