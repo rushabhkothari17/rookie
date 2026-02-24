@@ -718,12 +718,44 @@ async def checkout_status(
             customer = await db.customers.find_one({"id": order["customer_id"]}, {"_id": 0})
             if customer and not customer.get("currency_locked"):
                 await db.customers.update_one({"id": customer["id"]}, {"$set": {"currency_locked": True}})
-            await db.email_outbox.insert_one({
-                "id": make_id(), "to": user["email"],
-                "subject": "Order confirmation",
-                "body": f"Your order {order['order_number']} is confirmed.",
-                "type": "order_confirmation", "status": "MOCKED", "created_at": now_iso(),
-            })
+            
+            # Send order confirmation email with ToS PDF attachment
+            from services.email_service import EmailService
+            from services.pdf_service import generate_order_tos_pdf
+            
+            attachments = []
+            try:
+                # Generate ToS PDF if available
+                tos_pdf = await generate_order_tos_pdf(
+                    tenant_id=order.get("tenant_id", "automate-accounts"),
+                    order_id=order["id"],
+                    db=db
+                )
+                if tos_pdf:
+                    attachments.append({
+                        "filename": f"terms-and-conditions-{order['order_number']}.pdf",
+                        "content": tos_pdf,
+                        "content_type": "application/pdf"
+                    })
+            except Exception as pdf_err:
+                # Log error but don't fail the order
+                import logging
+                logging.warning(f"Failed to generate ToS PDF for order {order['id']}: {pdf_err}")
+            
+            await EmailService.send(
+                trigger="order_placed",
+                recipient=user["email"],
+                variables={
+                    "customer_name": user.get("full_name", ""),
+                    "customer_email": user["email"],
+                    "order_number": order["order_number"],
+                    "order_total": f"{order.get('total', 0):.2f}",
+                    "order_currency": order.get("currency", "USD"),
+                },
+                db=db,
+                attachments=attachments if attachments else None,
+                tenant_id=order.get("tenant_id")
+            )
     return {
         "status": status.status,
         "payment_status": status.payment_status,
