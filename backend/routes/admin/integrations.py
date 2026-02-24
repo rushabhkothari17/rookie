@@ -626,58 +626,71 @@ async def remove_crm_mapping(
 
 @router.get("/admin/integrations/status")
 async def get_all_integrations_status(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Get status of all integrations."""
+    """Get status of all integrations - reads from oauth_connections (Connected Services)."""
     tid = tenant_id_of(admin)
     
-    integrations = await db.integrations.find(
+    # Get all connected services from oauth_connections
+    connections = await db.oauth_connections.find(
         {"tenant_id": tid},
-        {"_id": 0, "credentials": 0, "client_secret": 0}
-    ).to_list(20)
+        {"_id": 0, "credentials": 0}
+    ).to_list(50)
     
-    # Get Resend status
-    resend_validated = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "resend_validated"},
-        {"_id": 0}
-    )
+    # Build a lookup dict
+    conn_lookup = {c.get("provider"): c for c in connections}
     
-    # Get active email provider
+    # Get active email provider from app_settings
     active_provider = await db.app_settings.find_one(
         {"tenant_id": tid, "key": "active_email_provider"},
         {"_id": 0}
     )
+    active_email = active_provider.get("value") if active_provider else None
     
-    # Get Stripe status
-    stripe_validated = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "stripe_validated"},
-        {"_id": 0}
-    )
+    # Check for validated email providers in oauth_connections
+    resend_conn = conn_lookup.get("resend")
+    zoho_mail_conn = conn_lookup.get("zoho_mail")
     
-    # Get GoCardless status
-    gc_validated = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "gocardless_validated"},
-        {"_id": 0}
-    )
-    
-    zoho_mail = next((i for i in integrations if i.get("service") == "zoho_mail"), None)
-    zoho_crm = next((i for i in integrations if i.get("service") == "zoho_crm"), None)
+    # If active provider is set but not in oauth_connections, check oauth_connections for any validated email
+    if not active_email:
+        # Auto-detect active email provider from oauth_connections
+        if resend_conn and resend_conn.get("is_validated"):
+            active_email = "resend"
+        elif zoho_mail_conn and zoho_mail_conn.get("is_validated"):
+            active_email = "zoho_mail"
     
     return {
-        "active_email_provider": active_provider.get("value") if active_provider else None,
+        "active_email_provider": active_email,
         "integrations": {
             "resend": {
-                "status": "connected" if (resend_validated and resend_validated.get("validated")) else "not_configured",
-                "validated_at": resend_validated.get("validated_at") if resend_validated else None,
-                "is_active": (active_provider.get("value") if active_provider else None) == "resend",
+                "status": "connected" if (resend_conn and resend_conn.get("is_validated")) else "not_configured",
+                "validated_at": resend_conn.get("validated_at") if resend_conn else None,
+                "is_active": active_email == "resend",
                 "type": "email"
             },
             "zoho_mail": {
-                "status": "connected" if (zoho_mail and zoho_mail.get("validated")) else "not_configured",
-                "datacenter": zoho_mail.get("datacenter") if zoho_mail else None,
-                "validated_at": zoho_mail.get("validated_at") if zoho_mail else None,
-                "is_active": (active_provider.get("value") if active_provider else None) == "zoho_mail",
+                "status": "connected" if (zoho_mail_conn and zoho_mail_conn.get("is_validated")) else "not_configured",
+                "datacenter": zoho_mail_conn.get("credentials", {}).get("datacenter") if zoho_mail_conn else None,
+                "validated_at": zoho_mail_conn.get("validated_at") if zoho_mail_conn else None,
+                "is_active": active_email == "zoho_mail",
                 "type": "email"
             },
             "zoho_crm": {
+                "status": "connected" if conn_lookup.get("zoho_crm", {}).get("is_validated") else "not_configured",
+                "type": "crm"
+            },
+            "zoho_books": {
+                "status": "connected" if conn_lookup.get("zoho_books", {}).get("is_validated") else "not_configured",
+                "type": "accounting"
+            },
+            "stripe": {
+                "status": "connected" if conn_lookup.get("stripe", {}).get("is_validated") else "not_configured",
+                "type": "payments"
+            },
+            "gocardless": {
+                "status": "connected" if (conn_lookup.get("gocardless", {}).get("is_validated") or conn_lookup.get("gocardless_sandbox", {}).get("is_validated")) else "not_configured",
+                "type": "payments"
+            },
+        }
+    }
                 "status": "connected" if (zoho_crm and zoho_crm.get("validated")) else "not_configured",
                 "datacenter": zoho_crm.get("datacenter") if zoho_crm else None,
                 "validated_at": zoho_crm.get("validated_at") if zoho_crm else None,
