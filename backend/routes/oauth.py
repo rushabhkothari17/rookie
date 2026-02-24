@@ -401,38 +401,63 @@ async def validate_connection(
                 else:
                     token_data = token_resp.json()
                     access_token = token_data.get("access_token")
-                    # Use the api_domain from Zoho's token response — it's authoritative
-                    # and always points to the correct DC regardless of user selection
+                    # Start with the api_domain from the token response
                     zoho_api_domain = token_data.get("api_domain", dc_config["api_domain"])
-                    
+
+                    # Helper: try a Zoho API endpoint, auto-detecting correct DC on INVALID_URL_PATTERN
+                    async def _zoho_api_get(path: str) -> tuple:
+                        """Returns (response, working_api_domain). Tries all DC domains on INVALID_URL_PATTERN."""
+                        all_domains = [zoho_api_domain] + [
+                            v["api_domain"] for v in ZOHO_DATA_CENTERS.values()
+                            if v["api_domain"] != zoho_api_domain
+                        ]
+                        last_resp = None
+                        for domain in all_domains:
+                            r = await client.get(
+                                f"{domain}{path}",
+                                headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                            )
+                            last_resp = r
+                            if r.status_code == 200:
+                                return r, domain
+                            # INVALID_URL_PATTERN means wrong DC — try next
+                            try:
+                                if r.json().get("code") != "INVALID_URL_PATTERN":
+                                    return r, domain  # real error (scope etc) — stop here
+                            except Exception:
+                                return r, domain
+                        return last_resp, zoho_api_domain
+
                     # Test API access based on provider
                     if provider == "zoho_mail":
-                        test_resp = await client.get(
-                            f"{dc_config['mail_api']}/accounts",
-                            headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
-                        )
-                        # Auto-store account_id from first account if not already stored
-                        if test_resp.status_code == 200:
-                            accounts = test_resp.json().get("data", [])
-                            if accounts:
-                                auto_account_id = str(accounts[0].get("accountId", ""))
-                                if auto_account_id:
-                                    await db.oauth_connections.update_one(
-                                        {"tenant_id": tid, "provider": "zoho_mail"},
-                                        {"$set": {"credentials.account_id": auto_account_id}}
-                                    )
+                        # Zoho Mail has its own subdomain per DC — try all mail DCs
+                        all_mail_apis = [dc_config["mail_api"]] + [
+                            v["mail_api"] for v in ZOHO_DATA_CENTERS.values()
+                            if v["mail_api"] != dc_config["mail_api"]
+                        ]
+                        test_resp = None
+                        for mail_api in all_mail_apis:
+                            r = await client.get(
+                                f"{mail_api}/accounts",
+                                headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                            )
+                            test_resp = r
+                            if r.status_code == 200:
+                                # Auto-store account_id from first account
+                                accounts = r.json().get("data", [])
+                                if accounts:
+                                    auto_account_id = str(accounts[0].get("accountId", ""))
+                                    if auto_account_id:
+                                        await db.oauth_connections.update_one(
+                                            {"tenant_id": tid, "provider": "zoho_mail"},
+                                            {"$set": {"credentials.account_id": auto_account_id}}
+                                        )
+                                break
                     elif provider == "zoho_crm":
-                        # /crm/v3/leads requires ZohoCRM.modules.ALL (from setup guide)
-                        test_resp = await client.get(
-                            f"{zoho_api_domain}/crm/v3/leads?per_page=1",
-                            headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
-                        )
+                        test_resp, _ = await _zoho_api_get("/crm/v3/leads?per_page=1")
                     else:  # zoho_books
-                        test_resp = await client.get(
-                            f"{zoho_api_domain}/books/v3/organizations",
-                            headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
-                        )
-                    
+                        test_resp, _ = await _zoho_api_get("/books/v3/organizations")
+
                     if test_resp.status_code == 200:
                         result = {"success": True, "message": f"{config['name']} connection validated successfully"}
                     else:
@@ -443,6 +468,8 @@ async def validate_connection(
                             zoho_msg  = err_body.get("message", "")
                             if zoho_code == "OAUTH_SCOPE_MISMATCH":
                                 detail = "Scope mismatch — re-generate the Authorization Code with the correct scopes (see Setup Guide)"
+                            elif zoho_code == "INVALID_URL_PATTERN":
+                                detail = "Could not find your account on any Zoho data center — check your credentials and try again"
                             else:
                                 detail = zoho_msg or zoho_code or f"HTTP {test_resp.status_code}"
                         except Exception:
