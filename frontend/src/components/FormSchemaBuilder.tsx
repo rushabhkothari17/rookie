@@ -58,7 +58,7 @@ interface Props {
 
 export default function FormSchemaBuilder({ value, onChange, title, disableAddDelete }: Props) {
   const [fields, setFields] = useState<FormField[]>(() =>
-    parseSchema(value).sort((a, b) => a.order - b.order)
+    parseSchema(value).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   );
   const [editingId, setEditingId] = useState<string | null>(null);
 
