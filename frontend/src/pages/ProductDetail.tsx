@@ -434,7 +434,7 @@ export default function ProductDetail() {
       if (scopeUnlock) {
         return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
       }
-      return { label: "Request scope", onClick: handleScopeRequest };
+      return { label: "Proceed to checkout", onClick: handleScopeRequest };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
   }, [product, pricing, isRFQ, migBooksData, scopeUnlock]);
