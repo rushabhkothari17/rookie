@@ -472,6 +472,7 @@ async def validate_zoho_crm(
     crm_service = ZohoCRMService(tid, payload.datacenter)
     
     result = await crm_service.validate_connection(payload.access_token)
+    await create_audit_log(entity_type="integration", entity_id="zoho_crm", action="connection_validated", actor=admin.get("email", "admin"), details={"success": result.get("success", False)})
     return result
 
 
