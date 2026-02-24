@@ -202,6 +202,15 @@ export default function Portal() {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4" data-testid="portal-error">
+        <div className="text-red-500 text-sm font-medium">{loadError}</div>
+        <button onClick={load} className="text-xs text-slate-500 underline">Try again</button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10 max-w-6xl mx-auto" data-testid="portal-page">
       {/* Header */}
