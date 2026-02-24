@@ -136,6 +136,7 @@ async def admin_create_quote_request(
     
     # Auto-sync to Zoho CRM (fire and forget)
     asyncio.create_task(auto_sync_to_zoho_crm(tenant_id_of(admin), "quote_requests", quote, "create"))
+    asyncio.create_task(auto_sync_to_zoho_books(tenant_id_of(admin), "quote_requests", quote, "create"))
     
     return {"quote": quote}
 
