@@ -361,7 +361,7 @@ export function IntegrationsOverview() {
   }
 
   return (
-    <div className="flex gap-6 relative" data-testid="integrations-overview">
+    <div className="flex gap-6 relative pb-20" data-testid="integrations-overview">
       {/* Category Sidebar */}
       <div className="w-48 shrink-0">
         <div className="sticky top-4 space-y-1">
