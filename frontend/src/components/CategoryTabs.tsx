@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CATEGORY_ORDER, displayCategory, slugFromCategory } from "@/lib/categories";
+import { displayCategory, slugFromCategory } from "@/lib/categories";
 import api from "@/lib/api";
 
 export default function CategoryTabs({
@@ -8,17 +8,14 @@ export default function CategoryTabs({
 }: {
   activeCategory?: string | null;
 }) {
-  const [categories, setCategories] = useState<string[]>(CATEGORY_ORDER);
-  const activeLabel = displayCategory(activeCategory || categories[0] || CATEGORY_ORDER[0]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const activeLabel = displayCategory(activeCategory || categories[0] || "");
 
   useEffect(() => {
     api.get("/categories").then((res) => {
+      // Use the order returned by the API (admin-defined order)
       const apiCats: string[] = res.data.categories || [];
-      if (apiCats.length === 0) return;
-      // CATEGORY_ORDER items first (that exist in products), then any new custom ones
-      const ordered = CATEGORY_ORDER.filter((c) => apiCats.includes(c));
-      const newOnes = apiCats.filter((c) => !CATEGORY_ORDER.includes(c));
-      setCategories([...ordered, ...newOnes]);
+      setCategories(apiCats);
     }).catch(() => {});
   }, []);
 
