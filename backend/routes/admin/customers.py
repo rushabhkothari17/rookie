@@ -284,6 +284,9 @@ async def admin_create_customer(
         details={"email": payload.email, "full_name": payload.full_name, "verified": payload.mark_verified},
     )
 
+    # Auto-sync to Zoho CRM (fire and forget - don't block response)
+    asyncio.create_task(auto_sync_to_zoho_crm(tid, "customers", customer_doc, "create"))
+
     return {"message": "Customer created", "customer_id": customer_id, "user_id": user_id}
 
 
