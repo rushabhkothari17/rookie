@@ -200,3 +200,15 @@ async def delete_template(template_id: str, admin: Dict[str, Any] = Depends(get_
         raise HTTPException(status_code=404, detail="Template not found")
     await db.article_templates.delete_one({"id": template_id})
     return {"message": "Deleted"}
+
+
+@router.get("/article-templates/{template_id}/logs")
+async def get_article_template_logs(template_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    tpl = await db.article_templates.find_one({**tf, "id": template_id}, {"_id": 0, "id": 1})
+    if not tpl:
+        raise HTTPException(status_code=404, detail="Template not found")
+    logs = await db.audit_logs.find(
+        {"entity_type": "article_template", "entity_id": template_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return {"logs": logs}
