@@ -106,6 +106,13 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Iter83 Bug Fixes: `/app/test_reports/iteration_83.json` — 15/15 backend tests pass (Portal 404, dropdown labels, email dedup, Test Connection button)
 - Iter84 P0 Bug Fixes: `/app/test_reports/iteration_84.json` — 20/20 backend tests pass (Cart TypeScript fix, all P0 flows verified)
 
+### Iter84 P0 Bug Fixes (Feb 2026)
+**Root Cause — Cart Checkout Dropdowns:** Cart.tsx refactor (1222→980 lines) added 6+ new `WebsiteSettings` property references that were missing from the interface in `WebsiteContext.tsx`. This caused TypeScript compilation errors ("Compiled with problems" overlay in dev mode) blocking user interaction. Fixed by adding `checkout_zoho_description`, `checkout_zoho_subscription_type_label`, `checkout_zoho_product_label`, `checkout_zoho_access_label`, `checkout_zoho_access_options`, `checkout_partner_question`, `checkout_terms_enabled` to interface + DEFAULT_SETTINGS. Also fixed boolean type comparison (`extraFields[fKey] === true` → `=== 'true'`).
+
+**Admin Manual Order/Sub Dropdowns:** Working correctly — 31+ products appear in dropdown. Previous CSS fixes were unnecessary; issue was the TypeScript overlay blocking interaction.
+
+**Customer Portal:** Working correctly — loads /orders, /subscriptions, /products for customer without 404. Friendly error messages shown if customer record not found.
+
 ### Iter83 Bug Fixes (Feb 2026)
 **Bug 1 - Customer Portal 404:** Portal.tsx `load()` function now has proper try-catch with friendly error messages for 404, 401, 403 responses. Admin users visiting `/portal` see "No customer account found" instead of crashing.
 
