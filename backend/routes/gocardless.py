@@ -187,7 +187,7 @@ async def complete_gocardless_redirect(
                             actor="system",
                             details={"payment_status": status, "payment_id": payment_id},
                         )
-                        if status in ["confirmed", "paid_out", "submitted"]:
+                        if status in ["confirmed", "paid_out", "submitted", "pending_submission"]:
                             await db.orders.update_one(
                                 {"id": payload.order_id},
                                 {"$set": {"status": "paid", "payment_date": now_iso(), "updated_at": now_iso()}},
