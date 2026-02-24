@@ -190,6 +190,12 @@ async def build_order_items(items: list, tenant_id: str = "") -> List[Dict[str, 
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         pricing = calculate_price(product, item.inputs, fee_rate=fee_rate)
+        # If a price_override is set (e.g. from scope ID unlock), use it
+        if hasattr(item, "price_override") and item.price_override is not None:
+            pricing["subtotal"] = item.price_override
+            pricing["total"] = item.price_override
+            pricing["fee"] = 0.0
+            pricing["is_scope_request"] = False
         order_items.append({
             "id": make_id(),
             "product": product,
