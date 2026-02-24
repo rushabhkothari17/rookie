@@ -181,12 +181,17 @@ async def complete_gocardless_redirect(
                                 details={"payment_status": status, "payment_id": payment_id},
                             )
                 else:
+                    # Store mandate_id even on payment failure so retry can skip re-completing the redirect flow
+                    await db.orders.update_one(
+                        {"id": payload.order_id},
+                        {"$set": {"gocardless_mandate_id": mandate_id, "updated_at": now_iso()}},
+                    )
                     await create_audit_log(
                         entity_type="order",
                         entity_id=payload.order_id,
                         action="payment_creation_failed",
                         actor="system",
-                        details={"mandate_id": mandate_id, "error": "Payment creation returned None"},
+                        details={"mandate_id": mandate_id, "scheme": scheme, "currency_used": payment_currency, "error": "Payment creation returned None"},
                     )
                     raise HTTPException(status_code=500, detail="Failed to create payment with GoCardless. Please contact support with your order number.")
 
