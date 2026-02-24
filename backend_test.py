@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class AutomateAccountsAPITester:
-    def __init__(self, base_url="https://debug-cart-dropdowns.preview.emergentagent.com"):
+    def __init__(self, base_url="https://bug-fix-sprint-9.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.admin_token = None
@@ -500,7 +500,7 @@ class AutomateAccountsAPITester:
                 "inputs": {"transactions": 100, "inventory": False, "multi_currency": False, "offshore": False}
             }],
             "checkout_type": "subscription",
-            "origin_url": "https://debug-cart-dropdowns.preview.emergentagent.com",
+            "origin_url": "https://bug-fix-sprint-9.preview.emergentagent.com",
             "terms_accepted": True
         }
         
@@ -648,7 +648,7 @@ class AutomateAccountsAPITester:
                 "inputs": {}
             }],
             "checkout_type": "one_time",
-            "origin_url": "https://debug-cart-dropdowns.preview.emergentagent.com",
+            "origin_url": "https://bug-fix-sprint-9.preview.emergentagent.com",
             "terms_accepted": True
         }
         
@@ -670,7 +670,7 @@ class AutomateAccountsAPITester:
                 "inputs": {}
             }],
             "checkout_type": "one_time",
-            "origin_url": "https://debug-cart-dropdowns.preview.emergentagent.com",
+            "origin_url": "https://bug-fix-sprint-9.preview.emergentagent.com",
             "terms_accepted": False
         }
         

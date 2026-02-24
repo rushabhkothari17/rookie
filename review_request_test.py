@@ -5,7 +5,7 @@ import json
 
 class ReviewRequestTester:
     def __init__(self):
-        self.base_url = "https://debug-cart-dropdowns.preview.emergentagent.com"
+        self.base_url = "https://bug-fix-sprint-9.preview.emergentagent.com"
         self.admin_token = None
         self.user_token = None
         
@@ -81,7 +81,7 @@ class ReviewRequestTester:
         payload = {
             "items": [{"product_id": "prod_ongoing_bookkeeping", "quantity": 1, "inputs": {}}],
             "checkout_type": "subscription",
-            "origin_url": "https://debug-cart-dropdowns.preview.emergentagent.com",
+            "origin_url": "https://bug-fix-sprint-9.preview.emergentagent.com",
             "terms_accepted": True
         }
         
@@ -179,7 +179,7 @@ class ReviewRequestTester:
     def run_review_tests(self):
         """Run all tests specified in the review request"""
         print("🔥 TESTING CRITICAL BUG FIXES - STRIPE SUBSCRIPTION MODE & GOCARDLESS ERROR HANDLING")
-        print("Backend URL: https://debug-cart-dropdowns.preview.emergentagent.com/api")
+        print("Backend URL: https://bug-fix-sprint-9.preview.emergentagent.com/api")
         print("Admin Credentials: admin@automateaccounts.local / ChangeMe123!")
         print("="*90)
         
