@@ -369,7 +369,7 @@ export default function Cart() {
     if (!cartQuoteProduct) return;
     setSubmittingCartQuote(true);
     try {
-      await api.post(`/products/${cartQuoteProduct.id}/request-quote`, {
+      await api.post(`/products/request-quote`, {
         ...cartQuoteForm,
         product_id: cartQuoteProduct.id,
         product_name: cartQuoteProduct.name,
