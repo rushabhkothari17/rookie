@@ -537,10 +537,22 @@ async def get_zoho_crm_module_fields(
 # === CRM Field Mappings ===
 
 @router.get("/admin/integrations/crm-mappings")
-async def get_crm_mappings(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Get all CRM field mappings for the tenant."""
+async def get_crm_mappings(
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    provider: Optional[str] = Query(None),
+):
+    """Get all CRM field mappings for the tenant, optionally filtered by provider."""
     tid = tenant_id_of(admin)
-    mappings = await get_crm_field_mappings(tid)
+    all_mappings = await get_crm_field_mappings(tid)
+
+    if provider:
+        if provider == "zoho_crm":
+            # Backwards compat: mappings without a provider field belong to CRM
+            mappings = [m for m in all_mappings if not m.get("provider") or m.get("provider") == "zoho_crm"]
+        else:
+            mappings = [m for m in all_mappings if m.get("provider") == provider]
+    else:
+        mappings = all_mappings
     
     # Define webapp modules available for mapping
     webapp_modules = [
