@@ -147,6 +147,7 @@ app.include_router(api_keys_admin_router)
 app.include_router(webhooks_admin_router)
 app.include_router(integrations_admin_router)
 app.include_router(finance_admin_router)
+app.include_router(permissions_admin_router)
 app.include_router(gdpr_router)
 app.include_router(downloads_router)
 
