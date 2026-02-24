@@ -202,6 +202,12 @@ async def orders_preview(
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         pricing = calculate_price(product, item.inputs, fee_rate=fee_rate)
+        # If a price_override is set (e.g. from scope ID unlock), use it
+        if item.price_override is not None:
+            pricing["subtotal"] = item.price_override
+            pricing["total"] = item.price_override
+            pricing["fee"] = 0.0
+            pricing["is_scope_request"] = False
         # Include nested product and pricing objects so Cart.tsx can access item.product.pricing_type
         # and item.pricing.is_scope_request etc.
         results.append({
