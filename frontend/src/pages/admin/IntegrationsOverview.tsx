@@ -852,6 +852,8 @@ export function IntegrationsOverview() {
                 <h3 className="text-base font-semibold text-slate-900">
                   {panelMode === "settings"
                     ? `${selectedIntegration.name} Settings`
+                    : panelMode === "mapping"
+                    ? `${selectedIntegration.name} Mappings`
                     : selectedIntegration.status !== "not_connected"
                     ? `Edit ${selectedIntegration.name}`
                     : `Connect ${selectedIntegration.name}`}
