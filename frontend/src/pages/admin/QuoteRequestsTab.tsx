@@ -10,6 +10,8 @@ import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { Download, Upload} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const STATUS_OPTIONS = ["pending", "responded", "closed"];
 const BLANK_FORM = { product_id: "", product_name: "", name: "", email: "", company: "", phone: "", message: "", user_id: "", status: "pending" };

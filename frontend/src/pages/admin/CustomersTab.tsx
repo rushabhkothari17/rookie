@@ -12,6 +12,7 @@ import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { useAuth } from "@/contexts/AuthContext";
 import { Download, Plus, Upload} from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 const PARTNER_MAP_OPTIONS = [
   { value: "", label: "Not set" },
