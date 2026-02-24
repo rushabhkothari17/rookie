@@ -872,16 +872,17 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     access_token = await _get_zoho_access_token_cached(tid, "zoho_crm", creds, dc_config)
     api_domain = creds.get("_api_domain", dc_config["api_domain"])
 
-        synced_counts: Dict[str, int] = {}
-        errors: List[str] = []
+    synced_counts: Dict[str, int] = {}
+    errors: List[str] = []
 
-        collection_map: Dict[str, Any] = {
-            "customers": db.customers,
-            "orders": db.orders,
-            "subscriptions": db.subscriptions,
-            "quote_requests": db.quote_requests,
-        }
+    collection_map: Dict[str, Any] = {
+        "customers": db.customers,
+        "orders": db.orders,
+        "subscriptions": db.subscriptions,
+        "quote_requests": db.quote_requests,
+    }
 
+    async with httpx.AsyncClient(timeout=60.0) as client:
         for mapping in mappings:
             webapp_module = mapping.get("webapp_module")
             crm_module = mapping.get("crm_module")
