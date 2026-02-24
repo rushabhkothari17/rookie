@@ -1193,7 +1193,7 @@ export function IntegrationsOverview() {
                         Map your webapp data to {selectedIntegration.name} modules
                       </p>
                     </div>
-                    {selectedIntegration.id === "zoho_crm" && (
+                    {(selectedIntegration.id === "zoho_crm" || selectedIntegration.id === "zoho_books") && (
                       <Button
                         size="sm"
                         className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -1211,7 +1211,7 @@ export function IntegrationsOverview() {
                   </div>
 
                   {/* Last sync result */}
-                  {lastSyncResult && selectedIntegration?.id === "zoho_crm" && (
+                  {lastSyncResult && (selectedIntegration?.id === "zoho_crm" || selectedIntegration?.id === "zoho_books") && (
                     <div className={`p-3 rounded-lg border text-xs ${
                       lastSyncResult.success 
                         ? "bg-green-50 border-green-200" 
