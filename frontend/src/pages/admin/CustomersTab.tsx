@@ -221,9 +221,9 @@ export function CustomersTab() {
                   <TableCell data-testid={`admin-customer-partner-map-${customer.id}`}>
                     {editingPartnerMap?.customerId === customer.id ? (
                       <div className="flex gap-1 items-center">
-                        <Select value={editingPartnerMap.value} onValueChange={v => setEditingPartnerMap({ customerId: customer.id, value: v })}>
+                        <Select value={editingPartnerMap.value || "__none__"} onValueChange={v => setEditingPartnerMap({ customerId: customer.id, value: v === "__none__" ? "" : v })}>
                           <SelectTrigger className="h-7 text-xs w-36 bg-white"><SelectValue /></SelectTrigger>
-                          <SelectContent>{PARTNER_MAP_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                          <SelectContent>{PARTNER_MAP_OPTIONS.map(o => <SelectItem key={o.value || "__none__"} value={o.value || "__none__"}>{o.label}</SelectItem>)}</SelectContent>
                         </Select>
                         <button onClick={async () => {
                           try {
