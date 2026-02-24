@@ -25,9 +25,36 @@ from datetime import datetime, timezone, timedelta
 router = APIRouter(prefix="/api", tags=["webhooks"])
 
 
+async def get_stripe_key_for_webhook() -> str:
+    """Get Stripe key - check oauth_connections first, fallback to env.
+    
+    For webhooks, we use the first validated Stripe connection we find,
+    or fallback to the environment variable since webhooks need to work
+    even if no connection is explicitly configured.
+    """
+    conn = await db.oauth_connections.find_one(
+        {"provider": "stripe", "is_validated": True},
+        {"_id": 0, "credentials": 1}
+    )
+    if conn:
+        return conn.get("credentials", {}).get("api_key") or STRIPE_API_KEY
+    return STRIPE_API_KEY
+
+
+async def get_stripe_fee_rate_for_tenant(tenant_id: str) -> float:
+    """Get Stripe fee rate from oauth_connections."""
+    conn = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": "stripe", "is_validated": True},
+        {"_id": 0, "settings": 1}
+    )
+    if conn:
+        return float(conn.get("settings", {}).get("fee_rate", SERVICE_FEE_RATE))
+    return SERVICE_FEE_RATE
+
+
 @router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    _stripe_key = await SettingsService.get("stripe_secret_key") or STRIPE_API_KEY
+    _stripe_key = await get_stripe_key_for_webhook()
     stripe_checkout = StripeCheckout(api_key=_stripe_key, webhook_url="")
     body = await request.body()
     webhook_response = await stripe_checkout.handle_webhook(body, request.headers.get("Stripe-Signature"))
