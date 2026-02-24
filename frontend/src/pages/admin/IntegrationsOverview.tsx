@@ -1230,14 +1230,14 @@ export function IntegrationsOverview() {
                                     <span className="text-xs text-slate-500 font-mono w-32 truncate shrink-0">{wf}</span>
                                     <ChevronRight size={12} className="text-slate-300 shrink-0" />
                                     <Select
-                                      value={current?.crm_field || ""}
-                                      onValueChange={(val) => setFieldMap(wf, val)}
+                                      value={current?.crm_field || "__none__"}
+                                      onValueChange={(val) => setFieldMap(wf, val === "__none__" ? "" : val)}
                                     >
                                       <SelectTrigger className="h-7 text-xs flex-1" data-testid={`field-${wf}`}>
                                         <SelectValue placeholder={`Select ${selectedIntegration.name} field...`} />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="">-- None --</SelectItem>
+                                        <SelectItem value="__none__" className="text-slate-400">-- None --</SelectItem>
                                         {zohoModuleFields.map(zf => (
                                           <SelectItem key={zf.api_name} value={zf.api_name}>
                                             {zf.field_label}
