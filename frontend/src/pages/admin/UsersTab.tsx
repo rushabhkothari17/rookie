@@ -127,7 +127,6 @@ export function UsersTab() {
 
   const handleToggleActive = async (userId: string, currentActive: boolean) => {
     const newState = !currentActive;
-    if (!confirm(`${newState ? "Activate" : "Deactivate"} this user?`)) return;
     try {
       if (newState) {
         await api.post(`/admin/users/${userId}/reactivate`);
