@@ -84,7 +84,6 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this template? This cannot be undone.")) return;
     setDeleting(id);
     try {
       await api.delete(`/article-templates/${id}`);
