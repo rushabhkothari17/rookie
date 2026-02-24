@@ -168,12 +168,6 @@ export default function Admin() {
           <TabsContent value="integrations" className="space-y-4">
             <IntegrationsOverview />
           </TabsContent>
-          <TabsContent value="crm" className="space-y-4">
-            <CRMTab />
-          </TabsContent>
-          <TabsContent value="finance" className="space-y-4">
-            <FinanceTab />
-          </TabsContent>
           <TabsContent value="api" className="space-y-4">
             <ApiTab />
           </TabsContent>
