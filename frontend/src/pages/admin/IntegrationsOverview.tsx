@@ -647,10 +647,15 @@ export function IntegrationsOverview() {
   };
 
   const handleBulkSync = async () => {
+    if (!selectedIntegration) return;
     setSyncing(true);
     setLastSyncResult(null);
     try {
-      const res = await api.post("/oauth/zoho_crm/bulk-sync");
+      // Determine sync endpoint based on integration
+      const syncEndpoint = selectedIntegration.id === "zoho_books" 
+        ? "/oauth/zoho_books/bulk-sync" 
+        : "/oauth/zoho_crm/bulk-sync";
+      const res = await api.post(syncEndpoint);
       setLastSyncResult({
         success: res.data.success,
         message: res.data.message,
