@@ -422,12 +422,15 @@ export function OrdersTab() {
                 {/* Payment Method */}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Method</label>
-                  <select value={selectedOrder.payment_method || ""} onChange={e => setSelectedOrder({ ...selectedOrder, payment_method: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-order-payment-select">
-                    <option value="card">Card</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="offline">Offline / Manual</option>
-                    <option value="manual">Manual</option>
-                  </select>
+                  <Select value={selectedOrder.payment_method || ""} onValueChange={v => setSelectedOrder({ ...selectedOrder, payment_method: v })} data-testid="admin-order-payment-select">
+                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="offline">Offline / Manual</SelectItem>
+                      <SelectItem value="manual">Manual</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 {/* Order Date */}
                 <div className="space-y-1">
@@ -476,10 +479,14 @@ export function OrdersTab() {
               {/* Product change */}
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Change Product (updates first line item)</label>
-                <select value={selectedOrder.edit_product_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, edit_product_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-order-product-select">
-                  <option value="">— Keep current product —</option>
-                  {products.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
+              <SearchableSelect
+                value={selectedOrder.edit_product_id || undefined}
+                onValueChange={v => setSelectedOrder({ ...selectedOrder, edit_product_id: v })}
+                options={[{ value: "", label: "— Keep current product —" }, ...products.map((p: any) => ({ value: p.id, label: p.name }))]}
+                placeholder="— Keep current product —"
+                searchPlaceholder="Search products..."
+                data-testid="admin-order-product-select"
+              />
               </div>
 
               {/* Note */}
