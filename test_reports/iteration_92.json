@@ -1,0 +1,68 @@
+{
+  "summary": "Tested complex pricing display fixes for catalog cards and product detail pages. Most pricing scenarios work correctly. Found one issue: 'Migrate to Zoho Forms' shows NO PRICE on catalog because its calc_type 'forms_migration' is not handled in getStartingPrice().",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "OfferingCard / getStartingPrice()",
+        "issue": "Product 'Migrate to Zoho Forms' (calc_type='forms_migration') shows NO PRICE on catalog card. The calc_type 'forms_migration' is not handled in getStartingPrice() in OfferingCard.tsx. Since base_price is also null, formatPrice() returns null → no price element rendered.",
+        "selector": "[data-testid='offering-card-prod_migrate_forms']",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "✅ Zoho Books (tiered, base_price=null) shows 'Starts from $999' on catalog card",
+    "✅ Ongoing Bookkeeping (calculator/bookkeeping, base_price=null) shows 'Starts from $249' on catalog",
+    "✅ Unlimited Zoho Support (tiered, base_price=null) shows 'Starts from $250' on catalog",
+    "✅ Ongoing Zoho Development (tiered, base_price=null) shows 'Starts from $2,500' on catalog",
+    "✅ Migrate to Zoho Mail (calculator/mailboxes, base_price=null) shows 'Starts from $350' on catalog",
+    "✅ Migrate to Zoho WorkDrive (calculator/storage_blocks, base_price=null) shows 'Starts from $100' on catalog",
+    "✅ Migrate to Zoho Desk (calculator/desk_migration) shows 'Starts from $499' on catalog",
+    "✅ Migrate to Zoho Sign (calculator/sign_migration) shows 'Starts from $99' on catalog",
+    "✅ Migrate to Zoho People (calculator/people_migration) shows 'Starts from $999' on catalog",
+    "✅ Historical Accounting & Data Cleanup (calculator/hours_pack) shows 'Starts from $750' on catalog",
+    "✅ On-Demand Build Hours Pack (calculator, base_price=0) shows 'Contact us' on catalog",
+    "✅ Fixed-Scope Development (scope_request, base_price=0) shows 'Contact us' on catalog",
+    "✅ Ongoing Zoho Development Enterprise (tiered, base_price=0) shows 'Contact us' on catalog",
+    "✅ Migrate to Zoho Books (calculator, base_price=0) shows 'Contact us' on catalog",
+    "✅ Zoho CRM (fixed, base_price=2499) shows 'from $2,499' on catalog",
+    "✅ Zoho Expense (fixed, base_price=999) shows 'from $999' on catalog",
+    "✅ Fixed-Scope Development (scope_request) detail page shows 'Price on request' instead of $0.00",
+    "✅ Migrate to Zoho Forms (calculator/forms_migration) detail page shows 'Price on request' when all inputs=0",
+    "✅ Zoho Books Express Setup (tiered) detail page shows $999.00 for first variant",
+    "✅ Ongoing Bookkeeping (calculator) detail page shows $250.00 calculated price"
+  ],
+  "failed_tests": [
+    "❌ 'Migrate to Zoho Forms' (prod_migrate_forms) shows NO PRICE on catalog card (forms_migration calc_type unhandled)"
+  ],
+  "test_report_links": ["/app/test_reports/iteration_92.json"],
+  "action_items": [
+    "Fix getStartingPrice() in /app/frontend/src/components/OfferingCard.tsx to handle 'forms_migration' calc_type. Since pricing_rules has no rate for forms_migration, either: (a) add a base_price to the product in the DB, (b) add a default starting price for forms_migration in getStartingPrice(), or (c) add a rate field to the product's pricing_rules. Current pricing_rules: {\"calc_type\": \"forms_migration\"} - no rate/fee available to derive a starting price."
+  ],
+  "critical_code_review_comments": [
+    "OfferingCard.tsx: getStartingPrice() does not handle 'forms_migration' calc_type - this is the only missing handler. All other calc_types (health_check, hours_pack, bookkeeping, mailboxes, storage_blocks, crm_migration, desk_migration, sign_migration, people_migration) are correctly handled.",
+    "ProductDetail.tsx line 365: isRFQ logic - for products like 'On-Demand Build Hours Pack' (calc, base_price=0), catalog shows 'Contact us' but detail shows $750.00 with 'Add to cart'. This inconsistency is intentional per spec but may confuse users.",
+    "ProductDetail.tsx line 633: isRFQ={isRFQ || !!pricing?.is_scope_request} correctly ensures scope_request products show 'Price on request'"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only)",
+    "frontend": "95% (1 issue with Migrate to Zoho Forms no-price on catalog)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Login with admin@automateaccounts.local / ChangeMe123! and partner code 'automate-accounts'. The mayank@automateaccounts.com and admin@tenant-b-test.com credentials return 401. All pricing fixes are working except 'Migrate to Zoho Forms' which shows no price on catalog. Key product IDs: prod_fixed_scope_dev (scope_request), prod_zoho_books_express (tiered), prod_hours_pack (calculator/hours_pack), prod_bookkeeping (calculator/bookkeeping), prod_migrate_forms (calculator/forms_migration).",
+  "rca_of_issue": "Migrate to Zoho Forms shows NO PRICE on catalog: Root cause is getStartingPrice() in OfferingCard.tsx only handles specific calc_types (health_check, hours_pack, bookkeeping, mailboxes, storage_blocks, crm_migration, desk_migration, sign_migration, people_migration) but NOT forms_migration. The product has pricing_rules={calc_type: 'forms_migration'} with no rate/base_fee field, and base_price=null. So both formatPrice paths return null → no price element rendered. Fix: either add forms_migration handler with a hardcoded or configurable base price, or ensure this product has a base_price set."
+}
