@@ -198,6 +198,41 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Logs Dialog */}
+      <Dialog open={showLogsDialog} onOpenChange={setShowLogsDialog}>
+        <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Template Logs</DialogTitle></DialogHeader>
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {entityLogs.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No logs found</p>}
+            {entityLogs.map((l: any, i: number) => (
+              <div key={l.id || i} className="border border-slate-200 rounded p-3">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-sm font-semibold text-slate-900">{l.action}</span>
+                  <span className="text-xs text-slate-500">{l.created_at ? new Date(l.created_at).toLocaleString() : "—"}</span>
+                </div>
+                <div className="text-xs text-slate-600">Actor: {l.actor || "—"}</div>
+                {l.details && Object.keys(l.details).length > 0 && <pre className="text-xs text-slate-500 mt-1 bg-slate-50 p-2 rounded overflow-x-auto">{JSON.stringify(l.details, null, 2)}</pre>}
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!confirmDeleteTpl} onOpenChange={(open) => !open && setConfirmDeleteTpl(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete this template? This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => { handleDelete(confirmDeleteTpl!); setConfirmDeleteTpl(null); }} data-testid="confirm-article-tpl-delete">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
