@@ -102,9 +102,23 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Webhooks: `/app/test_reports/iteration_364.json` — 49 tests, all pass (webhook system)
 - UI Bugs: `/app/test_reports/iteration_70.json` — 7 backend + frontend tests pass (login flow fix)
 - Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
-- Zoho Mappings: `/app/test_reports/iteration_81.json` — 21 backend + all frontend features pass (mapping UI)
-- Iter83 Bug Fixes: `/app/test_reports/iteration_83.json` — 15/15 backend tests pass (Portal 404, dropdown labels, email dedup, Test Connection button)
-- Iter86 Select Overhaul: `/app/test_reports/iteration_86.json` — 10/10 flows pass. All native `<select>` eliminated, SearchableSelect with search bars for products/countries, Shadcn Select for short lists.
+- Iter90 Comprehensive Audit Logging + Pagination: `/app/test_reports/iteration_90.json` — 27/27 backend tests pass, frontend AuditLogDialog works (Feb 2026)
+
+### Iter90: Comprehensive Audit Logging + Pagination (Feb 2026)
+- Added `create_audit_log` calls to **all state-changing endpoints** across every route file:
+  - `article_categories.py`, `article_email_templates.py`, `article_templates.py` — POST/PUT/DELETE
+  - `admin/imports.py`, `admin/payment_validate.py` — import bulk and credential validation
+  - `admin/permissions.py` — admin user create/update/deactivate/reactivate
+  - `admin/tenants.py` — tenant create/update/activate/deactivate/create-admin, custom domain add/update/verify/remove
+  - `oauth.py` — save-settings, credentials, validate, update-settings, activate, deactivate, disconnect, bulk-sync (Zoho CRM & Books)
+  - `auth.py` — register-partner flow
+  - `admin/finance.py` — account-mappings create/update/delete
+  - `admin/integrations.py` — Zoho Mail/CRM token exchange, validate, account selection, token refresh, Stripe/GoCardless validate
+- **Pagination** added to all 15 log endpoints (GET `/admin/{entity}/{id}/logs`):
+  - Returns `{logs, total, page, limit, pages}` with `limit=20` default
+  - Supports `?page=N&limit=M` query params
+- **Frontend**: New `AuditLogDialog` reusable component with prev/next pagination
+  - Replaces inline log dialogs in 15 admin tabs (Orders, Subscriptions, Customers, Users, Products, Categories, PromoCodes, OverrideCodes, Terms, QuoteRequests, BankTransactions, Articles, ArticleCategories, ArticleTemplates, ArticleEmailTemplates)
 
 ### Iter84 P0 Bug Fixes (Feb 2026)
 **Root Cause — Cart Checkout Dropdowns:** Cart.tsx refactor (1222→980 lines) added 6+ new `WebsiteSettings` property references that were missing from the interface in `WebsiteContext.tsx`. This caused TypeScript compilation errors ("Compiled with problems" overlay in dev mode) blocking user interaction. Fixed by adding `checkout_zoho_description`, `checkout_zoho_subscription_type_label`, `checkout_zoho_product_label`, `checkout_zoho_access_label`, `checkout_zoho_access_options`, `checkout_partner_question`, `checkout_terms_enabled` to interface + DEFAULT_SETTINGS. Also fixed boolean type comparison (`extraFields[fKey] === true` → `=== 'true'`).
