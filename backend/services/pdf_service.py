@@ -171,7 +171,7 @@ def generate_tos_pdf(
             try:
                 dt = datetime.fromisoformat(agreed_at.replace('Z', '+00:00'))
                 formatted_date = dt.strftime('%B %d, %Y at %H:%M UTC')
-            except:
+            except (ValueError, TypeError):
                 formatted_date = agreed_at
             meta_lines.append(f"Agreed on: {formatted_date}")
         
