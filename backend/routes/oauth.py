@@ -448,6 +448,7 @@ async def save_credentials(
         upsert=True
     )
     
+    await create_audit_log(entity_type="integration", entity_id=provider, action="credentials_saved", actor=admin.get("email", "admin"), details={"provider": provider}, tenant_id=tid)
     return {"success": True, "message": "Credentials saved. Please validate the connection."}
 
 
