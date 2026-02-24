@@ -299,7 +299,7 @@ export function IntegrationsOverview() {
   
   // Slide panel states
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
-  const [panelMode, setPanelMode] = useState<"config" | "settings" | null>(null);
+  const [panelMode, setPanelMode] = useState<"config" | "settings" | "mapping" | null>(null);
   
   // Form states
   const [credentials, setCredentials] = useState<Record<string, string>>({});
@@ -307,6 +307,15 @@ export function IntegrationsOverview() {
   const [dataCenter, setDataCenter] = useState("us");
   const [saving, setSaving] = useState(false);
   const [validating, setValidating] = useState<string | null>(null);
+
+  // Mapping panel states
+  const [zohoModules, setZohoModules] = useState<ZohoModule[]>([]);
+  const [crmMappings, setCrmMappings] = useState<CrmMapping[]>([]);
+  const [webappModules, setWebappModules] = useState<WebappModule[]>([]);
+  const [addingMapping, setAddingMapping] = useState(false);
+  const [mappingForm, setMappingForm] = useState<MappingFormState>({ webapp_module: "", crm_module: "", field_mappings: [] });
+  const [savingMapping, setSavingMapping] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const loadIntegrations = async () => {
     try {
