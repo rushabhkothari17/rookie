@@ -653,7 +653,11 @@ export function IntegrationsOverview() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
                 <h3 className="text-base font-semibold text-slate-900">
-                  {panelMode === "settings" ? `${selectedIntegration.name} Settings` : `Connect ${selectedIntegration.name}`}
+                  {panelMode === "settings"
+                    ? `${selectedIntegration.name} Settings`
+                    : selectedIntegration.status !== "not_connected"
+                    ? `Edit ${selectedIntegration.name}`
+                    : `Connect ${selectedIntegration.name}`}
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">{selectedIntegration.description}</p>
               </div>
