@@ -793,52 +793,39 @@ async def _get_zoho_conn_info(tid: str, provider: str):
 
 @router.get("/oauth/zoho_crm/modules")
 async def get_zoho_crm_modules_for_mapping(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Fetch available Zoho CRM modules using stored credentials."""
+    """Fetch available Zoho CRM modules using stored credentials (token cached)."""
     tid = tenant_id_of(admin)
     creds, dc_config = await _get_zoho_conn_info(tid, "zoho_crm")
 
+    access_token = await _get_zoho_access_token_cached(tid, "zoho_crm", creds, dc_config)
+    api_domain = creds.get("_api_domain", dc_config["api_domain"])
+
     async with httpx.AsyncClient(timeout=20.0) as client:
-        token_resp = await client.post(
-            f"{dc_config['accounts_url']}/oauth/v2/token",
-            data={
-                "grant_type": "refresh_token",
-                "client_id": creds.get("client_id", ""),
-                "client_secret": creds.get("client_secret", ""),
-                "refresh_token": creds.get("refresh_token", ""),
-            },
-        )
-        if token_resp.status_code != 200 or token_resp.json().get("error"):
-            raise HTTPException(status_code=400, detail="Token refresh failed — please reconnect Zoho CRM")
-
-        access_token = token_resp.json()["access_token"]
-        api_domain = creds.get("_api_domain", dc_config["api_domain"])
-
         modules_resp = await client.get(
             f"{api_domain}/crm/v3/settings/modules",
             headers={"Authorization": f"Zoho-oauthtoken {access_token}"},
         )
         if modules_resp.status_code != 200:
-            # fallback to v6
             modules_resp = await client.get(
                 f"{api_domain}/crm/v6/settings/modules",
                 headers={"Authorization": f"Zoho-oauthtoken {access_token}"},
             )
 
-        if modules_resp.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to fetch Zoho CRM modules")
+    if modules_resp.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to fetch Zoho CRM modules")
 
-        modules = modules_resp.json().get("modules", [])
-        return {
-            "modules": [
-                {
-                    "api_name": m.get("api_name"),
-                    "plural_label": m.get("plural_label") or m.get("api_name"),
-                    "singular_label": m.get("singular_label") or m.get("api_name"),
-                }
-                for m in modules
-                if m.get("api_supported") and m.get("api_name")
-            ]
-        }
+    modules = modules_resp.json().get("modules", [])
+    return {
+        "modules": [
+            {
+                "api_name": m.get("api_name"),
+                "plural_label": m.get("plural_label") or m.get("api_name"),
+                "singular_label": m.get("singular_label") or m.get("api_name"),
+            }
+            for m in modules
+            if m.get("api_supported") and m.get("api_name")
+        ]
+    }
 
 
 @router.get("/oauth/zoho_books/modules")
