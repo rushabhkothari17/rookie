@@ -25,6 +25,9 @@ export function ArticleEmailTemplatesTab() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", subject: "", html_body: "" });
+  const [confirmDeleteTpl, setConfirmDeleteTpl] = useState<string | null>(null);
+  const [entityLogs, setEntityLogs] = useState<any[]>([]);
+  const [showLogsDialog, setShowLogsDialog] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
