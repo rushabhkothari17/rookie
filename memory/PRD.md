@@ -411,8 +411,18 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
   - `frontend/src/pages/admin/IntegrationsOverview.tsx` - Integrations page
 - Modified: `frontend/src/pages/Admin.tsx` - Added "Connect Services" tab
 
+**3. Integration Consolidation (Feb 2026)**
+- Consolidated all integrations into single "Connect Services" page
+- Removed redundant CRM and Finance tabs from admin sidebar
+- Zoho Data Center selection: All 6 DCs supported (US, EU, IN, AU, JP, CA)
+- Fixes "Redirect URI passed does not match" error by using correct DC-specific URLs
+- Resend remains as API-key-based connection
+- Deleted: `frontend/src/pages/admin/CRMTab.tsx`, `frontend/src/pages/admin/FinanceTab.tsx`
+- Modified: `frontend/src/pages/Admin.tsx` - Removed CRM/Finance tabs from sidebar
+
 **Test Reports:**
 - `/app/test_reports/iteration_77.json` - 91% backend (10/11), 100% frontend
+- `/app/test_reports/iteration_78.json` - 100% backend (12/12), 100% frontend (Connect Services consolidation)
 
 **MOCKED APIs:**
 - OAuth providers: Endpoints implemented but OAuth flows require real credentials
