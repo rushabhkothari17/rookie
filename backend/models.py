@@ -312,6 +312,10 @@ class AdminCreateUserRequest(BaseModel):
     phone: Optional[str] = ""
     password: str
     role: str = "admin"
+    # Permission fields
+    access_level: Optional[str] = "full_access"
+    modules: Optional[List[str]] = None
+    preset_role: Optional[str] = None
 
 
 class AdminCreateCustomerRequest(BaseModel):
