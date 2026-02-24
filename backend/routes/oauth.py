@@ -393,7 +393,10 @@ async def validate_connection(
                 )
                 
                 if token_resp.status_code != 200:
-                    err = token_resp.json().get("error", "Invalid credentials")
+                    try:
+                        err = token_resp.json().get("error", token_resp.json().get("message", "Invalid credentials"))
+                    except Exception:
+                        err = f"HTTP {token_resp.status_code}"
                     result = {"success": False, "message": f"Token refresh failed: {err}"}
                 else:
                     access_token = token_resp.json().get("access_token")
