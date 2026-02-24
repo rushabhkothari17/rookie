@@ -379,6 +379,29 @@ export function UsersTab() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Deactivate/Activate User Confirmation */}
+      <AlertDialog open={!!confirmToggleUser} onOpenChange={(open) => !open && setConfirmToggleUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmToggleUser?.active ? "Deactivate User" : "Activate User"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {confirmToggleUser?.active ? "deactivate" : "activate"} this user?
+              {confirmToggleUser?.active && " They will no longer be able to log in."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={confirmToggleUser?.active ? "bg-red-600 hover:bg-red-700" : ""}
+              onClick={() => { handleToggleActive(confirmToggleUser!.id, confirmToggleUser!.active); setConfirmToggleUser(null); }}
+              data-testid="confirm-user-toggle"
+            >
+              {confirmToggleUser?.active ? "Deactivate" : "Activate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
