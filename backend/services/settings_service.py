@@ -77,30 +77,8 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "description": "Stripe Webhook Secret (whsec_...). Used to verify incoming webhook signatures.",
         "is_secret": True,
     },
-    {
-        "key": "gocardless_access_token",
-        "value_json": os.environ.get("GOCARDLESS_ACCESS_TOKEN", ""),
-        "value_type": "secret",
-        "category": "Payments",
-        "description": "GoCardless API Access Token for Direct Debit mandate creation.",
-        "is_secret": True,
-    },
-    {
-        "key": "gocardless_environment",
-        "value_json": os.environ.get("GOCARDLESS_ENVIRONMENT", "sandbox"),
-        "value_type": "string",
-        "category": "Payments",
-        "description": "GoCardless environment: 'sandbox' or 'live'.",
-        "is_secret": False,
-    },
-    {
-        "key": "gocardless_webhook_secret",
-        "value_json": os.environ.get("GOCARDLESS_WEBHOOK_SECRET", ""),
-        "value_type": "secret",
-        "category": "Payments",
-        "description": "GoCardless Webhook Secret for verifying incoming webhook signatures.",
-        "is_secret": True,
-    },
+    # Note: GoCardless credentials (access_token, environment, webhook_secret) are now managed 
+    # via Connected Services (oauth_connections collection) - not in these settings
     # ---- Override Codes ----
     {
         "key": "override_code_expiry_hours",
