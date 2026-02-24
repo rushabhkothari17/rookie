@@ -717,6 +717,7 @@ async def validate_connection(
         elif provider == "resend":
             await _sync_to_settings("resend_api_key", creds.get("api_key", ""))
     
+    await create_audit_log(entity_type="integration", entity_id=provider, action="connection_validated", actor=admin.get("email", "admin"), details={"provider": provider, "success": result["success"], "message": result.get("message", "")}, tenant_id=tid)
     return result
 
 
