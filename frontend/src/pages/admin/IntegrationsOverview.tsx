@@ -311,6 +311,74 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
   },
 };
 
+// Searchable field combobox component
+interface FieldComboboxProps {
+  fields: ZohoField[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  testId?: string;
+}
+
+function FieldCombobox({ fields, value, onChange, placeholder = "Select field...", testId }: FieldComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const selectedField = fields.find(f => f.api_name === value);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="h-7 text-xs flex-1 justify-between font-normal"
+          data-testid={testId}
+        >
+          <span className="truncate">
+            {selectedField ? selectedField.field_label : <span className="text-slate-400">{placeholder}</span>}
+          </span>
+          <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[250px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search fields..." className="h-8 text-xs" />
+          <CommandList>
+            <CommandEmpty className="py-3 text-xs">No field found.</CommandEmpty>
+            <CommandGroup>
+              <CommandItem
+                value="__clear__"
+                onSelect={() => {
+                  onChange("");
+                  setOpen(false);
+                }}
+                className="text-xs text-slate-400"
+              >
+                <Check className={`mr-2 h-3 w-3 ${!value ? "opacity-100" : "opacity-0"}`} />
+                -- None --
+              </CommandItem>
+              {fields.map(field => (
+                <CommandItem
+                  key={field.api_name}
+                  value={field.field_label}
+                  onSelect={() => {
+                    onChange(field.api_name);
+                    setOpen(false);
+                  }}
+                  className="text-xs"
+                >
+                  <Check className={`mr-2 h-3 w-3 ${value === field.api_name ? "opacity-100" : "opacity-0"}`} />
+                  {field.field_label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function IntegrationsOverview() {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [dataCenters, setDataCenters] = useState<DataCenter[]>([]);
