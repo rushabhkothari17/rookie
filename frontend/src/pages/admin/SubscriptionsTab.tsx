@@ -71,6 +71,8 @@ export function SubscriptionsTab() {
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [manualSub, setManualSub] = useState({ customer_email: "", product_id: "", quantity: 1, amount: 0, renewal_date: "", status: "active", internal_note: "" });
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+  const [confirmRenewId, setConfirmRenewId] = useState<string | null>(null);
 
   // Customer email lookup (loaded with each page)
   const [customerEmails, setCustomerEmails] = useState<Record<string, string>>({});
