@@ -109,11 +109,10 @@ export function TermsTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Search title…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-terms-search-filter" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-terms-status-filter">
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-terms-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+          </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Created</span>
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" />
@@ -195,9 +194,10 @@ export function TermsTab() {
             <div className="space-y-1"><label className="text-xs text-slate-500">Content</label><RichHtmlEditor value={editForm.content} onChange={(v) => setEditForm({ ...editForm, content: v })} minHeight="200px" placeholder="Enter terms content…" /></div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Status</label>
-              <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
-                <option value="active">Active</option><option value="inactive">Inactive</option>
-              </select>
+              <Select value={editForm.status} onValueChange={v => setEditForm({ ...editForm, status: v })}>
+                <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+              </Select>
             </div>
             <Button onClick={handleEdit} className="w-full" data-testid="admin-terms-edit-save">Save Changes</Button>
           </div>
