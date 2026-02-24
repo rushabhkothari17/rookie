@@ -438,7 +438,7 @@ async def validate_connection(
                             zoho_code = err_body.get("code", "")
                             zoho_msg  = err_body.get("message", "")
                             if zoho_code == "OAUTH_SCOPE_MISMATCH":
-                                detail = f"Scope mismatch — re-generate the Authorization Code with the correct scopes (see Setup Guide)"
+                                detail = "Scope mismatch — re-generate the Authorization Code with the correct scopes (see Setup Guide)"
                             else:
                                 detail = zoho_msg or zoho_code or f"HTTP {test_resp.status_code}"
                         except Exception:
