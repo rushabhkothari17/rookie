@@ -281,6 +281,22 @@ export function QuoteRequestsTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Delete Quote Request Confirmation */}
+      <AlertDialog open={!!confirmDeleteQuote} onOpenChange={(open) => !open && setConfirmDeleteQuote(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Quote Request</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete the quote request from "{confirmDeleteQuote?.name}" for "{confirmDeleteQuote?.product_name}"? This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => { handleDelete(confirmDeleteQuote.id); setConfirmDeleteQuote(null); }} data-testid="confirm-quote-delete">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
