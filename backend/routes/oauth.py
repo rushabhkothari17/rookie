@@ -245,7 +245,7 @@ async def save_credentials(
     payload: CredentialRequest,
     admin: Dict[str, Any] = Depends(get_tenant_admin)
 ):
-    """Save credentials for an integration."""
+    """Save credentials for an integration. Empty fields preserve existing stored values (edit mode)."""
     if provider not in INTEGRATIONS:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
     
@@ -255,9 +255,19 @@ async def save_credentials(
     
     tid = tenant_id_of(admin)
     
-    # Validate required fields
+    # Fetch existing connection to merge credentials (edit mode: blank field = keep existing)
+    existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": provider}, {"_id": 0})
+    existing_creds = existing.get("credentials", {}) if existing else {}
+    
+    # Merge: only overwrite a field if a non-empty value was provided
+    merged_creds: Dict[str, str] = dict(existing_creds)
+    for k, v in payload.credentials.items():
+        if v:  # non-empty value replaces existing
+            merged_creds[k] = v
+    
+    # Validate required fields against the merged result
     for field in config.get("fields", []):
-        if field.get("required") and not payload.credentials.get(field["key"]):
+        if field.get("required") and not merged_creds.get(field["key"]):
             raise HTTPException(status_code=400, detail=f"{field['label']} is required")
     
     await db.oauth_connections.update_one(
@@ -267,10 +277,10 @@ async def save_credentials(
             "provider": provider,
             "status": "pending",
             "is_validated": False,
-            "credentials": payload.credentials,
+            "credentials": merged_creds,
             "data_center": payload.data_center if config.get("is_zoho") else None,
-            "settings": payload.settings or {},
-            "connected_at": now_iso(),
+            "settings": payload.settings or (existing.get("settings", {}) if existing else {}),
+            "connected_at": existing.get("connected_at", now_iso()) if existing else now_iso(),
             "updated_at": now_iso(),
             "error_message": None,
         }},
