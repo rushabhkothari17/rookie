@@ -438,7 +438,8 @@ async def create_checkout_session(
             raise HTTPException(status_code=400, detail="Subscription pricing not configured. Please contact support.")
         if not customer.get("allow_card_payment", False):
             raise HTTPException(status_code=403, detail="Card payment is not enabled for your account. Please contact support or use Bank Transfer.")
-        stripe_globally_enabled = await SettingsService.get("stripe_enabled", False)
+        tenant_id = customer.get("tenant_id", "")
+        stripe_globally_enabled = await is_stripe_enabled(tenant_id)
         if not stripe_globally_enabled:
             raise HTTPException(status_code=400, detail="Card payments are currently not available.")
         stripe_price_id = product.get("stripe_price_id")
@@ -446,7 +447,8 @@ async def create_checkout_session(
             raise HTTPException(status_code=400, detail=f"Subscription product '{product.get('name')}' is not configured for card payment. Missing Stripe Price ID.")
 
     if checkout_type == "one_time":
-        stripe_globally_enabled = await SettingsService.get("stripe_enabled", False)
+        tenant_id = customer.get("tenant_id", "")
+        stripe_globally_enabled = await is_stripe_enabled(tenant_id)
         if not stripe_globally_enabled:
             raise HTTPException(status_code=400, detail="Card payments are currently not available.")
         if not customer.get("allow_card_payment", False):
