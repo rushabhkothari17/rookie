@@ -192,10 +192,8 @@ async def orders_preview(
     user: Dict[str, Any] = Depends(get_current_user),
 ):
     tid = user.get("tenant_id") or DEFAULT_TENANT_ID
-    # Use stripe_fee_rate for card payment preview (fallback to legacy service_fee_rate)
-    stripe_fee = float(await SettingsService.get("stripe_fee_rate", 0.0))
-    legacy_fee = float(await SettingsService.get("service_fee_rate", SERVICE_FEE_RATE))
-    fee_rate = stripe_fee if stripe_fee else legacy_fee
+    # Use stripe_fee_rate from oauth_connections for card payment preview
+    fee_rate = await get_stripe_fee_rate(tid)
     customer = await db.customers.find_one({"tenant_id": tid, "user_id": user["id"]}, {"_id": 0})
     customer_id = customer["id"] if customer else None
     results = []
