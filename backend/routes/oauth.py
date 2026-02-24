@@ -442,6 +442,17 @@ async def update_settings(
         {"$set": {"settings": payload.settings, "updated_at": now_iso()}}
     )
     
+    # If this is the active Resend provider, sync settings to legacy keys too
+    if provider == "resend":
+        active = await db.app_settings.find_one({"key": "active_email_provider"}, {"_id": 0})
+        if active and active.get("value_json") == "resend":
+            if "from_email" in payload.settings:
+                await _sync_to_settings("resend_sender_email", payload.settings["from_email"])
+            if "from_name" in payload.settings:
+                await _sync_to_settings("email_from_name", payload.settings["from_name"])
+            if "reply_to" in payload.settings:
+                await _sync_to_settings("email_reply_to", payload.settings["reply_to"])
+    
     return {"success": True, "message": "Settings updated"}
 
 
