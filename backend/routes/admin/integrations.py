@@ -691,23 +691,6 @@ async def get_all_integrations_status(admin: Dict[str, Any] = Depends(get_tenant
             },
         }
     }
-                "status": "connected" if (zoho_crm and zoho_crm.get("validated")) else "not_configured",
-                "datacenter": zoho_crm.get("datacenter") if zoho_crm else None,
-                "validated_at": zoho_crm.get("validated_at") if zoho_crm else None,
-                "type": "crm"
-            },
-            "stripe": {
-                "status": "connected" if (stripe_validated and stripe_validated.get("validated")) else "not_configured",
-                "validated_at": stripe_validated.get("validated_at") if stripe_validated else None,
-                "type": "payment"
-            },
-            "gocardless": {
-                "status": "connected" if (gc_validated and gc_validated.get("validated")) else "not_configured",
-                "validated_at": gc_validated.get("validated_at") if gc_validated else None,
-                "type": "payment"
-            }
-        }
-    }
 
 
 # === Payment Provider Validation ===
