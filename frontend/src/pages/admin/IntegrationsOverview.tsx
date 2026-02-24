@@ -1239,26 +1239,18 @@ export function IntegrationsOverview() {
                             <div className="space-y-1.5">
                               {webappModules.find(wm => wm.name === mappingForm.webapp_module)?.fields.map(wf => {
                                 const current = mappingForm.field_mappings.find(f => f.webapp_field === wf);
+                                const selectedField = zohoModuleFields.find(zf => zf.api_name === current?.crm_field);
                                 return (
                                   <div key={wf} className="flex items-center gap-2">
                                     <span className="text-xs text-slate-500 font-mono w-32 truncate shrink-0">{wf}</span>
                                     <ChevronRight size={12} className="text-slate-300 shrink-0" />
-                                    <Select
-                                      value={current?.crm_field || "__none__"}
-                                      onValueChange={(val) => setFieldMap(wf, val === "__none__" ? "" : val)}
-                                    >
-                                      <SelectTrigger className="h-7 text-xs flex-1" data-testid={`field-${wf}`}>
-                                        <SelectValue placeholder={`Select ${selectedIntegration.name} field...`} />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="__none__" className="text-slate-400">-- None --</SelectItem>
-                                        {zohoModuleFields.map(zf => (
-                                          <SelectItem key={zf.api_name} value={zf.api_name}>
-                                            {zf.field_label}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
+                                    <FieldCombobox
+                                      fields={zohoModuleFields}
+                                      value={current?.crm_field || ""}
+                                      onChange={(val) => setFieldMap(wf, val)}
+                                      placeholder={`Select ${selectedIntegration?.name || 'Zoho'} field...`}
+                                      testId={`field-${wf}`}
+                                    />
                                   </div>
                                 );
                               })}
