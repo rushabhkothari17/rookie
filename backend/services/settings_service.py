@@ -38,14 +38,6 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "is_secret": False,
     },
     {
-        "key": "gocardless_enabled",
-        "value_json": False,
-        "value_type": "bool",
-        "category": "Payments",
-        "description": "Enable GoCardless direct debit bank transfer payments.",
-        "is_secret": False,
-    },
-    {
         "key": "gocardless_fee_rate",
         "value_json": 0.0,
         "value_type": "number",
