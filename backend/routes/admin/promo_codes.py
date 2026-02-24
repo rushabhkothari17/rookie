@@ -110,7 +110,10 @@ async def admin_delete_promo_code(code_id: str, admin: Dict[str, Any] = Depends(
 
 
 @router.get("/admin/promo-codes/{promo_id}/logs")
-async def get_promo_code_logs(promo_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    logs = await db.audit_logs.find({"entity_type": "promo_code", "entity_id": promo_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
-    return {"logs": logs}
+async def get_promo_code_logs(promo_id: str, page: int = 1, limit: int = 20, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    flt = {"entity_type": "promo_code", "entity_id": promo_id}
+    total = await db.audit_logs.count_documents(flt)
+    skip = (page - 1) * limit
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
 
