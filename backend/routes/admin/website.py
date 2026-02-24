@@ -211,9 +211,16 @@ async def get_website_settings_public(
     app_s = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0}) or {}
     web_s = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0}) or {}
 
-    # Load payment provider flags from this tenant's app_settings (NOT global SettingsService)
-    stripe_enabled = bool(app_s.get("stripe_enabled", False))
-    gocardless_enabled = bool(app_s.get("gocardless_enabled", False))
+    # Load payment provider flags from oauth_connections (Connected Services)
+    stripe_conn = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "stripe", "is_validated": True}, {"_id": 0})
+    gocardless_conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": {"$in": ["gocardless", "gocardless_sandbox"]}, "is_validated": True}, 
+        {"_id": 0}
+    )
+    stripe_enabled = bool(stripe_conn)
+    gocardless_enabled = bool(gocardless_conn)
+    
+    # Fee rates from app_settings (these are business settings, not connection settings)
     stripe_fee_rate = float(app_s.get("stripe_fee_rate") or 0.05)
     gocardless_fee_rate = float(app_s.get("gocardless_fee_rate") or 0.0)
 
