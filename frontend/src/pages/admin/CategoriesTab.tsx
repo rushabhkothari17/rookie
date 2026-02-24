@@ -71,7 +71,6 @@ export function CategoriesTab() {
 
   const handleDelete = async (cat: any) => {
     if ((cat.product_count ?? 0) > 0) { toast.error(`Cannot delete: ${cat.product_count} product(s) linked. Reassign first.`); return; }
-    if (!window.confirm(`Delete category "${cat.name}"?`)) return;
     try { await api.delete(`/admin/categories/${cat.id}`); toast.success("Category deleted"); load(page); }
     catch (e: any) { toast.error(e?.response?.data?.detail || "Failed to delete"); }
   };
