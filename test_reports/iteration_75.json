@@ -1,0 +1,88 @@
+{
+  "summary": "Iteration 75: Verified Finance Tab (Zoho Books/QuickBooks), Custom Domains, and Order Refund features. All new APIs tested successfully. UI verified via Playwright.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter75_finance_refunds_domains.py",
+    "/app/test_reports/pytest/iter75_finance_refunds.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Finance Tab: Tile-based layout with Zoho Books (connected/not connected states) and QuickBooks (Coming Soon) - VERIFIED",
+    "Zoho Books Slide Panel: Setup guide, Connection Status, Datacenter selector, Client ID/Secret fields, Access Token, Validate Connection button - VERIFIED",
+    "Custom Domains: Located in Website Content > Custom Domains submenu - VERIFIED",
+    "Order Refund: Refund button visible on paid/partially_refunded orders in Actions column - VERIFIED",
+    "Refund Dialog: Shows order info, Already Refunded amount, Available to Refund, Amount input, Reason dropdown, Provider dropdown (Manual/Stripe/GoCardless), Process Refund button - VERIFIED",
+    "MOCKED: Zoho Books integration is stubbed - no actual Zoho API calls made. Sync jobs are queued but not actually processed."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter75_finance_refunds_domains.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 core tests passed, 4 skipped due to rate limiting)",
+    "frontend": "100% (all UI features verified via Playwright)"
+  },
+  "test_credentials": {
+    "tenant_b_admin": {
+      "email": "adminb@tenantb.local",
+      "password": "ChangeMe123!",
+      "partner_code": "tenant-b-test"
+    },
+    "platform_admin": {
+      "email": "admin@automateaccounts.local",
+      "password": "ChangeMe123!",
+      "partner_code": "automate-accounts"
+    }
+  },
+  "seed_data_creation": "Used existing test orders. Created TEST_ prefixed refund during manual refund test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 75 verified: 1) Finance Tab at /admin under INTEGRATIONS section - shows Zoho Books tile (clickable to open slide panel) and QuickBooks tile (Coming Soon). 2) Custom Domains found under Website Content > Custom Domains submenu. 3) Order Refunds: Refund button visible in Orders tab for paid/partially_refunded orders. Dialog shows order total, already refunded amount, and available to refund. Provider options: Manual, Stripe, GoCardless. 4) All existing functionality (login, customers, orders) working correctly.",
+  "features_tested": {
+    "finance_tab_api": {
+      "GET_finance_status": "PASS - Returns zoho_books and quickbooks objects with is_configured, is_validated, datacenter, etc.",
+      "POST_zoho_books_save_credentials": "PASS - Saves client_id, client_secret, datacenter",
+      "GET_zoho_books_account_mappings": "PASS - Returns mappings and webapp_entities",
+      "GET_sync_history": "PASS - Returns sync jobs list"
+    },
+    "custom_domains_api": {
+      "GET_custom_domains": "PASS - Returns domains array",
+      "PUT_custom_domains": "PASS - Updates domains with validation",
+      "DELETE_custom_domains": "PASS - Removes specific domain",
+      "invalid_domain_validation": "PASS - Returns 400 for invalid format"
+    },
+    "order_refunds_api": {
+      "POST_order_refund_manual": "PASS - Creates refund record for paid orders",
+      "GET_order_refunds": "PASS - Returns refund history for order",
+      "refund_amount_validation": "PASS - Validates against available balance"
+    },
+    "existing_functionality": {
+      "tenant_b_admin_login": "PASS",
+      "platform_admin_login": "PASS",
+      "customer_list": "PASS",
+      "orders_list": "PASS"
+    },
+    "finance_tab_ui": {
+      "zoho_books_tile": "PASS - Shows Not Connected status, clickable",
+      "quickbooks_tile": "PASS - Shows Coming Soon badge",
+      "zoho_slide_panel": "PASS - Setup guide, credentials form, validate button"
+    },
+    "custom_domains_ui": {
+      "section_location": "Website Content > Custom Domains submenu",
+      "visibility": "PASS"
+    },
+    "order_refund_ui": {
+      "refund_button_visibility": "PASS - Shows for paid/partially_refunded orders",
+      "refund_dialog": "PASS - Shows order info, amount input, reason, provider selects",
+      "refund_dialog_elements": "PASS - Amount input, Reason select, Provider select, Submit button"
+    }
+  },
+  "mocked_apis_note": "Zoho Books integration is MOCKED/STUBBED. No actual Zoho API calls are made. Sync jobs are created but not processed."
+}
