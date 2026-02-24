@@ -134,9 +134,10 @@ async def complete_gocardless_redirect(
         if payload.order_id:
             order = await db.orders.find_one({"id": payload.order_id}, {"_id": 0})
             if order and mandate_id:
+                payment_currency = scheme_currency_map.get(scheme, order.get("currency", "GBP"))
                 payment = create_payment(
                     amount=order["total"],
-                    currency=order.get("currency", "USD"),
+                    currency=payment_currency,
                     mandate_id=mandate_id,
                     description=f"Payment for Order {order['order_number']}",
                     metadata={"order_id": order["id"], "order_number": order["order_number"]},
