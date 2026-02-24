@@ -1233,20 +1233,28 @@ export function IntegrationsOverview() {
 
             {/* Footer */}
             <div className="px-6 pt-4 pb-16 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
-              <Button variant="ghost" onClick={closePanel}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={panelMode === "settings" ? handleSaveSettings : handleSaveCredentials} 
-                disabled={saving}
-                data-testid="save-btn"
-              >
-                {saving ? (
-                  <><Loader2 size={14} className="mr-2 animate-spin" /> Saving...</>
-                ) : (
-                  "Save & Continue"
-                )}
-              </Button>
+              {panelMode === "mapping" ? (
+                <Button onClick={closePanel} data-testid="done-btn">
+                  Done
+                </Button>
+              ) : (
+                <>
+                  <Button variant="ghost" onClick={closePanel}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={panelMode === "settings" ? handleSaveSettings : handleSaveCredentials}
+                    disabled={saving}
+                    data-testid="save-btn"
+                  >
+                    {saving ? (
+                      <><Loader2 size={14} className="mr-2 animate-spin" /> Saving...</>
+                    ) : (
+                      "Save & Continue"
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </>
