@@ -485,7 +485,7 @@ async def get_oauth_status(
         try:
             expires_at = datetime.fromisoformat(connection["expires_at"].replace("Z", "+00:00"))
             is_expired = expires_at < datetime.now(timezone.utc)
-        except:
+        except (ValueError, TypeError):
             pass
     
     return {
