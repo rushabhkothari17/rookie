@@ -272,8 +272,10 @@ class TestProductModelRestrictedTo:
         assert test_customer["customer_id"] in updated.get("restricted_to", []), \
             f"restricted_to not saved after update. Got: {updated.get('restricted_to')}"
         print(f"PASS: restricted_to persisted after update: {updated['restricted_to']}")
-        # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=admin_headers)
+        # Cleanup: deactivate since no DELETE endpoint
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={
+            "name": f"TEST_UpdateRestricted_{suffix}", "is_active": False
+        }, headers=admin_headers)
 
 
 class TestEmailTenantIdFix:
