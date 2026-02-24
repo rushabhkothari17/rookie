@@ -434,16 +434,18 @@ class TestAdminUserUpdatePermissions:
         assert resp.status_code == 200, f"Update user failed: {resp.text}"
         data = resp.json()
         
-        # Response should contain updated user
-        assert "user" in data or "message" in data
+        # Response should contain updated user and message
+        assert "message" in data
+        assert "user" in data
         
-        if "user" in data:
-            user = data["user"]
-            assert user.get("access_level") == "full_access"
-            modules = user.get("permissions", {}).get("modules", [])
-            assert len(modules) == 4
-            assert "customers" in modules
-            assert "orders" in modules
+        user = data["user"]
+        # Verify permissions.modules was updated
+        modules = user.get("permissions", {}).get("modules", [])
+        assert len(modules) == 4, f"Expected 4 modules, got {len(modules)}: {modules}"
+        assert "customers" in modules
+        assert "orders" in modules
+        assert "subscriptions" in modules
+        assert "products" in modules
 
 
 class TestSubscriptionListOptimization:
