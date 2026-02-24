@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/sonner";
 import { Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown, Tag, Upload} from "lucide-react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
+import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { ArticleTemplatesTab } from "./ArticleTemplatesTab";
 import { ArticleEmailTemplatesTab } from "./ArticleEmailTemplatesTab";
 import { ArticleCategoriesTab } from "./ArticleCategoriesTab";
@@ -109,8 +110,8 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<any>(null);
-  const [showLogsDialog, setShowLogsDialog] = useState(false);
-  const [articleLogs, setArticleLogs] = useState<any[]>([]);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [emailTarget, setEmailTarget] = useState<any>(null);
   const [emailForm, setEmailForm] = useState({
@@ -260,14 +261,9 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
     }
   };
 
-  const handleViewLogs = async (article: any) => {
-    try {
-      const res = await api.get(`/articles/${article.id}/logs`);
-      setArticleLogs(res.data.logs || []);
-      setShowLogsDialog(true);
-    } catch {
-      toast.error("Failed to load logs");
-    }
+  const handleViewLogs = (article: any) => {
+    setLogsUrl(`/articles/${article.id}/logs`);
+    setShowAuditLogs(true);
   };
 
   const handleEmailOpen = (article: any) => {
@@ -658,29 +654,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
       </Dialog>
 
       {/* Logs Dialog */}
-      <Dialog open={showLogsDialog} onOpenChange={setShowLogsDialog}>
-        <DialogContent className="max-w-lg" data-testid="article-logs-dialog">
-          <DialogHeader><DialogTitle>Article Activity Log</DialogTitle></DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto space-y-2">
-            {articleLogs.length === 0 ? (
-              <p className="text-sm text-slate-500 py-4 text-center">No activity yet.</p>
-            ) : articleLogs.map((log) => (
-              <div key={log.id} className="border border-slate-200 rounded p-3 text-sm">
-                <div className="flex justify-between items-start">
-                  <span className="font-semibold text-slate-900 capitalize">{log.action.replace(/_/g, " ")}</span>
-                  <span className="text-xs text-slate-400">{new Date(log.created_at).toLocaleString()}</span>
-                </div>
-                <div className="text-xs text-slate-500 mt-1">By: {log.actor}</div>
-                {log.details && Object.keys(log.details).length > 0 && (
-                  <pre className="text-xs text-slate-400 mt-1 bg-slate-50 p-2 rounded overflow-x-auto">
-                    {JSON.stringify(log.details, null, 2)}
-                  </pre>
-                )}
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Article Activity Log" logsUrl={logsUrl} />
 
       {/* Email Dialog */}
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
