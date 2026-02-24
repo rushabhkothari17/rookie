@@ -105,7 +105,18 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Zoho Mappings: `/app/test_reports/iteration_81.json` — 21 backend + all frontend features pass (mapping UI)
 - Iter83 Bug Fixes: `/app/test_reports/iteration_83.json` — 15/15 backend tests pass (Portal 404, dropdown labels, email dedup, Test Connection button)
 
-### P0 Bug Fixes (Feb 2026)
+### Iter83 Bug Fixes (Feb 2026)
+**Bug 1 - Customer Portal 404:** Portal.tsx `load()` function now has proper try-catch with friendly error messages for 404, 401, 403 responses. Admin users visiting `/portal` see "No customer account found" instead of crashing.
+
+**Bug 2 - Cart Dropdown Options:** Zoho section dropdown options now parse "Label|value" format correctly, showing only the label. `parseOptionItem()` helper added. `sectionRequiredFieldsMissing` and field key lookup now consistently use `f.id || f.key || f.name` priority.
+
+**Bug 3 - Email Template Duplicates:** Platform admin was seeing templates from all tenants (21 total). Fixed `list_templates` endpoint to always filter by `tenant_id`, returning only 10 templates for the current tenant.
+
+**Bug 4 - Test Connection Button:** Added "Test" button for validated Stripe and GoCardless tiles in Connect Services. Uses existing `/api/oauth/{provider}/validate` endpoint.
+
+**Bug 5 - Manual Order/Subscription Dialogs:** Customer email field now uses `<datalist>` with autocomplete from all 43 customers. Products dropdown gets proper `bg-white` styling. Other dialog selects across OrdersTab, SubscriptionsTab, PromoCodesTab, QuoteRequestsTab, OverrideCodesTab, TermsTab also fixed.
+
+
 **Bug 1 - Admin Tab Visibility:** Fixed customer login flow. AuthContext now falls back to `/auth/customer-login` when `/auth/partner-login` returns 403 "Access denied". TopNav correctly uses `{user?.is_admin && ...}` to hide Admin tab for customers.
 
 **Bug 2 - Partner Code Display:** Partner code now displays correctly in user profile. Backend `/me` endpoint resolves `partner_code` from tenant table via `tenant_id`. Profile.tsx displays `user?.partner_code` with fallback to "—".
