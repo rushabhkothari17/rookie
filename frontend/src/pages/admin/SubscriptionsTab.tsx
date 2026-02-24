@@ -389,12 +389,56 @@ export function SubscriptionsTab() {
 
       {/* Logs Dialog */}
       <Dialog open={showLogsDialog} onOpenChange={setShowLogsDialog}>
-        <DialogContent><DialogHeader><DialogTitle>Subscription Logs</DialogTitle></DialogHeader>
-          <div className="space-y-2 max-h-80 overflow-y-auto">
-            {subLogs.map((l: any, i: number) => <div key={i} className="text-xs bg-slate-50 rounded p-2"><span className="text-slate-400">{l.timestamp?.slice(0, 10)}</span> {l.action} {l.new_status && `→ ${l.new_status}`}</div>)}
+        <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Subscription Logs</DialogTitle></DialogHeader>
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {subLogs.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No logs found</p>}
+            {subLogs.map((l: any, i: number) => (
+              <div key={l.id || i} className="border border-slate-200 rounded p-3">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-sm font-semibold text-slate-900">{l.action}</span>
+                  <span className="text-xs text-slate-500">{l.created_at ? new Date(l.created_at).toLocaleString() : "—"}</span>
+                </div>
+                <div className="text-xs text-slate-600">Actor: {l.actor || "—"}</div>
+                {l.details && Object.keys(l.details).length > 0 && (
+                  <pre className="text-xs text-slate-500 mt-1 bg-slate-50 p-2 rounded overflow-x-auto">{JSON.stringify(l.details, null, 2)}</pre>
+                )}
+              </div>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Confirmation */}
+      <AlertDialog open={!!confirmCancelId} onOpenChange={(open) => !open && setConfirmCancelId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to cancel this subscription? This will schedule a cancellation at the end of the billing period.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Active</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => { handleCancel(confirmCancelId!); setConfirmCancelId(null); }} data-testid="confirm-cancel-sub">
+              Yes, Cancel
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Renew Confirmation */}
+      <AlertDialog open={!!confirmRenewId} onOpenChange={(open) => !open && setConfirmRenewId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Renew Subscription</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to manually renew this subscription now? A new renewal order will be created immediately.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { handleRenew(confirmRenewId!); setConfirmRenewId(null); }} data-testid="confirm-renew-sub">
+              Yes, Renew Now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Notes Dialog */}
       <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
