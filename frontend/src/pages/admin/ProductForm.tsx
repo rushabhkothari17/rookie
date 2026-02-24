@@ -24,6 +24,7 @@ export interface ProductFormData {
   price_rounding: string;
   is_active: boolean;
   visible_to_customers: string[];
+  restricted_to: string[];
   intake_schema_json: IntakeSchemaJson;
   custom_sections: CustomSection[];
 }
@@ -37,7 +38,7 @@ export const EMPTY_FORM: ProductFormData = {
   bullets: [""],
   tag: "", category: "",
   faqs: [], terms_id: "", base_price: 0, is_subscription: false, stripe_price_id: "",
-  price_rounding: "", is_active: true, visible_to_customers: [],
+  price_rounding: "", is_active: true, visible_to_customers: [], restricted_to: [],
   intake_schema_json: EMPTY_INTAKE_SCHEMA,
   custom_sections: [{ ...DEFAULT_SECTION, id: makeId() }],
 };
