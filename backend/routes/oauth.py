@@ -1150,6 +1150,7 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             synced_counts[f"{webapp_module}→{crm_module}"] = synced
 
     total = sum(synced_counts.values())
+    await create_audit_log(entity_type="integration", entity_id="zoho_crm", action="bulk_sync", actor=admin.get("email", "admin"), details={"total_synced": total, "synced": synced_counts, "errors": len(errors)}, tenant_id=tid)
     return {
         "success": len(errors) == 0,
         "synced": synced_counts,
