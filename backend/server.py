@@ -113,6 +113,7 @@ from routes.admin.finance import router as finance_admin_router
 from routes.admin.permissions import router as permissions_admin_router
 from routes.gdpr import router as gdpr_router
 from routes.downloads import router as downloads_router
+from routes.oauth import router as oauth_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
@@ -120,6 +121,7 @@ app.include_router(checkout_router)
 app.include_router(gocardless_router)
 app.include_router(webhooks_router)
 app.include_router(audit_logs_router)
+app.include_router(oauth_router)
 app.include_router(admin_misc_router)
 app.include_router(admin_promo_codes_router)
 app.include_router(admin_terms_router)
