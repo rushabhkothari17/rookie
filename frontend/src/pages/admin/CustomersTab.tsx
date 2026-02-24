@@ -45,7 +45,7 @@ export function CustomersTab() {
 
   // Dynamic payment mode filter options — only show globally-enabled providers
   const paymentFilterOptions = useMemo(() => {
-    const opts: { value: string; label: string }[] = [{ value: "", label: "All Payment Modes" }];
+    const opts: { value: string; label: string }[] = [{ value: "all_modes", label: "All Payment Modes" }];
     if (ws.gocardless_enabled) opts.push({ value: "gocardless", label: "GoCardless" });
     if (ws.stripe_enabled) opts.push({ value: "stripe", label: "Stripe" });
     if (ws.gocardless_enabled && ws.stripe_enabled) opts.push({ value: "both", label: "Both (GC + Stripe)" });
