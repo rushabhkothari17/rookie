@@ -385,10 +385,10 @@ class TestPlatformAdminLogin:
     """Test platform admin login still works"""
     
     def test_platform_admin_login(self):
-        """Platform admin can login"""
+        """Platform admin can login with partner_code=automate-accounts"""
         resp = requests.post(
-            f"{BASE_URL}/api/admin/login",
-            json=PLATFORM_ADMIN,
+            f"{BASE_URL}/api/auth/login",
+            json={**PLATFORM_ADMIN, "partner_code": "automate-accounts"},
             timeout=30
         )
         assert resp.status_code == 200, f"Platform admin login failed: {resp.text}"
