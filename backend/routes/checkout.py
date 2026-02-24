@@ -139,21 +139,24 @@ async def checkout_bank_transfer(
         gc_customer_id = customer.get("gocardless_customer_id")
         redirect_flow_id = None
 
-        if not gc_customer_id and create_gocardless_customer:
+        # Get GoCardless credentials from Connected Services
+        gc_token, gc_env = await get_gocardless_creds(customer.get("tenant_id", ""))
+
+        if not gc_customer_id and create_gocardless_customer and gc_token:
             name_parts = user.get("full_name", "Customer User").split()
             gc_customer = create_gocardless_customer(
                 email=user["email"],
                 given_name=name_parts[0],
                 family_name=name_parts[-1] if len(name_parts) > 1 else "User",
                 company_name=user.get("company_name", ""),
-                gc_token=await SettingsService.get("gocardless_access_token") or GOCARDLESS_ACCESS_TOKEN,
-                gc_env=await SettingsService.get("gocardless_environment", GOCARDLESS_ENVIRONMENT),
+                gc_token=gc_token,
+                gc_env=gc_env,
             )
             if gc_customer:
                 gc_customer_id = gc_customer["id"]
                 await db.customers.update_one({"id": customer["id"]}, {"$set": {"gocardless_customer_id": gc_customer_id}})
 
-        if gc_customer_id and create_redirect_flow:
+        if gc_customer_id and create_redirect_flow and gc_token:
             session_token = make_id()
             frontend_url = os.environ.get("FRONTEND_URL", os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:3000").replace("/api", ""))
             success_url = f"{frontend_url}/gocardless/callback?session_token={session_token}&subscription_id={sub_id}"
@@ -161,8 +164,8 @@ async def checkout_bank_transfer(
                 session_token=session_token,
                 success_redirect_url=success_url,
                 description=f"Direct Debit for {product['name']}",
-                gc_token=await SettingsService.get("gocardless_access_token") or GOCARDLESS_ACCESS_TOKEN,
-                gc_env=await SettingsService.get("gocardless_environment", GOCARDLESS_ENVIRONMENT),
+                gc_token=gc_token,
+                gc_env=gc_env,
             )
             if redirect_flow:
                 redirect_flow_id = redirect_flow["id"]
