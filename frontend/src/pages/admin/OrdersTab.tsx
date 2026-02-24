@@ -474,7 +474,7 @@ export function OrdersTab() {
               {/* Product change */}
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Change Product (updates first line item)</label>
-                <select value={selectedOrder.edit_product_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, edit_product_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2" data-testid="admin-order-product-select">
+                <select value={selectedOrder.edit_product_id || ""} onChange={e => setSelectedOrder({ ...selectedOrder, edit_product_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-order-product-select">
                   <option value="">— Keep current product —</option>
                   {products.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
