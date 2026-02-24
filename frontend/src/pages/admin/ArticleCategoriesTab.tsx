@@ -37,8 +37,8 @@ export function ArticleCategoriesTab() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDeleteCat, setConfirmDeleteCat] = useState<Category | null>(null);
-  const [entityLogs, setEntityLogs] = useState<any[]>([]);
-  const [showLogsDialog, setShowLogsDialog] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
 
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token") || "";

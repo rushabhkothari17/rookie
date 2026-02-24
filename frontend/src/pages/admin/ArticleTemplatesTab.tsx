@@ -32,8 +32,8 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", category: "", content: "" });
   const [confirmDeleteTpl, setConfirmDeleteTpl] = useState<string | null>(null);
-  const [entityLogs, setEntityLogs] = useState<any[]>([]);
-  const [showLogsDialog, setShowLogsDialog] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
 
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token") || "";
