@@ -891,6 +891,74 @@ async def get_zoho_books_modules_for_mapping(admin: Dict[str, Any] = Depends(get
     }
 
 
+# Zoho Books module fields - predefined since Books doesn't have a fields API like CRM
+ZOHO_BOOKS_MODULE_FIELDS = {
+    "contacts": [
+        {"api_name": "contact_name", "field_label": "Contact Name"},
+        {"api_name": "company_name", "field_label": "Company Name"},
+        {"api_name": "email", "field_label": "Email"},
+        {"api_name": "phone", "field_label": "Phone"},
+        {"api_name": "mobile", "field_label": "Mobile"},
+        {"api_name": "website", "field_label": "Website"},
+        {"api_name": "billing_address", "field_label": "Billing Address"},
+        {"api_name": "shipping_address", "field_label": "Shipping Address"},
+        {"api_name": "notes", "field_label": "Notes"},
+    ],
+    "invoices": [
+        {"api_name": "customer_name", "field_label": "Customer Name"},
+        {"api_name": "invoice_number", "field_label": "Invoice Number"},
+        {"api_name": "reference_number", "field_label": "Reference Number"},
+        {"api_name": "date", "field_label": "Invoice Date"},
+        {"api_name": "due_date", "field_label": "Due Date"},
+        {"api_name": "total", "field_label": "Total"},
+        {"api_name": "notes", "field_label": "Notes"},
+    ],
+    "estimates": [
+        {"api_name": "customer_name", "field_label": "Customer Name"},
+        {"api_name": "estimate_number", "field_label": "Estimate Number"},
+        {"api_name": "reference_number", "field_label": "Reference Number"},
+        {"api_name": "date", "field_label": "Estimate Date"},
+        {"api_name": "expiry_date", "field_label": "Expiry Date"},
+        {"api_name": "total", "field_label": "Total"},
+        {"api_name": "notes", "field_label": "Notes"},
+    ],
+    "bills": [
+        {"api_name": "vendor_name", "field_label": "Vendor Name"},
+        {"api_name": "bill_number", "field_label": "Bill Number"},
+        {"api_name": "reference_number", "field_label": "Reference Number"},
+        {"api_name": "date", "field_label": "Bill Date"},
+        {"api_name": "due_date", "field_label": "Due Date"},
+        {"api_name": "total", "field_label": "Total"},
+        {"api_name": "notes", "field_label": "Notes"},
+    ],
+    "recurringinvoices": [
+        {"api_name": "customer_name", "field_label": "Customer Name"},
+        {"api_name": "recurrence_name", "field_label": "Recurrence Name"},
+        {"api_name": "start_date", "field_label": "Start Date"},
+        {"api_name": "end_date", "field_label": "End Date"},
+        {"api_name": "total", "field_label": "Total"},
+    ],
+}
+
+
+@router.get("/oauth/zoho_books/modules/{module_name}/fields")
+async def get_zoho_books_module_fields(
+    module_name: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Return predefined fields for a Zoho Books module."""
+    tid = tenant_id_of(admin)
+    conn = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_books"}, {"_id": 0})
+    if not conn or not conn.get("is_validated"):
+        raise HTTPException(status_code=400, detail="Zoho Books is not connected or validated")
+    
+    fields = ZOHO_BOOKS_MODULE_FIELDS.get(module_name, [])
+    return {
+        "module": module_name,
+        "fields": fields
+    }
+
+
 # ---------------------------------------------------------------------------
 # Zoho CRM Bulk Sync
 # ---------------------------------------------------------------------------
