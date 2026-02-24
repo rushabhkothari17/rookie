@@ -317,6 +317,8 @@ export function IntegrationsOverview() {
 
   // Mapping panel states
   const [zohoModules, setZohoModules] = useState<ZohoModule[]>([]);
+  const [zohoModuleFields, setZohoModuleFields] = useState<ZohoField[]>([]);
+  const [loadingFields, setLoadingFields] = useState(false);
   const [crmMappings, setCrmMappings] = useState<CrmMapping[]>([]);
   const [webappModules, setWebappModules] = useState<WebappModule[]>([]);
   const [addingMapping, setAddingMapping] = useState(false);
