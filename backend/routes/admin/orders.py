@@ -302,6 +302,7 @@ async def update_order(
         
         # Auto-sync to Zoho CRM on update (fire and forget)
         asyncio.create_task(auto_sync_to_zoho_crm(tenant_id_of(admin), "orders", updated_order, "update"))
+        asyncio.create_task(auto_sync_to_zoho_books(tenant_id_of(admin), "orders", updated_order, "update"))
 
     if payload.new_note:
         note_entry = {"text": payload.new_note, "timestamp": now_iso(), "actor": f"admin:{admin['id']}"}
