@@ -22,8 +22,6 @@ import { TenantsTab } from "./admin/TenantsTab";
 import { SetupChecklistWidget } from "@/components/admin/SetupChecklistWidget";
 import { ApiTab } from "./admin/ApiTab";
 import { WebhooksTab } from "./admin/WebhooksTab";
-import { CRMTab } from "./admin/CRMTab";
-import { FinanceTab } from "./admin/FinanceTab";
 import { IntegrationsOverview } from "./admin/IntegrationsOverview";
 
 const TAB_CLASS =
