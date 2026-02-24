@@ -203,7 +203,7 @@ async def complete_gocardless_redirect(
                     # Store mandate_id even on payment failure so retry can skip re-completing the redirect flow
                     await db.orders.update_one(
                         {"id": payload.order_id},
-                        {"$set": {"gocardless_mandate_id": mandate_id, "updated_at": now_iso()}},
+                        {"$set": {"gocardless_mandate_id": mandate_id, "gocardless_scheme": scheme, "updated_at": now_iso()}},
                     )
                     await create_audit_log(
                         entity_type="order",
