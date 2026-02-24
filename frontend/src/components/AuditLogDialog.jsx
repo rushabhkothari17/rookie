@@ -10,12 +10,8 @@ export function AuditLogDialog({ open, onOpenChange, title, logsUrl }) {
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
 
-  const fetchLogs = useCallback(async (p: number) => {
+  const fetchLogs = useCallback(async (p) => {
     if (!logsUrl) return;
     setLoading(true);
     try {
@@ -37,7 +33,7 @@ export function AuditLogDialog({ open, onOpenChange, title, logsUrl }) {
     }
   }, [open, logsUrl, fetchLogs]);
 
-  const goTo = (p: number) => {
+  const goTo = (p) => {
     setPage(p);
     fetchLogs(p);
   };
@@ -53,7 +49,7 @@ export function AuditLogDialog({ open, onOpenChange, title, logsUrl }) {
           {!loading && logs.length === 0 && (
             <p className="text-sm text-slate-500 text-center py-4">No logs found</p>
           )}
-          {!loading && logs.map((log: any, i: number) => (
+          {!loading && logs.map((log, i) => (
             <div key={log.id || i} className="border border-slate-200 rounded p-3">
               <div className="flex justify-between items-start mb-1">
                 <span className="text-sm font-semibold text-slate-900">{log.action}</span>
