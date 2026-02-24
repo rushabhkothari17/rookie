@@ -478,9 +478,11 @@ async def refund_order(
     # Dispatch webhook
     customer = await db.customers.find_one({"id": order["customer_id"]}, {"_id": 0}) or {}
     _cust_email = customer.get("email", "")
-    if not _cust_email and customer.get("user_id"):
-        _user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0, "email": 1}) or {}
-        _cust_email = _user.get("email", "")
+    _cust_name = ""
+    if customer.get("user_id"):
+        _user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0, "email": 1, "full_name": 1}) or {}
+        _cust_email = _user.get("email", "") or _cust_email
+        _cust_name = _user.get("full_name", "")
     
     await dispatch_event("order.refunded", {
         "id": order_id,
@@ -492,6 +494,43 @@ async def refund_order(
         "customer_email": _cust_email,
         "refunded_at": now_iso()
     }, tid)
+    
+    # Send refund notification email to customer
+    if _cust_email:
+        from services.email_service import EmailService
+        
+        # Determine processing time based on provider
+        processing_times = {
+            "stripe": "5-10 business days",
+            "gocardless": "3-5 business days",
+            "manual": "As communicated by our support team"
+        }
+        processing_time = processing_times.get(payload.provider, "5-10 business days")
+        
+        # Format reason for display
+        reason_labels = {
+            "requested_by_customer": "Requested by customer",
+            "duplicate": "Duplicate payment",
+            "fraudulent": "Fraudulent transaction",
+            "other": "Other"
+        }
+        
+        await EmailService.send(
+            trigger="refund_processed",
+            recipient=_cust_email,
+            variables={
+                "customer_name": _cust_name or "Customer",
+                "customer_email": _cust_email,
+                "order_number": order.get("order_number", ""),
+                "refund_amount": f"{refund_amount_cents / 100:.2f}",
+                "refund_currency": order.get("currency", "$"),
+                "refund_reason": reason_labels.get(payload.reason, payload.reason),
+                "processing_time": processing_time,
+                "payment_method": payload.provider.title()
+            },
+            db=db,
+            tenant_id=tid
+        )
     
     return {
         "message": "Refund processed successfully",
