@@ -297,7 +297,7 @@ export function SubscriptionsTab() {
                 <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${statusColor(sub.status)}`}>{sub.status}</span></TableCell>
                 <TableCell>
                   <div className="flex gap-1 flex-nowrap">
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const r = await api.get(`/admin/subscriptions/${sub.id}/logs`); setSubLogs(r.data.logs || []); setShowLogsDialog(true); }}>Logs</Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { try { const r = await api.get(`/admin/subscriptions/${sub.id}/logs`); setSubLogs(r.data.logs || []); setShowLogsDialog(true); } catch { toast.error("Failed to load logs"); } }} data-testid={`admin-subs-logs-${sub.id}`}>Logs</Button>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSubNotes(sub.notes || []); setSubNotesJson(sub.notes_json || null); setShowNotesDialog(true); }}>Notes</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSub(sub); setShowEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmRenewId(sub.id)}>Renew</Button>
