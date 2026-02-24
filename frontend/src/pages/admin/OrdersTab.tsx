@@ -356,7 +356,7 @@ export function OrdersTab() {
                       <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setNoteData({ notes: order.notes || [], notes_json: order.notes_json || null }); setShowNotesDialog(true); }} data-testid={`admin-order-notes-${order.id}`}>Notes{order.notes?.length ? ` (${order.notes.length})` : ""}</Button>
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedOrder({ ...order, order_date_edit: order.created_at?.slice(0, 10) }); setShowEditDialog(true); }} data-testid={`admin-order-edit-${order.id}`}>Edit</Button>
                       {order.status === "unpaid" && (
-                        <Button size="sm" variant="secondary" className="h-6 px-2 text-[11px]" onClick={() => handleAutoCharge(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
+                        <Button size="sm" variant="secondary" className="h-6 px-2 text-[11px]" onClick={() => setConfirmChargeId(order.id)} data-testid={`admin-order-charge-${order.id}`}>Charge</Button>
                       )}
                       {(order.status === "paid" || order.status === "partially_refunded") && (
                         <Button size="sm" variant="outline" className="h-6 px-2 text-[11px] text-amber-600 border-amber-200 hover:bg-amber-50" onClick={async () => {
@@ -380,7 +380,7 @@ export function OrdersTab() {
                           setShowRefundDialog(true);
                         }} data-testid={`admin-order-refund-${order.id}`}>Refund</Button>
                       )}
-                      <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => handleDelete(order.id)} data-testid={`admin-order-delete-${order.id}`}>Delete</Button>
+                      <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" onClick={() => setConfirmDeleteId(order.id)} data-testid={`admin-order-delete-${order.id}`}>Delete</Button>
                     </div>
                   </TableCell>
                 </TableRow>
