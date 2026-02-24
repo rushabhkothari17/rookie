@@ -210,14 +210,14 @@ export function SubscriptionsTab() {
           <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-sub-number" />
           <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-processor-id" />
           <Input placeholder="Plan name" value={planFilter} onChange={e => setPlanFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-sub-filter-plan" />
-          <select value={status} onChange={e => setStatus(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-sub-filter-status">
-            <option value="">All Statuses</option>
-            {subStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select value={payment} onChange={e => setPayment(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-sub-filter-payment">
-            <option value="">All Methods</option>
-            {paymentMethods.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-sub-filter-status"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem>{subStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+          </Select>
+          <Select value={payment} onValueChange={setPayment}>
+            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-sub-filter-payment"><SelectValue placeholder="All Methods" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Renewal</span>
             <Input type="date" value={renewalFrom} onChange={e => setRenewalFrom(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-renewal-from" />
@@ -349,9 +349,10 @@ export function SubscriptionsTab() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Status</label>
-                  <select value={selectedSub.status} onChange={e => setSelectedSub({ ...selectedSub, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-sub-status-select">
-                    {subStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <Select value={selectedSub.status} onValueChange={v => setSelectedSub({ ...selectedSub, status: v })} data-testid="admin-sub-status-select">
+                    <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>{subStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Payment Method</label>
