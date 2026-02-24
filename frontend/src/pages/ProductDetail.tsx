@@ -747,7 +747,7 @@ export default function ProductDetail() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">Apps Involved *</label>
-                    <Input placeholder="e.g., Zoho CRM, Zoho Books..." value={scopeFormData.apps_involved || ""} onChange={e => setScopeFormData(p => ({ ...p, apps_involved: e.target.value }))} data-testid="scope-apps-involved" />
+                    <Input placeholder="e.g., CRM, accounting, email..." value={scopeFormData.apps_involved || ""} onChange={e => setScopeFormData(p => ({ ...p, apps_involved: e.target.value }))} data-testid="scope-apps-involved" />
                   </div>
                 </>
               );
