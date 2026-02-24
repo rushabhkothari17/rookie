@@ -124,7 +124,7 @@ async def checkout_bank_transfer(
         order_id=None,
     )
 
-    order_items = await build_order_items(payload.items)
+    order_items = await build_order_items(payload.items, tenant_id)
 
     if any(i["product"].get("sku") == "MIG-CRM" for i in order_items) and any(
         i["product"].get("sku") == "START-ZOHO-CRM-EXP" for i in order_items
