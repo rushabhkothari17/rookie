@@ -227,31 +227,21 @@ function TemplateEditor({ template, onSave, onClose }: {
 
 export default function EmailSection() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [emailSettings, setEmailSettings] = useState<Record<string, SettingItem>>({});
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [showLogs, setShowLogs] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
-  const [integrationStatus, setIntegrationStatus] = useState<any>(null);
-  const [settingActiveProvider, setSettingActiveProvider] = useState(false);
 
   const load = async () => {
     setLoadingTemplates(true);
     try {
-      const [tmplRes, settingsRes, integRes] = await Promise.all([
+      const [tmplRes, integRes] = await Promise.all([
         api.get("/admin/email-templates"),
-        api.get("/admin/settings/structured"),
         api.get("/admin/integrations/status"),
       ]);
       setTemplates(tmplRes.data.templates || []);
-      const emailItems: Record<string, SettingItem> = {};
-      (settingsRes.data.settings?.Email || []).forEach((item: SettingItem) => {
-        emailItems[item.key] = item;
-      });
-      setEmailSettings(emailItems);
       setActiveProvider(integRes.data.active_email_provider);
-      setIntegrationStatus(integRes.data.integrations);
     } catch { toast.error("Failed to load email settings"); }
     finally { setLoadingTemplates(false); }
   };
@@ -266,27 +256,9 @@ export default function EmailSection() {
   useEffect(() => { load(); }, []);
   useEffect(() => { if (showLogs) loadLogs(); }, [showLogs]);
 
-  const setProviderActive = async (provider: string) => {
-    setSettingActiveProvider(true);
-    try {
-      await api.post("/admin/integrations/email-providers/set-active", { provider });
-      setActiveProvider(provider === "none" ? null : provider);
-      toast.success(
-        provider === "none" 
-          ? "Email sending disabled. All emails will be stored in outbox only." 
-          : `${provider === "resend" ? "Resend" : "Zoho Mail"} is now your active email provider. The previous provider has been deactivated.`
-      );
-      load(); // Refresh to get updated status
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to set active provider");
-    } finally {
-      setSettingActiveProvider(false);
-    }
-  };
-
   const toggleTemplate = async (tmpl: EmailTemplate) => {
     if (!activeProvider) {
-      toast.error("Please activate an email provider first before enabling templates");
+      toast.error("Please connect and activate an email provider in Connect Services first");
       return;
     }
     try {
@@ -302,9 +274,6 @@ export default function EmailSection() {
   };
 
   if (loadingTemplates) return <div className="text-slate-400 text-sm">Loading…</div>;
-
-  const resendValidated = integrationStatus?.resend?.is_validated;
-  const zohoMailValidated = integrationStatus?.zoho_mail?.is_validated;
 
   return (
     <div data-testid="email-section">
