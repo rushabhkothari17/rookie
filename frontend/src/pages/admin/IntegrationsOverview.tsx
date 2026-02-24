@@ -116,6 +116,50 @@ interface MappingFormState {
 
 type CategoryFilter = "all" | "payments" | "email" | "crm" | "accounting";
 
+// Sensible default field mappings for common webapp+zoho module combos
+const DEFAULT_FIELD_MAPS: Record<string, Record<string, FieldMapping[]>> = {
+  customers: {
+    Leads: [
+      { webapp_field: "email", crm_field: "Email" },
+      { webapp_field: "full_name", crm_field: "Last_Name" },
+      { webapp_field: "company_name", crm_field: "Company" },
+      { webapp_field: "phone", crm_field: "Phone" },
+    ],
+    Contacts: [
+      { webapp_field: "email", crm_field: "Email" },
+      { webapp_field: "full_name", crm_field: "Last_Name" },
+      { webapp_field: "company_name", crm_field: "Account_Name" },
+      { webapp_field: "phone", crm_field: "Phone" },
+    ],
+    contacts: [
+      { webapp_field: "full_name", crm_field: "contact_name" },
+      { webapp_field: "email", crm_field: "email" },
+      { webapp_field: "company_name", crm_field: "company_name" },
+      { webapp_field: "phone", crm_field: "phone" },
+    ],
+  },
+  orders: {
+    Deals: [
+      { webapp_field: "order_number", crm_field: "Deal_Name" },
+      { webapp_field: "total", crm_field: "Amount" },
+      { webapp_field: "status", crm_field: "Stage" },
+    ],
+    invoices: [
+      { webapp_field: "order_number", crm_field: "reference_number" },
+      { webapp_field: "total", crm_field: "total" },
+    ],
+  },
+  quote_requests: {
+    Leads: [
+      { webapp_field: "email", crm_field: "Email" },
+      { webapp_field: "contact_name", crm_field: "Last_Name" },
+      { webapp_field: "company_name", crm_field: "Company" },
+      { webapp_field: "phone", crm_field: "Phone" },
+      { webapp_field: "message", crm_field: "Description" },
+    ],
+  },
+};
+
 const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
   all: { label: "All Integrations", icon: LayoutGrid, color: "text-slate-600", bgColor: "bg-slate-100" },
   payments: { label: "Payments", icon: CreditCard, color: "text-emerald-600", bgColor: "bg-emerald-100" },
