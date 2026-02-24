@@ -415,6 +415,12 @@ export function IntegrationsOverview() {
   const [mappingForm, setMappingForm] = useState<MappingFormState>({ webapp_module: "", crm_module: "", field_mappings: [] });
   const [savingMapping, setSavingMapping] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [lastSyncResult, setLastSyncResult] = useState<{
+    success: boolean;
+    message: string;
+    errors: string[];
+    synced: Record<string, number>;
+  } | null>(null);
 
   const loadIntegrations = async () => {
     try {
