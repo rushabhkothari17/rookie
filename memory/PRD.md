@@ -71,12 +71,15 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - [ ] MFA / TOTP for admin accounts
 - [x] ~~GDPR: customer self-service data export~~ (completed Feb 2026)
 - [x] ~~GDPR: customer right-to-erasure self-service~~ (completed Feb 2026)
-- [ ] Cookie consent banner
+- [x] ~~Cookie consent banner~~ (completed Feb 2026)
 - [ ] Data retention policy automation
 - [ ] Per-API-key rate limits
 - [ ] Application-level field encryption for PII at rest
 - [ ] External monitoring/alerting (Sentry, Datadog)
 - [ ] CI/CD: `pip-audit`, `npm audit`, SAST scanning in pipeline
+- [ ] Subscription N+1 query optimization
+- [ ] Complete Zoho OAuth flow (CRM + Books)
+- [ ] Refund notification emails to customers
 
 ## Credentials (Dev/Test)
 - Platform admin: `admin@automateaccounts.local` / `ChangeMe123!`
