@@ -1,0 +1,43 @@
+{
+  "summary": "Tested Scope ID flow fixes, GoCardless currency fix, and regression for iteration 89. All 18 backend tests pass. All frontend UI tests pass. Full end-to-end flow verified: Product page shows 'Proceed to checkout' for zero-price RFQ products, Cart page shows 'Quote Requests' section with Scope ID input and 'Request a Quote' button, Quote modal submits to /api/products/request-quote successfully. GoCardless scheme_currency_map (pad=CAD, bacs=GBP, ach=USD) and retry logic are both verified in code.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter89_scope_rfq_gocardless.py",
+    "/app/test_reports/pytest/pytest_iter89.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "GoCardless gocardless.py: scheme_currency_map correctly maps pad->CAD, bacs->GBP, ach->USD, sepa_core->EUR. payment_currency = scheme_currency_map.get(scheme, order.get('currency', 'GBP')) - correct fallback behavior.",
+    "Retry logic: when complete_redirect_flow() returns None, checks stored gocardless_mandate_id from DB and reconstructs redirect_flow = {'links': {'mandate': stored_mandate_id}, 'scheme': stored_scheme} - correctly handles page refresh scenario.",
+    "Cart.tsx RFQ grouping: items with pricing.subtotal === 0 && !item.inputs?._scope_unlock go to rfq bucket - correct condition. The RFQ section appears at data-testid=cart-rfq-section with scope ID input (cart-rfq-scope-id-input) and Request a Quote button (cart-rfq-request-quote-btn-{product_id}).",
+    "ProductDetail.tsx ctaConfig: When isRFQ=true and !scopeUnlock, returns label='Proceed to checkout' that adds item to cart and navigates to /cart. Quote modal is NOT shown on product page for RFQ products - correct per requirements."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter89_scope_rfq_gocardless.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests pass)",
+    "frontend": "100% (all flows verified)"
+  },
+  "test_credentials": {
+    "customer": "testcustomer@test.com / ChangeMe123! (partner_code: automate-accounts)",
+    "admin": "admin@automateaccounts.local / ChangeMe123! (partner_code: automate-accounts)"
+  },
+  "seed_data_creation": "Submitted a TEST_RFQ quote request via API (product_id=1d8c7a75-a957-435d-92d3-c0809a94b36d, email=TEST_john@test.com)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 89 all tests pass. Key findings: (1) Customer login uses partner_code=automate-accounts for testcustomer@test.com. (2) RFQ product ID=1d8c7a75-a957-435d-92d3-c0809a94b36d has base_price=0 and pricing_type=fixed. (3) Product page CTA correctly says 'Proceed to checkout' for RFQ items. (4) Cart page has 'Quote Requests' section with data-testid=cart-rfq-section, cart-rfq-scope-id-input, cart-rfq-request-quote-btn-{productId}. (5) Quote modal has cart-quote-name/email/company/phone/message/submit data-testids. (6) GoCardless scheme_currency_map at line ~138 in gocardless.py, payment_currency at line ~156. (7) Retry logic at lines 88-110. (8) Both admin portal and store page load correctly.",
+  "rca_of_issues": {
+    "gocardless_false_payment_failure": "Root cause: Payment currency was taken from the order (e.g. GBP) instead of the mandate scheme. Fix: scheme_currency_map maps scheme codes (pad->CAD, bacs->GBP, ach->USD etc.) and payment_currency = scheme_currency_map.get(scheme, order.get('currency', 'GBP')). Now PAD mandates use CAD regardless of order currency.",
+    "gocardless_redirect_flow_retry": "Root cause: When redirect_flow was already completed (e.g. page refresh), complete_redirect_flow() returned None causing HTTP 400. Fix: Check stored gocardless_mandate_id in DB and reconstruct redirect_flow dict from it, allowing payment creation to retry.",
+    "rfq_product_page_cta": "Root cause: Previously 'Request a Quote' opened a modal on product page. New flow: isRFQ products show 'Proceed to checkout' which adds to cart and navigates to /cart, where the Quote Requests section shows the RFQ item with Scope ID input and Request a Quote button."
+  }
+}
