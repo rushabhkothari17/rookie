@@ -44,6 +44,7 @@ async def create_tenant(payload: TenantCreate, admin: Dict[str, Any] = Depends(r
     from routes.auth import _seed_new_tenant
     await _seed_new_tenant(tenant_id, payload.name, now_iso())
 
+    await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="created", actor=admin.get("email", "admin"), details={"name": payload.name, "code": code})
     return {"tenant": doc}
 
 
@@ -63,6 +64,7 @@ async def update_tenant(tenant_id: str, payload: TenantUpdate, admin: Dict[str, 
 
     await db.tenants.update_one({"id": tenant_id}, {"$set": updates})
     updated = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(updates.keys())})
     return {"tenant": updated}
 
 
@@ -74,6 +76,7 @@ async def activate_tenant(tenant_id: str, admin: Dict[str, Any] = Depends(requir
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Tenant not found")
+    await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="activated", actor=admin.get("email", "admin"), details={})
     return {"message": "Tenant activated"}
 
 
@@ -87,6 +90,7 @@ async def deactivate_tenant(tenant_id: str, admin: Dict[str, Any] = Depends(requ
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Tenant not found")
+    await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="deactivated", actor=admin.get("email", "admin"), details={})
     return {"message": "Tenant deactivated"}
 
 
@@ -127,6 +131,7 @@ async def create_partner_admin(
         "created_at": now_iso(),
     }
     await db.users.insert_one(user_doc)
+    await create_audit_log(entity_type="tenant_admin", entity_id=user_id, action="created", actor=admin.get("email", "admin"), details={"email": payload.email, "role": payload.role, "tenant_id": tenant_id})
     return {
         "message": f"{payload.role} created for tenant {tenant['name']}",
         "user_id": user_id,
