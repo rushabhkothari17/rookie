@@ -574,7 +574,7 @@ export function OrdersTab() {
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Status</label>
-              <select value={manualOrder.status} onChange={e => setManualOrder({ ...manualOrder, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2">
+              <select value={manualOrder.status} onChange={e => setManualOrder({ ...manualOrder, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
                 <option value="paid">Paid (Manual)</option><option value="unpaid">Unpaid (Manual)</option>
               </select>
             </div>
