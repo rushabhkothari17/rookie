@@ -562,10 +562,14 @@ export function OrdersTab() {
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Product</label>
-              <select value={manualOrder.product_id} onChange={e => setManualOrder({ ...manualOrder, product_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="manual-order-product-select">
-                <option value="">Select product</option>
-                {products.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
+              <Select value={manualOrder.product_id || undefined} onValueChange={v => setManualOrder({ ...manualOrder, product_id: v })} data-testid="manual-order-product-select">
+                <SelectTrigger className="w-full bg-white" data-testid="manual-order-product-select">
+                  <SelectValue placeholder="Select product" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1"><label className="text-xs text-slate-500">Subtotal</label><Input type="number" step="0.01" value={manualOrder.subtotal} onChange={e => setManualOrder({ ...manualOrder, subtotal: parseFloat(e.target.value) || 0 })} /></div>
@@ -574,9 +578,15 @@ export function OrdersTab() {
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Status</label>
-              <select value={manualOrder.status} onChange={e => setManualOrder({ ...manualOrder, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
-                <option value="paid">Paid (Manual)</option><option value="unpaid">Unpaid (Manual)</option>
-              </select>
+              <Select value={manualOrder.status} onValueChange={v => setManualOrder({ ...manualOrder, status: v })}>
+                <SelectTrigger className="w-full bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid">Paid (Manual)</SelectItem>
+                  <SelectItem value="unpaid">Unpaid (Manual)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Internal Note</label>
