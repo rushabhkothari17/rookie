@@ -3,6 +3,9 @@ Integration Service for third-party connections.
 
 All integrations use credential-based authentication (API keys, tokens, etc.)
 No OAuth redirects - users enter credentials directly.
+
+Credentials are synced to app_settings on validation/activation so that
+email_service.py and checkout.py continue to work without changes.
 """
 from __future__ import annotations
 
@@ -17,6 +20,19 @@ from pydantic import BaseModel
 from core.helpers import now_iso
 from core.tenant import get_tenant_admin, tenant_id_of
 from db.session import db
+
+
+# ---------------------------------------------------------------------------
+# Helper: sync credentials into the legacy app_settings keys
+# ---------------------------------------------------------------------------
+
+async def _sync_to_settings(key: str, value: Any) -> None:
+    """Write (or upsert) a value into the global app_settings collection."""
+    await db.app_settings.update_one(
+        {"key": key},
+        {"$set": {"key": key, "value_json": value, "updated_at": now_iso()}},
+        upsert=True,
+    )
 
 router = APIRouter(prefix="/api", tags=["integrations"])
 
