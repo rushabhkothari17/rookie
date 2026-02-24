@@ -180,3 +180,20 @@ async def get_quote_request_logs(quote_id: str, admin: Dict[str, Any] = Depends(
     logs = await db.audit_logs.find({"entity_type": "quote_request", "entity_id": quote_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return {"logs": logs}
 
+
+@router.delete("/admin/quote-requests/{quote_id}")
+async def delete_quote_request(quote_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    quote = await db.quote_requests.find_one({**tf, "id": quote_id}, {"_id": 0})
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote request not found")
+    await db.quote_requests.delete_one({"id": quote_id})
+    await create_audit_log(
+        entity_type="quote_request",
+        entity_id=quote_id,
+        action="deleted",
+        actor=admin.get("email", "admin"),
+        details={"product_name": quote.get("product_name"), "email": quote.get("email")},
+    )
+    return {"message": "Quote request deleted"}
+
