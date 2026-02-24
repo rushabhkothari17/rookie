@@ -190,7 +190,11 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                   <div className="col-span-2">
                     <label className="text-[11px] text-slate-500 font-medium">Options (one per line, format: Label|value)</label>
                     <Textarea
-                      value={(field.options || []).join("\n")}
+                      value={
+                        Array.isArray(field.options) 
+                          ? field.options.join("\n") 
+                          : (field.options || "")
+                      }
                       onChange={e => updateField(field.id, { options: e.target.value.split("\n").filter(Boolean) })}
                       rows={3}
                       className="mt-0.5 text-xs font-mono"
