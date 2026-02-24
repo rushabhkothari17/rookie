@@ -202,21 +202,34 @@ export function UsersTab() {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Access</TableHead>
+              <TableHead>Modules</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {adminUsers.map((u: any) => {
               const isActive = u.is_active !== false;
+              const roleDisplay = getRoleDisplay(u);
+              const moduleCount = u.permissions?.modules?.length || 0;
               return (
                 <TableRow key={u.id} data-testid={`admin-user-row-${u.id}`}>
                   <TableCell>{u.full_name}</TableCell>
-                  <TableCell>{u.email}</TableCell>
-                  <TableCell><span className={`px-2 py-0.5 rounded text-xs ${u.role === "platform_admin" ? "bg-amber-100 text-amber-700" : u.role === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{u.role}</span></TableCell>
+                  <TableCell className="text-xs">{u.email}</TableCell>
+                  <TableCell><span className={`px-2 py-0.5 rounded text-xs ${roleDisplay.color}`}>{roleDisplay.label}</span></TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] ${
+                      u.access_level === "full_access" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                    }`}>
+                      {u.access_level === "full_access" ? <ShieldCheck size={10} /> : <Eye size={10} />}
+                      {u.access_level === "full_access" ? "Full" : "Read"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-xs text-slate-500">{moduleCount > 0 ? `${moduleCount} modules` : "All"}</span>
+                  </TableCell>
                   <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-user-status-${u.id}`}>{isActive ? "Active" : "Inactive"}</span></TableCell>
-                  <TableCell>{u.created_at?.slice(0, 10) || "—"}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(u)} data-testid={`admin-user-edit-${u.id}`}>Edit</Button>
@@ -229,7 +242,7 @@ export function UsersTab() {
                 </TableRow>
               );
             })}
-            {adminUsers.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-slate-400 py-4">No admin users found.</TableCell></TableRow>}
+            {adminUsers.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-slate-400 py-4">No admin users found.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
