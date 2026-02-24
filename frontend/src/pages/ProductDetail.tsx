@@ -326,16 +326,11 @@ export default function ProductDetail() {
   };
 
   const handleScopeRequest = () => {
-    // For Fixed-Scope Development only, show the scope form modal
-    if (product?.sku === "BUILD-FIXED-SCOPE") {
-      setShowScopeModal(true);
-    } else {
-      // For all other scope request products, add to cart and let customer
-      // enter a Scope ID (if they have one) on the checkout page, or submit as a scope request
-      addItem({ product_id: product.id, quantity: 1, inputs });
-      toast.success("Added to cart");
-      navigate("/cart");
-    }
+    // All scope request products (including BUILD-FIXED-SCOPE) navigate to cart
+    // The cart's "Quote Requests" section provides both Scope ID unlock and Request a Quote form
+    addItem({ product_id: product.id, quantity: 1, inputs });
+    toast.success("Added to cart");
+    navigate("/cart");
   };
 
   const handleSubmitScopeForm = async () => {
