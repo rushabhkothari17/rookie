@@ -105,6 +105,11 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Iter91 Email+Visibility+UI Fixes: `/app/test_reports/iteration_91.json` — 12/12 backend + 5/5 frontend pass (Feb 2026)
 - Pricing Display Fix: `/app/test_reports/iteration_92.json` — 95%+ frontend pass (all pricing types now display correctly)
 
+### Pricing Display Fix (Feb 2026)
+- **Complex pricing cards**: `OfferingCard.tsx` — added `getStartingPrice()` helper that derives a minimum price from `pricing_rules` for `tiered` (min variant), `calculator` (calc_type-specific minimum), and all sub-types. Shows "Starts from $X" on catalog cards.
+- **"Contact us" only for $0**: `formatPrice()` now only returns "Contact us" for products with an explicit `base_price === 0`, not for null/missing prices.
+- **Scope request detail page**: `ProductDetail.tsx` — fixed `isRFQ` prop to include `||  !!pricing?.is_scope_request`, so `StickyPurchaseSummary` shows "Price on request" instead of "$0.00" for scope_request products.
+
 ### Iter91: Email, Visibility & UI Fixes (Feb 2026)
 - **Email verification fix**: `auth.py` now passes `tenant_id` to `EmailService.send()` so Zoho Mail connection is found. `email_service.py` now reads Resend `from_email` from `settings` not `credentials`.
 - **Product visibility redesign**: 3-mode system in `ProductForm.tsx` — All / Restrict from specific (blacklist) / Show only to specific (whitelist). Admins bypass visibility checks in `store.py`.
