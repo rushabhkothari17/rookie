@@ -70,6 +70,17 @@ async def admin_create_admin_user(
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # Handle preset roles for permissions
+    access_level = payload.access_level or "full_access"
+    modules = payload.modules or []
+    
+    if payload.preset_role:
+        from routes.admin.permissions import PRESET_ROLES, ADMIN_MODULES
+        if payload.preset_role in PRESET_ROLES:
+            preset = PRESET_ROLES[payload.preset_role]
+            access_level = preset["access_level"]
+            modules = preset["modules"]
+    
     user_id = make_id()
     hashed = pwd_context.hash(payload.password)
     user_doc = {
@@ -82,7 +93,10 @@ async def admin_create_admin_user(
         "phone": payload.phone or "",
         "is_admin": True,
         "is_verified": True,
+        "is_active": True,
         "role": payload.role,
+        "access_level": access_level,
+        "permissions": {"modules": modules},
         "tenant_id": tid,
         "must_change_password": True,
         "created_at": now_iso(),
