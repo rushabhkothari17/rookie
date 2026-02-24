@@ -113,6 +113,22 @@ async def complete_gocardless_redirect(
             )
             raise HTTPException(status_code=400, detail="No mandate ID found in GoCardless response")
 
+        # Derive the correct payment currency from the mandate scheme, not the order currency.
+        # GoCardless mandates are scheme-specific: PAD=CAD, BACS=GBP, SEPA=EUR, ACH=USD, etc.
+        scheme = redirect_flow.get("scheme", "bacs")
+        scheme_currency_map = {
+            "bacs": "GBP",
+            "sepa_core": "EUR",
+            "sepa_cor1": "EUR",
+            "pad": "CAD",
+            "ach": "USD",
+            "becs": "AUD",
+            "becs_nz": "NZD",
+            "betalingsservice": "DKK",
+            "autogiro": "SEK",
+            "pay_to": "AUD",
+        }
+
         payment_id = None
 
         if payload.order_id:
