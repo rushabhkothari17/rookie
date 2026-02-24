@@ -269,8 +269,12 @@ async def generate_order_tos_pdf(
     if not tos:
         return None
     
-    # Get store name
-    store_name = await SettingsService.get("store_name", tenant_id=tenant_id) or "Store"
+    # Get store name (global setting or from website_settings for tenant)
+    ws = await db.website_settings.find_one({"tenant_id": tenant_id}, {"_id": 0, "store_name": 1})
+    store_name = ws.get("store_name") if ws else None
+    if not store_name:
+        from services.settings_service import SettingsService
+        store_name = await SettingsService.get("store_name", "Store")
     
     # Generate PDF
     return generate_tos_pdf(
