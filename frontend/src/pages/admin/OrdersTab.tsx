@@ -546,11 +546,23 @@ export function OrdersTab() {
           <div className="space-y-3">
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Customer Email</label>
-              <Input placeholder="customer@example.com" value={manualOrder.customer_email} onChange={e => setManualOrder({ ...manualOrder, customer_email: e.target.value })} />
+              <input
+                list="manual-order-customers"
+                placeholder="customer@example.com"
+                value={manualOrder.customer_email}
+                onChange={e => setManualOrder({ ...manualOrder, customer_email: e.target.value })}
+                className="w-full h-9 text-sm border border-slate-200 rounded px-3 bg-white"
+                data-testid="manual-order-customer-email"
+              />
+              <datalist id="manual-order-customers">
+                {users.map((u: any) => (
+                  <option key={u.id} value={u.email}>{u.full_name ? `${u.full_name} (${u.email})` : u.email}</option>
+                ))}
+              </datalist>
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Product</label>
-              <select value={manualOrder.product_id} onChange={e => setManualOrder({ ...manualOrder, product_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
+              <select value={manualOrder.product_id} onChange={e => setManualOrder({ ...manualOrder, product_id: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="manual-order-product-select">
                 <option value="">Select product</option>
                 {products.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
