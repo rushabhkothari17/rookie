@@ -82,19 +82,71 @@ async def admin_subscriptions(
         query.setdefault("contract_end_date", {})["$lte"] = contract_end_to + "T23:59:59"
 
     sort_dir = -1 if sort_order == "desc" else 1
-    total = await db.subscriptions.count_documents(query)
-    skip = (page - 1) * per_page
-    subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).skip(skip).limit(per_page).to_list(per_page)
-
+    
+    # Use aggregation pipeline for efficient customer/user lookups (avoid N+1)
+    pipeline: list = [
+        {"$match": query},
+    ]
+    
+    # Join with customers to get user_id
+    pipeline.append({
+        "$lookup": {
+            "from": "customers",
+            "localField": "customer_id",
+            "foreignField": "id",
+            "as": "customer_data"
+        }
+    })
+    pipeline.append({"$unwind": {"path": "$customer_data", "preserveNullAndEmptyArrays": True}})
+    
+    # Join with users to get email
+    pipeline.append({
+        "$lookup": {
+            "from": "users",
+            "localField": "customer_data.user_id",
+            "foreignField": "id",
+            "as": "user_data"
+        }
+    })
+    pipeline.append({"$unwind": {"path": "$user_data", "preserveNullAndEmptyArrays": True}})
+    
+    # Add email filter if provided
     if email:
-        all_subs = await db.subscriptions.find(query, {"_id": 0}).sort(sort_by, sort_dir).to_list(10000)
-        users_all = await db.users.find(tf, {"_id": 0, "id": 1, "email": 1}).to_list(10000)
-        custs_all = await db.customers.find(tf, {"_id": 0, "id": 1, "user_id": 1}).to_list(10000)
-        cust_to_user = {c["id"]: c.get("user_id", "") for c in custs_all}
-        user_email = {u["id"]: u.get("email", "") for u in users_all}
-        all_subs = [s for s in all_subs if email.lower() in user_email.get(cust_to_user.get(s.get("customer_id", ""), ""), "").lower()]
-        total = len(all_subs)
-        subs = all_subs[skip: skip + per_page]
+        pipeline.append({
+            "$match": {
+                "user_data.email": {"$regex": _re.escape(email), "$options": "i"}
+            }
+        })
+    
+    # Project the fields we need (include customer email for frontend)
+    pipeline.append({
+        "$addFields": {
+            "customer_email": "$user_data.email",
+            "customer_name": "$user_data.full_name"
+        }
+    })
+    
+    # Remove joined data and _id
+    pipeline.append({
+        "$project": {
+            "_id": 0,
+            "customer_data": 0,
+            "user_data": 0
+        }
+    })
+    
+    # Count total before pagination
+    count_pipeline = pipeline + [{"$count": "total"}]
+    count_result = await db.subscriptions.aggregate(count_pipeline).to_list(1)
+    total = count_result[0]["total"] if count_result else 0
+    
+    # Add sort and pagination
+    pipeline.append({"$sort": {sort_by: sort_dir}})
+    skip = (page - 1) * per_page
+    pipeline.append({"$skip": skip})
+    pipeline.append({"$limit": per_page})
+    
+    subs = await db.subscriptions.aggregate(pipeline).to_list(per_page)
 
     return {
         "subscriptions": subs,
