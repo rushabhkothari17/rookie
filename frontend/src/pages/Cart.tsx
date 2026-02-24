@@ -650,7 +650,7 @@ export default function Cart() {
                                 );
                               })}
                               {/* Special: partner_tag_response = Not yet triggers override code input */}
-                              {sectionFields.some((f: any) => (f.key || f.name) === 'partner_tag_response') && extraFields['partner_tag_response'] === 'Not yet' && (
+                              {sectionFields.some((f: any) => (f.id || f.key || f.name) === 'partner_tag_response') && extraFields['partner_tag_response'] === 'Not yet' && (
                                 <div className="space-y-1">
                                   <label className="text-xs font-semibold text-slate-600 block">Override Code <span className="text-red-500">*</span></label>
                                   <input value={overrideCode} onChange={e => setOverrideCode(e.target.value)}
