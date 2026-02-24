@@ -1104,7 +1104,7 @@ async def reset_password(payload: ResetPasswordRequest):
     await db.users.update_one(
         {"id": user["id"]},
         {
-            "$set": {"password": hashed, "updated_at": now_iso()},
+            "$set": {"password_hash": hashed, "updated_at": now_iso()},
             "$unset": {"password_reset_code": "", "password_reset_expires": ""},
         },
     )
