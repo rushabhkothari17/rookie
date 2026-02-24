@@ -465,3 +465,46 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - All integrations require real credentials to validate
 - Email provider: In mocked mode (emails go to email_outbox)
 
+### Phase 14: Integration Settings Centralization (Feb 2026)
+
+**1. Settings Centralization Refactor**
+- All payment provider settings (Stripe, GoCardless) now read from `oauth_connections.settings` instead of legacy `app_settings`
+- Backend routes updated:
+  - `checkout.py`: Uses `get_stripe_creds()` and `is_stripe_enabled()` helpers
+  - `store.py`: Uses `get_stripe_fee_rate()` for order preview pricing
+  - `webhooks.py`: Uses `get_stripe_key_for_webhook()` and `get_stripe_fee_rate_for_tenant()`
+  - `gocardless.py`: Uses `get_gocardless_creds_for_tenant()`
+- Fee rates configurable per-provider in "Connect Services" UI
+- Payment labels and UI text configurable per-provider
+- `oauth.py` INTEGRATIONS config updated with settings for Stripe and GoCardless
+
+**2. Cart Page Dropdown Fix**
+- Fixed: Zoho subscription type, current product, and partner tag dropdown options not showing
+- Root cause: Field objects in `fields_schema` have `id` but no `key` property
+- Fix: `Cart.tsx` line 614 now uses `field.key || field.name || field.id` fallback
+
+**3. FormSchemaBuilder Runtime Error Fix**
+- Fixed: Checkout Page Builder crashes when editing section fields
+- Root causes:
+  - `options` field stored as string but code expected array
+  - `order` field undefined causing sort crash
+- Fixes:
+  - Line 61: Safe sort with `(a.order ?? 0) - (b.order ?? 0)`
+  - Lines 193-196: Handle both array and string options formats
+
+**Files Modified:**
+- `backend/routes/checkout.py` - Payment settings from oauth_connections
+- `backend/routes/store.py` - Fee rate from oauth_connections
+- `backend/routes/webhooks.py` - Stripe key for webhook processing
+- `backend/routes/gocardless.py` - GoCardless creds for tenant
+- `backend/routes/oauth.py` - Added settings config for Stripe/GoCardless
+- `backend/services/checkout_service.py` - `build_order_items()` accepts tenant_id
+- `frontend/src/pages/Cart.tsx` - Field key fallback fix
+- `frontend/src/components/FormSchemaBuilder.tsx` - Safe sort and options handling
+
+**Test Reports:**
+- `/app/test_reports/iteration_82.json` - 100% backend (9/9), 90% frontend
+
+**MOCKED APIs:**
+- None - all integrations use real oauth_connections data
+
