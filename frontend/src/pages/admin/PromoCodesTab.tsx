@@ -116,21 +116,24 @@ export function PromoCodesTab() {
       <div className="space-y-1"><label className="text-xs text-slate-500">Code</label><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase() })} /></div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1"><label className="text-xs text-slate-500">Discount Type</label>
-          <select value={form.discount_type} onChange={e => setF({ ...form, discount_type: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
-            <option value="percent">Percent (%)</option><option value="fixed">Fixed ($)</option>
-          </select>
+          <Select value={form.discount_type} onValueChange={v => setF({ ...form, discount_type: v })}>
+            <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="percent">Percent (%)</SelectItem><SelectItem value="fixed">Fixed ($)</SelectItem></SelectContent>
+          </Select>
         </div>
         <div className="space-y-1"><label className="text-xs text-slate-500">Value</label><Input type="number" value={form.discount_value} onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })} /></div>
       </div>
       <div className="space-y-1"><label className="text-xs text-slate-500">Applies To</label>
-        <select value={form.applies_to} onChange={e => setF({ ...form, applies_to: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
-          <option value="both">Both</option><option value="one-time">One-time only</option><option value="subscription">Subscription only</option>
-        </select>
+        <Select value={form.applies_to} onValueChange={v => setF({ ...form, applies_to: v })}>
+          <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time only</SelectItem><SelectItem value="subscription">Subscription only</SelectItem></SelectContent>
+        </Select>
       </div>
       <div className="space-y-1"><label className="text-xs text-slate-500">Product Eligibility</label>
-        <select value={form.applies_to_products} onChange={e => setF({ ...form, applies_to_products: e.target.value, product_ids: e.target.value === "all" ? [] : form.product_ids })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white">
-          <option value="all">All Products</option><option value="selected">Selected Products</option>
-        </select>
+        <Select value={form.applies_to_products} onValueChange={v => setF({ ...form, applies_to_products: v, product_ids: v === "all" ? [] : form.product_ids })}>
+          <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All Products</SelectItem><SelectItem value="selected">Selected Products</SelectItem></SelectContent>
+        </Select>
       </div>
       {form.applies_to_products === "selected" && (
         <div className="space-y-1"><label className="text-xs text-slate-500">Select Products</label>
@@ -164,12 +167,14 @@ export function PromoCodesTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Filter by code…" value={codeFilter} onChange={e => setCodeFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-promo-code-filter" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-promo-status-filter">
-            <option value="">All Statuses</option><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Expired">Expired</option>
-          </select>
-          <select value={appliesToFilter} onChange={e => setAppliesToFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-promo-applies-filter">
-            <option value="">All Types</option><option value="both">Both</option><option value="one-time">One-time</option><option value="subscription">Subscription</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-promo-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem><SelectItem value="Expired">Expired</SelectItem></SelectContent>
+          </Select>
+          <Select value={appliesToFilter} onValueChange={setAppliesToFilter}>
+            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-promo-applies-filter"><SelectValue placeholder="All Types" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Types</SelectItem><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time</SelectItem><SelectItem value="subscription">Subscription</SelectItem></SelectContent>
+          </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">Created</span>
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" />
