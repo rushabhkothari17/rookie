@@ -391,6 +391,7 @@ async def refund_order(
         refund_amount_cents = available_to_refund
     
     provider_refund_id = None
+    provider_response = None
     
     # Process via payment provider if requested
     if payload.process_via_provider and payload.provider != "manual":
@@ -414,6 +415,12 @@ async def refund_order(
                 raise HTTPException(status_code=400, detail=result.get("error", "Stripe refund failed"))
             
             provider_refund_id = result.get("refund_id")
+            provider_response = {
+                "provider": "stripe",
+                "refund_id": result.get("refund_id"),
+                "status": result.get("status"),
+                "message": f"Stripe refund {result.get('status', 'processed')} - ID: {result.get('refund_id', 'N/A')}"
+            }
             
         elif payload.provider == "gocardless":
             # Get GoCardless payment ID from order
@@ -435,6 +442,12 @@ async def refund_order(
                 raise HTTPException(status_code=400, detail=result.get("error", "GoCardless refund failed"))
             
             provider_refund_id = result.get("refund_id")
+            provider_response = {
+                "provider": "gocardless",
+                "refund_id": result.get("refund_id"),
+                "status": result.get("status"),
+                "message": f"GoCardless refund {result.get('status', 'submitted')} - ID: {result.get('refund_id', 'N/A')}"
+            }
     
     # Record the refund
     refund_result = await record_refund(
