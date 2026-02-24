@@ -35,6 +35,9 @@ export function ArticleCategoriesTab() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDeleteCat, setConfirmDeleteCat] = useState<Category | null>(null);
+  const [entityLogs, setEntityLogs] = useState<any[]>([]);
+  const [showLogsDialog, setShowLogsDialog] = useState(false);
 
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token") || "";
