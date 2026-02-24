@@ -123,16 +123,12 @@ async def process_gocardless_refund(
     Returns:
         Dict with success status and refund details
     """
-    token = await get_gocardless_token(tenant_id)
-    if not token:
+    gc_creds = await get_gocardless_credentials(tenant_id)
+    if not gc_creds or not gc_creds.get("access_token"):
         return {"success": False, "error": "GoCardless not configured for this tenant"}
     
-    # Determine environment
-    gc_env = await db.settings.find_one(
-        {"tenant_id": tenant_id, "key": "gocardless_environment"},
-        {"_id": 0, "value_json": 1}
-    )
-    env = gc_env.get("value_json", "sandbox") if gc_env else "sandbox"
+    token = gc_creds["access_token"]
+    env = gc_creds.get("environment", "sandbox")
     api_url = "https://api.gocardless.com" if env == "live" else "https://api-sandbox.gocardless.com"
     
     # Build refund payload
