@@ -1,6 +1,7 @@
 """Admin: Subscription management routes."""
 from __future__ import annotations
 
+import asyncio
 import re as _re
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
@@ -15,6 +16,7 @@ from db.session import db
 from models import SubscriptionUpdate, ManualSubscriptionCreate
 from services.audit_service import create_audit_log
 from services.webhook_service import dispatch_event
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["admin-subscriptions"])
 
