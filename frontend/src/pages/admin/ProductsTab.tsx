@@ -41,6 +41,7 @@ function productToForm(p: any): ProductFormData {
     price_rounding: p.price_rounding || "",
     is_active: p.is_active ?? true,
     visible_to_customers: p.visible_to_customers || [],
+    restricted_to: p.restricted_to || [],
     intake_schema_json: p.intake_schema_json || EMPTY_INTAKE_SCHEMA,
     custom_sections: p.custom_sections || [],
   };
@@ -139,6 +140,7 @@ export function ProductsTab() {
         price_rounding: form.price_rounding || null,
         is_active: form.is_active,
         visible_to_customers: form.visible_to_customers,
+        restricted_to: form.restricted_to,
         intake_schema_json: form.intake_schema_json,
         custom_sections: form.custom_sections,
         tagline: form.short_description,
