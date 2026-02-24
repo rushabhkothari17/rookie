@@ -38,12 +38,12 @@ router = APIRouter(prefix="/api", tags=["integrations"])
 
 # Zoho Data Centers
 ZOHO_DATA_CENTERS = {
-    "us": {"name": "United States", "accounts_url": "https://accounts.zoho.com", "api_domain": "https://www.zohoapis.com"},
-    "eu": {"name": "Europe", "accounts_url": "https://accounts.zoho.eu", "api_domain": "https://www.zohoapis.eu"},
-    "in": {"name": "India", "accounts_url": "https://accounts.zoho.in", "api_domain": "https://www.zohoapis.in"},
-    "au": {"name": "Australia", "accounts_url": "https://accounts.zoho.com.au", "api_domain": "https://www.zohoapis.com.au"},
-    "jp": {"name": "Japan", "accounts_url": "https://accounts.zoho.jp", "api_domain": "https://www.zohoapis.jp"},
-    "ca": {"name": "Canada", "accounts_url": "https://accounts.zohocloud.ca", "api_domain": "https://www.zohoapis.ca"},
+    "us": {"name": "United States", "accounts_url": "https://accounts.zoho.com",     "api_domain": "https://www.zohoapis.com",    "mail_api": "https://mail.zoho.com/api"},
+    "eu": {"name": "Europe",         "accounts_url": "https://accounts.zoho.eu",      "api_domain": "https://www.zohoapis.eu",     "mail_api": "https://mail.zoho.eu/api"},
+    "in": {"name": "India",          "accounts_url": "https://accounts.zoho.in",      "api_domain": "https://www.zohoapis.in",     "mail_api": "https://mail.zoho.in/api"},
+    "au": {"name": "Australia",      "accounts_url": "https://accounts.zoho.com.au",  "api_domain": "https://www.zohoapis.com.au", "mail_api": "https://mail.zoho.com.au/api"},
+    "jp": {"name": "Japan",          "accounts_url": "https://accounts.zoho.jp",      "api_domain": "https://www.zohoapis.jp",     "mail_api": "https://mail.zoho.jp/api"},
+    "ca": {"name": "Canada",         "accounts_url": "https://accounts.zohocloud.ca", "api_domain": "https://www.zohoapis.ca",     "mail_api": "https://mail.zohocloud.ca/api"},
 }
 
 # Integration Configurations
