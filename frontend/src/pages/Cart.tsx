@@ -365,6 +365,26 @@ export default function Cart() {
     toast.success("Scope unlocked! Item updated in cart.");
   };
 
+  const handleSubmitCartQuote = async () => {
+    if (!cartQuoteProduct) return;
+    setSubmittingCartQuote(true);
+    try {
+      await api.post(`/products/${cartQuoteProduct.id}/request-quote`, {
+        ...cartQuoteForm,
+        product_id: cartQuoteProduct.id,
+        product_name: cartQuoteProduct.name,
+      });
+      toast.success("Quote request submitted! We'll be in touch shortly.");
+      setShowCartQuoteModal(false);
+      setCartQuoteForm({ name: "", email: "", company: "", phone: "", message: "" });
+      removeItem(cartQuoteProduct.id);
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to submit quote request");
+    } finally {
+      setSubmittingCartQuote(false);
+    }
+  };
+
   const handleScopeRequest = async () => {
     setLoading(true);
     try {
