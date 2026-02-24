@@ -33,6 +33,7 @@ const getStartingPrice = (product: any): number | null => {
     if (ct === "mailboxes") return parseFloat(pricing_rules.rate) || null;
     if (ct === "storage_blocks") return parseFloat(pricing_rules.rate) || null;
     if (ct === "crm_migration") return (parseFloat(pricing_rules.base_fee) || 499) + 250;
+    if (ct === "forms_migration") return 100; // min: 1 form without validation
     if (ct === "desk_migration") return 499;
     if (ct === "sign_migration") return 99;
     if (ct === "people_migration") return parseFloat(pricing_rules.base_fee) || 999;
