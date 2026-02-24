@@ -111,8 +111,6 @@ export default function Admin() {
             {/* Integrations */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Integrations</p>
             <TabsTrigger value="integrations" data-testid="admin-tab-integrations" className={TAB_CLASS}>Connect Services</TabsTrigger>
-            <TabsTrigger value="crm" data-testid="admin-tab-crm" className={TAB_CLASS}>CRM</TabsTrigger>
-            <TabsTrigger value="finance" data-testid="admin-tab-finance" className={TAB_CLASS}>Finance</TabsTrigger>
             <TabsTrigger value="api" data-testid="admin-tab-api" className={TAB_CLASS}>API</TabsTrigger>
             <TabsTrigger value="webhooks" data-testid="admin-tab-webhooks" className={TAB_CLASS}>Webhooks</TabsTrigger>
             <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
