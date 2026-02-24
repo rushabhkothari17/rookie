@@ -9,6 +9,7 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
+import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Plus, Upload} from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
