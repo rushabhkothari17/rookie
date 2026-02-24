@@ -125,6 +125,18 @@ async def get_product(
     product = await db.products.find_one({"tenant_id": tid, "id": product_id, "is_active": True}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    # Enforce visibility rules
+    if user:
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+        cid = customer["id"] if customer else None
+        is_admin = user.get("is_admin", False)
+        if not is_admin:
+            whitelist = product.get("visible_to_customers", [])
+            blacklist = product.get("restricted_to", [])
+            if whitelist and (not cid or cid not in whitelist):
+                raise HTTPException(status_code=404, detail="Product not found")
+            if blacklist and cid and cid in blacklist:
+                raise HTTPException(status_code=404, detail="Product not found")
     return {"product": product}
 
 
