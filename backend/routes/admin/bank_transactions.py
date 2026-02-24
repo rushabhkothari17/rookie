@@ -171,15 +171,22 @@ async def delete_bank_transaction(
 @router.get("/admin/bank-transactions/{txn_id}/logs")
 async def get_bank_transaction_logs(
     txn_id: str,
+    page: int = 1,
+    limit: int = 20,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     txn = await db.bank_transactions.find_one({**get_tenant_filter(admin), "id": txn_id}, {"_id": 0})
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
     inline_logs = txn.get("logs", [])
-    audit_logs = await db.audit_logs.find({"entity_type": "bank_transaction", "entity_id": txn_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    flt = {"entity_type": "bank_transaction", "entity_id": txn_id}
+    total_audit = await db.audit_logs.count_documents(flt)
+    audit_logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).to_list(1000)
     merged = sorted(inline_logs + audit_logs, key=lambda x: x.get("created_at", ""), reverse=True)
-    return {"logs": merged}
+    total = len(merged)
+    skip = (page - 1) * limit
+    paged = merged[skip: skip + limit]
+    return {"logs": paged, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
 
 
 @router.get("/admin/export/bank-transactions")

@@ -207,7 +207,10 @@ async def deactivate_override_code(
 
 
 @router.get("/admin/override-codes/{code_id}/logs")
-async def get_override_code_logs(code_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    logs = await db.audit_logs.find({"entity_type": "override_code", "entity_id": code_id}, {"_id": 0}).sort("created_at", -1).to_list(200)
-    return {"logs": logs}
+async def get_override_code_logs(code_id: str, page: int = 1, limit: int = 20, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    flt = {"entity_type": "override_code", "entity_id": code_id}
+    total = await db.audit_logs.count_documents(flt)
+    skip = (page - 1) * limit
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
 
