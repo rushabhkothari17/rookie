@@ -750,6 +750,38 @@ export function OrdersTab() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Order Confirmation */}
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Order</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete this order? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => { handleDelete(confirmDeleteId!); setConfirmDeleteId(null); }} data-testid="confirm-order-delete">
+              Delete Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Charge Order Confirmation */}
+      <AlertDialog open={!!confirmChargeId} onOpenChange={(open) => !open && setConfirmChargeId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Charge Order</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to manually charge this order now? This will attempt to collect payment immediately.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { handleAutoCharge(confirmChargeId!); setConfirmChargeId(null); }} data-testid="confirm-order-charge">
+              Yes, Charge Now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
