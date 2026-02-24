@@ -531,23 +531,18 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 
 ---
 
-## Feb 2026 — Bug Fix Sprint (Fork 9 continuation)
+## Feb 2026 — Bug Fix Sprint (Fork 10 - Current)
 
 ### Completed
-- Portal status filter dropdowns fixed (Shadcn Select replacing broken native selects)
-- Users/Customers Logs buttons fixed (`require_super_admin` now allows `partner_super_admin` + `platform_admin` roles, + try-catch added)
-- Subscription logs display fixed (actor, created_at, action, details now shown properly)
-- AlertDialog confirmation popups added for: Subscriptions (Cancel, Renew), Orders (Delete, Charge), Users/Customers (Deactivate), Products (Deactivate), Categories (Toggle, Delete), Promo Codes (Delete), Terms (Delete), Quote Requests (Delete)
-- Logs added to Article Categories, Article Templates, Article Email Templates (frontend + backend endpoints)
-- Backend DELETE endpoint for quote requests
-- Seed script: `backend/seed_tenant_b.py` (Tenant B test data: 6 products, 4 customers, 3 promos, 3 subs, 4 orders, 2 quotes, 2 terms)
-- `alert-dialog.jsx` fixed to explicitly pass `children` prop
+- **Scope ID Checkout Flow (P0):** `ProductDetail.tsx` - "Request Scope" button now navigates to cart (not opens modal) for non-BUILD-FIXED-SCOPE scope_request products. Scope ID unlock section now shown for scope_request products. `ctaConfig` handles `scopeUnlock` for scope_request products. `Cart.tsx` - Added Scope ID input section in the scope area (data-testid: cart-scope-id-section) with validate/apply functionality.
+- **GoCardless Idempotency Fix (P1):** `backend/routes/gocardless.py` - Added idempotency check at start of `complete_gocardless_redirect`. If order/subscription already has `gocardless_payment_id`, returns success immediately without re-processing. Prevents false "direct debit failed" error on page refresh.
+- **Edit Customer/User Popup UI (P2):** `CustomersTab.tsx` - Edit Customer, Create Customer, Notes, and Audit Logs dialogs now have `max-w-lg max-h-[90vh] overflow-y-auto`.
+- **Edit Terms Popup UI (P2):** `TermsTab.tsx` - Create Terms, Edit Terms, and Audit Logs dialogs now have `max-h-[90vh] overflow-y-auto`.
+- **Testing:** All 4 fixes verified - testing_agent_v4_fork 100% pass rate (iteration_88.json)
 
 ### Pending Backlog
 - P1: Email integration settings centralization (Gmail, Outlook, HubSpot, Salesforce, QuickBooks)
-- P2: Scope ID field — investigate specific product that lost scope_id visibility (code exists in ProductDetail.tsx for isRFQ products)
 - P2: "Edit Article" button visible to non-admin customers (recurring, 3+ times)
-- P2: Improve Edit User/Customer UI with popup/modal editing
 - P2: Security audit
 - LOW: Coming Soon integrations UI
 
