@@ -533,7 +533,10 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 
 ## Feb 2026 — Bug Fix Sprint (Fork 10 - Current)
 
-### Completed
+### Completed (continued)
+- **Forgot Password Flow (NEW):** Full end-to-end password reset: `POST /api/auth/forgot-password` + `POST /api/auth/reset-password`. 2-step ForgotPassword.tsx page (enter email+code → new password). "Forgot password?" link on Login.tsx. Password reset email uses existing `password_reset` email template (auto-enabled). Tested: code stored in DB, password_hash updated correctly, login works with new password.
+- **Scope ID BUILD-FIXED-SCOPE Fix:** Removed BUILD-FIXED-SCOPE exception from `handleScopeRequest` — all scope_request products now show "Proceed to checkout" and navigate to cart
+- **Subscription active on payment_pending_submission:** GoCardless subscriptions now set to `active` immediately when payment is created (mandate in place). SUB-4FAE5FE6 manually updated to active.
 - **Scope ID Checkout Flow (P0) - v2 fix:**
   - `ProductDetail.tsx`: For RFQ (zero-price) products, CTA changed from "Request a Quote" (opens modal) to "Proceed to checkout" (adds to cart + navigates to /cart)
   - `ProductDetail.tsx`: Scope ID unlock section now also shows for scope_request pricing_type products
