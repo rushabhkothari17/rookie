@@ -1161,7 +1161,7 @@ async def bulk_sync_zoho_books(admin: Dict[str, Any] = Depends(get_tenant_admin)
                 continue
             
             coll = collection_map.get(webapp_module)
-            if not coll:
+            if coll is None:
                 continue
             
             docs = await coll.find({"tenant_id": tid}, {"_id": 0}).to_list(500)
