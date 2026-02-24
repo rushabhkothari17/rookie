@@ -343,6 +343,7 @@ async def add_custom_domain(
         {"$push": {"custom_domains_data": domain_data}}
     )
     
+    await create_audit_log(entity_type="custom_domain", entity_id=domain, action="added", actor=admin.get("email", "admin"), details={"domain": domain}, tenant_id=tid)
     return {
         "message": f"Domain '{domain}' added. Please verify DNS configuration.",
         "domain": domain_data,
@@ -403,6 +404,7 @@ async def update_custom_domains(
         {"$set": {"custom_domains": validated_domains, "updated_at": now_iso()}}
     )
     
+    await create_audit_log(entity_type="custom_domain", entity_id=tid, action="updated", actor=admin.get("email", "admin"), details={"domains": validated_domains}, tenant_id=tid)
     return {
         "message": "Custom domains updated successfully",
         "domains": validated_domains,
@@ -448,6 +450,7 @@ async def verify_custom_domain(domain: str, admin: Dict[str, Any] = Depends(get_
         {"$set": update_data}
     )
     
+    await create_audit_log(entity_type="custom_domain", entity_id=domain, action="verified", actor=admin.get("email", "admin"), details={"domain": domain, "status": result["status"]}, tenant_id=tid)
     return {
         "domain": domain,
         "verification": result,
@@ -468,6 +471,7 @@ async def remove_custom_domain(domain: str, admin: Dict[str, Any] = Depends(get_
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Domain not found")
     
+    await create_audit_log(entity_type="custom_domain", entity_id=domain, action="removed", actor=admin.get("email", "admin"), details={"domain": domain}, tenant_id=tid)
     return {"message": f"Domain '{domain}' removed successfully"}
 
 
