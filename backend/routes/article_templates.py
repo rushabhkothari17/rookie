@@ -9,6 +9,7 @@ from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from core.security import require_admin
 from db.session import db
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["article-templates"])
 

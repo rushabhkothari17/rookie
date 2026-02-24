@@ -10,6 +10,7 @@ from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_
 from core.security import require_admin
 from db.session import db
 from models import ArticleEmailTemplateCreate, ArticleEmailTemplateUpdate
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["article-email-templates"])
 
