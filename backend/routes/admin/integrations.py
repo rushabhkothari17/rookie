@@ -737,6 +737,7 @@ async def validate_stripe(admin: Dict[str, Any] = Depends(get_tenant_admin)):
                     }},
                     upsert=True
                 )
+                await create_audit_log(entity_type="integration", entity_id="stripe", action="connection_validated", actor=admin.get("email", "admin"), details={"success": True})
                 return {
                     "success": True,
                     "message": "Stripe connection validated",
