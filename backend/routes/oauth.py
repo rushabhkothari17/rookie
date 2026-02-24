@@ -1024,6 +1024,10 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
 
             docs = await coll.find({"tenant_id": tid}, {"_id": 0}).to_list(500)
 
+            # Enrich customer records with user data (email, full_name)
+            if webapp_module == "customers":
+                docs = await enrich_customer_records(docs)
+
             zoho_records = []
             for record in docs:
                 zoho_record: Dict[str, Any] = {}
