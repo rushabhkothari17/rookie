@@ -721,10 +721,12 @@ export default function Cart() {
                           {ws.checkout_partner_description && <p className="text-xs text-slate-500">{ws.checkout_partner_description}</p>}
                           <div className="space-y-1">
                             <label className="text-sm font-medium text-slate-700">{ws.checkout_partner_question || "Have you tagged us as your Partner?"}<span className="text-red-500 ml-1">*</span></label>
-                            <select data-testid="partner-tag-response" value={partnerTagResponse} onChange={e => setPartnerTagResponse(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
-                              <option value="">-- Select --</option>
-                              {partnerOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
-                            </select>
+                            <Select value={partnerTagResponse || undefined} onValueChange={setPartnerTagResponse}>
+                              <SelectTrigger className="w-full bg-white text-slate-900" data-testid="partner-tag-response"><SelectValue placeholder="-- Select --" /></SelectTrigger>
+                              <SelectContent>
+                                {partnerOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <SelectItem key={value} value={value}>{label}</SelectItem>; })}
+                              </SelectContent>
+                            </Select>
                           </div>
                           {partnerTagResponse === "Not yet" && (
                             <div className="space-y-1">
