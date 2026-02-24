@@ -71,6 +71,7 @@ async def create_article_category(
     }
     await db.article_categories.insert_one(doc)
     doc.pop("_id", None)
+    await create_audit_log(entity_type="article_category", entity_id=doc["id"], action="created", actor=admin.get("email", "admin"), details={"name": doc["name"]})
     return {"category": doc}
 
 
@@ -96,6 +97,7 @@ async def update_article_category(
         updates["is_scope_final"] = payload.is_scope_final
     await db.article_categories.update_one({"id": category_id}, {"$set": updates})
     updated = await db.article_categories.find_one({"id": category_id}, {"_id": 0})
+    await create_audit_log(entity_type="article_category", entity_id=category_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(updates.keys())})
     return {"category": updated}
 
 
@@ -112,6 +114,7 @@ async def delete_article_category(
     if article_count > 0:
         raise HTTPException(status_code=400, detail=f"Cannot delete: {article_count} article(s) use this category")
     await db.article_categories.delete_one({"id": category_id})
+    await create_audit_log(entity_type="article_category", entity_id=category_id, action="deleted", actor=admin.get("email", "admin"), details={"name": cat.get("name")})
     return {"message": "Category deleted"}
 
 
