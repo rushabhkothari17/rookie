@@ -1071,7 +1071,10 @@ async def forgot_password(payload: ForgotPasswordRequest):
 @router.post("/auth/reset-password")
 async def reset_password(payload: ResetPasswordRequest):
     """Validate reset code and set new password."""
-    tenant_id = await resolve_tenant(payload.partner_code) if payload.partner_code else None
+    tenant_id = None
+    if payload.partner_code:
+        tenant = await resolve_tenant(payload.partner_code)
+        tenant_id = tenant.get("id") if tenant else None
     query: Dict[str, Any] = {"email": payload.email.lower()}
     if tenant_id:
         query["tenant_id"] = tenant_id
