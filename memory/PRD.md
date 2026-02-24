@@ -534,11 +534,18 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 ## Feb 2026 — Bug Fix Sprint (Fork 10 - Current)
 
 ### Completed
-- **Scope ID Checkout Flow (P0):** `ProductDetail.tsx` - "Request Scope" button now navigates to cart (not opens modal) for non-BUILD-FIXED-SCOPE scope_request products. Scope ID unlock section now shown for scope_request products. `ctaConfig` handles `scopeUnlock` for scope_request products. `Cart.tsx` - Added Scope ID input section in the scope area (data-testid: cart-scope-id-section) with validate/apply functionality.
-- **GoCardless Idempotency Fix (P1):** `backend/routes/gocardless.py` - Added idempotency check at start of `complete_gocardless_redirect`. If order/subscription already has `gocardless_payment_id`, returns success immediately without re-processing. Prevents false "direct debit failed" error on page refresh.
-- **Edit Customer/User Popup UI (P2):** `CustomersTab.tsx` - Edit Customer, Create Customer, Notes, and Audit Logs dialogs now have `max-w-lg max-h-[90vh] overflow-y-auto`.
-- **Edit Terms Popup UI (P2):** `TermsTab.tsx` - Create Terms, Edit Terms, and Audit Logs dialogs now have `max-h-[90vh] overflow-y-auto`.
-- **Testing:** All 4 fixes verified - testing_agent_v4_fork 100% pass rate (iteration_88.json)
+- **Scope ID Checkout Flow (P0) - v2 fix:**
+  - `ProductDetail.tsx`: For RFQ (zero-price) products, CTA changed from "Request a Quote" (opens modal) to "Proceed to checkout" (adds to cart + navigates to /cart)
+  - `ProductDetail.tsx`: Scope ID unlock section now also shows for scope_request pricing_type products
+  - `Cart.tsx`: Added `rfq` bucket in grouped useMemo for zero-price items. New "Quote Requests" section (data-testid: cart-rfq-section) with Scope ID input + "Request a Quote" button that opens a full quote form modal calling `/api/products/request-quote`
+- **GoCardless Currency Fix (P1) - v2:**
+  - Root cause: payment created with order currency (GBP) but PAD mandate requires CAD
+  - Fix: `scheme_currency_map` in `gocardless.py` derives correct currency from mandate scheme (pad→CAD, bacs→GBP, ach→USD, sepa→EUR etc.)
+  - Retry logic: if redirect_flow already completed but mandate stored in DB, use stored mandate_id to retry payment creation
+  - `gocardless_helper.py`: Added proper error logging for failed payment creation responses
+- **Edit Customer/User Popup UI (P2):** `CustomersTab.tsx` - All dialogs have `max-w-lg max-h-[90vh] overflow-y-auto`
+- **Edit Terms Popup UI (P2):** `TermsTab.tsx` - Create, Edit, Logs dialogs have `max-h-[90vh] overflow-y-auto`
+- **Testing:** All fixes verified - testing_agent_v4_fork 100% pass rate (iteration_88.json + iteration_89.json)
 
 ### Pending Backlog
 - P1: Email integration settings centralization (Gmail, Outlook, HubSpot, Salesforce, QuickBooks)
