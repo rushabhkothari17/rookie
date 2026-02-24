@@ -812,7 +812,7 @@ export function IntegrationsOverview() {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
+            <div className="px-6 pt-4 pb-16 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
               <Button variant="ghost" onClick={closePanel}>
                 Cancel
               </Button>
