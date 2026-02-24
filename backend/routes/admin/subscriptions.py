@@ -393,6 +393,11 @@ async def update_subscription(
             details={"note": payload.new_note},
         )
 
+    # Auto-sync to Zoho CRM on update (fire and forget)
+    updated_sub = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if updated_sub:
+        asyncio.create_task(auto_sync_to_zoho_crm(tenant_id_of(admin), "subscriptions", updated_sub, "update"))
+
     return {"message": "Subscription updated"}
 
 
