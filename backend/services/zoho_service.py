@@ -511,3 +511,139 @@ async def auto_sync_to_zoho_crm(
     except Exception as e:
         logger.error(f"Auto-sync exception: {str(e)}")
         return {"success": False, "error": str(e)}
+
+
+async def auto_sync_to_zoho_books(
+    tenant_id: str,
+    webapp_module: str,
+    record: Dict[str, Any],
+    operation: str = "create"
+) -> Dict[str, Any]:
+    """
+    Automatically sync a single record to Zoho Books based on active mappings.
+    """
+    try:
+        # Find active mapping for this module in Zoho Books
+        mapping = await db.crm_mappings.find_one({
+            "tenant_id": tenant_id,
+            "webapp_module": webapp_module,
+            "provider": "zoho_books",
+            "is_active": True,
+        }, {"_id": 0})
+        
+        if not mapping:
+            return {"success": True, "skipped": True, "reason": "no_mapping"}
+        
+        if operation == "create" and not mapping.get("sync_on_create", True):
+            return {"success": True, "skipped": True, "reason": "sync_on_create_disabled"}
+        if operation == "update" and not mapping.get("sync_on_update", True):
+            return {"success": True, "skipped": True, "reason": "sync_on_update_disabled"}
+        
+        books_module = mapping.get("crm_module")
+        field_maps = mapping.get("field_mappings", [])
+        
+        if not books_module or not field_maps:
+            return {"success": True, "skipped": True, "reason": "incomplete_mapping"}
+        
+        # Get Zoho Books connection credentials
+        conn = await db.oauth_connections.find_one(
+            {"tenant_id": tenant_id, "provider": "zoho_books", "is_validated": True},
+            {"_id": 0}
+        )
+        if not conn:
+            return {"success": False, "error": "no_zoho_books_connection"}
+        
+        creds = conn.get("credentials", {})
+        refresh_token = creds.get("refresh_token")
+        client_id = creds.get("client_id")
+        client_secret = creds.get("client_secret")
+        api_domain = creds.get("_api_domain", "https://www.zohoapis.com")
+        accounts_url = creds.get("_accounts_url", "https://accounts.zoho.com")
+        organization_id = creds.get("organization_id", "")
+        
+        if not all([refresh_token, client_id, client_secret]):
+            return {"success": False, "error": "missing_credentials"}
+        
+        # Get access token
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            token_resp = await client.post(
+                f"{accounts_url}/oauth/v2/token",
+                data={
+                    "grant_type": "refresh_token",
+                    "refresh_token": refresh_token,
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                },
+            )
+            if token_resp.status_code != 200:
+                return {"success": False, "error": "token_refresh_failed"}
+            
+            access_token = token_resp.json().get("access_token")
+            if not access_token:
+                return {"success": False, "error": "no_access_token"}
+            
+            # Enrich record if it's a customer
+            enriched_record = dict(record)
+            if webapp_module == "customers" and record.get("user_id"):
+                user = await db.users.find_one(
+                    {"id": record["user_id"]},
+                    {"_id": 0, "email": 1, "full_name": 1}
+                )
+                if user:
+                    enriched_record["email"] = user.get("email")
+                    enriched_record["full_name"] = user.get("full_name")
+            
+            # Build Zoho Books record from field mappings
+            zoho_record: Dict[str, Any] = {}
+            for fm in field_maps:
+                wf = fm.get("webapp_field")
+                cf = fm.get("crm_field")
+                if wf and cf:
+                    val = enriched_record.get(wf)
+                    if val is not None:
+                        zoho_record[cf] = val if isinstance(val, (int, float, bool)) else str(val)
+            
+            if not zoho_record:
+                return {"success": True, "skipped": True, "reason": "no_fields_to_sync"}
+            
+            # Books module to endpoint map
+            endpoint_map = {
+                "contacts": "contacts",
+                "invoices": "invoices",
+                "estimates": "estimates",
+                "bills": "bills",
+                "recurringinvoices": "recurringinvoices",
+            }
+            endpoint = endpoint_map.get(books_module, books_module)
+            
+            # Send to Zoho Books
+            params = {"organization_id": organization_id} if organization_id else {}
+            resp = await client.post(
+                f"{api_domain}/books/v3/{endpoint}",
+                json=zoho_record,
+                params=params,
+                headers={
+                    "Authorization": f"Zoho-oauthtoken {access_token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            
+            if resp.status_code in [200, 201]:
+                resp_data = resp.json()
+                if resp_data.get("code") == 0:  # Zoho Books uses code 0 for success
+                    entity_key = endpoint.rstrip('s')  # contacts -> contact
+                    zoho_id = resp_data.get(entity_key, {}).get("contact_id") or resp_data.get(entity_key, {}).get("invoice_id")
+                    logger.info(f"Auto-sync Zoho Books success: {webapp_module} -> {books_module}, ID: {zoho_id}")
+                    return {"success": True, "zoho_id": zoho_id}
+                else:
+                    error_msg = resp_data.get("message", str(resp_data))
+                    logger.warning(f"Auto-sync Zoho Books error: {error_msg}")
+                    return {"success": False, "error": error_msg}
+            else:
+                error_msg = resp.text[:200]
+                logger.error(f"Auto-sync Zoho Books HTTP error {resp.status_code}: {error_msg}")
+                return {"success": False, "error": f"HTTP {resp.status_code}: {error_msg}"}
+                
+    except Exception as e:
+        logger.error(f"Auto-sync Zoho Books exception: {str(e)}")
+        return {"success": False, "error": str(e)}
