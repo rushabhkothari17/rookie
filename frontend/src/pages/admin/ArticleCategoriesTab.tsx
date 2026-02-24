@@ -89,7 +89,6 @@ export function ArticleCategoriesTab() {
   };
 
   const handleDelete = async (cat: Category) => {
-    if (!confirm(`Delete category "${cat.name}"? Articles using this category will need to be reassigned.`)) return;
     setDeleting(cat.id);
     try {
       await api.delete(`/article-categories/${cat.id}`);
