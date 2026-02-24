@@ -195,6 +195,8 @@ async def list_integrations(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             "is_api_key": config.get("is_api_key", False),
             "is_zoho": config.get("is_zoho", False),
             "data_center": conn.get("data_center"),
+            "api_key_label": config.get("api_key_label", "API Key"),
+            "api_key_hint": config.get("api_key_hint", ""),
         })
     
     return {
