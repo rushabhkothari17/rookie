@@ -103,6 +103,7 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - UI Bugs: `/app/test_reports/iteration_70.json` — 7 backend + frontend tests pass (login flow fix)
 - Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
 - Iter91 Email+Visibility+UI Fixes: `/app/test_reports/iteration_91.json` — 12/12 backend + 5/5 frontend pass (Feb 2026)
+- Pricing Display Fix: `/app/test_reports/iteration_92.json` — 95%+ frontend pass (all pricing types now display correctly)
 
 ### Iter91: Email, Visibility & UI Fixes (Feb 2026)
 - **Email verification fix**: `auth.py` now passes `tenant_id` to `EmailService.send()` so Zoho Mail connection is found. `email_service.py` now reads Resend `from_email` from `settings` not `credentials`.
