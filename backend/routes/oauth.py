@@ -292,6 +292,7 @@ async def save_provider_settings(
         upsert=True
     )
     
+    await create_audit_log(entity_type="integration", entity_id=provider, action="settings_saved", actor=admin.get("email", "admin"), details={"provider": provider, "settings_keys": list(payload.settings.keys())}, tenant_id=tid)
     return {"success": True, "message": f"Settings saved for {provider}"}
 
 
