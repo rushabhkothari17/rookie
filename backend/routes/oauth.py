@@ -400,6 +400,16 @@ async def validate_connection(
                             f"{dc_config['mail_api']}/accounts",
                             headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
                         )
+                        # Auto-store account_id from first account if not already stored
+                        if test_resp.status_code == 200:
+                            accounts = test_resp.json().get("data", [])
+                            if accounts:
+                                auto_account_id = str(accounts[0].get("accountId", ""))
+                                if auto_account_id:
+                                    await db.oauth_connections.update_one(
+                                        {"tenant_id": tid, "provider": "zoho_mail"},
+                                        {"$set": {"credentials.account_id": auto_account_id}}
+                                    )
                     elif provider == "zoho_crm":
                         test_resp = await client.get(
                             f"{dc_config['api_domain']}/crm/v3/users?type=CurrentUser",
