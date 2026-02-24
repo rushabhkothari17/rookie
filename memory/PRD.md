@@ -78,8 +78,11 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - [ ] External monitoring/alerting (Sentry, Datadog)
 - [ ] CI/CD: `pip-audit`, `npm audit`, SAST scanning in pipeline
 - [ ] Subscription N+1 query optimization
-- [ ] Complete Zoho OAuth flow (CRM + Books)
-- [ ] Refund notification emails to customers
+- [x] ~~Complete Zoho OAuth flow (CRM + Books)~~ (completed Feb 2026)
+- [x] ~~Refund notification emails to customers~~ (completed Feb 2026)
+- [x] ~~Integration consolidation (Connect Services hub)~~ (completed Feb 2026)
+- [ ] Contextual guides/tooltips for Connect Services and Custom Domains
+- [ ] Connection health monitoring (background token validation)
 
 ## Credentials (Dev/Test)
 - Platform admin: `admin@automateaccounts.local` / `ChangeMe123!`
