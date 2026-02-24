@@ -282,7 +282,7 @@ export function ProductsTab() {
                     <Button
                       variant={product.is_active ? "destructive" : "outline"}
                       size="sm"
-                      onClick={() => handleToggleActive(product)}
+                      onClick={() => setConfirmToggleProduct(product)}
                       data-testid={`admin-toggle-${product.id}`}
                     >
                       {product.is_active ? "Deactivate" : "Activate"}
