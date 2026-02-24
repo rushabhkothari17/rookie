@@ -1026,6 +1026,209 @@ export function IntegrationsOverview() {
                   ))}
                 </div>
               )}
+
+              {panelMode === "mapping" && (
+                <div className="flex-1 p-6 space-y-5">
+                  {/* Header row: title + sync button */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-800">Entity Mappings</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Map your webapp data to {selectedIntegration.name} modules
+                      </p>
+                    </div>
+                    {selectedIntegration.id === "zoho_crm" && (
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={handleBulkSync}
+                        disabled={syncing || crmMappings.length === 0}
+                        data-testid="bulk-sync-btn"
+                      >
+                        {syncing ? (
+                          <><Loader2 size={13} className="mr-1.5 animate-spin" /> Syncing...</>
+                        ) : (
+                          <><RefreshCw size={13} className="mr-1.5" /> Sync Now</>
+                        )}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Existing mappings */}
+                  {crmMappings.length > 0 ? (
+                    <div className="space-y-2">
+                      {crmMappings.map(m => {
+                        const wm = webappModules.find(x => x.name === m.webapp_module);
+                        const zm = zohoModules.find(x => x.api_name === m.crm_module);
+                        return (
+                          <div
+                            key={m.id}
+                            className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl"
+                            data-testid={`mapping-row-${m.id}`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-slate-700 truncate">
+                                  {wm?.label || m.webapp_module}
+                                </span>
+                                <ArrowRightLeft size={13} className="text-slate-400 shrink-0" />
+                                <span className="text-sm text-slate-600 truncate">
+                                  {zm?.plural_label || m.crm_module}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-400 mt-0.5">
+                                {m.field_mappings?.length || 0} field{m.field_mappings?.length !== 1 ? "s" : ""} mapped
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="px-2 text-slate-400 hover:text-blue-500"
+                                onClick={() => handleEditMapping(m)}
+                                data-testid={`edit-mapping-${m.id}`}
+                              >
+                                <Pencil size={13} />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="px-2 text-slate-400 hover:text-red-500"
+                                onClick={() => handleDeleteMapping(m.id)}
+                                data-testid={`delete-mapping-${m.id}`}
+                              >
+                                <Trash2 size={13} />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    !addingMapping && (
+                      <div className="text-center py-8 border-2 border-dashed border-slate-200 rounded-xl">
+                        <ArrowRightLeft size={28} className="mx-auto text-slate-300 mb-2" />
+                        <p className="text-sm text-slate-500">No mappings yet</p>
+                        <p className="text-xs text-slate-400 mt-1">Add a mapping to start syncing data</p>
+                      </div>
+                    )
+                  )}
+
+                  {/* Add/Edit mapping form */}
+                  {addingMapping ? (
+                    <div className="border border-slate-200 rounded-xl p-4 space-y-4 bg-slate-50/50">
+                      <h5 className="text-sm font-semibold text-slate-700">
+                        {mappingForm.id ? "Edit Mapping" : "New Mapping"}
+                      </h5>
+
+                      {/* Webapp entity */}
+                      <div>
+                        <label className="text-xs font-medium text-slate-600 mb-1.5 block">
+                          Web App Entity <span className="text-red-500">*</span>
+                        </label>
+                        <Select
+                          value={mappingForm.webapp_module}
+                          onValueChange={v => setMappingForm(prev => ({ ...prev, webapp_module: v, field_mappings: [] }))}
+                        >
+                          <SelectTrigger data-testid="entity-select">
+                            <SelectValue placeholder="Select entity..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {webappModules.map(wm => (
+                              <SelectItem key={wm.name} value={wm.name}>{wm.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Zoho module */}
+                      <div>
+                        <label className="text-xs font-medium text-slate-600 mb-1.5 block">
+                          {selectedIntegration.name} Module <span className="text-red-500">*</span>
+                        </label>
+                        <Select
+                          value={mappingForm.crm_module}
+                          onValueChange={v => setMappingForm(prev => ({ ...prev, crm_module: v }))}
+                        >
+                          <SelectTrigger data-testid="module-select">
+                            <SelectValue placeholder="Select module..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {zohoModules.map(m => (
+                              <SelectItem key={m.api_name} value={m.api_name}>{m.plural_label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Field mappings */}
+                      {mappingForm.webapp_module && mappingForm.crm_module && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="text-xs font-medium text-slate-600">Field Mappings</label>
+                            <button
+                              type="button"
+                              onClick={applyDefaultFieldMaps}
+                              className="text-[11px] text-blue-600 hover:underline"
+                              data-testid="prefill-defaults-btn"
+                            >
+                              Pre-fill defaults
+                            </button>
+                          </div>
+                          <div className="space-y-1.5">
+                            {webappModules.find(wm => wm.name === mappingForm.webapp_module)?.fields.map(wf => {
+                              const current = mappingForm.field_mappings.find(f => f.webapp_field === wf);
+                              return (
+                                <div key={wf} className="flex items-center gap-2">
+                                  <span className="text-xs text-slate-500 font-mono w-32 truncate shrink-0">{wf}</span>
+                                  <ChevronRight size={12} className="text-slate-300 shrink-0" />
+                                  <Input
+                                    className="h-7 text-xs flex-1"
+                                    placeholder={`${selectedIntegration.name} field...`}
+                                    value={current?.crm_field || ""}
+                                    onChange={e => setFieldMap(wf, e.target.value)}
+                                    data-testid={`field-${wf}`}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="flex-1"
+                          onClick={() => { setAddingMapping(false); setMappingForm({ webapp_module: "", crm_module: "", field_mappings: [] }); }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          onClick={handleSaveMapping}
+                          disabled={savingMapping || !mappingForm.webapp_module || !mappingForm.crm_module}
+                          data-testid="save-mapping-btn"
+                        >
+                          {savingMapping ? <Loader2 size={13} className="animate-spin" /> : "Save Mapping"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-dashed"
+                      onClick={() => setAddingMapping(true)}
+                      data-testid="add-mapping-btn"
+                    >
+                      <Plus size={14} className="mr-1.5" /> Add Mapping
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Footer */}
