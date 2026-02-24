@@ -416,6 +416,13 @@ async def validate_connection(
                     except Exception:
                         err = f"HTTP {token_resp.status_code}"
                     result = {"success": False, "message": f"Token refresh failed: {err}"}
+                elif token_resp.json().get("error"):
+                    # Zoho returns HTTP 200 with {"error":"..."} for expired/revoked tokens
+                    err = token_resp.json().get("error", "unknown")
+                    if err in ("invalid_code", "invalid_token", "access_denied"):
+                        result = {"success": False, "message": "Refresh token has expired or been revoked — please reconnect with a fresh Authorization Code"}
+                    else:
+                        result = {"success": False, "message": f"Token refresh failed: {err}"}
                 else:
                     token_data = token_resp.json()
                     access_token = token_data.get("access_token")
