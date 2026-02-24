@@ -528,3 +528,26 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 **MOCKED APIs:**
 - None - all integrations use real oauth_connections data
 
+
+---
+
+## Feb 2026 — Bug Fix Sprint (Fork 9 continuation)
+
+### Completed
+- Portal status filter dropdowns fixed (Shadcn Select replacing broken native selects)
+- Users/Customers Logs buttons fixed (`require_super_admin` now allows `partner_super_admin` + `platform_admin` roles, + try-catch added)
+- Subscription logs display fixed (actor, created_at, action, details now shown properly)
+- AlertDialog confirmation popups added for: Subscriptions (Cancel, Renew), Orders (Delete, Charge), Users/Customers (Deactivate), Products (Deactivate), Categories (Toggle, Delete), Promo Codes (Delete), Terms (Delete), Quote Requests (Delete)
+- Logs added to Article Categories, Article Templates, Article Email Templates (frontend + backend endpoints)
+- Backend DELETE endpoint for quote requests
+- Seed script: `backend/seed_tenant_b.py` (Tenant B test data: 6 products, 4 customers, 3 promos, 3 subs, 4 orders, 2 quotes, 2 terms)
+- `alert-dialog.jsx` fixed to explicitly pass `children` prop
+
+### Pending Backlog
+- P1: Email integration settings centralization (Gmail, Outlook, HubSpot, Salesforce, QuickBooks)
+- P2: Scope ID field — investigate specific product that lost scope_id visibility (code exists in ProductDetail.tsx for isRFQ products)
+- P2: "Edit Article" button visible to non-admin customers (recurring, 3+ times)
+- P2: Improve Edit User/Customer UI with popup/modal editing
+- P2: Security audit
+- LOW: Coming Soon integrations UI
+
