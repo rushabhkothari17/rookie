@@ -52,8 +52,8 @@ export function UsersTab() {
     full_name: "", email: "", 
     access_level: "read_only", modules: [] as string[]
   });
-  const [entityLogs, setEntityLogs] = useState<any[]>([]);
-  const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmToggleUser, setConfirmToggleUser] = useState<{id: string, active: boolean} | null>(null);
 
   const load = useCallback(async (p = 1) => {
