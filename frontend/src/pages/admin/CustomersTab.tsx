@@ -162,22 +162,22 @@ export function CustomersTab() {
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Search name / email / company" value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 text-xs w-52" data-testid="admin-customers-search" />
-          <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customers-country-filter">
-            <option value="">All Countries</option>
-            <option value="GB">UK</option><option value="AU">Australia</option><option value="NZ">New Zealand</option><option value="CA">Canada</option><option value="USA">USA</option>
-          </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customers-status-filter">
-            <option value="">All Statuses</option><option value="active">Active</option><option value="inactive">Inactive</option>
-          </select>
-          <select value={paymentModeFilter} onChange={(e) => setPaymentModeFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customers-payment-filter">
-            {paymentFilterOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <select value={partnerMapFilter} onChange={(e) => setPartnerMapFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-customer-partner-map-filter">
-            <option value="all">All Partner Maps</option><option value="none">Not set</option>
-            {PARTNER_MAP_OPTIONS.filter(o => o.value).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+          <Select value={countryFilter} onValueChange={setCountryFilter}>
+            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-customers-country-filter"><SelectValue placeholder="All Countries" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Countries</SelectItem><SelectItem value="GB">UK</SelectItem><SelectItem value="AU">Australia</SelectItem><SelectItem value="NZ">New Zealand</SelectItem><SelectItem value="CA">Canada</SelectItem><SelectItem value="USA">USA</SelectItem></SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-customers-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+          </Select>
+          <Select value={paymentModeFilter} onValueChange={setPaymentModeFilter}>
+            <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="admin-customers-payment-filter"><SelectValue placeholder="All Methods" /></SelectTrigger>
+            <SelectContent>{paymentFilterOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
+          </Select>
+          <Select value={partnerMapFilter} onValueChange={setPartnerMapFilter}>
+            <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="admin-customer-partner-map-filter"><SelectValue placeholder="All Partner Maps" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All Partner Maps</SelectItem><SelectItem value="none">Not set</SelectItem>{PARTNER_MAP_OPTIONS.filter(o => o.value).map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+          </Select>
           <Button size="sm" variant="outline" onClick={clearFilters} className="h-8 text-xs" data-testid="admin-customers-clear">Clear</Button>
         </div>
       </div>
@@ -221,9 +221,10 @@ export function CustomersTab() {
                   <TableCell data-testid={`admin-customer-partner-map-${customer.id}`}>
                     {editingPartnerMap?.customerId === customer.id ? (
                       <div className="flex gap-1 items-center">
-                        <select value={editingPartnerMap.value} onChange={(e) => setEditingPartnerMap({ customerId: customer.id, value: e.target.value })} className="text-xs border border-slate-300 rounded px-1 py-0.5 bg-white" autoFocus>
-                          {PARTNER_MAP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                        </select>
+                        <Select value={editingPartnerMap.value} onValueChange={v => setEditingPartnerMap({ customerId: customer.id, value: v })}>
+                          <SelectTrigger className="h-7 text-xs w-36 bg-white"><SelectValue /></SelectTrigger>
+                          <SelectContent>{PARTNER_MAP_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                        </Select>
                         <button onClick={async () => {
                           try {
                             await api.put(`/admin/customers/${customer.id}/partner-map`, { partner_map: editingPartnerMap.value });
