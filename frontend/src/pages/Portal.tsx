@@ -97,6 +97,7 @@ export default function Portal() {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [productMap, setProductMap] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Orders filters + pagination
   const [orderSearch, setOrderSearch] = useState("");
@@ -111,7 +112,9 @@ export default function Portal() {
   const [subPage, setSubPage] = useState(1);
 
   const load = async () => {
+    if (!user) return;
     setLoading(true);
+    setLoadError(null);
     try {
       const [ordersRes, subsRes, productsRes] = await Promise.all([
         api.get("/orders"),
@@ -124,12 +127,23 @@ export default function Portal() {
       const map: Record<string, any> = {};
       (productsRes.data.products || []).forEach((p: any) => { map[p.id] = p; });
       setProductMap(map);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 404) {
+        setLoadError("No customer account found for your user. Please contact support.");
+      } else if (status === 401 || status === 403) {
+        setLoadError("Session expired. Please refresh the page.");
+      } else {
+        setLoadError("Failed to load portal data. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (user) load();
+  }, [user]);
 
   const orderItems = (orderId: string) => items.filter((i) => i.order_id === orderId);
 
