@@ -277,11 +277,15 @@ export default function Cart() {
         }
       } else {
         const response = await api.post("/checkout/session", {
-          items: groupItems.map((item) => ({
-            product_id: item.product.id,
-            quantity: item.quantity,
-            inputs: item.inputs,
-          })),
+          items: groupItems.map((item) => {
+            const cartItem = items.find((ci) => ci.product_id === item.product.id);
+            return {
+              product_id: item.product.id,
+              quantity: item.quantity,
+              inputs: item.inputs,
+              ...(cartItem?.price_override != null ? { price_override: cartItem.price_override } : {}),
+            };
+          }),
           checkout_type: checkoutType,
           origin_url: window.location.origin,
           promo_code: promoApplied?.code || null,
