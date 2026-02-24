@@ -10,7 +10,8 @@ email_service.py and checkout.py continue to work without changes.
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Optional
+import time
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 import httpx
 
@@ -20,6 +21,47 @@ from pydantic import BaseModel
 from core.helpers import now_iso
 from core.tenant import get_tenant_admin, tenant_id_of
 from db.session import db
+
+
+# ---------------------------------------------------------------------------
+# In-memory Zoho access token cache: {(tid, provider): (access_token, expiry_epoch)}
+# Tokens are cached for 55 minutes (Zoho access tokens last 60 minutes).
+# ---------------------------------------------------------------------------
+_zoho_token_cache: Dict[Tuple[str, str], Tuple[str, float]] = {}
+_ZOHO_TOKEN_TTL = 55 * 60  # 55 minutes in seconds
+
+
+async def _get_zoho_access_token_cached(
+    tid: str, provider: str, creds: Dict[str, Any], dc_config: Dict[str, Any]
+) -> str:
+    """
+    Get a Zoho access token, using the in-memory cache if valid.
+    Avoids hammering Zoho's token endpoint on repeated calls.
+    """
+    cache_key = (tid, provider)
+    cached = _zoho_token_cache.get(cache_key)
+    if cached:
+        token, expiry = cached
+        if time.time() < expiry:
+            return token
+
+    # Refresh from Zoho
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        token_resp = await client.post(
+            f"{dc_config['accounts_url']}/oauth/v2/token",
+            data={
+                "grant_type": "refresh_token",
+                "client_id": creds.get("client_id", ""),
+                "client_secret": creds.get("client_secret", ""),
+                "refresh_token": creds.get("refresh_token", ""),
+            },
+        )
+    if token_resp.status_code != 200 or token_resp.json().get("error"):
+        raise HTTPException(status_code=400, detail="Token refresh failed — please reconnect the Zoho integration")
+
+    access_token = token_resp.json()["access_token"]
+    _zoho_token_cache[cache_key] = (access_token, time.time() + _ZOHO_TOKEN_TTL)
+    return access_token
 
 
 # ---------------------------------------------------------------------------
