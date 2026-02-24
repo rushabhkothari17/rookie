@@ -22,14 +22,6 @@ interface EmailTemplate {
   is_system: boolean;
 }
 
-interface SettingItem {
-  key: string;
-  value_json: any;
-  is_secret?: boolean;
-  value_type?: string;
-  description?: string;
-}
-
 interface EmailLog {
   id: string;
   trigger: string;
