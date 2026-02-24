@@ -1,6 +1,7 @@
 """Admin: Order management routes."""
 from __future__ import annotations
 
+import asyncio
 import re as _re
 from typing import Any, Dict, Optional
 
@@ -14,6 +15,7 @@ from db.session import db
 from models import OrderUpdate, OrderDelete, ManualOrderCreate
 from services.audit_service import create_audit_log
 from services.webhook_service import dispatch_event
+from services.zoho_service import auto_sync_to_zoho_crm
 from gocardless_helper import create_payment
 
 router = APIRouter(prefix="/api", tags=["admin-orders"])
