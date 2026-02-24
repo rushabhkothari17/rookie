@@ -683,26 +683,32 @@ export default function Cart() {
                           {ws.checkout_zoho_description && <p className="text-xs text-slate-500">{ws.checkout_zoho_description}</p>}
                           <div className="space-y-1">
                             <label className="text-sm font-medium text-slate-700">{ws.checkout_zoho_subscription_type_label || "Current Zoho subscription type?"}<span className="text-red-500 ml-1">*</span></label>
-                            <select data-testid="zoho-subscription-type" value={zohoSubscriptionType} onChange={e => setZohoSubscriptionType(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
-                              <option value="">-- Select --</option>
-                              {subOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
-                            </select>
+                            <Select value={zohoSubscriptionType || undefined} onValueChange={setZohoSubscriptionType}>
+                              <SelectTrigger className="w-full bg-white text-slate-900" data-testid="zoho-subscription-type"><SelectValue placeholder="-- Select --" /></SelectTrigger>
+                              <SelectContent>
+                                {subOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <SelectItem key={value} value={value}>{label}</SelectItem>; })}
+                              </SelectContent>
+                            </Select>
                           </div>
                           {prodOpts.length > 0 && (
                             <div className="space-y-1">
                               <label className="text-sm font-medium text-slate-700">{ws.checkout_zoho_product_label || "Which Zoho products?"}<span className="text-red-500 ml-1">*</span></label>
-                              <select data-testid="zoho-current-product" value={currentZohoProduct} onChange={e => setCurrentZohoProduct(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
-                                <option value="">-- Select --</option>
-                                {prodOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
-                              </select>
+                              <Select value={currentZohoProduct || undefined} onValueChange={setCurrentZohoProduct}>
+                                <SelectTrigger className="w-full bg-white text-slate-900" data-testid="zoho-current-product"><SelectValue placeholder="-- Select --" /></SelectTrigger>
+                                <SelectContent>
+                                  {prodOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <SelectItem key={value} value={value}>{label}</SelectItem>; })}
+                                </SelectContent>
+                              </Select>
                             </div>
                           )}
                           <div className="space-y-1">
                             <label className="text-sm font-medium text-slate-700">{ws.checkout_zoho_access_label || "Zoho account access?"}<span className="text-red-500 ml-1">*</span></label>
-                            <select data-testid="zoho-account-access" value={zohoAccountAccess} onChange={e => setZohoAccountAccess(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
-                              <option value="">-- Select --</option>
-                              {accessOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
-                            </select>
+                            <Select value={zohoAccountAccess || undefined} onValueChange={setZohoAccountAccess}>
+                              <SelectTrigger className="w-full bg-white text-slate-900" data-testid="zoho-account-access"><SelectValue placeholder="-- Select --" /></SelectTrigger>
+                              <SelectContent>
+                                {accessOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <SelectItem key={value} value={value}>{label}</SelectItem>; })}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                       );
