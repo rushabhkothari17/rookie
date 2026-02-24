@@ -2,21 +2,23 @@
 OAuth Service for third-party integrations.
 
 Handles OAuth 2.0 flows for:
-- Zoho (CRM, Books, Mail)
+- Zoho (CRM, Books, Mail) with Data Center support
 - Stripe Connect
 - GoCardless
+- Resend (API key based)
 """
 from __future__ import annotations
 
 import os
 import secrets
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlencode
 import httpx
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, tenant_id_of
@@ -24,63 +26,85 @@ from db.session import db
 
 router = APIRouter(prefix="/api", tags=["oauth"])
 
-# OAuth Configuration - These would come from environment variables in production
+# Zoho Data Centers with their respective URLs
+ZOHO_DATA_CENTERS = {
+    "us": {"name": "United States", "accounts_url": "https://accounts.zoho.com", "api_domain": "https://www.zohoapis.com"},
+    "eu": {"name": "Europe", "accounts_url": "https://accounts.zoho.eu", "api_domain": "https://www.zohoapis.eu"},
+    "in": {"name": "India", "accounts_url": "https://accounts.zoho.in", "api_domain": "https://www.zohoapis.in"},
+    "au": {"name": "Australia", "accounts_url": "https://accounts.zoho.com.au", "api_domain": "https://www.zohoapis.com.au"},
+    "jp": {"name": "Japan", "accounts_url": "https://accounts.zoho.jp", "api_domain": "https://www.zohoapis.jp"},
+    "ca": {"name": "Canada", "accounts_url": "https://accounts.zohocloud.ca", "api_domain": "https://www.zohoapis.ca"},
+}
+
+# Provider configurations
 OAUTH_CONFIGS = {
     "zoho_crm": {
         "name": "Zoho CRM",
-        "authorize_url": "https://accounts.zoho.com/oauth/v2/auth",
-        "token_url": "https://accounts.zoho.com/oauth/v2/token",
+        "category": "crm",
         "scopes": ["ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL", "ZohoCRM.users.READ"],
         "client_id_env": "ZOHO_CLIENT_ID",
         "client_secret_env": "ZOHO_CLIENT_SECRET",
+        "is_zoho": True,
+        "description": "Sync customers, orders, and subscriptions with Zoho CRM",
     },
     "zoho_books": {
         "name": "Zoho Books",
-        "authorize_url": "https://accounts.zoho.com/oauth/v2/auth",
-        "token_url": "https://accounts.zoho.com/oauth/v2/token",
+        "category": "accounting",
         "scopes": ["ZohoBooks.fullaccess.all"],
         "client_id_env": "ZOHO_CLIENT_ID",
         "client_secret_env": "ZOHO_CLIENT_SECRET",
+        "is_zoho": True,
+        "description": "Sync invoices, payments, and financial data with Zoho Books",
     },
     "zoho_mail": {
         "name": "Zoho Mail",
-        "authorize_url": "https://accounts.zoho.com/oauth/v2/auth",
-        "token_url": "https://accounts.zoho.com/oauth/v2/token",
+        "category": "email",
         "scopes": ["ZohoMail.messages.CREATE", "ZohoMail.accounts.READ"],
         "client_id_env": "ZOHO_CLIENT_ID",
         "client_secret_env": "ZOHO_CLIENT_SECRET",
+        "is_zoho": True,
+        "description": "Send transactional emails via Zoho Mail",
     },
     "stripe": {
         "name": "Stripe",
+        "category": "payments",
         "authorize_url": "https://connect.stripe.com/oauth/authorize",
         "token_url": "https://connect.stripe.com/oauth/token",
         "scopes": ["read_write"],
-        "client_id_env": "STRIPE_CLIENT_ID",
+        "client_id_env": "STRIPE_CONNECT_CLIENT_ID",
         "client_secret_env": "STRIPE_SECRET_KEY",
-    },
-    "stripe_test": {
-        "name": "Stripe (Test Mode)",
-        "authorize_url": "https://connect.stripe.com/oauth/authorize",
-        "token_url": "https://connect.stripe.com/oauth/token",
-        "scopes": ["read_write"],
-        "client_id_env": "STRIPE_TEST_CLIENT_ID",
-        "client_secret_env": "STRIPE_TEST_SECRET_KEY",
+        "is_zoho": False,
+        "description": "Process card payments via Stripe",
     },
     "gocardless": {
         "name": "GoCardless",
+        "category": "payments",
         "authorize_url": "https://connect.gocardless.com/oauth/authorize",
         "token_url": "https://connect.gocardless.com/oauth/access_token",
         "scopes": ["full_access"],
         "client_id_env": "GOCARDLESS_CLIENT_ID",
         "client_secret_env": "GOCARDLESS_CLIENT_SECRET",
+        "is_zoho": False,
+        "description": "Process Direct Debit payments via GoCardless",
     },
     "gocardless_sandbox": {
         "name": "GoCardless (Sandbox)",
+        "category": "payments",
         "authorize_url": "https://connect-sandbox.gocardless.com/oauth/authorize",
         "token_url": "https://connect-sandbox.gocardless.com/oauth/access_token",
         "scopes": ["full_access"],
         "client_id_env": "GOCARDLESS_SANDBOX_CLIENT_ID",
         "client_secret_env": "GOCARDLESS_SANDBOX_CLIENT_SECRET",
+        "is_zoho": False,
+        "description": "Test Direct Debit payments in GoCardless Sandbox",
+    },
+    "resend": {
+        "name": "Resend",
+        "category": "email",
+        "is_api_key": True,
+        "is_zoho": False,
+        "description": "Send transactional emails via Resend",
+        "api_key_setting": "resend_api_key",
     },
 }
 
@@ -90,9 +114,27 @@ def get_frontend_url() -> str:
     return os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:3000")
 
 
+def get_zoho_urls(dc: str = "us") -> Dict[str, str]:
+    """Get Zoho URLs for a specific data center."""
+    dc_config = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+    return {
+        "authorize_url": f"{dc_config['accounts_url']}/oauth/v2/auth",
+        "token_url": f"{dc_config['accounts_url']}/oauth/v2/token",
+        "api_domain": dc_config["api_domain"],
+    }
+
+
+class OAuthConnectRequest(BaseModel):
+    data_center: Optional[str] = "us"  # For Zoho providers
+
+
+class ApiKeyRequest(BaseModel):
+    api_key: str
+
+
 @router.get("/oauth/integrations")
 async def list_integrations(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """List all available OAuth integrations and their current status."""
+    """List all available integrations and their current status."""
     tid = tenant_id_of(admin)
     
     # Get stored connections for this tenant
@@ -103,55 +145,106 @@ async def list_integrations(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     
     conn_map = {c["provider"]: c for c in connections}
     
+    # Get app settings for API key based integrations
+    settings = await db.app_settings.find(
+        {"key": {"$in": ["resend_api_key", "stripe_enabled", "gocardless_enabled", "active_email_provider"]}},
+        {"_id": 0}
+    ).to_list(10)
+    settings_map = {s["key"]: s.get("value_json") or s.get("value", "") for s in settings}
+    
     integrations = []
     for provider_id, config in OAUTH_CONFIGS.items():
         conn = conn_map.get(provider_id, {})
         
-        # Check if credentials are configured
-        client_id = os.environ.get(config["client_id_env"], "")
-        has_credentials = bool(client_id)
+        # Check credentials
+        if config.get("is_api_key"):
+            # API key based - check if key is set
+            api_key = settings_map.get(config.get("api_key_setting", ""), "")
+            has_credentials = bool(api_key)
+            status = "connected" if has_credentials else "not_connected"
+            can_connect = True  # Always can enter API key
+        else:
+            # OAuth based - check if OAuth credentials are configured
+            client_id = os.environ.get(config.get("client_id_env", ""), "")
+            has_credentials = bool(client_id)
+            status = conn.get("status", "not_connected")
+            can_connect = has_credentials
+        
+        # Check if this provider is active (for email/payments)
+        is_active = False
+        if config["category"] == "email":
+            is_active = settings_map.get("active_email_provider") == provider_id
+        elif config["category"] == "payments":
+            if "stripe" in provider_id:
+                is_active = settings_map.get("stripe_enabled", False)
+            elif "gocardless" in provider_id:
+                is_active = settings_map.get("gocardless_enabled", False)
         
         integrations.append({
             "id": provider_id,
             "name": config["name"],
-            "status": conn.get("status", "not_connected"),
+            "category": config["category"],
+            "description": config.get("description", ""),
+            "status": status,
+            "is_active": is_active,
             "connected_at": conn.get("connected_at"),
             "last_refresh": conn.get("last_refresh"),
             "expires_at": conn.get("expires_at"),
             "error_message": conn.get("error_message"),
             "has_credentials": has_credentials,
-            "can_connect": has_credentials,
+            "can_connect": can_connect,
+            "is_api_key": config.get("is_api_key", False),
+            "is_zoho": config.get("is_zoho", False),
+            "data_center": conn.get("data_center"),
         })
     
-    return {"integrations": integrations}
+    return {
+        "integrations": integrations,
+        "zoho_data_centers": [{"id": k, "name": v["name"]} for k, v in ZOHO_DATA_CENTERS.items()]
+    }
 
 
-@router.get("/oauth/{provider}/connect")
+@router.post("/oauth/{provider}/connect")
 async def initiate_oauth(
     provider: str,
+    payload: OAuthConnectRequest = Body(default=OAuthConnectRequest()),
     admin: Dict[str, Any] = Depends(get_tenant_admin)
 ):
     """
     Initiate OAuth flow for a provider.
     
-    Returns the authorization URL to redirect the user to.
+    For Zoho providers, specify data_center (us, eu, in, au, jp, ca).
     """
     if provider not in OAUTH_CONFIGS:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
     
     config = OAUTH_CONFIGS[provider]
+    
+    if config.get("is_api_key"):
+        raise HTTPException(status_code=400, detail=f"{config['name']} uses API key authentication, not OAuth")
+    
     tid = tenant_id_of(admin)
     
     # Get OAuth credentials from environment
-    client_id = os.environ.get(config["client_id_env"], "")
+    client_id = os.environ.get(config.get("client_id_env", ""), "")
     if not client_id:
         raise HTTPException(
             status_code=400,
-            detail=f"OAuth not configured for {config['name']}. Please contact support."
+            detail=f"OAuth not configured for {config['name']}. Please contact support to enable this integration."
         )
     
     # Generate state token for CSRF protection
     state = secrets.token_urlsafe(32)
+    
+    # Determine URLs based on provider type
+    data_center = payload.data_center or "us"
+    if config.get("is_zoho"):
+        urls = get_zoho_urls(data_center)
+        authorize_url = urls["authorize_url"]
+        token_url = urls["token_url"]
+    else:
+        authorize_url = config["authorize_url"]
+        token_url = config["token_url"]
     
     # Store state in database with tenant association
     await db.oauth_states.insert_one({
@@ -159,6 +252,8 @@ async def initiate_oauth(
         "tenant_id": tid,
         "provider": provider,
         "admin_id": admin["id"],
+        "data_center": data_center,
+        "token_url": token_url,
         "created_at": now_iso(),
         "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
     })
@@ -170,13 +265,15 @@ async def initiate_oauth(
             "tenant_id": tid,
             "provider": provider,
             "status": "connecting",
+            "data_center": data_center,
             "updated_at": now_iso()
         }},
         upsert=True
     )
     
-    # Build authorization URL
-    callback_url = f"{get_frontend_url()}/api/oauth/{provider}/callback"
+    # Build callback URL - must match what's configured in the provider's developer console
+    frontend_url = get_frontend_url()
+    callback_url = f"{frontend_url}/api/oauth/callback"
     
     params = {
         "client_id": client_id,
@@ -186,54 +283,52 @@ async def initiate_oauth(
     }
     
     # Provider-specific parameters
-    if provider.startswith("zoho"):
+    if config.get("is_zoho"):
         params["scope"] = ",".join(config["scopes"])
-        params["access_type"] = "offline"  # For refresh token
+        params["access_type"] = "offline"
         params["prompt"] = "consent"
-    elif provider.startswith("stripe"):
+    elif "stripe" in provider:
         params["scope"] = config["scopes"][0]
         params["stripe_landing"] = "login"
-    elif provider.startswith("gocardless"):
+    elif "gocardless" in provider:
         params["scope"] = config["scopes"][0]
         params["initial_view"] = "login"
     
-    auth_url = f"{config['authorize_url']}?{urlencode(params)}"
+    auth_url = f"{authorize_url}?{urlencode(params)}"
     
     return {
         "authorization_url": auth_url,
         "state": state,
-        "provider": provider
+        "provider": provider,
+        "callback_url": callback_url
     }
 
 
-@router.get("/oauth/{provider}/callback")
+@router.get("/oauth/callback")
 async def oauth_callback(
-    provider: str,
     code: Optional[str] = Query(None),
     state: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
-    error_description: Optional[str] = Query(None)
+    error_description: Optional[str] = Query(None),
+    location: Optional[str] = Query(None),  # Zoho returns datacenter info
 ):
     """
-    OAuth callback handler.
+    Universal OAuth callback handler.
     
-    Exchanges the authorization code for access tokens.
+    All providers redirect here with code and state.
     """
-    if provider not in OAUTH_CONFIGS:
-        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
-    
     frontend_url = get_frontend_url()
     
     # Handle error response from provider
     if error:
         return RedirectResponse(
-            url=f"{frontend_url}/admin?oauth_error={error}&provider={provider}",
+            url=f"{frontend_url}/admin?tab=integrations&oauth_error={error}&error_desc={error_description or ''}",
             status_code=302
         )
     
     if not code or not state:
         return RedirectResponse(
-            url=f"{frontend_url}/admin?oauth_error=missing_params&provider={provider}",
+            url=f"{frontend_url}/admin?tab=integrations&oauth_error=missing_params",
             status_code=302
         )
     
@@ -241,28 +336,44 @@ async def oauth_callback(
     state_doc = await db.oauth_states.find_one_and_delete({"state": state})
     if not state_doc:
         return RedirectResponse(
-            url=f"{frontend_url}/admin?oauth_error=invalid_state&provider={provider}",
+            url=f"{frontend_url}/admin?tab=integrations&oauth_error=invalid_state",
             status_code=302
         )
+    
+    provider = state_doc["provider"]
+    tid = state_doc["tenant_id"]
+    token_url = state_doc.get("token_url")
+    data_center = state_doc.get("data_center", "us")
     
     # Check if state expired
-    if datetime.fromisoformat(state_doc["expires_at"]) < datetime.now(timezone.utc):
+    if datetime.fromisoformat(state_doc["expires_at"].replace("Z", "+00:00")) < datetime.now(timezone.utc):
         await db.oauth_connections.update_one(
-            {"tenant_id": state_doc["tenant_id"], "provider": provider},
-            {"$set": {"status": "failed", "error_message": "Authorization expired"}}
+            {"tenant_id": tid, "provider": provider},
+            {"$set": {"status": "failed", "error_message": "Authorization expired", "updated_at": now_iso()}}
         )
         return RedirectResponse(
-            url=f"{frontend_url}/admin?oauth_error=expired&provider={provider}",
+            url=f"{frontend_url}/admin?tab=integrations&oauth_error=expired&provider={provider}",
             status_code=302
         )
     
-    tid = state_doc["tenant_id"]
-    config = OAUTH_CONFIGS[provider]
+    config = OAUTH_CONFIGS.get(provider)
+    if not config:
+        return RedirectResponse(
+            url=f"{frontend_url}/admin?tab=integrations&oauth_error=unknown_provider",
+            status_code=302
+        )
     
-    # Exchange code for tokens
-    client_id = os.environ.get(config["client_id_env"], "")
-    client_secret = os.environ.get(config["client_secret_env"], "")
-    callback_url = f"{frontend_url}/api/oauth/{provider}/callback"
+    # Get credentials
+    client_id = os.environ.get(config.get("client_id_env", ""), "")
+    client_secret = os.environ.get(config.get("client_secret_env", ""), "")
+    callback_url = f"{frontend_url}/api/oauth/callback"
+    
+    # Use stored token_url or get from config
+    if not token_url:
+        if config.get("is_zoho"):
+            token_url = get_zoho_urls(data_center)["token_url"]
+        else:
+            token_url = config.get("token_url")
     
     try:
         async with httpx.AsyncClient(timeout=30) as client:
@@ -274,18 +385,11 @@ async def oauth_callback(
                 "client_secret": client_secret,
             }
             
-            # Provider-specific token request
-            if provider.startswith("stripe"):
-                response = await client.post(
-                    config["token_url"],
-                    data=token_data
-                )
-            else:
-                response = await client.post(
-                    config["token_url"],
-                    data=token_data,
-                    headers={"Content-Type": "application/x-www-form-urlencoded"}
-                )
+            response = await client.post(
+                token_url,
+                data=token_data,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
             
             if response.status_code != 200:
                 error_msg = response.text[:200]
@@ -298,7 +402,7 @@ async def oauth_callback(
                     }}
                 )
                 return RedirectResponse(
-                    url=f"{frontend_url}/admin?oauth_error=token_exchange&provider={provider}",
+                    url=f"{frontend_url}/admin?tab=integrations&oauth_error=token_exchange&provider={provider}",
                     status_code=302
                 )
             
@@ -309,29 +413,52 @@ async def oauth_callback(
             expires_at = (datetime.now(timezone.utc) + timedelta(seconds=expires_in)).isoformat()
             
             # Store tokens
+            update_data = {
+                "status": "connected",
+                "access_token": tokens.get("access_token"),
+                "refresh_token": tokens.get("refresh_token"),
+                "token_type": tokens.get("token_type", "Bearer"),
+                "expires_at": expires_at,
+                "scope": tokens.get("scope"),
+                "data_center": data_center,
+                "connected_at": now_iso(),
+                "last_refresh": now_iso(),
+                "error_message": None,
+                "updated_at": now_iso(),
+            }
+            
+            # Provider-specific data
+            if "stripe" in provider:
+                update_data["stripe_user_id"] = tokens.get("stripe_user_id")
+                update_data["stripe_publishable_key"] = tokens.get("stripe_publishable_key")
+                update_data["livemode"] = tokens.get("livemode", True)
+            elif "gocardless" in provider:
+                update_data["organisation_id"] = tokens.get("organisation_id")
+            elif config.get("is_zoho"):
+                update_data["api_domain"] = tokens.get("api_domain") or get_zoho_urls(data_center)["api_domain"]
+            
             await db.oauth_connections.update_one(
                 {"tenant_id": tid, "provider": provider},
-                {"$set": {
-                    "status": "connected",
-                    "access_token": tokens.get("access_token"),
-                    "refresh_token": tokens.get("refresh_token"),
-                    "token_type": tokens.get("token_type", "Bearer"),
-                    "expires_at": expires_at,
-                    "scope": tokens.get("scope"),
-                    "connected_at": now_iso(),
-                    "last_refresh": now_iso(),
-                    "error_message": None,
-                    "updated_at": now_iso(),
-                    # Stripe-specific
-                    "stripe_user_id": tokens.get("stripe_user_id"),
-                    "stripe_publishable_key": tokens.get("stripe_publishable_key"),
-                    # GoCardless-specific
-                    "organisation_id": tokens.get("organisation_id"),
-                }}
+                {"$set": update_data}
             )
             
+            # Auto-enable the provider for its category
+            if config["category"] == "payments":
+                if "stripe" in provider:
+                    await db.app_settings.update_one(
+                        {"key": "stripe_enabled"},
+                        {"$set": {"key": "stripe_enabled", "value_json": True}},
+                        upsert=True
+                    )
+                elif "gocardless" in provider:
+                    await db.app_settings.update_one(
+                        {"key": "gocardless_enabled"},
+                        {"$set": {"key": "gocardless_enabled", "value_json": True}},
+                        upsert=True
+                    )
+            
             return RedirectResponse(
-                url=f"{frontend_url}/admin?oauth_success=true&provider={provider}",
+                url=f"{frontend_url}/admin?tab=integrations&oauth_success=true&provider={provider}",
                 status_code=302
             )
             
@@ -345,9 +472,73 @@ async def oauth_callback(
             }}
         )
         return RedirectResponse(
-            url=f"{frontend_url}/admin?oauth_error=exception&provider={provider}",
+            url=f"{frontend_url}/admin?tab=integrations&oauth_error=exception&provider={provider}",
             status_code=302
         )
+
+
+@router.post("/oauth/{provider}/cancel")
+async def cancel_oauth(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Cancel an in-progress OAuth connection."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    tid = tenant_id_of(admin)
+    
+    # Delete any pending states
+    await db.oauth_states.delete_many({"tenant_id": tid, "provider": provider})
+    
+    # Reset connection status
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": provider},
+        {"$set": {"status": "not_connected", "error_message": None, "updated_at": now_iso()}}
+    )
+    
+    return {"success": True, "message": "Connection cancelled"}
+
+
+@router.post("/oauth/{provider}/api-key")
+async def set_api_key(
+    provider: str,
+    payload: ApiKeyRequest,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Set API key for providers that use API key authentication (e.g., Resend)."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    config = OAUTH_CONFIGS[provider]
+    if not config.get("is_api_key"):
+        raise HTTPException(status_code=400, detail=f"{config['name']} uses OAuth, not API key")
+    
+    tid = tenant_id_of(admin)
+    setting_key = config.get("api_key_setting", f"{provider}_api_key")
+    
+    # Save API key to settings
+    await db.app_settings.update_one(
+        {"key": setting_key},
+        {"$set": {"key": setting_key, "value": payload.api_key, "updated_at": now_iso()}},
+        upsert=True
+    )
+    
+    # Update connection status
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": provider},
+        {"$set": {
+            "tenant_id": tid,
+            "provider": provider,
+            "status": "connected",
+            "connected_at": now_iso(),
+            "updated_at": now_iso(),
+            "error_message": None,
+        }},
+        upsert=True
+    )
+    
+    return {"success": True, "message": f"{config['name']} API key saved"}
 
 
 @router.post("/oauth/{provider}/refresh")
@@ -359,8 +550,11 @@ async def refresh_oauth_token(
     if provider not in OAUTH_CONFIGS:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
     
-    tid = tenant_id_of(admin)
     config = OAUTH_CONFIGS[provider]
+    if config.get("is_api_key"):
+        raise HTTPException(status_code=400, detail=f"{config['name']} uses API key, not OAuth")
+    
+    tid = tenant_id_of(admin)
     
     # Get current connection
     connection = await db.oauth_connections.find_one(
@@ -369,10 +563,17 @@ async def refresh_oauth_token(
     )
     
     if not connection or not connection.get("refresh_token"):
-        raise HTTPException(status_code=400, detail="No refresh token available")
+        raise HTTPException(status_code=400, detail="No refresh token available. Please reconnect.")
     
-    client_id = os.environ.get(config["client_id_env"], "")
-    client_secret = os.environ.get(config["client_secret_env"], "")
+    # Get token URL based on data center
+    data_center = connection.get("data_center", "us")
+    if config.get("is_zoho"):
+        token_url = get_zoho_urls(data_center)["token_url"]
+    else:
+        token_url = config.get("token_url")
+    
+    client_id = os.environ.get(config.get("client_id_env", ""), "")
+    client_secret = os.environ.get(config.get("client_secret_env", ""), "")
     
     try:
         async with httpx.AsyncClient(timeout=30) as client:
@@ -384,7 +585,7 @@ async def refresh_oauth_token(
             }
             
             response = await client.post(
-                config["token_url"],
+                token_url,
                 data=token_data,
                 headers={"Content-Type": "application/x-www-form-urlencoded"}
             )
@@ -394,12 +595,12 @@ async def refresh_oauth_token(
                 await db.oauth_connections.update_one(
                     {"tenant_id": tid, "provider": provider},
                     {"$set": {
-                        "status": "failed",
+                        "status": "expired",
                         "error_message": f"Token refresh failed: {error_msg}",
                         "updated_at": now_iso()
                     }}
                 )
-                raise HTTPException(status_code=400, detail="Token refresh failed")
+                raise HTTPException(status_code=400, detail="Token refresh failed. Please reconnect.")
             
             tokens = response.json()
             expires_in = tokens.get("expires_in", 3600)
@@ -441,17 +642,121 @@ async def disconnect_oauth(
     if provider not in OAUTH_CONFIGS:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
     
+    config = OAUTH_CONFIGS[provider]
     tid = tenant_id_of(admin)
     
     # Remove the connection
-    result = await db.oauth_connections.delete_one(
-        {"tenant_id": tid, "provider": provider}
+    await db.oauth_connections.delete_one({"tenant_id": tid, "provider": provider})
+    
+    # Clear API key if applicable
+    if config.get("is_api_key"):
+        setting_key = config.get("api_key_setting", f"{provider}_api_key")
+        await db.app_settings.delete_one({"key": setting_key})
+    
+    # Disable the provider
+    if config["category"] == "payments":
+        if "stripe" in provider:
+            await db.app_settings.update_one(
+                {"key": "stripe_enabled"},
+                {"$set": {"key": "stripe_enabled", "value_json": False}},
+                upsert=True
+            )
+        elif "gocardless" in provider:
+            await db.app_settings.update_one(
+                {"key": "gocardless_enabled"},
+                {"$set": {"key": "gocardless_enabled", "value_json": False}},
+                upsert=True
+            )
+    elif config["category"] == "email":
+        # If this was the active email provider, clear it
+        await db.app_settings.update_one(
+            {"key": "active_email_provider", "value": provider},
+            {"$set": {"value": ""}}
+        )
+    
+    return {"success": True, "message": f"{config['name']} disconnected"}
+
+
+@router.post("/oauth/{provider}/activate")
+async def activate_provider(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Activate a connected provider (e.g., set as active email provider)."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    config = OAUTH_CONFIGS[provider]
+    tid = tenant_id_of(admin)
+    
+    # Check if connected
+    connection = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": provider, "status": "connected"},
+        {"_id": 0}
     )
     
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Connection not found")
+    if not connection:
+        raise HTTPException(status_code=400, detail=f"{config['name']} is not connected")
     
-    return {"success": True, "message": f"{OAUTH_CONFIGS[provider]['name']} disconnected"}
+    if config["category"] == "email":
+        # Set as active email provider (only one can be active)
+        await db.app_settings.update_one(
+            {"key": "active_email_provider"},
+            {"$set": {"key": "active_email_provider", "value": provider}},
+            upsert=True
+        )
+        # Also enable email provider
+        await db.app_settings.update_one(
+            {"key": "email_provider_enabled"},
+            {"$set": {"key": "email_provider_enabled", "value_json": True}},
+            upsert=True
+        )
+    elif config["category"] == "payments":
+        if "stripe" in provider:
+            await db.app_settings.update_one(
+                {"key": "stripe_enabled"},
+                {"$set": {"key": "stripe_enabled", "value_json": True}},
+                upsert=True
+            )
+        elif "gocardless" in provider:
+            await db.app_settings.update_one(
+                {"key": "gocardless_enabled"},
+                {"$set": {"key": "gocardless_enabled", "value_json": True}},
+                upsert=True
+            )
+    
+    return {"success": True, "message": f"{config['name']} activated"}
+
+
+@router.post("/oauth/{provider}/deactivate")
+async def deactivate_provider(
+    provider: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin)
+):
+    """Deactivate a provider without disconnecting it."""
+    if provider not in OAUTH_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+    
+    config = OAUTH_CONFIGS[provider]
+    
+    if config["category"] == "email":
+        await db.app_settings.update_one(
+            {"key": "active_email_provider", "value": provider},
+            {"$set": {"value": ""}}
+        )
+    elif config["category"] == "payments":
+        if "stripe" in provider:
+            await db.app_settings.update_one(
+                {"key": "stripe_enabled"},
+                {"$set": {"value_json": False}}
+            )
+        elif "gocardless" in provider:
+            await db.app_settings.update_one(
+                {"key": "gocardless_enabled"},
+                {"$set": {"value_json": False}}
+            )
+    
+    return {"success": True, "message": f"{config['name']} deactivated"}
 
 
 @router.get("/oauth/{provider}/status")
@@ -468,25 +773,25 @@ async def get_oauth_status(
     
     connection = await db.oauth_connections.find_one(
         {"tenant_id": tid, "provider": provider},
-        {"_id": 0, "access_token": 0, "refresh_token": 0}  # Don't expose tokens
+        {"_id": 0, "access_token": 0, "refresh_token": 0}
     )
+    
+    # Check if token is expired
+    is_expired = False
+    if connection and connection.get("expires_at"):
+        try:
+            expires_at = datetime.fromisoformat(connection["expires_at"].replace("Z", "+00:00"))
+            is_expired = expires_at < datetime.now(timezone.utc)
+        except (ValueError, TypeError):
+            pass
     
     if not connection:
         return {
             "provider": provider,
             "name": config["name"],
             "status": "not_connected",
-            "can_connect": bool(os.environ.get(config["client_id_env"], ""))
+            "can_connect": bool(os.environ.get(config.get("client_id_env", ""), "")) if not config.get("is_api_key") else True
         }
-    
-    # Check if token is expired
-    is_expired = False
-    if connection.get("expires_at"):
-        try:
-            expires_at = datetime.fromisoformat(connection["expires_at"].replace("Z", "+00:00"))
-            is_expired = expires_at < datetime.now(timezone.utc)
-        except (ValueError, TypeError):
-            pass
     
     return {
         "provider": provider,
@@ -497,8 +802,72 @@ async def get_oauth_status(
         "expires_at": connection.get("expires_at"),
         "is_expired": is_expired,
         "error_message": connection.get("error_message"),
-        "can_connect": bool(os.environ.get(config["client_id_env"], "")),
-        # Provider-specific info
-        "stripe_user_id": connection.get("stripe_user_id"),
-        "organisation_id": connection.get("organisation_id"),
+        "data_center": connection.get("data_center"),
+        "can_connect": bool(os.environ.get(config.get("client_id_env", ""), "")) if not config.get("is_api_key") else True,
+    }
+
+
+@router.get("/oauth/health")
+async def check_connection_health(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Check health of all OAuth connections for the tenant."""
+    tid = tenant_id_of(admin)
+    
+    connections = await db.oauth_connections.find(
+        {"tenant_id": tid, "status": "connected"},
+        {"_id": 0, "access_token": 0, "refresh_token": 0}
+    ).to_list(50)
+    
+    health_report = []
+    now = datetime.now(timezone.utc)
+    
+    for conn in connections:
+        provider = conn.get("provider")
+        expires_at_str = conn.get("expires_at")
+        
+        status = "healthy"
+        message = "Connection is active"
+        needs_refresh = False
+        
+        if expires_at_str:
+            try:
+                expires_at = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
+                time_until_expiry = expires_at - now
+                
+                if time_until_expiry.total_seconds() < 0:
+                    status = "expired"
+                    message = "Token has expired. Please refresh or reconnect."
+                    needs_refresh = True
+                elif time_until_expiry.total_seconds() < 86400:  # Less than 24 hours
+                    status = "expiring_soon"
+                    message = f"Token expires in {int(time_until_expiry.total_seconds() / 3600)} hours"
+                    needs_refresh = True
+                elif time_until_expiry.total_seconds() < 604800:  # Less than 7 days
+                    status = "warning"
+                    message = f"Token expires in {int(time_until_expiry.days)} days"
+            except (ValueError, TypeError):
+                pass
+        
+        health_report.append({
+            "provider": provider,
+            "name": OAUTH_CONFIGS.get(provider, {}).get("name", provider),
+            "status": status,
+            "message": message,
+            "needs_refresh": needs_refresh,
+            "expires_at": expires_at_str,
+            "last_refresh": conn.get("last_refresh"),
+        })
+    
+    # Count by status
+    healthy_count = sum(1 for h in health_report if h["status"] == "healthy")
+    warning_count = sum(1 for h in health_report if h["status"] in ("warning", "expiring_soon"))
+    expired_count = sum(1 for h in health_report if h["status"] == "expired")
+    
+    return {
+        "summary": {
+            "total": len(health_report),
+            "healthy": healthy_count,
+            "warning": warning_count,
+            "expired": expired_count,
+        },
+        "connections": health_report
     }
