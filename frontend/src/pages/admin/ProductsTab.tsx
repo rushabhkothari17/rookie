@@ -62,6 +62,7 @@ export function ProductsTab() {
   const [page, setPage] = useState(1);
   const [entityLogs, setEntityLogs] = useState<any[]>([]);
   const [showEntityLogs, setShowEntityLogs] = useState(false);
+  const [confirmToggleProduct, setConfirmToggleProduct] = useState<any>(null);
   const PER_PAGE = 20;
 
   const load = async () => {
