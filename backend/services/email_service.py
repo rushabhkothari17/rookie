@@ -272,8 +272,8 @@ class EmailService:
         if not template.get("is_enabled", True):
             return {"status": "skipped", "reason": "template disabled"}
 
-        # Resolve store_name
-        store_name = await SettingsService.get("store_name", "", tenant_id=tenant_id) or ""
+        # Resolve store_name (global setting)
+        store_name = await SettingsService.get("store_name", "") or ""
         all_vars = {"store_name": store_name, **variables}
 
         subject = _resolve_vars(template["subject"], all_vars)
@@ -297,15 +297,16 @@ class EmailService:
         if tenant_id:
             log_entry["tenant_id"] = tenant_id
 
-        provider_enabled = await SettingsService.get("email_provider_enabled", False, tenant_id=tenant_id)
-        resend_key = await SettingsService.get("resend_api_key", "", tenant_id=tenant_id)
+        # Global email provider settings
+        provider_enabled = await SettingsService.get("email_provider_enabled", False)
+        resend_key = await SettingsService.get("resend_api_key", "")
 
         if provider_enabled and resend_key:
-            from_name = await SettingsService.get("email_from_name", "", tenant_id=tenant_id) or store_name
-            from_email = await SettingsService.get("resend_sender_email", "noreply@example.com", tenant_id=tenant_id)
-            reply_to = await SettingsService.get("email_reply_to", "", tenant_id=tenant_id) or None
-            cc_str = await SettingsService.get("email_cc", "", tenant_id=tenant_id) or ""
-            bcc_str = await SettingsService.get("email_bcc", "", tenant_id=tenant_id) or ""
+            from_name = await SettingsService.get("email_from_name", "") or store_name
+            from_email = await SettingsService.get("resend_sender_email", "noreply@example.com")
+            reply_to = await SettingsService.get("email_reply_to", "") or None
+            cc_str = await SettingsService.get("email_cc", "") or ""
+            bcc_str = await SettingsService.get("email_bcc", "") or ""
 
             log_entry["provider"] = "resend"
             try:
