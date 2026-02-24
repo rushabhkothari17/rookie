@@ -246,12 +246,34 @@ async def _resolve_refs(text: str, db) -> str:
 class EmailService:
     @staticmethod
     async def ensure_seeded(db, tenant_id: str = "automate-accounts") -> None:
-        """Seed default email templates for a tenant if none exist."""
-        count = await db.email_templates.count_documents({"tenant_id": tenant_id})
-        if count == 0:
-            now = now_iso()
+        """
+        Seed default email templates for a tenant.
+        
+        - Seeds all templates if none exist for the tenant
+        - Seeds any missing templates if some exist (for new templates added later)
+        """
+        existing_count = await db.email_templates.count_documents({"tenant_id": tenant_id})
+        now = now_iso()
+        
+        if existing_count == 0:
+            # First time seeding - add all templates
             docs = [{"id": make_id(), "tenant_id": tenant_id, "created_at": now, "updated_at": now, **t} for t in _TEMPLATES]
             await db.email_templates.insert_many(docs)
+        else:
+            # Check for missing templates and add them
+            existing_triggers = set()
+            cursor = db.email_templates.find(
+                {"tenant_id": tenant_id},
+                {"_id": 0, "trigger": 1}
+            )
+            async for doc in cursor:
+                existing_triggers.add(doc["trigger"])
+            
+            # Find templates that don't exist yet
+            missing = [t for t in _TEMPLATES if t["trigger"] not in existing_triggers]
+            if missing:
+                docs = [{"id": make_id(), "tenant_id": tenant_id, "created_at": now, "updated_at": now, **t} for t in missing]
+                await db.email_templates.insert_many(docs)
 
     @staticmethod
     async def send(
