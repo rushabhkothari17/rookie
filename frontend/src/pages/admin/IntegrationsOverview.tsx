@@ -3,12 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,6 +29,10 @@ import {
   Clock,
   AlertCircle,
   LayoutGrid,
+  ExternalLink,
+  ChevronRight,
+  Info,
+  Copy,
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -97,6 +95,100 @@ const ICON_MAP: Record<string, any> = {
   calculator: Calculator,
 };
 
+// Setup guides for each integration
+const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; url: string }[]; tips?: string[] }> = {
+  stripe: {
+    steps: [
+      "Log in to your Stripe Dashboard",
+      "Go to Developers → API Keys",
+      "Copy your Secret Key (starts with sk_live_ or sk_test_)",
+      "Optionally copy your Publishable Key for frontend use",
+    ],
+    links: [
+      { label: "Stripe Dashboard", url: "https://dashboard.stripe.com/apikeys" },
+      { label: "Stripe Docs", url: "https://stripe.com/docs/keys" },
+    ],
+    tips: ["Use test keys (sk_test_) for development", "Never expose your secret key in frontend code"],
+  },
+  gocardless: {
+    steps: [
+      "Log in to your GoCardless Dashboard",
+      "Go to Developers → Create → Access Token",
+      "Select 'Read-write access' scope",
+      "Copy the generated access token",
+    ],
+    links: [
+      { label: "GoCardless Dashboard", url: "https://manage.gocardless.com/developers/access-tokens" },
+      { label: "GoCardless Docs", url: "https://developer.gocardless.com/getting-started" },
+    ],
+  },
+  gocardless_sandbox: {
+    steps: [
+      "Log in to GoCardless Sandbox",
+      "Go to Developers → Create → Access Token",
+      "Copy the sandbox access token",
+    ],
+    links: [
+      { label: "GoCardless Sandbox", url: "https://manage-sandbox.gocardless.com/developers/access-tokens" },
+    ],
+  },
+  resend: {
+    steps: [
+      "Sign up or log in at resend.com",
+      "Go to API Keys section",
+      "Click 'Create API Key'",
+      "Give it a name and select permissions",
+      "Copy the generated API key",
+    ],
+    links: [
+      { label: "Resend API Keys", url: "https://resend.com/api-keys" },
+      { label: "Resend Docs", url: "https://resend.com/docs" },
+    ],
+    tips: ["Add and verify your domain for production emails", "Use onboarding@resend.dev for testing"],
+  },
+  zoho_mail: {
+    steps: [
+      "Go to Zoho API Console",
+      "Create a new Server-based Application",
+      "Add scope: ZohoMail.messages.CREATE, ZohoMail.accounts.READ",
+      "Set redirect URI (can be any valid URL for self-client)",
+      "Generate a Self Client token to get Refresh Token",
+      "Find your Account ID in Zoho Mail settings",
+    ],
+    links: [
+      { label: "Zoho API Console", url: "https://api-console.zoho.com/" },
+      { label: "Zoho Mail API Docs", url: "https://www.zoho.com/mail/help/api/" },
+    ],
+    tips: ["Select the correct data center for your Zoho account", "Refresh tokens don't expire unless revoked"],
+  },
+  zoho_crm: {
+    steps: [
+      "Go to Zoho API Console",
+      "Create a new Server-based Application",
+      "Add scopes: ZohoCRM.modules.ALL, ZohoCRM.settings.ALL",
+      "Set redirect URI (can be any valid URL for self-client)",
+      "Generate a Self Client token to get Refresh Token",
+    ],
+    links: [
+      { label: "Zoho API Console", url: "https://api-console.zoho.com/" },
+      { label: "Zoho CRM API Docs", url: "https://www.zoho.com/crm/developer/docs/api/v3/" },
+    ],
+  },
+  zoho_books: {
+    steps: [
+      "Go to Zoho API Console",
+      "Create a new Server-based Application",
+      "Add scope: ZohoBooks.fullaccess.all",
+      "Generate a Self Client token to get Refresh Token",
+      "Find your Organization ID in Zoho Books → Settings → Organization Profile",
+    ],
+    links: [
+      { label: "Zoho API Console", url: "https://api-console.zoho.com/" },
+      { label: "Zoho Books API Docs", url: "https://www.zoho.com/books/api/v3/" },
+    ],
+  },
+};
+
 export function IntegrationsOverview() {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [dataCenters, setDataCenters] = useState<DataCenter[]>([]);
@@ -104,10 +196,9 @@ export function IntegrationsOverview() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
   
-  // Dialog states
+  // Slide panel states
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
-  const [showConfigDialog, setShowConfigDialog] = useState(false);
-  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [panelMode, setPanelMode] = useState<"config" | "settings" | null>(null);
   
   // Form states
   const [credentials, setCredentials] = useState<Record<string, string>>({});
@@ -131,10 +222,9 @@ export function IntegrationsOverview() {
 
   useEffect(() => { loadIntegrations(); }, []);
 
-  const openConfigDialog = (integration: Integration) => {
+  const openConfigPanel = (integration: Integration) => {
     setSelectedIntegration(integration);
     setCredentials({});
-    setSettings({});
     setDataCenter(integration.data_center || "us");
     
     const settingsObj: Record<string, string> = {};
@@ -142,17 +232,22 @@ export function IntegrationsOverview() {
       settingsObj[s.key] = integration.stored_settings[s.key] || s.default || "";
     });
     setSettings(settingsObj);
-    setShowConfigDialog(true);
+    setPanelMode("config");
   };
 
-  const openSettingsDialog = (integration: Integration) => {
+  const openSettingsPanel = (integration: Integration) => {
     setSelectedIntegration(integration);
     const settingsObj: Record<string, string> = {};
     integration.settings.forEach(s => {
       settingsObj[s.key] = integration.stored_settings[s.key] || s.default || "";
     });
     setSettings(settingsObj);
-    setShowSettingsDialog(true);
+    setPanelMode("settings");
+  };
+
+  const closePanel = () => {
+    setPanelMode(null);
+    setSelectedIntegration(null);
   };
 
   const handleSaveCredentials = async () => {
@@ -165,7 +260,7 @@ export function IntegrationsOverview() {
         settings,
       });
       toast.success("Credentials saved. Now validate the connection.");
-      setShowConfigDialog(false);
+      closePanel();
       loadIntegrations();
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to save");
@@ -232,13 +327,18 @@ export function IntegrationsOverview() {
     try {
       await api.post(`/oauth/${selectedIntegration.id}/update-settings`, { settings });
       toast.success("Settings saved");
-      setShowSettingsDialog(false);
+      closePanel();
       loadIntegrations();
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to save settings");
     } finally {
       setSaving(false);
     }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard");
   };
 
   const filteredIntegrations = activeCategory === "all" 
@@ -254,14 +354,15 @@ export function IntegrationsOverview() {
   };
 
   const counts = getCategoryCounts();
+  const guide = selectedIntegration ? SETUP_GUIDES[selectedIntegration.id] : null;
 
   if (loading) {
     return <div className="flex items-center justify-center py-12"><Loader2 className="animate-spin text-slate-400" /></div>;
   }
 
   return (
-    <div className="flex gap-6" data-testid="integrations-overview">
-      {/* Sidebar */}
+    <div className="flex gap-6 relative" data-testid="integrations-overview">
+      {/* Category Sidebar */}
       <div className="w-48 shrink-0">
         <div className="sticky top-4 space-y-1">
           {(["all", "payments", "email", "crm", "accounting"] as CategoryFilter[]).map(cat => {
@@ -290,7 +391,6 @@ export function IntegrationsOverview() {
           })}
         </div>
         
-        {/* Active Email Provider Status */}
         {activeEmailProvider && (
           <div className="mt-6 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
             <div className="flex items-center gap-2 mb-1">
@@ -304,36 +404,32 @@ export function IntegrationsOverview() {
         )}
       </div>
 
-      {/* Main Content - Tile Grid */}
-      <div className="flex-1">
-        {/* Header */}
+      {/* Main Content */}
+      <div className="flex-1 min-w-0">
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-slate-800">
             {CATEGORY_CONFIG[activeCategory].label}
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            {activeCategory === "all" 
-              ? "Manage all your third-party integrations"
-              : activeCategory === "email"
+            {activeCategory === "email" 
               ? "Only one email provider can be active at a time"
-              : `Configure your ${activeCategory} integrations`
+              : "Manage your third-party integrations"
             }
           </p>
         </div>
 
-        {/* No Email Provider Warning */}
         {!activeEmailProvider && (activeCategory === "all" || activeCategory === "email") && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
             <AlertCircle size={18} className="text-amber-600 shrink-0" />
             <div>
               <p className="text-sm font-medium text-amber-800">No email provider active</p>
-              <p className="text-xs text-amber-600">Emails will be stored but not sent. Connect and activate an email provider.</p>
+              <p className="text-xs text-amber-600">Emails will be stored but not sent.</p>
             </div>
           </div>
         )}
 
         {/* Tiles Grid */}
-        <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className={`grid gap-4 transition-all ${panelMode ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-2 xl:grid-cols-3"}`}>
           {filteredIntegrations.map(integration => {
             const Icon = ICON_MAP[integration.icon] || CreditCard;
             const catConfig = CATEGORY_CONFIG[integration.category];
@@ -347,55 +443,39 @@ export function IntegrationsOverview() {
                   integration.is_coming_soon 
                     ? "bg-slate-50 border-slate-200 opacity-60"
                     : integration.is_validated && integration.is_active
-                    ? "bg-gradient-to-br from-emerald-50 to-white border-emerald-300 shadow-sm"
+                    ? "bg-gradient-to-br from-emerald-50 to-white border-emerald-300"
                     : integration.is_validated
                     ? "bg-gradient-to-br from-blue-50 to-white border-blue-200"
-                    : isConfigured
-                    ? "bg-white border-slate-200 hover:border-slate-300"
-                    : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                    : "bg-white border-slate-200 hover:border-slate-300"
                 }`}
                 data-testid={`tile-${integration.id}`}
               >
-                {/* Status Badge - Top Right */}
+                {/* Status Badge */}
                 <div className="absolute top-3 right-3">
                   {integration.is_coming_soon ? (
-                    <span className="text-[10px] px-2 py-1 rounded-full bg-slate-200 text-slate-600 font-medium">
-                      COMING SOON
-                    </span>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-slate-200 text-slate-600 font-medium">COMING SOON</span>
                   ) : integration.is_validated && integration.is_active ? (
-                    <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500 text-white font-medium flex items-center gap-1">
-                      <Check size={10} /> ACTIVE
-                    </span>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500 text-white font-medium flex items-center gap-1"><Check size={10} /> ACTIVE</span>
                   ) : integration.is_validated ? (
-                    <span className="text-[10px] px-2 py-1 rounded-full bg-blue-500 text-white font-medium flex items-center gap-1">
-                      <Check size={10} /> VALIDATED
-                    </span>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-blue-500 text-white font-medium flex items-center gap-1"><Check size={10} /> VALIDATED</span>
                   ) : integration.status === "pending" ? (
-                    <span className="text-[10px] px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1">
-                      <Clock size={10} /> PENDING
-                    </span>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1"><Clock size={10} /> PENDING</span>
                   ) : integration.status === "failed" ? (
-                    <span className="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1">
-                      <X size={10} /> FAILED
-                    </span>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1"><X size={10} /> FAILED</span>
                   ) : null}
                 </div>
 
                 {/* Icon & Name */}
                 <div className="flex items-start gap-3 mb-3">
                   <div className={`p-3 rounded-xl ${
-                    integration.is_validated && integration.is_active
-                      ? "bg-emerald-100"
-                      : integration.is_validated
-                      ? "bg-blue-100"
-                      : catConfig.bgColor
+                    integration.is_validated && integration.is_active ? "bg-emerald-100"
+                    : integration.is_validated ? "bg-blue-100"
+                    : catConfig.bgColor
                   }`}>
                     <Icon size={22} className={
-                      integration.is_validated && integration.is_active
-                        ? "text-emerald-600"
-                        : integration.is_validated
-                        ? "text-blue-600"
-                        : catConfig.color
+                      integration.is_validated && integration.is_active ? "text-emerald-600"
+                      : integration.is_validated ? "text-blue-600"
+                      : catConfig.color
                     } />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -404,7 +484,6 @@ export function IntegrationsOverview() {
                   </div>
                 </div>
 
-                {/* Data Center Badge for Zoho */}
                 {integration.is_zoho && integration.data_center && (
                   <div className="mb-3">
                     <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-500 font-medium">
@@ -413,7 +492,6 @@ export function IntegrationsOverview() {
                   </div>
                 )}
 
-                {/* Error Message */}
                 {integration.error_message && (
                   <div className="mb-3 p-2 bg-red-50 rounded-lg">
                     <p className="text-[11px] text-red-600 flex items-start gap-1">
@@ -431,14 +509,13 @@ export function IntegrationsOverview() {
                     <Button
                       size="sm"
                       className="w-full"
-                      onClick={() => openConfigDialog(integration)}
+                      onClick={() => openConfigPanel(integration)}
                       data-testid={`connect-${integration.id}`}
                     >
                       <Link size={14} className="mr-1.5" /> Connect
                     </Button>
                   ) : (
                     <div className="flex items-center gap-1.5 w-full">
-                      {/* Validate / Cancel */}
                       {canValidate && (
                         <>
                           <Button
@@ -452,9 +529,7 @@ export function IntegrationsOverview() {
                             {validating === integration.id ? (
                               <Loader2 size={14} className="animate-spin" />
                             ) : (
-                              <>
-                                <Check size={14} className="mr-1" /> Validate
-                              </>
+                              <><Check size={14} className="mr-1" /> Validate</>
                             )}
                           </Button>
                           <Button
@@ -463,14 +538,12 @@ export function IntegrationsOverview() {
                             className="text-slate-400 hover:text-red-500 px-2"
                             onClick={(e) => handleDisconnect(integration.id, e)}
                             data-testid={`cancel-${integration.id}`}
-                            title="Cancel / Disconnect"
                           >
                             <X size={16} />
                           </Button>
                         </>
                       )}
                       
-                      {/* Activate / Deactivate for validated email providers */}
                       {integration.is_validated && integration.category === "email" && (
                         integration.is_active ? (
                           <Button
@@ -494,42 +567,36 @@ export function IntegrationsOverview() {
                         )
                       )}
                       
-                      {/* Edit Button */}
                       {integration.is_validated && (
                         <>
                           <Button
                             size="sm"
                             variant="ghost"
                             className="text-slate-400 hover:text-slate-600 px-2"
-                            onClick={() => openConfigDialog(integration)}
+                            onClick={() => openConfigPanel(integration)}
                             data-testid={`edit-${integration.id}`}
-                            title="Edit credentials"
                           >
                             <Pencil size={14} />
                           </Button>
                           
-                          {/* Settings Button */}
                           {integration.settings.length > 0 && (
                             <Button
                               size="sm"
                               variant="ghost"
                               className="text-slate-400 hover:text-slate-600 px-2"
-                              onClick={() => openSettingsDialog(integration)}
+                              onClick={() => openSettingsPanel(integration)}
                               data-testid={`settings-${integration.id}`}
-                              title="Settings"
                             >
                               <Settings size={14} />
                             </Button>
                           )}
                           
-                          {/* Disconnect Button */}
                           <Button
                             size="sm"
                             variant="ghost"
                             className="text-slate-400 hover:text-red-500 px-2"
                             onClick={(e) => handleDisconnect(integration.id, e)}
                             data-testid={`disconnect-${integration.id}`}
-                            title="Disconnect"
                           >
                             <Trash2 size={14} />
                           </Button>
@@ -544,112 +611,210 @@ export function IntegrationsOverview() {
         </div>
       </div>
 
-      {/* Configure Dialog */}
-      <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-        <DialogContent className="max-w-md" data-testid="config-dialog">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {selectedIntegration?.status !== "not_connected" ? "Edit" : "Configure"} {selectedIntegration?.name}
-            </DialogTitle>
-          </DialogHeader>
+      {/* Slide-in Panel */}
+      {panelMode && selectedIntegration && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/20 z-40" 
+            onClick={closePanel}
+          />
           
-          {selectedIntegration && (
-            <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto">
-              {/* Zoho Data Center Selection */}
-              {selectedIntegration.is_zoho && (
-                <div>
-                  <label className="text-xs font-medium text-slate-700 mb-1.5 block">Data Center</label>
-                  <Select value={dataCenter} onValueChange={setDataCenter}>
-                    <SelectTrigger data-testid="dc-select">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {dataCenters.map(dc => (
-                        <SelectItem key={dc.id} value={dc.id}>{dc.name} ({dc.id.toUpperCase()})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-[11px] text-slate-400 mt-1">Select the data center where your Zoho account is hosted</p>
-                </div>
+          {/* Panel */}
+          <div className="fixed top-0 right-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">
+                  {panelMode === "settings" ? `${selectedIntegration.name} Settings` : `Connect ${selectedIntegration.name}`}
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">{selectedIntegration.description}</p>
+              </div>
+              <button 
+                onClick={closePanel}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={18} className="text-slate-400" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto">
+              {panelMode === "config" && (
+                <>
+                  {/* Setup Guide */}
+                  {guide && (
+                    <div className="p-6 bg-gradient-to-b from-blue-50 to-white border-b border-slate-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Info size={16} className="text-blue-600" />
+                        <h4 className="text-sm font-semibold text-blue-900">Setup Guide</h4>
+                      </div>
+                      
+                      <ol className="space-y-2 mb-4">
+                        {guide.steps.map((step, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-blue-800">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 font-medium shrink-0 text-[10px]">
+                              {i + 1}
+                            </span>
+                            <span className="pt-0.5">{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                      
+                      {/* Quick Links */}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {guide.links.map((link, i) => (
+                          <a
+                            key={i}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-xs font-medium text-blue-700 hover:bg-blue-50 transition-colors"
+                          >
+                            {link.label}
+                            <ExternalLink size={12} />
+                          </a>
+                        ))}
+                      </div>
+                      
+                      {/* Tips */}
+                      {guide.tips && guide.tips.length > 0 && (
+                        <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide mb-1">Tips</p>
+                          <ul className="space-y-1">
+                            {guide.tips.map((tip, i) => (
+                              <li key={i} className="text-xs text-amber-700 flex items-start gap-1.5">
+                                <ChevronRight size={12} className="shrink-0 mt-0.5" />
+                                {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Credentials Form */}
+                  <div className="p-6 space-y-4">
+                    <h4 className="text-sm font-semibold text-slate-700">Credentials</h4>
+                    
+                    {/* Zoho Data Center */}
+                    {selectedIntegration.is_zoho && (
+                      <div>
+                        <label className="text-xs font-medium text-slate-700 mb-1.5 block">
+                          Data Center <span className="text-red-500">*</span>
+                        </label>
+                        <Select value={dataCenter} onValueChange={setDataCenter}>
+                          <SelectTrigger data-testid="dc-select">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {dataCenters.map(dc => (
+                              <SelectItem key={dc.id} value={dc.id}>
+                                {dc.name} ({dc.id.toUpperCase()})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          Select the data center where your Zoho account is hosted
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Credential Fields */}
+                    {selectedIntegration.fields.map(field => (
+                      <div key={field.key}>
+                        <label className="text-xs font-medium text-slate-700 mb-1.5 block">
+                          {field.label} {field.required && <span className="text-red-500">*</span>}
+                        </label>
+                        <div className="relative">
+                          <Input
+                            type={field.secret ? "password" : "text"}
+                            value={credentials[field.key] || ""}
+                            onChange={e => setCredentials(prev => ({ ...prev, [field.key]: e.target.value }))}
+                            placeholder={field.hint}
+                            className="pr-10"
+                            data-testid={`field-${field.key}`}
+                          />
+                          {credentials[field.key] && (
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(credentials[field.key])}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
+                            >
+                              <Copy size={14} className="text-slate-400" />
+                            </button>
+                          )}
+                        </div>
+                        {field.hint && (
+                          <p className="text-[11px] text-slate-400 mt-1">{field.hint}</p>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {/* Settings Fields */}
+                    {selectedIntegration.settings.length > 0 && (
+                      <div className="pt-4 border-t border-slate-100">
+                        <h4 className="text-sm font-semibold text-slate-700 mb-3">Settings</h4>
+                        {selectedIntegration.settings.map(setting => (
+                          <div key={setting.key} className="mb-3">
+                            <label className="text-xs font-medium text-slate-700 mb-1.5 block">
+                              {setting.label}
+                            </label>
+                            <Input
+                              value={settings[setting.key] || ""}
+                              onChange={e => setSettings(prev => ({ ...prev, [setting.key]: e.target.value }))}
+                              placeholder={setting.default || ""}
+                              data-testid={`setting-${setting.key}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
-              
-              {/* Credential Fields */}
-              {selectedIntegration.fields.map(field => (
-                <div key={field.key}>
-                  <label className="text-xs font-medium text-slate-700 mb-1.5 block">
-                    {field.label} {field.required && <span className="text-red-500">*</span>}
-                  </label>
-                  <Input
-                    type={field.secret ? "password" : "text"}
-                    value={credentials[field.key] || ""}
-                    onChange={e => setCredentials(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    placeholder={field.hint}
-                    data-testid={`field-${field.key}`}
-                  />
-                  {field.hint && <p className="text-[11px] text-slate-400 mt-1">{field.hint}</p>}
-                </div>
-              ))}
-              
-              {/* Settings Fields */}
-              {selectedIntegration.settings.length > 0 && (
-                <div className="border-t border-slate-100 pt-4 mt-4">
-                  <p className="text-xs font-semibold text-slate-600 mb-3">Settings</p>
+
+              {panelMode === "settings" && (
+                <div className="p-6 space-y-4">
                   {selectedIntegration.settings.map(setting => (
-                    <div key={setting.key} className="mb-3">
-                      <label className="text-xs font-medium text-slate-700 mb-1.5 block">{setting.label}</label>
+                    <div key={setting.key}>
+                      <label className="text-xs font-medium text-slate-700 mb-1.5 block">
+                        {setting.label}
+                      </label>
                       <Input
                         value={settings[setting.key] || ""}
                         onChange={e => setSettings(prev => ({ ...prev, [setting.key]: e.target.value }))}
                         placeholder={setting.default || ""}
-                        data-testid={`setting-${setting.key}`}
+                        data-testid={`dialog-setting-${setting.key}`}
                       />
                     </div>
                   ))}
                 </div>
               )}
-              
-              <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-white">
-                <Button variant="ghost" onClick={() => setShowConfigDialog(false)}>Cancel</Button>
-                <Button onClick={handleSaveCredentials} disabled={saving} data-testid="save-credentials">
-                  {saving ? <><Loader2 size={14} className="mr-1 animate-spin" /> Saving</> : "Save & Continue"}
-                </Button>
-              </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Settings Dialog */}
-      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
-        <DialogContent className="max-w-md" data-testid="settings-dialog">
-          <DialogHeader>
-            <DialogTitle>{selectedIntegration?.name} Settings</DialogTitle>
-          </DialogHeader>
-          
-          {selectedIntegration && (
-            <div className="space-y-4 py-2">
-              {selectedIntegration.settings.map(setting => (
-                <div key={setting.key}>
-                  <label className="text-xs font-medium text-slate-700 mb-1.5 block">{setting.label}</label>
-                  <Input
-                    value={settings[setting.key] || ""}
-                    onChange={e => setSettings(prev => ({ ...prev, [setting.key]: e.target.value }))}
-                    placeholder={setting.default || ""}
-                    data-testid={`dialog-setting-${setting.key}`}
-                  />
-                </div>
-              ))}
-              
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="ghost" onClick={() => setShowSettingsDialog(false)}>Cancel</Button>
-                <Button onClick={handleSaveSettings} disabled={saving} data-testid="save-settings">
-                  {saving ? <><Loader2 size={14} className="mr-1 animate-spin" /> Saving</> : "Save Settings"}
-                </Button>
-              </div>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
+              <Button variant="ghost" onClick={closePanel}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={panelMode === "settings" ? handleSaveSettings : handleSaveCredentials} 
+                disabled={saving}
+                data-testid="save-btn"
+              >
+                {saving ? (
+                  <><Loader2 size={14} className="mr-2 animate-spin" /> Saving...</>
+                ) : (
+                  "Save & Continue"
+                )}
+              </Button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </>
+      )}
     </div>
   );
 }
