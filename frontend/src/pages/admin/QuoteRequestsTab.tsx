@@ -141,10 +141,10 @@ export function QuoteRequestsTab() {
         <div className="flex flex-wrap gap-2 items-end">
           <Input placeholder="Contact email…" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-quotes-email-filter" />
           <Input placeholder="Product name…" value={productFilter} onChange={e => setProductFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-quotes-product-filter" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-8 text-xs border border-slate-200 rounded px-2 bg-white" data-testid="admin-quotes-status-filter">
-            <option value="">All Statuses</option>
-            {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-quotes-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectContent><SelectItem value="">All Statuses</SelectItem>{STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+          </Select>
           <div className="flex items-center gap-1">
             <span className="text-xs text-slate-400">From</span>
             <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-quotes-start-date" />
@@ -204,10 +204,14 @@ export function QuoteRequestsTab() {
             {/* Product */}
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Product</label>
-              <select value={form.product_id} onChange={e => { const p = products.find((x: any) => x.id === e.target.value); setForm(f => ({ ...f, product_id: e.target.value, product_name: p?.name || "" })); }} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-quote-product">
-                <option value="">Select product…</option>
-                {products.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
+              <SearchableSelect
+                value={form.product_id || undefined}
+                onValueChange={v => { const p = products.find((x: any) => x.id === v); setForm(f => ({ ...f, product_id: v, product_name: p?.name || "" })); }}
+                options={products.map((p: any) => ({ value: p.id, label: p.name }))}
+                placeholder="Select product…"
+                searchPlaceholder="Search products..."
+                data-testid="admin-quote-product"
+              />
             </div>
             {/* Customer email search/typeahead */}
             <div className="space-y-1">
@@ -235,9 +239,10 @@ export function QuoteRequestsTab() {
             <div className="space-y-1"><label className="text-xs text-slate-500">Message</label><Textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={3} data-testid="admin-quote-message" /></div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Status</label>
-              <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full h-9 text-sm border border-slate-200 rounded px-2 bg-white" data-testid="admin-quote-status">
-                <option value="pending">Pending</option><option value="responded">Responded</option><option value="closed">Closed</option>
-              </select>
+              <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                <SelectTrigger className="w-full bg-white" data-testid="admin-quote-status"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="pending">Pending</SelectItem><SelectItem value="responded">Responded</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent>
+              </Select>
             </div>
             <div className="flex gap-2 justify-end pt-1">
               <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
