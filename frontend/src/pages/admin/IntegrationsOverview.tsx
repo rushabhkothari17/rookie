@@ -151,10 +151,9 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
       "Go to Zoho API Console and click 'Self Client' → CREATE",
       "Note your Client ID and Client Secret from the app details",
       "In the 'Generate Code' tab, enter scopes: ZohoMail.messages.CREATE,ZohoMail.accounts.READ",
-      "Set Time Duration to 3 minutes, click CREATE — copy the one-time Authorization Code",
-      "Run in terminal to get your Refresh Token:\ncurl -X POST \"https://accounts.zoho.com/oauth/v2/token\" --data \"code=<AUTH_CODE>&client_id=<CLIENT_ID>&client_secret=<CLIENT_SECRET>&redirect_uri=https://www.zoho.com&grant_type=authorization_code\"",
-      "Copy the refresh_token from the JSON response",
-      "Find your Account ID in Zoho Mail → Settings → My Account → Account Details",
+      "Set Time Duration to 3 minutes, then click CREATE",
+      "Copy the Authorization Code shown — paste it in the field below",
+      "Click Save & Continue — we'll exchange it for a refresh token automatically",
     ],
     links: [
       { label: "Zoho API Console", url: "https://api-console.zoho.com/" },
@@ -162,8 +161,8 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
     ],
     tips: [
       "Use 'Self Client' type — not 'Server-based Application'",
-      "Authorization Code expires in minutes — exchange it for a refresh token immediately",
-      "Refresh tokens don't expire unless revoked or unused for 60 days",
+      "The Authorization Code expires in minutes — paste and save immediately",
+      "Account ID is fetched automatically during validation",
     ],
   },
   zoho_crm: {
@@ -171,9 +170,9 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
       "Go to Zoho API Console and click 'Self Client' → CREATE",
       "Note your Client ID and Client Secret from the app details",
       "In the 'Generate Code' tab, enter scopes: ZohoCRM.modules.ALL,ZohoCRM.settings.ALL",
-      "Set Time Duration to 3 minutes, click CREATE — copy the one-time Authorization Code",
-      "Run in terminal to get your Refresh Token:\ncurl -X POST \"https://accounts.zoho.com/oauth/v2/token\" --data \"code=<AUTH_CODE>&client_id=<CLIENT_ID>&client_secret=<CLIENT_SECRET>&redirect_uri=https://www.zoho.com&grant_type=authorization_code\"",
-      "Copy the refresh_token from the JSON response",
+      "Set Time Duration to 3 minutes, then click CREATE",
+      "Copy the Authorization Code shown — paste it in the field below",
+      "Click Save & Continue — we'll exchange it for a refresh token automatically",
     ],
     links: [
       { label: "Zoho API Console", url: "https://api-console.zoho.com/" },
@@ -181,6 +180,7 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
     ],
     tips: [
       "Use 'Self Client' type — not 'Server-based Application'",
+      "The Authorization Code expires in minutes — paste and save immediately",
       "Use the correct data center URL matching your Zoho account region",
     ],
   },
@@ -189,9 +189,9 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
       "Go to Zoho API Console and click 'Self Client' → CREATE",
       "Note your Client ID and Client Secret from the app details",
       "In the 'Generate Code' tab, enter scopes: ZohoBooks.fullaccess.all",
-      "Set Time Duration to 3 minutes, click CREATE — copy the one-time Authorization Code",
-      "Run in terminal to get your Refresh Token:\ncurl -X POST \"https://accounts.zoho.com/oauth/v2/token\" --data \"code=<AUTH_CODE>&client_id=<CLIENT_ID>&client_secret=<CLIENT_SECRET>&redirect_uri=https://www.zoho.com&grant_type=authorization_code\"",
-      "Copy the refresh_token from the JSON response",
+      "Set Time Duration to 3 minutes, then click CREATE",
+      "Copy the Authorization Code shown — paste it in the field below",
+      "Click Save & Continue — we'll exchange it for a refresh token automatically",
       "Find your Organization ID: Zoho Books → Settings → Organization Profile",
     ],
     links: [
@@ -200,6 +200,7 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
     ],
     tips: [
       "Use 'Self Client' type — not 'Server-based Application'",
+      "The Authorization Code expires in minutes — paste and save immediately",
       "Organization ID is numeric, e.g. 20098XXXXXXX",
     ],
   },
