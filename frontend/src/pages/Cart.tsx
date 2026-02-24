@@ -608,8 +608,230 @@ export default function Cart() {
                         )}
                       </div>
                     )}
-                    {/* Dynamic checkout sections (new) OR legacy zoho/partner (fallback) */}
-                    {checkoutSections !== null ? (
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* ── Checkout Questions & Buttons (shown once for all items) ── */}
+            {(grouped.oneTime.length > 0 || grouped.subscriptions.length > 0) && (
+              <div className="space-y-4">
+                {/* Dynamic checkout sections (new) OR legacy zoho/partner (fallback) */}
+                {checkoutSections !== null ? (
+                  <>
+                    {checkoutSections.map((csection: any) => {
+                      const sectionFields = parseSectionFields(csection.fields_schema);
+                      return (
+                        <div key={csection.id} className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-4" data-testid={`checkout-section-${csection.id}`}>
+                          <p className="text-sm font-semibold text-slate-700">{csection.title}</p>
+                          {csection.description && <p className="text-xs text-slate-500">{csection.description}</p>}
+                          {sectionFields.filter((f: any) => f.enabled !== false).map((field: any) => {
+                            const fKey = field.id || field.key || field.name;
+                            return (
+                              <div key={fKey} className="space-y-1">
+                                <label className="text-sm font-medium text-slate-700">{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
+                                {field.type === "select" ? (
+                                  <select value={extraFields[fKey] || ""} onChange={e => setExtraFields(p => ({ ...p, [fKey]: e.target.value }))}
+                                    className={`w-full h-9 border rounded-md px-3 text-sm bg-white text-slate-900 ${field.required && !extraFields[fKey] ? "border-red-300" : "border-slate-300"}`}
+                                    data-testid={`section-field-${fKey}`}>
+                                    <option value="">-- Select --</option>
+                                    {parseOptions(field.options).map((opt: string) => {
+                                      const { label, value } = parseOptionItem(opt);
+                                      return <option key={value} value={value}>{label}</option>;
+                                    })}
+                                  </select>
+                                ) : field.type === "checkbox" ? (
+                                  <div className="flex items-center gap-2">
+                                    <input type="checkbox" checked={extraFields[fKey] === "true" || extraFields[fKey] === true} onChange={e => setExtraFields(p => ({ ...p, [fKey]: String(e.target.checked) }))} className="h-4 w-4" data-testid={`section-field-${fKey}`} />
+                                    <span className="text-sm text-slate-600">{field.placeholder}</span>
+                                  </div>
+                                ) : (
+                                  <input type={field.type === "email" ? "email" : "text"} placeholder={field.placeholder || ""} value={extraFields[fKey] || ""} onChange={e => setExtraFields(p => ({ ...p, [fKey]: e.target.value }))} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900" data-testid={`section-field-${fKey}`} />
+                                )}
+                              </div>
+                            );
+                          })}
+                          {/* Special: partner_tag_response = Not yet triggers override code input */}
+                          {sectionFields.some((f: any) => (f.id || f.key || f.name) === 'partner_tag_response') && extraFields['partner_tag_response'] === 'Not yet' && (
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium text-slate-700">Partner Override Code</label>
+                              <input type="text" placeholder="Enter override code" value={overrideCode} onChange={e => setOverrideCode(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900" data-testid="section-override-code" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <>
+                    {ws.checkout_zoho_enabled !== false && (() => {
+                      const subOpts = ws.checkout_zoho_subscription_options?.split('\n').filter(Boolean) || ["Paid - Annual", "Paid - Monthly", "Free / Not on Zoho"];
+                      const prodOpts = ws.checkout_zoho_product_options?.split('\n').filter(Boolean) || [];
+                      const accessOpts = ws.checkout_zoho_access_options?.split('\n').filter(Boolean) || ["New Customer", "Pre-existing Customer"];
+                      return (
+                        <div className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-4" data-testid="zoho-checkout-section">
+                          <p className="text-sm font-semibold text-slate-700">{ws.checkout_zoho_title || "Zoho Account Details"}</p>
+                          {ws.checkout_zoho_description && <p className="text-xs text-slate-500">{ws.checkout_zoho_description}</p>}
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium text-slate-700">{ws.checkout_zoho_subscription_type_label || "Current Zoho subscription type?"}<span className="text-red-500 ml-1">*</span></label>
+                            <select data-testid="zoho-subscription-type" value={zohoSubscriptionType} onChange={e => setZohoSubscriptionType(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
+                              <option value="">-- Select --</option>
+                              {subOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
+                            </select>
+                          </div>
+                          {prodOpts.length > 0 && (
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium text-slate-700">{ws.checkout_zoho_product_label || "Which Zoho products?"}<span className="text-red-500 ml-1">*</span></label>
+                              <select data-testid="zoho-current-product" value={currentZohoProduct} onChange={e => setCurrentZohoProduct(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
+                                <option value="">-- Select --</option>
+                                {prodOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
+                              </select>
+                            </div>
+                          )}
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium text-slate-700">{ws.checkout_zoho_access_label || "Zoho account access?"}<span className="text-red-500 ml-1">*</span></label>
+                            <select data-testid="zoho-account-access" value={zohoAccountAccess} onChange={e => setZohoAccountAccess(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
+                              <option value="">-- Select --</option>
+                              {accessOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
+                            </select>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    {ws.checkout_partner_enabled !== false && (() => {
+                      const partnerOpts = ws.checkout_partner_options?.split('\n').filter(Boolean) || ["Yes", "Not yet"];
+                      return (
+                        <div className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-4" data-testid="partner-checkout-section">
+                          <p className="text-sm font-semibold text-slate-700">{ws.checkout_partner_title || "Partner Tag"}</p>
+                          {ws.checkout_partner_description && <p className="text-xs text-slate-500">{ws.checkout_partner_description}</p>}
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium text-slate-700">{ws.checkout_partner_question || "Have you tagged us as your Partner?"}<span className="text-red-500 ml-1">*</span></label>
+                            <select data-testid="partner-tag-response" value={partnerTagResponse} onChange={e => setPartnerTagResponse(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900">
+                              <option value="">-- Select --</option>
+                              {partnerOpts.map((o: string) => { const {label, value} = parseOptionItem(o); return <option key={value} value={value}>{label}</option>; })}
+                            </select>
+                          </div>
+                          {partnerTagResponse === "Not yet" && (
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium text-slate-700">Partner Override Code</label>
+                              <input type="text" placeholder="Enter override code" value={overrideCode} onChange={e => setOverrideCode(e.target.value)} className="w-full h-9 border border-slate-300 rounded-md px-3 text-sm bg-white text-slate-900" data-testid="partner-override-code" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
+
+                {/* Extra schema fields (from legacy checkout extra_schema) */}
+                {ws.checkout_extra_schema && (() => {
+                  const extraSchema = JSON.parse(ws.checkout_extra_schema || "[]");
+                  if (!Array.isArray(extraSchema) || extraSchema.length === 0) return null;
+                  return (
+                    <div className="rounded-md border border-slate-200 bg-slate-50 p-4 space-y-4" data-testid="extra-schema-section">
+                      {extraSchema.filter((f: any) => f.enabled !== false).map((field: any) => (
+                        <div key={field.name} className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
+                          {field.type === "select" ? (
+                            <select value={extraFields[field.name] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.name]: e.target.value }))}
+                              className="w-full h-9 border border-slate-200 rounded-md px-3 text-sm bg-white text-slate-900">
+                              <option value="">-- Select --</option>
+                              {parseOptions(field.options).map((opt: string) => {
+                                const { label, value } = parseOptionItem(opt);
+                                return <option key={value} value={value}>{label}</option>;
+                              })}
+                            </select>
+                          ) : field.type === "checkbox" ? (
+                            <div className="flex items-center gap-2">
+                              <input type="checkbox" checked={extraFields[field.name] === "true" || extraFields[field.name] === true} onChange={e => setExtraFields(p => ({ ...p, [field.name]: String(e.target.checked) }))} />
+                              <span className="text-sm text-slate-600">{field.placeholder}</span>
+                            </div>
+                          ) : (
+                            <input type={field.type === "email" ? "email" : "text"} placeholder={field.placeholder || ""} value={extraFields[field.name] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.name]: e.target.value }))} className="w-full h-9 border border-slate-200 rounded-md px-3 text-sm bg-white text-slate-900" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Terms & Conditions */}
+                {ws.checkout_terms_enabled !== false && (
+                  <div className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-3" data-testid="cart-terms-section">
+                    <input
+                      type="checkbox"
+                      id="terms-checkbox"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <label htmlFor="terms-checkbox" className="text-sm text-slate-700 flex-1">
+                      I accept the{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(true)}
+                        className="text-slate-900 underline font-medium"
+                      >
+                        Terms & Conditions
+                      </button>
+                    </label>
+                  </div>
+                )}
+
+                {/* Checkout buttons per section type */}
+                {grouped.oneTime.length > 0 && (
+                  <Button
+                    className="w-full bg-slate-900 hover:bg-slate-800"
+                    onClick={() => handleCheckout(grouped.oneTime, "one_time")}
+                    disabled={
+                      loading ||
+                      !termsAccepted ||
+                      (checkoutSections !== null
+                        ? sectionRequiredFieldsMissing || (extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim())
+                        : (
+                          (ws.checkout_partner_enabled !== false && !partnerTagResponse) ||
+                          (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) ||
+                          (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) ||
+                          (ws.checkout_zoho_enabled !== false && (() => { const p = ws.checkout_zoho_product_options?.split('\n').filter(Boolean) || []; return p.length > 0 && !currentZohoProduct; })()) ||
+                          (ws.checkout_zoho_enabled !== false && !zohoAccountAccess)
+                        )
+                      ) ||
+                      currencyUnsupported ||
+                      (!allowBankTransfer && !allowCardPayment)
+                    }
+                    data-testid="cart-checkout-one_time"
+                  >
+                    {paymentMethod === "bank_transfer" ? "Create order" : "Proceed to checkout"}
+                  </Button>
+                )}
+                {grouped.subscriptions.length > 0 && (
+                  <Button
+                    className="w-full bg-slate-900 hover:bg-slate-800"
+                    onClick={() => handleCheckout(grouped.subscriptions, "subscription")}
+                    disabled={
+                      loading ||
+                      !termsAccepted ||
+                      (checkoutSections !== null
+                        ? sectionRequiredFieldsMissing || (extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim())
+                        : (
+                          (ws.checkout_partner_enabled !== false && !partnerTagResponse) ||
+                          (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) ||
+                          (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) ||
+                          (ws.checkout_zoho_enabled !== false && (() => { const p = ws.checkout_zoho_product_options?.split('\n').filter(Boolean) || []; return p.length > 0 && !currentZohoProduct; })()) ||
+                          (ws.checkout_zoho_enabled !== false && !zohoAccountAccess)
+                        )
+                      ) ||
+                      currencyUnsupported ||
+                      (!allowBankTransfer && !allowCardPayment) ||
+                      (subscriptionMissingPrice && paymentMethod === "card")
+                    }
+                    data-testid="cart-checkout-subscription"
+                  >
+                    {paymentMethod === "bank_transfer" ? "Create subscription request" : "Proceed to subscription checkout"}
+                  </Button>
+                )}
+              </div>
+            )}
                       <>
                         {checkoutSections.map((section: any) => {
                           const sectionFields = parseSectionFields(section.fields_schema);
