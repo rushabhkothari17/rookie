@@ -38,72 +38,136 @@ ZOHO_DATA_CENTERS = {
 
 # Provider configurations
 OAUTH_CONFIGS = {
-    "zoho_crm": {
-        "name": "Zoho CRM",
-        "category": "crm",
-        "scopes": ["ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL", "ZohoCRM.users.READ"],
-        "client_id_env": "ZOHO_CLIENT_ID",
-        "client_secret_env": "ZOHO_CLIENT_SECRET",
-        "is_zoho": True,
-        "description": "Sync customers, orders, and subscriptions with Zoho CRM",
-    },
-    "zoho_books": {
-        "name": "Zoho Books",
-        "category": "accounting",
-        "scopes": ["ZohoBooks.fullaccess.all"],
-        "client_id_env": "ZOHO_CLIENT_ID",
-        "client_secret_env": "ZOHO_CLIENT_SECRET",
-        "is_zoho": True,
-        "description": "Sync invoices, payments, and financial data with Zoho Books",
-    },
-    "zoho_mail": {
-        "name": "Zoho Mail",
-        "category": "email",
-        "scopes": ["ZohoMail.messages.CREATE", "ZohoMail.accounts.READ"],
-        "client_id_env": "ZOHO_CLIENT_ID",
-        "client_secret_env": "ZOHO_CLIENT_SECRET",
-        "is_zoho": True,
-        "description": "Send transactional emails via Zoho Mail",
-    },
+    # ===== PAYMENT PROVIDERS =====
     "stripe": {
         "name": "Stripe",
         "category": "payments",
-        "is_api_key": True,
-        "is_zoho": False,
+        "is_credential": True,
         "description": "Process card payments via Stripe",
-        "api_key_setting": "stripe_api_key",
-        "api_key_label": "Stripe Secret Key",
-        "api_key_hint": "Starts with sk_live_ or sk_test_",
+        "fields": [
+            {"key": "api_key", "label": "Secret Key", "hint": "Starts with sk_live_ or sk_test_", "secret": True, "required": True},
+            {"key": "publishable_key", "label": "Publishable Key", "hint": "Starts with pk_live_ or pk_test_", "secret": False, "required": False},
+        ],
+        "validate_url": "https://api.stripe.com/v1/balance",
     },
     "gocardless": {
         "name": "GoCardless",
         "category": "payments",
-        "is_api_key": True,
-        "is_zoho": False,
+        "is_credential": True,
         "description": "Process Direct Debit payments via GoCardless",
-        "api_key_setting": "gocardless_access_token",
-        "api_key_label": "Access Token",
-        "api_key_hint": "From GoCardless Dashboard → Developers → Access tokens",
+        "fields": [
+            {"key": "access_token", "label": "Access Token", "hint": "From GoCardless Dashboard → Developers", "secret": True, "required": True},
+        ],
+        "validate_url": "https://api.gocardless.com/creditors",
+        "settings": [
+            {"key": "success_title", "label": "Success Page Title", "default": "Payment Setup Complete"},
+            {"key": "success_message", "label": "Success Page Message", "default": "Your Direct Debit has been set up successfully. You will receive a confirmation email shortly."},
+            {"key": "success_button_text", "label": "Button Text", "default": "Return to Dashboard"},
+        ],
     },
     "gocardless_sandbox": {
         "name": "GoCardless (Sandbox)",
         "category": "payments",
-        "is_api_key": True,
-        "is_zoho": False,
-        "description": "Test Direct Debit payments in GoCardless Sandbox",
-        "api_key_setting": "gocardless_sandbox_access_token",
-        "api_key_label": "Sandbox Access Token",
-        "api_key_hint": "From GoCardless Sandbox Dashboard",
+        "is_credential": True,
+        "description": "Test Direct Debit payments in sandbox mode",
+        "fields": [
+            {"key": "access_token", "label": "Sandbox Access Token", "hint": "From GoCardless Sandbox Dashboard", "secret": True, "required": True},
+        ],
+        "validate_url": "https://api-sandbox.gocardless.com/creditors",
+    },
+    
+    # ===== EMAIL PROVIDERS =====
+    "zoho_mail": {
+        "name": "Zoho Mail",
+        "category": "email",
+        "is_credential": True,
+        "is_zoho": True,
+        "description": "Send transactional emails via Zoho Mail",
+        "fields": [
+            {"key": "client_id", "label": "Client ID", "hint": "From Zoho API Console", "secret": False, "required": True},
+            {"key": "client_secret", "label": "Client Secret", "hint": "From Zoho API Console", "secret": True, "required": True},
+            {"key": "refresh_token", "label": "Refresh Token", "hint": "Generated after OAuth authorization", "secret": True, "required": True},
+            {"key": "account_id", "label": "Account ID", "hint": "Your Zoho Mail account ID", "secret": False, "required": True},
+        ],
+        "settings": [
+            {"key": "from_email", "label": "From Email Address", "default": ""},
+            {"key": "from_name", "label": "From Name", "default": ""},
+        ],
     },
     "resend": {
         "name": "Resend",
         "category": "email",
-        "is_api_key": True,
-        "is_zoho": False,
+        "is_credential": True,
         "description": "Send transactional emails via Resend",
-        "api_key_setting": "resend_api_key",
-        "api_key_label": "API Key",
-        "api_key_hint": "From resend.com/api-keys",
+        "fields": [
+            {"key": "api_key", "label": "API Key", "hint": "From resend.com/api-keys", "secret": True, "required": True},
+        ],
+        "validate_url": "https://api.resend.com/domains",
+        "settings": [
+            {"key": "from_email", "label": "From Email Address", "default": "onboarding@resend.dev"},
+            {"key": "from_name", "label": "From Name", "default": ""},
+        ],
+    },
+    
+    # ===== CRM PROVIDERS =====
+    "zoho_crm": {
+        "name": "Zoho CRM",
+        "category": "crm",
+        "is_credential": True,
+        "is_zoho": True,
+        "description": "Sync customers, orders, and subscriptions with Zoho CRM",
+        "fields": [
+            {"key": "client_id", "label": "Client ID", "hint": "From Zoho API Console", "secret": False, "required": True},
+            {"key": "client_secret", "label": "Client Secret", "hint": "From Zoho API Console", "secret": True, "required": True},
+            {"key": "refresh_token", "label": "Refresh Token", "hint": "Generated after OAuth authorization", "secret": True, "required": True},
+        ],
+    },
+    
+    # ===== ACCOUNTING PROVIDERS =====
+    "zoho_books": {
+        "name": "Zoho Books",
+        "category": "accounting",
+        "is_credential": True,
+        "is_zoho": True,
+        "description": "Sync invoices, payments, and financial data with Zoho Books",
+        "fields": [
+            {"key": "client_id", "label": "Client ID", "hint": "From Zoho API Console", "secret": False, "required": True},
+            {"key": "client_secret", "label": "Client Secret", "hint": "From Zoho API Console", "secret": True, "required": True},
+            {"key": "refresh_token", "label": "Refresh Token", "hint": "Generated after OAuth authorization", "secret": True, "required": True},
+            {"key": "organization_id", "label": "Organization ID", "hint": "Your Zoho Books organization ID", "secret": False, "required": True},
+        ],
+    },
+    
+    # ===== COMING SOON =====
+    "hubspot": {
+        "name": "HubSpot",
+        "category": "crm",
+        "is_coming_soon": True,
+        "description": "Sync contacts and deals with HubSpot CRM",
+    },
+    "salesforce": {
+        "name": "Salesforce",
+        "category": "crm",
+        "is_coming_soon": True,
+        "description": "Enterprise CRM integration with Salesforce",
+    },
+    "quickbooks": {
+        "name": "QuickBooks",
+        "category": "accounting",
+        "is_coming_soon": True,
+        "description": "Sync invoices and payments with QuickBooks",
+    },
+    "gmail": {
+        "name": "Gmail",
+        "category": "email",
+        "is_coming_soon": True,
+        "description": "Send emails via Gmail SMTP or API",
+    },
+    "outlook": {
+        "name": "Microsoft Outlook",
+        "category": "email",
+        "is_coming_soon": True,
+        "description": "Send emails via Microsoft Graph API",
     },
 }
 
