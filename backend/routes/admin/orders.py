@@ -498,7 +498,8 @@ async def refund_order(
         "refund_id": refund_result["refund_id"],
         "amount": refund_amount_cents / 100,
         "provider": payload.provider,
-        "provider_refund_id": provider_refund_id
+        "provider_refund_id": provider_refund_id,
+        "provider_response": provider_response
     }
 
 
