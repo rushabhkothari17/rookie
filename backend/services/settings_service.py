@@ -21,7 +21,6 @@ from db.session import db
 
 SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
     # ---- Payments ----
-    {
     # Note: Payment provider credentials (Stripe keys, GoCardless tokens) are now managed 
     # via Connected Services (oauth_connections collection). Only general business settings remain here.
     {
