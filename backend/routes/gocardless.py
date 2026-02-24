@@ -90,17 +90,36 @@ async def complete_gocardless_redirect(
             gc_token=gc_token, gc_env=gc_env,
         )
         if not redirect_flow:
-            await create_audit_log(
-                entity_type="system",
-                entity_id=payload.order_id or payload.subscription_id or "unknown",
-                action="gocardless_redirect_failed",
-                actor="system",
-                details={"error": "Failed to complete redirect flow", "redirect_flow_id": payload.redirect_flow_id},
-            )
-            raise HTTPException(
-                status_code=400,
-                detail="Failed to complete the Direct Debit setup. The payment link may have expired or been used already. Please return to checkout and try again.",
-            )
+            # Redirect flow may have already been completed (e.g. user refreshed callback page).
+            # Check if we stored the mandate_id from a previous attempt and retry payment creation.
+            stored_mandate_id = None
+            stored_scheme = "bacs"
+            if payload.order_id:
+                existing = await db.orders.find_one({"id": payload.order_id}, {"_id": 0, "gocardless_mandate_id": 1, "gocardless_scheme": 1})
+                if existing:
+                    stored_mandate_id = existing.get("gocardless_mandate_id")
+                    stored_scheme = existing.get("gocardless_scheme", "bacs")
+            if payload.subscription_id and not stored_mandate_id:
+                existing = await db.subscriptions.find_one({"id": payload.subscription_id}, {"_id": 0, "gocardless_mandate_id": 1, "gocardless_scheme": 1})
+                if existing:
+                    stored_mandate_id = existing.get("gocardless_mandate_id")
+                    stored_scheme = existing.get("gocardless_scheme", "bacs")
+
+            if stored_mandate_id:
+                # We have a mandate from a previous attempt — fall through with it
+                redirect_flow = {"links": {"mandate": stored_mandate_id}, "scheme": stored_scheme}
+            else:
+                await create_audit_log(
+                    entity_type="system",
+                    entity_id=payload.order_id or payload.subscription_id or "unknown",
+                    action="gocardless_redirect_failed",
+                    actor="system",
+                    details={"error": "Failed to complete redirect flow", "redirect_flow_id": payload.redirect_flow_id},
+                )
+                raise HTTPException(
+                    status_code=400,
+                    detail="Failed to complete the Direct Debit setup. The payment link may have expired or been used already. Please return to checkout and try again.",
+                )
 
         mandate_id = redirect_flow.get("links", {}).get("mandate")
         if not mandate_id:
