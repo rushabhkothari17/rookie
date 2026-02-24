@@ -805,6 +805,7 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
         "created_at": now,
     })
 
+    await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="partner_registered", actor=admin_email, details={"name": name, "code": code, "admin_email": admin_email})
     return {
         "message": "Partner organization created successfully. You can now log in.",
         "tenant_name": name,
