@@ -723,7 +723,12 @@ export function IntegrationsOverview() {
 
                   {/* Credentials Form */}
                   <div className="p-6 space-y-4">
-                    <h4 className="text-sm font-semibold text-slate-700">Credentials</h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-slate-700">Credentials</h4>
+                      {selectedIntegration.status !== "not_connected" && (
+                        <span className="text-[11px] text-slate-400 italic">Leave blank to keep existing values</span>
+                      )}
+                    </div>
                     
                     {/* Zoho Data Center */}
                     {selectedIntegration.is_zoho && (
