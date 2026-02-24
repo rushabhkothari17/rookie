@@ -9,12 +9,51 @@ const formatTag = (product: any) => {
   return "Project based";
 };
 
-const formatPrice = (product: any) => {
+const fmt = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+
+/** Derive a minimum starting price from pricing_rules for complex pricing types. */
+const getStartingPrice = (product: any): number | null => {
+  const { pricing_type, pricing_rules = {} } = product;
+  if (pricing_type === "tiered") {
+    const prices = (pricing_rules.variants || [])
+      .map((v: any) => parseFloat(v.price) || 0)
+      .filter((p: number) => p > 0);
+    return prices.length > 0 ? Math.min(...prices) : null;
+  }
+  if (pricing_type === "calculator") {
+    const ct = pricing_rules.calc_type;
+    if (ct === "health_check") return parseFloat(pricing_rules.base_price) || null;
+    if (ct === "hours_pack") {
+      const minHours = parseInt(pricing_rules.min_hours) || 10;
+      const rate = parseFloat(pricing_rules.pay_now_rate) || 75;
+      return minHours * rate;
+    }
+    if (ct === "bookkeeping") return 249;
+    if (ct === "mailboxes") return parseFloat(pricing_rules.rate) || null;
+    if (ct === "storage_blocks") return parseFloat(pricing_rules.rate) || null;
+    if (ct === "crm_migration") return (parseFloat(pricing_rules.base_fee) || 499) + 250;
+    if (ct === "desk_migration") return 499;
+    if (ct === "sign_migration") return 99;
+    if (ct === "people_migration") return parseFloat(pricing_rules.base_fee) || 999;
+  }
+  return null;
+};
+
+const formatPrice = (product: any): string | null => {
   const price = product.base_price;
-  if (!price && price !== 0) return null;
+  // Explicit $0 → Contact us
   if (price === 0) return "Contact us";
-  const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(price);
-  return product.is_subscription ? `${formatted}/mo` : `from ${formatted}`;
+  // Has a direct base price
+  if (price != null && price > 0) {
+    return product.is_subscription ? `${fmt(price)}/mo` : `from ${fmt(price)}`;
+  }
+  // Complex pricing — try to derive a starting price
+  const startingPrice = getStartingPrice(product);
+  if (startingPrice !== null && startingPrice > 0) {
+    return `Starts from ${fmt(startingPrice)}`;
+  }
+  return null;
 };
 
 export default function OfferingCard({ product }: { product: any }) {
