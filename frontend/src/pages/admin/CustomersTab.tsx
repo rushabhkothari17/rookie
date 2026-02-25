@@ -192,7 +192,9 @@ export function CustomersTab() {
             <TableRow className="bg-slate-50">
               <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>State/Province</TableHead>
               <TableHead>Country</TableHead><TableHead>Currency</TableHead><TableHead>Status</TableHead>
-              <TableHead>Payment Methods</TableHead><TableHead>Partner Map</TableHead><TableHead>Actions</TableHead>
+              <TableHead>Payment Methods</TableHead><TableHead>Partner Map</TableHead>
+              {isPlatformAdmin && <TableHead>Partner</TableHead>}
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
