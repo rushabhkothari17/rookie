@@ -14,7 +14,7 @@ import { useWebsite } from "@/contexts/WebsiteContext";
 import AppShell from "@/components/AppShell";
 import { displayCategory } from "@/lib/categories";
 import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
-import { ProductLayout, evaluateVisibilityRule, getEnabledIntakeQuestions } from "./store/layouts";
+import { ProductLayout, evaluateVisibilityRule, getEnabledIntakeQuestions } from "@/pages/store/layouts";
 
 // ── Dynamic form field renderer ─────────────────────────────
 function DynamicField({ field, value, onChange }: {
