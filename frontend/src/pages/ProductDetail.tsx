@@ -57,6 +57,22 @@ function DynamicField({ field, value, onChange }: {
 const QUOTE_STD = ["name", "email", "company", "phone", "message"];
 const SCOPE_STD = ["project_summary", "desired_outcomes", "apps_involved", "timeline_urgency", "budget_range", "additional_notes"];
 
+// ── Visibility rule evaluation ───────────────────────────────
+function evaluateVisibilityRule(rule: any, answers: Record<string, any>): boolean {
+  if (!rule) return true;
+  const { depends_on, operator, value } = rule;
+  const answer = answers[depends_on];
+  switch (operator) {
+    case "equals": return String(answer ?? "") === String(value ?? "");
+    case "not_equals": return String(answer ?? "") !== String(value ?? "");
+    case "greater_than": return parseFloat(answer) > parseFloat(value);
+    case "less_than": return parseFloat(answer) < parseFloat(value);
+    case "contains": return Array.isArray(answer) ? answer.includes(value) : String(answer ?? "").includes(value);
+    case "not_empty": return !!answer && answer !== "" && !(Array.isArray(answer) && answer.length === 0);
+    default: return true;
+  }
+}
+
 // ── Intake helpers ──────────────────────────────────────────
 function getEnabledIntakeQuestions(schema: any): any[] {
   if (!schema?.questions) return [];
