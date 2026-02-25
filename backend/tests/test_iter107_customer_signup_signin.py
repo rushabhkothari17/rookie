@@ -404,12 +404,12 @@ class TestCustomerSignup:
         assert resp.status_code == 200, f"Cross-tenant same email should be allowed: {resp.text}"
 
     def test_signup_audit_log_created(self, tenant_a_info, mongo_db):
-        """USER_REGISTERED audit log is created after signup"""
-        log = mongo_db.audit_logs.find_one({
+        """USER_REGISTERED audit log is created after signup (stored in audit_trail collection)"""
+        log = mongo_db.audit_trail.find_one({
             "action": "USER_REGISTERED",
             "actor_email": CUST_EMAIL.lower(),
         })
-        assert log is not None, "USER_REGISTERED audit log not found"
+        assert log is not None, "USER_REGISTERED audit log not found in audit_trail collection"
 
 
 # ===========================================================================
