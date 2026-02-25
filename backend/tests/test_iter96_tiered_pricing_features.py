@@ -17,12 +17,22 @@ BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
 def get_admin_token():
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+    # Use partner-login for tenant-scoped access
+    resp = requests.post(f"{BASE_URL}/api/auth/partner-login", json={
         "email": "admin@automateaccounts.local",
         "password": "ChangeMe123!",
+        "partner_code": "automate-accounts",
     })
     if resp.status_code == 200:
         data = resp.json()
+        return data.get("access_token") or data.get("token")
+    # Fallback to regular login
+    resp2 = requests.post(f"{BASE_URL}/api/auth/login", json={
+        "email": "admin@automateaccounts.local",
+        "password": "ChangeMe123!",
+    })
+    if resp2.status_code == 200:
+        data = resp2.json()
         return data.get("access_token") or data.get("token")
     return None
 
