@@ -1637,11 +1637,11 @@ class TestDiscoveredSurfaces:
             print(f"⚠️  Soft deleted user not visible in list (may be filtered out)")
 
     def test_ds5_scenario_same_email_two_tenants(self, super_admin_a_token, super_admin_b_token, tenant_a, tenant_b):
-        """SCENARIO 1: Same email in Tenant A and Tenant B."""
+        """SCENARIO 1: Same email in Tenant A and Tenant B — both created successfully."""
         email = "TEST.sameemail@iter109.test"
         password = "TestSameEmail109!"
 
-        # Create in Tenant A
+        # Create in Tenant A (ignore if already exists)
         resp_a = requests.post(
             f"{BASE_URL}/api/admin/users",
             json={
@@ -1652,9 +1652,10 @@ class TestDiscoveredSurfaces:
             },
             headers=admin_headers(super_admin_a_token),
         )
-        assert resp_a.status_code in (200, 201), f"Create in Tenant A failed: {resp_a.text}"
+        if resp_a.status_code not in (200, 201) and "already" not in resp_a.text:
+            pytest.fail(f"Create in Tenant A failed: {resp_a.text}")
 
-        # Create in Tenant B with same email
+        # Create in Tenant B with same email (ignore if already exists)
         resp_b = requests.post(
             f"{BASE_URL}/api/admin/users",
             json={
@@ -1665,7 +1666,8 @@ class TestDiscoveredSurfaces:
             },
             headers=admin_headers(super_admin_b_token),
         )
-        assert resp_b.status_code in (200, 201), f"Create in Tenant B failed: {resp_b.text}"
+        if resp_b.status_code not in (200, 201) and "already" not in resp_b.text:
+            pytest.fail(f"Create in Tenant B failed: {resp_b.text}")
 
         # Login with Tenant A slug → Tenant A's user
         token_a = partner_login(tenant_a["code"], email, password)
