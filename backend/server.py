@@ -100,10 +100,12 @@ from routes.admin.website import router as admin_website_router
 from routes.uploads import router as uploads_router
 from routes.admin.references import router as references_router
 from routes.admin.email_templates import router as email_templates_router
-from routes.articles import router as articles_router
-from routes.article_templates import router as article_templates_router
-from routes.article_email_templates import router as article_email_templates_router
-from routes.article_categories import router as article_categories_router
+from routes.resources import router as resources_router
+from routes.resource_templates import router as resource_templates_router
+from routes.resource_email_templates import router as resource_email_templates_router
+from routes.resource_categories import router as resource_categories_router
+# Legacy compatibility aliases (redirect /api/articles → /api/resources)
+from routes.articles import router as articles_router  # kept for old API clients
 from routes.admin.tenants import router as tenants_admin_router
 from routes.admin.payment_validate import router as payment_validate_router
 from routes.admin.imports import router as imports_admin_router
