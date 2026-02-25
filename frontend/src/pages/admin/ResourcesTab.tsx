@@ -496,6 +496,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
                 <TableCell className="text-xs text-slate-600">
                   {a.visibility === "all" || !a.restricted_to?.length ? "All" : `${a.restricted_to.length} customer(s)`}
                 </TableCell>
+                {isPlatformAdmin && <TableCell className="text-xs text-slate-500">{a.partner_code || "—"}</TableCell>}
                 <TableCell>
                   <div className="flex gap-1 flex-wrap">
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px] gap-1" onClick={() => openEdit(a)} data-testid={`resource-edit-${a.id}`}>
