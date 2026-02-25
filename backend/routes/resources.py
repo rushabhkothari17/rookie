@@ -108,9 +108,10 @@ async def list_articles_public(
     x_view_as_customer: Optional[str] = Header(default=None, alias="X-View-As-Customer"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    # Public articles listing: intentionally ignores X-View-As-Tenant so admin
-    # impersonation does not bleed into the public-facing page.
-    if user and user.get("tenant_id"):
+    # Public resources listing: platform admin sees ALL resources (no tenant filter)
+    if user and is_platform_admin(user):
+        tid = None  # no filter — show all
+    elif user and user.get("tenant_id"):
         tid = user["tenant_id"]
     elif api_key_tid:
         tid = api_key_tid
@@ -124,7 +125,9 @@ async def list_articles_public(
         customer_id = customer["id"] if customer else None
     else:
         customer_id = None
-    query: Dict[str, Any] = {"tenant_id": tid, "deleted_at": {"$exists": False}}
+    query: Dict[str, Any] = {"deleted_at": {"$exists": False}}
+    if tid:
+        query["tenant_id"] = tid
     if category:
         query["category"] = category
     articles = await db.resources.find(query, {"_id": 0, "content": 0}).sort("updated_at", -1).to_list(500)
