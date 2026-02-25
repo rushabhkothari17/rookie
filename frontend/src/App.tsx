@@ -112,6 +112,22 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/admin/products/new"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <ProductEditor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/products/:id/edit"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <ProductEditor />
+                    </ProtectedRoute>
+                  }
+                />
               </Route>
             </Route>
             <Route path="*" element={<BaseLayout />}>
