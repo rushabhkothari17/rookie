@@ -250,7 +250,19 @@ export default function Login() {
 
           {/* Partner identity */}
           <div className="relative z-10 flex items-center gap-2.5">
-            {partnerInfo?.logo_url ? (
+            {partnerInfo?.is_platform ? (
+              <div
+                className="h-8 w-8 rounded-lg flex items-center justify-center"
+                style={{ background: lightBg ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.2)" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="8" height="8" rx="1.5" fill={panelText} fillOpacity="0.9"/>
+                  <rect x="13" y="3" width="8" height="8" rx="1.5" fill={panelText} fillOpacity="0.5"/>
+                  <rect x="3" y="13" width="8" height="8" rx="1.5" fill={panelText} fillOpacity="0.5"/>
+                  <rect x="13" y="13" width="8" height="8" rx="1.5" fill={panelText} fillOpacity="0.9"/>
+                </svg>
+              </div>
+            ) : partnerInfo?.logo_url ? (
               <img src={partnerInfo.logo_url} alt={partnerInfo.name} className="h-7 object-contain" />
             ) : (
               <div
@@ -260,7 +272,9 @@ export default function Login() {
                 {partnerInfo?.name?.[0] || "P"}
               </div>
             )}
-            <span className="text-sm font-semibold" style={{ color: panelText }}>{partnerInfo?.name}</span>
+            <span className="text-sm font-semibold" style={{ color: panelText }}>
+              {partnerInfo?.is_platform ? "Platform Administration" : partnerInfo?.name}
+            </span>
           </div>
 
           {/* Large decorative initial */}
@@ -268,7 +282,7 @@ export default function Login() {
             className="relative z-10 text-[7rem] font-black leading-none select-none"
             style={{ color: lightBg ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.08)" }}
           >
-            {partnerInfo?.name?.[0] || "P"}
+            {partnerInfo?.is_platform ? "⌘" : (partnerInfo?.name?.[0] || "P")}
           </div>
 
           {/* Code label at very bottom */}
