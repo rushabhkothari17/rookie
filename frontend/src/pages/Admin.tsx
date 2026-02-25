@@ -86,6 +86,7 @@ export default function Admin() {
               <TabsTrigger value="users" data-testid="admin-tab-users" className={TAB_CLASS}>Users</TabsTrigger>
             )}
             <TabsTrigger value="customers" data-testid="admin-tab-customers" className={TAB_CLASS}>Customers</TabsTrigger>
+            <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
 
             {/* Commerce */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
@@ -98,8 +99,6 @@ export default function Admin() {
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
             <TabsTrigger value="articles" data-testid="admin-tab-articles" className={TAB_CLASS}>Articles</TabsTrigger>
             <TabsTrigger value="override-codes" data-testid="admin-tab-override-codes" className={TAB_CLASS}>Override Codes</TabsTrigger>
-            <TabsTrigger value="categories" data-testid="admin-tab-categories" className={TAB_CLASS}>Categories</TabsTrigger>
-            <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
             <TabsTrigger value="terms" data-testid="admin-tab-terms" className={TAB_CLASS}>Terms</TabsTrigger>
 
             {/* Website & Settings */}
