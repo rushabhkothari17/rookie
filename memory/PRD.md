@@ -115,22 +115,53 @@ E-commerce platform for professional services with:
 1. ✅ **P2 Recurring Bug Fixed (3rd+ time, now closed):** "Edit Article" button was visible to `partner_super_admin` because `user?.is_admin` is `true` for all admin roles. Changed to `user?.role === 'platform_admin'` in `ArticleView.tsx` line 14. Verified: platform_admin sees button ✓, partner_super_admin does NOT see button ✓.
 2. ✅ **Duplicate tenant `automate-accs` deleted:** Removed tenant (id: `3e50877e-...`) + 1 user, 1 product, 1 category, 1 article, 1 website_settings, 1 terms doc, 1 email template. Original `automate-accounts` intact.
 
+## Completed in Latest Session (2026-03-[current]) — Security Audit & Hardening
+
+### Security Audit Results (All 10 checks PASS)
+1. ✅ Platform admin login via legacy endpoint (no partner_code) works correctly
+2. ✅ `partner_login` with `automate-accounts` code is BLOCKED (403) — hardcoded guard added
+3. ✅ `customer_login` with `automate-accounts` code is BLOCKED (403)
+4. ✅ Customer `register` with `automate-accounts` partner_code is BLOCKED (403)
+5. ✅ Create tenant with `automate-accounts` code is BLOCKED (400) — explicit hardcoded guard added
+6. ✅ Create partner admin user under platform tenant is BLOCKED (403) — `is_platform` check added
+7. ✅ Platform admin can list ALL tenants (unrestricted access)
+8. ✅ Platform admin has unrestricted customer access across all tenants
+9. ✅ Platform admin has unrestricted order access across all tenants
+10. ✅ Unauthenticated access to admin endpoints is blocked
+
+### Security Code Changes Made
+- `backend/routes/auth.py` — `partner_login`: Added explicit block for `automate-accounts` code
+- `backend/routes/auth.py` — `register_partner`: Hardcoded check added (loop also skips reserved code)
+- `backend/routes/admin/tenants.py` — `create_tenant`: Hardcoded block for `automate-accounts` code
+- `backend/routes/admin/tenants.py` — `create_partner_admin`: Block creating users under platform tenant
+- `backend/server.py` — `seed_admin_user()`: Added `role: "platform_admin"` and `tenant_id: None` to ensure correct role on new deployments
+
+### Access Control Architecture (Confirmed Secure)
+- `platform_admin` role: Bypasses all tenant filters → sees ALL data
+- `partner_super_admin/admin/staff`: Strictly scoped to their `tenant_id`
+- `platform_admin` check: Via `is_platform_admin()` function (role == "platform_admin")
+- `X-View-As-Tenant` header: Only honored for `platform_admin` role
+- Admin endpoints: Use `get_tenant_admin` → `require_admin` + tenant scoping
+- Tenant management: Uses `require_platform_admin` — strictly `platform_admin` only
+- `platform_admin` role: Cannot be assigned via admin API (excluded from allowed_roles in user CRUD)
+
 ## Pending Tasks (P1)
-1. Fix "Edit Article" button visibility for non-admin users (recurring bug)
+- None
 
 ## Future Tasks (P2)
-- Security audit
 - Centralized email integration settings
 - Credential forms for "Coming Soon" integrations
+- Formal penetration testing
 
 ## Test Credentials
-- Admin: `admin@automateaccounts.local` / `ChangeMe123!`
-- Partner Code: `automate-accounts`
+- Platform Admin: `admin@automateaccounts.local` / `ChangeMe123!`
+- Platform Admin Code: `automate-accounts` (reserved — only for platform admin login, NOT partner_login)
+- Login path for platform admin: `POST /api/auth/login` without `partner_code`
 
 ## Test Reports
-- `/app/test_reports/iteration_99.json` - Sidebar restructure tests (100% pass)
-- `/app/test_reports/iteration_100.json` - Cart redesign tests (100% pass)
-- `/app/test_reports/iteration_101.json` - Admin UI restructuring tests (100% pass)
+- `/app/test_reports/iteration_99.json` — Sidebar restructure tests (100% pass)
+- `/app/test_reports/iteration_100.json` — Cart redesign tests (100% pass)
+- `/app/test_reports/iteration_101.json` — Admin UI restructuring tests (100% pass)
 
 ---
-*Last Updated: 2026-02-25*
+*Last Updated: 2026-03-[current]*
