@@ -1,0 +1,107 @@
+{
+  "summary": "Comprehensive testing of pricing refactor features. Backend: 18/18 tests passed (100%). Frontend: All key features verified via Playwright. Admin product form new fields, all pricing types, VariantEditor/PriceInputsEditor, store pricing labels, product detail variant selector, and prod_migrate_books removal all confirmed working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "OfferingCard - catalog store card",
+        "issues": [
+          "card_description DOES NOT override short_description on catalog card. OfferingCard.tsx line 77 uses `product.short_description || product.card_description` - short_description takes priority over card_description. Admin intent is for card_description to override. Fix: swap order to `product.card_description || product.short_description || product.tagline`",
+          "card_tag DOES NOT override tag on catalog card. formatTag() in OfferingCard.tsx checks `product.tag` before `product.card_tag`. Fix: check card_tag first: `if (product.card_tag) return product.card_tag; if (product.tag) return product.tag;`",
+          "Fixed-price products show 'from $X' label instead of '$X'. Test spec expected '$X' for fixed pricing. Minor cosmetic issue. Current label is 'from $X' for non-subscription, '$X/mo' for subscription."
+        ]
+      }
+    ]
+  },
+  "passed_tests": [
+    "Backend: Admin login works with admin@automateaccounts.local / ChangeMe123!",
+    "Backend: prod_migrate_books product does NOT exist",
+    "Backend: Create fixed product with all new fields (card_title, tagline, card_tag, card_description, card_bullets) - all persisted correctly",
+    "Backend: Create tiered product with variants [Starter=$99, Professional=$299] - pricing_rules.variants stored correctly",
+    "Backend: Tiered product builds price_inputs automatically for frontend",
+    "Backend: Create calculator product with price_inputs (number and select inputs)",
+    "Backend: Calculator number input stores min, default, price_per_unit correctly",
+    "Backend: Create scope_request, inquiry, external pricing types all work",
+    "Backend: Update product with new fields (card_title, tagline, pricing_type, variants) persists correctly",
+    "Backend: Public products endpoint returns products",
+    "Backend: prod_migrate_books NOT visible on public store",
+    "Backend: Price calculation for tiered (basic variant=$99) works via /api/products/{id}/calculate-price",
+    "Backend: Price calculation for calculator (100 base + 3 users × 50 = $250) works",
+    "Frontend: Admin login redirects to /admin",
+    "Frontend: Catalog tab loads 65+ products",
+    "Frontend: New Product dialog opens via '+ New Product' button",
+    "Frontend: All 4 tabs present: General, Pricing, Intake Questions, Page Content",
+    "Frontend: General tab has tagline, card_title, card_tag, card_description fields with data-testid",
+    "Frontend: Pricing tab has Pricing Type dropdown with all 6 options: fixed, tiered, calculator, scope_request, inquiry, external",
+    "Frontend: Selecting 'Tiered' shows VariantEditor with 'Add variant' button",
+    "Frontend: VariantEditor allows adding variants with label and price",
+    "Frontend: Selecting 'Calculator' shows PriceInputsEditor with 'Number' and 'Select' buttons",
+    "Frontend: Calculator also shows Base Price (starting/minimum) field",
+    "Frontend: PriceInputsEditor number input has min, max, step, default, $ per unit fields",
+    "Frontend: PriceInputsEditor select input has option label, multiplier, flat, RFQ fields",
+    "Frontend: Creating product (tiered with 2 variants) via UI shows 'Product created' success toast",
+    "Frontend: Dialog closes after successful save",
+    "Frontend: Store CRM category shows TEST_Tiered_Product with 'Starts from $99' (cheapest variant)",
+    "Frontend: Store CRM category shows TEST_Calculator_Product with 'Starts from $225' (base=100 + 5×25)",
+    "Frontend: Store CRM category shows TEST_Calculator_StartPrice with 'Starts from $300' (base=200 + 2×50)",
+    "Frontend: Store CRM category shows TEST_ScopeRequest_Product with 'Contact us'",
+    "Frontend: Fixed product (Test Card Title, $299) shows 'from $299' on store card",
+    "Frontend: card_title override 'Test Card Title' shown on store card (instead of product.name)",
+    "Frontend: card_bullets ['Bullet A', 'Bullet B', 'Bullet C'] shown on store card",
+    "Frontend: Zoho Books Express Setup shows 'Starts from $999' on store (tiered pricing with variants)",
+    "Frontend: Zoho Books product detail page has variant selector 'Select option' dropdown",
+    "Frontend: Product detail page has 'Add to cart' button",
+    "Frontend: No BooksMigrationForm component in product detail page source or DOM",
+    "Frontend: No 'Migrate to Zoho Books Migration Form' text in page source"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_iter94_pricing_refactor.py",
+    "/app/test_reports/pytest/pytest_iter94_pricing_refactor.xml"
+  ],
+  "action_items": [
+    "MINOR: Fix OfferingCard.tsx line 77 - swap order to use card_description as primary override: `product.card_description || product.short_description || product.tagline`",
+    "MINOR: Fix OfferingCard.tsx formatTag() - check card_tag before tag for proper override behavior: `if (product.card_tag) return product.card_tag; if (product.tag) return product.tag;`",
+    "COSMETIC: Decide if fixed-price label should be '$X' (as spec says) or 'from $X' (current implementation)"
+  ],
+  "critical_code_review_comments": [
+    "OfferingCard.tsx line 77: `const description = product.short_description || product.card_description || product.tagline;` - card_description is an 'override' field but is currently used as fallback, not override. Should be: `product.card_description || product.short_description || product.tagline`",
+    "OfferingCard.tsx formatTag: card_tag should take priority over tag (it's the catalog card override), but current order is tag > card_tag"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter94_pricing_refactor.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "95% (all core features verified; 2 minor card override field ordering issues)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "Backend tests created TEST_ prefixed products in CRM/Finance categories: TEST_Fixed_Product_Refactor, TEST_Fixed_Persistence, TEST_Tiered_Product, TEST_Tiered_StartPrice, TEST_Calculator_Product, TEST_Calculator_StartPrice, TEST_ScopeRequest_Product, TEST_Inquiry_Product, TEST_External_Product, TEST_Update_Base, TEST_Store_Fixed. UI test created 'UI Test Tiered Product'.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Pricing refactor fully tested and working. Key features all pass: (1) Admin product form has 4 tabs (General/Pricing/Intake Questions/Page Content), tagline/card_title/card_tag/card_description/card_bullets fields in General tab; (2) Pricing tab has 6 pricing types with conditional UI (VariantEditor for tiered, PriceInputsEditor for calculator); (3) Store shows correct labels: 'Starts from $X' for tiered/calculator, 'from $X' for fixed, 'Contact us' for inquiry/scope_request; (4) prod_migrate_books deleted; (5) No BooksMigrationForm on product detail. Minor issue: card_description and card_tag don't actually override their counterparts in OfferingCard (ordering bug). Test products with TEST_ prefix exist in CRM and Finance categories.",
+  "rca_of_issues": {
+    "card_description_override_bug": {
+      "file": "/app/frontend/src/components/OfferingCard.tsx",
+      "line": 77,
+      "current": "const description = product.short_description || product.card_description || product.tagline;",
+      "fix": "const description = product.card_description || product.short_description || product.tagline;",
+      "impact": "Admin-set card_description is never shown if short_description is set - the override has no effect"
+    },
+    "card_tag_override_bug": {
+      "file": "/app/frontend/src/components/OfferingCard.tsx",
+      "line": "formatTag function lines 5-10",
+      "current": "if (product.tag) return product.tag; if (product.card_tag) return product.card_tag;",
+      "fix": "if (product.card_tag) return product.card_tag; if (product.tag) return product.tag;",
+      "impact": "Admin-set card_tag is never shown if tag is set - the override has no effect"
+    }
+  }
+}
