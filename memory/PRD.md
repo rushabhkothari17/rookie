@@ -111,8 +111,11 @@ E-commerce platform for professional services with:
 4. ✅ Product editing fixed (API endpoint corrected)
 5. ✅ Cart spacing increased
 
-## Completed in Latest Session (2026-02-26)
-1. ✅ **P0 Bug Fixed - Public store/articles data visibility**: When platform admin had TenantSwitcher set to Tenant B, the `X-View-As-Tenant` header bled into public store API calls, returning 0 products/articles (Tenant B has none). Fix: Added `_resolve_store_tenant_id()` in `store.py` that intentionally ignores `X-View-As-Tenant` — public listing endpoints now always use the user's own `tenant_id` (or DEFAULT_TENANT_ID for platform admin). Platform admin now consistently sees 75 products/9 articles regardless of TenantSwitcher state. Each tenant sees only their own data (no cross-tenant leakage). Fixed in: `get_categories`, `get_products`, `get_product`, `pricing_calc` in `store.py` and `list_articles_public` in `articles.py`.
+## Completed in Latest Session (2026-02-26) — Auth Gateway
+1. ✅ **Auth Gateway Flow**: `/login` is now a two-step gateway. Step 1: neutral platform screen (no partner branding), enter partner code → validate against `/api/tenant-info`. Step 2: partner branding applied (logo, colors, store name), shows sign in form. Partner code persists in `localStorage` as `aa_partner_code`.
+2. ✅ **Signup + ForgotPassword protected**: Both pages now read `aa_partner_code` from localStorage. If missing, they redirect to `/login` (the gateway). Partner code field removed from both forms. Partner badge shown with "Change" link.
+3. ✅ **Dynamic branding**: `applyPartnerBranding(code)` exported from `WebsiteContext` fetches & applies partner CSS variables on-the-fly. `WebsiteContext` also auto-loads partner branding on mount if code is stored.
+4. ✅ **All 11/11 frontend tests passed** by testing agent.
 
 ## Pending Tasks (P1)
 1. Fix "Edit Article" button visibility for non-admin users (recurring bug)
