@@ -153,11 +153,17 @@ export default function Admin() {
           <TabsContent value="catalog" className="space-y-4">
             <ProductsTab />
           </TabsContent>
-          <TabsContent value="terms" className="space-y-4">
-            <TermsTab />
+          <TabsContent value="email-templates" className="space-y-4">
+            <EmailTemplatesTab />
+          </TabsContent>
+          <TabsContent value="references" className="space-y-4">
+            <ReferencesTab />
           </TabsContent>
           <TabsContent value="website" className="space-y-4">
             <WebsiteTab defaultSection={websiteSection as any} />
+          </TabsContent>
+          <TabsContent value="domains" className="space-y-4">
+            <CustomDomainsTab />
           </TabsContent>
           <TabsContent value="integrations" className="space-y-4">
             <IntegrationsOverview />
@@ -167,12 +173,6 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="webhooks" className="space-y-4">
             <WebhooksTab />
-          </TabsContent>
-          <TabsContent value="override-codes" className="space-y-4">
-            <OverrideCodesTab />
-          </TabsContent>
-          <TabsContent value="promo" className="space-y-4">
-            <PromoCodesTab />
           </TabsContent>
           <TabsContent value="sync" className="space-y-4">
             <LogsTab />
