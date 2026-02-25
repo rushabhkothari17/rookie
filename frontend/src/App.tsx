@@ -105,14 +105,6 @@ export default function App() {
 
                 <Route path="/portal" element={<Portal />} />
                 <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <Admin />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
                   path="/admin/products/new"
                   element={
                     <ProtectedRoute requireAdmin>
@@ -125,6 +117,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requireAdmin>
                       <ProductEditor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <Admin />
                     </ProtectedRoute>
                   }
                 />
