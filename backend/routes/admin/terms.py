@@ -109,6 +109,7 @@ async def admin_list_terms(
     total = await db.terms_and_conditions.count_documents(query)
     skip = (page - 1) * per_page
     terms = await db.terms_and_conditions.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+    terms = await enrich_partner_codes(terms, is_platform_admin(admin))
     return {"terms": terms, "page": page, "per_page": per_page, "total": total, "total_pages": max(1, (total + per_page - 1) // per_page)}
 
 

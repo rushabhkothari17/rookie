@@ -85,8 +85,9 @@ async def list_override_codes(
 
     total = len(results)
     skip = (page - 1) * per_page
+    page_results = await enrich_partner_codes(results[skip: skip + per_page], is_platform_admin(admin))
     return {
-        "override_codes": results[skip: skip + per_page],
+        "override_codes": page_results,
         "page": page,
         "per_page": per_page,
         "total": total,
