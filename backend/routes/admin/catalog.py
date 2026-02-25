@@ -121,6 +121,7 @@ async def admin_list_all_products(
     total = await db.products.count_documents(query)
     skip = (page - 1) * per_page
     products = await db.products.find(query, {"_id": 0}).skip(skip).limit(per_page).to_list(per_page)
+    products = await enrich_partner_codes(products, is_platform_admin(admin))
     return {
         "products": products,
         "page": page,
@@ -318,8 +319,9 @@ async def admin_list_categories(
         cat["product_count"] = await db.products.count_documents({**tf, "category": cat["name"]})
     total = len(cats)
     skip = (page - 1) * per_page
+    sliced = await enrich_partner_codes(cats[skip: skip + per_page], is_platform_admin(admin))
     return {
-        "categories": cats[skip: skip + per_page],
+        "categories": sliced,
         "page": page,
         "per_page": per_page,
         "total": total,
