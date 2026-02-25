@@ -242,13 +242,15 @@ async def orders_preview(
     user: Dict[str, Any] = Depends(get_current_user),
 ):
     tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    # Include both the resolved tenant and the default/global catalog
+    tenant_ids = list({tid, DEFAULT_TENANT_ID})
     # Use stripe_fee_rate from oauth_connections for card payment preview
     fee_rate = await get_stripe_fee_rate(tid)
     customer = await db.customers.find_one({"tenant_id": tid, "user_id": user["id"]}, {"_id": 0})
     customer_id = customer["id"] if customer else None
     results = []
     for item in payload.items:
-        product = await db.products.find_one({"tenant_id": tid, "id": item.product_id}, {"_id": 0})
+        product = await db.products.find_one({"tenant_id": {"$in": tenant_ids}, "id": item.product_id}, {"_id": 0})
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         pricing = calculate_price(product, item.inputs, fee_rate=fee_rate)
