@@ -238,15 +238,25 @@ export default function Signup() {
               <p className="text-sm text-slate-500 mt-1">Already have access?{" "}
                 <Link to="/login" className="font-semibold hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="signup-login-link">Sign in</Link>
               </p>
+              {/* Partner badge */}
+              {partnerCode && (
+                <div className="mt-3 flex items-center justify-between rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">
+                  <span className="text-xs text-slate-500">
+                    Partner: <span className="font-semibold text-slate-700">{partnerName || partnerCode}</span>
+                  </span>
+                  <Link
+                    to="/login"
+                    onClick={() => localStorage.removeItem("aa_partner_code")}
+                    className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
+                    data-testid="change-partner-from-signup"
+                  >
+                    <ChevronLeft size={11} /> Change
+                  </Link>
+                </div>
+              )}
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* Partner Code */}
-              <FieldWrapper label="Partner code" fullWidth>
-                <Input placeholder="e.g. automate-accounts" value={partnerCode} onChange={e => setPartnerCode(e.target.value)} required data-testid="signup-partner-code-input" />
-                <p className="text-xs text-slate-400">Provided by your service provider</p>
-              </FieldWrapper>
-
               {/* Section: Personal Info */}
               <div>
                 <div className="flex items-center gap-3 mb-4">
