@@ -106,52 +106,6 @@ export function ProductsTab() {
     navigate(`/admin/products/${p.id}/edit`);
   };
 
-  const handleSave = async () => {
-    if (!form.name.trim()) { toast.error("Product name is required"); return; }
-    setSaving(true);
-    try {
-      const payload = {
-        name: form.name,
-        tagline: form.tagline,
-        card_title: form.card_title || null,
-        card_tag: form.card_tag || null,
-        card_description: form.card_description || null,
-        card_bullets: form.card_bullets.length > 0 ? form.card_bullets : null,
-        description_long: form.description_long,
-        bullets: form.bullets.filter(b => b.trim()),
-        tag: form.tag || null,
-        category: form.category,
-        faqs: form.faqs,
-        terms_id: form.terms_id || null,
-        base_price: form.base_price,
-        is_subscription: form.is_subscription,
-        stripe_price_id: form.stripe_price_id || null,
-        price_rounding: form.price_rounding || null,
-        is_active: form.is_active,
-        visible_to_customers: form.visible_to_customers,
-        restricted_to: form.restricted_to,
-        intake_schema_json: form.intake_schema_json,
-        custom_sections: form.custom_sections,
-        pricing_type: form.pricing_type || "internal",
-        external_url: form.external_url || null,
-        display_layout: form.display_layout || "standard",
-      };
-      if (editProduct) {
-        await api.put(`/admin/products/${editProduct.id}`, payload);
-        toast.success("Product updated");
-      } else {
-        await api.post("/admin/products", payload);
-        toast.success("Product created");
-      }
-      setShowDialog(false);
-      load();
-    } catch (e: any) {
-      toast.error(e?.response?.data?.detail || "Failed to save product");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleToggleActive = async (p: any) => {
     try {
       await api.put(`/admin/products/${p.id}`, {
