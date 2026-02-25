@@ -204,37 +204,28 @@ async def admin_update_product(
     }
     if payload.short_description is not None:
         update_fields["short_description"] = payload.short_description
-        update_fields["tagline"] = payload.short_description
-    if payload.tagline is not None and not payload.short_description:
+    if payload.tagline is not None:
         update_fields["tagline"] = payload.tagline
+    elif payload.short_description is not None and not existing.get("tagline"):
+        update_fields["tagline"] = payload.short_description
+    if payload.card_title is not None:
+        update_fields["card_title"] = payload.card_title
+    if payload.card_tag is not None:
+        update_fields["card_tag"] = payload.card_tag
+    if payload.card_description is not None:
+        update_fields["card_description"] = payload.card_description
+    if payload.card_bullets is not None:
+        update_fields["card_bullets"] = payload.card_bullets
     if payload.description_long is not None:
         update_fields["description_long"] = payload.description_long
     if payload.bullets is not None:
         update_fields["bullets"] = payload.bullets
     if payload.bullets_included is not None:
         update_fields["bullets_included"] = payload.bullets_included
-    if payload.bullets_excluded is not None:
-        update_fields["bullets_excluded"] = payload.bullets_excluded
-    if payload.bullets_needed is not None:
-        update_fields["bullets_needed"] = payload.bullets_needed
     if payload.tag is not None:
         update_fields["tag"] = payload.tag
     if payload.category is not None:
         update_fields["category"] = payload.category
-    if payload.outcome is not None:
-        update_fields["outcome"] = payload.outcome
-    if payload.automation_details is not None:
-        update_fields["automation_details"] = payload.automation_details
-    if payload.support_details is not None:
-        update_fields["support_details"] = payload.support_details
-    if payload.inclusions is not None:
-        update_fields["inclusions"] = payload.inclusions
-    if payload.exclusions is not None:
-        update_fields["exclusions"] = payload.exclusions
-    if payload.requirements is not None:
-        update_fields["requirements"] = payload.requirements
-    if payload.next_steps is not None:
-        update_fields["next_steps"] = payload.next_steps
     if payload.faqs is not None:
         update_fields["faqs"] = payload.faqs
     if payload.terms_id is not None:
@@ -245,8 +236,8 @@ async def admin_update_product(
         update_fields["is_subscription"] = payload.is_subscription
     if payload.stripe_price_id is not None:
         update_fields["stripe_price_id"] = payload.stripe_price_id
-    if payload.pricing_complexity is not None:
-        update_fields["pricing_complexity"] = payload.pricing_complexity
+    if payload.pricing_type is not None:
+        update_fields["pricing_type"] = payload.pricing_type
     if payload.pricing_rules is not None:
         update_fields["pricing_rules"] = payload.pricing_rules
     if payload.visible_to_customers is not None:
