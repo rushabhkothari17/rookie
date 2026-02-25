@@ -60,18 +60,44 @@ const SCOPE_STD = ["project_summary", "desired_outcomes", "apps_involved", "time
 // ── Intake helpers ──────────────────────────────────────────
 function getEnabledIntakeQuestions(schema: any): any[] {
   if (!schema?.questions) return [];
+  const questions = schema.questions;
+
+  // New flat array format
+  if (Array.isArray(questions)) {
+    return questions
+      .filter((q: any) => q.enabled !== false)
+      .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+  }
+
+  // Legacy grouped format
   const result: any[] = [];
   for (const qtype of ["dropdown", "multiselect", "single_line", "multi_line"]) {
-    const qs = (schema.questions[qtype] || [])
+    const qs = (questions[qtype] || [])
       .filter((q: any) => q.enabled)
       .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
-    result.push(...qs.map((q: any) => ({ ...q, qtype })));
+    result.push(...qs.map((q: any) => ({ ...q, type: qtype })));
   }
   return result;
 }
 
 function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
-  if (q.qtype === "dropdown") {
+  const qtype = q.type || q.qtype;
+
+  if (qtype === "number") {
+    return (
+      <Input
+        type="number"
+        min={q.min ?? 0}
+        max={q.max}
+        step={q.step ?? 1}
+        value={value ?? (q.default_value ?? q.min ?? 0)}
+        onChange={e => onChange(parseFloat(e.target.value) || 0)}
+        placeholder={q.helper_text || "Enter a number"}
+        data-testid={`intake-${q.key}`}
+      />
+    );
+  }
+  if (qtype === "dropdown") {
     return (
       <Select value={value || ""} onValueChange={onChange}>
         <SelectTrigger data-testid={`intake-${q.key}`}>
@@ -85,7 +111,7 @@ function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
       </Select>
     );
   }
-  if (q.qtype === "multiselect") {
+  if (qtype === "multiselect") {
     const selected: string[] = Array.isArray(value) ? value : [];
     return (
       <div className="space-y-2" data-testid={`intake-${q.key}`}>
@@ -103,7 +129,7 @@ function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
       </div>
     );
   }
-  if (q.qtype === "multi_line") {
+  if (qtype === "multi_line") {
     return (
       <Textarea
         value={value || ""}
@@ -114,6 +140,7 @@ function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
       />
     );
   }
+  // single_line default
   return (
     <Input
       value={value || ""}
