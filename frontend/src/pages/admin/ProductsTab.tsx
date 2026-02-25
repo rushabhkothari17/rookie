@@ -134,6 +134,11 @@ export function ProductsTab() {
       const payload = {
         name: form.name,
         short_description: form.short_description,
+        tagline: form.tagline || form.short_description,
+        card_title: form.card_title || null,
+        card_tag: form.card_tag || null,
+        card_description: form.card_description || null,
+        card_bullets: form.card_bullets.length > 0 ? form.card_bullets : null,
         description_long: form.description_long,
         bullets: form.bullets.filter(b => b.trim()),
         tag: form.tag || null,
