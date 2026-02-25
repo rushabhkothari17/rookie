@@ -310,6 +310,7 @@ export function OrdersTab() {
               <TableHead>Pay Date</TableHead>
               <TableHead>Method</TableHead>
               <TableHead>Status</TableHead>
+              {isPlatformAdmin && <TableHead>Partner</TableHead>}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
