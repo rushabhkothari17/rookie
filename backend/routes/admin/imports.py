@@ -272,14 +272,12 @@ TEMPLATES: Dict[str, List[str]] = {
         "id", "name", "description", "is_active", "display_order",
     ],
     "catalog": [
-        "id", "name", "sku", "category", "tagline", "short_description",
-        "description", "base_price", "currency", "billing_period",
+        "id", "name", "category", "tagline", "card_title", "card_tag",
+        "card_description", "description_long", "base_price",
         "pricing_type", "is_active", "is_subscription", "visible_to_customers",
         "tag", "stripe_price_id", "terms_id",
         "price_inputs", "intake_schema_json", "faqs",
-        "bullets_included", "bullets_excluded", "bullets_needed",
-        "custom_sections", "requirements", "inclusions", "exclusions",
-        "next_steps", "automation_details", "support_details",
+        "bullets_included", "card_bullets", "custom_sections",
     ],
     "terms": [
         "id", "title", "content", "version", "is_active", "created_at",

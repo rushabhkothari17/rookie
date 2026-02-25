@@ -126,11 +126,6 @@ async def checkout_bank_transfer(
 
     order_items = await build_order_items(payload.items, tenant_id)
 
-    if any(i["product"].get("sku") == "MIG-CRM" for i in order_items) and any(
-        i["product"].get("sku") == "START-ZOHO-CRM-EXP" for i in order_items
-    ):
-        raise HTTPException(status_code=400, detail="CRM data migration is included in CRM Express Setup")
-
     checkout_type = payload.checkout_type
     if checkout_type not in ["one_time", "subscription"]:
         raise HTTPException(status_code=400, detail="Invalid checkout type")
