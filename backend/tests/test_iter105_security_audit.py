@@ -430,6 +430,7 @@ class TestValidPartnerLogin:
         create_user_resp = requests.post(
             f"{BASE_URL}/api/admin/tenants/{tenant_id}/create-admin",
             json={
+                "tenant_id": tenant_id,  # Required in body by CreatePartnerAdminRequest
                 "email": "test-partner-admin@security-test.local",
                 "password": "SecurePass123!",
                 "full_name": "Test Partner Admin",
