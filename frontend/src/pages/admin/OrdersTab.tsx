@@ -14,6 +14,7 @@ import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Download, ExternalLink, Upload} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const getProcessorLink = (id: string | undefined): string | null => {
   if (!id) return null;
