@@ -41,11 +41,12 @@ def create_product(payload: dict, headers: dict) -> dict:
     return data.get("product", data)
 
 
-def calc_price(product_id: str, inputs: dict) -> dict:
+def calc_price(product_id: str, inputs: dict, headers: dict = None) -> dict:
+    h = headers or auth_headers()
     resp = requests.post(f"{BASE_URL}/api/pricing/calc", json={
         "product_id": product_id,
         "inputs": inputs,
-    })
+    }, headers=h)
     assert resp.status_code == 200, f"Price calc failed: {resp.text}"
     return resp.json()
 
