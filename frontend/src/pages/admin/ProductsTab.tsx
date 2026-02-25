@@ -34,7 +34,6 @@ function productToForm(p: any): ProductFormData {
 
   return {
     name: p.name || "",
-    short_description: p.short_description || "",
     tagline: p.tagline || "",
     card_title: p.card_title || "",
     card_tag: p.card_tag || "",
