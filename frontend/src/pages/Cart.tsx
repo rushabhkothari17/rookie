@@ -386,9 +386,9 @@ export default function Cart() {
       )}
 
       {preview && (
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
           {/* Main Content */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Cart Items */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
               <div className="p-4 border-b border-slate-100 bg-slate-50">
