@@ -108,6 +108,13 @@ async def create_partner_admin(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
+    # Block creating partner users under the platform admin tenant
+    if tenant.get("is_platform") or tenant.get("code") == DEFAULT_TENANT_ID:
+        raise HTTPException(
+            status_code=403,
+            detail="Cannot create partner users under the platform administration tenant. Use the main admin user management instead."
+        )
+
     existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tenant_id})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered for this tenant")
