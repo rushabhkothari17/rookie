@@ -91,6 +91,7 @@ async def admin_list_quote_requests(
     total = await db.quote_requests.count_documents(query)
     skip = (page - 1) * per_page
     quotes = await db.quote_requests.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+    quotes = await enrich_partner_codes(quotes, is_platform_admin(admin))
     return {
         "quotes": quotes,
         "page": page,
