@@ -19,9 +19,16 @@ from core.helpers import (
 def build_price_inputs(product: Dict[str, Any]) -> List[Dict[str, Any]]:
     pricing_type = product.get("pricing_type")
     rules = product.get("pricing_rules", {})
+
     if pricing_type == "tiered":
         return [{"id": "variant", "label": "Select option", "type": "select", "options": rules.get("variants", [])}]
+
     if pricing_type == "calculator":
+        # Data-driven: if price_inputs are defined in pricing_rules, return them directly
+        if rules.get("price_inputs"):
+            return rules["price_inputs"]
+
+        # Legacy calc_type handlers (backwards compat)
         calc_type = rules.get("calc_type")
         if calc_type == "health_check":
             return [{"id": "creator_extension", "label": "Creator/Catalyst extension", "type": "select", "options": rules.get("add_ons", [])}]
@@ -64,8 +71,6 @@ def build_price_inputs(product: Dict[str, Any]) -> List[Dict[str, Any]]:
                 {"id": "employee_profiles", "label": "Employee profiles", "type": "number", "min": 0},
                 {"id": "templates", "label": "Templates", "type": "number", "min": 0},
             ]
-    if pricing_type == "scope_request":
-        return []
     return []
 
 
