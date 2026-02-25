@@ -141,8 +141,7 @@ async def admin_create_product(
         "id": product_id,
         "tenant_id": tid,
         "name": payload.name,
-        "short_description": payload.short_description,
-        "tagline": payload.tagline or payload.short_description,
+        "tagline": payload.tagline or "",
         "card_title": payload.card_title,
         "card_tag": payload.card_tag,
         "card_description": payload.card_description,
@@ -163,6 +162,7 @@ async def admin_create_product(
         "price_rounding": payload.price_rounding or None,
         "pricing_type": payload.pricing_type or "internal",
         "external_url": payload.external_url,
+        "display_layout": payload.display_layout or "standard",
         "created_at": now_iso(),
         "is_custom": True,
     }
