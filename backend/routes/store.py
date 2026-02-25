@@ -51,10 +51,13 @@ async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code
     return DEFAULT_TENANT_ID
 
 
-async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
+async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None) -> Optional[str]:
     """Resolve tenant_id for public store listing pages.
+    Returns None for platform admins (no tenant filter = show all).
     Intentionally ignores X-View-As-Tenant so the admin impersonation header does not
-    bleed into public-facing store queries (platform admin always sees their own store)."""
+    bleed into public-facing store queries."""
+    if user and is_platform_admin(user):
+        return None  # platform admin sees all data across all tenants
     if user and user.get("tenant_id"):
         return user["tenant_id"]
     if api_key_tid:
