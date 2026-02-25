@@ -67,22 +67,29 @@ function roundToNearest99(amount) {
   return Math.abs(amount - high) <= Math.abs(amount - low) ? high : low;
 }
 
-export function calculateBooksMigrationPrice(inputs) {
+export function calculateBooksMigrationPrice(inputs, pricingRules = {}) {
+  const BASE_FEE = pricingRules.base_fee ?? 999;
+  const PER_YEAR_UP_TO_5 = pricingRules.per_year_up_to_5 ?? 350;
+  const PER_YEAR_OVER_5 = pricingRules.per_year_over_5 ?? 300;
+  const PREMIUM_MULT = pricingRules.premium_multiplier ?? 1.5;
+  const SOURCE_MULT = pricingRules.source_multiplier ?? 1.2;
+  const STANDARD = new Set(pricingRules.standard_sources || [...STANDARD_SOURCES]);
+
   const yearsStr = String(inputs.years || "1").replace("+YTD", "").replace("Y", "").trim();
   const years = Math.max(1, parseInt(yearsStr) || 1);
   const dataTypes = Array.isArray(inputs.data_types) ? inputs.data_types : [];
   const hasPremium = dataTypes.some((d) => PREMIUM_ITEMS.has(d));
   const sourceSystem = inputs.source_system || "quickbooks_online";
 
-  let base = 999;
+  let base = BASE_FEE;
   if (years > 1) {
     const extra = years - 1;
     const upTo5 = Math.min(extra, 4);
     const over5 = Math.max(0, extra - 4);
-    base += upTo5 * 350 + over5 * 300;
+    base += upTo5 * PER_YEAR_UP_TO_5 + over5 * PER_YEAR_OVER_5;
   }
-  if (hasPremium) base *= 1.5;
-  if (!STANDARD_SOURCES.has(sourceSystem)) base *= 1.2;
+  if (hasPremium) base *= PREMIUM_MULT;
+  if (!STANDARD.has(sourceSystem)) base *= SOURCE_MULT;
 
   return roundToNearest99(base);
 }
