@@ -154,8 +154,8 @@ async def validate_scope_article(
         {
             "tenant_id": tid,
             "$or": [
-                {"id": article_id},
-                {"id": {"$regex": f"^{_re.escape(article_id.lower())}"}},
+                {"id": resource_id},
+                {"id": {"$regex": f"^{_re.escape(resource_id.lower())}"}},
             ],
             "deleted_at": {"$exists": False},
         },
@@ -169,7 +169,7 @@ async def validate_scope_article(
         raise HTTPException(status_code=400, detail="Invalid Scope Id")
     return {
         "valid": True,
-        "article_id": article["id"],
+        "resource_id": article["id"],
         "title": article["title"],
         "price": article["price"],
         "slug": article.get("slug"),
@@ -184,7 +184,7 @@ async def get_article_logs(
     limit: int = 20,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    flt = {"article_id": article_id}
+    flt = {"resource_id": resource_id}
     total = await db.article_logs.count_documents(flt)
     skip = (page - 1) * limit
     logs = await db.article_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
@@ -197,14 +197,14 @@ async def get_article_by_id(
     user: Dict[str, Any] = Depends(get_current_user),
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    from core.tenant import is_platform_admin, DEFAULT_TENANT_ID as _DT
+
     # Resolve tenant: platform admins respect X-View-As-Tenant; all others use their own tenant_id
     if is_platform_admin(user) and x_view_as_tenant:
         tid = x_view_as_tenant
     else:
         tid = user.get("tenant_id") or _DT
     article = await db.resources.find_one(
-        {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
+        {"tenant_id": tid, "$or": [{"id": resource_id}, {"slug": resource_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
     )
     if not article:
@@ -235,7 +235,7 @@ async def download_article(
     else:
         tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.resources.find_one(
-        {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
+        {"tenant_id": tid, "$or": [{"id": resource_id}, {"slug": resource_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
     )
     if not article:
@@ -312,7 +312,7 @@ async def create_article(
     await db.resources.insert_one(doc)
     await db.article_logs.insert_one({
         "id": make_id(),
-        "article_id": article_id,
+        "resource_id": resource_id,
         "action": "created",
         "actor": admin.get("email", "admin"),
         "details": {"title": payload.title, "category": payload.category},
@@ -322,13 +322,13 @@ async def create_article(
         action="ARTICLE_CREATED",
         description=f"Article '{payload.title}' created",
         entity_type="Article",
-        entity_id=article_id,
+        entity_id=resource_id,
         actor_type="admin",
         actor_email=admin.get("email"),
         source="admin_ui",
         after_json={"title": payload.title, "category": payload.category, "visibility": payload.visibility},
     )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": article_id, "action": "created", "actor": admin.get("email", "admin"), "details": {"title": payload.title, "category": payload.category}, "created_at": now_iso()})
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": resource_id, "action": "created", "actor": admin.get("email", "admin"), "details": {"title": payload.title, "category": payload.category}, "created_at": now_iso()})
     doc.pop("_id", None)
     return {"resource": doc}
 
@@ -341,7 +341,7 @@ async def update_article(
 ):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
-    article = await db.resources.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
+    article = await db.resources.find_one({**tf, "id": resource_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
@@ -353,7 +353,7 @@ async def update_article(
         changes["title"] = payload.title
     if payload.slug is not None:
         existing = await db.resources.find_one(
-            {"slug": payload.slug, "id": {"$ne": article_id}, "deleted_at": {"$exists": False}}
+            {"slug": payload.slug, "id": {"$ne": resource_id}, "deleted_at": {"$exists": False}}
         )
         if existing:
             raise HTTPException(status_code=400, detail="Slug already in use")
@@ -382,12 +382,12 @@ async def update_article(
         updates["restricted_to"] = payload.restricted_to
         changes["restricted_to_count"] = len(payload.restricted_to)
 
-    await db.resources.update_one({"id": article_id}, {"$set": updates})
+    await db.resources.update_one({"id": resource_id}, {"$set": updates})
 
     if changes:
         await db.article_logs.insert_one({
             "id": make_id(),
-            "article_id": article_id,
+            "resource_id": resource_id,
             "action": "updated",
             "actor": admin.get("email", "admin"),
             "details": changes,
@@ -397,15 +397,15 @@ async def update_article(
             action="ARTICLE_UPDATED",
             description=f"Article '{article.get('title')}' updated",
             entity_type="Article",
-            entity_id=article_id,
+            entity_id=resource_id,
             actor_type="admin",
             actor_email=admin.get("email"),
             source="admin_ui",
             after_json=changes,
         )
-        await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": article_id, "action": "updated", "actor": admin.get("email", "admin"), "details": changes, "created_at": now_iso()})
+        await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": resource_id, "action": "updated", "actor": admin.get("email", "admin"), "details": changes, "created_at": now_iso()})
 
-    updated = await db.resources.find_one({"id": article_id}, {"_id": 0})
+    updated = await db.resources.find_one({"id": resource_id}, {"_id": 0})
     updated.pop("_id", None)
     return {"resource": updated}
 
@@ -416,15 +416,15 @@ async def delete_article(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
-    article = await db.resources.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
+    article = await db.resources.find_one({**tf, "id": resource_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
     now = now_iso()
-    await db.resources.update_one({"id": article_id}, {"$set": {"deleted_at": now}})
+    await db.resources.update_one({"id": resource_id}, {"$set": {"deleted_at": now}})
     await db.article_logs.insert_one({
         "id": make_id(),
-        "article_id": article_id,
+        "resource_id": resource_id,
         "action": "deleted",
         "actor": admin.get("email", "admin"),
         "details": {"title": article.get("title")},
@@ -434,13 +434,13 @@ async def delete_article(
         action="ARTICLE_DELETED",
         description=f"Article '{article.get('title')}' deleted",
         entity_type="Article",
-        entity_id=article_id,
+        entity_id=resource_id,
         actor_type="admin",
         actor_email=admin.get("email"),
         source="admin_ui",
         before_json={"title": article.get("title"), "category": article.get("category")},
     )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": article_id, "action": "deleted", "actor": admin.get("email", "admin"), "details": {"title": article.get("title")}, "created_at": now_iso()})
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": resource_id, "action": "deleted", "actor": admin.get("email", "admin"), "details": {"title": article.get("title")}, "created_at": now_iso()})
     return {"message": "Article deleted"}
 
 
@@ -451,7 +451,7 @@ async def email_article(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
-    article = await db.resources.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0, "content": 0})
+    article = await db.resources.find_one({**tf, "id": resource_id, "deleted_at": {"$exists": False}}, {"_id": 0, "content": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
@@ -499,7 +499,7 @@ async def email_article(
             sent.append(email_addr)
             await db.article_logs.insert_one({
                 "id": make_id(),
-                "article_id": article_id,
+                "resource_id": resource_id,
                 "action": "email_sent",
                 "actor": admin.get("email", "admin"),
                 "details": {"to": email_addr, "customer_id": customer["id"], "subject": subject},
@@ -509,7 +509,7 @@ async def email_article(
             errors.append({"email": email_addr, "error": result.get("error") or result.get("reason", "unknown")})
 
     if sent:
-        await create_audit_log(entity_type="resource", entity_id=article_id, action="email_sent", actor=admin.get("email", "admin"), details={"recipients": sent, "subject": subject, "sent_count": len(sent)})
+        await create_audit_log(entity_type="resource", entity_id=resource_id, action="email_sent", actor=admin.get("email", "admin"), details={"recipients": sent, "subject": subject, "sent_count": len(sent)})
     return {"sent": sent, "errors": errors, "message": f"Sent to {len(sent)} recipient(s)"}
 
 
@@ -521,7 +521,7 @@ async def send_article_email(
 ):
     """Send article to arbitrary email addresses (To/CC/BCC) with optional PDF attachment."""
     tf = get_tenant_filter(admin)
-    article = await db.resources.find_one({**tf, "id": article_id, "deleted_at": {"$exists": False}}, {"_id": 0})
+    article = await db.resources.find_one({**tf, "id": resource_id, "deleted_at": {"$exists": False}}, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
@@ -623,7 +623,7 @@ async def send_article_email(
     # Log the send action on the article
     await db.article_logs.insert_one({
         "id": make_id(),
-        "article_id": article_id,
+        "resource_id": resource_id,
         "action": "email_sent",
         "actor": admin.get("email", "admin"),
         "details": {
@@ -637,7 +637,7 @@ async def send_article_email(
     })
     await create_audit_log(
         entity_type="resource",
-        entity_id=article_id,
+        entity_id=resource_id,
         action="email_sent",
         actor=admin.get("email", "admin"),
         details={"recipients": payload.to, "subject": payload.subject, "sent_count": len(sent)},
