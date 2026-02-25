@@ -115,7 +115,7 @@ async def require_admin(user: Dict[str, Any] = Depends(get_current_user)) -> Dic
 
 async def require_super_admin(user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
     super_admin_roles = {"super_admin", "partner_super_admin", "platform_admin"}
-    if user.get("role") not in super_admin_roles and not user.get("is_admin"):
+    if user.get("role") not in super_admin_roles:
         raise HTTPException(status_code=403, detail="Super admin access required")
     return user
 

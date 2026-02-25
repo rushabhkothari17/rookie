@@ -304,7 +304,7 @@ async def get_my_permissions(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     role = admin.get("role", "partner_super_admin")
     
     # Super admins have all permissions
-    if role in ("platform_super_admin", "partner_super_admin", "super_admin"):
+    if role in ("platform_admin", "platform_super_admin", "partner_super_admin", "super_admin"):
         return {
             "access_level": "full_access",
             "role": role,
@@ -334,8 +334,8 @@ async def has_permission(admin: Dict[str, Any], module: str, action: str) -> boo
     """
     role = admin.get("role", "")
     
-    # Super admins have all permissions
-    if role in ("platform_super_admin", "partner_super_admin", "super_admin"):
+    # Super admins (and platform admin) have all permissions
+    if role in ("platform_admin", "platform_super_admin", "partner_super_admin", "super_admin"):
         return True
     
     # Check module access
