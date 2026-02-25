@@ -70,9 +70,7 @@ ENTITY_COLLECTIONS: Dict[str, str] = {
 JSON_FIELDS: Dict[str, List[str]] = {
     "catalog": [
         "price_inputs", "intake_schema_json", "faqs", "bullets_included",
-        "bullets_excluded", "bullets_needed", "card_bullets", "pricing_rules",
-        "custom_sections", "requirements", "inclusions", "exclusions",
-        "next_steps", "automation_details", "support_details",
+        "card_bullets", "pricing_rules", "custom_sections",
     ],
     "articles": ["restricted_to", "tags", "sections"],
     "article-templates": ["sections", "variables"],
