@@ -421,7 +421,7 @@ export default function ProductDetail() {
       return { label: "Proceed to checkout", onClick: handleScopeRequest };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
-  }, [product, pricing, isRFQ, migBooksData, scopeUnlock]);
+  }, [product, pricing, isRFQ, scopeUnlock]);
 
   if (loading) {
     return (
