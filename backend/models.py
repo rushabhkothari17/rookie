@@ -157,18 +157,20 @@ class VisibilityRule(BaseModel):
 
 
 class IntakeQuestion(BaseModel):
-    key: str
-    label: str
+    key: str = ""
+    label: str = ""
     helper_text: Optional[str] = ""
+    tooltip_text: Optional[str] = ""
     required: bool = False
     enabled: bool = True
     order: int = 0
-    type: str = "single_line"
+    type: str = "single_line"   # dropdown|multiselect|number|boolean|single_line|multi_line|date|file|formula|html_block
+    step_group: int = 0         # wizard step grouping (0 = ungrouped)
     # Dropdown / multiselect
     affects_price: bool = False
     price_mode: str = "add"
     options: Optional[List[IntakeOption]] = None
-    # Number type — flat
+    # Number type — flat or tiered
     price_per_unit: Optional[float] = None
     pricing_mode: str = "flat"
     tiers: Optional[List[Dict[str, Any]]] = None
@@ -179,6 +181,15 @@ class IntakeQuestion(BaseModel):
     # Boolean type
     price_for_yes: Optional[float] = None
     price_for_no: Optional[float] = None
+    # Formula type
+    formula_expression: Optional[str] = None
+    # Date type
+    date_format: str = "date"
+    # File type
+    accept: Optional[str] = None
+    max_size_mb: float = 10.0
+    # HTML block (no key/pricing — pure content)
+    content: Optional[str] = None
     # Conditional visibility
     visibility_rule: Optional[VisibilityRule] = None
 
