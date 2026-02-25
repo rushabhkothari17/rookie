@@ -321,9 +321,14 @@ export default function ProductDetail() {
   const fetchPricing = async (nextInputs: Record<string, any>) => {
     if (!product) return;
     if (product.pricing_type === "enquiry") return; // inquiry products have no calculator
+    // Only include visible questions' answers in the pricing calculation
+    const visibleAnswers: Record<string, any> = {};
+    for (const q of visibleIntakeQuestions) {
+      if (intakeAnswers[q.key] !== undefined) visibleAnswers[q.key] = intakeAnswers[q.key];
+    }
     const response = await api.post("/pricing/calc", {
       product_id: product.id,
-      inputs: { ...nextInputs, ...intakeAnswers },
+      inputs: { ...nextInputs, ...visibleAnswers },
     });
     setPricing(response.data);
   };
