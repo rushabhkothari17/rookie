@@ -133,7 +133,7 @@ export function QuoteRequestsTab() {
   return (
     <div className="space-y-4" data-testid="quote-requests-tab">
       <AdminPageHeader
-        title="Quote Requests"
+        title="Requests"
         subtitle={`${total} records`}
         actions={
           <>
