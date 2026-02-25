@@ -748,14 +748,14 @@ async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
 async def register_partner(payload: Dict[str, Any] = Body(...)):
     """Self-service partner organization registration.
     Creates a new tenant + partner_super_admin user.
+    Partner code is auto-generated from the org name — never user-supplied.
     """
     name = payload.get("name", "").strip()
-    code = payload.get("code", "").strip().lower().replace(" ", "-")
     admin_name = payload.get("admin_name", "").strip()
     admin_email = payload.get("admin_email", "").strip().lower()
     admin_password = payload.get("admin_password", "")
 
-    if not all([name, code, admin_name, admin_email, admin_password]):
+    if not all([name, admin_name, admin_email, admin_password]):
         raise HTTPException(status_code=400, detail="All fields are required")
 
     # Password complexity check
@@ -763,9 +763,17 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
     if pw_error:
         raise HTTPException(status_code=400, detail=pw_error)
 
-    # Validate code uniqueness
-    if await db.tenants.find_one({"code": code}):
-        raise HTTPException(status_code=400, detail="Partner code already in use. Choose a different code.")
+    # Auto-generate a unique partner code from org name
+    base_code = re.sub(r'[^\w\s-]', '', name.lower().strip())
+    base_code = re.sub(r'[\s_]+', '-', base_code)
+    base_code = re.sub(r'-+', '-', base_code).strip('-')[:30]
+    if not base_code:
+        base_code = "partner"
+    code = base_code
+    counter = 1
+    while await db.tenants.find_one({"code": code}):
+        code = f"{base_code}-{counter}"
+        counter += 1
 
     # Check email uniqueness across all tenants
     if await db.users.find_one({"email": admin_email}):
