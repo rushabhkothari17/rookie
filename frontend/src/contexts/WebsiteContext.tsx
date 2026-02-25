@@ -314,6 +314,54 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
 
+// ─── Standalone branding helpers (usable outside context) ──────────────────
+
+/** Fetch + apply a partner's branding, returns the settings. */
+export async function applyPartnerBranding(partnerCode: string): Promise<Record<string, any>> {
+  const url = partnerCode
+    ? `${process.env.REACT_APP_BACKEND_URL}/api/website-settings?partner_code=${encodeURIComponent(partnerCode)}`
+    : `${process.env.REACT_APP_BACKEND_URL}/api/website-settings`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch branding");
+  const data = await res.json();
+  const s = data.settings || {};
+  _applyBrandingToDOM(s);
+  return s;
+}
+
+function _applyBrandingToDOM(s: Record<string, any>) {
+  const _hexToHsl = (hex: string): string | null => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+    if (!m) return null;
+    const r = parseInt(m[1].slice(0, 2), 16) / 255;
+    const g = parseInt(m[1].slice(2, 4), 16) / 255;
+    const b = parseInt(m[1].slice(4, 6), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    let h = 0, s = 0;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h /= 6;
+    }
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+  const set = (v: string, c: string) => document.documentElement.style.setProperty(v, c);
+  const setHsl = (v: string, c: string) => { const h = _hexToHsl(c); if (h) set(v, h); };
+  if (s.primary_color) { set("--aa-primary", s.primary_color); setHsl("--primary", s.primary_color); document.documentElement.style.setProperty("--primary-foreground", "0 0% 98%"); }
+  if (s.accent_color) { set("--aa-accent", s.accent_color); set("--aa-accent-hover", s.accent_color); setHsl("--ring", s.accent_color); }
+  if (s.danger_color) { set("--aa-danger", s.danger_color); setHsl("--destructive", s.danger_color); }
+  if (s.success_color) set("--aa-success", s.success_color);
+  if (s.warning_color) set("--aa-warning", s.warning_color);
+  if (s.background_color) { set("--aa-bg", s.background_color); setHsl("--background", s.background_color); }
+  if (s.text_color) { set("--aa-text", s.text_color); setHsl("--foreground", s.text_color); setHsl("--card-foreground", s.text_color); }
+  if (s.border_color) { set("--aa-border", s.border_color); setHsl("--border", s.border_color); setHsl("--input", s.border_color); }
+  if (s.muted_color) { set("--aa-muted", s.muted_color); setHsl("--muted-foreground", s.muted_color); }
+}
+
 // Convert a hex color (#rrggbb) to shadcn HSL format "H S% L%"
 function hexToHsl(hex: string): string | null {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
