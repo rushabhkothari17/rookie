@@ -59,10 +59,10 @@ export default function QuickBuyLayout({
           {pricing ? (
             <div>
               <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">
-                {isRFQ ? "Pricing" : "Total"}
+                {isEnquiry ? "Pricing" : isFree ? "Price" : "Total"}
               </p>
               <p className="text-4xl font-bold">
-                {isRFQ ? "On request" : formatCurrency(pricing.total)}
+                {isEnquiry ? "On request" : isFree ? "Free" : formatCurrency(pricing.total)}
               </p>
               {isSubscription && !isRFQ && (
                 <p className="text-sm text-slate-400 mt-1">per month</p>
