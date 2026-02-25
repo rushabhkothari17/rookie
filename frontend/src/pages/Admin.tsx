@@ -13,7 +13,6 @@ import { UsersTab } from "./admin/UsersTab";
 import { ProductsTab } from "./admin/ProductsTab";
 import { CategoriesTab } from "./admin/CategoriesTab";
 import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
-import { BankTransactionsTab } from "./admin/BankTransactionsTab";
 import { OverrideCodesTab } from "./admin/OverrideCodesTab";
 import { ArticlesTab } from "./admin/ArticlesTab";
 import WebsiteTab from "./admin/WebsiteTab";
