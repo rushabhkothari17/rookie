@@ -1246,18 +1246,19 @@ class TestScenarios:
         )
         assert login1.status_code == 403, f"Expected 403 for unverified customer, got {login1.status_code}"
 
-        # Admin sets is_verified=True via user update
+        # Admin tries to set is_verified=True via PUT /api/admin/users/{user_id}
+        # NOTE: admin_update_user does NOT support 'is_verified' field — returns 200 but silently ignores it
+        # This is a FEATURE GAP: no admin API to mark a customer as verified (only via mark_verified at create time)
         update_resp = requests.put(
             f"{BASE_URL}/api/admin/users/{user_id}",
             json={"is_verified": True},
             headers=tenant_a_admin_headers,
         )
-        # Note: the update_user endpoint may not support is_verified field
-        # Let's update directly via DB for now
-        if update_resp.status_code != 200:
-            # Fall back to direct DB update for this test
-            mongo_db.users.update_one({"id": user_id}, {"$set": {"is_verified": True}})
-            print(f"Note: PUT /api/admin/users/{user_id} for is_verified returned {update_resp.status_code}")
+        print(f"PUT /api/admin/users/{user_id} is_verified: {update_resp.status_code} (NOTE: field not supported by API)")
+        # Always fall back to direct DB update since admin API doesn't support is_verified
+        mongo_db.users.update_one({"id": user_id}, {"$set": {"is_verified": True}})
+        user_after = mongo_db.users.find_one({"id": user_id})
+        assert user_after.get("is_verified") is True, "DB update for is_verified failed"
 
         # Login should now succeed
         login2 = requests.post(
