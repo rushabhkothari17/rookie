@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { displayCategory } from "@/lib/categories";
 
 const formatTag = (product: any) => {
-  if (product.tag) return product.tag;
   if (product.card_tag) return product.card_tag;
+  if (product.tag) return product.tag;
   if (product.is_subscription) return "Subscription";
   return "Project based";
 };
