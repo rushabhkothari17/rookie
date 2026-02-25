@@ -167,8 +167,8 @@ export function ProductsTab() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loading && <TableRow><TableCell colSpan={6} className="text-center text-slate-400">Loading...</TableCell></TableRow>}
-                  {!loading && filtered.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-slate-400">No products found.</TableCell></TableRow>}
+                  {loading && <TableRow><TableCell colSpan={isPlatformAdmin ? 7 : 6} className="text-center text-slate-400">Loading...</TableCell></TableRow>}
+                  {!loading && filtered.length === 0 && <TableRow><TableCell colSpan={isPlatformAdmin ? 7 : 6} className="text-center text-slate-400">No products found.</TableCell></TableRow>}
                   {paged.map((product) => (
                     <TableRow key={product.id} data-testid={`admin-product-row-${product.id}`}>
                       <TableCell>
