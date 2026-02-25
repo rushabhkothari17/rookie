@@ -7,13 +7,10 @@ import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantS
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
 import { OrdersTab } from "./admin/OrdersTab";
-import { PromoCodesTab } from "./admin/PromoCodesTab";
-import { TermsTab } from "./admin/TermsTab";
 import { UsersTab } from "./admin/UsersTab";
 import { ProductsTab } from "./admin/ProductsTab";
 import { CategoriesTab } from "./admin/CategoriesTab";
 import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
-import { OverrideCodesTab } from "./admin/OverrideCodesTab";
 import { ArticlesTab } from "./admin/ArticlesTab";
 import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
@@ -22,6 +19,9 @@ import { SetupChecklistWidget } from "@/components/admin/SetupChecklistWidget";
 import { ApiTab } from "./admin/ApiTab";
 import { WebhooksTab } from "./admin/WebhooksTab";
 import { IntegrationsOverview } from "./admin/IntegrationsOverview";
+import { EmailTemplatesTab } from "./admin/EmailTemplatesTab";
+import { ReferencesTab } from "./admin/ReferencesTab";
+import { CustomDomainsTab } from "./admin/CustomDomainsTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
