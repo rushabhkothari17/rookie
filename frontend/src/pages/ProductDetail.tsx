@@ -99,44 +99,92 @@ function getEnabledIntakeQuestions(schema: any): any[] {
 function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
   const qtype = q.type || q.qtype;
 
+  // HTML blocks are content dividers, not form fields
+  if (qtype === "html_block") {
+    return (
+      <div className="py-1">
+        {q.label && <h3 className="text-base font-semibold text-slate-800 mb-2">{q.label}</h3>}
+        {q.content && (
+          <div className="text-sm text-slate-600 prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: q.content }} />
+        )}
+      </div>
+    );
+  }
+
   if (qtype === "boolean") {
     return (
       <div className="flex gap-4" data-testid={`intake-${q.key}`}>
         {[{ label: "Yes", value: "yes" }, { label: "No", value: "no" }].map(opt => (
           <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer select-none">
-            <input
-              type="radio"
-              name={`boolean-${q.key}`}
+            <input type="radio" name={`boolean-${q.key}`}
               checked={String(value ?? "") === opt.value}
-              onChange={() => onChange(opt.value)}
-              className="accent-[#0f172a]"
-            />
+              onChange={() => onChange(opt.value)} className="accent-[#0f172a]" />
             {opt.label}
           </label>
         ))}
       </div>
     );
   }
+  if (qtype === "date") {
+    if (q.date_format === "date_range") {
+      const dateVal = typeof value === "object" ? value : { from: "", to: "" };
+      return (
+        <div className="flex items-center gap-3" data-testid={`intake-${q.key}`}>
+          <Input type="date" value={dateVal.from || ""} onChange={e => onChange({ ...dateVal, from: e.target.value })} className="flex-1" />
+          <span className="text-slate-400 text-sm">to</span>
+          <Input type="date" value={dateVal.to || ""} onChange={e => onChange({ ...dateVal, to: e.target.value })} className="flex-1" />
+        </div>
+      );
+    }
+    return <Input type="date" value={value || ""} onChange={e => onChange(e.target.value)} data-testid={`intake-${q.key}`} />;
+  }
+  if (qtype === "file") {
+    const uploaded = typeof value === "object" && value?.filename;
+    return (
+      <div data-testid={`intake-${q.key}`}>
+        {uploaded && (
+          <div className="flex items-center gap-2 text-sm text-slate-600 mb-2 p-2 bg-slate-50 rounded border border-slate-200">
+            <span className="text-green-600">✓</span> {value.filename}
+            <button type="button" className="ml-auto text-slate-400 hover:text-red-500" onClick={() => onChange(null)}>Remove</button>
+          </div>
+        )}
+        <input type="file" accept={q.accept || "*"} className="text-sm text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-slate-200 file:text-xs file:font-medium file:text-slate-700 file:bg-slate-50 hover:file:bg-slate-100"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const maxBytes = (q.max_size_mb || 10) * 1024 * 1024;
+            if (file.size > maxBytes) { alert(`File too large (max ${q.max_size_mb || 10} MB)`); return; }
+            try {
+              const formData = new FormData();
+              formData.append("file", file);
+              const res = await api.post("/uploads", formData, { headers: { "Content-Type": "multipart/form-data" } });
+              onChange(res.data);
+            } catch { alert("Upload failed. Please try again."); }
+          }} />
+      </div>
+    );
+  }
+  if (qtype === "formula") {
+    // Formula field: value is computed server-side, show as read-only indicator
+    return (
+      <div className="h-9 flex items-center px-3 rounded-md border border-slate-200 bg-slate-50 text-sm text-slate-500 italic" data-testid={`intake-${q.key}`}>
+        Automatically calculated from other inputs
+      </div>
+    );
+  }
   if (qtype === "number") {
     return (
-      <Input
-        type="number"
-        min={q.min ?? 0}
-        max={q.max}
-        step={q.step ?? 1}
+      <Input type="number" min={q.min ?? 0} max={q.max} step={q.step ?? 1}
         value={value ?? (q.default_value ?? q.min ?? 0)}
         onChange={e => onChange(parseFloat(e.target.value) || 0)}
-        placeholder={q.helper_text || "Enter a number"}
-        data-testid={`intake-${q.key}`}
-      />
+        placeholder={q.helper_text || "Enter a number"} data-testid={`intake-${q.key}`} />
     );
   }
   if (qtype === "dropdown") {
     return (
       <Select value={value || ""} onValueChange={onChange}>
-        <SelectTrigger data-testid={`intake-${q.key}`}>
-          <SelectValue placeholder={`Select…`} />
-        </SelectTrigger>
+        <SelectTrigger data-testid={`intake-${q.key}`}><SelectValue placeholder="Select…" /></SelectTrigger>
         <SelectContent>
           {(q.options || []).map((opt: any) => (
             <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -151,12 +199,10 @@ function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
       <div className="space-y-2" data-testid={`intake-${q.key}`}>
         {(q.options || []).map((opt: any) => (
           <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer">
-            <Checkbox
-              checked={selected.includes(opt.value)}
+            <Checkbox checked={selected.includes(opt.value)}
               onCheckedChange={(checked) =>
                 onChange(checked ? [...selected, opt.value] : selected.filter((v: string) => v !== opt.value))
-              }
-            />
+              } />
             {opt.label}
           </label>
         ))}
@@ -164,25 +210,12 @@ function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
     );
   }
   if (qtype === "multi_line") {
-    return (
-      <Textarea
-        value={value || ""}
-        onChange={e => onChange(e.target.value)}
-        placeholder={q.helper_text || ""}
-        rows={3}
-        data-testid={`intake-${q.key}`}
-      />
-    );
+    return <Textarea value={value || ""} onChange={e => onChange(e.target.value)}
+      placeholder={q.helper_text || ""} rows={3} data-testid={`intake-${q.key}`} />;
   }
   // single_line default
-  return (
-    <Input
-      value={value || ""}
-      onChange={e => onChange(e.target.value)}
-      placeholder={q.helper_text || ""}
-      data-testid={`intake-${q.key}`}
-    />
-  );
+  return <Input value={value || ""} onChange={e => onChange(e.target.value)}
+    placeholder={q.helper_text || ""} data-testid={`intake-${q.key}`} />;
 }
 
 const renderInputField = (
