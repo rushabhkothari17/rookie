@@ -40,10 +40,14 @@ export default function Signup() {
   const { register } = useAuth();
   const ws = useWebsite();
 
+  const [partnerCode, setPartnerCode] = useState<string>(() => localStorage.getItem("aa_partner_code") || "");
+  const [partnerName, setPartnerName] = useState<string>("");
+  const [partnerLogoUrl, setPartnerLogoUrl] = useState<string>("");
+  const [partnerPrimaryColor, setPartnerPrimaryColor] = useState<string>("");
+
   const [partnerOrg, setPartnerOrg] = useState({ name: "", code: "", admin_name: "", admin_email: "", admin_password: "" });
   const [partnerLoading, setPartnerLoading] = useState(false);
 
-  const [partnerCode, setPartnerCode] = useState("");
   const [form, setForm] = useState({
     full_name: "", job_title: "", company_name: "",
     email: "", phone: "", password: "",
@@ -52,6 +56,23 @@ export default function Signup() {
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+
+  // On mount: require partner code for customer signup
+  useEffect(() => {
+    if (isPartnerMode) return;
+    const stored = localStorage.getItem("aa_partner_code");
+    if (!stored) {
+      navigate("/login");
+      return;
+    }
+    setPartnerCode(stored);
+    // Load partner branding
+    applyPartnerBranding(stored).then(s => {
+      setPartnerName(s.store_name || "");
+      setPartnerLogoUrl(s.logo_url || "");
+      setPartnerPrimaryColor(s.primary_color || "");
+    }).catch(() => {});
+  }, [isPartnerMode, navigate]);
 
   const handleChange = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
