@@ -163,6 +163,9 @@ async def admin_update_user(
             raise HTTPException(status_code=400, detail="You cannot deactivate your own account")
         updates["is_active"] = payload["is_active"]
 
+    if "is_verified" in payload:
+        updates["is_verified"] = bool(payload["is_verified"])
+
     if len(updates) > 1:  # More than just updated_at
         await db.users.update_one({"id": user_id}, {"$set": updates})
         await create_audit_log(

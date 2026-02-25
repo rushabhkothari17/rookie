@@ -399,6 +399,11 @@ async def admin_set_customer_active(
 
 @router.get("/admin/customers/{customer_id}/logs")
 async def get_customer_logs(customer_id: str, page: int = 1, limit: int = 20, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    # Verify customer belongs to this admin's tenant before returning logs
+    customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0, "id": 1})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
     flt = {"entity_type": "customer", "entity_id": customer_id}
     total = await db.audit_logs.count_documents(flt)
     skip = (page - 1) * limit

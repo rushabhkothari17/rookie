@@ -66,9 +66,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // First try partner-login (for admin/staff users)
       response = await api.post("/auth/partner-login", payload);
     } catch (err: any) {
-      // If partner-login fails with 403 (wrong login type), try customer-login
-      if (err.response?.status === 403 && err.response?.data?.detail?.includes("Access denied")) {
-        response = await api.post("/auth/customer-login", payload);
+      if (err.response?.status === 403) {
+        const detail: string = err.response?.data?.detail || "";
+        if (detail.includes("reserved")) {
+          // Platform admin code (automate-accounts) — use legacy login with no partner_code
+          response = await api.post("/auth/login", { email, password });
+        } else if (detail.includes("Access denied")) {
+          // Customer account — use customer-login
+          response = await api.post("/auth/customer-login", payload);
+        } else {
+          throw err;
+        }
       } else {
         throw err;
       }
