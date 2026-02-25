@@ -66,7 +66,7 @@ export function CustomersTab() {
   const [customerNotes, setCustomerNotes] = useState<any[]>([]);
   const [editingPartnerMap, setEditingPartnerMap] = useState<{ customerId: string; value: string } | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "GB", mark_verified: true });
+  const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmToggleCustomer, setConfirmToggleCustomer] = useState<{id: string, active: boolean} | null>(null);
@@ -136,7 +136,7 @@ export function CustomersTab() {
     try {
       await api.post("/admin/customers/create", newCustomer);
       toast.success("Customer created"); setShowCreateDialog(false);
-      setNewCustomer({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "GB", mark_verified: true });
+      setNewCustomer({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create customer"); }
   };
