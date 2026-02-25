@@ -63,7 +63,10 @@ def calc_price(product_id: str, inputs: dict, headers: dict = None) -> dict:
 
 
 def delete_product(product_id: str, headers: dict):
-    requests.delete(f"{BASE_URL}/api/admin/products/{product_id}", headers=headers)
+    """Deactivate product (no DELETE endpoint exists — deactivate instead)."""
+    requests.put(f"{BASE_URL}/api/admin/products/{product_id}",
+                 json={"name": "TEST96_DEACTIVATED", "is_active": False},
+                 headers=headers)
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
