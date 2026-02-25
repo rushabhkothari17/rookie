@@ -111,9 +111,11 @@ E-commerce platform for professional services with:
 4. ✅ Product editing fixed (API endpoint corrected)
 5. ✅ Cart spacing increased
 
+## Completed in Latest Session (2026-02-26)
+1. ✅ **P0 Bug Fixed - Public data visibility**: Tenant users (e.g. Tenant B) could not see any products/articles on public store/articles pages because DB queries only searched their own tenant_id. All products/articles are stored under `tenant_id='automate-accounts'` (DEFAULT_TENANT_ID). Fix: changed queries in `store.py` and `articles.py` to use `$in: [tid, DEFAULT_TENANT_ID]` so tenant users see both their own catalog + the global catalog. Fixed in: `get_categories`, `get_products`, `get_product`, `pricing_calc`, `orders_preview` endpoints, and `list_articles_public` in articles.py. Verified: 16/16 backend + frontend tests passed.
+
 ## Pending Tasks (P1)
-1. Fix React key prop warning in ProductForm
-2. Fix "Edit Article" button visibility for non-admin users (recurring bug)
+1. Fix "Edit Article" button visibility for non-admin users (recurring bug)
 
 ## Future Tasks (P2)
 - Security audit
