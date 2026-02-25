@@ -167,7 +167,7 @@ async def admin_create_product(
             "updated_at": now_iso(),
             "updated_by": admin.get("email", admin["id"]),
         }
-    product["price_inputs"] = build_price_inputs(product)
+    product.pop("price_inputs", None)  # removed field
     await db.products.insert_one(product)
     product.pop("_id", None)
     audit_details: Dict[str, Any] = {"name": payload.name, "category": payload.category, "is_subscription": payload.is_subscription}
