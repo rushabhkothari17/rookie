@@ -124,14 +124,19 @@ export default function Signup() {
     e.preventDefault();
     setPartnerLoading(true);
     try {
-      await api.post("/auth/register-partner", partnerOrg);
-      toast.success("Organization created! You can now log in.");
-      navigate("/login");
+      const res = await api.post("/auth/register-partner", partnerOrg);
+      setGeneratedCode(res.data.partner_code || "");
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Registration failed");
     } finally {
       setPartnerLoading(false);
     }
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(generatedCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
   };
 
   const storeName = ws.store_name || "Portal";
