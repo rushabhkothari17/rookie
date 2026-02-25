@@ -24,7 +24,7 @@ type AuthContextType = {
   login: (email: string, password: string, partner_code?: string, login_type?: string) => Promise<{ is_admin: boolean; role: string }>;
   logout: () => void;
   register: (payload: any, partner_code?: string) => Promise<any>;
-  verifyEmail: (email: string, code: string) => Promise<void>;
+  verifyEmail: (email: string, code: string, partnerCode?: string) => Promise<void>;
   refresh: () => Promise<void>;
 };
 
@@ -105,8 +105,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return response.data;
   };
 
-  const verifyEmail = async (email: string, code: string) => {
-    await api.post("/auth/verify-email", { email, code });
+  const verifyEmail = async (email: string, code: string, partnerCode?: string) => {
+    await api.post("/auth/verify-email", { email, code, partner_code: partnerCode || undefined });
   };
 
   useEffect(() => {
