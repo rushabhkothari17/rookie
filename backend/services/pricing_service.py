@@ -287,7 +287,7 @@ def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any], fee_rate: f
                 {"label": "Templates", "amount": templates * 50.0},
             ]
         elif calc_type == "books_migration":
-            bm = calculate_books_migration_price(inputs)
+            bm = calculate_books_migration_price(inputs, rules)
             subtotal = bm["subtotal"]
             line_items = bm["line_items"]
         else:
