@@ -19,7 +19,7 @@ const ITEMS = [
   { key: "first_product", label: "Add your first product", desc: "Catalog > Create product", tab: "catalog", section: undefined },
   { key: "payment_configured", label: "Configure payment", desc: "Website Content > Payments", tab: "website", section: "payments" },
   { key: "first_customer", label: "Invite a customer", desc: "Customers > Add customer", tab: "customers", section: undefined },
-  { key: "first_article", label: "Create an article", desc: "Articles > Write guide", tab: "articles", section: undefined },
+  { key: "first_article", label: "Create a resource", desc: "Resources > Write guide", tab: "resources", section: undefined },
 ] as const;
 
 interface Props {
