@@ -269,6 +269,7 @@ export function SubscriptionsTab() {
               {sortHeader("contract_end_date", "Contract End")}
               <TableHead>Payment</TableHead>
               <TableHead>Status</TableHead>
+              {isPlatformAdmin && <TableHead>Partner</TableHead>}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
