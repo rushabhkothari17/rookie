@@ -261,7 +261,7 @@ export function QuoteRequestsTab() {
         </DialogContent>
       </Dialog>
 
-      <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Quote Request Audit Logs" logsUrl={logsUrl} />
+      <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Request Audit Logs" logsUrl={logsUrl} />
       <ImportModal
         entity="quote-requests"
         entityLabel="Quote Requests"
