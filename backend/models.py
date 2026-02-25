@@ -445,7 +445,7 @@ class AdminProductCreate(BaseModel):
     is_subscription: bool = False
     stripe_price_id: Optional[str] = None
     pricing_type: str = "internal"
-    pricing_rules: Optional[Dict[str, Any]] = None
+    external_url: Optional[str] = None
     is_active: bool = True
     visible_to_customers: List[str] = Field(default_factory=list)
     restricted_to: List[str] = Field(default_factory=list)
