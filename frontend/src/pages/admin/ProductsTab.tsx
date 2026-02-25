@@ -6,15 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
-import { Download, Upload, ExternalLink } from "lucide-react";
+import { CategoriesTab } from "./CategoriesTab";
+import { Download, Upload, ExternalLink, Package, FolderTree } from "lucide-react";
 
 export function ProductsTab() {
+  const [activeSubTab, setActiveSubTab] = useState("products");
   const navigate = useNavigate();
   const [showImport, setShowImport] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
