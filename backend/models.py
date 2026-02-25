@@ -215,7 +215,6 @@ class CustomSection(BaseModel):
 
 class AdminProductUpdate(BaseModel):
     name: str
-    short_description: Optional[str] = ""
     tagline: Optional[str] = ""
     card_title: Optional[str] = None
     card_tag: Optional[str] = None
