@@ -879,20 +879,21 @@ class TestTenantIsolation:
             return None
         return login.json()["token"]
 
-    def test_customer_cannot_access_admin_customers(self, tenant_a_id):
+    def test_customer_cannot_access_admin_customers(self, tenant_a_info):
         """Customer JWT cannot access /api/admin/customers → 403"""
-        token = self._get_customer_token(TENANT_A_CODE, "TEST-isolation107@test.local")
+        partner_code = tenant_a_info["code"]
+        token = self._get_customer_token(partner_code, "TEST-isolation107@test.local")
         assert token, "Could not get customer token"
         headers = {"Authorization": f"Bearer {token}"}
         resp = requests.get(f"{BASE_URL}/api/admin/customers", headers=headers)
         assert resp.status_code in [403, 401], f"Expected 403/401, got {resp.status_code}"
 
-    def test_customer_cannot_access_admin_tenants(self, tenant_a_id):
+    def test_customer_cannot_access_admin_tenants(self, tenant_a_info):
         """Customer JWT cannot access /api/admin/tenants → 403"""
-        # Need token from previously created customer
+        partner_code = tenant_a_info["code"]
         login = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": "TEST-isolation107@test.local", "password": CUST_PASSWORD},
+            json={"partner_code": partner_code, "email": "TEST-isolation107@test.local", "password": CUST_PASSWORD},
         )
         if login.status_code != 200:
             pytest.skip("Customer token not available")
@@ -901,12 +902,14 @@ class TestTenantIsolation:
         resp = requests.get(f"{BASE_URL}/api/admin/tenants", headers=headers)
         assert resp.status_code in [403, 401], f"Expected 403/401, got {resp.status_code}"
 
-    def test_customer_tenant_id_matches_their_tenant(self, tenant_a_id):
+    def test_customer_tenant_id_matches_their_tenant(self, tenant_a_info):
         """Customer JWT tenant_id matches their own tenant"""
         import base64, json as _json
+        partner_code = tenant_a_info["code"]
+        tenant_a_id = tenant_a_info["id"]
         login = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": "TEST-isolation107@test.local", "password": CUST_PASSWORD},
+            json={"partner_code": partner_code, "email": "TEST-isolation107@test.local", "password": CUST_PASSWORD},
         )
         if login.status_code != 200:
             pytest.skip("Customer token not available")
