@@ -598,7 +598,7 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [slideSaving, setSlideSaving] = useState(false);
   const [authSlide, setAuthSlide] = useState<AuthSlide | null>(null);
-  const [formSlide, setFormSlide] = useState<"quote" | "scope" | "bank_transaction" | null>(null);
+  const [formSlide, setFormSlide] = useState<"quote" | "scope" | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
