@@ -12,6 +12,11 @@ interface FAQ { question: string; answer: string; }
 export interface ProductFormData {
   name: string;
   short_description: string;
+  tagline: string;
+  card_title: string;
+  card_tag: string;
+  card_description: string;
+  card_bullets: string[];
   description_long: string;
   bullets: string[];
   tag: string;
@@ -22,12 +27,13 @@ export interface ProductFormData {
   is_subscription: boolean;
   stripe_price_id: string;
   price_rounding: string;
+  pricing_type: string;
+  pricing_rules: Record<string, any>;
   is_active: boolean;
   visible_to_customers: string[];
   restricted_to: string[];
   intake_schema_json: IntakeSchemaJson;
   custom_sections: CustomSection[];
-  pricing_rules: Record<string, any>;
 }
 
 function makeId() {
@@ -35,14 +41,16 @@ function makeId() {
 }
 
 export const EMPTY_FORM: ProductFormData = {
-  name: "", short_description: "", description_long: "",
+  name: "", short_description: "", tagline: "",
+  card_title: "", card_tag: "", card_description: "", card_bullets: [],
+  description_long: "",
   bullets: [""],
   tag: "", category: "",
   faqs: [], terms_id: "", base_price: 0, is_subscription: false, stripe_price_id: "",
-  price_rounding: "", is_active: true, visible_to_customers: [], restricted_to: [],
+  price_rounding: "", pricing_type: "fixed", pricing_rules: {},
+  is_active: true, visible_to_customers: [], restricted_to: [],
   intake_schema_json: EMPTY_INTAKE_SCHEMA,
   custom_sections: [{ ...DEFAULT_SECTION, id: makeId() }],
-  pricing_rules: {},
 };
 
 const MAX_BULLETS = 10;
