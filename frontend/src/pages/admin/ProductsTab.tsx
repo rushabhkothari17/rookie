@@ -383,7 +383,7 @@ export function ProductsTab() {
       <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Product Audit Logs" logsUrl={logsUrl} />
       <ImportModal
         entity="catalog"
-        entityLabel="Catalog"
+        entityLabel="Products"
         open={showImport}
         onClose={() => setShowImport(false)}
         onSuccess={load}
