@@ -412,6 +412,27 @@ export function ProductForm({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Advanced: Pricing Rules JSON */}
+          {form.pricing_rules && Object.keys(form.pricing_rules).length > 0 && (
+            <div>
+              <label className="text-xs text-slate-600">Pricing Rules (Advanced)</label>
+              <p className="text-[10px] text-slate-400 mb-1">
+                JSON config for tiered/calculator pricing. Edit to update rates, variants, etc.
+              </p>
+              <Textarea
+                value={pricingRulesText}
+                onChange={e => handlePricingRulesChange(e.target.value)}
+                rows={6}
+                className="mt-1 font-mono text-xs"
+                placeholder="{}"
+                data-testid="pf-pricing-rules"
+              />
+              {pricingRulesError && (
+                <p className="text-xs text-red-500 mt-1">{pricingRulesError}</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
