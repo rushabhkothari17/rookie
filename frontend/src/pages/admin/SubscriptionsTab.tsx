@@ -33,6 +33,8 @@ const SUB_STATUSES_FALLBACK = ["active", "unpaid", "paused", "canceled_pending",
 const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "offline", "manual"];
 
 export function SubscriptionsTab() {
+  const { user: authUser } = useAuth();
+  const isPlatformAdmin = authUser?.role === "platform_admin";
   const [subs, setSubs] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [page, setPage] = useState(1);
