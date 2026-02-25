@@ -45,8 +45,10 @@ export default function Signup() {
   const [partnerLogoUrl, setPartnerLogoUrl] = useState<string>("");
   const [partnerPrimaryColor, setPartnerPrimaryColor] = useState<string>("");
 
-  const [partnerOrg, setPartnerOrg] = useState({ name: "", code: "", admin_name: "", admin_email: "", admin_password: "" });
+  const [partnerOrg, setPartnerOrg] = useState({ name: "", admin_name: "", admin_email: "", admin_password: "" });
   const [partnerLoading, setPartnerLoading] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [codeCopied, setCodeCopied] = useState(false);
 
   const [form, setForm] = useState({
     full_name: "", job_title: "", company_name: "",
