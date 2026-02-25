@@ -1,297 +1,209 @@
-"""Pricing calculation service."""
+"""Pricing calculation service — simplified data-driven model.
+
+Pricing types:
+  internal  — base_price + intake question add-ons/multipliers → checkout
+  external  — redirects to external_url, no checkout
+  enquiry   — contact/scoping form, no checkout
+"""
+
 from __future__ import annotations
-
-from typing import Any, Dict, List
-
+import math
+from typing import Any, Dict, List, Optional
 from fastapi import HTTPException
-from core.constants import (
-    SERVICE_FEE_RATE,
-    PREMIUM_MIGRATION_ITEMS,
-    STANDARD_MIGRATION_SOURCES,
-)
-from core.helpers import (
-    round_cents,
-    round_to_nearest_99,
-    round_nearest_25,
-    round_nearest,
-)
 
-def build_price_inputs(product: Dict[str, Any]) -> List[Dict[str, Any]]:
-    pricing_type = product.get("pricing_type")
-    rules = product.get("pricing_rules", {})
-
-    if pricing_type == "tiered":
-        return [{"id": "variant", "label": "Select option", "type": "select", "options": rules.get("variants", [])}]
-
-    if pricing_type == "calculator":
-        # Data-driven: if price_inputs are defined in pricing_rules, return them directly
-        if rules.get("price_inputs"):
-            return rules["price_inputs"]
-
-        # Legacy calc_type handlers (backwards compat)
-        calc_type = rules.get("calc_type")
-        if calc_type == "health_check":
-            return [{"id": "creator_extension", "label": "Creator/Catalyst extension", "type": "select", "options": rules.get("add_ons", [])}]
-        if calc_type == "hours_pack":
-            return [
-                {"id": "hours", "label": "Hours per month", "type": "number", "min": rules.get("min_hours"), "max": rules.get("max_hours"), "step": rules.get("step")},
-                {"id": "payment_option", "label": "Payment option", "type": "select", "options": [{"id": "pay_now", "label": "Pay Now"}, {"id": "scope_later", "label": "Scope & Pay Later"}]},
-            ]
-        if calc_type == "bookkeeping":
-            return [
-                {"id": "transactions", "label": "Monthly transactions", "type": "number", "min": 1},
-                {"id": "inventory", "label": "Inventory tracking", "type": "checkbox"},
-                {"id": "multi_currency", "label": "Multi-currency", "type": "checkbox"},
-                {"id": "offshore", "label": "Offshore finance department", "type": "checkbox"},
-            ]
-        if calc_type == "mailboxes":
-            return [{"id": "mailboxes", "label": "Mailbox count", "type": "number", "min": 1}]
-        if calc_type == "storage_blocks":
-            return [{"id": "blocks", "label": "50GB blocks", "type": "number", "min": 1}]
-        if calc_type == "crm_migration":
-            return [{"id": "tables", "label": "Tables/Modules", "type": "number", "min": 1}, {"id": "records", "label": "Records", "type": "number", "min": 1}]
-        if calc_type == "forms_migration":
-            return [
-                {"id": "forms_with_validation", "label": "Forms with validation", "type": "number", "min": 0},
-                {"id": "forms_without_validation", "label": "Forms without validation", "type": "number", "min": 0},
-                {"id": "total_fields", "label": "Total fields", "type": "number", "min": 0},
-                {"id": "email_notifications", "label": "Email notifications", "type": "number", "min": 0},
-            ]
-        if calc_type == "desk_migration":
-            return [{"id": "departments", "label": "Departments", "type": "number", "min": 1}, {"id": "tickets", "label": "Tickets", "type": "number", "min": 0}, {"id": "kb_articles", "label": "KB articles", "type": "number", "min": 0}]
-        if calc_type == "sign_migration":
-            return [{"id": "templates", "label": "Templates", "type": "number", "min": 1}, {"id": "workdrive_docs", "label": "WorkDrive documents", "type": "number", "min": 0}]
-        if calc_type == "people_migration":
-            return [
-                {"id": "leave_policies", "label": "Leave policies", "type": "number", "min": 0},
-                {"id": "leave_requests", "label": "Leave requests", "type": "number", "min": 0},
-                {"id": "timesheets", "label": "Timesheets", "type": "number", "min": 0},
-                {"id": "attendance", "label": "Attendance", "type": "number", "min": 0},
-                {"id": "employee_docs", "label": "Employee file docs", "type": "number", "min": 0},
-                {"id": "employee_profiles", "label": "Employee profiles", "type": "number", "min": 0},
-                {"id": "templates", "label": "Templates", "type": "number", "min": 0},
-            ]
-    return []
+SERVICE_FEE_RATE = 0.0
 
 
-def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any], fee_rate: float = SERVICE_FEE_RATE) -> Dict[str, Any]:
-    pricing_type = product.get("pricing_type")
-    rules = product.get("pricing_rules", {})
-    subtotal = 0.0
-    line_items = []
-    is_scope_request = False
+def round_cents(v: float) -> float:
+    return math.ceil(v * 100) / 100
+
+
+def round_nearest(v: float, nearest: int) -> float:
+    return math.ceil(v / nearest) * nearest
+
+
+# ── Intake schema helpers ──────────────────────────────────────────────────────
+
+def _get_intake_questions(schema: Any) -> List[Dict]:
+    """Return a flat, ordered list of intake questions.
+
+    Handles both the legacy grouped format (dict with dropdown/multiselect/
+    single_line/multi_line keys) and the new flat array format.
+    """
+    if not schema:
+        return []
+    questions = schema.get("questions", [])
+
+    if isinstance(questions, dict):
+        # Legacy grouped format → flatten with type field
+        flat: List[Dict] = []
+        type_map = {
+            "dropdown": "dropdown",
+            "multiselect": "multiselect",
+            "single_line": "single_line",
+            "multi_line": "multi_line",
+        }
+        for key, q_type in type_map.items():
+            for q in questions.get(key, []):
+                flat.append({**q, "type": q_type})
+        return sorted(flat, key=lambda x: x.get("order", 0))
+
+    # New flat format — already typed
+    return sorted(questions, key=lambda x: x.get("order", 0))
+
+
+# ── Main calculator ────────────────────────────────────────────────────────────
+
+def calculate_price(
+    product: Dict[str, Any],
+    inputs: Dict[str, Any],
+    fee_rate: float = SERVICE_FEE_RATE,
+) -> Dict[str, Any]:
+    pricing_type = product.get("pricing_type", "internal")
     is_subscription = bool(product.get("is_subscription"))
-    requires_checkout = pricing_type not in ["external", "inquiry"]
-    external_url = rules.get("external_url") if pricing_type == "external" else None
 
-    if pricing_type in ("fixed", "simple", None, ""):
-        subtotal = float(product.get("base_price") or 0.0)
-        if subtotal > 0:
-            line_items.append({"label": product["name"], "amount": subtotal})
+    # ── External ──────────────────────────────────────────────────────────────
+    if pricing_type == "external":
+        external_url = (
+            product.get("external_url")
+            or product.get("pricing_rules", {}).get("external_url")
+        )
+        return {
+            "subtotal": 0.0,
+            "fee": 0.0,
+            "total": 0.0,
+            "line_items": [],
+            "requires_checkout": False,
+            "is_subscription": is_subscription,
+            "is_enquiry": False,
+            "external_url": external_url,
+        }
 
-        # Apply intake-based price adjustments (dropdown / multiselect with affects_price=true)
-        schema = product.get("intake_schema_json")
-        if schema and subtotal >= 0:
-            intake_qs = schema.get("questions", {})
-            for q_type in ("dropdown", "multiselect"):
-                for q in intake_qs.get(q_type, []):
-                    if not q.get("affects_price") or not q.get("enabled"):
-                        continue
-                    price_mode = q.get("price_mode", "add")
-                    raw_val = inputs.get(q["key"])
-                    if raw_val is None:
-                        continue
-                    selected = [raw_val] if isinstance(raw_val, str) else (raw_val if isinstance(raw_val, list) else [])
-                    for opt in q.get("options", []):
-                        if opt.get("value") in selected:
-                            pv = float(opt.get("price_value") or 0)
-                            if pv == 0:
-                                continue
-                            if price_mode == "add":
-                                subtotal += pv
-                                line_items.append({"label": f"{q['label']}: {opt['label']}", "amount": round_cents(pv)})
-                            elif price_mode == "multiply":
-                                new_sub = round_cents(subtotal * pv)
-                                line_items.append({"label": f"{q['label']}: {opt['label']} (×{pv})", "amount": round_cents(new_sub - subtotal)})
-                                subtotal = new_sub
+    # ── Enquiry ───────────────────────────────────────────────────────────────
+    if pricing_type == "enquiry":
+        return {
+            "subtotal": 0.0,
+            "fee": 0.0,
+            "total": 0.0,
+            "line_items": [],
+            "requires_checkout": False,
+            "is_subscription": is_subscription,
+            "is_enquiry": True,
+            "external_url": None,
+        }
 
-        # Product-level price rounding
-        price_rounding = product.get("price_rounding")
-        if price_rounding and subtotal > 0:
-            nearest = {"25": 25, "50": 50, "100": 100}.get(str(price_rounding))
-            if nearest:
-                subtotal = round_nearest(subtotal, nearest)
+    # ── Internal ──────────────────────────────────────────────────────────────
+    base = float(product.get("base_price") or 0.0)
+    subtotal = base
+    line_items: List[Dict] = []
+    if base > 0:
+        line_items.append({"label": product.get("name", "Service"), "amount": base})
 
-    elif pricing_type == "tiered":
-        variants = rules.get("variants", [])
-        variant_id = inputs.get("variant") or (variants[0]["id"] if variants else None)
-        variant = next((v for v in variants if v["id"] == variant_id), variants[0] if variants else None)
-        if not variant:
-            raise HTTPException(status_code=400, detail="Invalid option")
-        subtotal = float(variant["price"])
-        line_items.append({"label": f"{product['name']} — {variant['label']}", "amount": subtotal})
-    elif pricing_type == "scope_request":
-        scope_unlock = inputs.get("_scope_unlock")
-        if scope_unlock and scope_unlock.get("price"):
-            subtotal = float(scope_unlock["price"])
-            is_scope_request = False
-            requires_checkout = True
-            line_items.append({"label": product["name"], "amount": subtotal})
-        else:
-            is_scope_request = True
-            requires_checkout = False
-            subtotal = 0.0
-            line_items.append({"label": product["name"], "amount": subtotal})
-    elif pricing_type == "calculator":
-        # ── Data-driven calculator (price_inputs in pricing_rules) ──────────────
-        price_inputs = rules.get("price_inputs")
-        if price_inputs:
-            subtotal = float(product.get("base_price") or 0.0)
-            if subtotal > 0:
-                line_items.append({"label": product["name"], "amount": subtotal})
-            for pi in price_inputs:
-                pi_type = pi.get("type")
-                pi_id = pi.get("id")
-                raw = inputs.get(pi_id, pi.get("default", pi.get("min", 0)))
-                if pi_type == "number":
-                    min_v = float(pi.get("min", 0))
-                    max_v = float(pi.get("max", 9999999))
-                    val = max(min_v, min(max_v, float(raw or min_v)))
-                    rate = float(pi.get("price_per_unit", 0))
-                    if rate > 0:
-                        amount = round_cents(val * rate)
-                        subtotal += amount
-                        line_items.append({"label": pi["label"], "amount": amount})
-                elif pi_type == "select":
-                    selected_id = raw or ((pi.get("options") or [{}])[0] or {}).get("id")
-                    option = next((o for o in pi.get("options", []) if o.get("id") == selected_id), None)
-                    if option:
-                        mult = float(option.get("multiplier", 1.0))
-                        if mult and mult != 1.0:
-                            new_sub = round_cents(subtotal * mult)
-                            line_items.append({"label": f"{pi['label']}: {option['label']}", "amount": round_cents(new_sub - subtotal)})
-                            subtotal = new_sub
-                        flat = float(option.get("flat_price", 0))
-                        if flat:
-                            subtotal += flat
-                            line_items.append({"label": f"{pi['label']}: {option['label']}", "amount": flat})
-                        if option.get("scope_request"):
-                            is_scope_request = True
-                            requires_checkout = False
-        else:
-            # ── Legacy calc_type handlers ────────────────────────────────────────
-            calc_type = rules.get("calc_type")
-            if calc_type == "health_check":
-                base = float(rules.get("base_price", 0.0))
-                add_on_id = inputs.get("creator_extension", "none")
-                add_on = next((a for a in rules.get("add_ons", []) if a["id"] == add_on_id), rules.get("add_ons", [])[0] if rules.get("add_ons") else None)
-                add_price = float(add_on.get("price", 0.0)) if add_on else 0.0
-                subtotal = base + add_price
-                line_items.append({"label": product["name"], "amount": base})
-                if add_price > 0:
-                    line_items.append({"label": f"Creator/Catalyst extension ({add_on['label']})", "amount": add_price})
-            elif calc_type == "hours_pack":
-                hours = int(inputs.get("hours", rules.get("min_hours", 10)))
-                hours = max(rules.get("min_hours", 10), min(hours, rules.get("max_hours", 200)))
-                option = inputs.get("payment_option", "pay_now")
-                if option == "scope_later":
-                    rate = float(rules.get("scope_later_rate", 90.0))
-                    is_scope_request = True
-                    requires_checkout = False
-                    is_subscription = False
-                else:
-                    rate = float(rules.get("pay_now_rate", 75.0))
-                subtotal = hours * rate
-                line_items.append({"label": f"{hours} hours/month", "amount": subtotal})
-            elif calc_type == "bookkeeping":
-                transactions = max(1, int(inputs.get("transactions", 1)))
-                base = max(249.0, transactions * 3.0)
-                multiplier = 1.0
-                if inputs.get("inventory"):
-                    multiplier *= 1.2
-                if inputs.get("multi_currency"):
-                    multiplier *= 1.1
-                if inputs.get("offshore"):
-                    multiplier *= 1.2
-                subtotal = round_nearest_25(base * multiplier)
-                line_items.append({"label": f"{transactions} monthly transactions", "amount": subtotal})
-            elif calc_type == "mailboxes":
-                count = max(1, int(inputs.get("mailboxes", 1)))
-                subtotal = count * float(rules.get("rate", 350.0))
-                line_items.append({"label": f"{count} mailboxes", "amount": subtotal})
-            elif calc_type == "storage_blocks":
-                blocks = max(1, int(inputs.get("blocks", 1)))
-                subtotal = blocks * float(rules.get("rate", 100.0))
-                line_items.append({"label": f"{blocks} × 50GB", "amount": subtotal})
-            elif calc_type == "crm_migration":
-                tables = max(1, int(inputs.get("tables", 1)))
-                records = max(1, int(inputs.get("records", 1)))
-                subtotal = float(rules.get("base_fee", 499.0)) + tables * 250.0 + records * 0.10
-                subtotal = round_nearest_25(subtotal)
-                line_items.append({"label": f"{tables} modules", "amount": tables * 250.0})
-                line_items.append({"label": f"{records} records", "amount": round_cents(records * 0.10)})
-                line_items.append({"label": "Base setup", "amount": float(rules.get("base_fee", 499.0))})
-            elif calc_type == "forms_migration":
-                forms_with = max(0, int(inputs.get("forms_with_validation", 0)))
-                forms_without = max(0, int(inputs.get("forms_without_validation", 0)))
-                fields = max(0, int(inputs.get("total_fields", 0)))
-                notifications = max(0, int(inputs.get("email_notifications", 0)))
-                subtotal = forms_with * 200.0 + forms_without * 100.0 + fields * 1.0 + notifications * 25.0
-                line_items += [
-                    {"label": "Forms with validation", "amount": forms_with * 200.0},
-                    {"label": "Forms without validation", "amount": forms_without * 100.0},
-                    {"label": "Total fields", "amount": fields * 1.0},
-                    {"label": "Email notifications", "amount": notifications * 25.0},
-                ]
-            elif calc_type == "desk_migration":
-                departments = max(1, int(inputs.get("departments", 1)))
-                tickets = max(0, int(inputs.get("tickets", 0)))
-                kb_articles = max(0, int(inputs.get("kb_articles", 0)))
-                subtotal = departments * 499.0 + tickets * 0.10 + kb_articles * 25.0
-                line_items += [
-                    {"label": "Departments", "amount": departments * 499.0},
-                    {"label": "Tickets", "amount": round_cents(tickets * 0.10)},
-                    {"label": "KB articles", "amount": kb_articles * 25.0},
-                ]
-            elif calc_type == "sign_migration":
-                templates = max(1, int(inputs.get("templates", 1)))
-                workdrive_docs = max(0, int(inputs.get("workdrive_docs", 0)))
-                subtotal = templates * 99.0 + workdrive_docs * 5.0
-                line_items += [{"label": "Templates", "amount": templates * 99.0}, {"label": "WorkDrive docs", "amount": workdrive_docs * 5.0}]
-            elif calc_type == "people_migration":
-                base_fee = float(rules.get("base_fee", 999.0))
-                leave_policies = max(0, int(inputs.get("leave_policies", 0)))
-                leave_requests = max(0, int(inputs.get("leave_requests", 0)))
-                timesheets = max(0, int(inputs.get("timesheets", 0)))
-                attendance = max(0, int(inputs.get("attendance", 0)))
-                employee_docs = max(0, int(inputs.get("employee_docs", 0)))
-                employee_profiles = max(0, int(inputs.get("employee_profiles", 0)))
-                templates = max(0, int(inputs.get("templates", 0)))
-                subtotal = (base_fee + leave_policies * 99.0 + leave_requests * 1.0 + timesheets * 0.10 + attendance * 0.10 + employee_docs * 5.0 + employee_profiles * 50.0 + templates * 50.0)
-                line_items += [
-                    {"label": "Base setup", "amount": base_fee},
-                    {"label": "Leave policies", "amount": leave_policies * 99.0},
-                    {"label": "Leave requests", "amount": leave_requests * 1.0},
-                    {"label": "Timesheets", "amount": round_cents(timesheets * 0.10)},
-                    {"label": "Attendance", "amount": round_cents(attendance * 0.10)},
-                    {"label": "Employee docs", "amount": employee_docs * 5.0},
-                    {"label": "Employee profiles", "amount": employee_profiles * 50.0},
-                    {"label": "Templates", "amount": templates * 50.0},
-                ]
-            else:
-                subtotal = 0.0
-    else:
-        subtotal = 0.0
+    schema = product.get("intake_schema_json")
+    questions = _get_intake_questions(schema)
 
-    fee = round_cents(subtotal * fee_rate) if requires_checkout and not is_scope_request else 0.0
-    total = round_cents(subtotal + fee)
+    for q in questions:
+        if not q.get("enabled", True):
+            continue
+        q_type = q.get("type", "single_line")
+        key = q.get("key", "")
+
+        # ── Number question — price_per_unit ──────────────────────────────
+        if q_type == "number":
+            rate = float(q.get("price_per_unit") or 0.0)
+            if rate == 0:
+                continue
+            raw = inputs.get(key)
+            if raw is None:
+                continue
+            min_v = float(q.get("min", 0))
+            max_v = float(q.get("max", 9_999_999))
+            val = max(min_v, min(max_v, float(raw or min_v)))
+            amount = round_cents(val * rate)
+            if amount > 0:
+                subtotal += amount
+                line_items.append({"label": q.get("label", key), "amount": amount})
+
+        # ── Dropdown / Multiselect — affects_price ────────────────────────
+        elif q_type in ("dropdown", "multiselect") and q.get("affects_price"):
+            price_mode = q.get("price_mode", "add")
+            raw = inputs.get(key)
+            if raw is None:
+                continue
+            selected = [raw] if isinstance(raw, str) else (raw if isinstance(raw, list) else [])
+            for opt in q.get("options", []):
+                if opt.get("value") not in selected:
+                    continue
+                pv = float(opt.get("price_value") or 0)
+                if pv == 0:
+                    continue
+                if price_mode == "add":
+                    subtotal += pv
+                    line_items.append({
+                        "label": f"{q.get('label', key)}: {opt.get('label', '')}",
+                        "amount": round_cents(pv),
+                    })
+                elif price_mode == "multiply":
+                    new_sub = round_cents(subtotal * pv)
+                    line_items.append({
+                        "label": f"{q.get('label', key)}: {opt.get('label', '')} (×{pv})",
+                        "amount": round_cents(new_sub - subtotal),
+                    })
+                    subtotal = new_sub
+
+    # Price rounding (optional product-level config)
+    price_rounding = product.get("price_rounding")
+    if price_rounding and subtotal > 0:
+        nearest = {"25": 25, "50": 50, "100": 100}.get(str(price_rounding))
+        if nearest:
+            subtotal = round_nearest(subtotal, nearest)
+
+    subtotal = round_cents(subtotal)
+    requires_checkout = subtotal > 0
+    fee = round_cents(subtotal * fee_rate) if requires_checkout else 0.0
+
     return {
-        "subtotal": round_cents(subtotal),
+        "subtotal": subtotal,
         "fee": fee,
-        "total": total,
+        "total": round_cents(subtotal + fee),
         "line_items": line_items,
         "requires_checkout": requires_checkout,
         "is_subscription": is_subscription,
-        "is_scope_request": is_scope_request,
-        "external_url": external_url,
+        "is_enquiry": False,
+        "external_url": None,
     }
+
+
+# ── Starting price helper (for catalog cards) ─────────────────────────────────
+
+def get_starting_price(product: Dict[str, Any]) -> Optional[float]:
+    """Return the minimum possible price for catalog card display, or None."""
+    pricing_type = product.get("pricing_type", "internal")
+    if pricing_type in ("external", "enquiry"):
+        return None
+
+    base = float(product.get("base_price") or 0.0)
+    schema = product.get("intake_schema_json")
+    questions = _get_intake_questions(schema)
+
+    has_required_priced_question = False
+    min_add = 0.0
+
+    for q in questions:
+        if not q.get("enabled", True):
+            continue
+        q_type = q.get("type", "single_line")
+        if q_type == "number" and float(q.get("price_per_unit") or 0) > 0:
+            if q.get("required"):
+                min_val = float(q.get("min", 0))
+                min_add += round_cents(min_val * float(q["price_per_unit"]))
+                has_required_priced_question = True
+        elif q_type in ("dropdown", "multiselect") and q.get("affects_price") and q.get("required"):
+            prices = [float(o.get("price_value") or 0) for o in q.get("options", [])]
+            if prices:
+                has_required_priced_question = True
+                min_add += min(p for p in prices if p > 0) if any(p > 0 for p in prices) else 0
+
+    if base > 0 or has_required_priced_question:
+        return round_cents(base + min_add)
+    return None
