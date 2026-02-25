@@ -30,6 +30,7 @@ interface PresetRole {
 
 export function UsersTab() {
   const { user: authUser } = useAuth();
+  const isPlatformAdmin = authUser?.role === "platform_admin";
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
