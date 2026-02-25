@@ -211,6 +211,21 @@ async def admin_set_user_active(
         raise HTTPException(status_code=404, detail="User not found")
 
     old_state = user.get("is_active", True)
+
+    # Orphan protection: block deactivating the only active partner_super_admin in a tenant
+    if not active and user.get("role") in ("partner_super_admin", "super_admin"):
+        active_supers = await db.users.count_documents({
+            **tf,
+            "role": user["role"],
+            "is_active": True,
+            "id": {"$ne": user_id},
+        })
+        if active_supers == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot deactivate the only active super admin. Please assign another super admin first."
+            )
+
     await db.users.update_one({**tf, "id": user_id}, {"$set": {"is_active": active, "updated_at": now_iso()}})
 
     await create_audit_log(

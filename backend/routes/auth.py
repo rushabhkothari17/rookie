@@ -1151,6 +1151,7 @@ async def reset_password(payload: ResetPasswordRequest):
         {
             "$set": {"password_hash": hashed, "updated_at": now_iso()},
             "$unset": {"password_reset_code": "", "password_reset_expires": ""},
+            "$inc": {"token_version": 1},
         },
     )
     await create_audit_log(
