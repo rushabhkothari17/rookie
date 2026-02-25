@@ -112,9 +112,6 @@ export default function TopNav() {
               <DropdownMenuItem asChild data-testid="nav-user-profile">
                 <Link to="/profile">My Profile</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild data-testid="nav-user-portal">
-                <Link to="/portal">{ws.nav_portal_label || "Portal"}</Link>
-              </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-600"
                 onClick={logout}
