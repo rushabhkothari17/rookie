@@ -15,12 +15,26 @@ const fmt = (n: number) =>
 /** Derive a minimum starting price from pricing_rules for complex pricing types. */
 const getStartingPrice = (product: any): number | null => {
   const { pricing_type, pricing_rules = {} } = product;
+
+  // New data-driven calculator: use price_inputs
+  if (pricing_type === "calculator" && pricing_rules.price_inputs?.length > 0) {
+    let starting = parseFloat(product.base_price) || 0;
+    for (const pi of pricing_rules.price_inputs) {
+      if (pi.type === "number" && pi.price_per_unit) {
+        const val = parseFloat(pi.default ?? pi.min ?? 0);
+        starting += val * pi.price_per_unit;
+      }
+    }
+    return starting > 0 ? starting : null;
+  }
+
   if (pricing_type === "tiered") {
     const prices = (pricing_rules.variants || [])
       .map((v: any) => parseFloat(v.price) || 0)
       .filter((p: number) => p > 0);
     return prices.length > 0 ? Math.min(...prices) : null;
   }
+
   if (pricing_type === "calculator") {
     const ct = pricing_rules.calc_type;
     if (ct === "health_check") return parseFloat(pricing_rules.base_price) || null;
@@ -33,7 +47,7 @@ const getStartingPrice = (product: any): number | null => {
     if (ct === "mailboxes") return parseFloat(pricing_rules.rate) || null;
     if (ct === "storage_blocks") return parseFloat(pricing_rules.rate) || null;
     if (ct === "crm_migration") return (parseFloat(pricing_rules.base_fee) || 499) + 250;
-    if (ct === "forms_migration") return 100; // min: 1 form without validation
+    if (ct === "forms_migration") return 100;
     if (ct === "desk_migration") return 499;
     if (ct === "sign_migration") return 99;
     if (ct === "people_migration") return parseFloat(pricing_rules.base_fee) || 999;
@@ -42,19 +56,20 @@ const getStartingPrice = (product: any): number | null => {
 };
 
 const formatPrice = (product: any): string | null => {
-  const price = product.base_price;
-  // Explicit $0 → Contact us
-  if (price === 0) return "Contact us";
-  // Has a direct base price
-  if (price != null && price > 0) {
-    return product.is_subscription ? `${fmt(price)}/mo` : `from ${fmt(price)}`;
-  }
-  // Complex pricing — try to derive a starting price
+  // Try to derive a starting price first (covers tiered and calculator variants)
   const startingPrice = getStartingPrice(product);
   if (startingPrice !== null && startingPrice > 0) {
     return `Starts from ${fmt(startingPrice)}`;
   }
-  return null;
+
+  // Has a direct base price > 0
+  const price = product.base_price;
+  if (price != null && price > 0) {
+    return product.is_subscription ? `${fmt(price)}/mo` : `from ${fmt(price)}`;
+  }
+
+  // inquiry/scope_request or genuinely unpriced → Contact us
+  return "Contact us";
 };
 
 export default function OfferingCard({ product }: { product: any }) {
