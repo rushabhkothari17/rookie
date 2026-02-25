@@ -746,7 +746,7 @@ class TestCountryLock:
         """profile_updated audit log created on profile change"""
         log = mongo_db.audit_logs.find_one({
             "action": "profile_updated",
-            "actor": "TEST-countrylock107@test.local",
+            "actor": "test-countrylock107@test.local",
         })
         assert log is not None, "profile_updated audit log not found"
 
