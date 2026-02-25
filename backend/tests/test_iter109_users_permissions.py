@@ -429,6 +429,17 @@ class TestBCreateUsers:
             },
             headers=admin_headers(super_admin_a_token),
         )
+        if resp.status_code == 400 and "already" in resp.text:
+            # Already exists from previous run — look up the existing user
+            resp2 = requests.get(
+                f"{BASE_URL}/api/admin/users?search=TEST.newadmin.b1",
+                headers=admin_headers(super_admin_a_token),
+            )
+            users = resp2.json().get("users", [])
+            if users:
+                TestBCreateUsers._created_user_id = users[0]["id"]
+                print(f"✅ Using existing user from previous run: {users[0]['id']}")
+                return
         assert resp.status_code in (200, 201), f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
         assert "user_id" in data or "user" in data, f"Expected user_id in response: {data}"
