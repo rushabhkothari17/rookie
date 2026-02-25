@@ -257,6 +257,8 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
     Requires partner_code to identify the tenant.
     Sets HttpOnly cookies with JWT access and refresh tokens.
     """
+    if payload.partner_code.strip().lower() == DEFAULT_TENANT_ID:
+        raise HTTPException(status_code=403, detail="This code is reserved for platform administration. Please use your organization's partner code.")
     tenant = await resolve_tenant(payload.partner_code)
     # Any non-admin user is a customer
     query: Dict[str, Any] = {"email": payload.email.lower(), "tenant_id": tenant["id"]}
