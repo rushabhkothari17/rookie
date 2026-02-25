@@ -230,7 +230,7 @@ export function ProductsTab() {
 
   return (
     <div className="space-y-4">
-      <AdminPageHeader title="Catalog" subtitle={`${filtered.length} products`} actions={
+      <AdminPageHeader title="Products" subtitle={`${filtered.length} products`} actions={
         <>
           <Button variant="outline" size="sm" onClick={downloadCsv} data-testid="admin-catalog-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
           <Button variant="outline" size="sm" onClick={() => setShowImport(true)} data-testid="admin-catalog-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
