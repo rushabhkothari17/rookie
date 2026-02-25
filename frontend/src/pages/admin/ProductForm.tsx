@@ -126,6 +126,27 @@ export function ProductForm({
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [visSearch, setVisSearch] = useState("");
+  const [pricingRulesText, setPricingRulesText] = useState(() => {
+    const r = form.pricing_rules;
+    return r && Object.keys(r).length > 0 ? JSON.stringify(r, null, 2) : "";
+  });
+  const [pricingRulesError, setPricingRulesError] = useState("");
+
+  const handlePricingRulesChange = (text: string) => {
+    setPricingRulesText(text);
+    if (!text.trim()) {
+      setPricingRulesError("");
+      setForm({ ...form, pricing_rules: {} });
+      return;
+    }
+    try {
+      const parsed = JSON.parse(text);
+      setPricingRulesError("");
+      setForm({ ...form, pricing_rules: parsed });
+    } catch {
+      setPricingRulesError("Invalid JSON");
+    }
+  };
 
   // Derive visibility mode from form data
   const visMode = form.visible_to_customers.length > 0
