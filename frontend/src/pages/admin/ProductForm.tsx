@@ -27,6 +27,7 @@ export interface ProductFormData {
   restricted_to: string[];
   intake_schema_json: IntakeSchemaJson;
   custom_sections: CustomSection[];
+  pricing_rules: Record<string, any>;
 }
 
 function makeId() {
