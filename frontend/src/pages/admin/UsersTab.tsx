@@ -222,10 +222,13 @@ export function UsersTab() {
                   <TableCell><span className={`px-2 py-0.5 rounded text-xs ${roleDisplay.color}`}>{roleDisplay.label}</span></TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] ${
-                      u.access_level === "full_access" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                      (u.role === "partner_super_admin" || u.role === "super_admin" || u.role === "platform_admin" || u.access_level === "full_access")
+                        ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                     }`}>
-                      {u.access_level === "full_access" ? <ShieldCheck size={10} /> : <Eye size={10} />}
-                      {u.access_level === "full_access" ? "Full" : "Read"}
+                      {(u.role === "partner_super_admin" || u.role === "super_admin" || u.role === "platform_admin" || u.access_level === "full_access")
+                        ? <ShieldCheck size={10} /> : <Eye size={10} />}
+                      {(u.role === "partner_super_admin" || u.role === "super_admin" || u.role === "platform_admin" || u.access_level === "full_access")
+                        ? "Full" : "Read"}
                     </span>
                   </TableCell>
                   <TableCell>
