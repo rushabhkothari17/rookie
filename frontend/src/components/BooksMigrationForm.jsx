@@ -94,7 +94,7 @@ export function calculateBooksMigrationPrice(inputs, pricingRules = {}) {
   return roundToNearest99(base);
 }
 
-export default function BooksMigrationForm({ onChange, initialValues = {}, websiteUrl = "https://www.automateaccounts.com" }) {
+export default function BooksMigrationForm({ onChange, initialValues = {}, websiteUrl = "https://www.automateaccounts.com", pricingRules = {} }) {
   const [sourceSystem, setSourceSystem] = useState(initialValues.source_system || "");
   const [accessConfirmed, setAccessConfirmed] = useState(initialValues.access_confirmed || "");
   const [zohoProducts, setZohoProducts] = useState(initialValues.zoho_products || "");
