@@ -64,11 +64,13 @@ function EmailBodyComposer({ value, onChange }: { value: string; onChange: (v: s
   );
 }
 
-interface ArticlesTabProps {
-  editArticleId?: string;
+interface ResourcesTabProps {
+  editResourceId?: string;
 }
 
-export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
+export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
+  const { user: authUser } = useAuth();
+  const isPlatformAdmin = authUser?.role === "platform_admin";
   const [showImportResources, setShowImportResources] = useState(false);
   const [subTab, setSubTab] = useState<"resources" | "templates" | "email-templates" | "categories" | "override-codes">("resources");
   const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
@@ -175,13 +177,13 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
 
   useEffect(() => { load(1); }, [categoryFilter, searchFilter, startDate, endDate]);
 
-  // Auto-open edit dialog when navigated from resource preview with editArticleId
+  // Auto-open edit dialog when navigated from resource preview with editResourceId
   useEffect(() => {
-    if (editArticleId) {
-      openEdit({ id: editArticleId });
+    if (editResourceId) {
+      openEdit({ id: editResourceId });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editArticleId]);
+  }, [editResourceId]);
 
   const resetForm = () => setForm({ title: "", slug: "", category: "", price: "", content: "", visibility: "all", restricted_to: [] });
 
