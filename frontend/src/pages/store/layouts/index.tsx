@@ -3,23 +3,20 @@
  * 
  * Layout types:
  * - standard (ClassicLayout): Two-column - info left, price right
- * - quick_buy: Compact, price-first, fast checkout
- * - wizard: Guided step-by-step form with progress bar
- * - application: Sidebar nav, sections, enterprise feel
- * - showcase: Hero section, live calculator
+ * - quick_buy (QuickBuyLayout): Compact, price-first, fast checkout
+ * - wizard (WizardLayout): Guided step-by-step form with progress bar
+ * - application (ApplicationLayout): Sidebar nav, sections, enterprise feel
+ * - showcase (ShowcaseLayout): Hero section, live calculator
  */
 import { lazy, Suspense } from "react";
 import type { LayoutProps } from "./types";
 
 // Lazy load layouts for better code splitting
 const ClassicLayout = lazy(() => import("./ClassicLayout"));
-
-// Placeholder for other layouts - they'll use ClassicLayout for now
-// TODO: Implement unique layouts for each type
-const QuickBuyLayout = lazy(() => import("./ClassicLayout"));
-const WizardLayout = lazy(() => import("./ClassicLayout")); 
-const ApplicationLayout = lazy(() => import("./ClassicLayout"));
-const ShowcaseLayout = lazy(() => import("./ClassicLayout"));
+const QuickBuyLayout = lazy(() => import("./QuickBuyLayout"));
+const WizardLayout = lazy(() => import("./WizardLayout")); 
+const ApplicationLayout = lazy(() => import("./ApplicationLayout"));
+const ShowcaseLayout = lazy(() => import("./ShowcaseLayout"));
 
 const LAYOUT_MAP: Record<string, React.LazyExoticComponent<React.ComponentType<LayoutProps>>> = {
   standard: ClassicLayout,
