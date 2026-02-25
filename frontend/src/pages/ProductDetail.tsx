@@ -476,6 +476,7 @@ export default function ProductDetail() {
                   onChange={setMigBooksData}
                   initialValues={{}}
                   websiteUrl={websiteUrl}
+                  pricingRules={product.pricing_rules || {}}
                 />
               </SectionCard>
             )}
