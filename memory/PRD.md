@@ -104,6 +104,7 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Security Sweep: `/app/test_reports/iteration_71.json` — 22 backend tests pass (IDOR, tenant isolation)
 - Iter91 Email+Visibility+UI Fixes: `/app/test_reports/iteration_91.json` — 12/12 backend + 5/5 frontend pass (Feb 2026)
 - Pricing Display Fix: `/app/test_reports/iteration_92.json` — 95%+ frontend pass (all pricing types now display correctly)
+- Pricing Detail Page Fix: `/app/test_reports/iteration_93.json` — 6/6 frontend pass (base_price=0 shows "Price on request", admin pricing_rules editor added)
 
 ### Pricing Display Fix (Feb 2026)
 - **Complex pricing cards**: `OfferingCard.tsx` — added `getStartingPrice()` helper that derives a minimum price from `pricing_rules` for `tiered` (min variant), `calculator` (calc_type-specific minimum), and all sub-types. Shows "Starts from $X" on catalog cards.
