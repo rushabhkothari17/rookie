@@ -237,6 +237,7 @@ export function UsersTab() {
                     <span className="text-xs text-slate-500">{moduleCount > 0 ? `${moduleCount} modules` : "All"}</span>
                   </TableCell>
                   <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-user-status-${u.id}`}>{isActive ? "Active" : "Inactive"}</span></TableCell>
+                  {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-user-partner-${u.id}`}>{u.partner_code || "—"}</TableCell>}
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(u)} data-testid={`admin-user-edit-${u.id}`}>Edit</Button>
