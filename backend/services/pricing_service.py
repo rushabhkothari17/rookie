@@ -151,7 +151,7 @@ def calculate_price(
                 line_items.append({"label": q.get("label", key), "amount": amount})
 
         # ── Boolean question — affects_price like a dropdown ──────────────
-        elif q_type == "boolean" and q.get("affects_price"):
+        elif q_type == "boolean" and (q.get("affects_price") or q.get("affects_price_boolean")):
             raw = inputs.get(key)
             if raw is None:
                 continue
