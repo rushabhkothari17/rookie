@@ -91,6 +91,7 @@ async def list_articles_admin(
         .limit(per_page)
         .to_list(per_page)
     )
+    articles = await enrich_partner_codes(articles, is_platform_admin(admin))
     return {
         "resources": articles,
         "page": page,
