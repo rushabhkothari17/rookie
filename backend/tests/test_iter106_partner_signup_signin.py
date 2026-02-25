@@ -1223,7 +1223,7 @@ class TestTenantIsolation:
 
     def test_tenant_a_products_scoped_to_tenant_a(self, tenant_a_headers, setup_tenant_b):
         """Tenant A admin sees only their own products."""
-        resp = requests.get(f"{BASE_URL}/api/admin/products", headers=tenant_a_headers)
+        resp = requests.get(f"{BASE_URL}/api/admin/products-all", headers=tenant_a_headers)
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
         data = resp.json()
         products = data.get("products", data.get("items", []))
