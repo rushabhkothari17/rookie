@@ -168,6 +168,24 @@ async def get_all_terms(
     return {"terms": terms}
 
 
+@router.get("/terms/default")
+async def get_default_terms(
+    partner_code: Optional[str] = None,
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
+    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+    api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
+):
+    """Get the default terms and conditions for the current tenant."""
+    tid = await _resolve_tenant_id(user, partner_code, x_view_as_tenant, api_key_tid)
+    terms = await db.terms_and_conditions.find_one(
+        {"tenant_id": tid, "is_default": True, "status": "active"}, 
+        {"_id": 0}
+    )
+    if not terms:
+        raise HTTPException(status_code=404, detail="Terms not found")
+    return terms
+
+
 @router.get("/terms/{terms_id}")
 async def get_single_terms(
     terms_id: str,
