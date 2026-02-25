@@ -11,7 +11,7 @@ import { UsersTab } from "./admin/UsersTab";
 import { ProductsTab } from "./admin/ProductsTab";
 import { CategoriesTab } from "./admin/CategoriesTab";
 import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
-import { ArticlesTab } from "./admin/ArticlesTab";
+import { ResourcesTab } from "./admin/ResourcesTab";
 import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
 import { TenantsTab } from "./admin/TenantsTab";
@@ -44,8 +44,8 @@ export default function Admin() {
   const showChecklist = !isPlatformAdmin || viewingAsTenant;
 
   const [searchParams] = useSearchParams();
-  const editArticleId = searchParams.get("editArticle");
-  const defaultTab = editArticleId ? "articles" : "customers";
+  const editResourceId = searchParams.get("editArticle") || searchParams.get("editResource");
+  const defaultTab = editResourceId ? "resources" : "customers";
   const adminBadge = ws.admin_page_badge || "ADMIN";
   const adminTitle = ws.admin_page_title || "Control Panel";
   const adminSubtitle = ws.admin_page_subtitle || "";
@@ -80,6 +80,14 @@ export default function Admin() {
         {/* Left Sidebar Navigation */}
         <div className="w-52 shrink-0 border-r border-slate-200 pr-0 mr-6 min-h-[60vh]">
           <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
+            {/* Platform — only for platform_admin when NOT viewing as a tenant */}
+            {showPartnerOrgs && (
+              <>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Platform</p>
+                <TabsTrigger value="tenants" data-testid="admin-tab-tenants" className={TAB_CLASS}>Partner Orgs</TabsTrigger>
+              </>
+            )}
+
             {/* People */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">People</p>
             {isSuperAdmin && (
@@ -96,7 +104,7 @@ export default function Admin() {
 
             {/* Content */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
-            <TabsTrigger value="articles" data-testid="admin-tab-articles" className={TAB_CLASS}>Articles</TabsTrigger>
+            <TabsTrigger value="resources" data-testid="admin-tab-resources" className={TAB_CLASS}>Resources</TabsTrigger>
             <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
             <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
 
@@ -144,8 +152,8 @@ export default function Admin() {
           <TabsContent value="quotes" className="space-y-4">
             <QuoteRequestsTab />
           </TabsContent>
-          <TabsContent value="articles" className="space-y-4">
-            <ArticlesTab editArticleId={editArticleId || undefined} />
+          <TabsContent value="resources" className="space-y-4">
+            <ResourcesTab editResourceId={editResourceId || undefined} />
           </TabsContent>
           <TabsContent value="categories" className="space-y-4">
             <CategoriesTab />
