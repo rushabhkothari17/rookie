@@ -145,9 +145,6 @@ export default function Admin() {
           <TabsContent value="quotes" className="space-y-4">
             <QuoteRequestsTab />
           </TabsContent>
-          <TabsContent value="bank-transactions" className="space-y-4">
-            <BankTransactionsTab />
-          </TabsContent>
           <TabsContent value="articles" className="space-y-4">
             <ArticlesTab editArticleId={editArticleId || undefined} />
           </TabsContent>
