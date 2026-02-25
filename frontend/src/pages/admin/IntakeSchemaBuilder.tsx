@@ -462,7 +462,8 @@ function QuestionCard({
                 <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                   <input type="checkbox" checked={q.affects_price_boolean || false}
                     onChange={e => onChange({ ...q, affects_price_boolean: e.target.checked })}
-                    className="w-3.5 h-3.5 rounded accent-[#0f172a]" />
+                    className="w-3.5 h-3.5 rounded accent-[#0f172a]"
+                    data-testid="boolean-affects-price" />
                   Affects price
                 </label>
                 {q.affects_price_boolean && (
