@@ -376,8 +376,9 @@ class TestPlatformAdminMeEndpoint:
     """Test 13 - /me endpoint returns role=platform_admin for platform admin."""
 
     def test_me_endpoint_role_platform_admin(self, platform_admin_headers):
+        # /me endpoint is at /api/me (not /api/auth/me)
         resp = requests.get(
-            f"{BASE_URL}/api/auth/me",
+            f"{BASE_URL}/api/me",
             headers=platform_admin_headers,
         )
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
@@ -389,7 +390,7 @@ class TestPlatformAdminMeEndpoint:
     def test_me_endpoint_no_tenant_id(self, platform_admin_headers):
         """Platform admin should have tenant_id=None."""
         resp = requests.get(
-            f"{BASE_URL}/api/auth/me",
+            f"{BASE_URL}/api/me",
             headers=platform_admin_headers,
         )
         assert resp.status_code == 200
