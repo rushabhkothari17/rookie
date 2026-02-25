@@ -724,11 +724,14 @@ class TestCountryLock:
         assert customer, "Customer not found"
         customer_id = customer["id"]
 
+        # Admin update endpoint uses separate Pydantic model fields:
+        # customer_data (CustomerUpdate) and address_data (AddressUpdate) as separate body fields
         resp = requests.put(
             f"{BASE_URL}/api/admin/customers/{customer_id}",
+            params={},
             json={
-                "customer": {"full_name": "Admin Updated Name"},
-                "address": {"country": "USA", "line1": "200 Admin Street", "city": "New York", "region": "NY", "postal": "10001"},
+                "customer_data": {"full_name": "Admin Updated Name"},
+                "address_data": {"country": "USA", "line1": "200 Admin Street", "city": "New York", "region": "NY", "postal": "10001"},
             },
             headers=tenant_a_admin_headers,
         )
