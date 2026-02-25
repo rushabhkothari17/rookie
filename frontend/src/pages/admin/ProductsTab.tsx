@@ -145,7 +145,7 @@ export function ProductsTab() {
         intake_schema_json: form.intake_schema_json,
         custom_sections: form.custom_sections,
         tagline: form.short_description,
-        pricing_rules: editProduct?.pricing_rules || {},
+        pricing_rules: form.pricing_rules || editProduct?.pricing_rules || {},
       };
       if (editProduct) {
         await api.put(`/admin/products/${editProduct.id}`, payload);
