@@ -385,11 +385,9 @@ class TestVisibilityRulesPricingExclusion:
         }
         resp = requests.post(f"{BASE_URL}/api/admin/products", json=payload, headers=admin_auth)
         assert resp.status_code == 200, f"Create product failed: {resp.text}"
-        product = resp.json()
+        data = resp.json()
+        product = data.get("product", data)
         pid = product["id"]
-
-        try:
-            # Scenario 1: hidden question's key NOT in inputs (simulates frontend not sending it)
             # → price should be base 100 only
             result_no_support = calc_price(pid, {"include_support": "no"})
             assert result_no_support["subtotal"] == 100.0, \
