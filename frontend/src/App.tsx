@@ -18,8 +18,8 @@ import Cart from "@/pages/Cart";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import BankTransferSuccess from "@/pages/BankTransferSuccess";
 import GoCardlessCallback from "@/pages/GoCardlessCallback";
-import Articles from "@/pages/Articles";
-import ArticleView from "@/pages/ArticleView";
+import Articles from "@/pages/Resources";
+import ArticleView from "@/pages/ResourceView";
 
 import Portal from "@/pages/Portal";
 import Admin from "@/pages/Admin";
@@ -108,6 +108,8 @@ export default function App() {
               <Route path="/product/:productId" element={<ProductDetail />} />
               <Route path="/articles" element={<Articles />} />
               <Route path="/articles/:articleId" element={<ArticleView />} />
+              <Route path="/resources" element={<Articles />} />
+              <Route path="/resources/:articleId" element={<ArticleView />} />
               <Route element={<BaseLayout />}>
                 <Route path="/cart" element={<ErrorBoundary><Cart /></ErrorBoundary>} />
                 <Route path="/checkout/success" element={<CheckoutSuccess />} />
