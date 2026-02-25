@@ -878,7 +878,18 @@ export default function Cart() {
                 )}
 
                 {/* Checkout buttons per section type */}
-                {grouped.oneTime.length > 0 && (
+                {grouped.oneTime.length > 0 && (() => {
+                  const oneTimeTotal = grouped.oneTime.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
+                  let oneTimeDiscount = 0;
+                  if (promoApplied) {
+                    if (promoApplied.discount_type === "percent") {
+                      oneTimeDiscount = Math.round(oneTimeTotal * promoApplied.discount_value) / 100;
+                    } else {
+                      oneTimeDiscount = Math.min(promoApplied.discount_value, oneTimeTotal);
+                    }
+                  }
+                  const isFree = (oneTimeTotal - oneTimeDiscount) <= 0;
+                  return (
                   <Button
                     className="w-full bg-slate-900 hover:bg-slate-800"
                     onClick={() => handleCheckout(grouped.oneTime, "one_time")}
@@ -896,13 +907,14 @@ export default function Cart() {
                         )
                       ) ||
                       currencyUnsupported ||
-                      (!allowBankTransfer && !allowCardPayment)
+                      (!isFree && !allowBankTransfer && !allowCardPayment)
                     }
                     data-testid="cart-checkout-one_time"
                   >
-                    {paymentMethod === "bank_transfer" ? "Create order" : "Proceed to checkout"}
+                    {isFree ? "Complete Free Order" : (paymentMethod === "bank_transfer" ? "Create order" : "Proceed to checkout")}
                   </Button>
-                )}
+                  );
+                })()}
                 {grouped.subscriptions.length > 0 && (
                   <Button
                     className="w-full bg-slate-900 hover:bg-slate-800"
