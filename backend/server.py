@@ -35,7 +35,7 @@ from middleware.security_headers import SecurityHeadersMiddleware
 
 # Seed data and pricing helpers
 from data.seed_products import build_seed_products
-from services.pricing_service import build_price_inputs
+from services.pricing_service import calculate_price
 
 # ---------------------------------------------------------------------------
 # App — disable interactive docs in production
