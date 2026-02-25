@@ -1,0 +1,98 @@
+{
+  "summary": "Tested new 3-type pricing architecture (internal/external/enquiry). Found and fixed a critical backend bug. All 17 backend tests pass (100%). All 13 frontend features verified via Playwright. The backend had a critical regression introduced by incomplete refactoring of the intake schema validation code.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/admin/products AND PUT /api/admin/products/:id",
+        "issue": "FIXED: _validate_intake_schema() in catalog.py accessed schema.questions.dropdown (old grouped format) but IntakeSchemaJson.questions is now List[IntakeQuestion] (flat array). Caused AttributeError 500 whenever intake_schema_json was provided (which the UI always sends). Also fixed _normalize_schema_dict() for new flat format and audit_details in admin_create_product.",
+        "priority": "CRITICAL",
+        "status": "FIXED"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Store category sidebar",
+        "issues": [
+          "A blank/unnamed category shows '1' count in sidebar below CRM(24). Likely test products with empty category. Minor cosmetic issue."
+        ]
+      },
+      {
+        "screen": "Store offering cards - From pricing label",
+        "issues": [
+          "Text extraction shows 'From£125' (no space). Visually correct with CSS mr-1 margin but the prefix span and price span are rendered adjacent without a space character. Not a visual bug but worth noting."
+        ]
+      }
+    ]
+  },
+  "passed_tests": [
+    "Admin login via partner-login (admin@automateaccounts.local / ChangeMe123!)",
+    "Catalog tab shows 45+ products (≥21 seeded required)",
+    "Catalog products have new pricing types (internal/external/enquiry)",
+    "Public /api/products endpoint returns products",
+    "Create internal product (no intake schema) - POST 200, pricing_type=internal",
+    "Create internal product WITH intake questions (number + dropdown) - POST 200 after fix",
+    "Create external product with external_url - POST 200, pricing_type=external",
+    "Create enquiry product - POST 200, pricing_type=enquiry",
+    "PUT /api/admin/products/:id - update pricing_type → 200",
+    "PUT /api/admin/products/:id with intake_schema_json → 200 after fix",
+    "POST /api/pricing/calc for internal (base_price only) → subtotal=500.0",
+    "POST /api/pricing/calc for internal with number intake (base=100 + 3×50=250) → correct",
+    "POST /api/pricing/calc for external → requires_checkout=False, external_url set",
+    "POST /api/pricing/calc for enquiry → is_enquiry=True, requires_checkout=False",
+    "Store shows internal products with £X labels",
+    "Store shows external products with 'Visit site' labels",
+    "Store shows enquiry products with 'Get in touch' labels",
+    "Product edit dialog opens with 5 tabs: General, Store Card, Pricing, Visibility, Content",
+    "Pricing tab shows 3 type cards: Internal Checkout, External Link, Enquiry Only",
+    "Internal type: base_price field + intake builder + Add question button all visible",
+    "External type: only external URL field shown (base_price and intake hidden)",
+    "Enquiry type: only informational text (no price/URL fields)",
+    "Add Number intake question → shows label, min, max, step, price_per_unit fields",
+    "Add Dropdown intake question → shows label, options, affects_price toggle",
+    "Affects price toggle → enables Price adj. column + per-option price input fields",
+    "New product creation via UI → 'Product created' toast, dialog closes",
+    "Product update (PUT) via UI → 'Product updated' toast, dialog closes",
+    "Dropdown question 'Service Type' persists after reload"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_iter95_pricing_arch.py",
+    "/app/test_reports/pytest/pytest_iter95_pricing_arch.xml"
+  ],
+  "action_items": [
+    "MINOR: Store sidebar shows blank category with count '1' - some test products may have empty category string",
+    "COSMETIC: 'From £X' price labels - the prefix span and price span could include a space character (not just CSS margin) for better text accessibility"
+  ],
+  "critical_code_review_comments": [
+    "FIXED (catalog.py): _validate_intake_schema() and _normalize_schema_dict() used old grouped format API (schema.questions.dropdown etc.) but IntakeSchemaJson model was updated to flat List[IntakeQuestion]. All 3 occurrences fixed: _validate_intake_schema, _normalize_schema_dict, and audit_details in admin_create_product.",
+    "catalog.py line 170: product.pop('price_inputs', None) - remnant from old pricing model, harmless but could be cleaned up",
+    "ProductForm.tsx: no data-testid on BulletsList items for individual bullets but this is minor"
+  ],
+  "updated_files": [
+    "/app/backend/routes/admin/catalog.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests passed after fix)",
+    "frontend": "100% (all 13 feature scenarios verified)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "Backend tests created TEST95_* prefixed products: TEST95_Internal_NoIntake, TEST95_Internal_WithIntake, TEST95_External_Product, TEST95_Enquiry_Product, TEST95_Update_Pricing, TEST95_Update_IntakeSchema, TEST95_Calc_BaseOnly, TEST95_Calc_NumberIntake, TEST95_Calc_External, TEST95_Calc_Enquiry, TEST95_Store_Internal, TEST95_Store_External, TEST95_Store_Enquiry. UI test created TEST95_UI_Intake_Product.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Pricing architecture is now 3-type: internal/external/enquiry. Critical backend bug fixed in catalog.py (_validate_intake_schema, _normalize_schema_dict, audit_details). All features working: product form 5 tabs, 3 pricing type cards with conditional UI, intake builder with number+dropdown question types, store card labels (£X/Visit site/Get in touch), pricing calc endpoint. TEST95_* products exist in CRM category. Backend test file at /app/backend/tests/test_iter95_pricing_arch.py.",
+  "rca_of_issue": {
+    "file": "/app/backend/routes/admin/catalog.py",
+    "functions_affected": ["_validate_intake_schema", "_normalize_schema_dict", "admin_create_product (audit_details)"],
+    "root_cause": "New IntakeSchemaJson model changed questions field from a grouped dict (with .dropdown, .multiselect, etc. sub-arrays) to a flat List[IntakeQuestion]. The _validate_intake_schema and _normalize_schema_dict functions were not updated to match the new model structure, causing AttributeError: 'list' object has no attribute 'dropdown' on any POST/PUT that included intake_schema_json.",
+    "fix_applied": "Updated _validate_intake_schema to iterate over schema.questions list directly. Updated _normalize_schema_dict to handle flat array format (with legacy grouped format fallback). Updated audit_details to use len(questions) instead of accessing non-existent grouped attributes.",
+    "reproduction": "POST /api/admin/products with intake_schema_json: {version:2, questions:[{type:'number',...}]} → 500 AttributeError before fix, 200 after fix"
+  }
+}
