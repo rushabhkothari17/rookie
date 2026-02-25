@@ -219,6 +219,7 @@ async def seed_products():
         await db.settings.insert_one(settings)
     products = build_seed_products(settings["zoho_books_migration_url"])
     for product in products:
+        product["tenant_id"] = DEFAULT_TENANT_ID
         product["price_inputs"] = build_price_inputs(product)
         await db.products.insert_one(product)
 
