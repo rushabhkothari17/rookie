@@ -491,7 +491,7 @@ export default function ProductDetail() {
             )}
 
             {/* Scope ID Unlock — for RFQ products AND scope_request products (not MIG-BOOKS or BUILD-FIXED-SCOPE) */}
-            {(isRFQ || pricing?.is_scope_request || product.pricing_type === "scope_request") && product.sku !== "MIG-BOOKS" && product.sku !== "BUILD-FIXED-SCOPE" && (
+            {(isRFQ || pricing?.is_scope_request || product.pricing_type === "scope_request") && product.pricing_type !== "inquiry" && (
               <SectionCard title="Unlock with Scope ID" testId="scope-id-card">
                 <div className="space-y-3">
                   <p className="text-sm text-slate-500">
