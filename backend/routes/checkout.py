@@ -370,6 +370,19 @@ async def checkout_bank_transfer(
             "quantity": item["quantity"], "metadata_json": item["inputs"],
             "unit_price": item["pricing"]["subtotal"], "line_total": item["pricing"]["subtotal"],
         })
+        # ── Audit: log intake question answers per item ───────────────────
+        intake_answers = item.get("inputs") or {}
+        if intake_answers:
+            await create_audit_log(
+                entity_type="order", entity_id=order_id, action="intake_submitted",
+                actor="customer",
+                details={
+                    "product_id": product["id"],
+                    "product_name": product.get("name", ""),
+                    "intake_answers": intake_answers,
+                    "order_number": order_number,
+                },
+            )
 
     await db.invoices.insert_one({
         "id": make_id(), "order_id": order_id, "subscription_id": None,
