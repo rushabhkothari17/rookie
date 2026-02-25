@@ -424,11 +424,11 @@ class TestCustomerSignup:
 class TestEmailVerification:
     """B) Email verification flow + brute force lockout"""
 
-    def test_verify_email_correct_code(self, tenant_a_id, mongo_db):
+    def test_verify_email_correct_code(self, tenant_a_info, mongo_db):
         """Correct verification code → is_verified=True"""
-        # Get code from signup response
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-verify107@test.local")
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         code = signup_resp.json()["verification_code"]
         email = "TEST-verify107@test.local"
@@ -442,10 +442,11 @@ class TestEmailVerification:
         assert user["is_verified"] is True, "is_verified should be True after verification"
         assert user.get("verification_code") is None, "verification_code should be cleared"
 
-    def test_verify_email_wrong_code(self, tenant_a_id, mongo_db):
+    def test_verify_email_wrong_code(self, tenant_a_info, mongo_db):
         """Wrong code → 400"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-wrongcode107@test.local")
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         email = "TEST-wrongcode107@test.local"
 
@@ -453,10 +454,11 @@ class TestEmailVerification:
         assert resp.status_code == 400, f"Expected 400 for wrong code, got {resp.status_code}"
         assert "invalid" in resp.json().get("detail", "").lower()
 
-    def test_verify_email_brute_force_lockout(self, tenant_a_id, mongo_db):
+    def test_verify_email_brute_force_lockout(self, tenant_a_info, mongo_db):
         """5 wrong codes → 429 lockout for 15 minutes"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-bruteverify107@test.local")
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         email = "TEST-bruteverify107@test.local"
 
@@ -473,7 +475,7 @@ class TestEmailVerification:
         resp = requests.post(f"{BASE_URL}/api/auth/verify-email", json={"email": email, "code": "999999"})
         assert resp.status_code == 429, "User should still be locked out"
 
-    def test_verify_email_already_verified_idempotent(self, tenant_a_id, mongo_db):
+    def test_verify_email_already_verified_idempotent(self, tenant_a_info, mongo_db):
         """Already verified user → 200 'Already verified'"""
         # Re-use test-verify107 which was verified in test_verify_email_correct_code
         resp = requests.post(
@@ -483,10 +485,11 @@ class TestEmailVerification:
         assert resp.status_code == 200, f"Expected 200 for already verified: {resp.status_code}"
         assert "already verified" in resp.json().get("message", "").lower()
 
-    def test_resend_verification_email(self, tenant_a_id, mongo_db):
+    def test_resend_verification_email(self, tenant_a_info, mongo_db):
         """Resend → new code generated, audit log created"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-resend107@test.local")
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         original_code = signup_resp.json()["verification_code"]
         email = "TEST-resend107@test.local"
@@ -495,20 +498,18 @@ class TestEmailVerification:
         assert resend_resp.status_code == 200, f"Resend failed: {resend_resp.text}"
         new_code = resend_resp.json().get("verification_code")
         assert new_code is not None, "No verification code in resend response"
-        # Code should have changed
-        # Note: statistically might be same, but test that field exists
 
         # Audit log: verification_resent
         log = mongo_db.audit_logs.find_one({"action": "verification_resent", "actor": email.lower()})
         assert log is not None, "verification_resent audit log not found"
 
-    def test_email_outbox_after_verification(self, tenant_a_id, mongo_db):
+    def test_email_outbox_after_verification(self, tenant_a_info, mongo_db):
         """After successful verify-email, email_outbox record with type=welcome created"""
         outbox = mongo_db.email_outbox.find_one({"to": "TEST-verify107@test.local", "type": "welcome"})
         assert outbox is not None, "email_outbox welcome record not found after verification"
         assert outbox["status"] == "MOCKED"
 
-    def test_audit_log_email_verified(self, tenant_a_id, mongo_db):
+    def test_audit_log_email_verified(self, tenant_a_info, mongo_db):
         """email_verified audit log created after successful verification"""
         log = mongo_db.audit_logs.find_one({
             "action": "email_verified",
