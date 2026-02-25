@@ -106,7 +106,7 @@ const emptyQuestion = (type: QType, order: number): IntakeQuestion => ({
     ? { price_per_unit: 0, pricing_mode: "flat", tiers: [], min: 0, max: 1000, step: 1, default_value: 0 }
     : {}),
   ...(type === "boolean"
-    ? { affects_price_boolean: false, price_for_yes: 0, price_for_no: 0 }
+    ? { affects_price: false, price_for_yes: 0, price_for_no: 0 }
     : {}),
 });
 
