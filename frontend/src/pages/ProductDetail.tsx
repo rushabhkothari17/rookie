@@ -539,10 +539,10 @@ export default function ProductDetail() {
               </SectionCard>
             )}
 
-            {enabledIntakeQuestions.length > 0 && (
+            {visibleIntakeQuestions.length > 0 && (
               <SectionCard title="Tell us about your project" testId="product-intake-section">
                 <div className="space-y-4">
-                  {enabledIntakeQuestions.map((q: any) => (
+                  {visibleIntakeQuestions.map((q: any) => (
                     <div key={q.key} className="space-y-1.5" data-testid={`intake-field-${q.key}`}>
                       <label className="text-sm font-medium text-slate-700">
                         {q.label}
