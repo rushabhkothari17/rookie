@@ -147,7 +147,7 @@ class PricingTier(BaseModel):
     to: Optional[float] = None
     price_per_unit: float = 0.0
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "serialize_by_alias": True}
 
 
 class VisibilityRule(BaseModel):
@@ -171,7 +171,7 @@ class IntakeQuestion(BaseModel):
     # Number type — flat
     price_per_unit: Optional[float] = None
     pricing_mode: str = "flat"
-    tiers: Optional[List[PricingTier]] = None
+    tiers: Optional[List[Dict[str, Any]]] = None
     min: Optional[float] = None
     max: Optional[float] = None
     step: Optional[float] = None
