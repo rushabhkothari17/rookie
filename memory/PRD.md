@@ -71,8 +71,12 @@ Build a fully configurable, admin-driven SaaS platform for accounting/automation
 ### Phase 6 — Dynamic Product Layouts + Extended Fields (Feb 25, 2026)
 - **Dynamic Layout System**: New `layouts/` folder with layout components
   - `ProductLayout` router in `ProductDetail.tsx` selects layout based on `product.display_layout`
-  - `ClassicLayout.tsx`: Two-column layout (product info left, price summary right)
-  - Other layouts (wizard, quick_buy, application, showcase) are placeholders
+  - **5 Distinct Layouts Fully Implemented**:
+    - `ClassicLayout.tsx` (standard): Two-column layout (product info left, sticky price summary right)
+    - `QuickBuyLayout.tsx` (quick_buy): Compact price-first design with dark hero, fast checkout
+    - `WizardLayout.tsx` (wizard): Step-by-step guided form with progress bar and numbered steps
+    - `ApplicationLayout.tsx` (application): Sidebar navigation with sections (Overview, Form, Pricing, FAQs)
+    - `ShowcaseLayout.tsx` (showcase): Gradient hero with live Configure & Price calculator
 - **New Field Types**:
   - `boolean` (Yes/No with price_for_yes/price_for_no)
   - `date` (single date or date range)
@@ -86,6 +90,7 @@ Build a fully configurable, admin-driven SaaS platform for accounting/automation
 - **Scope ID Unlock Section**: For enquiry/scope_request products with validation
 - **File Upload Endpoint**: `POST /api/uploads` with 24hr TTL using MongoDB TTL index
 - **Formula Pricing Engine**: Safe AST-based evaluator supporting +, -, *, / operations
+- **Dialog Accessibility Fix**: Added DialogTitle to product edit dialog for screen reader compatibility
 
 ## Key DB Schema — products
 ```json
