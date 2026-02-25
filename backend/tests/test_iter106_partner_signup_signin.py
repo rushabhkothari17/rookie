@@ -706,19 +706,14 @@ class TestPartnerSignIn:
             "password": setup_tenant_a["password"],
         })
         assert login_resp.status_code == 200
-        # Check audit log
-        audit = mongo_db.audit_logs.find_one(
+        # AuditService.log() writes to audit_trail (not legacy audit_logs)
+        audit = mongo_db.audit_trail.find_one(
             {"actor_email": setup_tenant_a["email"].lower(), "action": "USER_LOGIN"},
             {"_id": 0}
         )
-        if audit is None:
-            # Try lowercase action
-            audit = mongo_db.audit_logs.find_one(
-                {"actor_email": setup_tenant_a["email"].lower()},
-                {"_id": 0}
-            )
-        assert audit is not None, "No audit log found for partner login"
-        print(f"PASS: Audit log created on login: action='{audit.get('action')}'")
+        assert audit is not None, \
+            f"No audit_trail entry found for USER_LOGIN by {setup_tenant_a['email'].lower()}"
+        print(f"PASS: Audit log created on login in audit_trail: action='{audit.get('action')}'")
 
 
 class TestPartnerLoginBruteForce:
