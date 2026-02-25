@@ -102,7 +102,7 @@ export function ProductsTab() {
   return (
     <div className="space-y-4">
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
-        <TabsList className="bg-slate-100 p-1 rounded-lg w-fit">
+        <TabsList className="bg-slate-100 p-1 rounded-lg w-fit flex-wrap">
           <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2" data-testid="products-subtab-products">
             <Package size={16} />
             Products
@@ -110,6 +110,14 @@ export function ProductsTab() {
           <TabsTrigger value="categories" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2" data-testid="products-subtab-categories">
             <FolderTree size={16} />
             Categories
+          </TabsTrigger>
+          <TabsTrigger value="promo" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2" data-testid="products-subtab-promo">
+            <Tag size={16} />
+            Promo Codes
+          </TabsTrigger>
+          <TabsTrigger value="terms" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2" data-testid="products-subtab-terms">
+            <FileText size={16} />
+            Terms
           </TabsTrigger>
         </TabsList>
 
