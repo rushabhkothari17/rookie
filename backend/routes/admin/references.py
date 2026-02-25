@@ -32,6 +32,7 @@ async def list_references_public(
     else:
         tid = DEFAULT_TENANT_ID
     refs = await db.website_references.find({"tenant_id": tid}, {"_id": 0}).sort("label", 1).to_list(500)
+    refs = await enrich_partner_codes(refs, is_platform_admin(admin))
     return {"references": refs}
 
 
@@ -41,6 +42,7 @@ async def list_references_public(
 async def list_references(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
     refs = await db.website_references.find(tf, {"_id": 0}).sort("label", 1).to_list(500)
+    refs = await enrich_partner_codes(refs, is_platform_admin(admin))
     return {"references": refs}
 
 
