@@ -62,19 +62,14 @@ function productToForm(p: any): ProductFormData {
 }
 
 export function ProductsTab() {
+  const navigate = useNavigate();
   const [showImport, setShowImport] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [terms, setTerms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [catalogFilter, setCatalogFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
-  const [showDialog, setShowDialog] = useState(false);
-  const [editProduct, setEditProduct] = useState<any>(null);
-  const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
@@ -84,11 +79,9 @@ export function ProductsTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const [prodRes, catRes, custRes, termsRes] = await Promise.all([
+      const [prodRes, catRes] = await Promise.all([
         api.get("/admin/products-all?per_page=500"),
         api.get("/admin/categories?per_page=500").catch(() => ({ data: { categories: [] } })),
-        api.get("/admin/customers?per_page=1000").catch(() => ({ data: { customers: [], users: [] } })),
-        api.get("/admin/terms").catch(() => ({ data: { terms: [] } })),
       ]);
       setProducts(
         (prodRes.data.products || []).sort((a: any, b: any) =>
@@ -96,15 +89,6 @@ export function ProductsTab() {
         )
       );
       setCategories(catRes.data.categories || []);
-      // Merge user email into customers for typeahead
-      const usersArr: any[] = custRes.data.users || [];
-      const userEmailMap: Record<string, string> = {};
-      usersArr.forEach((u: any) => { userEmailMap[u.id] = u.email || ""; });
-      const enrichedCustomers = (custRes.data.customers || []).map((c: any) => ({
-        ...c, email: userEmailMap[c.user_id] || "",
-      }));
-      setCustomers(enrichedCustomers);
-      setTerms(termsRes.data.terms || []);
     } catch {
       toast.error("Failed to load products");
     } finally {
@@ -114,25 +98,12 @@ export function ProductsTab() {
 
   useEffect(() => { load(); }, []);
 
-  // Re-fetch categories whenever the dialog opens to pick up newly added categories
-  useEffect(() => {
-    if (showDialog) {
-      api.get("/admin/categories?per_page=500")
-        .then(res => setCategories(res.data.categories || []))
-        .catch(() => {});
-    }
-  }, [showDialog]);
-
   const openCreate = () => {
-    setEditProduct(null);
-    setForm(EMPTY_FORM);
-    setShowDialog(true);
+    navigate("/admin/products/new");
   };
 
   const openEdit = (p: any) => {
-    setEditProduct(p);
-    setForm(productToForm(p));
-    setShowDialog(true);
+    navigate(`/admin/products/${p.id}/edit`);
   };
 
   const handleSave = async () => {
