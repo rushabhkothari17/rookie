@@ -16,13 +16,21 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Upload} from "lucide-react";
 
 function productToForm(p: any): ProductFormData {
-  // v2: include card_title, card_tag, card_description, card_bullets, tagline, pricing_type
   const bullets: string[] = (p.bullets || []).filter((b: string) => b);
   if (bullets.length === 0) {
     const fallback = (p.bullets_included || []).filter((b: string) => b);
     if (fallback.length > 0) bullets.push(...fallback);
     else bullets.push("");
   }
+
+  // Map legacy pricing types to new 3-type model
+  const legacyMap: Record<string, string> = {
+    fixed: "internal", tiered: "internal", calculator: "internal",
+    simple: "internal", hours: "internal",
+    scope_request: "enquiry", inquiry: "enquiry",
+  };
+  const pricing_type = legacyMap[p.pricing_type] ?? p.pricing_type ?? "internal";
+  const external_url = p.external_url || p.pricing_rules?.external_url || "";
 
   return {
     name: p.name || "",
@@ -44,8 +52,8 @@ function productToForm(p: any): ProductFormData {
     is_subscription: p.is_subscription ?? false,
     stripe_price_id: p.stripe_price_id || "",
     price_rounding: p.price_rounding || "",
-    pricing_type: p.pricing_type || "fixed",
-    pricing_rules: p.pricing_rules || {},
+    pricing_type,
+    external_url,
     is_active: p.is_active ?? true,
     visible_to_customers: p.visible_to_customers || [],
     restricted_to: p.restricted_to || [],
@@ -155,8 +163,8 @@ export function ProductsTab() {
         restricted_to: form.restricted_to,
         intake_schema_json: form.intake_schema_json,
         custom_sections: form.custom_sections,
-        pricing_type: form.pricing_type || "fixed",
-        pricing_rules: form.pricing_rules || editProduct?.pricing_rules || {},
+        pricing_type: form.pricing_type || "internal",
+        external_url: form.external_url || null,
       };
       if (editProduct) {
         await api.put(`/admin/products/${editProduct.id}`, payload);
