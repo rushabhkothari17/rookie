@@ -1188,13 +1188,14 @@ class TestFTenantIsolation:
             headers=admin_headers(platform_token),
         )
         assert resp_platform.status_code == 200
-        platform_users = {u["email"] for u in resp_platform.json().get("users", [])}
+        # Emails are stored in lowercase
+        platform_users = {u["email"].lower() for u in resp_platform.json().get("users", [])}
 
         # Check both A and B super admins are visible to platform admin
-        assert "TEST.super.a@iter109.test" in platform_users, (
+        assert "test.super.a@iter109.test" in platform_users, (
             f"Platform admin should see Tenant A users. Available: {platform_users}"
         )
-        assert "TEST.super.b@iter109.test" in platform_users, (
+        assert "test.super.b@iter109.test" in platform_users, (
             f"Platform admin should see Tenant B users. Available: {platform_users}"
         )
         print(f"✅ Platform admin sees users from all tenants")
