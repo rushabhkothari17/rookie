@@ -19,17 +19,25 @@ E-commerce platform for professional services with:
 - [x] Advanced intake forms with conditional visibility
 - [x] Tiered pricing engine with formulas
 
-### Admin Interface
-- [x] Products tab with Products/Categories sub-tabs
-- [x] "Catalog" renamed to "Products"
-- [x] "Quote Requests" renamed to "Requests"
-- [x] Bank Transactions module removed
-- [x] Customer Portal link in main nav
-- [x] Blank category bug fixed in store sidebar
+### Admin Interface (RESTRUCTURED 2026-02-25)
+- [x] **Products tab** now contains: Products, Categories, Promo Codes, Terms (as sub-tabs)
+- [x] **Articles tab** now contains: Articles, Templates, Email Templates, Categories, Override Codes (as sub-tabs)
+- [x] **Main sidebar** updated:
+  - PEOPLE: Users, Customers
+  - COMMERCE: Products, Subscriptions, Orders, Requests
+  - CONTENT: Articles, Email Templates, References
+  - SETTINGS: Website Content, Custom Domains
+  - INTEGRATIONS: Connect Services, API, Webhooks, Logs
+- [x] **Website Content** streamlined:
+  - Removed Payments section (keep in Connected Services)
+  - Removed Bank Transaction Form from Forms
+  - Removed Email Templates, References, Custom Domains (moved to sidebar)
+- [x] Bank Transactions module fully removed
 
 ### Cart & Checkout (REDESIGNED 2026-02-25)
 - [x] **Two-column layout**: Cart items on left, Order Summary sidebar on right
 - [x] **Modern payment method cards**: Bank Transfer (no fee) and Card Payment (5% fee)
+- [x] **Increased spacing** between sections (space-y-8, gap-10)
 - [x] **Collapsible promo code section**
 - [x] **Clean empty cart state** with shopping cart icon and Browse CTA
 - [x] **Scope ID validation in Cart** (moved from product pages)
@@ -59,13 +67,18 @@ E-commerce platform for professional services with:
     └── src/
         ├── pages/
         │   ├── admin/
-        │   │   ├── ProductEditor.tsx - Full-screen editor
-        │   │   ├── ProductsTab.tsx   - Products/Categories tabs
+        │   │   ├── ProductsTab.tsx   - Products/Categories/Promo/Terms tabs
+        │   │   ├── ArticlesTab.tsx   - Articles/Templates/Email/Categories/Override tabs
+        │   │   ├── WebsiteTab.tsx    - Streamlined (removed payments, references, etc.)
+        │   │   ├── EmailTemplatesTab.tsx - NEW standalone tab
+        │   │   ├── ReferencesTab.tsx - NEW standalone tab
+        │   │   ├── CustomDomainsTab.tsx - NEW standalone tab
         │   │   └── CategoriesTab.tsx
         │   ├── store/
         │   │   ├── ProductDetail.tsx - Layout router
         │   │   └── layouts/          - 5 layout components
-        │   └── Cart.tsx              - REDESIGNED cart page
+        │   ├── Cart.tsx              - REDESIGNED with increased spacing
+        │   └── ProductEditor.tsx     - Fixed API endpoint
         ├── components/
         │   └── Store/
         └── App.tsx
@@ -76,6 +89,7 @@ E-commerce platform for professional services with:
 - `POST /api/checkout/session` - Stripe checkout
 - `POST /api/checkout/bank-transfer` - Bank transfer/GoCardless
 - `POST /api/orders/preview` - Cart preview with pricing
+- `GET /api/admin/products-all` - Admin products list
 - `GET /api/products` - Public product list
 - `GET /api/categories` - Product categories
 
@@ -87,25 +101,24 @@ E-commerce platform for professional services with:
 - `invoices` - Payment records
 
 ## Completed in Latest Session (2026-02-25)
-1. ✅ Fixed "blank category" issue in Store sidebar
-2. ✅ Admin sidebar restructured (Products under Commerce, Categories as sub-tab)
-3. ✅ Free product checkout backend endpoint
-4. ✅ **Cart UI/UX complete redesign**:
-   - Two-column layout
-   - Modern payment method cards
-   - Collapsible promo code
-   - Clean empty state
-   - Sticky order summary
-5. ✅ **Scope ID moved to Cart** (removed from product pages)
+1. ✅ Cart UI/UX complete redesign
+2. ✅ Scope ID moved to Cart (from product pages)
+3. ✅ **Admin UI restructured**:
+   - Products tab: +Promo Codes, +Terms sub-tabs
+   - Articles tab: +Override Codes sub-tab
+   - Main sidebar: +Email Templates, +References, +Custom Domains
+   - Website Content: -Payments, -Bank Transaction Form, -Email, -References, -Domains
+4. ✅ Product editing fixed (API endpoint corrected)
+5. ✅ Cart spacing increased
 
 ## Pending Tasks (P1)
-1. Fix "Edit Article" button visibility for non-admin users (recurring bug)
-2. Verify complex multi-level visibility logic for intake forms
+1. Fix React key prop warning in ProductForm
+2. Fix "Edit Article" button visibility for non-admin users (recurring bug)
 
 ## Future Tasks (P2)
 - Security audit
 - Centralized email integration settings
-- Credential forms for "Coming Soon" integrations (Gmail, Outlook, HubSpot)
+- Credential forms for "Coming Soon" integrations
 
 ## Test Credentials
 - Admin: `admin@automateaccounts.local` / `ChangeMe123!`
@@ -114,6 +127,7 @@ E-commerce platform for professional services with:
 ## Test Reports
 - `/app/test_reports/iteration_99.json` - Sidebar restructure tests (100% pass)
 - `/app/test_reports/iteration_100.json` - Cart redesign tests (100% pass)
+- `/app/test_reports/iteration_101.json` - Admin UI restructuring tests (100% pass)
 
 ---
 *Last Updated: 2026-02-25*
