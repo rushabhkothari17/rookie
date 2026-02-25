@@ -707,7 +707,7 @@ export default function Cart() {
           </div>
 
           {/* Sidebar - Order Summary */}
-          <div className="lg:sticky lg:top-6 space-y-4 h-fit">
+          <div className="lg:sticky lg:top-6 space-y-6 h-fit">
             {/* Promo Code */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden" data-testid="cart-promo-section">
               <button onClick={() => setShowPromoSection(!showPromoSection)} className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors">
