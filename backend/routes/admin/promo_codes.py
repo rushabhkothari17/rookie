@@ -39,7 +39,8 @@ async def admin_list_promo_codes(
     total = await db.promo_codes.count_documents(query)
     skip = (page - 1) * per_page
     codes = await db.promo_codes.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
-    return {"promo_codes": codes, "page": page, "per_page": per_page, "total": total, "total_pages": max(1, (total + per_page - 1) // per_page)}
+    codes_enriched = await enrich_partner_codes(codes, is_platform_admin(admin))
+    return {"promo_codes": codes_enriched, "page": page, "per_page": per_page, "total": total, "total_pages": max(1, (total + per_page - 1) // per_page)}
 
 
 @router.post("/admin/promo-codes")
