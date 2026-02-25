@@ -466,7 +466,7 @@ async def create_checkout_session(
         for item in order_items:
             if item["pricing"].get("is_subscription"):
                 raise HTTPException(status_code=400, detail="One-time checkout cannot include subscriptions")
-            if item["pricing"].get("is_scope_request") or item["product"].get("pricing_type") in ["external", "inquiry"]:
+            if item["pricing"].get("is_enquiry") or item["product"].get("pricing_type") in ["external", "enquiry"]:
                 raise HTTPException(status_code=400, detail="Checkout not supported for this item")
 
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)

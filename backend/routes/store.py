@@ -233,7 +233,7 @@ async def orders_preview(
             pricing["subtotal"] = item.price_override
             pricing["total"] = item.price_override
             pricing["fee"] = 0.0
-            pricing["is_scope_request"] = False
+            pricing["is_enquiry"] = pricing.get("is_enquiry", False)
         # Include nested product and pricing objects so Cart.tsx can access item.product.pricing_type
         # and item.pricing.is_scope_request etc.
         results.append({
