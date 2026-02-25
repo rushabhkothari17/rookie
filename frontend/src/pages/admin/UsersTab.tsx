@@ -208,6 +208,7 @@ export function UsersTab() {
               <TableHead>Access</TableHead>
               <TableHead>Modules</TableHead>
               <TableHead>Status</TableHead>
+              {isPlatformAdmin && <TableHead>Partner</TableHead>}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
