@@ -598,18 +598,18 @@ export function IntakeSchemaBuilder({
           </div>
         </button>
         {showCaps && (
-          <div className="px-3 pb-3 border-t border-slate-100 grid grid-cols-2 gap-3 pt-3">
+          <div className="px-3 pb-3 border-t border-slate-100 grid grid-cols-2 gap-3 pt-3" data-testid="price-caps-section">
             <div>
               <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Minimum price (£)</label>
               <Input type="number" value={schema.price_floor ?? ""}
                 onChange={e => onChange({ ...schema, price_floor: e.target.value === "" ? null : parseFloat(e.target.value) })}
-                placeholder="No minimum" className="h-8 text-xs font-mono" />
+                placeholder="No minimum" className="h-8 text-xs font-mono" data-testid="price-floor-input" />
             </div>
             <div>
               <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Maximum price (£)</label>
               <Input type="number" value={schema.price_ceiling ?? ""}
                 onChange={e => onChange({ ...schema, price_ceiling: e.target.value === "" ? null : parseFloat(e.target.value) })}
-                placeholder="No maximum" className="h-8 text-xs font-mono" />
+                placeholder="No maximum" className="h-8 text-xs font-mono" data-testid="price-ceiling-input" />
             </div>
             <p className="col-span-2 text-[10px] text-slate-400">Applied after all question calculations. Useful to enforce minimum billing or cap variable pricing.</p>
           </div>
