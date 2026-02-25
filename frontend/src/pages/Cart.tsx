@@ -820,7 +820,7 @@ export default function Cart() {
             </div>
 
             {/* Terms & Checkout */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-sm">
               {ws.checkout_terms_enabled !== false && (
                 <label className="flex items-start gap-3 cursor-pointer" data-testid="cart-terms-section">
                   <input 
@@ -828,11 +828,11 @@ export default function Cart() {
                     checked={termsAccepted} 
                     onChange={(e) => setTermsAccepted(e.target.checked)} 
                     className="mt-1 w-4 h-4 rounded"
-                    style={{ accentColor: ws.primary_color || '#1e293b' }}
+                    style={{ accentColor: "var(--aa-accent)" }}
                   />
                   <span className="text-sm text-slate-600">
                     I accept the{" "}
-                    <button type="button" onClick={() => setShowTermsModal(true)} className="underline font-medium hover:no-underline" style={{ color: ws.primary_color || '#1e293b' }}>
+                    <button type="button" onClick={() => setShowTermsModal(true)} className="underline font-medium hover:no-underline" style={{ color: "var(--aa-primary)" }}>
                       Terms & Conditions
                     </button>
                   </span>
@@ -841,8 +841,8 @@ export default function Cart() {
               
               {grouped.oneTime.length > 0 && (
                 <Button 
-                  className="w-full h-12 text-base text-white transition-all hover:opacity-90" 
-                  style={{ backgroundColor: ws.primary_color || '#1e293b' }}
+                  className="w-full h-12 text-base text-white transition-all hover:opacity-90 shadow-lg" 
+                  style={{ backgroundColor: "var(--aa-primary)" }}
                   onClick={() => handleCheckout(grouped.oneTime, "one_time")} 
                   disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing || (extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim()) : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!isFreeCheckout && !allowBankTransfer && !allowCardPayment)} 
                   data-testid="cart-checkout-one_time"
@@ -853,8 +853,8 @@ export default function Cart() {
               
               {grouped.subscriptions.length > 0 && (
                 <Button 
-                  className="w-full h-12 text-base text-white transition-all hover:opacity-90" 
-                  style={{ backgroundColor: ws.accent_color || '#7c3aed' }}
+                  className="w-full h-12 text-base text-white transition-all hover:opacity-90 shadow-lg" 
+                  style={{ backgroundColor: "var(--aa-accent)" }}
                   onClick={() => handleCheckout(grouped.subscriptions, "subscription")} 
                   disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!allowBankTransfer && !allowCardPayment) || (subscriptionMissingPrice && paymentMethod === "card")} 
                   data-testid="cart-checkout-subscription"
