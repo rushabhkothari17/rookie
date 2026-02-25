@@ -129,8 +129,8 @@ export default function Cart() {
   // Payment settings
   const allowBankTransfer = ws.gocardless_enabled !== false;
   const allowCardPayment = ws.stripe_enabled !== false;
-  const stripeFeePercent = parseFloat(ws.payment_stripe_fee_percent || "2.9");
-  const stripeFeeRate = stripeFeePercent / 100;
+  const stripeFeeRate = ws.stripe_fee_rate || 0.029;
+  const stripeFeePercent = Math.round(stripeFeeRate * 1000) / 10; // Convert to percentage for display
   const showFee = paymentMethod === "card";
   const currencyUnsupported = preview?.currency && !["USD", "CAD"].includes(preview.currency);
   const subscriptionMissingPrice = grouped.subscriptions.some((i: any) => !i.product.stripe_price_id);
