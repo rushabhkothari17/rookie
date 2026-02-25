@@ -126,7 +126,8 @@ async def get_product(
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
     tid = await _resolve_tenant_id(user, None, x_view_as_tenant)
-    product = await db.products.find_one({"tenant_id": tid, "id": product_id, "is_active": True}, {"_id": 0})
+    tenant_ids = list({tid, DEFAULT_TENANT_ID})
+    product = await db.products.find_one({"tenant_id": {"$in": tenant_ids}, "id": product_id, "is_active": True}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     # Enforce visibility rules
