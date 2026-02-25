@@ -308,7 +308,7 @@ class TestCustomerSignup:
         payload = make_customer_payload("TEST-cust107-unknown@test.local", country="Atlantis")
         resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 200, f"Unknown country signup failed: {resp.text}"
-        user = mongo_db.users.find_one({"email": "TEST-cust107-unknown@test.local", "tenant_id": tenant_b_id})
+        user = mongo_db.users.find_one({"email": "test-cust107-unknown@test.local", "tenant_id": tenant_b_id})
         assert user, "User not created"
         customer = mongo_db.customers.find_one({"user_id": user["id"]})
         assert customer, "Customer not created"
