@@ -87,10 +87,27 @@ Build a fully configurable, admin-driven SaaS platform for accounting/automation
 - **Product Tags**: `tag` field displayed as blue badges on product detail page
 - **Subscription Indicator**: Blue info box "This is a recurring subscription" for `is_subscription=true`
 - **Terms & Conditions Link**: Shows when product has `terms_id` set
-- **Scope ID Unlock Section**: For enquiry/scope_request products with validation
 - **File Upload Endpoint**: `POST /api/uploads` with 24hr TTL using MongoDB TTL index
 - **Formula Pricing Engine**: Safe AST-based evaluator supporting +, -, *, / operations
 - **Dialog Accessibility Fix**: Added DialogTitle to product edit dialog for screen reader compatibility
+
+### Phase 7 — Admin Panel Restructuring (Feb 25, 2026)
+- **Bank Transactions Module Removed**: Backend route and frontend tab completely removed
+- **Renamed Tabs**:
+  - "Catalog" → "Products" in admin sidebar
+  - "Quote Requests" → "Requests" in admin sidebar
+- **Portal Navigation**: Moved from user dropdown to main TopNav after Articles, renamed to "Customer Portal"
+- **Full-Screen Product Editor**: New dedicated routes:
+  - `/admin/products/new` for creating products
+  - `/admin/products/:id/edit` for editing products
+  - Full-screen UI with sticky header, tabs for General/Store Card/Pricing/Visibility/Content
+- **Multi-Level Visibility Chaining**: Visibility rules now support chains (A depends on B, B depends on C)
+- **Improved CTA Button Text**:
+  - Free products (price=0): "Get it free"
+  - Enquiry products: "Proceed to request quote"
+  - Regular products: "Add to cart"
+- **Scope ID Section**: Moved from product page to checkout page (enquiry products only)
+- **Article Category Fix**: Dropdown now shows both dynamic DB categories and hardcoded scope categories
 
 ## Key DB Schema — products
 ```json
