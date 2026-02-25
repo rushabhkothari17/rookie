@@ -242,7 +242,6 @@ async def ensure_db_security_indexes():
         ("api_keys", [("key", 1), ("is_active", 1)]),      # legacy plaintext fallback
         ("api_keys", [("tenant_id", 1), ("is_active", 1)]),
         ("quote_requests", [("tenant_id", 1), ("created_at", -1)]),
-        ("bank_transactions", [("tenant_id", 1), ("date", -1)]),
         ("audit_logs", [("tenant_id", 1), ("created_at", -1)]),
     ]
     for collection_name, keys in idx:
