@@ -92,7 +92,7 @@ export default function Cart() {
     if (items.length === 0) { setPreview(null); return; }
     const loadPreview = async () => {
       try {
-        const r = await api.post("/cart/preview", { items: items.map(i => ({ product_id: i.product_id, quantity: i.quantity, inputs: i.inputs })) });
+        const r = await api.post("/orders/preview", { items: items.map(i => ({ product_id: i.product_id, quantity: i.quantity, inputs: i.inputs })) });
         setPreview(r.data);
       } catch { toast.error("Failed to load cart preview"); }
     };
