@@ -119,6 +119,98 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "content", label: "Page Content" },
 ];
 
+interface Variant { id: string; label: string; price: number; }
+function VariantEditor({ variants, onChange }: { variants: Variant[]; onChange: (v: Variant[]) => void; }) {
+  const add = () => onChange([...variants, { id: makeId(), label: "", price: 0 }]);
+  const remove = (i: number) => onChange(variants.filter((_, j) => j !== i));
+  const update = (i: number, key: keyof Variant, val: any) => {
+    const n = [...variants]; n[i] = { ...n[i], [key]: val }; onChange(n);
+  };
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-xs text-slate-600">Pricing Variants</label>
+        <Button type="button" variant="outline" size="sm" onClick={add} className="h-7 text-xs" data-testid="pf-variant-add">
+          <Plus size={12} className="mr-1" /> Add variant
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {variants.map((v, i) => (
+          <div key={v.id} className="flex gap-2 items-center bg-slate-50 rounded p-2">
+            <Input value={v.label} onChange={e => update(i, "label", e.target.value)} placeholder="Label (e.g. Standard)" className="h-8 text-sm flex-1" data-testid={`pf-variant-label-${i}`} />
+            <Input type="number" value={v.price} onChange={e => update(i, "price", parseFloat(e.target.value) || 0)} placeholder="Price" className="h-8 text-sm w-28" data-testid={`pf-variant-price-${i}`} />
+            <button type="button" onClick={() => remove(i)} className="text-red-400 hover:text-red-600 shrink-0"><X size={14} /></button>
+          </div>
+        ))}
+        {variants.length === 0 && <p className="text-xs text-slate-400">No variants yet. Add at least one.</p>}
+      </div>
+    </div>
+  );
+}
+
+interface PriceInput { id: string; label: string; type: "number" | "select"; min?: number; max?: number; step?: number; default?: number; price_per_unit?: number; options?: { id: string; label: string; multiplier?: number; flat_price?: number; scope_request?: boolean }[]; }
+function PriceInputsEditor({ inputs, onChange }: { inputs: PriceInput[]; onChange: (v: PriceInput[]) => void; }) {
+  const add = (type: "number" | "select") => onChange([...inputs, { id: makeId(), label: "", type, ...(type === "number" ? { min: 1, price_per_unit: 0 } : { options: [{ id: makeId(), label: "" }] }) }]);
+  const remove = (i: number) => onChange(inputs.filter((_, j) => j !== i));
+  const update = (i: number, key: string, val: any) => { const n = [...inputs]; n[i] = { ...n[i], [key]: val }; onChange(n); };
+  const addOption = (i: number) => { const n = [...inputs]; n[i] = { ...n[i], options: [...(n[i].options || []), { id: makeId(), label: "" }] }; onChange(n); };
+  const removeOption = (i: number, j: number) => { const n = [...inputs]; n[i] = { ...n[i], options: n[i].options!.filter((_, k) => k !== j) }; onChange(n); };
+  const updateOption = (i: number, j: number, key: string, val: any) => { const n = [...inputs]; const ops = [...(n[i].options || [])]; ops[j] = { ...ops[j], [key]: val }; n[i] = { ...n[i], options: ops }; onChange(n); };
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-xs text-slate-600">Price Inputs <span className="text-slate-400">(shown on product page to calculate price)</span></label>
+        <div className="flex gap-1">
+          <Button type="button" variant="outline" size="sm" onClick={() => add("number")} className="h-7 text-xs" data-testid="pf-pi-add-number"><Plus size={12} className="mr-1" /> Number</Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => add("select")} className="h-7 text-xs" data-testid="pf-pi-add-select"><Plus size={12} className="mr-1" /> Select</Button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {inputs.map((pi, i) => (
+          <div key={pi.id} className="border border-slate-200 rounded-lg p-3 space-y-2 relative bg-slate-50">
+            <button type="button" onClick={() => remove(i)} className="absolute top-2 right-2 text-red-400 hover:text-red-600"><X size={14} /></button>
+            <div className="flex gap-2 items-center pr-6">
+              <Input value={pi.label} onChange={e => update(i, "label", e.target.value)} placeholder="Input label" className="h-8 text-sm" data-testid={`pf-pi-label-${i}`} />
+              <span className="text-xs text-slate-400 whitespace-nowrap">{pi.type}</span>
+            </div>
+            {pi.type === "number" && (
+              <div className="grid grid-cols-4 gap-2">
+                <div><label className="text-[10px] text-slate-500">Min</label><Input type="number" value={pi.min ?? ""} onChange={e => update(i, "min", parseFloat(e.target.value) || 0)} className="h-7 text-xs" /></div>
+                <div><label className="text-[10px] text-slate-500">Max</label><Input type="number" value={pi.max ?? ""} onChange={e => update(i, "max", parseFloat(e.target.value) || undefined)} className="h-7 text-xs" /></div>
+                <div><label className="text-[10px] text-slate-500">Step</label><Input type="number" value={pi.step ?? ""} onChange={e => update(i, "step", parseFloat(e.target.value) || undefined)} className="h-7 text-xs" /></div>
+                <div><label className="text-[10px] text-slate-500">Default</label><Input type="number" value={pi.default ?? ""} onChange={e => update(i, "default", parseFloat(e.target.value) || undefined)} className="h-7 text-xs" /></div>
+              </div>
+            )}
+            {pi.type === "number" && (
+              <div className="flex gap-2 items-center">
+                <label className="text-[10px] text-slate-500 whitespace-nowrap">$ per unit</label>
+                <Input type="number" value={pi.price_per_unit ?? ""} onChange={e => update(i, "price_per_unit", parseFloat(e.target.value) || 0)} placeholder="Rate per unit" className="h-7 text-xs w-36" data-testid={`pf-pi-rate-${i}`} />
+              </div>
+            )}
+            {pi.type === "select" && (
+              <div className="space-y-1.5">
+                {(pi.options || []).map((opt, j) => (
+                  <div key={opt.id} className="flex gap-2 items-center">
+                    <Input value={opt.label} onChange={e => updateOption(i, j, "label", e.target.value)} placeholder="Option label" className="h-7 text-xs flex-1" />
+                    <Input type="number" value={opt.multiplier ?? ""} onChange={e => updateOption(i, j, "multiplier", parseFloat(e.target.value) || undefined)} placeholder="×mult" className="h-7 text-xs w-20" />
+                    <Input type="number" value={opt.flat_price ?? ""} onChange={e => updateOption(i, j, "flat_price", parseFloat(e.target.value) || undefined)} placeholder="+flat" className="h-7 text-xs w-20" />
+                    <label className="flex items-center gap-1 text-[10px] text-slate-500 whitespace-nowrap">
+                      <input type="checkbox" checked={!!opt.scope_request} onChange={e => updateOption(i, j, "scope_request", e.target.checked)} className="w-3 h-3" /> RFQ
+                    </label>
+                    <button type="button" onClick={() => removeOption(i, j)} className="text-red-400 hover:text-red-600"><X size={12} /></button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={() => addOption(i)} className="h-6 text-xs"><Plus size={10} className="mr-1" /> Option</Button>
+              </div>
+            )}
+          </div>
+        ))}
+        {inputs.length === 0 && <p className="text-xs text-slate-400">No price inputs. Add number or select inputs to build the calculator.</p>}
+      </div>
+    </div>
+  );
+}
+
 export function ProductForm({
   form,
   setForm,
