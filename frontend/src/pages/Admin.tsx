@@ -86,10 +86,10 @@ export default function Admin() {
               <TabsTrigger value="users" data-testid="admin-tab-users" className={TAB_CLASS}>Users</TabsTrigger>
             )}
             <TabsTrigger value="customers" data-testid="admin-tab-customers" className={TAB_CLASS}>Customers</TabsTrigger>
-            <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
 
             {/* Commerce */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
+            <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
             <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>
             <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>
             <TabsTrigger value="promo" data-testid="admin-tab-promo" className={TAB_CLASS}>Promo Codes</TabsTrigger>
