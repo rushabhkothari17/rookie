@@ -141,8 +141,7 @@ export function ProductsTab() {
     try {
       const payload = {
         name: form.name,
-        short_description: form.short_description,
-        tagline: form.tagline || form.short_description,
+        tagline: form.tagline,
         card_title: form.card_title || null,
         card_tag: form.card_tag || null,
         card_description: form.card_description || null,
