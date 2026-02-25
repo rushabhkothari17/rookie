@@ -62,7 +62,7 @@ export default function ProductEditor() {
         setTerms(termsRes.data.terms || []);
 
         if (id) {
-          const prodRes = await api.get("/admin/products");
+          const prodRes = await api.get("/admin/products-all?per_page=500");
           const product = prodRes.data.products?.find((p: any) => p.id === id);
           if (product) {
             setForm(productToForm(product));
