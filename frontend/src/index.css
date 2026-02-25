@@ -79,6 +79,10 @@ h3,
   display: none;
 }
 
+.label-xs {
+  @apply text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5;
+}
+
 .aa-no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
