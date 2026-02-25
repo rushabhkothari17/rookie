@@ -4,7 +4,6 @@ import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, ArrowLeft, ChevronLeft } from "lucide-react";
 import { applyPartnerBranding } from "@/contexts/WebsiteContext";
 
