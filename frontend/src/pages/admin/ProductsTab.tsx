@@ -187,7 +187,6 @@ export function ProductsTab() {
       await api.put(`/admin/products/${p.id}`, {
         name: p.name,
         is_active: !p.is_active,
-        pricing_rules: p.pricing_rules || {},
       });
       toast.success(`Product ${p.is_active ? "deactivated" : "activated"}`);
       load();
