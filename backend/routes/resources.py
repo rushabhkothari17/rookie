@@ -465,7 +465,7 @@ async def email_article(
     user_email_map = {u["id"]: u["email"] for u in users}
 
     app_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
-    resource_url = f"{app_url}/resources/{article.get("slug") or resource_id}"
+    resource_url = f"{app_url}/resources/{article.get('slug') or resource_id}"
     web_s = await db.website_settings.find_one({"tenant_id": tenant_id_of(admin)}, {"_id": 0}) or {}
     subject_tpl = web_s.get("email_article_subject_template") or "{{article_title}} — from {{store_name}}"
     subject = payload.subject or subject_tpl.replace("{{article_title}}", article["title"])
