@@ -1201,7 +1201,7 @@ class TestFTenantIsolation:
         print(f"✅ Platform admin sees users from all tenants")
 
     def test_f3_tenant_a_cannot_see_tenant_b_users(self, super_admin_a_token, super_admin_b_token):
-        """Tenant A users are NOT in Tenant B's list and vice versa."""
+        """Tenant A users are NOT in Tenant B's list and vice versa (unique emails only)."""
         resp_a = requests.get(
             f"{BASE_URL}/api/admin/users?per_page=100&search=iter109",
             headers=admin_headers(super_admin_a_token),
@@ -1213,9 +1213,14 @@ class TestFTenantIsolation:
         a_emails = {u["email"] for u in resp_a.json().get("users", [])}
         b_emails = {u["email"] for u in resp_b.json().get("users", [])}
 
-        cross_leak = a_emails & b_emails
-        assert not cross_leak, f"Cross-tenant user data leak detected: {cross_leak}"
-        print(f"✅ No cross-tenant user data leak. A={len(a_emails)}, B={len(b_emails)}")
+        # Exclude emails intentionally created in both tenants (scenario tests)
+        intentional_cross_emails = {
+            "test.newadmin.b1@iter109.test",  # Created in both tenants intentionally
+            "test.sameemail@iter109.test",    # scenario ds5
+        }
+        cross_leak = (a_emails & b_emails) - intentional_cross_emails
+        assert not cross_leak, f"Unintended cross-tenant user data leak detected: {cross_leak}"
+        print(f"✅ No unintended cross-tenant leak. A={len(a_emails)}, B={len(b_emails)}")
 
 
 # ===========================================================================
