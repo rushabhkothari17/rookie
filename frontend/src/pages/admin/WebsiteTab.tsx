@@ -146,14 +146,10 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
   { group: "Content", items: [
     { key: "auth", label: "Auth & Pages" },
     { key: "forms", label: "Forms" },
-    { key: "email", label: "Email Templates" },
   ]},
   { group: "Configuration", items: [
     { key: "footer", label: "Footer & Nav" },
-    { key: "references", label: "References" },
-    { key: "payments", label: "Payments" },
     { key: "sysconfig", label: "System Config" },
-    { key: "domains", label: "Custom Domains" },
   ]},
 ];
 
