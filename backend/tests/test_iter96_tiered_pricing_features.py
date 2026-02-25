@@ -36,7 +36,9 @@ def auth_headers():
 def create_product(payload: dict, headers: dict) -> dict:
     resp = requests.post(f"{BASE_URL}/api/admin/products", json=payload, headers=headers)
     assert resp.status_code == 200, f"Create product failed: {resp.text}"
-    return resp.json()
+    data = resp.json()
+    # Response may be wrapped in {"product": {...}} or be the product directly
+    return data.get("product", data)
 
 
 def calc_price(product_id: str, inputs: dict) -> dict:
