@@ -143,110 +143,143 @@ def calculate_price(product: Dict[str, Any], inputs: Dict[str, Any], fee_rate: f
             subtotal = 0.0
             line_items.append({"label": product["name"], "amount": subtotal})
     elif pricing_type == "calculator":
-        calc_type = rules.get("calc_type")
-        if calc_type == "health_check":
-            base = float(rules.get("base_price", 0.0))
-            add_on_id = inputs.get("creator_extension", "none")
-            add_on = next((a for a in rules.get("add_ons", []) if a["id"] == add_on_id), rules.get("add_ons", [])[0] if rules.get("add_ons") else None)
-            add_price = float(add_on.get("price", 0.0)) if add_on else 0.0
-            subtotal = base + add_price
-            line_items.append({"label": product["name"], "amount": base})
-            if add_price > 0:
-                line_items.append({"label": f"Creator/Catalyst extension ({add_on['label']})", "amount": add_price})
-        elif calc_type == "hours_pack":
-            hours = int(inputs.get("hours", rules.get("min_hours", 10)))
-            hours = max(rules.get("min_hours", 10), min(hours, rules.get("max_hours", 200)))
-            option = inputs.get("payment_option", "pay_now")
-            if option == "scope_later":
-                rate = float(rules.get("scope_later_rate", 90.0))
-                is_scope_request = True
-                requires_checkout = False
-                is_subscription = False
-            else:
-                rate = float(rules.get("pay_now_rate", 75.0))
-            subtotal = hours * rate
-            line_items.append({"label": f"{hours} hours/month", "amount": subtotal})
-        elif calc_type == "bookkeeping":
-            transactions = max(1, int(inputs.get("transactions", 1)))
-            base = max(249.0, transactions * 3.0)
-            multiplier = 1.0
-            if inputs.get("inventory"):
-                multiplier *= 1.2
-            if inputs.get("multi_currency"):
-                multiplier *= 1.1
-            if inputs.get("offshore"):
-                multiplier *= 1.2
-            subtotal = round_nearest_25(base * multiplier)
-            line_items.append({"label": f"{transactions} monthly transactions", "amount": subtotal})
-        elif calc_type == "mailboxes":
-            count = max(1, int(inputs.get("mailboxes", 1)))
-            subtotal = count * float(rules.get("rate", 350.0))
-            line_items.append({"label": f"{count} mailboxes", "amount": subtotal})
-        elif calc_type == "storage_blocks":
-            blocks = max(1, int(inputs.get("blocks", 1)))
-            subtotal = blocks * float(rules.get("rate", 100.0))
-            line_items.append({"label": f"{blocks} × 50GB", "amount": subtotal})
-        elif calc_type == "crm_migration":
-            tables = max(1, int(inputs.get("tables", 1)))
-            records = max(1, int(inputs.get("records", 1)))
-            subtotal = float(rules.get("base_fee", 499.0)) + tables * 250.0 + records * 0.10
-            subtotal = round_nearest_25(subtotal)
-            line_items.append({"label": f"{tables} modules", "amount": tables * 250.0})
-            line_items.append({"label": f"{records} records", "amount": round_cents(records * 0.10)})
-            line_items.append({"label": "Base setup", "amount": float(rules.get("base_fee", 499.0))})
-        elif calc_type == "forms_migration":
-            forms_with = max(0, int(inputs.get("forms_with_validation", 0)))
-            forms_without = max(0, int(inputs.get("forms_without_validation", 0)))
-            fields = max(0, int(inputs.get("total_fields", 0)))
-            notifications = max(0, int(inputs.get("email_notifications", 0)))
-            subtotal = forms_with * 200.0 + forms_without * 100.0 + fields * 1.0 + notifications * 25.0
-            line_items += [
-                {"label": "Forms with validation", "amount": forms_with * 200.0},
-                {"label": "Forms without validation", "amount": forms_without * 100.0},
-                {"label": "Total fields", "amount": fields * 1.0},
-                {"label": "Email notifications", "amount": notifications * 25.0},
-            ]
-        elif calc_type == "desk_migration":
-            departments = max(1, int(inputs.get("departments", 1)))
-            tickets = max(0, int(inputs.get("tickets", 0)))
-            kb_articles = max(0, int(inputs.get("kb_articles", 0)))
-            subtotal = departments * 499.0 + tickets * 0.10 + kb_articles * 25.0
-            line_items += [
-                {"label": "Departments", "amount": departments * 499.0},
-                {"label": "Tickets", "amount": round_cents(tickets * 0.10)},
-                {"label": "KB articles", "amount": kb_articles * 25.0},
-            ]
-        elif calc_type == "sign_migration":
-            templates = max(1, int(inputs.get("templates", 1)))
-            workdrive_docs = max(0, int(inputs.get("workdrive_docs", 0)))
-            subtotal = templates * 99.0 + workdrive_docs * 5.0
-            line_items += [{"label": "Templates", "amount": templates * 99.0}, {"label": "WorkDrive docs", "amount": workdrive_docs * 5.0}]
-        elif calc_type == "people_migration":
-            base_fee = float(rules.get("base_fee", 999.0))
-            leave_policies = max(0, int(inputs.get("leave_policies", 0)))
-            leave_requests = max(0, int(inputs.get("leave_requests", 0)))
-            timesheets = max(0, int(inputs.get("timesheets", 0)))
-            attendance = max(0, int(inputs.get("attendance", 0)))
-            employee_docs = max(0, int(inputs.get("employee_docs", 0)))
-            employee_profiles = max(0, int(inputs.get("employee_profiles", 0)))
-            templates = max(0, int(inputs.get("templates", 0)))
-            subtotal = (base_fee + leave_policies * 99.0 + leave_requests * 1.0 + timesheets * 0.10 + attendance * 0.10 + employee_docs * 5.0 + employee_profiles * 50.0 + templates * 50.0)
-            line_items += [
-                {"label": "Base setup", "amount": base_fee},
-                {"label": "Leave policies", "amount": leave_policies * 99.0},
-                {"label": "Leave requests", "amount": leave_requests * 1.0},
-                {"label": "Timesheets", "amount": round_cents(timesheets * 0.10)},
-                {"label": "Attendance", "amount": round_cents(attendance * 0.10)},
-                {"label": "Employee docs", "amount": employee_docs * 5.0},
-                {"label": "Employee profiles", "amount": employee_profiles * 50.0},
-                {"label": "Templates", "amount": templates * 50.0},
-            ]
-        elif calc_type == "books_migration":
-            bm = calculate_books_migration_price(inputs, rules)
-            subtotal = bm["subtotal"]
-            line_items = bm["line_items"]
+        # ── Data-driven calculator (price_inputs in pricing_rules) ──────────────
+        price_inputs = rules.get("price_inputs")
+        if price_inputs:
+            subtotal = float(product.get("base_price") or 0.0)
+            if subtotal > 0:
+                line_items.append({"label": product["name"], "amount": subtotal})
+            for pi in price_inputs:
+                pi_type = pi.get("type")
+                pi_id = pi.get("id")
+                raw = inputs.get(pi_id, pi.get("default", pi.get("min", 0)))
+                if pi_type == "number":
+                    min_v = float(pi.get("min", 0))
+                    max_v = float(pi.get("max", 9999999))
+                    val = max(min_v, min(max_v, float(raw or min_v)))
+                    rate = float(pi.get("price_per_unit", 0))
+                    if rate > 0:
+                        amount = round_cents(val * rate)
+                        subtotal += amount
+                        line_items.append({"label": pi["label"], "amount": amount})
+                elif pi_type == "select":
+                    selected_id = raw or ((pi.get("options") or [{}])[0] or {}).get("id")
+                    option = next((o for o in pi.get("options", []) if o.get("id") == selected_id), None)
+                    if option:
+                        mult = float(option.get("multiplier", 1.0))
+                        if mult and mult != 1.0:
+                            new_sub = round_cents(subtotal * mult)
+                            line_items.append({"label": f"{pi['label']}: {option['label']}", "amount": round_cents(new_sub - subtotal)})
+                            subtotal = new_sub
+                        flat = float(option.get("flat_price", 0))
+                        if flat:
+                            subtotal += flat
+                            line_items.append({"label": f"{pi['label']}: {option['label']}", "amount": flat})
+                        if option.get("scope_request"):
+                            is_scope_request = True
+                            requires_checkout = False
         else:
-            subtotal = 0.0
+            # ── Legacy calc_type handlers ────────────────────────────────────────
+            calc_type = rules.get("calc_type")
+            if calc_type == "health_check":
+                base = float(rules.get("base_price", 0.0))
+                add_on_id = inputs.get("creator_extension", "none")
+                add_on = next((a for a in rules.get("add_ons", []) if a["id"] == add_on_id), rules.get("add_ons", [])[0] if rules.get("add_ons") else None)
+                add_price = float(add_on.get("price", 0.0)) if add_on else 0.0
+                subtotal = base + add_price
+                line_items.append({"label": product["name"], "amount": base})
+                if add_price > 0:
+                    line_items.append({"label": f"Creator/Catalyst extension ({add_on['label']})", "amount": add_price})
+            elif calc_type == "hours_pack":
+                hours = int(inputs.get("hours", rules.get("min_hours", 10)))
+                hours = max(rules.get("min_hours", 10), min(hours, rules.get("max_hours", 200)))
+                option = inputs.get("payment_option", "pay_now")
+                if option == "scope_later":
+                    rate = float(rules.get("scope_later_rate", 90.0))
+                    is_scope_request = True
+                    requires_checkout = False
+                    is_subscription = False
+                else:
+                    rate = float(rules.get("pay_now_rate", 75.0))
+                subtotal = hours * rate
+                line_items.append({"label": f"{hours} hours/month", "amount": subtotal})
+            elif calc_type == "bookkeeping":
+                transactions = max(1, int(inputs.get("transactions", 1)))
+                base = max(249.0, transactions * 3.0)
+                multiplier = 1.0
+                if inputs.get("inventory"):
+                    multiplier *= 1.2
+                if inputs.get("multi_currency"):
+                    multiplier *= 1.1
+                if inputs.get("offshore"):
+                    multiplier *= 1.2
+                subtotal = round_nearest_25(base * multiplier)
+                line_items.append({"label": f"{transactions} monthly transactions", "amount": subtotal})
+            elif calc_type == "mailboxes":
+                count = max(1, int(inputs.get("mailboxes", 1)))
+                subtotal = count * float(rules.get("rate", 350.0))
+                line_items.append({"label": f"{count} mailboxes", "amount": subtotal})
+            elif calc_type == "storage_blocks":
+                blocks = max(1, int(inputs.get("blocks", 1)))
+                subtotal = blocks * float(rules.get("rate", 100.0))
+                line_items.append({"label": f"{blocks} × 50GB", "amount": subtotal})
+            elif calc_type == "crm_migration":
+                tables = max(1, int(inputs.get("tables", 1)))
+                records = max(1, int(inputs.get("records", 1)))
+                subtotal = float(rules.get("base_fee", 499.0)) + tables * 250.0 + records * 0.10
+                subtotal = round_nearest_25(subtotal)
+                line_items.append({"label": f"{tables} modules", "amount": tables * 250.0})
+                line_items.append({"label": f"{records} records", "amount": round_cents(records * 0.10)})
+                line_items.append({"label": "Base setup", "amount": float(rules.get("base_fee", 499.0))})
+            elif calc_type == "forms_migration":
+                forms_with = max(0, int(inputs.get("forms_with_validation", 0)))
+                forms_without = max(0, int(inputs.get("forms_without_validation", 0)))
+                fields = max(0, int(inputs.get("total_fields", 0)))
+                notifications = max(0, int(inputs.get("email_notifications", 0)))
+                subtotal = forms_with * 200.0 + forms_without * 100.0 + fields * 1.0 + notifications * 25.0
+                line_items += [
+                    {"label": "Forms with validation", "amount": forms_with * 200.0},
+                    {"label": "Forms without validation", "amount": forms_without * 100.0},
+                    {"label": "Total fields", "amount": fields * 1.0},
+                    {"label": "Email notifications", "amount": notifications * 25.0},
+                ]
+            elif calc_type == "desk_migration":
+                departments = max(1, int(inputs.get("departments", 1)))
+                tickets = max(0, int(inputs.get("tickets", 0)))
+                kb_articles = max(0, int(inputs.get("kb_articles", 0)))
+                subtotal = departments * 499.0 + tickets * 0.10 + kb_articles * 25.0
+                line_items += [
+                    {"label": "Departments", "amount": departments * 499.0},
+                    {"label": "Tickets", "amount": round_cents(tickets * 0.10)},
+                    {"label": "KB articles", "amount": kb_articles * 25.0},
+                ]
+            elif calc_type == "sign_migration":
+                templates = max(1, int(inputs.get("templates", 1)))
+                workdrive_docs = max(0, int(inputs.get("workdrive_docs", 0)))
+                subtotal = templates * 99.0 + workdrive_docs * 5.0
+                line_items += [{"label": "Templates", "amount": templates * 99.0}, {"label": "WorkDrive docs", "amount": workdrive_docs * 5.0}]
+            elif calc_type == "people_migration":
+                base_fee = float(rules.get("base_fee", 999.0))
+                leave_policies = max(0, int(inputs.get("leave_policies", 0)))
+                leave_requests = max(0, int(inputs.get("leave_requests", 0)))
+                timesheets = max(0, int(inputs.get("timesheets", 0)))
+                attendance = max(0, int(inputs.get("attendance", 0)))
+                employee_docs = max(0, int(inputs.get("employee_docs", 0)))
+                employee_profiles = max(0, int(inputs.get("employee_profiles", 0)))
+                templates = max(0, int(inputs.get("templates", 0)))
+                subtotal = (base_fee + leave_policies * 99.0 + leave_requests * 1.0 + timesheets * 0.10 + attendance * 0.10 + employee_docs * 5.0 + employee_profiles * 50.0 + templates * 50.0)
+                line_items += [
+                    {"label": "Base setup", "amount": base_fee},
+                    {"label": "Leave policies", "amount": leave_policies * 99.0},
+                    {"label": "Leave requests", "amount": leave_requests * 1.0},
+                    {"label": "Timesheets", "amount": round_cents(timesheets * 0.10)},
+                    {"label": "Attendance", "amount": round_cents(attendance * 0.10)},
+                    {"label": "Employee docs", "amount": employee_docs * 5.0},
+                    {"label": "Employee profiles", "amount": employee_profiles * 50.0},
+                    {"label": "Templates", "amount": templates * 50.0},
+                ]
+            else:
+                subtotal = 0.0
     else:
         subtotal = 0.0
 
