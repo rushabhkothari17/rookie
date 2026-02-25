@@ -134,10 +134,15 @@ async def admin_update_user(
     payload: Dict[str, Any] = Body(...),
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
+    from routes.admin.permissions import has_permission
     tf = get_tenant_filter(admin)
     user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Only super admins or users with 'users' module edit rights can update admin users
+    if not await has_permission(admin, "users", "edit"):
+        raise HTTPException(status_code=403, detail="You don't have permission to edit users")
 
     allowed_roles = ("admin", "super_admin", "partner_super_admin", "partner_admin", "partner_staff")
     updates: Dict[str, Any] = {"updated_at": now_iso()}
