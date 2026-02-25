@@ -106,6 +106,14 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Pricing Display Fix: `/app/test_reports/iteration_92.json` — 95%+ frontend pass (all pricing types now display correctly)
 - Pricing Detail Page Fix: `/app/test_reports/iteration_93.json` — 6/6 frontend pass (base_price=0 shows "Price on request", admin pricing_rules editor added)
 
+### Catalog & Pricing Refactor (Feb 2026)
+- **Dead code removal**: Removed ~12 unused fields from Product model (`sku`, `pricing_complexity`, `bullets_excluded`, `bullets_needed`, `next_steps`, `outcome`, `requirements`, `support_details`, `inclusions`, `exclusions`, `automation_details`).
+- **Data-driven pricing**: `pricing_service.py` rewritten — new `calculator` type uses `pricing_rules.price_inputs` (configurable from admin UI), legacy `calc_type` handlers kept for backward compat.
+- **New UI fields**: `ProductForm.tsx` now has `card_title`, `card_tag`, `card_description`, `card_bullets`, `tagline` fields. Pricing tab has `pricing_type` dropdown (fixed/tiered/calculator/scope_request/inquiry/external) with conditional `VariantEditor` (tiered) and `PriceInputsEditor` (calculator).
+- **Hardcoded product deleted**: `prod_migrate_books` removed from DB; `BooksMigrationForm.jsx` deleted.
+- **Store card pricing fix**: `OfferingCard.tsx` — `card_description` and `card_tag` correctly override `short_description` and `tag`. Shows "Starts from $X" for tiered/calculator, "from $X" for fixed, "Contact us" for inquiry/scope_request.
+- **Test coverage**: `/app/test_reports/iteration_94.json` — 18/18 backend + 95% frontend pass.
+
 ### Pricing Display Fix (Feb 2026)
 - **Complex pricing cards**: `OfferingCard.tsx` — added `getStartingPrice()` helper that derives a minimum price from `pricing_rules` for `tiered` (min variant), `calculator` (calc_type-specific minimum), and all sub-types. Shows "Starts from $X" on catalog cards.
 - **"Contact us" only for $0**: `formatPrice()` now only returns "Contact us" for products with an explicit `base_price === 0`, not for null/missing prices.
