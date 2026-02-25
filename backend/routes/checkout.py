@@ -841,3 +841,182 @@ async def checkout_status(
         "currency": status.currency,
         "metadata": status.metadata,
     }
+
+
+
+@router.post("/checkout/free")
+async def checkout_free(
+    payload: BankTransferCheckoutRequest,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    """
+    Handle checkout for free products (total = $0).
+    Bypasses payment processors and creates order directly with 'paid' status.
+    """
+    if not payload.terms_accepted:
+        raise HTTPException(status_code=400, detail="You must accept the Terms & Conditions to proceed")
+
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    tenant_id = customer.get("tenant_id", "")
+
+    await validate_and_consume_partner_tag(
+        customer_id=customer["id"],
+        partner_tag_response=payload.partner_tag_response,
+        override_code=payload.override_code,
+        order_id=None,
+    )
+
+    order_items = await build_order_items(payload.items, tenant_id)
+    
+    # Calculate total and verify it's actually free
+    subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
+    
+    # Apply promo code if any
+    promo_code_data = None
+    discount_amount = 0.0
+    if payload.promo_code:
+        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper()}, {"_id": 0})
+        if promo and promo.get("enabled"):
+            now_str = datetime.now(timezone.utc).isoformat()
+            is_expired = promo.get("expiry_date") and promo["expiry_date"] < now_str
+            max_reached = promo.get("max_uses") and promo.get("usage_count", 0) >= promo["max_uses"]
+            if not is_expired and not max_reached:
+                if promo["discount_type"] == "percent":
+                    discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
+                else:
+                    discount_amount = min(round_cents(promo["discount_value"]), subtotal)
+                promo_code_data = promo
+    
+    total = round_cents(subtotal - discount_amount)
+    
+    # Ensure total is 0 or very close (within rounding tolerance)
+    if total > 0.01:
+        raise HTTPException(status_code=400, detail="This checkout endpoint is only for free products. Please use the regular checkout for paid items.")
+
+    primary_product = order_items[0]["product"]
+    terms_id = payload.terms_id if payload.terms_id else primary_product.get("terms_id")
+    if not terms_id:
+        default_terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
+        terms_id = default_terms["id"] if default_terms else None
+
+    rendered_terms_text = ""
+    if terms_id:
+        terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+        if terms:
+            address = await db.addresses.find_one({"user_id": user["id"]}, {"_id": 0})
+            rendered_terms_text = resolve_terms_tags(terms["content"], user, address or {}, primary_product["name"])
+
+    order_id = make_id()
+    order_number = f"AA-{order_id.split('-')[0].upper()}"
+
+    order_doc = {
+        "id": order_id,
+        "order_number": order_number,
+        "tenant_id": tenant_id,
+        "customer_id": customer["id"],
+        "type": "one_time",
+        "status": "paid",  # Free orders are immediately marked as paid
+        "subtotal": round_cents(subtotal),
+        "discount_amount": discount_amount,
+        "promo_code": promo_code_data["code"] if promo_code_data else None,
+        "fee": 0.0,
+        "total": 0.0,  # Free!
+        "currency": customer.get("currency"),
+        "payment_method": "free",
+        "terms_id_used": terms_id,
+        "rendered_terms_text": rendered_terms_text,
+        "terms_accepted_at": now_iso(),
+        "partner_tag_response": payload.partner_tag_response,
+        "override_code_id": None,
+        "partner_tag_timestamp": now_iso(),
+        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="free"),
+        "extra_fields": payload.extra_fields or {},
+        "payment_date": now_iso(),
+        "created_at": now_iso(),
+    }
+    await db.orders.insert_one(order_doc)
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="created",
+        actor="customer",
+        details={"status": "paid", "payment_method": "free", "total": 0.0},
+    )
+    
+    if promo_code_data:
+        await db.promo_codes.update_one({"id": promo_code_data["id"]}, {"$inc": {"usage_count": 1}})
+
+    for item in order_items:
+        product = item["product"]
+        await db.order_items.insert_one({
+            "id": make_id(),
+            "order_id": order_id,
+            "product_id": product["id"],
+            "quantity": item["quantity"],
+            "metadata_json": item["inputs"],
+            "unit_price": item["pricing"]["subtotal"],
+            "line_total": item["pricing"]["subtotal"],
+        })
+        # Log intake question answers
+        intake_answers = item.get("inputs") or {}
+        if intake_answers:
+            await create_audit_log(
+                entity_type="order",
+                entity_id=order_id,
+                action="intake_submitted",
+                actor="customer",
+                details={
+                    "product_id": product["id"],
+                    "product_name": product.get("name", ""),
+                    "intake_answers": intake_answers,
+                    "order_number": order_number,
+                },
+            )
+
+    await db.invoices.insert_one({
+        "id": make_id(),
+        "order_id": order_id,
+        "subscription_id": None,
+        "stripe_invoice_id": None,
+        "zoho_books_invoice_id": None,
+        "amount_paid": 0.0,
+        "status": "paid",
+    })
+    
+    await db.zoho_sync_logs.insert_one({
+        "id": make_id(),
+        "entity_type": "deal",
+        "entity_id": order_id,
+        "status": "Not Sent",
+        "last_error": None,
+        "attempts": 0,
+        "created_at": now_iso(),
+        "mocked": True,
+    })
+    
+    # Send confirmation email
+    from services.email_service import EmailService
+    await EmailService.send(
+        trigger="order_placed",
+        recipient=user["email"],
+        variables={
+            "customer_name": user.get("full_name", ""),
+            "customer_email": user["email"],
+            "order_number": order_number,
+            "order_total": "0.00",
+            "order_currency": customer.get("currency", "USD"),
+        },
+        db=db,
+        tenant_id=tenant_id
+    )
+
+    return {
+        "message": "Order completed successfully",
+        "order_id": order_id,
+        "order_number": order_number,
+        "status": "paid",
+        "total": 0.0,
+    }
