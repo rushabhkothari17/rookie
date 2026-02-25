@@ -462,7 +462,6 @@ class CategoryUpdate(BaseModel):
 
 class AdminProductCreate(BaseModel):
     name: str
-    short_description: str = ""
     tagline: str = ""
     card_title: Optional[str] = None
     card_tag: Optional[str] = None
@@ -486,6 +485,7 @@ class AdminProductCreate(BaseModel):
     intake_schema_json: Optional[IntakeSchemaJson] = None
     price_rounding: Optional[str] = None
     custom_sections: Optional[List[CustomSection]] = None
+    display_layout: Optional[str] = "standard"
 
 
 class AppSettingsUpdate(BaseModel):
