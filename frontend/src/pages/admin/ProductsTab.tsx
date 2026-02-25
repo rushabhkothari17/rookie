@@ -16,6 +16,7 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Upload} from "lucide-react";
 
 function productToForm(p: any): ProductFormData {
+  // v2: include card_title, card_tag, card_description, card_bullets, tagline, pricing_type
   const bullets: string[] = (p.bullets || []).filter((b: string) => b);
   if (bullets.length === 0) {
     const fallback = (p.bullets_included || []).filter((b: string) => b);
