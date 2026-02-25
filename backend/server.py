@@ -935,28 +935,6 @@ async def startup_tasks():
         if updates:
             await db.app_settings.update_one({}, {"$set": updates})
 
-    # 2. Backfill pricing_complexity based on pricing_type for products missing it
-    PRICING_TYPE_TO_COMPLEXITY = {
-        "fixed": "SIMPLE",
-        "simple": "SIMPLE",
-        "calculator": "COMPLEX",
-        "tiered": "COMPLEX",
-        "hours": "COMPLEX",
-        "external": "REQUEST_FOR_QUOTE",
-        "scope_request": "REQUEST_FOR_QUOTE",
-        "inquiry": "REQUEST_FOR_QUOTE",
-    }
-    products_missing_complexity = await db.products.find(
-        {"pricing_complexity": {"$exists": False}}, {"_id": 0, "id": 1, "pricing_type": 1}
-    ).to_list(2000)
-    for prod in products_missing_complexity:
-        p_type = prod.get("pricing_type", "fixed")
-        complexity = PRICING_TYPE_TO_COMPLEXITY.get(p_type, "SIMPLE")
-        await db.products.update_one(
-            {"id": prod["id"]},
-            {"$set": {"pricing_complexity": complexity}}
-        )
-
 
 
 
