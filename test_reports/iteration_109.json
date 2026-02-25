@@ -1,0 +1,131 @@
+{
+  "summary": "Comprehensive end-to-end testing of Users entity (backend + frontend): admin/users.py, permissions.py, router conflict analysis, permission matrix, tenant isolation, security hardening. 45 backend tests passed, 16 skipped (idempotent). Frontend UI fully functional with 2 UI bugs found.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "PATCH /api/admin/users/{id}/active + GET /api/admin/users/{id}/logs",
+        "issue": "require_super_admin security bypass: checks 'role not in super_admin_roles AND NOT is_admin'. The OR condition means ANY is_admin=True user (partner_admin, partner_staff) bypasses super-admin check. CONFIRMED: partner_admin and partner_staff can deactivate users and read audit logs.",
+        "priority": "CRITICAL",
+        "fix": "In security.py require_super_admin (line ~116): Remove the 'or not user.get(\"is_admin\")' OR condition. Check role explicitly: 'if user.get(\"role\") not in super_admin_roles: raise 403'"
+      },
+      {
+        "endpoint": "DELETE /api/admin/users/{id} (permissions.py)",
+        "issue": "platform_admin NOT in has_permission() super_admin check. permissions.py has_permission() checks 'platform_super_admin' (not 'platform_admin'). CONFIRMED: platform admin receives 403 when calling DELETE /api/admin/users/{id}.",
+        "priority": "HIGH",
+        "fix": "In permissions.py has_permission() (line ~323): Add 'platform_admin' to the super_admin_roles set alongside 'platform_super_admin'"
+      },
+      {
+        "endpoint": "POST /api/admin/users (admin/users.py)",
+        "issue": "No password complexity validation for admin user creation. CONFIRMED: weak password 'weak' is accepted (201). The _validate_password_complexity() function exists in auth.py but is NOT called in admin_create_admin_user().",
+        "priority": "HIGH",
+        "fix": "In admin/users.py admin_create_admin_user(): Add _validate_password_complexity(payload.password) call before creating user. Import the function from auth module or move it to a shared util."
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "GET /api/auth/reset-password or POST /api/auth/change-password",
+        "issue": "token_version is never incremented. The token_version check EXISTS in get_current_user() (security.py line ~100-103) but NO endpoint increments it on password change/reset. Old tokens remain valid after password reset.",
+        "priority": "MEDIUM",
+        "fix": "In the password reset endpoint: After hashing new password, increment token_version: $inc: {token_version: 1}"
+      },
+      {
+        "endpoint": "PATCH /api/admin/users/{id}/active",
+        "issue": "No orphan protection: Deactivating the ONLY active partner_super_admin in a tenant is NOT blocked. A partner_admin (via is_admin bypass) can deactivate the super_admin, leaving the tenant unmanageable.",
+        "priority": "MEDIUM",
+        "fix": "Before deactivation: check if user has role=partner_super_admin AND count active partner_super_admins in tenant. If last one, return 400 'Cannot deactivate the only super admin'"
+      },
+      {
+        "endpoint": "PUT /api/admin/users/{id} (admin/users.py)",
+        "issue": "users.py PUT route uses get_tenant_admin (any admin passes) without checking has_permission('users', 'edit'). Any partner_staff can edit any admin user without 'users' module permission. CONFIRMED: partner_staff can call PUT successfully.",
+        "priority": "MEDIUM",
+        "fix": "Add has_permission check in admin_update_user() in users.py: check 'users' module permission before allowing edit"
+      },
+      {
+        "endpoint": "GET /api/admin/users + POST /api/admin/users",
+        "issue": "ARCHITECTURAL: Both admin/users.py and permissions.py register GET+POST /api/admin/users. admin_users_router registered first (server.py line 132) wins. permissions.py list_admin_users and create_admin_user are DEAD CODE (never reached). The two endpoints have different behavior (users.py: role-based with pagination; permissions.py: module-based without pagination).",
+        "priority": "MEDIUM",
+        "fix": "Consolidate: Either (1) Remove duplicate routes from permissions.py and redirect to users.py, or (2) Add unique path prefix like /api/admin/users/permissions-based. Currently permissions.py POST create_admin_user is completely unreachable."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "UsersTab - Access column",
+        "issue": "Super admin users (partner_super_admin role) show '● Read' access badge instead of '● Full'. This is because they don't have access_level='full_access' field set (created via tenant endpoint). Display code only checks access_level field, not role.",
+        "selector": "td:has-text('Read') in super admin rows",
+        "priority": "MEDIUM",
+        "fix": "In UsersTab.tsx line ~227-228: Change condition to: {(u.role === 'partner_super_admin' || u.role === 'super_admin') ? 'Full' : (u.access_level === 'full_access' ? 'Full' : 'Read')}"
+      },
+      {
+        "component": "UsersTab - Logs dialog",
+        "issue": "Logs dialog does not have data-testid='admin-user-logs-dialog' attribute. Testability gap.",
+        "selector": "[data-testid='admin-user-logs-dialog']",
+        "priority": "LOW",
+        "fix": "In UsersTab.tsx logs dialog: Add data-testid='admin-user-logs-dialog' to the Dialog/DialogContent component"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Create Admin User via UI",
+        "issue": "The Create User dialog does NOT have a 'Role' dropdown for partner_super_admin/partner_admin/partner_staff roles. UI only supports preset_role templates and module-based creation. Users created via UI always get role='admin' (users.py default). The 'role-based' creation (partner_super_admin/admin/super_admin) is only accessible via direct API calls.",
+        "affected_selectors": ["[data-testid='admin-new-user-preset']"],
+        "note": "This may be intentional UX decision but limits the ability to set specific roles via UI"
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Users table",
+        "issues": [
+          "Super admin rows show 'Read' access badge (amber/eye icon) which looks like they have restricted access - misleading",
+          "The 'Only super admins can manage admin users' subtitle is accurate but may confuse users who see Edit buttons for non-super-admins"
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter109_users_permissions.py",
+    "/app/test_reports/pytest/pytest_iter109_users_permissions.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Fix require_super_admin in security.py - remove is_admin=True bypass (ANY is_admin user can call super-admin endpoints)",
+    "HIGH: Fix has_permission() in permissions.py - add 'platform_admin' to super_admin_roles set",
+    "HIGH: Add password complexity validation in admin/users.py admin_create_admin_user()",
+    "MEDIUM: Increment token_version in password reset/change endpoint",
+    "MEDIUM: Add orphan protection - block deactivating last partner_super_admin in tenant",
+    "MEDIUM: Add has_permission('users','edit') check in users.py PUT /admin/users/{id}",
+    "MEDIUM: Resolve router conflict - consolidate GET+POST /api/admin/users routes (both users.py and permissions.py register same paths)",
+    "UI: Fix super admin Access badge display (shows 'Read' instead of 'Full' for partner_super_admin users without access_level field set)",
+    "UI: Add data-testid to logs dialog for testability"
+  ],
+  "critical_code_review_comments": [
+    "security.py require_super_admin (line ~116): 'not user.get(\"is_admin\")' is a logic bug - should be 'and not user.get(\"is_admin\")' evaluated correctly means ANY is_admin=True user bypasses role check. CONFIRMED working bypass.",
+    "permissions.py has_permission() (line ~323): super_admin_roles set contains 'platform_super_admin' not 'platform_admin'. These are two different roles. platform_admin is the actual role for platform admins (defined in constants.py PLATFORM_ROLE='platform_admin'). This mismatch means platform admins fail permission checks.",
+    "admin/users.py admin_create_admin_user(): Password validation missing. auth.py has _validate_password_complexity() but it's only called in customer/partner signup flows, not admin user creation.",
+    "server.py line 132 vs 153: admin_users_router included before permissions_admin_router. Both have GET /api/admin/users and POST /api/admin/users. FastAPI first-match wins. permissions.py create_admin_user() is unreachable dead code.",
+    "token_version in security.py: The check exists but no endpoint calls '$inc: {token_version: 1}' after password change. The feature is half-implemented."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter109_users_permissions.py"
+  ],
+  "success_rate": {
+    "backend": "100% (45/45 functional, 16 skipped-idempotent)",
+    "frontend": "85% (UI functional, 2 display bugs, 1 feature gap)"
+  },
+  "seed_data_creation": "Created test tenants: test-iter109-a, test-iter109-b. Created test users: TEST.super.a@iter109.test, TEST.super.b@iter109.test, TEST.admin.a@iter109.test, TEST.staff.a@iter109.test, multiple test admin users in both tenants. Tenants deactivated in cleanup.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Test tenants test-iter109-a and test-iter109-b may still exist (deactivated). Test users with email pattern *@iter109.test exist in these tenants. Main security issues: (1) require_super_admin is_admin bypass CONFIRMED - partner_admin/staff can deactivate users; (2) platform_admin DELETE 403 CONFIRMED; (3) weak passwords accepted for admin creation CONFIRMED. Backend test file: /app/backend/tests/test_iter109_users_permissions.py. Run with: pytest backend/tests/test_iter109_users_permissions.py -v. Idempotent - handles existing test data gracefully.",
+  "rca_of_issues": {
+    "require_super_admin_bypass": {
+      "root_cause": "security.py require_super_admin condition: 'if user.get(\"role\") not in super_admin_roles and not user.get(\"is_admin\"): raise 403'. This means: PASS if role IS in super_admin_roles OR is_admin=True. Since all partner_admin and partner_staff users have is_admin=True in DB, they all bypass this check.",
+      "affected_endpoints": ["PATCH /api/admin/users/{id}/active", "GET /api/admin/users/{id}/logs"],
+      "fix": "Change condition to: 'if user.get(\"role\") not in super_admin_roles: raise 403' (remove is_admin bypass)"
+    },
+    "platform_admin_has_permission": {
+      "root_cause": "permissions.py has_permission() defines super_admin_roles as {'platform_super_admin', 'partner_super_admin', 'super_admin'}. The actual platform admin role constant (constants.py PLATFORM_ROLE) is 'platform_admin' (not 'platform_super_admin'). This name mismatch means platform admins fail all has_permission() checks.",
+      "affected_endpoints": ["DELETE /api/admin/users/{id}"],
+      "fix": "Add 'platform_admin' to super_admin_roles set in has_permission(), or use PLATFORM_ROLE constant"
+    }
+  }
+}
