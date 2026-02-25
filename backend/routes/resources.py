@@ -203,7 +203,7 @@ async def get_article_by_id(
     if is_platform_admin(user) and x_view_as_tenant:
         tid = x_view_as_tenant
     else:
-        tid = user.get("tenant_id") or _DT
+        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.resources.find_one(
         {"tenant_id": tid, "$or": [{"id": resource_id}, {"slug": resource_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
