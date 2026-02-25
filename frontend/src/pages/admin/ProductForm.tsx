@@ -42,6 +42,7 @@ export const EMPTY_FORM: ProductFormData = {
   price_rounding: "", is_active: true, visible_to_customers: [], restricted_to: [],
   intake_schema_json: EMPTY_INTAKE_SCHEMA,
   custom_sections: [{ ...DEFAULT_SECTION, id: makeId() }],
+  pricing_rules: {},
 };
 
 const MAX_BULLETS = 10;
