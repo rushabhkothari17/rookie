@@ -25,6 +25,11 @@ export default function QuickBuyLayout({
   };
 
   const hasQuestions = visibleIntakeQuestions.length > 0;
+  const isFree = !isRFQ && pricing && pricing.total === 0;
+  const isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry";
+
+  // CTA label
+  const ctaLabel = isEnquiry ? "Request Quote" : isFree ? "Get it Free" : "Buy Now";
 
   return (
     <div className="max-w-xl mx-auto" data-testid="quick-buy-layout">
