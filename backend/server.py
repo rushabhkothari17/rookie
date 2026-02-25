@@ -22,6 +22,7 @@ from core.config import ADMIN_EMAIL, ADMIN_PASSWORD
 from core.helpers import now_iso, make_id
 from core.security import pwd_context
 from core.constants import ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES
+from core.tenant import DEFAULT_TENANT_ID
 import core.config as _cfg
 
 JWT_SECRET = _cfg.JWT_SECRET
