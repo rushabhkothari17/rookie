@@ -74,7 +74,7 @@ const formatPrice = (product: any): string | null => {
 
 export default function OfferingCard({ product }: { product: any }) {
   const bullets = product.card_bullets || product.bullets || product.bullets_included || [];
-  const description = product.short_description || product.card_description || product.tagline;
+  const description = product.card_description || product.short_description || product.tagline;
   const priceLabel = formatPrice(product);
 
   return (
