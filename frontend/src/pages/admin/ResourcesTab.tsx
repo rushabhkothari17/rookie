@@ -457,6 +457,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
               <TableHead className="text-xs">Category</TableHead>
               <TableHead className="text-xs">Price</TableHead>
               <TableHead className="text-xs">Visible to</TableHead>
+              {isPlatformAdmin && <TableHead className="text-xs">Partner</TableHead>}
               <TableHead className="text-xs">Actions</TableHead>
             </TableRow>
           </TableHeader>
