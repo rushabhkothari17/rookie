@@ -113,6 +113,7 @@ export default function Login() {
         logo_url: branding.logo_url,
         primary_color: branding.primary_color,
         accent_color: branding.accent_color,
+        is_platform: tenant.is_platform ?? false,
       });
       setAuthKey(k => k + 1);
       setStep("auth");
