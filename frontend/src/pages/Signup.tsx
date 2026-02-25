@@ -177,23 +177,24 @@ export default function Signup() {
   }
 
   // Customer signup
+  const primaryColor = partnerPrimaryColor || "var(--aa-primary)";
   return (
     <div className="min-h-screen flex" data-testid="signup-page">
       {/* Left branding panel */}
       <div
         className="hidden lg:flex w-80 xl:w-96 flex-col justify-between p-10 shrink-0"
-        style={{ backgroundColor: "var(--aa-primary, #1e293b)" }}
+        style={{ backgroundColor: partnerPrimaryColor || "var(--aa-primary, #1e293b)" }}
       >
         <div>
           <div className="flex items-center gap-2.5 mb-10">
-            {ws.logo_url ? (
-              <img src={ws.logo_url} alt={storeName} className="h-8 object-contain" />
+            {(partnerLogoUrl || ws.logo_url) ? (
+              <img src={partnerLogoUrl || ws.logo_url} alt={partnerName || storeName} className="h-8 object-contain" />
             ) : (
               <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">{storeName[0]}</span>
+                <span className="text-white font-bold text-sm">{(partnerName || storeName)[0]}</span>
               </div>
             )}
-            <span className="text-white font-bold text-lg">{storeName}</span>
+            <span className="text-white font-bold text-lg">{partnerName || storeName}</span>
           </div>
 
           <div className="space-y-2">
