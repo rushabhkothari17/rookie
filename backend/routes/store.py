@@ -161,9 +161,8 @@ async def pricing_calc(
     user: Dict[str, Any] = Depends(get_current_user),
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = await _resolve_tenant_id(user, None, x_view_as_tenant)
-    tenant_ids = list({tid, DEFAULT_TENANT_ID})
-    product = await db.products.find_one({"tenant_id": {"$in": tenant_ids}, "id": payload.product_id}, {"_id": 0})
+    tid = await _resolve_store_tenant_id(user, None)
+    product = await db.products.find_one({"tenant_id": tid, "id": payload.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     # Product page shows base price without card processing fee
