@@ -500,7 +500,7 @@ class TestEmailVerification:
 
     def test_email_outbox_after_verification(self, tenant_a_info, mongo_db):
         """After successful verify-email, email_outbox record with type=welcome created"""
-        outbox = mongo_db.email_outbox.find_one({"to": "TEST-verify107@test.local", "type": "welcome"})
+        outbox = mongo_db.email_outbox.find_one({"to": "test-verify107@test.local", "type": "welcome"})
         assert outbox is not None, "email_outbox welcome record not found after verification"
         assert outbox["status"] == "MOCKED"
 
@@ -508,7 +508,7 @@ class TestEmailVerification:
         """email_verified audit log created after successful verification"""
         log = mongo_db.audit_logs.find_one({
             "action": "email_verified",
-            "actor": "TEST-verify107@test.local",
+            "actor": "test-verify107@test.local",
         })
         assert log is not None, "email_verified audit log not found"
 
