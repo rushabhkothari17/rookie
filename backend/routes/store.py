@@ -77,11 +77,12 @@ async def get_categories(
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
     tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid)
-    inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
+    tf: Dict[str, Any] = {"tenant_id": tid} if tid else {}
+    inactive_cats = await db.categories.find({**tf, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
-    all_cats = await db.categories.find({"tenant_id": tid, "is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
+    all_cats = await db.categories.find({**tf, "is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
     cat_map = {c["name"]: c.get("description", "") for c in all_cats}
-    products = await db.products.find({"tenant_id": tid, "is_active": True}, {"_id": 0, "category": 1}).to_list(1000)
+    products = await db.products.find({**tf, "is_active": True}, {"_id": 0, "category": 1}).to_list(1000)
     categories = sorted({
         p["category"] for p in products
         if p.get("category") and p["category"] not in inactive_names
