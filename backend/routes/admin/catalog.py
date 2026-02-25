@@ -22,38 +22,55 @@ def _label_to_key(label: str, fallback: str = "key") -> str:
 
 
 def _normalize_schema_dict(schema_dict: dict) -> None:
-    """Auto-generate keys for questions and values for options (in-place on dict)."""
-    questions = schema_dict.get("questions", {})
-    for q_type in ("dropdown", "multiselect", "single_line", "multi_line"):
-        for i, q in enumerate(questions.get(q_type, [])):
+    """Auto-generate keys for questions and values for options (in-place on dict).
+
+    Supports new flat array format: questions is a List[dict].
+    """
+    questions = schema_dict.get("questions", [])
+    if isinstance(questions, list):
+        # New flat array format
+        for i, q in enumerate(questions):
             if not q.get("key", "").strip():
                 q["key"] = _label_to_key(q.get("label", ""), f"q_{i}")
-            for opt in q.get("options", []):
+            for opt in (q.get("options") or []):
                 if not opt.get("value", "").strip():
                     opt["value"] = _label_to_key(opt.get("label", ""), "opt")
+    else:
+        # Legacy grouped format fallback
+        for q_type in ("dropdown", "multiselect", "single_line", "multi_line"):
+            for i, q in enumerate(questions.get(q_type, [])):
+                if not q.get("key", "").strip():
+                    q["key"] = _label_to_key(q.get("label", ""), f"q_{i}")
+                for opt in q.get("options", []):
+                    if not opt.get("value", "").strip():
+                        opt["value"] = _label_to_key(opt.get("label", ""), "opt")
 
 
 def _validate_intake_schema(schema: IntakeSchemaJson) -> None:
-    """Validate intake schema: key uniqueness, option arrays, max 10 per type."""
+    """Validate intake schema: key uniqueness, option arrays, max 50 questions.
+
+    Works with the new flat array format (questions: List[IntakeQuestion]).
+    """
+    questions = schema.questions  # List[IntakeQuestion]
+    if len(questions) > 50:
+        raise HTTPException(status_code=400, detail="Max 50 intake questions allowed")
     all_keys: list = []
-    type_map = {
-        "dropdown": schema.questions.dropdown,
-        "multiselect": schema.questions.multiselect,
-        "single_line": schema.questions.single_line,
-        "multi_line": schema.questions.multi_line,
-    }
-    for q_type, questions in type_map.items():
-        if len(questions) > 10:
-            raise HTTPException(status_code=400, detail=f"Max 10 {q_type} questions allowed")
-        for q in questions:
-            if q_type in ("dropdown", "multiselect"):
-                if not q.options:
-                    raise HTTPException(status_code=400, detail=f"Question '{q.key or q.label}' must have options")
-                for opt in q.options:
-                    if not opt.label:
-                        raise HTTPException(status_code=400, detail=f"Option in '{q.key or q.label}' must have a label")
-            if q.key:
-                all_keys.append(q.key)
+    for q in questions:
+        q_type = q.type
+        if q_type in ("dropdown", "multiselect"):
+            if q.affects_price and not q.options:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Question '{q.key or q.label}' affects price but has no options",
+                )
+            for opt in (q.options or []):
+                if not opt.label:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Option in '{q.key or q.label}' must have a label",
+                    )
+        if q.key:
+            all_keys.append(q.key)
     seen: set = set()
     for k in all_keys:
         if k in seen:
