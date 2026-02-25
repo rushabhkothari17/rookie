@@ -219,21 +219,16 @@ def tenant_b_admin_headers(tenant_b_info):
 
 def _cleanup_tenant(mongo_db, tenant_id, code):
     """Remove all test data for a tenant."""
-    # Remove users
-    user_ids = [u["id"] for u in mongo_db.users.find({"tenant_id": tenant_id}, {"id": 1})]
+    if not tenant_id:
+        return
     mongo_db.users.delete_many({"tenant_id": tenant_id})
-    # Remove customers
-    customer_ids = [c["id"] for c in mongo_db.customers.find({"tenant_id": tenant_id}, {"id": 1})]
     mongo_db.customers.delete_many({"tenant_id": tenant_id})
-    # Remove addresses
     mongo_db.addresses.delete_many({"tenant_id": tenant_id})
-    # Remove audit logs
-    mongo_db.audit_logs.delete_many({"meta.tenant_id": tenant_id})
-    # Remove email outbox
-    mongo_db.email_outbox.delete_many({})  # safe to clean all test outbox entries
-    # Remove website settings
+    mongo_db.audit_logs.delete_many({"meta_json.tenant_id": tenant_id})
+    mongo_db.email_outbox.delete_many({})  # clean all test outbox entries
     mongo_db.website_settings.delete_many({"tenant_id": tenant_id})
-    # Remove tenant
+    mongo_db.app_settings.delete_many({"tenant_id": tenant_id})
+    mongo_db.email_templates.delete_many({"tenant_id": tenant_id})
     mongo_db.tenants.delete_many({"code": code})
 
 
