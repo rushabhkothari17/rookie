@@ -120,9 +120,11 @@ export default function ProductDetail() {
   // Compute enabled intake questions & initialise answers with defaults
   const enabledIntakeQuestions = useMemo(() => getEnabledIntakeQuestions(product?.intake_schema_json), [product]);
 
-  // Filter by visibility rules using current answers
+  // Filter by visibility rules using current answers (supports multi-level chaining)
   const visibleIntakeQuestions = useMemo(
-    () => enabledIntakeQuestions.filter(q => evaluateVisibilityRule(q.visibility_rule, intakeAnswers)),
+    () => enabledIntakeQuestions.filter(q => 
+      evaluateVisibilityRule(q.visibility_rule, intakeAnswers, enabledIntakeQuestions)
+    ),
     [enabledIntakeQuestions, intakeAnswers]
   );
 
