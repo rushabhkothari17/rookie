@@ -148,7 +148,8 @@ async def admin_subscriptions(
     pipeline.append({"$skip": skip})
     pipeline.append({"$limit": per_page})
     
-    subs = await enrich_partner_codes(list(subs), is_platform_admin(admin))
+    subs = await db.subscriptions.aggregate(pipeline).to_list(per_page)
+    subs = await enrich_partner_codes(subs, is_platform_admin(admin))
 
     return {
         "subscriptions": subs,
