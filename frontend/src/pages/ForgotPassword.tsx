@@ -165,11 +165,9 @@ export default function ForgotPassword() {
             className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4"
             data-testid="reset-password-form"
           >
-            <Alert className="border-blue-200 bg-blue-50">
-              <AlertDescription className="text-blue-800 text-sm">
-                A reset code was sent to <strong>{email}</strong>. Enter it below along with your new password.
-              </AlertDescription>
-            </Alert>
+            <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2.5 border border-slate-100">
+              Code sent to <span className="font-medium text-slate-700">{email}</span>
+            </p>
             <div className="space-y-2">
               <Label htmlFor="code">Reset Code</Label>
               <Input
