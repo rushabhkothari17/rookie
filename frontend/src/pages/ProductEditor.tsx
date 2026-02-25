@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import api from "@/lib/api";
-import { ProductForm, type ProductFormData, EMPTY_INTAKE_SCHEMA } from "./admin/ProductForm";
+import { ProductForm, type ProductFormData, EMPTY_FORM } from "./admin/ProductForm";
+import { EMPTY_INTAKE_SCHEMA } from "./admin/IntakeSchemaBuilder";
 
 export default function ProductEditor() {
   const { id } = useParams<{ id: string }>();
