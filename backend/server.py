@@ -93,7 +93,6 @@ from routes.admin.subscriptions import router as admin_subscriptions_router
 from routes.admin.users import router as admin_users_router
 from routes.admin.catalog import router as admin_catalog_router
 from routes.admin.quote_requests import router as admin_quote_requests_router
-from routes.admin.bank_transactions import router as admin_bank_transactions_router
 from routes.admin.override_codes import router as admin_override_codes_router
 from routes.admin.exports import router as admin_exports_router
 from routes.admin.settings import router as admin_settings_router
