@@ -958,7 +958,15 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
 
 @router.post("/auth/resend-verification-email")
 async def resend_verification_email(payload: ResendVerificationRequest):
-    user = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    # Scope by tenant when partner_code is provided — prevents cross-tenant ambiguity
+    query: Dict[str, Any] = {"email": payload.email.lower()}
+    if payload.partner_code:
+        try:
+            tenant = await resolve_tenant(payload.partner_code)
+            query["tenant_id"] = tenant["id"]
+        except Exception:
+            pass  # Invalid code — fall back to unscoped lookup
+    user = await db.users.find_one(query, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     if user.get("is_verified"):
