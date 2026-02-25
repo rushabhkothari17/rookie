@@ -244,10 +244,12 @@ def _cleanup_tenant(mongo_db, tenant_id, code):
 class TestCustomerSignup:
     """A) Customer signup: fields, validation, DB persistence, currency, idempotency"""
 
-    def test_signup_success_canada(self, tenant_a_id, mongo_db):
+    def test_signup_success_canada(self, tenant_a_info, mongo_db):
         """Full signup with Canada → CAD currency, DB persistence"""
+        tenant_a_id = tenant_a_info["id"]
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload(CUST_EMAIL, country="Canada")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 200, f"Signup failed: {resp.text}"
         data = resp.json()
         assert "verification_code" in data, "No verification_code in response (MOCKED)"
@@ -278,10 +280,12 @@ class TestCustomerSignup:
         assert address["region"] == "Ontario"
         assert address["postal"] == "M5V 1A1"
 
-    def test_signup_currency_usa(self, tenant_b_id, mongo_db):
+    def test_signup_currency_usa(self, tenant_b_info, mongo_db):
         """USA signup → USD currency"""
+        tenant_b_id = tenant_b_info["id"]
+        partner_code = tenant_b_info["code"]
         payload = make_customer_payload("TEST-cust107-usa@test.local", country="USA")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_B_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 200, f"USA signup failed: {resp.text}"
         user = mongo_db.users.find_one({"email": "TEST-cust107-usa@test.local", "tenant_id": tenant_b_id})
         assert user, "User not created"
@@ -289,10 +293,12 @@ class TestCustomerSignup:
         assert customer, "Customer not created"
         assert customer["currency"] == "USD", f"Expected USD got {customer.get('currency')}"
 
-    def test_signup_currency_uk(self, tenant_b_id, mongo_db):
+    def test_signup_currency_uk(self, tenant_b_info, mongo_db):
         """UK signup → GBP currency"""
+        tenant_b_id = tenant_b_info["id"]
+        partner_code = tenant_b_info["code"]
         payload = make_customer_payload("TEST-cust107-uk@test.local", country="UK")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_B_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 200, f"UK signup failed: {resp.text}"
         user = mongo_db.users.find_one({"email": "TEST-cust107-uk@test.local", "tenant_id": tenant_b_id})
         assert user, "User not created"
@@ -300,10 +306,12 @@ class TestCustomerSignup:
         assert customer, "Customer not created"
         assert customer["currency"] == "GBP", f"Expected GBP got {customer.get('currency')}"
 
-    def test_signup_currency_unknown(self, tenant_b_id, mongo_db):
+    def test_signup_currency_unknown(self, tenant_b_info, mongo_db):
         """Unknown country signup → USD (default)"""
+        tenant_b_id = tenant_b_info["id"]
+        partner_code = tenant_b_info["code"]
         payload = make_customer_payload("TEST-cust107-unknown@test.local", country="Atlantis")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_B_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 200, f"Unknown country signup failed: {resp.text}"
         user = mongo_db.users.find_one({"email": "TEST-cust107-unknown@test.local", "tenant_id": tenant_b_id})
         assert user, "User not created"
@@ -313,85 +321,94 @@ class TestCustomerSignup:
 
     # --- Validation tests ---
 
-    def test_signup_missing_email(self, tenant_a_id):
+    def test_signup_missing_email(self, tenant_a_info):
         """Missing email → 422"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("dummy@test.local")
         del payload["email"]
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 422, f"Expected 422, got {resp.status_code}"
 
-    def test_signup_missing_full_name(self, tenant_a_id):
+    def test_signup_missing_full_name(self, tenant_a_info):
         """Missing full_name → 422"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-missing-name@test.local")
         del payload["full_name"]
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 422, f"Expected 422, got {resp.status_code}"
 
-    def test_signup_missing_address(self, tenant_a_id):
+    def test_signup_missing_address(self, tenant_a_info):
         """Missing address → 422"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-missing-addr@test.local")
         del payload["address"]
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 422, f"Expected 422, got {resp.status_code}"
 
-    def test_signup_password_too_short(self, tenant_a_id):
+    def test_signup_password_too_short(self, tenant_a_info):
         """Password < 10 chars → 400"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-shortpw107@test.local", password="Abc1!")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
         assert "10 characters" in resp.json().get("detail", "")
 
-    def test_signup_password_no_uppercase(self, tenant_a_id):
+    def test_signup_password_no_uppercase(self, tenant_a_info):
         """Password without uppercase → 400"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-noupcase107@test.local", password="testpass1@a")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
         assert "uppercase" in resp.json().get("detail", "").lower()
 
-    def test_signup_password_no_lowercase(self, tenant_a_id):
+    def test_signup_password_no_lowercase(self, tenant_a_info):
         """Password without lowercase → 400"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-nolower107@test.local", password="TESTPASS1@A")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
         assert "lowercase" in resp.json().get("detail", "").lower()
 
-    def test_signup_password_no_digit(self, tenant_a_id):
+    def test_signup_password_no_digit(self, tenant_a_info):
         """Password without digit → 400"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-nodigit107@test.local", password="TestPass@abc")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
         assert "number" in resp.json().get("detail", "").lower()
 
-    def test_signup_password_no_special(self, tenant_a_id):
+    def test_signup_password_no_special(self, tenant_a_info):
         """Password without special char → 400"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload("TEST-nospecial107@test.local", password="TestPass1234")
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
         assert "special" in resp.json().get("detail", "").lower()
 
-    def test_signup_reserved_code_blocked(self, tenant_a_id):
+    def test_signup_reserved_code_blocked(self, tenant_a_info):
         """Reserved code (automate-accounts) → 403"""
         payload = make_customer_payload("TEST-reserved107@test.local")
         resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={RESERVED_CODE}", json=payload)
         assert resp.status_code == 403, f"Expected 403, got {resp.status_code}"
         assert "reserved" in resp.json().get("detail", "").lower()
 
-    def test_signup_idempotency_same_tenant(self, tenant_a_id):
+    def test_signup_idempotency_same_tenant(self, tenant_a_info):
         """Same email + same tenant → 400 Email already registered"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload(CUST_EMAIL)
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
         assert "already registered" in resp.json().get("detail", "").lower()
 
-    def test_signup_same_email_different_tenant_allowed(self, tenant_a_id, tenant_b_id):
+    def test_signup_same_email_different_tenant_allowed(self, tenant_a_info, tenant_b_info):
         """Same email in Tenant A and Tenant B → both 200 (cross-tenant isolation)"""
         # CUST_EMAIL already exists in Tenant A (from test_signup_success_canada)
         # Signup with same email in Tenant B → should succeed
         payload = make_customer_payload(CUST_EMAIL)
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_B_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={tenant_b_info['code']}", json=payload)
         assert resp.status_code == 200, f"Cross-tenant same email should be allowed: {resp.text}"
 
-    def test_signup_audit_log_created(self, tenant_a_id, mongo_db):
+    def test_signup_audit_log_created(self, tenant_a_info, mongo_db):
         """USER_REGISTERED audit log is created after signup"""
         log = mongo_db.audit_logs.find_one({
             "action": "USER_REGISTERED",
