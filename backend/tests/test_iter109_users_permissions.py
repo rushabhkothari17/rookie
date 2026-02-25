@@ -70,6 +70,7 @@ def create_partner_user_via_tenant_endpoint(platform_token: str, tenant_id: str,
     resp = requests.post(
         f"{BASE_URL}/api/admin/tenants/{tenant_id}/create-admin",
         json={
+            "tenant_id": tenant_id,
             "email": email,
             "password": password,
             "full_name": f"Test {role}",
