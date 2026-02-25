@@ -107,7 +107,14 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Pricing Detail Page Fix: `/app/test_reports/iteration_93.json` — 6/6 frontend pass (base_price=0 shows "Price on request", admin pricing_rules editor added)
 - Catalog & Pricing Refactor: `/app/test_reports/iteration_94.json` — 18/18 backend + 95% frontend pass (new admin fields, pricing types, store labels)
 
-### Catalog & Pricing Refactor (Feb 2026)
+### Full Dead Code Purge (Feb 2026)
+- **DB**: Deleted all 66 legacy demo products, dropped `pricing_rules`, `terms` (orphaned), `payment_transactions` (empty) collections. Re-seeded 21 clean products (no dead fields).
+- **server.py**: Removed entire `apply_catalog_overrides()` function (~400 lines of hardcoded product SKU overrides), removed `pricing_complexity` backfill from startup_tasks, removed `pricing_rules.insert_one()` from `seed_products()`. Added `tenant_id = DEFAULT_TENANT_ID` to seed.
+- **checkout.py**: Removed MIG-CRM SKU bundle validation check (2 locations).
+- **imports.py**: Removed dead CSV columns (`sku`, `bullets_excluded`, `bullets_needed`, `next_steps`, `automation_details`, `support_details`, `inclusions`, `exclusions`, `requirements`) from catalog import template and JSON_FIELDS.
+- **Deleted files**: `migration_script.py`, `OverrideCodesTab.jsx` (duplicate of .tsx).
+- **Deleted DB collections**: `terms`, `payment_transactions`, `pricing_rules`.
+- **Result**: 21 products, zero dead fields, no hardcoded SKU logic anywhere in codebase.
 - **Dead code removal**: Removed ~12 unused fields from Product model (`sku`, `pricing_complexity`, `bullets_excluded`, `bullets_needed`, `next_steps`, `outcome`, `requirements`, `support_details`, `inclusions`, `exclusions`, `automation_details`).
 - **Data-driven pricing**: `pricing_service.py` rewritten — new `calculator` type uses `pricing_rules.price_inputs` (configurable from admin UI), legacy `calc_type` handlers kept for backward compat.
 - **New UI fields**: `ProductForm.tsx` now has `card_title`, `card_tag`, `card_description`, `card_bullets`, `tagline` fields. Pricing tab has `pricing_type` dropdown (fixed/tiered/calculator/scope_request/inquiry/external) with conditional `VariantEditor` (tiered) and `PriceInputsEditor` (calculator).
