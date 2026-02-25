@@ -290,6 +290,7 @@ class TestAListEndpoints:
         data = resp.json()
         users = data.get("users", [])
         assert len(users) >= 1, f"Expected to find partner admin by name, got: {users}"
+        assert any("TEST Partner Admin" in (u.get("full_name") or "") for u in users)
         print(f"✅ Search by name works: found {len(users)} users")
 
     def test_a5_platform_admin_sees_all_tenants(self, platform_token, super_admin_a_token, super_admin_b_token):
