@@ -335,7 +335,7 @@ function QuestionCard({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="group bg-white border border-slate-200 rounded-lg overflow-hidden transition-all hover:border-slate-300 shadow-sm">
+      <div className="group bg-white border border-slate-200 rounded-lg overflow-hidden transition-all hover:border-slate-300 shadow-sm" data-testid="question-card" data-q-type={q.type}>
         {/* Header */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-slate-50 select-none transition-colors">
