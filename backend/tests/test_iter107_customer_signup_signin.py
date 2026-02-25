@@ -1035,15 +1035,17 @@ class TestBranding:
 class TestAdminCustomerAccess:
     """Platform admin can view all customers; Partner super admin can view/toggle their own"""
 
-    def test_platform_admin_can_view_all_customers(self, platform_admin_headers, tenant_a_id, tenant_b_id):
+    def test_platform_admin_can_view_all_customers(self, platform_admin_headers, tenant_a_info, tenant_b_info):
         """Platform admin GET /api/admin/customers → can see all tenants"""
         resp = requests.get(f"{BASE_URL}/api/admin/customers", headers=platform_admin_headers)
         assert resp.status_code == 200, f"Platform admin GET customers failed: {resp.text}"
         data = resp.json()
         assert "customers" in data
 
-    def test_partner_admin_sees_only_own_customers(self, tenant_a_admin_headers, tenant_b_admin_headers, tenant_a_id, tenant_b_id):
+    def test_partner_admin_sees_only_own_customers(self, tenant_a_admin_headers, tenant_b_admin_headers, tenant_a_info, tenant_b_info):
         """Partner super admin sees only their tenant's customers"""
+        tenant_a_id = tenant_a_info["id"]
+        tenant_b_id = tenant_b_info["id"]
         resp_a = requests.get(f"{BASE_URL}/api/admin/customers", headers=tenant_a_admin_headers)
         resp_b = requests.get(f"{BASE_URL}/api/admin/customers", headers=tenant_b_admin_headers)
         assert resp_a.status_code == 200
@@ -1052,18 +1054,16 @@ class TestAdminCustomerAccess:
         customers_a = resp_a.json().get("customers", [])
         customers_b = resp_b.json().get("customers", [])
 
-        # All customers returned for Tenant A should belong to Tenant A
         for cust in customers_a:
             assert cust.get("tenant_id") == tenant_a_id, f"Tenant A admin sees foreign customer: {cust}"
 
-        # All customers returned for Tenant B should belong to Tenant B
         for cust in customers_b:
             assert cust.get("tenant_id") == tenant_b_id, f"Tenant B admin sees foreign customer: {cust}"
 
-    def test_partner_admin_toggle_customer_active(self, tenant_a_id, tenant_a_admin_headers, mongo_db):
+    def test_partner_admin_toggle_customer_active(self, tenant_a_info, tenant_a_admin_headers, mongo_db):
         """Partner super admin can toggle customer active/inactive"""
-        # Find a customer in Tenant A
-        customers = mongo_db.customers.find({"tenant_id": tenant_a_id}).to_list(10)
+        tenant_a_id = tenant_a_info["id"]
+        customers = list(mongo_db.customers.find({"tenant_id": tenant_a_id}))
         if not customers:
             pytest.skip("No customers in Tenant A")
         customer_id = customers[0]["id"]
@@ -1082,9 +1082,10 @@ class TestAdminCustomerAccess:
             headers=tenant_a_admin_headers,
         )
 
-    def test_partner_admin_cannot_access_other_tenant_customer(self, tenant_a_admin_headers, tenant_b_id, mongo_db):
+    def test_partner_admin_cannot_access_other_tenant_customer(self, tenant_a_admin_headers, tenant_b_info, mongo_db):
         """Tenant A admin cannot deactivate Tenant B customer → 403/404"""
-        customers_b = mongo_db.customers.find({"tenant_id": tenant_b_id}).to_list(10)
+        tenant_b_id = tenant_b_info["id"]
+        customers_b = list(mongo_db.customers.find({"tenant_id": tenant_b_id}))
         if not customers_b:
             pytest.skip("No customers in Tenant B")
         cust_b_id = customers_b[0]["id"]
