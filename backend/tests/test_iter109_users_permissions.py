@@ -49,16 +49,23 @@ def admin_headers(token: str) -> dict:
 
 
 def create_test_tenant(token: str, code: str, name: str) -> dict:
-    """Create a test tenant via platform admin."""
+    """Create a test tenant via platform admin, or look up existing."""
+    # Try to create
     resp = requests.post(
         f"{BASE_URL}/api/admin/tenants",
-        json={
-            "name": name,
-            "code": code,
-            "status": "active",
-        },
+        json={"name": name, "code": code, "status": "active"},
         headers=admin_headers(token),
     )
+    if resp.status_code in (200, 201):
+        return resp.json()
+    # If already exists, look it up
+    if resp.status_code == 400 and "already in use" in resp.text:
+        resp2 = requests.get(f"{BASE_URL}/api/admin/tenants", headers=admin_headers(token))
+        if resp2.status_code == 200:
+            tenants = resp2.json().get("tenants", [])
+            for t in tenants:
+                if t.get("code") == code:
+                    return {"tenant": t}
     assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
     return resp.json()
 
