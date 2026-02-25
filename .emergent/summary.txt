@@ -1,94 +1,101 @@
 <analysis>**original_problem_statement:**
-The user initiated a major codebase overhaul. This started with a request to fix pricing display and quickly evolved into a full-scale refactoring to remove dead code and make all product pricing configurable from the admin UI.
+The user initiated a major codebase overhaul, which included cleaning up dead code, simplifying the pricing architecture, and redesigning the admin product form.
 
-Following a massive, agent-led refactoring, the user provided further direction:
-1.  **Full Codebase Audit & Cleanup:** The user requested a comprehensive audit of the entire application (not just products) to identify and remove all dead code, including unused database fields, collections, backend logic, and frontend components. The agent performed this audit, and the user approved the deletion of all identified dead code.
-2.  **Fix UI Bug:** The user reported a bug where the Customer Visibility radio buttons in the admin product form were not working correctly.
-3.  **Simplify Pricing Architecture:** The user proposed a radical simplification of the product pricing model, collapsing multiple types (, , , , ) into just three: , , and . This involved moving intake questions into the pricing section and making them the sole driver for dynamic pricing calculations.
-4.  **Improve UI/UX:** The user criticized the admin product form's layout as super basic and not modern, self intuitive, cutting edge and beautiful yet simple. This led to a complete redesign of the form.
-5.  **Fix UI Polish:** After the redesign, the user noted that the new dark-themed form was clashing with the default white modal dialog it appeared in and requested a fix.
+In the current session, the user significantly expanded the scope, requesting a large set of new features for the product catalog and intake forms. The key requirements are:
+1.  **UI/UX Overhaul:** Redesign the admin product creation/editing UI to match the main website's light theme, as the previous dark theme was inconsistent.
+2.  **Advanced Pricing Rules:**
+    *   Implement complex pricing logic including tiered/range pricing, price floors/ceilings, and cross-field formulas (e.g., ).
+3.  **Advanced Intake Forms:**
+    *   **Conditional Logic:** Add the ability to show/hide questions based on answers to previous questions.
+    *   **New Field Types:** Introduce new fields for  (yes/no), Wed Feb 25 04:58:41 UTC 2026, , and a non-interactive  block.
+    *   **Tooltips:** Add a tooltip field to each question for providing extra help text.
+4.  **Dynamic Product Page Layouts:**
+    *   Create 5 distinct UI layouts for the customer-facing product detail page (e.g., Classic, Modern, Wizard-style) and make the layout selectable from the admin panel. This is to support both simple and complex products, like insurance buy online programs.
+5.  **Data and Audit Trail:**
+    *   Save all user-provided answers from the intake form into the order's audit log for record-keeping.
+6.  **UI Polish and Field Management:**
+    *   Remove the unused  field.
+    *   Display product  as badges on the detail page.
+    *   Show an indicator for subscription products in the price summary.
+    *   Add a link to the Terms & Conditions near the final checkout button.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is in a stable, tested state following several major, user-directed refactoring cycles.
-1.  **Codebase Cleanup:** A massive amount of dead code has been removed from the entire application. This includes unused database fields across dozens of products, entire DB collections (, , ), hardcoded backend logic ( function), and dead frontend files. The database has been re-seeded with a clean schema.
-2.  **New Pricing Architecture:** The product pricing model has been completely rewritten. The old, complex system (, , , ) is gone. It's been replaced by a simple three-type system:
-    *   : Has a  and uses  to calculate the final price.
-    *   : Redirects to an .
-    *   : Acts as a Contact Us or Request for Quote page, with no checkout.
-3.  **Redesigned Admin UI:** The  (for creating/editing products) and  have been completely rewritten based on a spec from the design agent. The new form features a dark theme, a more modern layout, and merges the Pricing and Intake Questions sections as requested.
-4.  **Bug Fixes:** The customer visibility UI bug has been fixed.
-
-The application has been thoroughly tested by the testing agent after these changes and passed all tests.
+The agent has completed a significant portion of the requested work.
+1.  **Admin UI Theme Fix:** The dark-themed  and  have been successfully rewritten to a light theme, aligning them with the rest of the admin panel's design.
+2.  **Backend Models:** The primary  has been heavily modified to support all the new features. It now includes fields for tiered pricing, price caps, conditional visibility rules, tooltips, product page layouts (), and schemas for the new intake question types (, Wed Feb 25 04:58:41 UTC 2026, , ).
+3.  **Backend Services:**
+    *   : The  function has been updated to handle tiered pricing, boolean fields, and apply price floors/ceilings.
+    *   : A new route () has been created to handle file uploads from intake forms.
+    *   : The checkout logic for both Stripe and GoCardless has been updated to capture the user's intake form answers and save them to the  model's audit trail.
+4.  **Frontend Admin UI:**  has been extensively rewritten to provide a user interface for admins to configure all the new features: tiered pricing, visibility rules, tooltips, price formulas, and the new field types.
+5.  **Frontend Product Layouts:** Five new files for the distinct product page layouts have been created in , but they are not yet fully implemented or integrated.
 
 **Last working item**:
-    - Last item agent was working: The user pointed out a UI/UX issue where the new dark-themed  was rendering inside a default white  modal, creating a visual clash. The agent identified the cause and was about to implement a fix by making the dialog container dark to match the form.
+    - Last item agent was working: The agent was in the final stages of a massive multi-feature implementation sprint. The last action was the creation of five new, distinct layout components for the customer-facing product detail page.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? screenshot tool
+    - Which testing method agent to use? testing_agent_v4_fork (due to the large scope of changes across the entire stack).
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: UI Polish for Admin Product Form Dialog (P0 - HIGHEST)
-
-  Issues Detail:
-  - Issue 1: 
-     - **Description**: The dark-themed product form () is inside a white modal ( from Shadcn), which looks bad. The user wants a cohesive, polished look.
-     - **Attempted fixes**: The agent identified the style clash between  and the  component in .
-     - **Next debug checklist**:
-       1.  Modify the  component in  where  is rendered.
-       2.  Apply dark background classes (e.g., , ) and text color classes () to the  to match the form's dark theme.
-       3.  Refine any visual elements (buttons, inputs) within the form for better polish against the new dark background.
-       4.  Use the screenshot tool to verify the fix.
-     - **Why fix this issue and what will be achieved with the fix?**: It will resolve the user's direct feedback on UI/UX and make the admin panel look professional and visually consistent.
-     - **Status**:  IN PROGRESS
-     - **Is recurring issue?** N
-     - **Should Test frontend/backend/both after fix?**: frontend
-     - **Blocked on other issue**: None
+  There are no isolated issues or bugs. The entire pending workload is part of the large, in-progress feature implementation.
 
 **In progress Task List**:
-  - Task 1: Complete UI Polish of Admin Product Form (P0)
-     - **Where to resume**: .
-     - **What will be achieved with this?**: A visually cohesive and polished admin interface for creating and editing products.
+  - Task 1: **Complete Product Detail Page Layout Implementation (P0 - HIGHEST)**
+     - **Where to resume**: . This file needs to be refactored to dynamically import and render one of the five new layout components from  based on the  property. All necessary data (product info, intake questions, pricing logic) must be passed as props to the selected layout component.
+     - **What will be achieved with this?**: The application will support multiple, distinct UI layouts for product pages, configurable on a per-product basis.
      - **Status**:  IN PROGRESS
-     - **Should Test frontend/backend/both after fix?**: frontend
+     - **Should Test frontend/backend/both after fix?**: both
+     - **Blocked on something**: None
+
+  - Task 2: **Implement Frontend Logic in New Layouts (P1)**
+     - **Where to resume**: Inside the 5 new layout components (e.g., , ).
+     - **What needs to be done**:
+       1.  Implement the rendering for new intake field types (Wed Feb 25 04:58:41 UTC 2026, , , ) and .
+       2.  Integrate the file upload component to use the new  endpoint.
+       3.  Implement conditional visibility logic to show/hide questions.
+       4.  Add the live price preview, subscription indicator, product tags, and T&C link.
+     - **What will be achieved with this?**: The customer-facing product page will be feature-complete, reflecting all the advanced capabilities configured in the admin panel.
+     - **Status**:  NOT STARTED
+     - **Should Test frontend/backend/both after fix?**: both
+     - **Blocked on something**: Task 1
+
+  - Task 3: **Implement Backend Formula Pricing (P1)**
+     - **Where to resume**:  in the  function.
+     - **What needs to be done**: Implement the logic to parse and compute prices based on the  field (e.g., ). The model and admin UI are ready, but the backend calculation logic is currently a placeholder.
+     - **What will be achieved with this?**: Unlocks dynamic, formula-based pricing for products.
+     - **Status**:  NOT STARTED
+     - **Should Test frontend/backend/both after fix?**: backend
      - **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks (P1):**
+    *   Provide an explicit summary to the user about which catalog fields are not linked to any UI layout, as requested.
     *   Centralize EMAIL integration settings.
-    *   Implement Coming Soon integrations: Build credential forms and validation for Gmail, Microsoft Outlook, HubSpot, Salesforce, and QuickBooks.
+    *   Implement credential forms for Coming Soon integrations (Gmail, Outlook, HubSpot, Salesforce, QuickBooks).
 *   **Future Tasks (P2):**
     *   Conduct a comprehensive security audit (Penetration Testing).
 *   **Recurring/Low Priority (P2):**
-    *   Verify non-admin users cannot see the Edit Article button on public articles.
+    *   Verify non-admin users cannot see the Edit Article button on public articles (Recurring issue).
 
 **Completed work in this session**
-- **Massive Codebase Cleanup (DONE):**
-  - Conducted a full audit of the codebase for dead/unused code.
-  - Deleted numerous dead fields from the  collection (, , , etc.).
-  - Deleted entire unused DB collections: , , .
-  - Removed the large, hardcoded  function from .
-  - Removed SKU-based business logic from .
-  - Deleted the dead  and .
-- **Pricing Architecture Refactor (DONE):**
-  - Simplified the  model to , ,  across the entire stack (backend models, services, frontend components).
-  - Rewrote  to remove old calculator logic.
-  - Rewrote  and migrated existing DB products to the new schema.
-- **Admin UI Redesign (DONE):**
-  - Completely rewrote  with a modern, dark-themed layout.
-  - Rewrote  to be a simple, flat list editor.
-  - Updated all related components (, , ) to support the new product structure.
-- **Bug Fixes (DONE):**
-  - Fixed the frontend compilation error from the previous fork.
-  - Fixed a bug where the customer visibility radio buttons in  were not functioning correctly.
-  - Fixed an issue where seeded products were missing a  and not appearing in the store.
-- **Testing (DONE):**
-  - Successfully ran a full regression test using the testing agent, achieving 100% pass rates on both frontend and backend after the major refactoring.
+- **Admin UI Theme Overhaul:** Rewrote , , and  to a consistent light theme.
+- **Advanced Intake Form Builder:** Massively updated  to configure tiered pricing, conditional visibility, formulas, tooltips, and new field types.
+- **Backend Model & Service Expansion:**
+  - Heavily modified  to support all new pricing, layout, and question features.
+  - Updated  to handle tiered pricing and price caps.
+  - Added a new  route for file uploads.
+- **Audit Trail Implementation:** Added logic to  to save intake form answers to the order audit trail.
+- **Field Cleanup:** Removed  from the product model and admin UI, replacing it with the  selector.
+- **Initial Layout Creation:** Created the file structure for 5 new product detail page layouts.
 
 **Earlier issues found/mentioned but not fixed**
    - **Issue 1:** The Edit Article button is sometimes visible to non-admin users on public articles. This is a recurring issue from a previous fork and has not been addressed.
+     - **Why to solve this issue and what will be achieved with this?**: Fixes a potential security/permission vulnerability and improves UI consistency for non-admin users.
+     - **Should Test frontend/backend/both after fix?**: both
+     - **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
   - **Issue recurrence in previous fork:** Edit Article button is sometimes visible to non-admin users on public articles.
@@ -99,70 +106,63 @@ The application has been thoroughly tested by the testing agent after these chan
 
 
 **Key Technical Concepts**
-- **Simplified Pricing Model:** The core architecture now revolves around three product pricing types: , , and .  pricing is driven by a  plus calculations from .
-- **UI/UX Redesign:** The admin product creation/editing experience has been completely overhauled with a modern, dark-themed UI. The form () now combines pricing and intake questions into a single, intuitive flow.
-- **Code Simplification & Cleanup:** A significant effort was made to remove technical debt, dead code, and obsolete data structures from the entire application, resulting in a cleaner and more maintainable codebase.
-- **State Management Fix:** A UI bug in a React form was fixed by introducing explicit local state () instead of deriving UI state from data props, preventing the UI from snapping back unexpectedly.
+- **Dynamic Component Rendering:** The product detail page is moving from a monolithic component to a router that dynamically renders different layout components based on a product's  property.
+- **Advanced Pricing Engine:** The pricing model has evolved to support complex rules including tiered pricing, cross-field formulas, and price floors/ceilings, moving beyond simple addition/multiplication.
+- **Declarative UI Configuration:** The intake form system is now a declarative form builder, where admins can define not just fields but also their behavior (conditional visibility) and layout, which is then interpreted and rendered on the frontend.
+- **Separation of Concerns:** Creating the new file upload route () separates the concern of handling large binary data from the main application logic in  or .
 
 **key DB schema**
 - **products**:
-    - **Removed:** , , , , and many other legacy fields.
-    - **Added:** .
-    - **Modified:**
-        -  is now an enum:  |  | .
-        -  is now a flat  instead of a nested structure.
-- **Deleted Collections**: , , .
-
-**changes in tech stack**
-  - None.
+    - **Removed:** 
+    - **Added:**
+        - 
+        - 
+        - 
+    - **Modified:** The  list of dictionaries has been significantly expanded. Each question can now contain:
+        - : , Wed Feb 25 04:58:41 UTC 2026, ,  (in addition to existing types)
+        - 
+        - 
+        - 
+        - 
+- **orders**:
+    - **Modified:** The  object now includes a snapshot of the  submitted by the user during checkout.
 
 **All files of reference**
-*   **Files with current issue:**
-    *    (Contains the  that needs styling)
-    *    (The form that needs the polished container)
-*   **Recently rewritten/modified files:**
+*   **Files to be modified next:**
+    *    (Core layout router)
+    *   All files under  (Layout implementation)
+    *    (Formula pricing logic)
+*   **Recently created/modified files:**
+    *   
+    *   
+    *    (New)
     *   
     *   
     *   
-    *   
-    *   
-    *   
-    *   
-    *   
-
-**Areas that need refactoring**:
-- None currently. The last task is a UI polish, not a refactor.
-
-**key api endpoints**
-- : The handler for this endpoint was updated to support the new simplified product and intake question schema.
 
 **Critical Info for New Agent**
-1.  **Current Task is UI Polish:** Your immediate and only task is to fix the visual clash in the admin product form dialog. The new dark form is in a white modal. You need to style the modal ( in ) to be dark, creating a cohesive, professional look.
-2.  **The App is Stable:** The application has undergone huge, successful refactorings and is stable. All backend and frontend functionality passed a comprehensive regression test. You are building on a solid foundation.
-3.  **Understand the New Pricing Model:** All product pricing is now defined by  (, , ), a , and an array of  which can modify the price. The old complex logic is gone.
-4.  **Trust the Design Direction:** The user wants a modern, cutting edge UI. When polishing the dialog, aim for a clean, bold, dark-themed aesthetic consistent with the work already done on .
+1.  **You are in the middle of a very large implementation.** The work is not a simple bug fix. Backend models and admin UI are mostly done, but the customer-facing side is incomplete.
+2.  **Your immediate priority is the frontend product page.** You must first refactor  to act as a layout router that dynamically renders one of the 5 new layout components.
+3.  **After routing is set up, you must implement the logic within those 5 layouts.** This includes rendering all the new field types, handling conditional visibility, integrating file uploads, and displaying UI elements like tags and tooltips.
+4.  **A key backend piece is missing.** The logic for  in  has not been written. This needs to be implemented to complete the advanced pricing feature.
+5.  **Test thoroughly.** Given the massive scope of these changes, a comprehensive run with the  is mandatory before considering this task complete. Test both the admin configuration and the customer-facing experience for all new features.
 
 **documents and test reports created in this job**
 -  (Updated)
--  (Passed 100%)
--  (Passed 100%)
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Approved the plan to perform a full-codebase audit and delete all dead code, and to fix the visibility bug.
-2.  **User:** Approved the specific list of dead code and collections to be deleted.
-3.  **User:** Was asked to clarify why pricing types and rules were still needed if intake questions could handle everything.
-4.  **User:** Reported the UI bug with the customer visibility toggle.
-5.  **User:** Confirmed that  pricing could be done via intake questions and that  vs.  was a needless distinction.
-6.  **User:** Proposed a new, simpler architecture:  of /, with intake questions moved into the pricing section.
-7.  **User:** Criticized the admin UI as super basic and not modern or intuitive.
-8.  **User:** Agreed with the agent's refined architecture proposal (, , ) and approved a full UI redesign, trusting the agent's judgment on aesthetics.
-9.  **User:** Pointed out that the new dark-themed product form looks bad inside the default white modal.
-10. **User:** Asked the agent to fix the layout to look good, without needing the design agent again, confirming the current layout structure is fine but the visual polish is missing. (Status: **IN PROGRESS**)
+1.  **User:** Approved the plan to build complex pricing rules, conditional visibility, and layout sections. (Status: **IN PROGRESS**)
+2.  **User:** Stated that before starting new features, the UI/UX must be updated to match the main website's theme. (Status: **COMPLETED**)
+3.  **User:** Requested several new features: tooltips for questions, an HTML content block to be placed between questions, and multiple distinct layouts for the product detail page. (Status: **IN PROGRESS**)
+4.  **User:** Requested to highlight any catalog fields that are not linked to a layout. (Status: **PENDING**)
+5.  **User:** Added more requirements: show product tags as badges, delete , show a subscription indicator in the price summary, link T&Cs near the checkout button, and save all question answers to the audit log. (Status: **IN PROGRESS**)
+6.  **User:** Emphasized that the 5 product page layouts need to be genuinely different to handle complex products like insurance programs. (Status: **IN PROGRESS**)
 
 **Project Health Check:**
-- **Broken:** None. The application is stable and tested.
+- **Broken:** The customer-facing product detail page is in a broken state due to the half-finished refactoring.
 - **Mocked:** None.
-- **Needs Improvement:** The admin  dialog needs UI polish to resolve a dark/light theme clash.
+- **Needs Improvement:** The entire product intake and pricing system is undergoing a major upgrade and is not yet functional on the frontend.
 
 **3rd Party Integrations**
 - **GoCardless:** Payment processing.
@@ -170,15 +170,15 @@ The application has been thoroughly tested by the testing agent after these chan
 - **Zoho Mail:** Transactional email provider.
 
 **Testing status**
-  - **Testing agent used after significant changes:** YES. A full regression test was run and passed after the major pricing architecture refactor.
+  - **Testing agent used after significant changes:** YES. An intermediate test was run which found and fixed critical backend model issues. A full test is now required upon completion.
   - **Troubleshoot agent used after agent stuck in loop:** NO
   - **Test files created:** []
-  - **Known regressions:** None.
+  - **Known regressions:** None identified, but the risk is high due to the large-scale changes.
 
 **Credentials to test flow:**
 - **Platform Admin:**  / 
 - **Tenant Admin:**  / 
-- **Test User:** 
 
 **What agent forgot to execute**
-The agent has successfully addressed all user requests up to this point. The final UI polish request is the current work-in-progress and has not been forgotten.</analysis>
+- The backend logic for  in  was planned but not implemented. A placeholder comment was left instead.
+- The agent analyzed the product model to identify unused fields but did not explicitly report this information back to the user as requested.</analysis>
