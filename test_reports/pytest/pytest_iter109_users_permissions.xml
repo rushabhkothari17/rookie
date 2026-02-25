@@ -1,7 +1,386 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="2.670" timestamp="2026-02-25T22:39:01.623837+00:00" hostname="agent-env-96a963bf-0464-4061-a3ce-39590aeb74c2"><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a1_get_users_returns_pagination_fields" time="2.504"><error message="failed on setup with &quot;AssertionError: Create partner user via tenant endpoint failed: {&quot;detail&quot;:[{&quot;type&quot;:&quot;missing&quot;,&quot;loc&quot;:[&quot;body&quot;,&quot;tenant_id&quot;],&quot;msg&quot;:&quot;Field required&quot;,&quot;input&quot;:{&quot;email&quot;:&quot;TEST.super.a@iter109.test&quot;,&quot;password&quot;:&quot;TestSuper109!A&quot;,&quot;full_name&quot;:&quot;Test partner_super_admin&quot;,&quot;role&quot;:&quot;partner_super_admin&quot;}}]}&#10;assert 422 in (200, 201)&#10; +  where 422 = &lt;Response [422]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:138: in super_admin_a_token
-    create_partner_user_via_tenant_endpoint(
-backend/tests/test_iter109_users_permissions.py:80: in create_partner_user_via_tenant_endpoint
-    assert resp.status_code in (200, 201), f"Create partner user via tenant endpoint failed: {resp.text}"
-E   AssertionError: Create partner user via tenant endpoint failed: {"detail":[{"type":"missing","loc":["body","tenant_id"],"msg":"Field required","input":{"email":"TEST.super.a@iter109.test","password":"TestSuper109!A","full_name":"Test partner_super_admin","role":"partner_super_admin"}}]}
-E   assert 422 in (200, 201)
-E    +  where 422 = &lt;Response [422]&gt;.status_code</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="55" failures="0" skipped="1" tests="61" time="6.290" timestamp="2026-02-25T22:39:42.470349+00:00" hostname="agent-env-96a963bf-0464-4061-a3ce-39590aeb74c2"><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a1_get_users_returns_pagination_fields" time="0.692"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a2_get_users_response_fields" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a3_search_by_email" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a4_search_by_name" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a5_platform_admin_sees_all_tenants" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a6_partner_super_admin_sees_only_own_tenant" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a7_get_permissions_modules" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a8_get_my_permissions_super_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a9_get_my_permissions_custom_user" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestAListEndpoints" name="test_a10_unauthenticated_access" time="0.112" /><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b1_create_partner_admin_user_success" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b2_create_user_verify_audit_log" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b3_create_platform_admin_not_allowed" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b4_duplicate_email_same_tenant_returns_400" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b5_same_email_different_tenant_allowed" time="1.414" /><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b6_only_one_partner_super_admin_per_tenant" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b7_create_with_preset_role_manager" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b8_create_with_modules_gets_custom_role" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b9_create_user_default_role_is_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestBCreateUsers" name="test_b10_password_complexity_validation" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c1_update_full_name" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c2_update_role_to_platform_admin_blocked" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c3_update_modules_sets_role_to_custom" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c4_cannot_set_partner_super_admin_when_exists" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c5_cannot_deactivate_own_account" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c6_update_access_level" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c7_update_is_verified" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestCEditUsers" name="test_c8_cross_tenant_edit_returns_404" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d1_patch_active_false_deactivates_user" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d2_deactivated_user_cannot_login" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d3_patch_active_true_reactivates_user" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d4_patch_creates_audit_log" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d5_post_reactivate" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d6_delete_soft_deletes_user" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d7_delete_self_returns_400" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDStatusOperations" name="test_d8_cross_tenant_patch_active_returns_404" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestEPermissionMatrix" name="test_e1_platform_admin_not_in_super_admin_check" time="0.164"><skipped type="pytest.skip" message="No test user available">/app/backend/tests/test_iter109_users_permissions.py:957: No test user available</skipped></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestEPermissionMatrix" name="test_e2_partner_staff_with_customers_module_full_access" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestEPermissionMatrix" name="test_e3_user_without_users_module_cannot_create_user" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestEPermissionMatrix" name="test_e4_permissions_py_put_checks_has_permission" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestEPermissionMatrix" name="test_e5_require_super_admin_is_admin_bypass" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestEPermissionMatrix" name="test_e6_get_logs_requires_super_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestFTenantIsolation" name="test_f1_cross_tenant_get_user_returns_404" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestFTenantIsolation" name="test_f2_platform_admin_sees_all" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestFTenantIsolation" name="test_f3_tenant_a_cannot_see_tenant_b_users" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestGSecurity" name="test_g1_token_version_mechanism_invalidates_old_tokens" time="0.398" /><testcase classname="backend.tests.test_iter109_users_permissions.TestGSecurity" name="test_g2_no_privilege_escalation_via_role_platform_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestGSecurity" name="test_g3_orphan_protection_deactivating_last_super_admin" time="0.330" /><testcase classname="backend.tests.test_iter109_users_permissions.TestGSecurity" name="test_g4_customer_user_cannot_access_admin_endpoints" time="0.114" /><testcase classname="backend.tests.test_iter109_users_permissions.TestHAuditLogs" name="test_h1_get_user_logs_returns_correct_fields" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestHAuditLogs" name="test_h2_cross_tenant_logs_returns_404" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestHAuditLogs" name="test_h3_audit_log_entries_created_for_create_update" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestIUnlock" name="test_i1_unlock_resets_failed_login_attempts" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestIUnlock" name="test_i2_unlock_creates_audit_log" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestIUnlock" name="test_i3_unlock_cross_tenant_returns_404" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDiscoveredSurfaces" name="test_ds1_router_conflict_resolution" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDiscoveredSurfaces" name="test_ds2_tenants_create_admin_alternative_path" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDiscoveredSurfaces" name="test_ds3_exports_endpoint" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDiscoveredSurfaces" name="test_ds4_permissions_py_delete_soft_delete_verification" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDiscoveredSurfaces" name="test_ds5_scenario_same_email_two_tenants" time="0.000"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter109_users_permissions.TestDiscoveredSurfaces" name="test_ds6_scenario_full_permission_lifecycle" time="1.461"><error message="failed on setup with &quot;AssertionError: Create tenant failed: {&quot;detail&quot;:&quot;Partner code already in use&quot;}&#10;assert 400 in (200, 201)&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter109_users_permissions.py:115: in tenant_a
+    tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter109_users_permissions.py:62: in create_test_tenant
+    assert resp.status_code in (200, 201), f"Create tenant failed: {resp.text}"
+E   AssertionError: Create tenant failed: {"detail":"Partner code already in use"}
+E   assert 400 in (200, 201)
+E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase></testsuite></testsuites>
