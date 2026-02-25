@@ -327,6 +327,7 @@ export function ProductsTab() {
             <DialogTitle>{editProduct ? `Edit: ${editProduct.name}` : "New Product"}</DialogTitle>
           </DialogHeader>
           <ProductForm
+            key={editProduct?.id || "new"}
             form={form}
             setForm={setForm}
             categories={categories}
