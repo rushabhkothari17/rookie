@@ -133,18 +133,7 @@ export default function ClassicLayout({
 
       {/* Right Column - Sticky Summary */}
       <div>
-        {scopeUnlock ? (
-          <StickyPurchaseSummary
-            pricing={{
-              subtotal: scopeUnlock.price,
-              fee: 0,
-              total: scopeUnlock.price,
-            }}
-            cta={ctaConfig}
-            currency={currency}
-            disabled={false}
-          />
-        ) : pricing ? (
+        {pricing ? (
           <div className="space-y-4">
             <StickyPurchaseSummary
               pricing={{
@@ -155,7 +144,7 @@ export default function ClassicLayout({
               }}
               cta={ctaConfig}
               currency={currency}
-              isRFQ={isRFQ || !!pricing?.is_enquiry}
+              isRFQ={isEnquiry}
               disabled={false}
             />
 
@@ -167,6 +156,16 @@ export default function ClassicLayout({
               >
                 <RefreshCcw size={16} />
                 <span>This is a recurring subscription</span>
+              </div>
+            )}
+
+            {/* Free product indicator */}
+            {isFree && (
+              <div
+                className="flex items-center gap-2 p-3 rounded-xl border border-green-100 bg-green-50 text-sm text-green-700"
+                data-testid="free-product-indicator"
+              >
+                <span>Free - no payment required</span>
               </div>
             )}
 
