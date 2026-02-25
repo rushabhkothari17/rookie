@@ -51,7 +51,7 @@ export default function Login() {
     setCodeError("");
     try {
       // 1. Validate partner code
-      const res = await axios.get(`${API}/api/auth/tenant-info?code=${encodeURIComponent(code.trim().toLowerCase())}`);
+      const res = await axios.get(`${API}/api/tenant-info?code=${encodeURIComponent(code.trim().toLowerCase())}`);
       const tenant = res.data.tenant;
 
       // 2. Fetch + apply partner branding
