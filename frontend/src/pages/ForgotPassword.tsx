@@ -113,10 +113,9 @@ export default function ForgotPassword() {
         </div>
 
         {error && (
-          <Alert variant="destructive" data-testid="forgot-password-error">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <p className="flex items-center gap-1.5 text-xs text-red-500" data-testid="forgot-password-error">
+            <AlertCircle className="h-3 w-3" /> {error}
+          </p>
         )}
 
         {/* Step 1: Request code */}
