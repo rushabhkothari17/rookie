@@ -241,7 +241,7 @@ async def ensure_db_security_indexes():
         ("subscriptions", [("tenant_id", 1), ("customer_id", 1)]),
         ("subscriptions", [("tenant_id", 1), ("created_at", -1)]),
         ("products", [("tenant_id", 1), ("is_active", 1)]),
-        ("articles", [("tenant_id", 1), ("status", 1)]),
+        ("resources", [("tenant_id", 1), ("status", 1)]),
         ("promo_codes", [("tenant_id", 1), ("code", 1)]),
         ("api_keys", [("key_hash", 1), ("is_active", 1)]),
         ("api_keys", [("key", 1), ("is_active", 1)]),      # legacy plaintext fallback
