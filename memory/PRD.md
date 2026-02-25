@@ -150,17 +150,17 @@ Build a fully configurable, admin-driven SaaS platform for accounting/automation
 - (None currently — all P0 resolved)
 
 ### P1 — High Priority
+- **Complete Other Product Layouts**: Implement distinct layouts for wizard, quick_buy, application, showcase (currently use ClassicLayout placeholder)
 - **Email integration settings**: Centralize email config in admin panel
 - **"Coming Soon" integrations**: Gmail, Microsoft Outlook, HubSpot, Salesforce, QuickBooks credential forms
 
 ### P2 — Medium Priority
-- **Multi-step / wizard form**: Split long questionnaires across pages
-- **Date + File upload field types**: For scheduling and document attachment
-- **Cross-field formula pricing**: `field_a × field_b × multiplier`
+- **Multi-step / wizard form**: Split long questionnaires across pages (blocked until WizardLayout implemented)
 - **Security audit**: Penetration testing
 
 ### P3 — Low Priority / Bugs
 - **Edit Article button**: Sometimes visible to non-admin users (recurring, 3+ occurrences)
+- **Dialog accessibility**: Add DialogTitle and aria-describedby for screen readers
 - **Product DELETE endpoint**: Currently only deactivation via PUT
 - **GET /api/admin/products/{id}**: Single product admin fetch endpoint
 
