@@ -82,9 +82,11 @@ async def get_products(
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
     tid = await _resolve_tenant_id(user, partner_code, x_view_as_tenant, api_key_tid)
-    inactive_cats = await db.categories.find({"tenant_id": tid, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
+    # Include both the resolved tenant and the default/global catalog
+    tenant_ids = list({tid, DEFAULT_TENANT_ID})
+    inactive_cats = await db.categories.find({"tenant_id": {"$in": tenant_ids}, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_cat_names = {c["name"] for c in inactive_cats}
-    query: Dict[str, Any] = {"tenant_id": tid, "is_active": True}
+    query: Dict[str, Any] = {"tenant_id": {"$in": tenant_ids}, "is_active": True}
     if inactive_cat_names:
         query["category"] = {"$nin": list(inactive_cat_names)}
     all_products = await db.products.find(query, {"_id": 0}).to_list(1000)
