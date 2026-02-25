@@ -264,6 +264,13 @@ export function ProductsTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="categories" className="mt-4">
+          <CategoriesTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
