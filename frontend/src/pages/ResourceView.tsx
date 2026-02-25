@@ -7,11 +7,11 @@ import { ChevronLeft, Download, FileText, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function ArticleView() {
+export default function ResourceView() {
   const { articleId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin = user?.role === 'platform_admin';
+  const isAdmin = user?.role === 'platform_admin' || user?.role === 'super_admin' || user?.role === 'partner_super_admin';
   const [resource, setResource] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
