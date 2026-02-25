@@ -160,6 +160,8 @@ async def admin_customers(
             addresses.append(r["address"])
             seen_addresses.add(r["address"]["id"])
     
+    is_platform = is_platform_admin(admin)
+    customers = await enrich_partner_codes(customers, is_platform)
     return {
         "customers": customers,
         "users": users,
