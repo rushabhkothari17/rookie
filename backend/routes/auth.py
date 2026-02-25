@@ -576,12 +576,15 @@ async def login(payload: LoginRequest, response: Response):
 @router.get("/tenant-info")
 async def get_tenant_info(code: str):
     """Public endpoint to verify a partner code and get tenant display name."""
+    # automate-accounts is the reserved platform admin code — not a regular tenant
+    if code.strip().lower() == DEFAULT_TENANT_ID:
+        return {"tenant": {"name": "Platform Administration", "code": DEFAULT_TENANT_ID, "is_platform": True}}
     tenant = await db.tenants.find_one({"code": code.lower()}, {"_id": 0, "id": 1, "name": 1, "code": 1, "status": 1})
     if not tenant:
         raise HTTPException(status_code=404, detail="Partner code not found")
     if tenant.get("status") != "active":
         raise HTTPException(status_code=403, detail="Organization is inactive")
-    return {"tenant": {"name": tenant["name"], "code": tenant["code"]}}
+    return {"tenant": {"name": tenant["name"], "code": tenant["code"], "is_platform": False}}
 
 
 async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
