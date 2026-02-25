@@ -84,6 +84,25 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            
+            {/* Full-screen Product Editor routes - outside BaseLayout */}
+            <Route
+              path="/admin/products/new"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <ProductEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/products/:id/edit"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <ProductEditor />
+                </ProtectedRoute>
+              }
+            />
+            
             <Route
               path="/"
               element={
@@ -104,22 +123,6 @@ export default function App() {
                 <Route path="/profile" element={<Profile />} />
 
                 <Route path="/portal" element={<Portal />} />
-                <Route
-                  path="/admin/products/new"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <ProductEditor />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/products/:id/edit"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <ProductEditor />
-                    </ProtectedRoute>
-                  }
-                />
                 <Route
                   path="/admin"
                   element={
