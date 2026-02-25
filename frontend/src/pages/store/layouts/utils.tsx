@@ -6,8 +6,8 @@ import { Info } from "lucide-react";
 import api from "@/lib/api";
 import type { IntakeQuestion } from "./types";
 
-// Evaluate visibility rules
-export function evaluateVisibilityRule(rule: any, answers: Record<string, any>): boolean {
+// Evaluate a single visibility rule
+function evaluateSingleRule(rule: any, answers: Record<string, any>): boolean {
   if (!rule) return true;
   const { depends_on, operator, value } = rule;
   const answer = answers[depends_on];
@@ -20,6 +20,51 @@ export function evaluateVisibilityRule(rule: any, answers: Record<string, any>):
     case "not_empty": return !!answer && answer !== "" && !(Array.isArray(answer) && answer.length === 0);
     default: return true;
   }
+}
+
+/**
+ * Evaluate visibility with multi-level chaining support.
+ * If question A depends on B, and B depends on C, then:
+ * - C must be visible and its rule must pass
+ * - B must be visible and its rule must pass
+ * - Only then A is evaluated
+ * 
+ * This prevents showing a question whose dependency is itself hidden.
+ */
+export function evaluateVisibilityRule(
+  rule: any,
+  answers: Record<string, any>,
+  allQuestions?: IntakeQuestion[],
+  visited: Set<string> = new Set()
+): boolean {
+  if (!rule) return true;
+  
+  const { depends_on } = rule;
+  
+  // Prevent infinite loops in circular dependencies
+  if (visited.has(depends_on)) return true;
+  visited.add(depends_on);
+  
+  // First, check if the dependency question itself is visible
+  if (allQuestions) {
+    const depQuestion = allQuestions.find(q => q.key === depends_on);
+    if (depQuestion?.visibility_rule) {
+      // Recursively check if the dependency is visible
+      const depVisible = evaluateVisibilityRule(
+        depQuestion.visibility_rule,
+        answers,
+        allQuestions,
+        visited
+      );
+      if (!depVisible) {
+        // The question we depend on is hidden, so we should also be hidden
+        return false;
+      }
+    }
+  }
+  
+  // Now evaluate our own rule
+  return evaluateSingleRule(rule, answers);
 }
 
 // Get enabled intake questions from schema
