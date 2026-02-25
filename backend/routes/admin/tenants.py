@@ -24,6 +24,9 @@ async def list_tenants(admin: Dict[str, Any] = Depends(require_platform_admin)):
 @router.post("/admin/tenants")
 async def create_tenant(payload: TenantCreate, admin: Dict[str, Any] = Depends(require_platform_admin)):
     code = payload.code.lower().strip().replace(" ", "-")
+    # Explicitly block the reserved platform admin code
+    if code == DEFAULT_TENANT_ID:
+        raise HTTPException(status_code=400, detail="This code is reserved for platform administration and cannot be used for a partner tenant.")
     existing = await db.tenants.find_one({"code": code})
     if existing:
         raise HTTPException(status_code=400, detail="Partner code already in use")
