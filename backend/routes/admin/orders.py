@@ -73,6 +73,7 @@ async def admin_orders(
     items = await db.order_items.find({"order_id": {"$in": all_order_ids}}, {"_id": 0}).to_list(1000)
     total_count = await db.orders.count_documents(query)
 
+    orders = await enrich_partner_codes(orders, is_platform_admin(admin))
     return {
         "orders": orders,
         "items": items,

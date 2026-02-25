@@ -34,6 +34,7 @@ async def admin_list_users(
     total = await db.users.count_documents(query)
     skip = (page - 1) * per_page
     users = await db.users.find(query, {"_id": 0, "password_hash": 0}).skip(skip).limit(per_page).to_list(per_page)
+    users = await enrich_partner_codes(users, is_platform_admin(admin))
     return {
         "users": users,
         "page": page,
