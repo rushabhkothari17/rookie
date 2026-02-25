@@ -23,11 +23,7 @@ def round_nearest(v: float, nearest: int) -> float:
 
 
 def _calculate_tiered_price(val: float, tiers: List[Dict]) -> float:
-    """Progressive tiered pricing — each tier covers its quantity range.
-
-    Example tiers: [{from:0, to:10, price_per_unit:5}, {from:10, to:None, price_per_unit:3}]
-    For val=15: (10-0)*5 + (15-10)*3 = 50 + 15 = 65
-    """
+    """Progressive tiered pricing — each tier covers its quantity range."""
     total = 0.0
     for tier in sorted(tiers, key=lambda t: float(t.get("from", 0))):
         from_v = float(tier.get("from", 0))
@@ -39,6 +35,45 @@ def _calculate_tiered_price(val: float, tiers: List[Dict]) -> float:
         if qty_in_tier > 0:
             total += qty_in_tier * ppu
     return round_cents(total)
+
+
+# ── Safe formula evaluator ─────────────────────────────────────────────────────
+import ast
+import operator as _op
+
+_SAFE_OPS = {
+    ast.Add: _op.add, ast.Sub: _op.sub,
+    ast.Mult: _op.mul, ast.Div: _op.truediv,
+}
+
+
+def _eval_formula_node(node: ast.AST, ctx: Dict[str, float]) -> float:
+    """Recursively evaluate a safe AST node. Supports +,-,*,/ and field refs."""
+    if isinstance(node, ast.Constant):
+        return float(node.value)
+    if isinstance(node, ast.Name):
+        return float(ctx.get(node.id, 0) or 0)
+    if isinstance(node, ast.BinOp):
+        fn = _SAFE_OPS.get(type(node.op))
+        if fn is None:
+            return 0.0
+        r = _eval_formula_node(node.right, ctx)
+        if isinstance(node.op, ast.Div) and r == 0:
+            return 0.0
+        return fn(_eval_formula_node(node.left, ctx), r)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        return -_eval_formula_node(node.operand, ctx)
+    return 0.0
+
+
+def eval_formula_expression(expr: str, ctx: Dict[str, float]) -> float:
+    """Safely evaluate formula like 'employees * monthly_rate * 0.8'."""
+    try:
+        tree = ast.parse(expr.strip(), mode="eval")
+        result = _eval_formula_node(tree.body, ctx)
+        return round_cents(max(0.0, result))
+    except Exception:
+        return 0.0
 
 
 # ── Intake schema helpers ──────────────────────────────────────────────────────
