@@ -428,23 +428,23 @@ class CategoryUpdate(BaseModel):
 class AdminProductCreate(BaseModel):
     name: str
     short_description: str = ""
+    tagline: str = ""
+    card_title: Optional[str] = None
+    card_tag: Optional[str] = None
+    card_description: Optional[str] = None
+    card_bullets: Optional[List[str]] = None
     description_long: str = ""
     bullets: List[str] = Field(default_factory=list)
+    bullets_included: Optional[List[str]] = None
     tag: Optional[str] = None
     category: str = ""
-    outcome: Optional[str] = None
-    automation_details: Optional[str] = None
-    support_details: Optional[str] = None
-    inclusions: List[str] = Field(default_factory=list)
-    exclusions: List[str] = Field(default_factory=list)
-    requirements: List[str] = Field(default_factory=list)
-    next_steps: List[str] = Field(default_factory=list)
     faqs: List[Dict[str, str]] = Field(default_factory=list)
     terms_id: Optional[str] = None
     base_price: float = 0.0
     is_subscription: bool = False
     stripe_price_id: Optional[str] = None
-    pricing_complexity: str = "SIMPLE"
+    pricing_type: str = "fixed"
+    pricing_rules: Optional[Dict[str, Any]] = None
     is_active: bool = True
     visible_to_customers: List[str] = Field(default_factory=list)
     restricted_to: List[str] = Field(default_factory=list)
