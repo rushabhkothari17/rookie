@@ -583,6 +583,7 @@ export function IntakeSchemaBuilder({
         <button
           type="button"
           onClick={() => setShowCaps(v => !v)}
+          data-testid="price-caps-toggle"
           className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-slate-50 rounded-lg transition-colors"
         >
           <div className="flex items-center gap-2">
