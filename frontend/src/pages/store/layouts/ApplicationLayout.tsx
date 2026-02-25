@@ -210,41 +210,13 @@ export default function ApplicationLayout({
         {/* Pricing Section */}
         {activeSection === "pricing" && (
           <div className="space-y-6" data-testid="section-pricing">
-            {/* Scope ID unlock for enquiry products */}
+            {/* Scope ID notice - directing users to cart */}
             {(isRFQ || pricing?.is_enquiry) && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <h3 className="font-semibold text-slate-900 mb-3">Unlock with Scope ID</h3>
-                <p className="text-sm text-slate-500 mb-4">
-                  If you have a finalized scope document, enter the Scope ID to unlock pricing.
+              <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6">
+                <h3 className="font-semibold text-slate-900 mb-2">Scope-Based Pricing</h3>
+                <p className="text-sm text-slate-600">
+                  This product requires scoping. Add it to your cart and enter your Scope ID during checkout, or request a new scope.
                 </p>
-                <div className="flex gap-2">
-                  <Input
-                    value={scopeId}
-                    onChange={e => setScopeId(e.target.value)}
-                    placeholder="Enter Scope ID"
-                    className="flex-1 font-mono"
-                    data-testid="scope-id-input"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={handleValidateScopeId}
-                    disabled={scopeValidating || !scopeId.trim()}
-                  >
-                    {scopeValidating ? "Checking..." : "Validate"}
-                  </Button>
-                </div>
-                {scopeError && (
-                  <p className="text-sm text-red-600 mt-2">{scopeError}</p>
-                )}
-                {scopeUnlock && (
-                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="font-semibold text-green-800">Scope unlocked</p>
-                    <p className="text-sm text-green-700">{scopeUnlock.title}</p>
-                    <p className="font-bold text-green-800 mt-1">
-                      {formatCurrency(scopeUnlock.price)}
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
