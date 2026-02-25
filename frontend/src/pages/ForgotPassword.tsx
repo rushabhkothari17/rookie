@@ -87,25 +87,23 @@ export default function ForgotPassword() {
       <div className="w-full max-w-sm space-y-8">
 
         {/* Partner brand header */}
-        <div className="text-center space-y-3">
-          {partnerLogoUrl ? (
-            <div className="flex justify-center">
-              <img src={partnerLogoUrl} alt={partnerName} className="h-12 object-contain" />
-            </div>
-          ) : (
-            <div className="flex justify-center">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-3 mb-4">
+            {partnerLogoUrl ? (
+              <img src={partnerLogoUrl} alt={partnerName} className="h-8 object-contain" />
+            ) : (
               <div
-                className="h-12 w-12 rounded-xl flex items-center justify-center text-white text-xl font-bold"
+                className="h-9 w-9 rounded-xl flex items-center justify-center text-white font-bold text-base"
                 style={{ backgroundColor: primaryColor }}
               >
                 {(partnerName || partnerCode)[0]?.toUpperCase() || "P"}
               </div>
-            </div>
-          )}
-          {partnerName && (
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">{partnerName}</p>
-          )}
-          <h1 className="text-2xl font-bold text-slate-900">
+            )}
+            {partnerName && (
+              <span className="font-semibold text-slate-700 text-sm">{partnerName}</span>
+            )}
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             {step === "done" ? "Password reset!" : "Forgot password?"}
           </h1>
           <p className="text-sm text-slate-500">
