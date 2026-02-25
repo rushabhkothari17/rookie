@@ -300,6 +300,7 @@ export function SubscriptionsTab() {
                 <TableCell className="whitespace-nowrap">{sub.contract_end_date?.slice(0, 10) || "—"}</TableCell>
                 <TableCell><span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700">{sub.payment_method || "—"}</span></TableCell>
                 <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${statusColor(sub.status)}`}>{sub.status}</span></TableCell>
+                {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-sub-partner-${sub.id}`}>{sub.partner_code || "—"}</TableCell>}
                 <TableCell>
                   <div className="flex gap-1 flex-nowrap">
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/subscriptions/${sub.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-subs-logs-${sub.id}`}>Logs</Button>
