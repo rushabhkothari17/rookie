@@ -143,43 +143,135 @@ export default function Signup() {
 
   // Partner mode
   if (isPartnerMode) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4" data-testid="partner-signup-page">
-        <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-8">
-            <div className="mb-6">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Partner registration</p>
-              <h1 className="text-2xl font-bold text-slate-900">Create your organization</h1>
-              <p className="text-sm text-slate-500 mt-1">Set up your partner workspace to get started.</p>
+    // ── Success screen ────────────────────────────────────────────────────────
+    if (generatedCode) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center p-4" data-testid="partner-signup-success">
+          <div className="w-full max-w-md text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="h-14 w-14 rounded-full bg-green-50 flex items-center justify-center">
+                <CheckCircle2 size={28} className="text-green-500" strokeWidth={2} />
+              </div>
             </div>
-            <form className="space-y-4" onSubmit={handlePartnerSubmit}>
-              <FieldWrapper label="Organization name" icon={Building2}>
-                <Input placeholder="Acme Corp" value={partnerOrg.name} onChange={e => setPartnerOrg(p => ({ ...p, name: e.target.value }))} required data-testid="partner-org-name" />
-              </FieldWrapper>
-              <FieldWrapper label="Partner code" icon={ChevronRight}>
-                <Input placeholder="acme-corp" value={partnerOrg.code} onChange={e => setPartnerOrg(p => ({ ...p, code: e.target.value }))} required data-testid="partner-org-code" />
-                <p className="text-xs text-slate-400">Lowercase letters and hyphens only</p>
-              </FieldWrapper>
-              <FieldWrapper label="Admin name" icon={User}>
-                <Input placeholder="Jane Smith" value={partnerOrg.admin_name} onChange={e => setPartnerOrg(p => ({ ...p, admin_name: e.target.value }))} required data-testid="partner-admin-name" />
-              </FieldWrapper>
-              <FieldWrapper label="Admin email" icon={Mail}>
-                <Input type="email" placeholder="jane@acmecorp.com" value={partnerOrg.admin_email} onChange={e => setPartnerOrg(p => ({ ...p, admin_email: e.target.value }))} required data-testid="partner-admin-email" />
-              </FieldWrapper>
-              <FieldWrapper label="Admin password" icon={Lock}>
-                <Input type="password" value={partnerOrg.admin_password} onChange={e => setPartnerOrg(p => ({ ...p, admin_password: e.target.value }))} required data-testid="partner-admin-password" />
-              </FieldWrapper>
-              <Button type="submit" className="w-full h-11 font-semibold" disabled={partnerLoading} data-testid="partner-signup-submit" style={{ backgroundColor: "var(--aa-primary)" }}>
-                {partnerLoading ? "Creating…" : "Create organization"}
-              </Button>
-            </form>
-            <p className="mt-5 text-center text-sm text-slate-500">
-              Already have an account?{" "}
-              <Link to="/login" className="font-semibold hover:underline" style={{ color: "var(--aa-accent)" }}>Sign in</Link>
-            </p>
+
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Organization created!</h1>
+              <p className="text-sm text-slate-400">Save your partner code — you'll need it to sign in.</p>
+            </div>
+
+            {/* Partner code display */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Your Partner Code</p>
+              <div className="flex items-center gap-2">
+                <code
+                  className="flex-1 text-2xl font-bold tracking-tight text-slate-900 bg-white border border-slate-200 rounded-xl px-4 py-3 font-mono text-center"
+                  data-testid="generated-partner-code"
+                >
+                  {generatedCode}
+                </code>
+                <button
+                  onClick={handleCopyCode}
+                  className="h-12 w-12 shrink-0 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:border-slate-400 hover:text-slate-800 transition-colors"
+                  data-testid="copy-code-btn"
+                  title="Copy partner code"
+                >
+                  {codeCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                </button>
+              </div>
+              <p className="text-xs text-slate-400">
+                Share this code with your customers so they can sign in and register through your portal.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                localStorage.setItem("aa_partner_code", generatedCode);
+                navigate("/login");
+              }}
+              className="w-full h-11 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-700 transition-colors"
+              data-testid="goto-login-after-register"
+            >
+              Sign in to your organization
+            </button>
+
+            <Link to="/login" onClick={() => localStorage.removeItem("aa_partner_code")} className="block text-sm text-slate-400 hover:text-slate-600 transition-colors">
+              Go to login gateway
+            </Link>
           </div>
         </div>
+      );
+    }
+
+    // ── Registration form ─────────────────────────────────────────────────────
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4" data-testid="partner-signup-page">
+        <div className="w-full max-w-md space-y-6">
+          <div className="space-y-1">
+            <Link to="/login" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors mb-4">
+              <ChevronLeft size={12} /> Back
+            </Link>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Create your organization</h1>
+            <p className="text-sm text-slate-400">Set up your partner workspace to get started.</p>
+          </div>
+
+          <form className="space-y-4" onSubmit={handlePartnerSubmit}>
+            <FieldWrapper label="Organization name" icon={Building2}>
+              <Input
+                placeholder="Acme Corp"
+                value={partnerOrg.name}
+                onChange={e => setPartnerOrg(p => ({ ...p, name: e.target.value }))}
+                required
+                data-testid="partner-org-name"
+              />
+            </FieldWrapper>
+            <FieldWrapper label="Your name" icon={User}>
+              <Input
+                placeholder="Jane Smith"
+                value={partnerOrg.admin_name}
+                onChange={e => setPartnerOrg(p => ({ ...p, admin_name: e.target.value }))}
+                required
+                data-testid="partner-admin-name"
+              />
+            </FieldWrapper>
+            <FieldWrapper label="Email" icon={Mail}>
+              <Input
+                type="email"
+                placeholder="jane@acmecorp.com"
+                value={partnerOrg.admin_email}
+                onChange={e => setPartnerOrg(p => ({ ...p, admin_email: e.target.value }))}
+                required
+                data-testid="partner-admin-email"
+              />
+            </FieldWrapper>
+            <FieldWrapper label="Password" icon={Lock}>
+              <Input
+                type="password"
+                placeholder="Min 10 chars, upper, lower, number, symbol"
+                value={partnerOrg.admin_password}
+                onChange={e => setPartnerOrg(p => ({ ...p, admin_password: e.target.value }))}
+                required
+                data-testid="partner-admin-password"
+              />
+            </FieldWrapper>
+
+            <Button
+              type="submit"
+              className="w-full h-11 font-semibold bg-slate-900 hover:bg-slate-700 text-white"
+              disabled={partnerLoading}
+              data-testid="partner-signup-submit"
+            >
+              {partnerLoading ? "Creating…" : "Create organization"}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-slate-400">
+            Already have an account?{" "}
+            <Link to="/login" className="font-semibold text-slate-700 hover:underline">Sign in</Link>
+          </p>
+        </div>
       </div>
+    );
+  }
     );
   }
 
