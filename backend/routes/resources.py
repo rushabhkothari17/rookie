@@ -199,15 +199,16 @@ async def get_article_by_id(
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
 
-    # Resolve tenant: platform admins respect X-View-As-Tenant; all others use their own tenant_id
-    if is_platform_admin(user) and x_view_as_tenant:
-        tid = x_view_as_tenant
+    # Resolve tenant: platform admins with a specific view use that; platform admins
+    # with "All Tenants" (no header) search across all tenants; others use own tenant_id
+    if is_platform_admin(user):
+        tid = x_view_as_tenant  # None means all tenants
     else:
         tid = user.get("tenant_id") or DEFAULT_TENANT_ID
-    article = await db.resources.find_one(
-        {"tenant_id": tid, "$or": [{"id": resource_id}, {"slug": resource_id}], "deleted_at": {"$exists": False}},
-        {"_id": 0},
-    )
+    query: Dict[str, Any] = {"$or": [{"id": resource_id}, {"slug": resource_id}], "deleted_at": {"$exists": False}}
+    if tid:
+        query["tenant_id"] = tid
+    article = await db.resources.find_one(query, {"_id": 0})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
     if article.get("visibility") != "all" and article.get("restricted_to"):
