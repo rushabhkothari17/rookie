@@ -16,7 +16,6 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Upload} from "lucide-react";
 
 function productToForm(p: any): ProductFormData {
-  // bullets: prefer new 'bullets' field, fall back to bullets_included
   const bullets: string[] = (p.bullets || []).filter((b: string) => b);
   if (bullets.length === 0) {
     const fallback = (p.bullets_included || []).filter((b: string) => b);
@@ -26,7 +25,12 @@ function productToForm(p: any): ProductFormData {
 
   return {
     name: p.name || "",
-    short_description: p.short_description || p.tagline || "",
+    short_description: p.short_description || "",
+    tagline: p.tagline || "",
+    card_title: p.card_title || "",
+    card_tag: p.card_tag || "",
+    card_description: p.card_description || "",
+    card_bullets: p.card_bullets || [],
     description_long: p.description_long || "",
     bullets,
     tag: p.tag || "",
@@ -39,12 +43,13 @@ function productToForm(p: any): ProductFormData {
     is_subscription: p.is_subscription ?? false,
     stripe_price_id: p.stripe_price_id || "",
     price_rounding: p.price_rounding || "",
+    pricing_type: p.pricing_type || "fixed",
+    pricing_rules: p.pricing_rules || {},
     is_active: p.is_active ?? true,
     visible_to_customers: p.visible_to_customers || [],
     restricted_to: p.restricted_to || [],
     intake_schema_json: p.intake_schema_json || EMPTY_INTAKE_SCHEMA,
     custom_sections: p.custom_sections || [],
-    pricing_rules: p.pricing_rules || {},
   };
 }
 
