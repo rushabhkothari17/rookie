@@ -849,9 +849,6 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
             </>
           )}
 
-          {/* ── Email Templates ── */}
-          {activeSection === "email" && <EmailSection />}
-
           {/* ── Footer & Nav ── */}
           {activeSection === "footer" && (
             <>
@@ -864,45 +861,6 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
                 <AuthTile title="Contact Info" description="Email, phone, and address" preview={ws.contact_email || undefined} onEdit={() => setAuthSlide("footer_contact")} testId="footer-tile-contact" />
                 <AuthTile title="Social Media" description="Social network links" preview={ws.footer_social_title || undefined} onEdit={() => setAuthSlide("footer_social")} testId="footer-tile-social" />
               </div>
-            </>
-          )}
-
-          {/* ── References ── */}
-          {activeSection === "references" && (
-            <>
-              <p className="text-xs text-slate-500 mb-4">
-                References are key-value pairs used across your app. Use <code className="font-mono bg-slate-100 px-1 rounded">{"{{ref:key}}"}</code> to reference them in content fields.
-              </p>
-              <ReferencesSection />
-            </>
-          )}
-
-          {/* ── Payments ── */}
-          {activeSection === "payments" && (
-            <>
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold text-slate-700">Payment Integrations</h3>
-              </div>
-              <p className="text-xs text-slate-400 mb-4">Enabled providers appear in the Customers module for per-customer assignment.</p>
-              <PaymentProviderCard
-                title="GoCardless" subtitle="Direct Debit / Bank Transfer"
-                enabledItem={(structured["Payments"] || []).find((i: any) => i.key === "gocardless_enabled")}
-                displayLabelKey="payment_gocardless_label" displayDescKey="payment_gocardless_description"
-                initialLabel={ws.payment_gocardless_label} initialDesc={ws.payment_gocardless_description}
-                credItems={(structured["Payments"] || []).filter((i: any) => i.key.startsWith("gocardless") && i.key !== "gocardless_enabled" && i.key !== "gocardless_fee_rate")}
-                feeRateItem={(structured["Payments"] || []).find((i: any) => i.key === "gocardless_fee_rate") || null}
-                onSaved={onStructuredSaved}
-                onCallbackSettings={() => setAuthSlide("gocardless_callback")}
-              />
-              <PaymentProviderCard
-                title="Stripe" subtitle="Credit / Debit Card"
-                enabledItem={(structured["Payments"] || []).find((i: any) => i.key === "stripe_enabled")}
-                displayLabelKey="payment_stripe_label" displayDescKey="payment_stripe_description"
-                initialLabel={ws.payment_stripe_label} initialDesc={ws.payment_stripe_description}
-                credItems={(structured["Payments"] || []).filter((i: any) => i.key.startsWith("stripe") && i.key !== "stripe_enabled" && i.key !== "stripe_fee_rate" && i.key !== "service_fee_rate")}
-                feeRateItem={(structured["Payments"] || []).find((i: any) => i.key === "stripe_fee_rate") || null}
-                onSaved={onStructuredSaved}
-              />
             </>
           )}
 
