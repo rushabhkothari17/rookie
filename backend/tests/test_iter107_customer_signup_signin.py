@@ -988,9 +988,10 @@ class TestInactiveScenarios:
 class TestBranding:
     """Branding: website-settings get/update, tenant customization"""
 
-    def test_get_website_settings_public(self, tenant_a_id):
+    def test_get_website_settings_public(self, tenant_a_info):
         """GET /api/website-settings?partner_code → returns settings"""
-        resp = requests.get(f"{BASE_URL}/api/website-settings?partner_code={TENANT_A_CODE}")
+        partner_code = tenant_a_info["code"]
+        resp = requests.get(f"{BASE_URL}/api/website-settings?partner_code={partner_code}")
         assert resp.status_code == 200, f"GET website-settings failed: {resp.text}"
         settings = resp.json().get("settings", {})
         assert "login_title" in settings
@@ -1013,7 +1014,6 @@ class TestBranding:
         )
         assert put_resp.status_code == 200, f"PUT website-settings failed: {put_resp.text}"
 
-        # Verify GET returns updated title
         get_resp = requests.get(f"{BASE_URL}/api/admin/website-settings", headers=tenant_a_admin_headers)
         assert get_resp.status_code == 200
         settings = get_resp.json().get("settings", {})
@@ -1021,12 +1021,9 @@ class TestBranding:
 
     def test_website_settings_tenant_isolated(self, tenant_a_admin_headers, tenant_b_admin_headers):
         """Website settings changes in Tenant A don't affect Tenant B"""
-        # Already set Tenant A's login_title to custom value
-        # Tenant B's settings should have default
         resp_b = requests.get(f"{BASE_URL}/api/admin/website-settings", headers=tenant_b_admin_headers)
         assert resp_b.status_code == 200
         settings_b = resp_b.json().get("settings", {})
-        # Tenant B should have default or their own title, not Tenant A's custom title
         custom_title = "TEST Login 107 Custom Title"
         assert settings_b.get("login_title") != custom_title, "Tenant B should not see Tenant A's settings"
 
