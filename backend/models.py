@@ -177,7 +177,6 @@ class IntakeQuestion(BaseModel):
     step: Optional[float] = None
     default_value: Optional[float] = None
     # Boolean type
-    affects_price_boolean: bool = False
     price_for_yes: Optional[float] = None
     price_for_no: Optional[float] = None
     # Conditional visibility
