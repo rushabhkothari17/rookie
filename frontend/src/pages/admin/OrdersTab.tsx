@@ -355,6 +355,7 @@ export function OrdersTab() {
                   <TableCell>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] ${statusColor(order.status)}`}>{order.status}</span>
                   </TableCell>
+                  {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-order-partner-${order.id}`}>{order.partner_code || "—"}</TableCell>}
                   <TableCell>
                     <div className="flex gap-1 flex-nowrap items-center">
                       <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/orders/${order.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-order-logs-${order.id}`}>Logs</Button>
