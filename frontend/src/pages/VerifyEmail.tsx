@@ -11,6 +11,7 @@ export default function VerifyEmail() {
   const navigate = useNavigate();
   const { verifyEmail } = useAuth();
   const ws = useWebsite();
+  const partnerCode = localStorage.getItem("aa_partner_code") || "";
   const [email, setEmail] = useState(localStorage.getItem("aa_signup_email") || "");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export default function VerifyEmail() {
     event.preventDefault();
     setLoading(true);
     try {
-      await verifyEmail(email, code);
+      await verifyEmail(email, code, partnerCode || undefined);
       toast.success("Email verified. Please sign in.");
       navigate("/login");
     } catch (error: any) {
@@ -34,7 +35,7 @@ export default function VerifyEmail() {
     if (!email) { toast.error("Please enter your email address first"); return; }
     setResending(true);
     try {
-      const res = await api.post("/auth/resend-verification-email", { email });
+      const res = await api.post("/auth/resend-verification-email", { email, partner_code: partnerCode || undefined });
       const code = res.data?.verification_code;
       toast.success("Verification code resent.");
       if (code) setCode(code);
