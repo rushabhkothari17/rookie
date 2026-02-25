@@ -411,7 +411,8 @@ function QuestionCard({
                         <input type="radio" name={`pm-${idx}`} value={m}
                           checked={(q.pricing_mode || "flat") === m}
                           onChange={() => onChange({ ...q, pricing_mode: m })}
-                          className="accent-[#1e40af]" />
+                          className="accent-[#1e40af]"
+                          data-testid={`pricing-mode-${m}`} />
                         {m === "flat" ? "Flat rate (£/unit)" : "Tiered pricing"}
                       </label>
                     ))}
