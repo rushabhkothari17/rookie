@@ -23,6 +23,7 @@ import ArticleView from "@/pages/ArticleView";
 
 import Portal from "@/pages/Portal";
 import Admin from "@/pages/Admin";
+import ProductEditor from "@/pages/ProductEditor";
 
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
