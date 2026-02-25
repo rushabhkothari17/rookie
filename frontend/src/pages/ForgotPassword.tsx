@@ -83,7 +83,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12" data-testid="forgot-password-page">
-      <div className="w-full max-w-sm space-y-8">
+      <div className="w-full max-w-[360px] space-y-6">
 
         {/* Partner brand header */}
         <div className="flex items-center gap-2.5">
