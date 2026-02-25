@@ -396,59 +396,15 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<WebsiteSettings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
-    api.get("/website-settings")
+    const storedCode = localStorage.getItem("aa_partner_code") || "";
+    const url = storedCode
+      ? `/website-settings?partner_code=${encodeURIComponent(storedCode)}`
+      : "/website-settings";
+    api.get(url)
       .then(res => {
         const s = res.data.settings || {};
         setSettings(prev => ({ ...prev, ...s }));
-
-        // Primary → --aa-primary (custom) + --primary (shadcn buttons/headings)
-        if (s.primary_color) {
-          setColor("--aa-primary", s.primary_color);
-          setShadcnColor("--primary", s.primary_color);
-          // foreground always stays white for contrast
-          document.documentElement.style.setProperty("--primary-foreground", "0 0% 98%");
-        }
-        // Accent → --aa-accent (custom) + --ring (shadcn focus ring)
-        if (s.accent_color) {
-          setColor("--aa-accent", s.accent_color);
-          setColor("--aa-accent-hover", s.accent_color);
-          setShadcnColor("--ring", s.accent_color);
-        }
-        // Danger → --aa-danger + --destructive (shadcn error buttons/badges)
-        if (s.danger_color) {
-          setColor("--aa-danger", s.danger_color);
-          setShadcnColor("--destructive", s.danger_color);
-        }
-        // Success → --aa-success
-        if (s.success_color) {
-          setColor("--aa-success", s.success_color);
-        }
-        // Warning → --aa-warning
-        if (s.warning_color) {
-          setColor("--aa-warning", s.warning_color);
-        }
-        // Background → --aa-bg + --background (shadcn)
-        if (s.background_color) {
-          setColor("--aa-bg", s.background_color);
-          setShadcnColor("--background", s.background_color);
-        }
-        // Text → --aa-text + --foreground (shadcn)
-        if (s.text_color) {
-          setColor("--aa-text", s.text_color);
-          setShadcnColor("--foreground", s.text_color);
-          setShadcnColor("--card-foreground", s.text_color);
-        }
-        // Border → --aa-border + --border (shadcn)
-        if (s.border_color) {
-          setColor("--aa-border", s.border_color);
-          setShadcnColor("--border", s.border_color);
-          setShadcnColor("--input", s.border_color);
-        }
-        // Muted → --aa-muted + --muted-foreground (shadcn)
-        if (s.muted_color) {
-          setColor("--aa-muted", s.muted_color);
-          setShadcnColor("--muted-foreground", s.muted_color);
-        }
+        _applyBrandingToDOM(s);
       })
       .catch(() => {});
   }, []);
