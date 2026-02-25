@@ -219,12 +219,8 @@ async def admin_update_product(
         "name": payload.name,
         "is_active": payload.is_active,
     }
-    if payload.short_description is not None:
-        update_fields["short_description"] = payload.short_description
     if payload.tagline is not None:
         update_fields["tagline"] = payload.tagline
-    elif payload.short_description is not None and not existing.get("tagline"):
-        update_fields["tagline"] = payload.short_description
     if payload.card_title is not None:
         update_fields["card_title"] = payload.card_title
     if payload.card_tag is not None:
@@ -257,6 +253,8 @@ async def admin_update_product(
         update_fields["pricing_type"] = payload.pricing_type
     if payload.external_url is not None:
         update_fields["external_url"] = payload.external_url
+    if payload.display_layout is not None:
+        update_fields["display_layout"] = payload.display_layout
     if payload.visible_to_customers is not None:
         update_fields["visible_to_customers"] = payload.visible_to_customers
     if payload.restricted_to is not None:
