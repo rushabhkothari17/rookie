@@ -261,15 +261,15 @@ async def admin_update_product(
         update_fields["custom_sections"] = _build_sections(payload.custom_sections)
 
     merged = {**existing, **update_fields}
-    merged["price_inputs"] = build_price_inputs(merged)
+    merged.pop("price_inputs", None)  # removed field
     await db.products.update_one({"id": product_id}, {"$set": merged})
     audit_details: Dict[str, Any] = {"name": payload.name, "is_active": payload.is_active}
     if payload.intake_schema_json is not None:
-        q = payload.intake_schema_json.questions
+        questions = update_fields["intake_schema_json"].get("questions", [])
+        q_count = len(questions) if isinstance(questions, list) else sum(len(v) for v in questions.values())
         audit_details["intake_schema"] = {
-            "dropdown": len(q.dropdown), "multiselect": len(q.multiselect),
-            "single_line": len(q.single_line), "multi_line": len(q.multi_line),
-            "version": update_fields["intake_schema_json"]["version"],
+            "questions": q_count,
+            "version": update_fields["intake_schema_json"].get("version", 1),
         }
     await create_audit_log(
         entity_type="product",
