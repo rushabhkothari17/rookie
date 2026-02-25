@@ -1174,11 +1174,11 @@ class TestAdminPanelAccess:
     """Partner super admin can access /admin endpoints scoped to their tenant."""
 
     def test_partner_super_admin_can_access_admin_products(self, tenant_a_headers):
-        """partner_super_admin can access /api/admin/products for their tenant."""
-        resp = requests.get(f"{BASE_URL}/api/admin/products", headers=tenant_a_headers)
+        """partner_super_admin can access /api/admin/products-all for their tenant."""
+        resp = requests.get(f"{BASE_URL}/api/admin/products-all", headers=tenant_a_headers)
         assert resp.status_code == 200, \
-            f"Expected 200 for partner_super_admin /admin/products, got {resp.status_code}: {resp.text}"
-        print("PASS: partner_super_admin can access /api/admin/products")
+            f"Expected 200 for partner_super_admin /admin/products-all, got {resp.status_code}: {resp.text}"
+        print("PASS: partner_super_admin can access /api/admin/products-all")
 
     def test_partner_super_admin_can_access_admin_customers(self, tenant_a_headers):
         """partner_super_admin can access /api/admin/customers for their tenant."""
