@@ -270,14 +270,14 @@ class TestAListEndpoints:
     def test_a3_search_by_email(self, super_admin_a_token):
         """GET /api/admin/users?search=email searches by email field."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/users?search=TEST.super.a",
+            f"{BASE_URL}/api/admin/users?search=test.super.a",
             headers=admin_headers(super_admin_a_token),
         )
         assert resp.status_code == 200
         data = resp.json()
         users = data.get("users", [])
         assert len(users) >= 1, f"Expected to find test super admin, got: {[u['email'] for u in users]}"
-        assert any("TEST.super.a" in u["email"].lower() for u in users)
+        assert any("test.super.a" in u["email"].lower() for u in users)
         print(f"✅ Search by email works: found {len(users)} users")
 
     def test_a4_search_by_name(self, super_admin_a_token):
