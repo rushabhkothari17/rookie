@@ -316,13 +316,22 @@ export function ProductForm({
             </div>
 
             <div>
-              <label className={labelCls}>Short description</label>
-              <Input value={form.short_description} onChange={e => s("short_description")(e.target.value)} placeholder="One-line summary" data-testid="pf-short-desc" />
+              <label className={labelCls}>Tagline</label>
+              <Input value={form.tagline} onChange={e => s("tagline")(e.target.value)} placeholder="One-line punch" data-testid="pf-tagline" />
             </div>
 
             <div>
-              <label className={labelCls}>Tagline</label>
-              <Input value={form.tagline} onChange={e => s("tagline")(e.target.value)} placeholder="One-line punch" data-testid="pf-tagline" />
+              <label className={labelCls}>Page layout <span className="text-slate-400 normal-case font-normal tracking-normal text-xs">(how product detail page is rendered)</span></label>
+              <Select value={form.display_layout || "standard"} onValueChange={s("display_layout")}>
+                <SelectTrigger data-testid="pf-layout"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard — two-column: info left, price right</SelectItem>
+                  <SelectItem value="quick_buy">Quick Buy — compact, price-first, fast checkout</SelectItem>
+                  <SelectItem value="wizard">Wizard — guided step-by-step form with progress bar</SelectItem>
+                  <SelectItem value="application">Application Form — sidebar nav, sections, enterprise feel</SelectItem>
+                  <SelectItem value="showcase">Showcase + Configurator — hero section, live calculator</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
