@@ -349,12 +349,17 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4" data-testid="cart-empty">
-        <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-6">
-          <ShoppingCart className="w-10 h-10 text-slate-400" />
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: ws.primary_color ? `${ws.primary_color}15` : '#f1f5f9' }}>
+          <ShoppingCart className="w-10 h-10" style={{ color: ws.primary_color || '#64748b' }} />
         </div>
-        <h1 className="text-2xl font-semibold text-slate-900 mb-2">Your cart is empty</h1>
+        <h1 className="text-2xl font-semibold mb-2" style={{ color: ws.primary_color || '#1e293b' }}>Your cart is empty</h1>
         <p className="text-slate-500 mb-6 max-w-md">Looks like you haven't added anything to your cart yet. Browse our products and find something you'll love.</p>
-        <Button onClick={() => navigate("/store")} className="bg-slate-900 hover:bg-slate-800" data-testid="cart-browse-btn">
+        <Button 
+          onClick={() => navigate("/store")} 
+          className="text-white hover:opacity-90 transition-all"
+          style={{ backgroundColor: ws.primary_color || '#1e293b' }}
+          data-testid="cart-browse-btn"
+        >
           Browse Products
         </Button>
       </div>
