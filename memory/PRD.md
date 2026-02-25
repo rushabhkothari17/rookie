@@ -174,6 +174,7 @@ Build a fully configurable, admin-driven SaaS platform for accounting/automation
 ### P1 — High Priority
 - **Email integration settings**: Centralize email config in admin panel
 - **"Coming Soon" integrations**: Gmail, Microsoft Outlook, HubSpot, Salesforce, QuickBooks credential forms
+- **Scope ID on Checkout Page**: Move Scope ID validation to checkout flow for enquiry products
 
 ### P2 — Medium Priority
 - **Security audit**: Penetration testing
@@ -182,6 +183,7 @@ Build a fully configurable, admin-driven SaaS platform for accounting/automation
 - **Edit Article button**: Sometimes visible to non-admin users (recurring, 3+ occurrences)
 - **Product DELETE endpoint**: Currently only deactivation via PUT
 - **GET /api/admin/products/{id}**: Single product admin fetch endpoint
+- **Product Editor 405 error**: OPTIONS preflight issue when loading edit mode (cosmetic)
 
 ## 3rd Party Integrations
 - GoCardless (payment)
