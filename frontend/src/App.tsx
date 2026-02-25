@@ -103,14 +103,7 @@ export default function App() {
               }
             />
             
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Outlet />
-                </ProtectedRoute>
-              }
-            >
+            <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
               <Route path="/store" element={<Store />} />
               <Route path="/product/:productId" element={<ProductDetail />} />
               <Route path="/articles" element={<Articles />} />
