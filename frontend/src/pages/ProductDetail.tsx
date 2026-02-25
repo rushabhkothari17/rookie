@@ -359,11 +359,11 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
-    // Validate required intake questions
-    for (const q of enabledIntakeQuestions) {
+    // Validate required visible intake questions only
+    for (const q of visibleIntakeQuestions) {
       if (!q.required) continue;
       const val = intakeAnswers[q.key];
-      const empty = q.qtype === "multiselect" ? !val || val.length === 0 : !val || val === "";
+      const empty = q.type === "multiselect" ? !val || val.length === 0 : !val || val === "";
       if (empty) { toast.error(`"${q.label}" is required`); return; }
     }
 
