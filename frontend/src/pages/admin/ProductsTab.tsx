@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ImportModal } from "@/components/admin/ImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
-import { ProductForm, ProductFormData, EMPTY_FORM } from "./ProductForm";
 import { EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
-import { Download, Upload} from "lucide-react";
+import { Download, Upload, ExternalLink } from "lucide-react";
 
 function productToForm(p: any): ProductFormData {
   const bullets: string[] = (p.bullets || []).filter((b: string) => b);
