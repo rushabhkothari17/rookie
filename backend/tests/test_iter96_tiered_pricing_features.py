@@ -253,12 +253,15 @@ class TestTieredPricing:
         pid = product["id"]
         try:
             assert product.get("pricing_type") == "internal"
-            # Verify via GET
-            get_resp = requests.get(f"{BASE_URL}/api/admin/products/{pid}", headers=admin_auth)
+            # Verify via list endpoint (no GET by ID)
+            get_resp = requests.get(
+                f"{BASE_URL}/api/admin/products-all?per_page=200",
+                headers=admin_auth
+            )
             assert get_resp.status_code == 200
-            saved = get_resp.json()
-            if "product" in saved:
-                saved = saved["product"]
+            prods = get_resp.json().get("products", [])
+            saved = next((p for p in prods if p.get("id") == pid), None)
+            assert saved is not None, f"Product {pid} not found in list"
             schema = saved.get("intake_schema_json", {})
             questions = schema.get("questions", [])
             assert len(questions) == 1, f"Expected 1 question, got {len(questions)}"
