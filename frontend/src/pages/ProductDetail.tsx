@@ -335,173 +335,35 @@ export default function ProductDetail() {
   }
 
   const categoryLabel = displayCategory(product.category);
+  
+  // Determine terms URL if product has terms_id
+  const termsUrl = product.terms_id ? `/terms/${product.terms_id}` : undefined;
+  
+  // Determine layout type
+  const layoutType = product.display_layout || "standard";
 
   return (
     <AppShell activeCategory={categoryLabel}>
       <div className="space-y-8" data-testid="product-detail">
-        <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
-          <div className="flex flex-col gap-6">
-            <ProductHero product={product} />
-
-            {product.price_inputs?.length > 0 && (
-              <SectionCard title="Configure pricing" testId="product-input-card">
-                <div className="space-y-3">
-                  {product.price_inputs?.map((field: any) => (
-                    <div key={field.id} className="space-y-2">
-                      <label className="text-sm text-slate-600">{field.label}</label>
-                      {renderInputField(field, inputs[field.id], (value) =>
-                        handleInputChange(field.id, value),
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </SectionCard>
-            )}
-
-            {visibleIntakeQuestions.length > 0 && (
-              <SectionCard title="Tell us about your project" testId="product-intake-section">
-                <div className="space-y-4">
-                  {visibleIntakeQuestions.map((q: any) => (
-                    <div key={q.key} className="space-y-1.5" data-testid={`intake-field-${q.key}`}>
-                      <label className="text-sm font-medium text-slate-700">
-                        {q.label}
-                        {q.required && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-                      {q.helper_text && (
-                        <p className="text-xs text-slate-400">{q.helper_text}</p>
-                      )}
-                      {renderIntakeField(
-                        q,
-                        intakeAnswers[q.key],
-                        (v: any) => setIntakeAnswers(prev => ({ ...prev, [q.key]: v }))
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </SectionCard>
-            )}
-
-            {/* Scope ID Unlock — for RFQ products AND scope_request products (not MIG-BOOKS or BUILD-FIXED-SCOPE) */}
-            {(isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry") && (
-              <SectionCard title="Unlock with Scope ID" testId="scope-id-card">
-                <div className="space-y-3">
-                  <p className="text-sm text-slate-500">
-                    If you have received a finalized scope document, enter the Scope ID below to unlock pricing and proceed to checkout. Otherwise, submit an enquiry to proceed.
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      value={scopeId}
-                      onChange={(e) => { setScopeId(e.target.value); setScopeUnlock(null); setScopeError(""); }}
-                      placeholder="Enter Scope ID"
-                      className="flex-1 font-mono text-sm"
-                      data-testid="scope-id-input"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={handleValidateScopeId}
-                      disabled={scopeValidating || !scopeId.trim()}
-                      data-testid="scope-id-validate-btn"
-                    >
-                      {scopeValidating ? "Checking…" : "Validate"}
-                    </Button>
-                  </div>
-                  {scopeError && (
-                    <p className="text-sm text-red-600" data-testid="scope-id-error">{scopeError.includes("Invalid") ? "Invalid Scope Id" : scopeError}</p>
-                  )}
-                  {scopeUnlock && (
-                    <div className="rounded-lg bg-green-50 border border-green-200 p-3 space-y-1" data-testid="scope-id-success">
-                      <p className="text-sm font-semibold text-green-800">Scope unlocked</p>
-                      <p className="text-xs text-green-700">{scopeUnlock.title}</p>
-                      <p className="text-sm font-bold text-green-800">${scopeUnlock.price}</p>
-                    </div>
-                  )}
-                </div>
-              </SectionCard>
-            )}
-
-            {/* ── Custom sections ── */}
-            {(product.custom_sections || []).map((sec: any, i: number) => (
-              <SectionCard
-                key={sec.id || i}
-                title={sec.name}
-                testId={`custom-section-${i}`}
-                icon={sec.icon}
-                iconColor={sec.icon_color}
-              >
-                {sec.content ? (
-                  <div className="prose prose-sm max-w-none text-slate-600 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-0.5">
-                    <ReactMarkdown>{sec.content}</ReactMarkdown>
-                  </div>
-                ) : (
-                  <span className="text-slate-400 italic">No content added yet.</span>
-                )}
-                {sec.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {sec.tags.map((tag: string) => (
-                      <span key={tag} className="px-2 py-0.5 bg-slate-100 rounded-full text-xs text-slate-500">{tag}</span>
-                    ))}
-                  </div>
-                )}
-              </SectionCard>
-            ))}
-
-            {(product.faqs || []).length > 0 && (
-              <SectionCard title="FAQs" testId="product-faqs">
-                <div className="space-y-5" data-testid="product-faqs-list">
-                  {(product.faqs || []).map((item: any, i: number) =>
-                    typeof item === "string" ? (
-                      <p key={i} className="leading-relaxed">• {item}</p>
-                    ) : (
-                      <div key={i} className="space-y-1">
-                        <p className="font-semibold text-slate-800">{item.question}</p>
-                        <p className="text-slate-500 leading-relaxed">{item.answer}</p>
-                      </div>
-                    )
-                  )}
-                </div>
-              </SectionCard>
-            )}
-          </div>
-
-          <div>
-            {scopeUnlock ? (
-              <StickyPurchaseSummary
-                pricing={{
-                  subtotal: scopeUnlock.price,
-                  fee: 0,
-                  total: scopeUnlock.price,
-                }}
-                cta={ctaConfig}
-                currency={customer?.currency}
-                disabled={false}
-              />
-            ) : pricing ? (
-              <StickyPurchaseSummary
-                pricing={{
-                  subtotal: pricing.subtotal,
-                  fee: pricing.fee,
-                  total: pricing.total,
-                }}
-                cta={ctaConfig}
-                currency={customer?.currency}
-                isRFQ={isRFQ || !!pricing?.is_enquiry}
-                disabled={requiresStripePrice}
-                warning={
-                  requiresStripePrice
-                    ? "Subscription checkout is unavailable until a Stripe price ID is configured by admin."
-                    : undefined
-                }
-              />
-            ) : (
-              <div
-                className="rounded-3xl border border-slate-100 bg-white p-6 text-sm text-slate-400"
-                data-testid="product-summary-loading"
-              >
-                Calculating pricing...
-              </div>
-            )}
-          </div>
-        </div>
+        <ProductLayout
+          layoutType={layoutType}
+          product={product}
+          pricing={pricing}
+          intakeAnswers={intakeAnswers}
+          setIntakeAnswers={setIntakeAnswers}
+          visibleIntakeQuestions={visibleIntakeQuestions}
+          handleAddToCart={handleAddToCart}
+          isRFQ={isRFQ}
+          isSubscription={Boolean(product?.is_subscription)}
+          termsUrl={termsUrl}
+          currency={customer?.currency}
+          scopeUnlock={scopeUnlock}
+          scopeId={scopeId}
+          setScopeId={(v) => { setScopeId(v); setScopeUnlock(null); setScopeError(""); }}
+          handleValidateScopeId={handleValidateScopeId}
+          scopeValidating={scopeValidating}
+          scopeError={scopeError}
+        />
       </div>
 
       {/* Quote Request Modal */}
