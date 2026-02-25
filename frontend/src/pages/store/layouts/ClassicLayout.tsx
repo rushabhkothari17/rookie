@@ -31,13 +31,17 @@ export default function ClassicLayout({
   scopeValidating,
   scopeError,
 }: LayoutProps) {
+  // Determine if product is free (price=0) or enquiry
+  const isFree = !isRFQ && pricing && pricing.total === 0;
+  const isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry";
+  
   // Build CTA config
   const ctaConfig = (() => {
-    if (scopeUnlock) {
-      return { label: `Add to cart - £${scopeUnlock.price}`, onClick: handleAddToCart };
+    if (isEnquiry) {
+      return { label: "Proceed to request quote", onClick: handleAddToCart };
     }
-    if (isRFQ || pricing?.is_enquiry) {
-      return { label: "Proceed to checkout", onClick: handleAddToCart };
+    if (isFree) {
+      return { label: "Get it free", onClick: handleAddToCart };
     }
     return { label: "Add to cart", onClick: handleAddToCart };
   })();
