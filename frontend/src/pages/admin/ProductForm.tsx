@@ -15,7 +15,6 @@ interface FAQ { question: string; answer: string; }
 
 export interface ProductFormData {
   name: string;
-  short_description: string;
   tagline: string;
   card_title: string;
   card_tag: string;
@@ -38,6 +37,7 @@ export interface ProductFormData {
   restricted_to: string[];
   intake_schema_json: IntakeSchemaJson;
   custom_sections: CustomSection[];
+  display_layout: string;
 }
 
 type TabKey = "general" | "storecard" | "pricing" | "visibility" | "content";
