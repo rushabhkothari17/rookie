@@ -228,9 +228,12 @@ class TestCreateAdminUnderReservedTenantBlocked:
     """Test 6 - creating a partner admin under automate-accounts tenant is blocked."""
 
     def test_create_admin_under_reserved_tenant_blocked(self, platform_admin_headers):
+        # Note: CreatePartnerAdminRequest requires tenant_id in body as well
+        # Platform tenant id and code are both 'automate-accounts' per system context
         resp = requests.post(
             f"{BASE_URL}/api/admin/tenants/{RESERVED_CODE}/create-admin",
             json={
+                "tenant_id": RESERVED_CODE,
                 "email": "hacker@example.com",
                 "password": "HackerPass123!",
                 "full_name": "Hacker",
@@ -238,7 +241,7 @@ class TestCreateAdminUnderReservedTenantBlocked:
             },
             headers=platform_admin_headers,
         )
-        # Should return 404 (tenant not found by that ID) or 403 (blocked by is_platform check)
+        # Should return 403 (blocked by is_platform check) or 404 (tenant not found by ID)
         assert resp.status_code in [403, 404], f"Expected 403 or 404, got {resp.status_code}: {resp.text}"
         print(f"PASS: POST /api/admin/tenants/automate-accounts/create-admin correctly blocked ({resp.status_code})")
 
