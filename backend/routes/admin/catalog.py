@@ -189,10 +189,10 @@ async def admin_create_product(
     product.pop("_id", None)
     audit_details: Dict[str, Any] = {"name": payload.name, "category": payload.category, "is_subscription": payload.is_subscription}
     if payload.intake_schema_json is not None:
-        q = payload.intake_schema_json.questions
+        questions = payload.intake_schema_json.questions
         audit_details["intake_schema"] = {
-            "dropdown": len(q.dropdown), "multiselect": len(q.multiselect),
-            "single_line": len(q.single_line), "multi_line": len(q.multi_line),
+            "question_count": len(questions),
+            "types": list({q.type for q in questions}),
         }
     await create_audit_log(
         entity_type="product",
