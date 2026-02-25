@@ -402,18 +402,20 @@ export default function Login() {
               </div>
             </form>
 
-            {/* Footer links */}
-            <div className="anim-slide-up delay-400 text-center text-sm text-slate-400">
-              New here?{" "}
-              <Link
-                to={`/signup${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
-                className="font-semibold transition-colors hover:opacity-70"
-                style={{ color: accent }}
-                data-testid="register-customer-link"
-              >
-                Create an account
-              </Link>
-            </div>
+            {/* Footer links — hidden for platform portal */}
+            {!partnerInfo?.is_platform && (
+              <div className="anim-slide-up delay-400 text-center text-sm text-slate-400">
+                New here?{" "}
+                <Link
+                  to={`/signup${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
+                  className="font-semibold transition-colors hover:opacity-70"
+                  style={{ color: accent }}
+                  data-testid="register-customer-link"
+                >
+                  Create an account
+                </Link>
+              </div>
+            )}
 
           </div>
 
