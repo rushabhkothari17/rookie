@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin, is_platform_admin, enrich_partner_codes
 from core.constants import ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHODS, ALLOWED_ORDER_STATUSES, ALLOWED_BANK_TRANSACTION_STATUSES
 from db.session import db
 from models import SubscriptionUpdate, ManualSubscriptionCreate

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.security import require_admin, optional_get_current_user
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin, DEFAULT_TENANT_ID
+from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin, is_platform_admin, enrich_partner_codes, DEFAULT_TENANT_ID
 from db.session import db
 from services.audit_service import create_audit_log
 
