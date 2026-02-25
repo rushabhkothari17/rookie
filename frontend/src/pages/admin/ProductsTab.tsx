@@ -14,53 +14,6 @@ import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Upload, ExternalLink } from "lucide-react";
 
-function productToForm(p: any): ProductFormData {
-  const bullets: string[] = (p.bullets || []).filter((b: string) => b);
-  if (bullets.length === 0) {
-    const fallback = (p.bullets_included || []).filter((b: string) => b);
-    if (fallback.length > 0) bullets.push(...fallback);
-    else bullets.push("");
-  }
-
-  // Map legacy pricing types to new 3-type model
-  const legacyMap: Record<string, string> = {
-    fixed: "internal", tiered: "internal", calculator: "internal",
-    simple: "internal", hours: "internal",
-    scope_request: "enquiry", inquiry: "enquiry",
-  };
-  const pricing_type = legacyMap[p.pricing_type] ?? p.pricing_type ?? "internal";
-  const external_url = p.external_url || p.pricing_rules?.external_url || "";
-
-  return {
-    name: p.name || "",
-    tagline: p.tagline || "",
-    card_title: p.card_title || "",
-    card_tag: p.card_tag || "",
-    card_description: p.card_description || "",
-    card_bullets: p.card_bullets || [],
-    description_long: p.description_long || "",
-    bullets,
-    tag: p.tag || "",
-    category: p.category || "",
-    faqs: Array.isArray(p.faqs)
-      ? p.faqs.map((f: any) => typeof f === "string" ? { question: f, answer: "" } : f)
-      : [],
-    terms_id: p.terms_id || "",
-    base_price: p.base_price ?? 0,
-    is_subscription: p.is_subscription ?? false,
-    stripe_price_id: p.stripe_price_id || "",
-    price_rounding: p.price_rounding || "",
-    pricing_type,
-    external_url,
-    is_active: p.is_active ?? true,
-    visible_to_customers: p.visible_to_customers || [],
-    restricted_to: p.restricted_to || [],
-    intake_schema_json: p.intake_schema_json || EMPTY_INTAKE_SCHEMA,
-    custom_sections: p.custom_sections || [],
-    display_layout: p.display_layout || "standard",
-  };
-}
-
 export function ProductsTab() {
   const navigate = useNavigate();
   const [showImport, setShowImport] = useState(false);
