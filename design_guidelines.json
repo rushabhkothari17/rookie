@@ -1,196 +1,210 @@
 {
+  "metadata": {
+    "version": "1.0.0",
+    "author": "E1",
+    "theme": "light",
+    "app_type": "saas_auth"
+  },
   "design_system": {
-    "theme": "dark",
-    "colors": {
-      "background": "#0f172a",
-      "surface": "#1e293b",
-      "surface_highlight": "#334155",
-      "border": "#1e293b",
-      "border_subtle": "rgba(148, 163, 184, 0.1)",
-      "primary": "#dc2626",
-      "primary_hover": "#ef4444",
-      "primary_foreground": "#ffffff",
-      "text_main": "#f8fafc",
-      "text_muted": "#94a3b8",
-      "text_dim": "#64748b",
-      "success": "#10b981",
-      "warning": "#f59e0b",
-      "error": "#ef4444"
-    },
     "typography": {
-      "font_family_heading": "Manrope, sans-serif",
-      "font_family_body": "Inter, sans-serif",
-      "weights": {
-        "regular": 400,
-        "medium": 500,
-        "semibold": 600,
-        "bold": 700
+      "headings": {
+        "font_family": "Manrope, sans-serif",
+        "weights": ["600", "700"],
+        "tracking": "-0.02em",
+        "usage": "Use for 'Sign In', 'Welcome', and Partner Names."
       },
-      "sizes": {
-        "xs": "0.75rem",
-        "sm": "0.875rem",
-        "base": "1rem",
-        "lg": "1.125rem",
-        "xl": "1.25rem",
-        "2xl": "1.5rem",
-        "3xl": "1.875rem"
+      "body": {
+        "font_family": "Inter, sans-serif",
+        "weights": ["400", "500"],
+        "usage": "All input labels, help text, and links."
+      }
+    },
+    "colors": {
+      "base": {
+        "background": "#FFFFFF",
+        "foreground": "#0F172A",
+        "muted": "#F8FAFC",
+        "border": "#E2E8F0"
+      },
+      "dynamic_partner": {
+        "description": "The left panel of the Auth screen MUST use the partner's primary color dynamically.",
+        "text_contrast_rule": "Calculate contrast or default to white text on colored backgrounds. If color is light, use dark text."
+      },
+      "interactions": {
+        "focus_ring": "ring-2 ring-slate-900 ring-offset-2",
+        "error": "#EF4444"
       }
     },
     "spacing": {
-      "modal_padding": "p-6 md:p-8",
-      "section_gap": "gap-8",
-      "field_gap": "gap-4",
-      "card_padding": "p-5"
-    },
+      "container_padding": "p-8 md:p-12",
+      "gap_standard": "gap-6",
+      "input_height": "h-11",
+      "button_height": "h-11"
+    }
+  },
+  "visual_enhancers": {
     "shadows": {
-      "modal": "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-      "card": "0 4px 6px -1px rgba(0, 0, 0, 0.3)",
-      "glow": "0 0 15px rgba(220, 38, 38, 0.3)"
+      "card": "shadow-[0_2px_20px_rgba(0,0,0,0.04)]",
+      "floating": "shadow-[0_8px_30px_rgba(0,0,0,0.08)]",
+      "input_focus": "shadow-[0_0_0_2px_rgba(15,23,42,0.1)]"
     },
     "border_radius": {
-      "modal": "rounded-xl",
-      "card": "rounded-lg",
-      "input": "rounded-md",
-      "button": "rounded-md"
+      "card": "rounded-2xl",
+      "input": "rounded-lg",
+      "button": "rounded-lg",
+      "pill": "rounded-full"
+    },
+    "glass_effect": "backdrop-blur-md bg-white/80 border border-white/20"
+  },
+  "animations": {
+    "css_keyframes": [
+      "@keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }",
+      "@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }"
+    ],
+    "classes": {
+      "animate_in": "animate-[slideUpFade_0.4s_ease-out_forwards]",
+      "stagger_1": "animation-delay-[100ms]",
+      "stagger_2": "animation-delay-[200ms]",
+      "stagger_3": "animation-delay-[300ms]",
+      "hover_card": "transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
     }
   },
-  "layout_strategies": {
-    "modal_structure": {
-      "wrapper": "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4",
-      "container": "relative w-full max-w-4xl max-h-[90vh] bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl flex flex-col overflow-hidden",
-      "header": "flex items-center justify-between px-6 py-4 border-b border-[#1e293b] bg-[#0f172a]/95 backdrop-blur sticky top-0 z-10",
-      "body": "flex-1 overflow-y-auto p-0 scrollbar-thin scrollbar-thumb-[#334155] scrollbar-track-transparent",
-      "footer": "flex items-center justify-end gap-3 px-6 py-4 border-t border-[#1e293b] bg-[#0f172a] sticky bottom-0 z-10"
-    },
-    "tabs_navigation": {
-      "container": "flex items-center gap-1 px-6 border-b border-[#1e293b] bg-[#0f172a]",
-      "item": "relative px-4 py-3 text-sm font-medium text-[#94a3b8] hover:text-[#f8fafc] transition-colors data-[state=active]:text-[#dc2626] data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:w-full data-[state=active]:after:h-[2px] data-[state=active]:after:bg-[#dc2626]",
-      "list": ["General", "Store Card", "Pricing", "Visibility", "Custom Sections"]
-    }
-  },
-  "components": {
-    "inputs": {
-      "base": "bg-[#1e293b] border-[#334155] text-[#f8fafc] placeholder:text-[#64748b] focus:ring-1 focus:ring-[#dc2626] focus:border-[#dc2626] h-10 transition-all",
-      "label": "text-sm font-medium text-[#94a3b8] mb-1.5 block",
-      "helper": "text-xs text-[#64748b] mt-1"
-    },
-    "buttons": {
-      "primary": "bg-[#dc2626] hover:bg-[#b91c1c] text-white shadow-[0_0_10px_rgba(220,38,38,0.25)] font-medium h-10 px-4 transition-all hover:scale-[1.02] active:scale-[0.98]",
-      "secondary": "bg-transparent border border-[#334155] text-[#f8fafc] hover:bg-[#1e293b] h-10 px-4",
-      "ghost": "bg-transparent hover:bg-[#1e293b] text-[#94a3b8] hover:text-[#f8fafc] h-8 w-8 p-0"
-    },
-    "pricing_cards": {
-      "container": "grid grid-cols-1 md:grid-cols-3 gap-4 mb-8",
-      "card": "cursor-pointer relative flex flex-col items-start p-5 border rounded-lg transition-all duration-200 group",
-      "card_active": "bg-[#1e293b] border-[#dc2626] ring-1 ring-[#dc2626]/50 shadow-[0_0_20px_rgba(220,38,38,0.1)]",
-      "card_inactive": "bg-[#0f172a] border-[#334155] hover:border-[#64748b] hover:bg-[#1e293b]/50",
-      "icon_wrapper": "p-2 rounded-md bg-[#0f172a] border border-[#334155] text-[#f8fafc] mb-3 group-hover:border-[#dc2626]/50 group-hover:text-[#dc2626] transition-colors",
-      "title": "text-base font-semibold text-[#f8fafc] mb-1",
-      "description": "text-xs text-[#94a3b8] leading-relaxed"
-    },
-    "intake_builder": {
-      "container": "space-y-4",
-      "empty_state": "border border-dashed border-[#334155] rounded-lg p-8 flex flex-col items-center justify-center text-center bg-[#1e293b]/20",
-      "add_button_row": "flex items-center justify-between py-2",
-      "question_card": {
-        "wrapper": "group bg-[#1e293b] border border-[#334155] rounded-lg p-0 overflow-hidden transition-all hover:border-[#475569]",
-        "header": "flex items-center justify-between p-4 cursor-pointer hover:bg-[#334155]/20",
-        "drag_handle": "cursor-grab text-[#64748b] hover:text-[#f8fafc] p-2",
-        "content": "p-4 border-t border-[#334155] bg-[#0f172a]/30 space-y-4 animate-accordion-down",
-        "type_badge": "text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-[#0f172a] border border-[#334155] text-[#94a3b8]"
-      }
-    }
-  },
-  "feature_specs": {
-    "product_form_modal": {
-      "title": "Create New Product",
-      "tabs": {
-        "General": "Product basics (Name, Tagline, Category, Description, Active Status)",
-        "Store Card": "Catalog preview settings (Card Title, Tag, Bullets)",
-        "Pricing": "The core logic (Type Selection + Intake Questions)",
-        "Visibility": "Customer segmentation",
-        "Custom Sections": "Rich text content blocks"
-      }
-    },
-    "pricing_tab": {
-      "types": [
+  "screens": {
+    "gateway": {
+      "layout": "Flexbox centered, h-screen, bg-white (or subtle .aa-bg). Minimalist.",
+      "components": [
         {
-          "id": "internal",
-          "label": "Internal Checkout",
-          "description": "Standard checkout with base price and custom intake questions.",
-          "icon": "CreditCard"
-        },
-        {
-          "id": "external",
-          "label": "External Link",
-          "description": "Redirects customers to a third-party URL (e.g., Stripe, Gumroad).",
-          "icon": "ExternalLink"
-        },
-        {
-          "id": "enquiry",
-          "label": "Enquiry Only",
-          "description": "No checkout. Customers must contact sales to purchase.",
-          "icon": "MessageSquare"
+          "name": "PartnerCodeCard",
+          "style": "w-full max-w-md bg-white p-10 rounded-2xl shadow-none md:shadow-xl border-0 md:border md:border-slate-100",
+          "elements": [
+            {
+              "type": "Heading",
+              "text": "Enter Partner Code",
+              "style": "text-2xl font-bold text-center mb-8"
+            },
+            {
+              "type": "Input",
+              "testid": "partner-code-input",
+              "style": "h-12 text-lg tracking-wide text-center uppercase placeholder:normal-case"
+            },
+            {
+              "type": "Button",
+              "testid": "partner-code-submit",
+              "text": "Continue",
+              "style": "w-full mt-6 h-12 text-base font-semibold shadow-md transition-transform active:scale-95"
+            },
+            {
+              "type": "Link",
+              "testid": "register-partner-link",
+              "text": "Register as a partner",
+              "style": "block text-center mt-6 text-sm text-slate-500 hover:text-slate-900 transition-colors"
+            }
+          ]
         }
-      ],
-      "fields": {
-        "internal": ["base_price", "intake_questions_builder"],
-        "external": ["external_url_input"],
-        "enquiry": ["enquiry_message_preview"]
-      }
+      ]
     },
-    "intake_builder": {
-      "question_types": [
-        "Single Line Text",
-        "Multi Line Text",
-        "Number",
-        "Dropdown",
-        "Multi Select"
-      ],
-      "fields_per_question": {
-        "common": ["label", "helper_text", "required", "enabled"],
-        "number": ["price_per_unit"],
-        "options_based": ["options_list (label, price_value, price_mode: add/multiply)"]
+    "auth": {
+      "layout": "Grid (1 col mobile, 2 cols desktop). h-screen.",
+      "left_panel": {
+        "style": "hidden md:flex flex-col justify-between p-12 text-white relative overflow-hidden",
+        "dynamic_bg": "Use inline style for backgroundColor: partner.primaryColor",
+        "content": "Partner Logo (top left), Partner Name (large, bottom left). pattern/texture overlay (optional opacity-10)."
+      },
+      "right_panel": {
+        "style": "flex flex-col justify-center p-8 md:p-16 bg-white relative",
+        "form_container": "w-full max-w-sm mx-auto space-y-6 animate-[slideUpFade_0.5s_ease-out]",
+        "elements": [
+          {
+            "type": "Header",
+            "text": "Sign in",
+            "style": "text-3xl font-bold tracking-tight mb-2"
+          },
+          {
+            "type": "InputGroup",
+            "label": "Email",
+            "testid": "login-email-input",
+            "style": "h-11"
+          },
+          {
+            "type": "InputGroup",
+            "label": "Password",
+            "testid": "login-password-input",
+            "style": "h-11"
+          },
+          {
+            "type": "Actions",
+            "items": [
+              {
+                "type": "Link",
+                "text": "Forgot password?",
+                "testid": "forgot-password-link",
+                "style": "text-sm font-medium text-slate-600 hover:text-slate-900"
+              }
+            ]
+          },
+          {
+            "type": "Button",
+            "text": "Sign In",
+            "testid": "login-submit-button",
+            "style": "w-full h-11 shadow-sm font-semibold"
+          },
+          {
+            "type": "Footer",
+            "content": "New here? <Link>Create account</Link>",
+            "testid": "register-customer-link",
+            "style": "text-center text-sm text-slate-500 mt-6"
+          }
+        ]
+      },
+      "floating_pill": {
+        "location": "Absolute bottom-6 right-6 (or centered bottom on mobile)",
+        "testid": "change-partner-btn",
+        "style": "flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full text-xs font-semibold text-slate-600 transition-colors cursor-pointer",
+        "content": "Partner Code: {code} (Change Icon)"
       }
     }
   },
   "assets": {
-    "icons_library": "lucide-react",
-    "placeholder_images": [
+    "images": [
       {
-        "category": "store_card_preview",
-        "url": "https://images.unsplash.com/photo-1662826113534-cd887674d83b?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Abstract dark 3D geometric shape"
-      },
-      {
-        "category": "store_card_preview_alt",
-        "url": "https://images.unsplash.com/photo-1524169113253-c6ba17f68498?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Abstract blue and red lines"
+        "category": "abstract_white_bg",
+        "url": "https://images.unsplash.com/photo-1692889783742-7d99b124c402?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsJTIwYWJzdHJhY3QlMjBnZW9tZXRyaWMlMjBzaGFwZXMlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzcyMDQ5MTMwfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Subtle white geometric structure for backgrounds if needed."
       }
+    ],
+    "icons": {
+      "library": "lucide-react",
+      "required": ["ArrowRight", "Loader2", "Check", "X", "Building2", "User", "Lock"]
+    }
+  },
+  "testing_requirements": {
+    "data_testids": [
+      "auth-gateway",
+      "partner-code-input",
+      "partner-code-submit",
+      "gateway-error",
+      "login-form",
+      "login-email-input",
+      "login-password-input",
+      "login-submit-button",
+      "forgot-password-link",
+      "register-customer-link",
+      "change-partner-btn",
+      "register-partner-link"
     ]
   },
-  "instructions_to_main_agent": [
-    "1. Initialize the modal with the `Dialog` component from shadcn/ui.",
-    "2. Implement the `Tabs` component for navigation. Ensure 'Pricing' is the center of attention.",
-    "3. Build the `PricingTypeSelector` component first - this drives the logic of the Pricing tab.",
-    "4. For `Internal` pricing type, build the `IntakeQuestionsBuilder` component.",
-    "5. The Builder must allow adding questions. Use a 'Add Question' button that opens a Popover with question types.",
-    "6. Use `Collapsible` for question cards in the builder list. Header shows summary, body shows form.",
-    "7. Ensure the `Store Card` tab has a live preview on the right side (split pane) or bottom.",
-    "8. Use the provided hex codes. Do NOT fallback to default Tailwind colors. Use the 'slate-900' range.",
-    "9. Add `data-testid` to all inputs and buttons (e.g., `data-testid='pricing-type-internal'`)."
-  ],
-  "UNIVERSAL_GUIDELINES": {
-    "do_not": [
-      "Use gradients for text.",
-      "Use 'Inter' for headings (Use Manrope).",
-      "Use default scrollbars (Hide them or style them thin).",
-      "Center-align form text (Always left-align labels and inputs)."
-    ],
-    "must_do": [
-      "Use 'sonner' for toast notifications.",
-      "Add micro-interactions (hover scale, border glow) to cards.",
-      "Ensure all inputs have a clearly defined :focus state (Red ring)."
-    ]
-  }
+  "implementation_instructions": {
+    "step_1": "Create the Gateway Screen. Use a clean, centered layout. Focus on the input field interaction (ring expansion).",
+    "step_2": "Create the Auth Screen. Implement the split layout. Ensure the left panel accepts a dynamic `style={{ backgroundColor: partnerColor }}`.",
+    "step_3": "Implement the 'Partner Pill' at the bottom of the Auth form. It must allow switching back to step 1.",
+    "step_4": "Add the CSS keyframes for 'slideUpFade' in the global CSS or as a Tailwind plugin.",
+    "step_5": "Ensure all `data-testid` attributes are present exactly as listed."
+  },
+  "universal_guidelines": [
+    "Do not use gradients for the Partner Brand Panel; use solid dynamic color.",
+    "Ensure high contrast for text on the dynamic panel.",
+    "Micro-interactions: Buttons should scale down slightly on click (`active:scale-95`). Inputs should have a smooth ring transition.",
+    "Use `Manrope` for headings and `Inter` for body text.",
+    "Keep it minimal. No extra marketing text."
+  ]
 }
