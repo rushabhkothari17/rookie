@@ -117,7 +117,7 @@ export default function BooksMigrationForm({ onChange, initialValues = {}, websi
     company_name: companyName,
   };
 
-  const price = calculateBooksMigrationPrice(currentValues);
+  const price = calculateBooksMigrationPrice(currentValues, pricingRules);
 
   useEffect(() => {
     onChange({ inputs: currentValues, price, isComplete: isFormComplete() });
