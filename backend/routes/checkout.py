@@ -557,8 +557,19 @@ async def create_checkout_session(
             "quantity": item["quantity"], "metadata_json": item["inputs"],
             "unit_price": item["pricing"]["subtotal"], "line_total": item["pricing"]["subtotal"],
         })
-
-    host_url = payload.origin_url.rstrip("/")
+        # ── Audit: log intake question answers ────────────────────────────
+        intake_answers = item.get("inputs") or {}
+        if intake_answers:
+            await create_audit_log(
+                entity_type="order", entity_id=order_id, action="intake_submitted",
+                actor="customer",
+                details={
+                    "product_id": product["id"],
+                    "product_name": product.get("name", ""),
+                    "intake_answers": intake_answers,
+                    "order_number": order_number,
+                },
+            )    host_url = payload.origin_url.rstrip("/")
     success_url = f"{host_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{host_url}/cart"
     stripe_checkout = StripeCheckout(api_key=_stripe_api_key, webhook_url=f"{host_url}/api/webhook/stripe")
