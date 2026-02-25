@@ -124,7 +124,7 @@ async def list_articles_public(
         customer_id = customer["id"] if customer else None
     else:
         customer_id = None
-    query: Dict[str, Any] = {"tenant_id": {"$in": list({tid, DEFAULT_TENANT_ID})}, "deleted_at": {"$exists": False}}
+    query: Dict[str, Any] = {"tenant_id": tid, "deleted_at": {"$exists": False}}
     if category:
         query["category"] = category
     articles = await db.articles.find(query, {"_id": 0, "content": 0}).sort("updated_at", -1).to_list(500)
