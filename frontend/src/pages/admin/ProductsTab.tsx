@@ -13,7 +13,9 @@ import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { CategoriesTab } from "./CategoriesTab";
-import { Download, Upload, ExternalLink, Package, FolderTree } from "lucide-react";
+import { PromoCodesTab } from "./PromoCodesTab";
+import { TermsTab } from "./TermsTab";
+import { Download, Upload, ExternalLink, Package, FolderTree, Tag, FileText } from "lucide-react";
 
 export function ProductsTab() {
   const [activeSubTab, setActiveSubTab] = useState("products");
