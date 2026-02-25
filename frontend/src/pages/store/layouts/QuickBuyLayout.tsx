@@ -119,7 +119,7 @@ export default function QuickBuyLayout({
         data-testid="quick-buy-cta"
       >
         <ShoppingCart size={20} />
-        {isRFQ ? "Get a Quote" : "Buy Now"}
+        {ctaLabel}
       </Button>
 
       {/* Terms link */}
