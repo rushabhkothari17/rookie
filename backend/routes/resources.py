@@ -328,7 +328,7 @@ async def create_article(
         source="admin_ui",
         after_json={"title": payload.title, "category": payload.category, "visibility": payload.visibility},
     )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": resource_id, "action": "created", "actor": admin.get("email", "admin"), "details": {"title": payload.title, "category": payload.category}, "created_at": now_iso()})
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "resource", "entity_id": resource_id, "action": "created", "actor": admin.get("email", "admin"), "details": {"title": payload.title, "category": payload.category}, "created_at": now_iso()})
     doc.pop("_id", None)
     return {"resource": doc}
 
@@ -403,7 +403,7 @@ async def update_article(
             source="admin_ui",
             after_json=changes,
         )
-        await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": resource_id, "action": "updated", "actor": admin.get("email", "admin"), "details": changes, "created_at": now_iso()})
+        await db.audit_logs.insert_one({"id": make_id(), "entity_type": "resource", "entity_id": resource_id, "action": "updated", "actor": admin.get("email", "admin"), "details": changes, "created_at": now_iso()})
 
     updated = await db.resources.find_one({"id": resource_id}, {"_id": 0})
     updated.pop("_id", None)
@@ -440,7 +440,7 @@ async def delete_article(
         source="admin_ui",
         before_json={"title": article.get("title"), "category": article.get("category")},
     )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": resource_id, "action": "deleted", "actor": admin.get("email", "admin"), "details": {"title": article.get("title")}, "created_at": now_iso()})
+    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "resource", "entity_id": resource_id, "action": "deleted", "actor": admin.get("email", "admin"), "details": {"title": article.get("title")}, "created_at": now_iso()})
     return {"message": "Article deleted"}
 
 
@@ -464,7 +464,7 @@ async def email_article(
     user_email_map = {u["id"]: u["email"] for u in users}
 
     app_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")
-    article_url = f"{app_url}/resources/{article.get("slug") or resource_id}"
+    resource_url = f"{app_url}/resources/{article.get("slug") or resource_id}"
     web_s = await db.website_settings.find_one({"tenant_id": tenant_id_of(admin)}, {"_id": 0}) or {}
     subject_tpl = web_s.get("email_article_subject_template") or "{{article_title}} — from {{store_name}}"
     subject = payload.subject or subject_tpl.replace("{{article_title}}", article["title"])
@@ -486,7 +486,7 @@ async def email_article(
             variables={
                 "article_title": article["title"],
                 "article_category": article.get("category", ""),
-                "article_url": article_url,
+                "resource_url": resource_url,
                 "article_message": payload.message or "",
                 "article_price": f"${article['price']}" if article.get("price") else "",
                 "cta_text": cta_text,
