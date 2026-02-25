@@ -247,6 +247,7 @@ export function CustomersTab() {
                       </div>
                     )}
                   </TableCell>
+                  {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-customer-partner-${customer.id}`}>{customer.partner_code || "—"}</TableCell>}
                   <TableCell>
                     <div className="flex gap-1 items-center flex-nowrap">
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
