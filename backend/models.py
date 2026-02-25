@@ -197,8 +197,8 @@ class AdminProductUpdate(BaseModel):
     base_price: Optional[float] = None
     is_subscription: Optional[bool] = None
     stripe_price_id: Optional[str] = None
-    pricing_type: Optional[str] = None
-    pricing_rules: Optional[Dict[str, Any]] = None
+    pricing_type: Optional[str] = "internal"
+    external_url: Optional[str] = None
     is_active: bool = True
     visible_to_customers: Optional[List[str]] = None
     restricted_to: Optional[List[str]] = None
