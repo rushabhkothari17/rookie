@@ -154,7 +154,7 @@ export function ProductsTab() {
         restricted_to: form.restricted_to,
         intake_schema_json: form.intake_schema_json,
         custom_sections: form.custom_sections,
-        tagline: form.short_description,
+        pricing_type: form.pricing_type || "fixed",
         pricing_rules: form.pricing_rules || editProduct?.pricing_rules || {},
       };
       if (editProduct) {
