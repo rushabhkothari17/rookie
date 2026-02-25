@@ -837,6 +837,10 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
     if pw_error:
         raise HTTPException(status_code=400, detail=pw_error)
 
+    # Block registration under the reserved platform admin code
+    if partner_code and partner_code.strip().lower() == DEFAULT_TENANT_ID:
+        raise HTTPException(status_code=403, detail="This code is reserved for platform administration. Customer registration is not available under this code.")
+
     # Resolve tenant
     if partner_code:
         tenant = await resolve_tenant(partner_code)
