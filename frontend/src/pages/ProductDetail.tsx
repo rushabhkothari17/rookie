@@ -185,7 +185,6 @@ export default function ProductDetail() {
   const [intakeAnswers, setIntakeAnswers] = useState<Record<string, any>>({});
   const [pricing, setPricing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [migBooksData, setMigBooksData] = useState<{inputs: any; price: number; isComplete: boolean}>({inputs: {}, price: 999, isComplete: false});
   const [showScopeModal, setShowScopeModal] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteFormData, setQuoteFormData] = useState<Record<string, string>>({ name: "", email: "", company: "", phone: "", message: "" });
