@@ -92,18 +92,18 @@ export default function Admin() {
             <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
             <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>
             <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>
-            <TabsTrigger value="promo" data-testid="admin-tab-promo" className={TAB_CLASS}>Promo Codes</TabsTrigger>
             <TabsTrigger value="quotes" data-testid="admin-tab-quotes" className={TAB_CLASS}>Requests</TabsTrigger>
 
             {/* Content */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
             <TabsTrigger value="articles" data-testid="admin-tab-articles" className={TAB_CLASS}>Articles</TabsTrigger>
-            <TabsTrigger value="override-codes" data-testid="admin-tab-override-codes" className={TAB_CLASS}>Override Codes</TabsTrigger>
-            <TabsTrigger value="terms" data-testid="admin-tab-terms" className={TAB_CLASS}>Terms</TabsTrigger>
+            <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
+            <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
 
             {/* Website & Settings */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
             <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
+            <TabsTrigger value="domains" data-testid="admin-tab-domains" className={TAB_CLASS}>Custom Domains</TabsTrigger>
 
             {/* Integrations */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Integrations</p>
