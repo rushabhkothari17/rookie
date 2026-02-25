@@ -251,6 +251,11 @@ export function ProductForm({
           </div>
 
           <div>
+            <label className="text-xs text-slate-600">Tagline</label>
+            <Input value={form.tagline} onChange={e => s("tagline")(e.target.value)} placeholder="Short punch-line shown as sub-headline" className="mt-1" data-testid="pf-tagline" />
+          </div>
+
+          <div>
             <label className="text-xs text-slate-600">Short Description</label>
             <Input value={form.short_description} onChange={e => s("short_description")(e.target.value)} placeholder="One-line description shown on product cards" className="mt-1" data-testid="pf-short-desc" />
           </div>
@@ -261,6 +266,26 @@ export function ProductForm({
           </div>
 
           <BulletsList bullets={form.bullets} onChange={s("bullets")} />
+
+          {/* ─── Card Display (catalog card overrides) ─── */}
+          <div className="space-y-3 border-t border-slate-100 pt-4">
+            <p className="text-xs font-semibold text-slate-700">Catalog Card Display <span className="text-slate-400 font-normal">(leave blank to use values above)</span></p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-slate-600">Card Title override</label>
+                <Input value={form.card_title} onChange={e => s("card_title")(e.target.value)} placeholder={form.name || "Uses Name"} className="mt-1" data-testid="pf-card-title" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-600">Card Tag override</label>
+                <Input value={form.card_tag} onChange={e => s("card_tag")(e.target.value)} placeholder={form.tag || "Uses Tag"} className="mt-1" data-testid="pf-card-tag" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-slate-600">Card Description override</label>
+              <Input value={form.card_description} onChange={e => s("card_description")(e.target.value)} placeholder={form.short_description || "Uses Short Description"} className="mt-1" data-testid="pf-card-desc" />
+            </div>
+            <BulletsList bullets={form.card_bullets.length > 0 ? form.card_bullets : [""]} onChange={v => s("card_bullets")(v.filter(b => b))} />
+          </div>
 
           {/* Visibility */}
           <div className="space-y-3 border-t border-slate-100 pt-4">
