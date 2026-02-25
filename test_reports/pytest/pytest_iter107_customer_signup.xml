@@ -1,164 +1,163 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="16" failures="29" skipped="2" tests="58" time="8.859" timestamp="2026-02-25T21:36:04.857878+00:00" hostname="agent-env-96a963bf-0464-4061-a3ce-39590aeb74c2"><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_success_canada" time="1.819"><failure message="AssertionError: User not created in DB&#10;assert None is not None">backend/tests/test_iter107_customer_signup_signin.py:232: in test_signup_success_canada
-    assert user is not None, "User not created in DB"
-E   AssertionError: User not created in DB
-E   assert None is not None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_currency_usa" time="0.260"><error message="failed on setup with &quot;AssertionError: Tenant B admin creation failed: {&quot;detail&quot;:&quot;A super admin already exists for this tenant. Only one super admin is allowed per tenant.&quot;}&#10;assert 400 in [200, 201]&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:164: in tenant_b_id
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
-E   AssertionError: Tenant B admin creation failed: {"detail":"A super admin already exists for this tenant. Only one super admin is allowed per tenant."}
-E   assert 400 in [200, 201]
-E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_currency_uk" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant B admin creation failed: {&quot;detail&quot;:&quot;A super admin already exists for this tenant. Only one super admin is allowed per tenant.&quot;}&#10;assert 400 in [200, 201]&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:164: in tenant_b_id
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
-E   AssertionError: Tenant B admin creation failed: {"detail":"A super admin already exists for this tenant. Only one super admin is allowed per tenant."}
-E   assert 400 in [200, 201]
-E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_currency_unknown" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant B admin creation failed: {&quot;detail&quot;:&quot;A super admin already exists for this tenant. Only one super admin is allowed per tenant.&quot;}&#10;assert 400 in [200, 201]&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:164: in tenant_b_id
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
-E   AssertionError: Tenant B admin creation failed: {"detail":"A super admin already exists for this tenant. Only one super admin is allowed per tenant."}
-E   assert 400 in [200, 201]
-E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_missing_email" time="0.127" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_missing_full_name" time="0.183" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_missing_address" time="0.121" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_too_short" time="0.215" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_uppercase" time="0.195"><failure message="AssertionError: Expected 400, got 429&#10;assert 429 == 400&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:322: in test_signup_password_no_uppercase
-    assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
-E   AssertionError: Expected 400, got 429
-E   assert 429 == 400
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_lowercase" time="0.145"><failure message="AssertionError: Expected 400, got 429&#10;assert 429 == 400&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:329: in test_signup_password_no_lowercase
-    assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
-E   AssertionError: Expected 400, got 429
-E   assert 429 == 400
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_digit" time="0.181"><failure message="AssertionError: Expected 400, got 429&#10;assert 429 == 400&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:336: in test_signup_password_no_digit
-    assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
-E   AssertionError: Expected 400, got 429
-E   assert 429 == 400
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_special" time="0.216"><failure message="AssertionError: Expected 400, got 429&#10;assert 429 == 400&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:343: in test_signup_password_no_special
-    assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
-E   AssertionError: Expected 400, got 429
-E   assert 429 == 400
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_reserved_code_blocked" time="0.126"><failure message="AssertionError: Expected 403, got 429&#10;assert 429 == 403&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:350: in test_signup_reserved_code_blocked
-    assert resp.status_code == 403, f"Expected 403, got {resp.status_code}"
-E   AssertionError: Expected 403, got 429
-E   assert 429 == 403
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_idempotency_same_tenant" time="0.228"><failure message="AssertionError: Expected 400, got 429&#10;assert 429 == 400&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:357: in test_signup_idempotency_same_tenant
-    assert resp.status_code == 400, f"Expected 400, got {resp.status_code}"
-E   AssertionError: Expected 400, got 429
-E   assert 429 == 400
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_same_email_different_tenant_allowed" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant B admin creation failed: {&quot;detail&quot;:&quot;A super admin already exists for this tenant. Only one super admin is allowed per tenant.&quot;}&#10;assert 400 in [200, 201]&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:164: in tenant_b_id
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
-E   AssertionError: Tenant B admin creation failed: {"detail":"A super admin already exists for this tenant. Only one super admin is allowed per tenant."}
-E   assert 400 in [200, 201]
-E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_audit_log_created" time="0.001"><failure message="AssertionError: USER_REGISTERED audit log not found&#10;assert None is not None">backend/tests/test_iter107_customer_signup_signin.py:374: in test_signup_audit_log_created
-    assert log is not None, "USER_REGISTERED audit log not found"
-E   AssertionError: USER_REGISTERED audit log not found
-E   assert None is not None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_correct_code" time="0.156"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:389: in test_verify_email_correct_code
-    assert signup_resp.status_code == 200
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_wrong_code" time="0.110"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:406: in test_verify_email_wrong_code
-    assert signup_resp.status_code == 200
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_brute_force_lockout" time="0.131"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:417: in test_verify_email_brute_force_lockout
-    assert signup_resp.status_code == 200
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_already_verified_idempotent" time="0.133"><failure message="AssertionError: Expected 200 for already verified: 404&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:440: in test_verify_email_already_verified_idempotent
-    assert resp.status_code == 200, f"Expected 200 for already verified: {resp.status_code}"
-E   AssertionError: Expected 200 for already verified: 404
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_resend_verification_email" time="0.187"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:447: in test_resend_verification_email
-    assert signup_resp.status_code == 200
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_email_outbox_after_verification" time="0.001"><failure message="AssertionError: email_outbox welcome record not found after verification&#10;assert None is not None">backend/tests/test_iter107_customer_signup_signin.py:465: in test_email_outbox_after_verification
-    assert outbox is not None, "email_outbox welcome record not found after verification"
-E   AssertionError: email_outbox welcome record not found after verification
-E   assert None is not None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_audit_log_email_verified" time="0.001"><failure message="AssertionError: email_verified audit log not found&#10;assert None is not None">backend/tests/test_iter107_customer_signup_signin.py:474: in test_audit_log_email_verified
-    assert log is not None, "email_verified audit log not found"
-E   AssertionError: email_verified audit log not found
-E   assert None is not None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_success" time="0.304"><failure message="AssertionError: Login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:505: in test_customer_login_success
-    assert resp.status_code == 200, f"Login failed: {resp.text}"
-E   AssertionError: Login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_jwt_content" time="0.153"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:520: in test_customer_login_jwt_content
-    assert resp.status_code == 200
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_wrong_password" time="0.119" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_unverified_blocked" time="0.476" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_wrong_partner_code" time="0.181" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_case_insensitive_partner_code" time="0.125"><failure message="AssertionError: UPPERCASE partner_code failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:570: in test_customer_login_case_insensitive_partner_code
-    assert resp1.status_code == 200, f"UPPERCASE partner_code failed: {resp1.text}"
-E   AssertionError: UPPERCASE partner_code failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_reserved_code_blocked" time="0.121" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_admin_user_blocked" time="0.135"><failure message="AssertionError: Expected 403 for admin via customer login, got 401&#10;assert 401 == 403&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:594: in test_customer_login_admin_user_blocked
-    assert resp.status_code == 403, f"Expected 403 for admin via customer login, got {resp.status_code}"
-E   AssertionError: Expected 403 for admin via customer login, got 401
-E   assert 401 == 403
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_cross_tenant_isolated" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant B admin creation failed: {&quot;detail&quot;:&quot;A super admin already exists for this tenant. Only one super admin is allowed per tenant.&quot;}&#10;assert 400 in [200, 201]&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:164: in tenant_b_id
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
-E   AssertionError: Tenant B admin creation failed: {"detail":"A super admin already exists for this tenant. Only one super admin is allowed per tenant."}
-E   assert 400 in [200, 201]
-E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_put_me_no_country_field" time="0.113"><failure message="AssertionError: Could not get customer token&#10;assert None">backend/tests/test_iter107_customer_signup_signin.py:635: in test_put_me_no_country_field
-    assert token, "Could not get customer token"
-E   AssertionError: Could not get customer token
-E   assert None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_put_me_profile_update_works" time="0.141"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:665: in test_put_me_profile_update_works
-    assert login_resp.status_code == 200
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_admin_can_update_country" time="0.142"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_profile_updated_audit_log" time="0.001"><failure message="AssertionError: profile_updated audit log not found&#10;assert None is not None">backend/tests/test_iter107_customer_signup_signin.py:706: in test_profile_updated_audit_log
-    assert log is not None, "profile_updated audit log not found"
-E   AssertionError: profile_updated audit log not found
-E   assert None is not None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_forgot_password_valid_email" time="0.113"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:722: in test_forgot_password_valid_email
-    assert signup_resp.status_code == 200
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_forgot_password_nonexistent_email" time="0.137" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_reset_password_correct_code" time="0.001"><failure message="AttributeError: 'NoneType' object has no attribute 'get'">backend/tests/test_iter107_customer_signup_signin.py:752: in test_reset_password_correct_code
-    reset_code = user.get("password_reset_code")
-                 ^^^^^^^^
-E   AttributeError: 'NoneType' object has no attribute 'get'</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_reset_password_wrong_code" time="0.140"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:779: in test_reset_password_wrong_code
-    assert signup_resp.status_code == 200
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_reset_password_new_password_complexity" time="0.123"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:796: in test_reset_password_new_password_complexity
-    assert signup_resp.status_code == 200
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestTenantIsolation" name="test_customer_cannot_access_admin_customers" time="0.111"><failure message="AssertionError: Could not get customer token&#10;assert None">backend/tests/test_iter107_customer_signup_signin.py:835: in test_customer_cannot_access_admin_customers
-    assert token, "Could not get customer token"
-E   AssertionError: Could not get customer token
-E   assert None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestTenantIsolation" name="test_customer_cannot_access_admin_tenants" time="0.144"><skipped type="pytest.skip" message="Customer token not available">/app/backend/tests/test_iter107_customer_signup_signin.py:848: Customer token not available</skipped></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestTenantIsolation" name="test_customer_tenant_id_matches_their_tenant" time="0.142"><skipped type="pytest.skip" message="Customer token not available">/app/backend/tests/test_iter107_customer_signup_signin.py:862: Customer token not available</skipped></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestInactiveScenarios" name="test_inactive_user_blocked" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestInactiveScenarios" name="test_reactivate_user_allows_login" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_get_website_settings_public" time="0.170" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_get_website_settings_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_update_website_settings_and_verify" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_website_settings_tenant_isolated" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_platform_admin_can_view_all_customers" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant B admin creation failed: {&quot;detail&quot;:&quot;A super admin already exists for this tenant. Only one super admin is allowed per tenant.&quot;}&#10;assert 400 in [200, 201]&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:164: in tenant_b_id
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
-E   AssertionError: Tenant B admin creation failed: {"detail":"A super admin already exists for this tenant. Only one super admin is allowed per tenant."}
-E   assert 400 in [200, 201]
-E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_partner_admin_sees_only_own_customers" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_partner_admin_toggle_customer_active" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_partner_admin_cannot_access_other_tenant_customer" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A admin login failed: {&quot;detail&quot;:&quot;Invalid credentials&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:177: in tenant_a_admin_headers
-    assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
-E   AssertionError: Tenant A admin login failed: {"detail":"Invalid credentials"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_shared_email_signup_tenant_a" time="0.144"><failure message="AssertionError: Shared email signup in A failed: {&quot;detail&quot;: &quot;Rate limit exceeded. Please slow down and try again.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:1062: in test_shared_email_signup_tenant_a
-    assert resp.status_code == 200, f"Shared email signup in A failed: {resp.text}"
-E   AssertionError: Shared email signup in A failed: {"detail": "Rate limit exceeded. Please slow down and try again."}
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_shared_email_signup_tenant_b" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant B admin creation failed: {&quot;detail&quot;:&quot;A super admin already exists for this tenant. Only one super admin is allowed per tenant.&quot;}&#10;assert 400 in [200, 201]&#10; +  where 400 = &lt;Response [400]&gt;.status_code&quot;">backend/tests/test_iter107_customer_signup_signin.py:164: in tenant_b_id
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
-E   AssertionError: Tenant B admin creation failed: {"detail":"A super admin already exists for this tenant. Only one super admin is allowed per tenant."}
-E   assert 400 in [200, 201]
-E    +  where 400 = &lt;Response [400]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_shared_email_a_login_uses_tenant_a_only" time="0.179"><failure message="AssertionError: Shared email login via A slug failed: {&quot;detail&quot;: &quot;Rate limit exceeded. Please slow down and try again.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">backend/tests/test_iter107_customer_signup_signin.py:1080: in test_shared_email_a_login_uses_tenant_a_only
-    assert resp.status_code == 200, f"Shared email login via A slug failed: {resp.text}"
-E   AssertionError: Shared email login via A slug failed: {"detail": "Rate limit exceeded. Please slow down and try again."}
-E   assert 429 == 200
-E    +  where 429 = &lt;Response [429]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_verify_email_no_tenant_scoping_flag" time="0.006" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="51" failures="3" skipped="0" tests="58" time="4.343" timestamp="2026-02-25T21:43:16.333515+00:00" hostname="agent-env-96a963bf-0464-4061-a3ce-39590aeb74c2"><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_success_canada" time="0.946"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_currency_usa" time="0.925"><failure message="AssertionError: User not created&#10;assert None">backend/tests/test_iter107_customer_signup_signin.py:291: in test_signup_currency_usa
+    assert user, "User not created"
+E   AssertionError: User not created
+E   assert None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_currency_uk" time="0.341"><failure message="AssertionError: User not created&#10;assert None">backend/tests/test_iter107_customer_signup_signin.py:304: in test_signup_currency_uk
+    assert user, "User not created"
+E   AssertionError: User not created
+E   assert None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_currency_unknown" time="0.386"><failure message="AssertionError: User not created&#10;assert None">backend/tests/test_iter107_customer_signup_signin.py:317: in test_signup_currency_unknown
+    assert user, "User not created"
+E   AssertionError: User not created
+E   assert None</failure></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_missing_email" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_missing_full_name" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_missing_address" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_too_short" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_uppercase" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_lowercase" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_digit" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_password_no_special" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_reserved_code_blocked" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_idempotency_same_tenant" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_same_email_different_tenant_allowed" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerSignup" name="test_signup_audit_log_created" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_correct_code" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_wrong_code" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_brute_force_lockout" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_verify_email_already_verified_idempotent" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_resend_verification_email" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_email_outbox_after_verification" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestEmailVerification" name="test_audit_log_email_verified" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_success" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_jwt_content" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_wrong_password" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_unverified_blocked" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_wrong_partner_code" time="0.116" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_case_insensitive_partner_code" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_reserved_code_blocked" time="0.148" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_admin_user_blocked" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCustomerLogin" name="test_customer_login_cross_tenant_isolated" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_put_me_no_country_field" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_put_me_profile_update_works" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_admin_can_update_country" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCountryLock" name="test_profile_updated_audit_log" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_forgot_password_valid_email" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_forgot_password_nonexistent_email" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_reset_password_correct_code" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_reset_password_wrong_code" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestPasswordReset" name="test_reset_password_new_password_complexity" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestTenantIsolation" name="test_customer_cannot_access_admin_customers" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestTenantIsolation" name="test_customer_cannot_access_admin_tenants" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestTenantIsolation" name="test_customer_tenant_id_matches_their_tenant" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestInactiveScenarios" name="test_inactive_user_blocked" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestInactiveScenarios" name="test_reactivate_user_allows_login" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_get_website_settings_public" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_get_website_settings_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_update_website_settings_and_verify" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestBranding" name="test_website_settings_tenant_isolated" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_platform_admin_can_view_all_customers" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_partner_admin_sees_only_own_customers" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_partner_admin_toggle_customer_active" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestAdminCustomerAccess" name="test_partner_admin_cannot_access_other_tenant_customer" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_shared_email_signup_tenant_a" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_shared_email_signup_tenant_b" time="0.355" /><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_shared_email_a_login_uses_tenant_a_only" time="0.000"><error message="failed on setup with &quot;AssertionError: Tenant A not found by code 'test-iter107-corp-a'&#10;assert None is not None&quot;">backend/tests/test_iter107_customer_signup_signin.py:135: in tenant_a_info
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+E   AssertionError: Tenant A not found by code 'test-iter107-corp-a'
+E   assert None is not None</error></testcase><testcase classname="backend.tests.test_iter107_customer_signup_signin.TestCrossTenantIsolation" name="test_verify_email_no_tenant_scoping_flag" time="0.012" /></testsuite></testsuites>
