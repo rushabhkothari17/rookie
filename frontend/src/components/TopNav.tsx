@@ -53,6 +53,9 @@ export default function TopNav() {
             <Link to="/articles" className={isActive("/articles")} data-testid="nav-articles">
               {ws.nav_articles_label || "Articles"}
             </Link>
+            <Link to="/portal" className={isActive("/portal")} data-testid="nav-portal">
+              {ws.nav_portal_label || "Customer Portal"}
+            </Link>
             {user?.is_admin && (
               <Link to="/admin" className={isActive("/admin")} data-testid="nav-admin">
                 Admin
