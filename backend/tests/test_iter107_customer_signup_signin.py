@@ -760,19 +760,19 @@ class TestCountryLock:
 class TestPasswordReset:
     """E) Forgot password (no enumeration), reset-password, expiry"""
 
-    def test_forgot_password_valid_email(self, tenant_a_id, mongo_db):
+    def test_forgot_password_valid_email(self, tenant_a_info, mongo_db):
         """forgot-password with valid email → success message (no enumeration)"""
+        partner_code = tenant_a_info["code"]
         email = "TEST-pwreset107@test.local"
-        # Sign up a customer
         payload = make_customer_payload(email)
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         code = signup_resp.json()["verification_code"]
         requests.post(f"{BASE_URL}/api/auth/verify-email", json={"email": email, "code": code})
 
         resp = requests.post(
             f"{BASE_URL}/api/auth/forgot-password",
-            json={"email": email, "partner_code": TENANT_A_CODE},
+            json={"email": email, "partner_code": partner_code},
         )
         assert resp.status_code == 200, f"Forgot password failed: {resp.text}"
         assert "sent" in resp.json().get("message", "").lower() or "account" in resp.json().get("message", "").lower()
@@ -782,18 +782,19 @@ class TestPasswordReset:
         assert user.get("password_reset_code"), "password_reset_code not stored"
         assert user.get("password_reset_expires"), "password_reset_expires not stored"
 
-    def test_forgot_password_nonexistent_email(self):
+    def test_forgot_password_nonexistent_email(self, tenant_a_info):
         """forgot-password with non-existent email → always returns success (no enumeration)"""
+        partner_code = tenant_a_info["code"]
         resp = requests.post(
             f"{BASE_URL}/api/auth/forgot-password",
-            json={"email": "nonexistent107@test.local", "partner_code": TENANT_A_CODE},
+            json={"email": "nonexistent107@test.local", "partner_code": partner_code},
         )
         assert resp.status_code == 200, f"Expected 200 even for non-existent email: {resp.text}"
-        # Message should be generic
         assert "if an account" in resp.json().get("message", "").lower()
 
-    def test_reset_password_correct_code(self, tenant_a_id, mongo_db):
+    def test_reset_password_correct_code(self, tenant_a_info, mongo_db):
         """Reset password with correct code → password updated"""
+        partner_code = tenant_a_info["code"]
         email = "TEST-pwreset107@test.local"
         user = mongo_db.users.find_one({"email": email.lower()})
         reset_code = user.get("password_reset_code")
@@ -802,7 +803,7 @@ class TestPasswordReset:
         new_password = "NewPass@107Reset!"
         resp = requests.post(
             f"{BASE_URL}/api/auth/reset-password",
-            json={"email": email, "partner_code": TENANT_A_CODE, "code": reset_code, "new_password": new_password},
+            json={"email": email, "partner_code": partner_code, "code": reset_code, "new_password": new_password},
         )
         assert resp.status_code == 200, f"Reset password failed: {resp.text}"
         assert "reset" in resp.json().get("message", "").lower()
@@ -814,42 +815,44 @@ class TestPasswordReset:
         # Login with new password works
         login_resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": email, "password": new_password},
+            json={"partner_code": partner_code, "email": email, "password": new_password},
         )
         assert login_resp.status_code == 200, f"Login with new password failed: {login_resp.text}"
 
-    def test_reset_password_wrong_code(self, tenant_a_id, mongo_db):
+    def test_reset_password_wrong_code(self, tenant_a_info, mongo_db):
         """Reset password with wrong code → 400"""
+        partner_code = tenant_a_info["code"]
         email = "TEST-pwreset-wrong107@test.local"
         payload = make_customer_payload(email)
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         code = signup_resp.json()["verification_code"]
         requests.post(f"{BASE_URL}/api/auth/verify-email", json={"email": email, "code": code})
-        requests.post(f"{BASE_URL}/api/auth/forgot-password", json={"email": email, "partner_code": TENANT_A_CODE})
+        requests.post(f"{BASE_URL}/api/auth/forgot-password", json={"email": email, "partner_code": partner_code})
 
         resp = requests.post(
             f"{BASE_URL}/api/auth/reset-password",
-            json={"email": email, "partner_code": TENANT_A_CODE, "code": "000000", "new_password": "NewPass@107!"},
+            json={"email": email, "partner_code": partner_code, "code": "000000", "new_password": "NewPass@107!"},
         )
         assert resp.status_code == 400, f"Expected 400 for wrong code, got {resp.status_code}"
         assert "invalid" in resp.json().get("detail", "").lower()
 
-    def test_reset_password_new_password_complexity(self, tenant_a_id, mongo_db):
+    def test_reset_password_new_password_complexity(self, tenant_a_info, mongo_db):
         """Reset password with weak new password → 400"""
+        partner_code = tenant_a_info["code"]
         email = "TEST-pwreset-weak107@test.local"
         payload = make_customer_payload(email)
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         code = signup_resp.json()["verification_code"]
         requests.post(f"{BASE_URL}/api/auth/verify-email", json={"email": email, "code": code})
-        requests.post(f"{BASE_URL}/api/auth/forgot-password", json={"email": email, "partner_code": TENANT_A_CODE})
+        requests.post(f"{BASE_URL}/api/auth/forgot-password", json={"email": email, "partner_code": partner_code})
         user = mongo_db.users.find_one({"email": email.lower()})
         reset_code = user.get("password_reset_code")
 
         resp = requests.post(
             f"{BASE_URL}/api/auth/reset-password",
-            json={"email": email, "partner_code": TENANT_A_CODE, "code": reset_code, "new_password": "weakpass"},
+            json={"email": email, "partner_code": partner_code, "code": reset_code, "new_password": "weakpass"},
         )
         assert resp.status_code == 400, f"Expected 400 for weak password, got {resp.status_code}"
 
