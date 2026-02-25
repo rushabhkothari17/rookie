@@ -164,6 +164,7 @@ export function ProductsTab() {
         custom_sections: form.custom_sections,
         pricing_type: form.pricing_type || "internal",
         external_url: form.external_url || null,
+        display_layout: form.display_layout || "standard",
       };
       if (editProduct) {
         await api.put(`/admin/products/${editProduct.id}`, payload);
