@@ -241,7 +241,7 @@ function VisibilityRuleEditor({
 }) {
   const hasRule = !!rule;
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="visibility-rule-section">
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none">
           <Eye size={11} /> Visibility rule
@@ -255,6 +255,7 @@ function VisibilityRuleEditor({
               : onChange(null)
             }
             className="w-3 h-3 rounded accent-[#0f172a]"
+            data-testid="vis-rule-toggle"
           />
           {hasRule ? "On" : "Off"}
         </label>
