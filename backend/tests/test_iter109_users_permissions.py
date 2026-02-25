@@ -144,9 +144,14 @@ def super_admin_a_token(platform_token, tenant_a):
     """Partner super admin for tenant A."""
     email = "TEST.super.a@iter109.test"
     password = "TestSuper109!A"
-    create_partner_user_via_tenant_endpoint(
-        platform_token, tenant_a["id"], email, password, "partner_super_admin"
-    )
+    # Try to create, ignore if already exists
+    try:
+        create_partner_user_via_tenant_endpoint(
+            platform_token, tenant_a["id"], email, password, "partner_super_admin"
+        )
+    except AssertionError as e:
+        if "already registered" not in str(e):
+            raise
     token = partner_login("test-iter109-a", email, password)
     assert token, "Super admin A login failed"
     return token
@@ -169,7 +174,9 @@ def partner_admin_a_token(platform_token, tenant_a, super_admin_a_token):
         },
         headers=admin_headers(super_admin_a_token),
     )
-    assert resp.status_code in (200, 201), f"Create partner admin failed: {resp.text}"
+    # Allow 400 if already exists
+    if resp.status_code not in (200, 201, 400):
+        assert False, f"Create partner admin failed: {resp.text}"
     token = partner_login("test-iter109-a", email, password)
     assert token, "Partner admin A login failed"
     return token
@@ -192,7 +199,9 @@ def partner_staff_a_token(platform_token, tenant_a, super_admin_a_token):
         },
         headers=admin_headers(super_admin_a_token),
     )
-    assert resp.status_code in (200, 201), f"Create partner staff failed: {resp.text}"
+    # Allow 400 if already exists
+    if resp.status_code not in (200, 201, 400):
+        assert False, f"Create partner staff failed: {resp.text}"
     token = partner_login("test-iter109-a", email, password)
     assert token, "Partner staff A login failed"
     return token
@@ -203,9 +212,14 @@ def super_admin_b_token(platform_token, tenant_b):
     """Partner super admin for tenant B."""
     email = "TEST.super.b@iter109.test"
     password = "TestSuper109!B"
-    create_partner_user_via_tenant_endpoint(
-        platform_token, tenant_b["id"], email, password, "partner_super_admin"
-    )
+    # Try to create, ignore if already exists
+    try:
+        create_partner_user_via_tenant_endpoint(
+            platform_token, tenant_b["id"], email, password, "partner_super_admin"
+        )
+    except AssertionError as e:
+        if "already registered" not in str(e):
+            raise
     token = partner_login("test-iter109-b", email, password)
     assert token, "Super admin B login failed"
     return token
