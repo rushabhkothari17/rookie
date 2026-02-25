@@ -21,7 +21,8 @@ def get_admin_token():
         "password": "ChangeMe123!",
     })
     if resp.status_code == 200:
-        return resp.json().get("access_token")
+        data = resp.json()
+        return data.get("access_token") or data.get("token")
     return None
 
 
