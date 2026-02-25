@@ -110,9 +110,8 @@ def platform_admin_headers():
 
 
 @pytest.fixture(scope="module")
-def tenant_a_id(platform_admin_headers, mongo_db):
-    """Create Tenant A via register-partner and return its ID."""
-    # Use register-partner to create tenant + super admin in one shot
+def tenant_a_info(platform_admin_headers, mongo_db):
+    """Create Tenant A via register-partner and return dict with id and code."""
     resp = requests.post(
         f"{BASE_URL}/api/auth/register-partner",
         json={
@@ -129,7 +128,6 @@ def tenant_a_id(platform_admin_headers, mongo_db):
     else:
         pytest.fail(f"Tenant A creation failed: {resp.text}")
 
-    # Get tenant_id from admin API
     tenants_resp = requests.get(f"{BASE_URL}/api/admin/tenants", headers=platform_admin_headers)
     assert tenants_resp.status_code == 200
     tenants = tenants_resp.json()["tenants"]
@@ -137,14 +135,25 @@ def tenant_a_id(platform_admin_headers, mongo_db):
     assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
     tenant_id = tenant["id"]
 
-    yield tenant_id
-    # Cleanup Tenant A data
+    yield {"id": tenant_id, "code": partner_code}
     _cleanup_tenant(mongo_db, tenant_id, partner_code)
 
 
 @pytest.fixture(scope="module")
-def tenant_b_id(platform_admin_headers, mongo_db):
-    """Create Tenant B via register-partner and return its ID."""
+def tenant_a_id(tenant_a_info):
+    """Tenant A's ID."""
+    return tenant_a_info["id"]
+
+
+@pytest.fixture(scope="module")
+def tenant_a_code(tenant_a_info):
+    """Tenant A's partner code (may differ from TENANT_A_CODE if re-run)."""
+    return tenant_a_info["code"]
+
+
+@pytest.fixture(scope="module")
+def tenant_b_info(platform_admin_headers, mongo_db):
+    """Create Tenant B via register-partner and return dict with id and code."""
     resp = requests.post(
         f"{BASE_URL}/api/auth/register-partner",
         json={
@@ -161,7 +170,6 @@ def tenant_b_id(platform_admin_headers, mongo_db):
     else:
         pytest.fail(f"Tenant B creation failed: {resp.text}")
 
-    # Get tenant_id from admin API
     tenants_resp = requests.get(f"{BASE_URL}/api/admin/tenants", headers=platform_admin_headers)
     assert tenants_resp.status_code == 200
     tenants = tenants_resp.json()["tenants"]
@@ -169,9 +177,20 @@ def tenant_b_id(platform_admin_headers, mongo_db):
     assert tenant is not None, f"Tenant B not found by code '{partner_code}'"
     tenant_id = tenant["id"]
 
-    yield tenant_id
-    # Cleanup Tenant B data
+    yield {"id": tenant_id, "code": partner_code}
     _cleanup_tenant(mongo_db, tenant_id, partner_code)
+
+
+@pytest.fixture(scope="module")
+def tenant_b_id(tenant_b_info):
+    """Tenant B's ID."""
+    return tenant_b_info["id"]
+
+
+@pytest.fixture(scope="module")
+def tenant_b_code(tenant_b_info):
+    """Tenant B's partner code."""
+    return tenant_b_info["code"]
 
 
 @pytest.fixture(scope="module")
