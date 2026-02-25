@@ -181,10 +181,10 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
     onChange(n);
   };
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="tier-editor">
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Pricing tiers</span>
-        <button type="button" onClick={addTier}
+        <button type="button" onClick={addTier} data-testid="tier-add-btn"
           className="flex items-center gap-1 text-xs text-[#1e40af] hover:text-blue-700 font-medium transition-colors">
           <Plus size={11} /> Add tier
         </button>
@@ -198,7 +198,7 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
             <span>From</span><span>To (blank=∞)</span><span>£/unit</span><span></span>
           </div>
           {tiers.map((tier, i) => (
-            <div key={i} className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 items-center">
+            <div key={i} className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 items-center" data-testid="tier-row">
               <Input type="number" value={tier.from ?? 0}
                 onChange={e => updateTier(i, "from", parseFloat(e.target.value) || 0)}
                 className="h-8 text-xs font-mono" placeholder="0" />
