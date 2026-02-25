@@ -226,6 +226,11 @@ export function ProductForm({
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [visSearch, setVisSearch] = useState("");
+  const [localVisMode, setLocalVisMode] = useState<"all" | "restricted" | "show_to_specific">(() => {
+    if (form.visible_to_customers.length > 0) return "show_to_specific";
+    if (form.restricted_to.length > 0) return "restricted";
+    return "all";
+  });
   const [pricingRulesText, setPricingRulesText] = useState(() => {
     const r = form.pricing_rules;
     return r && Object.keys(r).length > 0 ? JSON.stringify(r, null, 2) : "";
@@ -248,20 +253,16 @@ export function ProductForm({
     }
   };
 
-  // Derive visibility mode from form data
-  const visMode = form.visible_to_customers.length > 0
-    ? "show_to_specific"
-    : form.restricted_to.length > 0
-      ? "restricted"
-      : "all";
+  const visMode = localVisMode;
 
   const setVisMode = (mode: "all" | "restricted" | "show_to_specific") => {
+    setLocalVisMode(mode);
     if (mode === "all") {
       setForm({ ...form, visible_to_customers: [], restricted_to: [] });
     } else if (mode === "restricted") {
-      setForm({ ...form, visible_to_customers: [], restricted_to: form.restricted_to });
+      setForm({ ...form, visible_to_customers: [], restricted_to: [] });
     } else {
-      setForm({ ...form, restricted_to: [], visible_to_customers: form.visible_to_customers });
+      setForm({ ...form, restricted_to: [], visible_to_customers: [] });
     }
   };
 
