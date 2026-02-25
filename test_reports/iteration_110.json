@@ -1,0 +1,103 @@
+{
+  "summary": "Frontend testing of Platform Admin refactor features: Articles→Resources rename, Partner column in admin tables, sidebar reordering, multi-tenant data visibility, and ResourceView fix. Found and fixed 4 critical bugs: (1) NameError _DT in resources.py, (2) get_article_by_id missing All-Tenants support for platform admin, (3) platform admin user had role='custom' instead of 'platform_admin' breaking ALL platform features, (4) Quick Setup widget still said 'Articles'. All 10 features confirmed working after fixes.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/resources/{id}",
+        "issue": "NameError: name '_DT' is not defined (line 206 of resources.py). Was calling `tid = user.get('tenant_id') or _DT` where _DT was undefined. Fixed to DEFAULT_TENANT_ID.",
+        "priority": "CRITICAL",
+        "fix_applied": "Changed _DT to DEFAULT_TENANT_ID in resources.py line 206. FIXED."
+      },
+      {
+        "endpoint": "GET /api/resources/{id}",
+        "issue": "Platform admin with 'All Tenants' view (no X-View-As-Tenant header) got 404 because endpoint still filtered by tenant_id. When platform admin views All Tenants, tid should be None to search across all tenants.",
+        "priority": "CRITICAL",
+        "fix_applied": "Replaced conditional logic so is_platform_admin with no x_view_as_tenant sets tid=None (no filter). FIXED."
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "SetupChecklistWidget",
+        "issue": "Quick Setup widget still said 'Create an article / Articles > Write guide' (incomplete Articles→Resources rename)",
+        "selector": "text=Create an article",
+        "priority": "LOW",
+        "fix_applied": "Updated to 'Create a resource / Resources > Write guide' in SetupChecklistWidget.tsx. FIXED."
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Public Resources Page hero",
+        "issues": ["Hero title was 'Articles & Guides' stored in DB website_settings. Code defaults correctly to 'Resources & Guides' but DB had old value. Updated DB value to 'Resources & Guides'. FIXED."]
+      }
+    ]
+  },
+  "data_bugs": [
+    {
+      "issue": "admin@automateaccounts.local had role='custom' in DB instead of role='platform_admin'. This broke ALL platform admin features: no Partner columns, no 'All Tenants' switcher, no multi-tenant data visibility, Partner Orgs section missing from sidebar.",
+      "fix_applied": "Updated user role to 'platform_admin' in MongoDB. FIXED.",
+      "root_cause": "User was seeded/created with role='custom' via some path that didn't set the correct PLATFORM_ROLE. The no-partner-code login in auth.py allows any is_admin=True user but only role='platform_admin' users get platform features."
+    }
+  ],
+  "test_results": {
+    "1_platform_admin_login": "PASS - Login with automate-accounts partner code + email/password works. 403 on /api/auth/partner-login is expected (fallback to /auth/login without partner_code is working by design).",
+    "2_sidebar_partner_orgs_before_users": "PASS - 'Partner Orgs' at idx=0, 'Users' at idx=1 in sidebar",
+    "3_customers_tab_partner_column": "PASS - Partner column visible for platform_admin role. 1 customer shown from automate-accounts tenant.",
+    "4_users_tab_partner_column": "PASS - Partner column visible, 20+ users, partner_codes: {—, automate-accounts, test-iter109-a, test-iter109-b}",
+    "5_products_tab_partner_column": "PASS - Partner column visible, 46 products (all automate-accounts)",
+    "6_resources_tab_subtabs": "PASS - All 5 sub-tabs present: Resources, Templates, Email Templates, Categories, Override Codes",
+    "7_create_customer_empty_country": "PASS - Country field shows 'Select country…' placeholder (empty, not GB)",
+    "8_resources_public_page": "PASS - /resources page loads without errors, shows resources grid",
+    "9_resource_view_page": "PASS - /resources/:id loads 'Welcome to Your Knowledge Base' after backend fix",
+    "10_multi_tenant_data": "PASS - Admin Resources shows data from test-iter109-a, test-iter109-b, and automate-accounts tenants"
+  },
+  "test_report_links": [
+    "/app/test_reports/iter110_admin_fresh.jpeg",
+    "/app/test_reports/iter110_users_products_test.jpeg",
+    "/app/test_reports/iter110_resources_admin_test.jpeg",
+    "/app/test_reports/iter110_create_customer_fresh.jpeg",
+    "/app/test_reports/iter110_resource_view_final.jpeg"
+  ],
+  "updated_files": [
+    "/app/backend/routes/resources.py (line 206: _DT → DEFAULT_TENANT_ID)",
+    "/app/backend/routes/resources.py (get_article_by_id: All-Tenants platform admin support)",
+    "/app/frontend/src/components/admin/SetupChecklistWidget.tsx (Articles → Resources rename)",
+    "MongoDB test_database.users (admin@automateaccounts.local role: custom → platform_admin)",
+    "MongoDB test_database.website_settings (articles_hero_title: Articles & Guides → Resources & Guides)"
+  ],
+  "action_items": [
+    "INFO: The 403 on /api/auth/partner-login during platform admin login is EXPECTED by design (the AuthContext tries partner-login first for automate-accounts, gets blocked, then falls back to /auth/login). No action needed.",
+    "INFO: Resource view content still says 'Admin > Articles panel' in the article body text - this is user-generated content, not UI code.",
+    "RECOMMEND: Review how new platform admin users are seeded/created to ensure they always get role='platform_admin' not role='custom' or other roles."
+  ],
+  "critical_code_review_comments": [
+    "resources.py line 237 (previously 206): Using DEFAULT_TENANT_ID for tenant filtering in get_article_by_id is now correct. Platform admin All-Tenants view properly searches across all tenants.",
+    "AUTH DESIGN NOTE: The /auth/login endpoint allows any is_admin=True user without partner_code (not just platform_admin). Combined with is_platform_admin() check requiring role='platform_admin', there's a gap: is_admin=True users with role='custom' can log in to admin but don't get platform admin features. Consider adding explicit PLATFORM_ROLE check in the no-partner-code login path OR ensure admin user creation always sets correct role.",
+    "TENANT ISOLATION: get_article_by_id now correctly passes None as tid for platform admin All-Tenants view. Same pattern should be verified for other single-resource endpoints (GET /api/products/{id}, etc.) to ensure consistent behavior."
+  ],
+  "success_rate": {
+    "backend": "100% (after fixes)",
+    "frontend": "100% (all 10 features working after data fix)"
+  },
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Platform admin is admin@automateaccounts.local / ChangeMe123! - logs in via automate-accounts partner code. DB role was fixed to 'platform_admin'. All admin tabs show Partner column for platform admin. ResourceView 500 error was fixed (_DT NameError). All tenant data visible in Resources (25), Users (24+), Products (46). Test tenants test-iter109-a and test-iter109-b still have data. Previous test: iteration_109.json (users/permissions). Next focus areas: OrdersTab/SubscriptionsTab Partner column, testing with tenant-scoped X-View-As-Tenant header, verifying tenant isolation for non-platform admins.",
+  "rca_of_issues": {
+    "platform_admin_role_bug": {
+      "root_cause": "The admin@automateaccounts.local user was created/seeded with role='custom' instead of role='platform_admin'. The PLATFORM_ROLE constant is 'platform_admin'. is_platform_admin() checks role==PLATFORM_ROLE. With role='custom', all platform admin checks fail silently - the user can still access the admin panel (via is_admin=True) but sees no Partner columns, no All Tenants switcher, and gets tenant-filtered data instead of all-tenant data.",
+      "fix": "Updated DB: db.users.update_one({'email': 'admin@automateaccounts.local'}, {'$set': {'role': 'platform_admin'}})",
+      "prevention": "Add validation in admin user seeding/creation to ensure platform admin accounts always use PLATFORM_ROLE constant"
+    },
+    "_DT_nameerror": {
+      "root_cause": "resources.py get_article_by_id referenced undefined variable '_DT' (should be DEFAULT_TENANT_ID). Likely introduced during refactoring when a local alias was removed but the reference wasn't updated.",
+      "fix": "resources.py: tid = user.get('tenant_id') or DEFAULT_TENANT_ID"
+    },
+    "all_tenants_resource_view": {
+      "root_cause": "get_article_by_id always set tid=DEFAULT_TENANT_ID for platform admin with no X-View-As-Tenant header, then queried {'tenant_id': 'automate-accounts', ...}. Resources belong to UUID-based tenant_ids. Since no resource has tenant_id='automate-accounts', all resource views returned 404.",
+      "fix": "Platform admin with no x_view_as_tenant header: tid=None (no tenant filter), allowing cross-tenant resource retrieval."
+    }
+  }
+}
