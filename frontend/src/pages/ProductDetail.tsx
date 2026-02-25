@@ -130,8 +130,8 @@ export default function ProductDetail() {
     if (!enabledIntakeQuestions.length) return;
     const defaults: Record<string, any> = {};
     for (const q of enabledIntakeQuestions) {
-      if (q.qtype === "multiselect") defaults[q.key] = [];
-      else if (q.qtype === "dropdown") defaults[q.key] = q.options?.[0]?.value || "";
+      if (q.type === "multiselect") defaults[q.key] = [];
+      else if (q.type === "dropdown") defaults[q.key] = q.options?.[0]?.value || "";
       else defaults[q.key] = "";
     }
     setIntakeAnswers(defaults);
