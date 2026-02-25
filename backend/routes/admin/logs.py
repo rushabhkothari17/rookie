@@ -50,6 +50,7 @@ async def list_audit_logs(
     )
 
     total, (records, next_cursor) = await _parallel_query(common, page, per_page, cursor, get_tenant_filter(admin))
+    records = await enrich_partner_codes(records, is_platform_admin(admin))
 
     return {
         "logs": records,
