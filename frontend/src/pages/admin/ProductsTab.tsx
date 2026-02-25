@@ -187,6 +187,7 @@ export function ProductsTab() {
                           {product.is_active ? "Active" : "Inactive"}
                         </span>
                       </TableCell>
+                      {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-product-partner-${product.id}`}>{product.partner_code || "—"}</TableCell>}
                       <TableCell>
                         <div className="flex gap-2 items-center">
                           <Button variant="outline" size="sm" onClick={() => openEdit(product)} className="gap-1" data-testid={`admin-edit-${product.id}`}>
