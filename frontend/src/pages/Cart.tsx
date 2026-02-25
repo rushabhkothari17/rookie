@@ -433,15 +433,15 @@ export default function Cart() {
           <div className="space-y-6">
             {/* Cart Items */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-              <div className="p-4 border-b" style={{ backgroundColor: ws.primary_color ? `${ws.primary_color}10` : '#f8fafc', borderColor: ws.primary_color ? `${ws.primary_color}20` : '#e2e8f0' }}>
-                <h2 className="font-semibold" style={{ color: ws.primary_color || '#1e293b' }}>Cart Items</h2>
+              <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                <h2 className="font-semibold text-slate-900">Cart Items</h2>
               </div>
               <div className="divide-y divide-slate-100">
                 {[...grouped.oneTime, ...grouped.subscriptions].map((item: any) => (
-                  <div key={item.product.id} className="p-4 hover:bg-slate-50 transition-colors" data-testid={`cart-item-${item.product.id}`}>
+                  <div key={item.product.id} className="p-4 hover:bg-slate-50/50 transition-colors" data-testid={`cart-item-${item.product.id}`}>
                     <div className="flex gap-4">
                       {item.product.image_url && (
-                        <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                        <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 shadow-sm">
                           <img src={item.product.image_url} alt="" className="w-full h-full object-cover" />
                         </div>
                       )}
@@ -451,7 +451,7 @@ export default function Cart() {
                             <h3 className="font-medium text-slate-900" data-testid={`cart-item-name-${item.product.id}`}>{item.product.name}</h3>
                             {item.product.tagline && <p className="text-sm text-slate-500 mt-0.5">{item.product.tagline}</p>}
                             {item.product.is_subscription && (
-                              <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                              <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 15%, transparent)", color: "var(--aa-accent)" }}>
                                 <Clock size={12} /> Subscription
                               </span>
                             )}
