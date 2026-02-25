@@ -1,57 +1,263 @@
 <analysis>**original_problem_statement:**
-The user's latest request is to fix the pricing display on product cards and detail pages. Specifically, products with complex pricing (tiered, calculator, scope_request) are not showing any price, even a starting price. The user wants a Starts from price to be displayed for these products, and only products with a /bin/bash price should show Contact Us.
+The user initially requested a fix for the pricing display on product cards, asking for a Starts from price for products with complex pricing.
 
-This request follows a series of recently completed major feature implementations and bug fixes, including:
-1.  Fixing email delivery for signups by making the  dynamic.
-2.  Overhauling the product visibility logic to fix a bug where restricting a product to one customer hid it from all users, including admins.
-3.  Adding a new show to specific customer visibility option.
-4.  Improving the UI for the signup form.
-5.  Adding pricing to product cards on the catalog page.
+This request then escalated significantly. After the agent implemented an initial fix, the user pointed out several logical flaws and requested a comprehensive audit and refactoring of the entire codebase. The new requirements are:
+1.  **Remove all dead code:** Identify and delete all database fields and associated backend/frontend code that are unused or not configurable through the UI. The user explicitly listed , , , , , , , , , , and .
+2.  **Make all pricing configurable:** All pricing logic must be driven by data configured in the admin panel (Catalog page), not hardcoded in the backend () or frontend components.
+3.  **Delete hardcoded products:** The Migrate to Zoho Books product (), which had extensive hardcoded logic, must be deleted from the database and all related code removed.
+4.  **Add missing fields to UI:** New UI controls should be added to the admin  for fields like , , , , and .
+5.  **Fix Pricing Logic:** The price displayed should be the cheapest possible option available to the user. A product should only show Price on request (or Contact Us) if the  is zero AND there are no pricing intake questions or variants that define a price.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack React and FastAPI platform. The agent has just completed a major set of features and bug fixes:
--   **Comprehensive Audit Logging:** Implemented audit logs for all 57 previously identified API endpoints and added frontend pagination for all audit log views using a new reusable  component.
--   **Email Service Fix:** Corrected the logic to dynamically fetch the  address based on the tenant, fixing signup email delivery.
--   **Product Catalog & Visibility Overhaul:**
-    -   Fixed a bug where restricting a product to one customer hid it from everyone.
-    -   Implemented a new show to specific customer visibility mode.
-    -   Updated the product creation/edit form with a new UI for the three visibility modes.
--   **UI Enhancements:**
-    -   Redesigned the signup page with a modern, split-panel layout.
-    -   Added pricing information to product cards on the main store page.
+The agent has performed a massive, codebase-wide refactoring to meet the user's request.
+-   **Backend:** Numerous dead fields have been removed from the Pydantic models (). The API endpoints for creating/updating products () have been updated. The pricing calculator in  has been rewritten to be data-driven, using a new structure in the  field. The hardcoded books migration logic has been removed. The database seed script () has been updated.
+-   **Frontend:** The hardcoded  has been deleted, and all special-case logic for it has been removed from . The admin product form () has been heavily modified to include new UI fields and complex, conditional editors for  (tiered variants vs. calculator price inputs).
 
-All of the above work was successfully tested by the testing subagent.
+However, these extensive changes have introduced a compile-time error in the frontend, and the application is currently broken.
 
 **Last working item**:
-    - Last item agent was working: The agent was investigating why products with complex pricing types (e.g., , , ) do not display a Starts from price. It confirmed this is because their  is  in the database. The agent identified the relevant frontend components ( and ) that need modification to handle this case.
-    - Status: IN PROGRESS
+    - Last item agent was working: The agent was attempting to resolve a TypeScript compilation error in . After several failed attempts assuming it was a caching issue, the agent finally identified the specific error in the logs but did not get to fix it.
+    - Status: BLOCKED
     - Agent Testing Done: N
     - Which testing method agent to use? both
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Products with complex pricing (tiered, calculator, scope_request) don't show a starting price. (P0)
+  - Issue 1: Frontend fails to compile due to a TypeScript error in . (P0 - CRITICAL BLOCKER)
 
   Issues Detail:
   - Issue 1: 
-     - **Description**: The user wants products that have variable pricing to display a Starts from price on both the catalog page () and the product detail page (). Currently, they show no price at all. Only products explicitly priced at /bin/bash should show Contact Us.
-     - **Attempted fixes**: None. The agent was in the investigation phase and has identified the root cause ( is ) and the files needing changes.
+     - **Description**: The application is not running because the frontend code fails to compile. The logs indicate a type error.
+     - **Attempted fixes**: The agent incorrectly assumed the issue was a stale webpack cache and tried clearing it and making trivial file changes. This did not work. The agent finally located the error in the logs.
      - **Next debug checklist**: 
-       1.  Update the backend in  ( and  endpoints) to calculate a  for complex products (e.g., from the first pricing tier) and include it in the response.
-       2.  Modify the frontend components ( and ) to display the price based on this priority:  > . If  is used, it should be prefixed with Starts from. The Contact Us message should only appear if the price is explicitly .
-     - **Why fix this issue and what will be achieved with the fix?**: This will improve user experience and sales conversion by providing clear pricing information for all products, even those with variable rates.
+       1. Examine the frontend logs (==> /var/log/supervisor/frontend.err.log <==
+    580 |                   fee: 0,
+  > 581 |                   total: migBooksData.price,
+        |                          ^^^^^^^^^^^^
+    582 |                 }}
+    583 |                 cta={ctaConfig}
+    584 |                 currency={customer?.currency}
+
+ERROR in src/pages/ProductDetail.tsx:579:29
+TS2304: Cannot find name 'migBooksData'.
+    577 |               <StickyPurchaseSummary
+    578 |                 pricing={{
+  > 579 |                   subtotal: migBooksData.price,
+        |                             ^^^^^^^^^^^^
+    580 |                   fee: 0,
+    581 |                   total: migBooksData.price,
+    582 |                 }}
+
+ERROR in src/pages/ProductDetail.tsx:581:26
+TS2304: Cannot find name 'migBooksData'.
+    579 |                   subtotal: migBooksData.price,
+    580 |                   fee: 0,
+  > 581 |                   total: migBooksData.price,
+        |                          ^^^^^^^^^^^^
+    582 |                 }}
+    583 |                 cta={ctaConfig}
+    584 |                 currency={customer?.currency}
+
+ERROR in src/pages/admin/ProductsTab.tsx:27:3
+TS2740: Type '{ name: any; short_description: any; description_long: any; bullets: string[]; tag: any; category: any; faqs: any; terms_id: any; base_price: any; is_subscription: any; stripe_price_id: any; price_rounding: any; ... 5 more ...; pricing_rules: any; }' is missing the following properties from type 'ProductFormData': tagline, card_title, card_tag, card_description, and 2 more.
+    25 |   }
+    26 |
+  > 27 |   return {
+       |   ^^^^^^
+    28 |     name: p.name || "",
+    29 |     short_description: p.short_description || p.tagline || "",
+    30 |     description_long: p.description_long || "",
+
+ERROR in src/pages/admin/ProductsTab.tsx:27:3
+TS2740: Type '{ name: any; short_description: any; description_long: any; bullets: string[]; tag: any; category: any; faqs: any; terms_id: any; base_price: any; is_subscription: any; stripe_price_id: any; price_rounding: any; ... 5 more ...; pricing_rules: any; }' is missing the following properties from type 'ProductFormData': tagline, card_title, card_tag, card_description, and 2 more.
+    25 |   }
+    26 |
+  > 27 |   return {
+       |   ^^^^^^
+    28 |     name: p.name || "",
+    29 |     short_description: p.short_description || p.tagline || "",
+    30 |     description_long: p.description_long || "",
+
+ERROR in src/pages/admin/ProductForm.tsx:441:14
+TS2304: Cannot find name 'VariantEditor'.
+    439 |           {/* Tiered: variant editor */}
+    440 |           {form.pricing_type === "tiered" && (
+  > 441 |             <VariantEditor
+        |              ^^^^^^^^^^^^^
+    442 |               variants={(form.pricing_rules?.variants || [])}
+    443 |               onChange={variants => setForm({ ...form, pricing_rules: { ...form.pricing_rules, variants } })}
+    444 |             />
+
+ERROR in src/pages/admin/ProductForm.tsx:449:14
+TS2304: Cannot find name 'PriceInputsEditor'.
+    447 |           {/* Calculator: price inputs editor */}
+    448 |           {form.pricing_type === "calculator" && (
+  > 449 |             <PriceInputsEditor
+        |              ^^^^^^^^^^^^^^^^^
+    450 |               inputs={(form.pricing_rules?.price_inputs || [])}
+    451 |               onChange={price_inputs => setForm({ ...form, pricing_rules: { ...form.pricing_rules, price_inputs } })}
+    452 |             />
+
+ERROR in src/pages/admin/ProductsTab.tsx:27:3
+TS2740: Type '{ name: any; short_description: any; description_long: any; bullets: string[]; tag: any; category: any; faqs: any; terms_id: any; base_price: any; is_subscription: any; stripe_price_id: any; price_rounding: any; ... 5 more ...; pricing_rules: any; }' is missing the following properties from type 'ProductFormData': tagline, card_title, card_tag, card_description, and 2 more.
+    25 |   }
+    26 |
+  > 27 |   return {
+       |   ^^^^^^
+    28 |     name: p.name || "",
+    29 |     short_description: p.short_description || p.tagline || "",
+    30 |     description_long: p.description_long || "",
+
+ERROR in src/pages/admin/ProductsTab.tsx:27:3
+TS2740: Type '{ name: any; short_description: any; description_long: any; bullets: string[]; tag: any; category: any; faqs: any; terms_id: any; base_price: any; is_subscription: any; stripe_price_id: any; price_rounding: any; ... 5 more ...; pricing_rules: any; }' is missing the following properties from type 'ProductFormData': tagline, card_title, card_tag, card_description, and 2 more.
+    25 |   }
+    26 |
+  > 27 |   return {
+       |   ^^^^^^
+    28 |     name: p.name || "",
+    29 |     short_description: p.short_description || p.tagline || "",
+    30 |     description_long: p.description_long || "",
+
+ERROR in src/pages/admin/ProductsTab.tsx:157:9
+TS1117: An object literal cannot have multiple properties with the same name.
+    155 |         intake_schema_json: form.intake_schema_json,
+    156 |         custom_sections: form.custom_sections,
+  > 157 |         tagline: form.short_description,
+        |         ^^^^^^^
+    158 |         pricing_rules: form.pricing_rules || editProduct?.pricing_rules || {},
+    159 |       };
+    160 |       if (editProduct) {
+
+(node:5222) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:5222) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+
+==> /var/log/supervisor/frontend.out.log <==
+  Line 67:6:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/CategoriesTab.tsx
+  Line 52:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/CustomersTab.tsx
+  Line 100:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/LogsTab.tsx
+  Line 113:55:  React Hook useEffect has missing dependencies: 'load' and 'perPage'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/OrdersTab.tsx
+  Line 137:6:   React Hook useCallback has a missing dependency: 'userMap'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 154:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array       react-hooks/exhaustive-deps
+
+src/pages/admin/OverrideCodesTab.tsx
+  Line 75:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/PromoCodesTab.tsx
+  Line 64:6:   React Hook useCallback has a missing dependency: 'products'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 66:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+
+src/pages/admin/QuoteRequestsTab.tsx
+  Line 81:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/SubscriptionsTab.tsx
+  Line 141:6:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/TermsTab.tsx
+  Line 61:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/UsersTab.tsx
+  Line 80:56:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/components/admin/ImportModal.tsx
+  Line 81:6:  React Hook useCallback has a missing dependency: 'handleFile'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Cart.tsx
+  Line 152:6:  React Hook useEffect has a missing dependency: 'loadPreview'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 208:6:  React Hook useEffect has a missing dependency: 'loadTerms'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+
+src/pages/CheckoutSuccess.tsx
+  Line 30:6:  React Hook useEffect has a missing dependency: 'pollStatus'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Portal.tsx
+  Line 147:6:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/ProductDetail.tsx
+  Line 252:6:  React Hook useEffect has a missing dependency: 'enabledIntakeQuestions'. Either include it or remove the dependency array                                                                                                                                     react-hooks/exhaustive-deps
+  Line 424:6:  React Hook useMemo has missing dependencies: 'addItem', 'contactEmail', 'handleAddToCart', 'handleScopeRequest', 'inputs', 'intakeAnswers', 'navigate', 'ws.gocardless_enabled', and 'ws.stripe_enabled'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Store.tsx
+  Line 51:6:  React Hook useEffect has a missing dependency: 'searchParams'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/ArticlesTab.tsx
+  Line 174:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/BankTransactionsTab.tsx
+  Line 67:6:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/CategoriesTab.tsx
+  Line 52:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/CustomersTab.tsx
+  Line 100:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/LogsTab.tsx
+  Line 113:55:  React Hook useEffect has missing dependencies: 'load' and 'perPage'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/OrdersTab.tsx
+  Line 137:6:   React Hook useCallback has a missing dependency: 'userMap'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 154:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array       react-hooks/exhaustive-deps
+
+src/pages/admin/OverrideCodesTab.tsx
+  Line 75:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/PromoCodesTab.tsx
+  Line 64:6:   React Hook useCallback has a missing dependency: 'products'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  Line 66:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+
+src/pages/admin/QuoteRequestsTab.tsx
+  Line 81:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/SubscriptionsTab.tsx
+  Line 141:6:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/TermsTab.tsx
+  Line 61:33:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/admin/UsersTab.tsx
+  Line 80:56:  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+No issues found.
+yarn run v1.22.22
+$ craco start) to confirm the error message.
+       2. The error is likely  in  related to the new  or  components, where the  is not correctly narrowing the type for the conditional rendering.
+       3. View .
+       4. Fix the type error. This may involve adding a type assertion or restructuring the conditional logic to help the TypeScript compiler understand the types.
+     - **Why fix this issue and what will be achieved with the fix?**: This is a hard blocker. Fixing it will allow the application to compile, making it possible to test the massive refactoring that was just performed.
      - **Status**:  IN PROGRESS
      - **Is recurring issue?** N
      - **Should Test frontend/backend/both after fix?**: both
-     - **Blocked on other issue**: None.
+     - **Blocked on other issue**: None. This is the blocker.
 
 **In progress Task List**:
-- There are no other in-progress tasks.
+  - Task 1: Complete and verify the comprehensive codebase refactoring. (P1)
+
+ Task Detail:
+  - Task 1: 
+     - **Where to resume**: The backend changes are mostly implemented, and the frontend UI has been added but is causing a compile error. Once the compile error (Issue 1) is fixed, the entire feature needs to be tested from end to end.
+     - **What will be achieved with this?**: The codebase will be cleaner, free of dead code, and all product pricing will be fully configurable from the admin panel, as requested by the user.
+     - **Status**:  BLOCKED
+     - **Should Test frontend/backend/both after fix?**: both
+     - **Blocked on something**: Issue 1: Frontend fails to compile.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks (P1):**
+    *   Fix the pricing logic on  to align with the user's latest rule: show the cheapest possible price, and only show Contact Us if no price can be determined.
     *   Complete the centralization of EMAIL integration settings.
     *   Implement Coming Soon integrations: Build credential forms and validation for Gmail, Microsoft Outlook, HubSpot, Salesforce, and QuickBooks.
 *   **Future Tasks (P2):**
@@ -60,18 +266,21 @@ All of the above work was successfully tested by the testing subagent.
     *   Verify non-admin users cannot see the Edit Article button on public articles.
 
 **Completed work in this session**
-- **Comprehensive Audit Logging & Pagination (DONE):** Added logging to all backend routes and implemented paginated log views on the frontend.
-- **Email Delivery Fix (DONE):** Fixed signup email verification by ensuring  is dynamically selected based on the tenant.
-- **Product Catalog & Visibility Overhaul (DONE):**
-    - Fixed a major visibility bug and implemented a new show to specific customer mode.
-    - Revamped the admin UI in  to manage the three visibility modes.
-- **UI/UX Redesign (DONE):**
-    - Redesigned the  page with a modern layout.
-    - Added initial price display to .
-- **Testing (DONE):** All the above changes were successfully validated by the testing agent, which also applied a critical fix to the  model.
+- **Codebase Audit (DONE):** Identified numerous dead/un-editable fields in the  model.
+- **Backend Refactoring (DONE, UNTESTED):**
+  - Removed ~12 dead fields from .
+  - Updated  create/update endpoints to handle the new model shape.
+  - Rewrote  to use a data-driven calculator and removed hardcoded  logic.
+  - Rewrote  to match the new schema.
+- **Database Cleanup (DONE):** Deleted the  product from the database.
+- **Frontend Refactoring (IN PROGRESS, BROKEN):**
+  - Deleted .
+  - Removed all special-casing for  from .
+  - Added new fields (, , etc.) to the UI in .
+  - Added a dynamic  selector and conditional  and  components to .
 
 **Earlier issues found/mentioned but not fixed**
-   - None.
+   - **Issue 1:** The Edit Article button is sometimes visible to non-admin users on public articles. This is a recurring issue from a previous fork and has not been addressed.
 
 **Known issue recurrence from previous fork**
   - **Issue recurrence in previous fork:** Edit Article button is sometimes visible to non-admin users on public articles.
@@ -82,61 +291,77 @@ All of the above work was successfully tested by the testing subagent.
 
 
 **Key Technical Concepts**
-- **Dynamic Pricing Display:** The current task requires fetching or calculating a starting from price on the backend for products with complex pricing models and displaying it conditionally on the frontend.
-- **Conditional Rendering (React):** The frontend will need to use conditional logic to display the base price, the starting price, or a Contact Us message based on the data received from the API.
-- **API Data Enrichment:** The backend will need to enrich the product data model to include a  for complex products where applicable.
+- **Data-Driven Configuration:** The core change was moving from hardcoded logic (e.g., ) to a generic, data-driven system where the structure of pricing forms and calculations is defined in the product's  JSON field, which is editable in the admin UI.
+- **Conditional Rendering (React):** The  now uses  to conditionally render different UI components ( vs. ), which is the source of the current compilation error.
+- **Dynamic Pydantic Models:** The backend now relies heavily on flexible Pydantic models to handle the dynamic structure of .
 
 **key DB schema**
-- **products**:  (The  field was logically added to the application's data models).
+- **products**: The schema was heavily modified.
+    - **Removed:** , , , , , , , , , , .
+    - **Added:** , , , , .
+    - **Modified:**  is now a more structured list of objects defining the intake form for calculator-based pricing.
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
-*   **Files for current task:**
+*   **Files with current issue:**
+    *    (Contains compile-time error)
+*   **Recently modified files (Part of the refactor):**
     *   
     *   
     *   
-*   **Recently created/modified files:**
-    *   All files in  (for audit logging)
-    *    (New)
-    *    (Heavily modified)
-    *    (Rewritten)
-    *    (Modified)
-    *    (Modified by testing agent)
+    *   
+    *   
+    *   
+    *   
+*   **Deleted Files:**
+    *   
+
+**Areas that need refactoring**:
+- : Needs an immediate fix to resolve the TypeScript error.
+- The entire data-driven pricing feature, once compiling, requires thorough end-to-end testing and likely has bugs given the scale of the changes.
+
+**key api endpoints**
+- : The handler for this endpoint in  was significantly updated to process the new product model and  structure.
 
 **Critical Info for New Agent**
-1.  **Primary Task:** The immediate priority is to fix the pricing display. For products with a  of , , or , a Starts from price needs to be calculated on the backend and displayed on the frontend.
-2.  **Implementation Strategy:**
-    *   **Backend:** Update the  and  endpoints in  to calculate and return a  for complex products. This may involve inspecting the  field.
-    *   **Frontend:** Update  and  to conditionally render the price. The logic should be: display  if available, otherwise display Starts from . Only show Contact Us if the price is explicitly zero.
-3.  **Context:** The user has just approved a large batch of work. This pricing issue is a final refinement based on their review of those changes.
+1.  **THE APP IS BROKEN.** Your absolute first priority is to fix the frontend compilation error. Do not try to do anything else. The error is in . Check the frontend logs to get the exact error message and line number.
+2.  **The Task is HUGE and UNTESTED.** The previous agent undertook a massive refactoring of backend models, services, and frontend forms. Once the app compiles, you must assume nothing works. A full regression test of creating, editing, and viewing products of all pricing types (, , ) is mandatory.
+3.  **Pricing Logic Re-evaluation:** The user's last message clarified the pricing display rule: show the cheapest option to checkout. The logic in  and  needs to be updated to reflect this. The previous Price on request logic for  products was incorrect and needs to be reverted/fixed.
+4.  **Data-Driven is Key:** The user's core demand is that the system be configurable from the admin panel. The new  editor in the  is the centerpiece of this. You must verify it correctly saves and that the  on the backend correctly interprets this data.
 
 **documents and test reports created in this job**
-- 
+-  (Updated, but may need another update after the refactor is verified)
 - 
 - 
 
-**Last 10 User Messages and any pending HUMAN messages** 
-1.  **User:** Requested a large batch of features/fixes including email delivery, product visibility logic, a new visibility option, signup UI redesign, and pricing on product cards. (Status: **RESOLVED**)
-2.  **User:** Clarified the restrict to vs. show to visibility logic. (Status: **RESOLVED**)
-3.  **User:** Pointed out that products with complex pricing (e.g., tiered) still don't show a price and requested a Starts from price be displayed. (Status: **IN PROGRESS** - This is the current active task).
+**Last 10 User Messages and any pending HUMAN messages**
+- **User:** Approved initial pricing fix but then pointed out logical flaws where products with  were incorrectly showing Price on request even when a starting price could be calculated.
+- **User:** Asked if any parts of a specific product page were hardcoded.
+- **User:** Confirmed that several values were hardcoded and requested a massive refactoring:
+    - Delete a list of 12+ specific dead fields/properties from the codebase.
+    - Delete the entire Migrate to Zoho Books product and its hardcoded logic.
+    - Make the entire pricing calculator system data-driven and configurable via the admin UI.
+    - Add missing UI fields for , , etc.
+    - Stated that  must be configurable from the frontend.
+- **User:** Clarified the desired pricing logic: show the cheapest checkout option. Only use Request for Quote if  is 0 AND no price can be determined from variants or intake questions. (Status: **IN PROGRESS**)
 
 **Project Health Check:**
-- **Broken:** Product pricing display is incomplete for products with complex pricing models.
+- **Broken:** The entire frontend is broken and will not compile due to a TypeScript error in .
 - **Mocked:** None.
-- **Needs Improvement:** Pricing display logic on store and product pages.
+- **Needs Improvement:** The entire application state is unknown due to the massive, untested refactoring.
 
 **3rd Party Integrations**
 - **GoCardless:** Payment processing.
 - **Stripe:** Payment processing.
-- **Zoho Mail:** Transactional email provider. Integration was recently fixed.
+- **Zoho Mail:** Transactional email provider.
 
 **Testing status**
-  - **Testing agent used after significant changes:** YES. The last major set of changes was fully validated, and a critical bug was found and fixed by the testing agent.
+  - **Testing agent used after significant changes:** YES, but for a previous version of the code. The current, massively refactored codebase is **completely untested** because it doesn't compile.
   - **Troubleshoot agent used after agent stuck in loop:** NO
   - **Test files created:** []
-  - **Known regressions:** None.
+  - **Known regressions:** Unknown, but highly likely given the scope of changes.
 
 **Credentials to test flow:**
 - **Platform Admin:**  / 
@@ -144,4 +369,4 @@ All of the above work was successfully tested by the testing subagent.
 - **Test User:** 
 
 **What agent forgot to execute**
-The agent's initial implementation of displaying prices on product cards did not account for the edge case of complex pricing models where  is . This was not explicitly part of the original request but is a necessary refinement identified by the user.</analysis>
+The agent failed to correctly diagnose and fix the TypeScript error. It spent multiple turns assuming a cache issue instead of addressing the type error directly, leaving the app in a broken state. The agent did not get a chance to test any of the significant backend and frontend refactoring it completed.</analysis>
