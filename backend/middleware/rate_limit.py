@@ -16,9 +16,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 # (max_requests, window_seconds)  — applied by path prefix (longest match wins)
 RATE_LIMITS: Dict[str, Tuple[int, int]] = {
-    "/api/auth/login":                         (60, 60),    # 60 per minute
-    "/api/auth/partner-login":                 (60, 60),    # 60 per minute
-    "/api/auth/customer-login":                (60, 60),    # 60 per minute
+    "/api/auth/login":                         (10, 60),    # 10 per minute per IP
+    "/api/auth/partner-login":                 (10, 60),    # 10 per minute per IP
+    "/api/auth/customer-login":                (10, 60),    # 10 per minute per IP
     "/api/auth/register-partner":              (20, 60),    # 20 per minute (self-service partner reg)
     "/api/auth/register":                      (5, 60),     # 5 per minute (customer reg)
     "/api/auth/forgot-password":               (20, 300),   # 20 per 5 min
