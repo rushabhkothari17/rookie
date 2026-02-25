@@ -272,8 +272,6 @@ export default function Signup() {
       </div>
     );
   }
-    );
-  }
 
   // Customer signup
   const primaryColor = partnerPrimaryColor || "var(--aa-primary)";
