@@ -17,7 +17,16 @@ from core.helpers import (
 )
 
 
-def calculate_books_migration_price(inputs: Dict[str, Any]) -> Dict[str, Any]:
+def calculate_books_migration_price(inputs: Dict[str, Any], rules: Dict[str, Any] = None) -> Dict[str, Any]:
+    if rules is None:
+        rules = {}
+    base_fee = float(rules.get("base_fee", 999.0))
+    per_year_up_to_5 = float(rules.get("per_year_up_to_5", 350.0))
+    per_year_over_5 = float(rules.get("per_year_over_5", 300.0))
+    premium_multiplier = float(rules.get("premium_multiplier", 1.5))
+    source_multiplier = float(rules.get("source_multiplier", 1.2))
+    standard_sources = set(rules.get("standard_sources", list(STANDARD_MIGRATION_SOURCES)))
+
     years_raw = str(inputs.get("years", "1")).replace("+YTD", "").replace("Y", "").strip()
     try:
         years = max(1, int(years_raw))
@@ -29,31 +38,31 @@ def calculate_books_migration_price(inputs: Dict[str, Any]) -> Dict[str, Any]:
     has_premium = any(d in PREMIUM_MIGRATION_ITEMS for d in data_types)
     source_system = inputs.get("source_system", "quickbooks_online")
 
-    base = 999.0
+    base = base_fee
     if years > 1:
         extra = years - 1
         up_to_5 = min(extra, 4)
         over_5 = max(0, extra - 4)
-        base += up_to_5 * 350.0 + over_5 * 300.0
+        base += up_to_5 * per_year_up_to_5 + over_5 * per_year_over_5
     if has_premium:
-        base *= 1.5
-    if source_system not in STANDARD_MIGRATION_SOURCES:
-        base *= 1.2
+        base *= premium_multiplier
+    if source_system not in standard_sources:
+        base *= source_multiplier
 
     price = round_to_nearest_99(base)
-    line_items = [{"label": f"Migration ({years}Y + YTD)", "amount": 999.0}]
+    line_items = [{"label": f"Migration ({years}Y + YTD)", "amount": base_fee}]
     if years > 1:
         extra = years - 1
         up_to_5 = min(extra, 4)
         over_5 = max(0, extra - 4)
         if up_to_5:
-            line_items.append({"label": f"+{up_to_5} additional year(s) × $350", "amount": up_to_5 * 350.0})
+            line_items.append({"label": f"+{up_to_5} additional year(s) × ${per_year_up_to_5:.0f}", "amount": up_to_5 * per_year_up_to_5})
         if over_5:
-            line_items.append({"label": f"+{over_5} additional year(s) × $300", "amount": over_5 * 300.0})
+            line_items.append({"label": f"+{over_5} additional year(s) × ${per_year_over_5:.0f}", "amount": over_5 * per_year_over_5})
     if has_premium:
-        line_items.append({"label": "Premium features (1.5× multiplier)", "amount": 0})
-    if source_system not in STANDARD_MIGRATION_SOURCES:
-        line_items.append({"label": "Source system complexity (1.2× multiplier)", "amount": 0})
+        line_items.append({"label": f"Premium features ({premium_multiplier}× multiplier)", "amount": 0})
+    if source_system not in standard_sources:
+        line_items.append({"label": f"Source system complexity ({source_multiplier}× multiplier)", "amount": 0})
     return {"subtotal": float(price), "line_items": line_items}
 
 
