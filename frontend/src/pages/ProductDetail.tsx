@@ -280,7 +280,7 @@ export default function ProductDetail() {
 
   const fetchPricing = async (nextInputs: Record<string, any>) => {
     if (!product) return;
-    if (product.pricing_type === "inquiry") return; // inquiry products have no calculator
+    if (product.pricing_type === "enquiry") return; // inquiry products have no calculator
     const response = await api.post("/pricing/calc", {
       product_id: product.id,
       inputs: { ...nextInputs, ...intakeAnswers },
@@ -379,7 +379,7 @@ export default function ProductDetail() {
   };
 
   // isRFQ: product shows "price on request" when pricing returns 0 with no base price
-  const isRFQ = !pricing?.is_scope_request && pricing !== null &&
+  const isRFQ = !pricing?.is_enquiry && pricing !== null &&
     (pricing?.total === 0 || (!product?.base_price && !pricing?.total));
 
   const handleSubmitQuote = async () => {
@@ -434,13 +434,13 @@ export default function ProductDetail() {
     if (product.pricing_type === "external") {
       return { label: "Add to cart", onClick: handleAddToCart };
     }
-    if (product.pricing_type === "inquiry") {
+    if (product.pricing_type === "enquiry") {
       return {
         label: "Contact sales",
         href: `mailto:${contactEmail}`,
       };
     }
-    if (pricing?.is_scope_request || product.pricing_type === "scope_request") {
+    if (pricing?.is_enquiry || product.pricing_type === "enquiry") {
       // If a Scope ID has been validated, switch CTA to Add to cart with the unlocked price
       if (scopeUnlock) {
         return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
@@ -518,7 +518,7 @@ export default function ProductDetail() {
             )}
 
             {/* Scope ID Unlock — for RFQ products AND scope_request products (not MIG-BOOKS or BUILD-FIXED-SCOPE) */}
-            {(isRFQ || pricing?.is_scope_request || product.pricing_type === "scope_request") && product.pricing_type !== "inquiry" && (
+            {(isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry") && product.pricing_type !== "inquiry" && (
               <SectionCard title="Unlock with Scope ID" testId="scope-id-card">
                 <div className="space-y-3">
                   <p className="text-sm text-slate-500">
@@ -620,7 +620,7 @@ export default function ProductDetail() {
                 }}
                 cta={ctaConfig}
                 currency={customer?.currency}
-                isRFQ={isRFQ || !!pricing?.is_scope_request}
+                isRFQ={isRFQ || !!pricing?.is_enquiry}
                 disabled={requiresStripePrice}
                 warning={
                   requiresStripePrice
