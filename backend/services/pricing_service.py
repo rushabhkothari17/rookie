@@ -127,21 +127,44 @@ def calculate_price(
         q_type = q.get("type", "single_line")
         key = q.get("key", "")
 
-        # ── Number question — price_per_unit ──────────────────────────────
+        # ── Number question — flat rate or tiered pricing ────────────────
         if q_type == "number":
-            rate = float(q.get("price_per_unit") or 0.0)
-            if rate == 0:
-                continue
             raw = inputs.get(key)
             if raw is None:
                 continue
             min_v = float(q.get("min", 0))
             max_v = float(q.get("max", 9_999_999))
             val = max(min_v, min(max_v, float(raw or min_v)))
-            amount = round_cents(val * rate)
+
+            pricing_mode = q.get("pricing_mode", "flat")
+            if pricing_mode == "tiered":
+                tiers = q.get("tiers", [])
+                amount = _calculate_tiered_price(val, tiers)
+            else:
+                rate = float(q.get("price_per_unit") or 0.0)
+                if rate == 0:
+                    continue
+                amount = round_cents(val * rate)
+
             if amount > 0:
                 subtotal += amount
                 line_items.append({"label": q.get("label", key), "amount": amount})
+
+        # ── Boolean question — affects_price like a dropdown ──────────────
+        elif q_type == "boolean" and q.get("affects_price"):
+            raw = inputs.get(key)
+            if raw is None:
+                continue
+            # price_for_yes / price_for_no on the question, or options list
+            yes_val = float(q.get("price_for_yes") or 0.0)
+            no_val = float(q.get("price_for_no") or 0.0)
+            pv = yes_val if str(raw).lower() in ("yes", "true", "1") else no_val
+            if pv != 0:
+                subtotal += pv
+                line_items.append({
+                    "label": f"{q.get('label', key)}: {'Yes' if str(raw).lower() in ('yes','true','1') else 'No'}",
+                    "amount": round_cents(pv),
+                })
 
         # ── Dropdown / Multiselect — affects_price ────────────────────────
         elif q_type in ("dropdown", "multiselect") and q.get("affects_price"):
