@@ -63,16 +63,17 @@ const formatPrice = (product: any): { label: string; prefix?: string } => {
 };
 
 export default function OfferingCard({ product }: { product: any }) {
-  const bullets = product.card_bullets || product.bullets || product.bullets_included || [];
+  const bullets = product.card_bullets?.length > 0
+    ? product.card_bullets
+    : product.bullets?.length > 0
+      ? product.bullets
+      : (product.bullets_included || []);
   const description = product.card_description || product.short_description || product.tagline;
-  const priceLabel = formatPrice(product);
+  const priceInfo = formatPrice(product);
+  const isExternal = product.pricing_type === "external";
 
-  return (
-    <Link
-      to={`/product/${product.id}`}
-      className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-200"
-      data-testid={`offering-card-${product.id}`}
-    >
+  const content = (
+    <>
       <div className="flex items-center justify-between">
         <span
           className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
@@ -80,30 +81,21 @@ export default function OfferingCard({ product }: { product: any }) {
         >
           {formatTag(product)}
         </span>
-        <ArrowUpRight
-          className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-600"
-          size={16}
-        />
+        {isExternal
+          ? <ExternalLink className="text-slate-300 group-hover:text-slate-600 transition-colors" size={16} />
+          : <ArrowUpRight className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-600" size={16} />
+        }
       </div>
 
       <div className="mt-4 flex-1">
-        <div
-          className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400"
-          data-testid={`offering-category-${product.id}`}
-        >
+        <div className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400" data-testid={`offering-category-${product.id}`}>
           {displayCategory(product.category)}
         </div>
-        <h3
-          className="mt-2 text-lg font-bold text-slate-900"
-          data-testid={`offering-name-${product.id}`}
-        >
+        <h3 className="mt-2 text-lg font-bold text-slate-900" data-testid={`offering-name-${product.id}`}>
           {product.card_title || product.name}
         </h3>
         {description && (
-          <p
-            className="mt-1 text-sm leading-relaxed text-slate-500"
-            data-testid={`offering-description-${product.id}`}
-          >
+          <p className="mt-1 text-sm leading-relaxed text-slate-500" data-testid={`offering-description-${product.id}`}>
             {description}
           </p>
         )}
@@ -120,23 +112,40 @@ export default function OfferingCard({ product }: { product: any }) {
         </ul>
       )}
 
-      {/* Pricing + CTA row */}
       <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-        {priceLabel ? (
-          <div data-testid={`offering-price-${product.id}`}>
-            <span className="text-lg font-bold text-slate-900">{priceLabel}</span>
-          </div>
-        ) : (
-          <div />
-        )}
-        <div
-          className="flex items-center gap-1.5 text-sm font-semibold text-slate-700"
-          data-testid={`offering-cta-${product.id}`}
-        >
-          View details
-          <ArrowUpRight size={14} />
+        <div data-testid={`offering-price-${product.id}`}>
+          {priceInfo.prefix && <span className="text-xs font-medium text-slate-400 mr-1">{priceInfo.prefix}</span>}
+          <span className="text-lg font-bold text-slate-900">{priceInfo.label}</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700" data-testid={`offering-cta-${product.id}`}>
+          {isExternal ? "Visit site" : "View details"}
+          {isExternal ? <ExternalLink size={14} /> : <ArrowUpRight size={14} />}
         </div>
       </div>
+    </>
+  );
+
+  if (isExternal && product.external_url) {
+    return (
+      <a
+        href={product.external_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-200"
+        data-testid={`offering-card-${product.id}`}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      to={`/product/${product.id}`}
+      className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-200"
+      data-testid={`offering-card-${product.id}`}
+    >
+      {content}
     </Link>
   );
 }
