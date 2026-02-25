@@ -200,6 +200,17 @@ def calculate_price(
         if nearest:
             subtotal = round_nearest(subtotal, nearest)
 
+    # Price floor / ceiling (optional schema-level config)
+    price_floor = float((schema or {}).get("price_floor") or 0)
+    price_ceiling = float((schema or {}).get("price_ceiling") or 0)
+    if price_floor > 0 and subtotal > 0 and subtotal < price_floor:
+        line_items.append({"label": "Minimum pricing applied", "amount": round_cents(price_floor - subtotal)})
+        subtotal = price_floor
+    if price_ceiling > 0 and subtotal > price_ceiling:
+        diff = subtotal - price_ceiling
+        line_items.append({"label": "Maximum pricing cap applied", "amount": round_cents(-diff)})
+        subtotal = price_ceiling
+
     subtotal = round_cents(subtotal)
     requires_checkout = subtotal > 0
     fee = round_cents(subtotal * fee_rate) if requires_checkout else 0.0
