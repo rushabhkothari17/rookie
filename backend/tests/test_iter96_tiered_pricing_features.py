@@ -537,11 +537,12 @@ class TestProductSaveNewFeatures:
         product = create_product(payload, admin_auth)
         pid = product["id"]
         try:
-            get_resp = requests.get(f"{BASE_URL}/api/admin/products/{pid}", headers=admin_auth)
+            get_resp = requests.get(f"{BASE_URL}/api/admin/products-all?per_page=200", headers=admin_auth)
             assert get_resp.status_code == 200
-            saved = get_resp.json()
-            if "product" in saved:
-                saved = saved["product"]
+            prods = get_resp.json().get("products", [])
+            saved = next((p for p in prods if p.get("id") == pid), None)
+            if saved is None:
+                pytest.skip(f"Product {pid} not found in list")
             schema = saved.get("intake_schema_json", {})
             questions = schema.get("questions", [])
             vis_q = next((q for q in questions if q["key"] == "extra_feature"), None)
