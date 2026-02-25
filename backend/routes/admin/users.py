@@ -48,6 +48,11 @@ async def admin_create_admin_user(
     payload: AdminCreateUserRequest,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
+    from routes.admin.permissions import has_permission, PRESET_ROLES
+    # Enforce permission check — only users with 'users' module create rights can add users
+    if not await has_permission(admin, "users", "create"):
+        raise HTTPException(status_code=403, detail="You don't have permission to create users")
+
     tid = tenant_id_of(admin)
     valid_roles = ("partner_super_admin", "partner_admin", "partner_staff", "admin", "super_admin")
     if payload.role not in valid_roles:
