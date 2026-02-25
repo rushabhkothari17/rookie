@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { displayCategory } from "@/lib/categories";
 
@@ -10,66 +10,56 @@ const formatTag = (product: any) => {
 };
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+  new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
 
-/** Derive a minimum starting price from pricing_rules for complex pricing types. */
+/** Derive a minimum starting price from intake questions for data-driven pricing. */
 const getStartingPrice = (product: any): number | null => {
-  const { pricing_type, pricing_rules = {} } = product;
+  const base = parseFloat(product.base_price) || 0;
+  const schema = product.intake_schema_json;
+  if (!schema) return base > 0 ? base : null;
 
-  // New data-driven calculator: use price_inputs
-  if (pricing_type === "calculator" && pricing_rules.price_inputs?.length > 0) {
-    let starting = parseFloat(product.base_price) || 0;
-    for (const pi of pricing_rules.price_inputs) {
-      if (pi.type === "number" && pi.price_per_unit) {
-        const val = parseFloat(pi.default ?? pi.min ?? 0);
-        starting += val * pi.price_per_unit;
-      }
+  const questions = Array.isArray(schema.questions)
+    ? schema.questions
+    : Object.values(schema.questions || {}).flat();
+
+  let minAdd = 0;
+  let hasPricedRequired = false;
+
+  for (const q of questions as any[]) {
+    if (!q.enabled && q.enabled !== undefined) continue;
+    if (q.type === "number" && parseFloat(q.price_per_unit) > 0 && q.required) {
+      hasPricedRequired = true;
+      minAdd += (parseFloat(q.min) || 0) * parseFloat(q.price_per_unit);
+    } else if ((q.type === "dropdown" || q.type === "multiselect") && q.affects_price && q.required) {
+      const prices = (q.options || []).map((o: any) => parseFloat(o.price_value) || 0).filter((p: number) => p > 0);
+      if (prices.length > 0) { hasPricedRequired = true; minAdd += Math.min(...prices); }
     }
-    return starting > 0 ? starting : null;
   }
 
-  if (pricing_type === "tiered") {
-    const prices = (pricing_rules.variants || [])
-      .map((v: any) => parseFloat(v.price) || 0)
-      .filter((p: number) => p > 0);
-    return prices.length > 0 ? Math.min(...prices) : null;
-  }
-
-  if (pricing_type === "calculator") {
-    const ct = pricing_rules.calc_type;
-    if (ct === "health_check") return parseFloat(pricing_rules.base_price) || null;
-    if (ct === "hours_pack") {
-      const minHours = parseInt(pricing_rules.min_hours) || 10;
-      const rate = parseFloat(pricing_rules.pay_now_rate) || 75;
-      return minHours * rate;
-    }
-    if (ct === "bookkeeping") return 249;
-    if (ct === "mailboxes") return parseFloat(pricing_rules.rate) || null;
-    if (ct === "storage_blocks") return parseFloat(pricing_rules.rate) || null;
-    if (ct === "crm_migration") return (parseFloat(pricing_rules.base_fee) || 499) + 250;
-    if (ct === "forms_migration") return 100;
-    if (ct === "desk_migration") return 499;
-    if (ct === "sign_migration") return 99;
-    if (ct === "people_migration") return parseFloat(pricing_rules.base_fee) || 999;
-  }
+  if (base > 0 || hasPricedRequired) return base + minAdd;
   return null;
 };
 
-const formatPrice = (product: any): string | null => {
-  // Try to derive a starting price first (covers tiered and calculator variants)
-  const startingPrice = getStartingPrice(product);
-  if (startingPrice !== null && startingPrice > 0) {
-    return `Starts from ${fmt(startingPrice)}`;
-  }
+const formatPrice = (product: any): { label: string; prefix?: string } => {
+  const type = product.pricing_type;
 
-  // Has a direct base price > 0
-  const price = product.base_price;
-  if (price != null && price > 0) {
-    return product.is_subscription ? `${fmt(price)}/mo` : `from ${fmt(price)}`;
-  }
+  if (type === "external") return { label: "Visit site", prefix: "" };
+  if (type === "enquiry") return { label: "Get in touch", prefix: "" };
 
-  // inquiry/scope_request or genuinely unpriced → Contact us
-  return "Contact us";
+  const starting = getStartingPrice(product);
+  if (starting !== null && starting > 0) {
+    const hasIntake = Array.isArray(product.intake_schema_json?.questions)
+      ? product.intake_schema_json.questions.some((q: any) => q.enabled !== false && (q.price_per_unit > 0 || q.affects_price))
+      : false;
+    const prefix = (hasIntake || !product.base_price) ? "From" : "";
+    return { label: fmt(starting), prefix };
+  }
+  if (starting === 0 && product.base_price === 0) return { label: "Free", prefix: "" };
+
+  // Legacy enquiry fallback
+  if (type === "scope_request" || type === "inquiry") return { label: "Get in touch", prefix: "" };
+
+  return { label: "Contact us", prefix: "" };
 };
 
 export default function OfferingCard({ product }: { product: any }) {
