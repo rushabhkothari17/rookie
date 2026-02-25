@@ -149,23 +149,24 @@ class IntakeQuestion(BaseModel):
     required: bool = False
     enabled: bool = True
     order: int = 0
+    type: str = "single_line"
+    # Dropdown / multiselect
     affects_price: bool = False
     price_mode: str = "add"
     options: Optional[List[IntakeOption]] = None
-
-
-class IntakeQuestionsBlock(BaseModel):
-    dropdown: List[IntakeQuestion] = Field(default_factory=list)
-    multiselect: List[IntakeQuestion] = Field(default_factory=list)
-    single_line: List[IntakeQuestion] = Field(default_factory=list)
-    multi_line: List[IntakeQuestion] = Field(default_factory=list)
+    # Number type
+    price_per_unit: Optional[float] = None
+    min: Optional[float] = None
+    max: Optional[float] = None
+    step: Optional[float] = None
+    default_value: Optional[float] = None
 
 
 class IntakeSchemaJson(BaseModel):
-    version: int = 1
+    version: int = 2
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
-    questions: IntakeQuestionsBlock = Field(default_factory=IntakeQuestionsBlock)
+    questions: List[IntakeQuestion] = Field(default_factory=list)
 
 
 class CustomSection(BaseModel):
