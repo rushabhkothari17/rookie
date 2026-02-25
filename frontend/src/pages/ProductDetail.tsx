@@ -295,13 +295,7 @@ export default function ProductDetail() {
       if (empty) { toast.error(`"${q.label}" is required`); return; }
     }
 
-    if (product.sku === "MIG-BOOKS") {
-      if (!migBooksData.isComplete) {
-        toast.error("Please complete the required fields to get your price");
-        return;
-      }
-      addItem({ product_id: product.id, quantity: 1, inputs: { ...migBooksData.inputs, ...intakeAnswers }, price_override: migBooksData.price });
-    } else if (scopeUnlock) {
+    if (scopeUnlock) {
       const scopeInputs = {
         ...inputs,
         ...intakeAnswers,
