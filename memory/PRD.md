@@ -1,191 +1,96 @@
-# Automate Accounts Platform — PRD
+# AutomateAccounts Product Requirements Document
 
 ## Original Problem Statement
-Build a fully configurable, admin-driven SaaS platform for accounting/automation services. All product pricing, intake questions, and catalog content must be manageable from the admin UI without code changes.
+E-commerce platform for professional services with:
+- Product catalog with multiple pricing tiers
+- Intake forms with conditional logic
+- Multiple product page layouts (Classic, QuickBuy, Wizard, Application, Showcase)
+- Full-screen admin product editor
+- Payment processing (Stripe, GoCardless, Bank Transfer)
+- Free product checkout support
+
+## Core Features Implemented
+
+### Product Management
+- [x] 5 distinct product page layouts (Classic, QuickBuy, Wizard, Application, Showcase)
+- [x] Full-screen product editor at `/admin/products/:id/edit`
+- [x] Dynamic layout selection per product
+- [x] Advanced intake forms with conditional visibility
+- [x] Tiered pricing engine with formulas
+
+### Admin Interface
+- [x] Products tab with Products/Categories sub-tabs
+- [x] "Catalog" renamed to "Products"
+- [x] "Quote Requests" renamed to "Requests"
+- [x] Bank Transactions module removed
+- [x] Customer Portal link in main nav
+
+### Checkout
+- [x] Free product checkout (total = $0, no payment required)
+- [x] Multiple payment methods (Card, Bank Transfer, GoCardless)
+- [x] Promo codes
+- [x] Terms & Conditions acceptance
+
+### Store
+- [x] Category sidebar with blurbs
+- [x] Blank category filtering (fixed)
+- [x] Product search and filters
 
 ## Architecture
+
 ```
 /app/
 ├── backend/
-│   ├── routes/          # catalog.py, checkout.py, auth.py, etc.
+│   ├── routes/
+│   │   ├── catalog.py      - Product CRUD
+│   │   ├── checkout.py     - All checkout endpoints including /checkout/free
+│   │   ├── store.py        - Public store APIs
+│   │   └── uploads.py      - File handling
 │   ├── services/
-│   │   ├── pricing_service.py    # 3-type pricing engine + tiered/boolean/caps
-│   │   ├── checkout_service.py
-│   │   └── zoho_service.py
-│   ├── models.py         # All Pydantic models incl. IntakeQuestion, PricingTier, VisibilityRule
-│   ├── server.py
-│   └── seed_products.py
+│   │   └── pricing_service.py - Tiered pricing calculations
+│   └── server.py
 └── frontend/
     └── src/
         ├── pages/
         │   ├── admin/
-        │   │   ├── ProductForm.tsx      # Light-themed product form (5 tabs)
-        │   │   ├── IntakeSchemaBuilder.tsx # Full intake builder with tiered/boolean/visibility
-        │   │   ├── ProductsTab.tsx       # Admin catalog management
-        │   │   └── (other admin tabs)
-        │   ├── ProductDetail.tsx        # Customer-facing product + live price preview
-        │   └── Store.tsx
+        │   │   ├── ProductEditor.tsx - Full-screen editor
+        │   │   ├── ProductsTab.tsx   - Products/Categories tabs
+        │   │   └── CategoriesTab.tsx
+        │   └── store/
+        │       ├── ProductDetail.tsx - Layout router
+        │       └── layouts/          - 5 layout components
         ├── components/
-        │   ├── StickyPurchaseSummary.tsx # Live price with line items breakdown
-        │   └── (other components)
-        └── types/index.ts
+        │   └── Store/
+        └── App.tsx
 ```
 
-## What's Been Implemented
+## Key Endpoints
+- `POST /api/checkout/free` - Free product checkout
+- `POST /api/checkout/session` - Stripe checkout
+- `POST /api/checkout/bank-transfer` - Bank transfer/GoCardless
+- `GET /api/products` - Public product list
+- `GET /api/categories` - Product categories
 
-### Phase 1 — Initial Build (Previous sessions)
-- Full multi-tenant platform with JWT auth
-- Admin panel with Customers, Orders, Subscriptions, Articles, Website settings
-- Store/catalog with product cards, product detail pages
-- GoCardless + Stripe payment integration
-- Zoho Mail transactional email
+## Database Collections
+- `products` - Product catalog with `display_layout` field
+- `product_categories` - Categories with blurbs
+- `orders` - Order records with `payment_method: "free"` support
+- `order_items` - Line items with intake answers
+- `invoices` - Payment records
 
-### Phase 2 — Pricing Architecture Refactor (Session ~7-8)
-- Replaced complex pricing model with 3 clean types: `internal`, `external`, `enquiry`
-- `internal`: base_price + intake questions → checkout
-- `external`: redirect to external_url
-- `enquiry`: contact/RFQ form only
-- Rewrote pricing_service.py for the new model
-- Rewrote seed_products.py with clean schema
+## Pending Tasks (P0-P1)
+1. Cart UI/UX redesign
+2. Move Scope ID validation to Checkout page (for enquiry products)
+3. Fix "Edit Article" button visibility for non-admin users
 
-### Phase 3 — Codebase Cleanup (Session ~8-9)
-- Removed dead DB collections: `pricing_rules`, `terms`, `payment_transactions`
-- Removed dead fields from products: `pricing_complexity`, `sku`, `next_steps`, etc.
-- Removed `apply_catalog_overrides()` hardcoded function
-- Deleted dead files: `migration_script.py`, `OverrideCodesTab.jsx`
+## Future Tasks (P2)
+- Complex visibility logic verification (AND/OR conditions)
+- Security audit
+- Centralized email integration settings
 
-### Phase 4 — Admin UI Redesign + Theme Fix (Session ~10, Feb 2026)
-- Complete rewrite of `ProductForm.tsx` — dark → light theme matching admin panel
-- Complete rewrite of `IntakeSchemaBuilder.tsx` — dark → light theme
-- Updated `ProductsTab.tsx` dialog to white/slate light theme
-- Color system: `bg-white`, `border-slate-200`, `text-slate-900`, `#1e40af` blue accent, `#0f172a` navy
+## Test Credentials
+- Admin: `admin@automateaccounts.local` / `ChangeMe123!`
+- Partner Code: `automate-accounts`
 
-### Phase 5 — Advanced Intake Question Features (Feb 2026)
-- **Tiered pricing** for number fields: progressive tier brackets (from/to/£per unit)
-- **Boolean/Yes-No field type**: simple toggle question with optional price_for_yes/price_for_no
-- **Price floor & ceiling caps**: schema-level min/max price constraints applied after all calculations
-- **Conditional visibility rules**: show/hide questions based on other question's answer (depends_on/operator/value)
-- **Live price preview** with itemized line items breakdown in StickyPurchaseSummary
-- Customer-facing form only sends visible questions' answers to pricing API
-
-### Phase 6 — Dynamic Product Layouts + Extended Fields (Feb 25, 2026)
-- **Dynamic Layout System**: New `layouts/` folder with layout components
-  - `ProductLayout` router in `ProductDetail.tsx` selects layout based on `product.display_layout`
-  - **5 Distinct Layouts Fully Implemented**:
-    - `ClassicLayout.tsx` (standard): Two-column layout (product info left, sticky price summary right)
-    - `QuickBuyLayout.tsx` (quick_buy): Compact price-first design with dark hero, fast checkout
-    - `WizardLayout.tsx` (wizard): Step-by-step guided form with progress bar and numbered steps
-    - `ApplicationLayout.tsx` (application): Sidebar navigation with sections (Overview, Form, Pricing, FAQs)
-    - `ShowcaseLayout.tsx` (showcase): Gradient hero with live Configure & Price calculator
-- **New Field Types**:
-  - `boolean` (Yes/No with price_for_yes/price_for_no)
-  - `date` (single date or date range)
-  - `file` (upload with 24hr expiry via `/api/uploads`)
-  - `html_block` (content divider between questions)
-  - `formula` (cross-field calculations like `quantity * height * price_per_sq_ft`)
-- **Tooltips**: Question-level `tooltip_text` field rendered as info icon
-- **Product Tags**: `tag` field displayed as blue badges on product detail page
-- **Subscription Indicator**: Blue info box "This is a recurring subscription" for `is_subscription=true`
-- **Terms & Conditions Link**: Shows when product has `terms_id` set
-- **File Upload Endpoint**: `POST /api/uploads` with 24hr TTL using MongoDB TTL index
-- **Formula Pricing Engine**: Safe AST-based evaluator supporting +, -, *, / operations
-- **Dialog Accessibility Fix**: Added DialogTitle to product edit dialog for screen reader compatibility
-
-### Phase 7 — Admin Panel Restructuring (Feb 25, 2026)
-- **Bank Transactions Module Removed**: Backend route and frontend tab completely removed
-- **Renamed Tabs**:
-  - "Catalog" → "Products" in admin sidebar
-  - "Quote Requests" → "Requests" in admin sidebar
-- **Portal Navigation**: Moved from user dropdown to main TopNav after Articles, renamed to "Customer Portal"
-- **Full-Screen Product Editor**: New dedicated routes:
-  - `/admin/products/new` for creating products
-  - `/admin/products/:id/edit` for editing products
-  - Full-screen UI with sticky header, tabs for General/Store Card/Pricing/Visibility/Content
-- **Multi-Level Visibility Chaining**: Visibility rules now support chains (A depends on B, B depends on C)
-- **Improved CTA Button Text**:
-  - Free products (price=0): "Get it free"
-  - Enquiry products: "Proceed to request quote"
-  - Regular products: "Add to cart"
-- **Scope ID Section**: Moved from product page to checkout page (enquiry products only)
-- **Article Category Fix**: Dropdown now shows both dynamic DB categories and hardcoded scope categories
-
-## Key DB Schema — products
-```json
-{
-  "pricing_type": "internal | external | enquiry",
-  "base_price": 0,
-  "external_url": "string (for external type)",
-  "display_layout": "standard | quick_buy | wizard | application | showcase",
-  "tag": "comma-separated tags",
-  "terms_id": "terms document ID for T&C link",
-  "is_subscription": false,
-  "intake_schema_json": {
-    "version": 2,
-    "price_floor": null,
-    "price_ceiling": null,
-    "questions": [
-      {
-        "key": "string",
-        "label": "string",
-        "type": "dropdown | multiselect | number | boolean | single_line | multi_line | date | file | formula | html_block",
-        "enabled": true,
-        "required": false,
-        "tooltip_text": "optional help text",
-        "affects_price": false,
-        "price_mode": "add | multiply",
-        "options": [{"label":"","value":"","price_value":0}],
-        "pricing_mode": "flat | tiered",
-        "price_per_unit": 0,
-        "tiers": [{"from":0,"to":10,"price_per_unit":5}],
-        "price_for_yes": 0,
-        "price_for_no": 0,
-        "date_format": "date | date_range",
-        "accept": "file types for file upload",
-        "max_size_mb": 10,
-        "formula_expression": "field_a * field_b * 0.5",
-        "content": "HTML content for html_block type",
-        "visibility_rule": {
-          "depends_on": "question_key",
-          "operator": "equals | not_equals | greater_than | less_than | contains | not_empty",
-          "value": "string"
-        }
-      }
-    ]
-  }
-}
-```
-
-## Key API Endpoints
-- `POST /api/auth/login` — multi-tenant login
-- `GET /api/catalog/products` — public product list
-- `POST /api/pricing/calc` — calculate price with inputs
-- `PUT /api/catalog/products/{id}` — admin update product
-- `POST /api/checkout/session` — create checkout session
-
-## Admin Credentials (dev)
-- Platform Admin: `admin@automateaccounts.local` / `ChangeMe123!`
-- Tenant Admin: `adminb@tenantb.local` / `ChangeMe123!` (partner_code: `tenant-b-test`)
-
-## Prioritized Backlog
-
-### P0 — Critical
-- (None currently — all P0 resolved)
-
-### P1 — High Priority
-- **Email integration settings**: Centralize email config in admin panel
-- **"Coming Soon" integrations**: Gmail, Microsoft Outlook, HubSpot, Salesforce, QuickBooks credential forms
-- **Scope ID on Checkout Page**: Move Scope ID validation to checkout flow for enquiry products
-
-### P2 — Medium Priority
-- **Security audit**: Penetration testing
-
-### P3 — Low Priority / Bugs
-- **Edit Article button**: Sometimes visible to non-admin users (recurring, 3+ occurrences)
-- **Product DELETE endpoint**: Currently only deactivation via PUT
-- **GET /api/admin/products/{id}**: Single product admin fetch endpoint
-- **Product Editor 405 error**: OPTIONS preflight issue when loading edit mode (cosmetic)
-
-## 3rd Party Integrations
-- GoCardless (payment)
-- Stripe (payment + subscriptions)
-- Zoho Mail (transactional email)
+---
+*Last Updated: 2026-02-25*
