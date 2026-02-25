@@ -110,13 +110,36 @@ export function ProductsTab() {
 
   return (
     <div className="space-y-4">
-      <AdminPageHeader title="Products" subtitle={`${filtered.length} products`} actions={
-        <>
-          <Button variant="outline" size="sm" onClick={downloadCsv} data-testid="admin-catalog-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
-          <Button variant="outline" size="sm" onClick={() => setShowImport(true)} data-testid="admin-catalog-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
-          <Button size="sm" onClick={openCreate} data-testid="admin-create-product-btn">+ New Product</Button>
-        </>
-      } />
+      {/* Sub-tabs for Products and Categories */}
+      <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
+        <TabsList className="bg-slate-100 p-1 rounded-lg w-fit">
+          <TabsTrigger 
+            value="products" 
+            className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2"
+            data-testid="products-subtab-products"
+          >
+            <Package size={16} />
+            Products
+          </TabsTrigger>
+          <TabsTrigger 
+            value="categories" 
+            className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2"
+            data-testid="products-subtab-categories"
+          >
+            <FolderTree size={16} />
+            Categories
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="products" className="mt-4">
+          <div className="space-y-4">
+            <AdminPageHeader title="Products" subtitle={`${filtered.length} products`} actions={
+              <>
+                <Button variant="outline" size="sm" onClick={downloadCsv} data-testid="admin-catalog-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
+                <Button variant="outline" size="sm" onClick={() => setShowImport(true)} data-testid="admin-catalog-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
+                <Button size="sm" onClick={openCreate} data-testid="admin-create-product-btn">+ New Product</Button>
+              </>
+            } />
 
       {/* Filters */}
       <div className="rounded-xl border border-slate-200 bg-white p-3">
