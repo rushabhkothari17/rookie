@@ -55,9 +55,7 @@ def create_test_tenant(token: str, code: str, name: str) -> dict:
         json={
             "name": name,
             "code": code,
-            "admin_name": "Test Admin",
-            "admin_email": f"admin@{code}.test",
-            "admin_password": "TestPass123!",
+            "status": "active",
         },
         headers=admin_headers(token),
     )
