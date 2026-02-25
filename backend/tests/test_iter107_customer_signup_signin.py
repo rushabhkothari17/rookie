@@ -194,11 +194,11 @@ def tenant_b_code(tenant_b_info):
 
 
 @pytest.fixture(scope="module")
-def tenant_a_admin_headers(tenant_a_id):
+def tenant_a_admin_headers(tenant_a_info):
     """Partner super admin for Tenant A."""
     resp = requests.post(
         f"{BASE_URL}/api/auth/partner-login",
-        json={"partner_code": TENANT_A_CODE, "email": TENANT_A_ADMIN_EMAIL, "password": TENANT_A_ADMIN_PASSWORD},
+        json={"partner_code": tenant_a_info["code"], "email": TENANT_A_ADMIN_EMAIL, "password": TENANT_A_ADMIN_PASSWORD},
     )
     assert resp.status_code == 200, f"Tenant A admin login failed: {resp.text}"
     token = resp.json().get("token") or resp.cookies.get("access_token")
@@ -206,11 +206,11 @@ def tenant_a_admin_headers(tenant_a_id):
 
 
 @pytest.fixture(scope="module")
-def tenant_b_admin_headers(tenant_b_id):
+def tenant_b_admin_headers(tenant_b_info):
     """Partner super admin for Tenant B."""
     resp = requests.post(
         f"{BASE_URL}/api/auth/partner-login",
-        json={"partner_code": TENANT_B_CODE, "email": TENANT_B_ADMIN_EMAIL, "password": TENANT_B_ADMIN_PASSWORD},
+        json={"partner_code": tenant_b_info["code"], "email": TENANT_B_ADMIN_EMAIL, "password": TENANT_B_ADMIN_PASSWORD},
     )
     assert resp.status_code == 200, f"Tenant B admin login failed: {resp.text}"
     token = resp.json().get("token") or resp.cookies.get("access_token")
