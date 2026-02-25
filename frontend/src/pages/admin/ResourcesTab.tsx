@@ -7,13 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Clock, Trash2, Plus, ExternalLink, Download, FileText, LayoutTemplate, X, ChevronDown, Tag, Upload, ShieldCheck } from "lucide-react";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
-import { ArticleTemplatesTab } from "./ArticleTemplatesTab";
-import { ArticleEmailTemplatesTab } from "./ArticleEmailTemplatesTab";
-import { ArticleCategoriesTab } from "./ArticleCategoriesTab";
+import { ArticleTemplatesTab } from "./ResourceTemplatesTab";
+import { ArticleEmailTemplatesTab } from "./ResourceEmailTemplatesTab";
+import { ArticleCategoriesTab } from "./ResourceCategoriesTab";
 import { OverrideCodesTab } from "./OverrideCodesTab";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
