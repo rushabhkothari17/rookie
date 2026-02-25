@@ -19,6 +19,8 @@ import { Download, Upload, ExternalLink, Package, FolderTree, Tag, FileText } fr
 import { useAuth } from "@/contexts/AuthContext";
 
 export function ProductsTab() {
+  const { user: authUser } = useAuth();
+  const isPlatformAdmin = authUser?.role === "platform_admin";
   const [activeSubTab, setActiveSubTab] = useState("products");
   const navigate = useNavigate();
   const [showImport, setShowImport] = useState(false);
