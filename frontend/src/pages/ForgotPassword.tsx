@@ -1,28 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, CheckCircle, ArrowLeft, ChevronLeft } from "lucide-react";
+import { applyPartnerBranding } from "@/contexts/WebsiteContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
 
-  // Step 1: request code
-  const [partnerCode, setPartnerCode] = useState("");
+  const [partnerCode] = useState<string>(() => localStorage.getItem("aa_partner_code") || "");
+  const [partnerName, setPartnerName] = useState("");
+  const [partnerLogoUrl, setPartnerLogoUrl] = useState("");
+  const [partnerPrimaryColor, setPartnerPrimaryColor] = useState("");
+
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"request" | "reset" | "done">("request");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Step 2: enter code + new password
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Require partner code — redirect to login if missing
+  useEffect(() => {
+    if (!partnerCode) {
+      navigate("/login");
+      return;
+    }
+    applyPartnerBranding(partnerCode).then(s => {
+      setPartnerName(s.store_name || "");
+      setPartnerLogoUrl(s.logo_url || "");
+      setPartnerPrimaryColor(s.primary_color || "");
+    }).catch(() => {});
+  }, [partnerCode, navigate]);
 
   async function handleRequestCode(e: React.FormEvent) {
     e.preventDefault();
@@ -64,19 +80,31 @@ export default function ForgotPassword() {
     }
   }
 
+  const primaryColor = partnerPrimaryColor || "var(--aa-primary)";
+
   return (
-    <div className="min-h-screen aa-bg flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen aa-bg flex items-center justify-center px-4 py-12" data-testid="forgot-password-page">
       <div className="w-full max-w-sm space-y-6">
-        {/* Brand */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-center">
-            <div
-              className="h-12 w-12 rounded-xl flex items-center justify-center text-white text-xl font-bold"
-              style={{ backgroundColor: "var(--aa-primary)" }}
-            >
-              A
+
+        {/* Partner brand header */}
+        <div className="text-center space-y-3">
+          {partnerLogoUrl ? (
+            <div className="flex justify-center">
+              <img src={partnerLogoUrl} alt={partnerName} className="h-12 object-contain" />
             </div>
-          </div>
+          ) : (
+            <div className="flex justify-center">
+              <div
+                className="h-12 w-12 rounded-xl flex items-center justify-center text-white text-xl font-bold"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {(partnerName || partnerCode)[0]?.toUpperCase() || "P"}
+              </div>
+            </div>
+          )}
+          {partnerName && (
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">{partnerName}</p>
+          )}
           <h1 className="text-2xl font-bold text-slate-900">
             {step === "done" ? "Password reset!" : "Forgot password?"}
           </h1>
@@ -102,17 +130,6 @@ export default function ForgotPassword() {
             data-testid="forgot-password-form"
           >
             <div className="space-y-2">
-              <Label htmlFor="partner-code">Partner Code</Label>
-              <Input
-                id="partner-code"
-                placeholder="e.g. automate-accounts"
-                value={partnerCode}
-                onChange={(e) => setPartnerCode(e.target.value)}
-                required
-                data-testid="forgot-partner-code-input"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>
               <Input
                 id="email"
@@ -121,12 +138,14 @@ export default function ForgotPassword() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoFocus
                 data-testid="forgot-email-input"
               />
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="w-full text-white"
+              style={{ backgroundColor: primaryColor }}
               disabled={loading}
               data-testid="forgot-password-submit"
             >
@@ -136,6 +155,7 @@ export default function ForgotPassword() {
               <Link
                 to="/login"
                 className="text-sm text-slate-500 hover:text-slate-700 inline-flex items-center gap-1"
+                data-testid="back-to-login-link"
               >
                 <ArrowLeft className="h-3 w-3" /> Back to sign in
               </Link>
@@ -194,13 +214,14 @@ export default function ForgotPassword() {
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="w-full text-white"
+              style={{ backgroundColor: primaryColor }}
               disabled={loading}
               data-testid="reset-password-submit"
             >
               {loading ? "Resetting…" : "Reset Password"}
             </Button>
-            <div className="text-center space-y-1">
+            <div className="text-center">
               <button
                 type="button"
                 onClick={() => { setStep("request"); setError(""); setCode(""); }}
@@ -224,9 +245,29 @@ export default function ForgotPassword() {
             <p className="text-slate-600 text-sm">
               Your password has been reset. You can now sign in with your new password.
             </p>
-            <Button className="w-full" onClick={() => navigate("/login")} data-testid="goto-login-btn">
+            <Button
+              className="w-full text-white"
+              style={{ backgroundColor: primaryColor }}
+              onClick={() => navigate("/login")}
+              data-testid="goto-login-btn"
+            >
               Sign In
             </Button>
+          </div>
+        )}
+
+        {/* Change partner footer */}
+        {partnerCode && step !== "done" && (
+          <div className="text-center">
+            <Link
+              to="/login"
+              onClick={() => localStorage.removeItem("aa_partner_code")}
+              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+              data-testid="change-partner-from-forgot"
+            >
+              <ChevronLeft size={12} />
+              Wrong partner? ({partnerCode})
+            </Link>
           </div>
         )}
       </div>
