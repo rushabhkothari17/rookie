@@ -113,7 +113,9 @@ def tenant_a(platform_token):
     """Create test tenant A."""
     global _CREATED_TENANT_A_ID
     tenant_data = create_test_tenant(platform_token, "test-iter109-a", "TEST Iter109 Corp A")
-    tenant_id = tenant_data.get("tenant_id") or tenant_data.get("id") or tenant_data.get("tenant", {}).get("id")
+    # Response is {"tenant": {"id": ..., "code": ..., "name": ...}}
+    tenant = tenant_data.get("tenant") or tenant_data
+    tenant_id = tenant.get("id")
     _CREATED_TENANT_A_ID = tenant_id
     yield {"id": tenant_id, "code": "test-iter109-a"}
     # Cleanup handled in module teardown
@@ -124,7 +126,8 @@ def tenant_b(platform_token):
     """Create test tenant B."""
     global _CREATED_TENANT_B_ID
     tenant_data = create_test_tenant(platform_token, "test-iter109-b", "TEST Iter109 Corp B")
-    tenant_id = tenant_data.get("tenant_id") or tenant_data.get("id") or tenant_data.get("tenant", {}).get("id")
+    tenant = tenant_data.get("tenant") or tenant_data
+    tenant_id = tenant.get("id")
     _CREATED_TENANT_B_ID = tenant_id
     yield {"id": tenant_id, "code": "test-iter109-b"}
 
