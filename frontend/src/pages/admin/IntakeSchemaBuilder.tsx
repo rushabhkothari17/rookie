@@ -588,7 +588,7 @@ export function IntakeSchemaBuilder({
           </div>
           <div className="flex items-center gap-2">
             {(schema.price_floor || schema.price_ceiling) && (
-              <AlertCircle size={12} className="text-[#1e40af]" title="Caps configured" />
+              <span title="Caps configured"><AlertCircle size={12} className="text-[#1e40af]" /></span>
             )}
             <ChevronRight size={12} className={`text-slate-400 transition-transform ${showCaps ? "rotate-90" : ""}`} />
           </div>
