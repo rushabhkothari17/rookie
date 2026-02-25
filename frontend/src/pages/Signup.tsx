@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite, applyPartnerBranding } from "@/contexts/WebsiteContext";
 import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
 import api from "@/lib/api";
-import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, CheckCircle2, ChevronLeft } from "lucide-react";
+import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, CheckCircle2, ChevronLeft, Copy, Check } from "lucide-react";
 
 const STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country"];
 
