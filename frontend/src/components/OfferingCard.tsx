@@ -114,7 +114,7 @@ export default function OfferingCard({ product }: { product: any }) {
 
       <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
         <div data-testid={`offering-price-${product.id}`}>
-          {priceInfo.prefix && <span className="text-xs font-medium text-slate-400 mr-1">{priceInfo.prefix}</span>}
+          {priceInfo.prefix && <span className="text-xs font-medium text-slate-400 mr-1">{priceInfo.prefix} </span>}
           <span className="text-lg font-bold text-slate-900">{priceInfo.label}</span>
         </div>
         <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700" data-testid={`offering-cta-${product.id}`}>
