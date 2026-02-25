@@ -67,10 +67,12 @@ class CreatePartnerAdminRequest(BaseModel):
 class VerifyEmailRequest(BaseModel):
     email: str
     code: str
+    partner_code: Optional[str] = None
 
 
 class ResendVerificationRequest(BaseModel):
     email: str
+    partner_code: Optional[str] = None
 
 
 class UpdateProfileRequest(BaseModel):

@@ -18,9 +18,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 RATE_LIMITS: Dict[str, Tuple[int, int]] = {
     "/api/auth/login":                         (10, 60),    # 10 per minute per IP
     "/api/auth/partner-login":                 (10, 60),    # 10 per minute per IP
-    "/api/auth/customer-login":                (60, 60),    # 60 per min (increased for testing)ute per IP
+    "/api/auth/customer-login":                (10, 60),    # 10 per minute per IP
     "/api/auth/register-partner":              (20, 60),    # 20 per minute (self-service partner reg)
-    "/api/auth/register":                      (60, 60),    # 60 per minute (customer reg - increased for testing)
+    "/api/auth/register":                      (5, 60),     # 5 per minute (customer reg)
     "/api/auth/forgot-password":               (20, 300),   # 20 per 5 min
     "/api/auth/resend-verification-email":     (3, 300),    # 3 per 5 min
     "/api/auth/reset-password":                (5, 300),
