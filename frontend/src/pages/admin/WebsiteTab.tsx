@@ -14,7 +14,7 @@ import { CustomDomainsSection } from "@/components/admin/CustomDomainsSection";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Section = "branding" | "auth" | "forms" | "email" | "footer" | "references" | "payments" | "sysconfig" | "domains";
+type Section = "branding" | "auth" | "forms" | "footer" | "sysconfig";
 
 type AuthSlide =
   | "login" | "signup" | "verify_email"
