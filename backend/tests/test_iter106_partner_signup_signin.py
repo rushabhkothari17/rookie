@@ -1196,10 +1196,10 @@ class TestAdminPanelAccess:
 
     def test_unauthenticated_admin_access_blocked(self):
         """Unauthenticated access to admin returns 401/403."""
-        resp = requests.get(f"{BASE_URL}/api/admin/products")
+        resp = requests.get(f"{BASE_URL}/api/admin/customers")
         assert resp.status_code in [401, 403], \
             f"Expected 401/403, got {resp.status_code}"
-        print(f"PASS: Unauthenticated access to /admin/products blocked ({resp.status_code})")
+        print(f"PASS: Unauthenticated access to /admin/customers blocked ({resp.status_code})")
 
 
 # ===========================================================================
