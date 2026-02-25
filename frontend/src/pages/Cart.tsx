@@ -752,9 +752,9 @@ export default function Cart() {
           <div className="lg:sticky lg:top-6 space-y-6 h-fit">
             {/* Promo Code */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden" data-testid="cart-promo-section">
-              <button onClick={() => setShowPromoSection(!showPromoSection)} className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors">
+              <button onClick={() => setShowPromoSection(!showPromoSection)} className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <Tag size={18} className="text-slate-400" />
+                  <Tag size={18} style={{ color: "var(--aa-accent)" }} />
                   <span className="font-medium text-slate-900">Promo Code</span>
                 </div>
                 {showPromoSection ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
@@ -762,11 +762,11 @@ export default function Cart() {
               {showPromoSection && (
                 <div className="px-4 pb-4">
                   {promoApplied ? (
-                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)", borderColor: "var(--aa-accent)" }}>
                       <div className="flex items-center gap-2">
-                        <Check size={16} className="text-green-600" />
-                        <span className="font-mono font-medium text-green-700">{promoApplied.code}</span>
-                        <span className="text-sm text-green-600">({promoApplied.discount_type === "percent" ? `${promoApplied.discount_value}% off` : `$${promoApplied.discount_value} off`})</span>
+                        <Check size={16} style={{ color: "var(--aa-accent)" }} />
+                        <span className="font-mono font-medium" style={{ color: "var(--aa-primary)" }}>{promoApplied.code}</span>
+                        <span className="text-sm text-slate-600">({promoApplied.discount_type === "percent" ? `${promoApplied.discount_value}% off` : `$${promoApplied.discount_value} off`})</span>
                       </div>
                       <button onClick={handleRemovePromo} className="text-red-500 hover:text-red-700" data-testid="cart-promo-remove">
                         <X size={16} />
@@ -784,8 +784,8 @@ export default function Cart() {
             </div>
 
             {/* Order Summary */}
-            <div className="rounded-2xl border overflow-hidden shadow-sm" style={{ borderColor: ws.primary_color ? `${ws.primary_color}30` : '#e2e8f0' }} data-testid="cart-price-summary">
-              <div className="p-4" style={{ backgroundColor: ws.primary_color || '#1e293b' }}>
+            <div className="rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(15,23,42,0.1)]" data-testid="cart-price-summary">
+              <div className="p-4" style={{ backgroundColor: "var(--aa-primary)" }}>
                 <h3 className="font-semibold text-white">Order Summary</h3>
               </div>
               <div className="p-5 bg-white">
@@ -795,7 +795,7 @@ export default function Cart() {
                     <span className="text-slate-900">${totalSubtotal.toFixed(2)}</span>
                   </div>
                   {discountAmount > 0 && (
-                    <div className="flex justify-between text-green-600">
+                    <div className="flex justify-between" style={{ color: "var(--aa-accent)" }}>
                       <span>Discount ({promoApplied?.code})</span>
                       <span>-${discountAmount.toFixed(2)}</span>
                     </div>
@@ -808,12 +808,12 @@ export default function Cart() {
                   )}
                   <div className="pt-3 border-t border-slate-200 flex justify-between">
                     <span className="font-semibold text-slate-900">Total</span>
-                    <span className="font-bold text-lg" style={{ color: ws.primary_color || '#1e293b' }}>${total.toFixed(2)}</span>
+                    <span className="font-bold text-lg" style={{ color: "var(--aa-primary)" }}>${total.toFixed(2)}</span>
                   </div>
                 </div>
                 {isFreeCheckout && (
-                  <div className="mt-3 p-2 bg-green-50 rounded-lg text-center">
-                    <p className="text-sm font-medium text-green-700">This order is free!</p>
+                  <div className="mt-3 p-2 rounded-lg text-center" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }}>
+                    <p className="text-sm font-medium" style={{ color: "var(--aa-accent)" }}>This order is free!</p>
                   </div>
                 )}
               </div>
