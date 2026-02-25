@@ -751,3 +751,14 @@ class ArticleCategoryUpdate(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
     is_scope_final: Optional[bool] = None
+
+
+# Resource model aliases (Articles renamed to Resources)
+ResourceCreate = ArticleCreate
+ResourceUpdate = ArticleUpdate
+ResourceEmailRequest = ArticleEmailRequest
+ResourceSendEmailRequest = ArticleSendEmailRequest
+ResourceEmailTemplateCreate = ArticleEmailTemplateCreate
+ResourceEmailTemplateUpdate = ArticleEmailTemplateUpdate
+ResourceCategoryCreate = ArticleCategoryCreate
+ResourceCategoryUpdate = ArticleCategoryUpdate
