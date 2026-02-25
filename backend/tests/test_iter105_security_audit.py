@@ -377,13 +377,15 @@ class TestPlatformAdminMeEndpoint:
 
     def test_me_endpoint_role_platform_admin(self, platform_admin_headers):
         # /me endpoint is at /api/me (not /api/auth/me)
+        # Response is nested: {"user": {...}, "customer": ..., "address": ...}
         resp = requests.get(
             f"{BASE_URL}/api/me",
             headers=platform_admin_headers,
         )
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
-        role = data.get("role")
+        user_data = data.get("user", data)  # handle both flat and nested
+        role = user_data.get("role")
         assert role == "platform_admin", f"Expected role='platform_admin', got '{role}'"
         print(f"PASS: /me endpoint returns role=platform_admin")
 
@@ -395,7 +397,8 @@ class TestPlatformAdminMeEndpoint:
         )
         assert resp.status_code == 200
         data = resp.json()
-        tenant_id = data.get("tenant_id")
+        user_data = data.get("user", data)
+        tenant_id = user_data.get("tenant_id")
         assert tenant_id is None, f"Expected tenant_id=None, got '{tenant_id}'"
         print(f"PASS: Platform admin /me returns tenant_id=None")
 
