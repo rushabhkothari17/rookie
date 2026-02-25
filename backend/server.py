@@ -221,13 +221,6 @@ async def seed_products():
     for product in products:
         product["price_inputs"] = build_price_inputs(product)
         await db.products.insert_one(product)
-        await db.pricing_rules.insert_one(
-            {
-                "id": make_id(),
-                "product_id": product["id"],
-                "rule_json": product.get("pricing_rules", {}),
-            }
-        )
 
 
 
