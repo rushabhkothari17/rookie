@@ -2,7 +2,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import api from "@/lib/api";
 import type { IntakeQuestion } from "./types";
@@ -46,7 +45,7 @@ export function getEnabledIntakeQuestions(schema: any): IntakeQuestion[] {
   return result;
 }
 
-// Question label with optional tooltip
+// Question label with optional tooltip (uses title attribute)
 export function QuestionLabel({ q }: { q: IntakeQuestion }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -55,18 +54,12 @@ export function QuestionLabel({ q }: { q: IntakeQuestion }) {
         {q.required && <span className="text-red-500 ml-1">*</span>}
       </span>
       {q.tooltip_text && (
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="text-slate-400 hover:text-slate-600 cursor-help">
-                <Info size={14} />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs text-xs">
-              {q.tooltip_text}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <span 
+          className="text-slate-400 hover:text-slate-600 cursor-help" 
+          title={q.tooltip_text}
+        >
+          <Info size={14} />
+        </span>
       )}
     </div>
   );
