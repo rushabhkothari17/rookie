@@ -36,8 +36,9 @@ export default function Store() {
         .map((c: any) => ({ name: c.name, blurb: catMap[c.name] || c.blurb || "" }));
 
       // Add any categories present in products but not in admin categories list
+      // Filter out empty/null category names
       Object.keys(catCounts).forEach(name => {
-        if (!apiCats.find(c => c.name === name)) {
+        if (name && name.trim() && !apiCats.find(c => c.name === name)) {
           apiCats.push({ name, blurb: catMap[name] || "" });
         }
       });
