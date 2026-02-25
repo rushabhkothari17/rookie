@@ -782,9 +782,13 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
         base_code = "partner"
     code = base_code
     counter = 1
-    while await db.tenants.find_one({"code": code}):
+    while await db.tenants.find_one({"code": code}) or code == DEFAULT_TENANT_ID:
         code = f"{base_code}-{counter}"
         counter += 1
+
+    # Explicit guard: the reserved platform admin code must never be used for a partner
+    if code == DEFAULT_TENANT_ID:
+        raise HTTPException(status_code=400, detail="The generated partner code conflicts with a reserved identifier. Please use a different organization name.")
 
     # Check email uniqueness across all tenants
     if await db.users.find_one({"email": admin_email}):
