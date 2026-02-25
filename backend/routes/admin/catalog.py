@@ -89,7 +89,6 @@ async def admin_list_all_products(
     if search:
         query["$or"] = [
             {"name": {"$regex": re.escape(search), "$options": "i"}},
-            {"sku": {"$regex": re.escape(search), "$options": "i"}},
         ]
     if category:
         query["category"] = category
