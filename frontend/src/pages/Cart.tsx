@@ -301,27 +301,8 @@ export default function Cart() {
         }
       } else {
         const response = await api.post("/checkout/session", {
-          items: groupItems.map((item) => {
-            const cartItem = items.find((ci) => ci.product_id === item.product.id);
-            return {
-              product_id: item.product.id,
-              quantity: item.quantity,
-              inputs: item.inputs,
-              ...(cartItem?.price_override != null ? { price_override: cartItem.price_override } : {}),
-            };
-          }),
-          checkout_type: checkoutType,
+          ...checkoutPayload,
           origin_url: window.location.origin,
-          promo_code: promoApplied?.code || null,
-          terms_accepted: termsAccepted,
-          terms_id: termsContent?.id || null,
-          start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
-          partner_tag_response: partnerTag,
-          override_code: overrideVal,
-          zoho_subscription_type: zohoSubType,
-          current_zoho_product: zohoProduct,
-          zoho_account_access: zohoAccess,
-          extra_fields: Object.keys(extraFields).length ? extraFields : undefined,
         });
         window.location.href = response.data.url;
       }
