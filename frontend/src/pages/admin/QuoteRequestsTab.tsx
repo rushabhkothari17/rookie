@@ -208,7 +208,7 @@ export function QuoteRequestsTab() {
       {/* Edit/Create Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg" data-testid="admin-quote-dialog">
-          <DialogHeader><DialogTitle>{editQuote ? "Edit Quote Request" : "New Quote Request"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editQuote ? "Edit Request" : "New Request"}</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
             {/* Product */}
             <div className="space-y-1">
