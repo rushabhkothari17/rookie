@@ -144,8 +144,8 @@ async def admin_create_product(
         "visible_to_customers": payload.visible_to_customers,
         "restricted_to": payload.restricted_to,
         "price_rounding": payload.price_rounding or None,
-        "pricing_type": payload.pricing_type or "fixed",
-        "pricing_rules": payload.pricing_rules or {},
+        "pricing_type": payload.pricing_type or "internal",
+        "external_url": payload.external_url,
         "created_at": now_iso(),
         "is_custom": True,
     }
@@ -238,8 +238,8 @@ async def admin_update_product(
         update_fields["stripe_price_id"] = payload.stripe_price_id
     if payload.pricing_type is not None:
         update_fields["pricing_type"] = payload.pricing_type
-    if payload.pricing_rules is not None:
-        update_fields["pricing_rules"] = payload.pricing_rules
+    if payload.external_url is not None:
+        update_fields["external_url"] = payload.external_url
     if payload.visible_to_customers is not None:
         update_fields["visible_to_customers"] = payload.visible_to_customers
     if payload.restricted_to is not None:
