@@ -56,7 +56,6 @@ export interface IntakeQuestion {
   step?: number;
   default_value?: number;
   // Boolean type
-  affects_price_boolean?: boolean;
   price_for_yes?: number;
   price_for_no?: number;
   // Conditional visibility
