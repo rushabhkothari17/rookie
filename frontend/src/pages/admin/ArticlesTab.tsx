@@ -566,7 +566,9 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {(dynamicCategories.length > 0 ? dynamicCategories.map(c => c.name) : HARDCODED_CATEGORIES).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {/* Show dynamic categories first, then hardcoded ones if not already included */}
+                    {dynamicCategories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                    {HARDCODED_CATEGORIES.filter(hc => !dynamicCategories.some(dc => dc.name === hc)).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
