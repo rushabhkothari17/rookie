@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWebsite } from "@/contexts/WebsiteContext";
+import { useWebsite, applyPartnerBranding } from "@/contexts/WebsiteContext";
 import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
 import api from "@/lib/api";
-import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, CheckCircle2 } from "lucide-react";
+import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, CheckCircle2, ChevronLeft } from "lucide-react";
 
 const STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country"];
 
