@@ -9,13 +9,15 @@ export default function StickyPurchaseSummary({
   currency,
   isRFQ,
 }: {
-  pricing: { subtotal: number; fee: number; total: number };
+  pricing: { subtotal: number; fee: number; total: number; line_items?: { label: string; amount: number }[] };
   cta: { label: string; onClick?: () => void; href?: string };
   disabled?: boolean;
   warning?: string;
   currency?: string;
   isRFQ?: boolean;
 }) {
+  const lineItems = pricing?.line_items;
+  const hasBreakdown = !isRFQ && lineItems && lineItems.length > 1;
   return (
     <div
       className="sticky top-28 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]"
