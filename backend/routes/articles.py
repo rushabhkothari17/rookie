@@ -108,9 +108,9 @@ async def list_articles_public(
     x_view_as_customer: Optional[str] = Header(default=None, alias="X-View-As-Customer"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    if user and user.get("role") == "platform_admin" and x_view_as_tenant:
-        tid = x_view_as_tenant
-    elif user and user.get("tenant_id"):
+    # Public articles listing: intentionally ignores X-View-As-Tenant so admin
+    # impersonation does not bleed into the public-facing page.
+    if user and user.get("tenant_id"):
         tid = user["tenant_id"]
     elif api_key_tid:
         tid = api_key_tid
