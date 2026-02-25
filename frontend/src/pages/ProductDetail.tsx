@@ -99,6 +99,24 @@ function getEnabledIntakeQuestions(schema: any): any[] {
 function renderIntakeField(q: any, value: any, onChange: (v: any) => void) {
   const qtype = q.type || q.qtype;
 
+  if (qtype === "boolean") {
+    return (
+      <div className="flex gap-4" data-testid={`intake-${q.key}`}>
+        {[{ label: "Yes", value: "yes" }, { label: "No", value: "no" }].map(opt => (
+          <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer select-none">
+            <input
+              type="radio"
+              name={`boolean-${q.key}`}
+              checked={String(value ?? "") === opt.value}
+              onChange={() => onChange(opt.value)}
+              className="accent-[#0f172a]"
+            />
+            {opt.label}
+          </label>
+        ))}
+      </div>
+    );
+  }
   if (qtype === "number") {
     return (
       <Input
