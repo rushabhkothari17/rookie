@@ -1,0 +1,56 @@
+{
+  "summary": "P0 Bug Fix Verified: Tenant query fix working correctly. Tenant B users now see all products (91) from the global automate-accounts catalog. All backend API tests passed (16/16). Store and Articles UI confirmed working for authenticated Tenant B users.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Tenant B (adminb@tenantb.local) GET /api/products returns 91 products (global catalog)",
+    "Tenant B GET /api/categories returns 11 categories (Zoho Express Setup, Audit & Optimize, Build & Automate, Accounting on Zoho, Managed Services, Migrate to Zoho, CRM, SaaS Products, Setup & Onboarding, Consulting Services, Test)",
+    "Tenant B products include automate-accounts tenant_id entries",
+    "Platform admin GET /api/products returns 75 products (no duplication)",
+    "Platform admin products have no duplicate product IDs",
+    "Platform admin GET /api/products with X-View-As-Tenant (Tenant B) returns 91 products",
+    "Tenant B GET /api/articles/public returns 13 articles from both tenant_b AND automate-accounts",
+    "Platform admin GET /api/articles/public returns 9 articles",
+    "Platform admin GET /api/articles/public with X-View-As-Tenant (Tenant B) works correctly",
+    "Tenant B products have no duplicate product IDs",
+    "Tenant B categories have no duplicates",
+    "Unauthenticated GET /api/products returns global catalog (non-empty)",
+    "Unauthenticated GET /api/categories returns global catalog categories",
+    "Store page UI (Tenant B): Shows all 11 categories with correct product counts",
+    "Store page UI (Tenant B): Products from automate-accounts catalog visible (Zoho Express Setup, CRM, etc.)",
+    "Articles page UI (Tenant B): Shows 13 articles total (All: 13, Blog: 2, Scope-Final Won: 2, Setup Guides: 6)",
+    "Articles page UI (Tenant B): Shows articles from both Tenant B ('TB Article (Audit Test)') and automate-accounts ('AA Article')"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_iter_tenant_query_fix.py",
+    "/app/test_reports/pytest/tenant_query_fix_results.xml"
+  ],
+  "action_items": [
+    "OPTIONAL: store.py get_product (line 129) still uses single tenant_id - if Tenant B user tries to access product detail page for automate-accounts product, it may 404. Consider applying same $in fix.",
+    "OPTIONAL: store.py orders/preview (line 249) uses single tenant_id for product lookup - verify checkout flow works for Tenant B purchasing global catalog products."
+  ],
+  "critical_code_review_comments": [
+    "store.py: get_product (line 129) still uses single tenant_id filter - if a Tenant B user navigates to a specific product detail page, the product may not be found since tenant_id='automate-accounts' won't match Tenant B's tenant_id.",
+    "store.py: orders/preview (line 249) uses single tenant_id filter for product lookup - Tenant B checkout for global catalog products may fail with 404."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% (16/16 tests passed)",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123!",
+    "tenant_b_admin": "adminb@tenantb.local / ChangeMe123! (partner_code: tenant-b-test)"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "P0 bug fix verified. The fix in store.py (lines 63, 86-89) and articles.py (line 127) correctly uses $in: [tid, DEFAULT_TENANT_ID] to include both user's tenant_id AND automate-accounts in queries. Exact counts: Tenant B products=91, categories=11, articles=13. Platform admin products=75 (no duplication). Two optional edge cases noted: get_product and orders/preview still use single tenant_id filter - these may need $in fix for product detail/checkout flows for Tenant B."
+}
