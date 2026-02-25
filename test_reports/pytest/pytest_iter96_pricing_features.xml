@@ -1,62 +1,126 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="20" skipped="0" tests="20" time="1.580" timestamp="2026-02-25T04:15:35.663838+00:00" hostname="agent-env-050b32ac-1e40-4219-8fb1-d07351a2a45e"><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_within_first_tier" time="0.558"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:177: in test_tiered_within_first_tier
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="20" skipped="0" tests="20" time="3.787" timestamp="2026-02-25T04:16:02.285672+00:00" hostname="agent-env-050b32ac-1e40-4219-8fb1-d07351a2a45e"><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_within_first_tier" time="0.601"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:179: in test_tiered_within_first_tier
     result = calc_price(tiered_product["id"], {"users": 5})
-                        ^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_at_boundary" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:183: in test_tiered_at_boundary
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_at_boundary" time="0.128"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:185: in test_tiered_at_boundary
     result = calc_price(tiered_product["id"], {"users": 10})
-                        ^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_spanning_two_tiers" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:188: in test_tiered_spanning_two_tiers
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_spanning_two_tiers" time="0.122"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:190: in test_tiered_spanning_two_tiers
     result = calc_price(tiered_product["id"], {"users": 15})
-                        ^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_has_line_items" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:193: in test_tiered_has_line_items
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_has_line_items" time="0.115"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:195: in test_tiered_has_line_items
     result = calc_price(tiered_product["id"], {"users": 15})
-                        ^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_zero_value_no_charge" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:203: in test_tiered_zero_value_no_charge
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_zero_value_no_charge" time="0.123"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:205: in test_tiered_zero_value_no_charge
     result = calc_price(tiered_product["id"], {"users": 0})
-                        ^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_product_save_with_tiered_intake" time="0.149"><failure message="AssertionError: assert None == 'internal'&#10; +  where None = &lt;built-in method get of dict object at 0xfb72e4754700&gt;('pricing_type')&#10; +    where &lt;built-in method get of dict object at 0xfb72e4754700&gt; = {'product': {'base_price': 50.0, 'bullets': [], 'bullets_included': None, 'card_bullets': None, ...}}.get">backend/tests/test_iter96_tiered_pricing_features.py:241: in test_product_save_with_tiered_intake
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_product_save_with_tiered_intake" time="0.110"><failure message="AssertionError: assert None == 'internal'&#10; +  where None = &lt;built-in method get of dict object at 0xfc2ab85ba280&gt;('pricing_type')&#10; +    where &lt;built-in method get of dict object at 0xfc2ab85ba280&gt; = {'product': {'base_price': 50.0, 'bullets': [], 'bullets_included': None, 'card_bullets': None, ...}}.get">backend/tests/test_iter96_tiered_pricing_features.py:243: in test_product_save_with_tiered_intake
     assert product.get("pricing_type") == "internal"
 E   AssertionError: assert None == 'internal'
-E    +  where None = &lt;built-in method get of dict object at 0xfb72e4754700&gt;('pricing_type')
-E    +    where &lt;built-in method get of dict object at 0xfb72e4754700&gt; = {'product': {'base_price': 50.0, 'bullets': [], 'bullets_included': None, 'card_bullets': None, ...}}.get</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_adds_price" time="0.120"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:263: in test_boolean_yes_adds_price
+E    +  where None = &lt;built-in method get of dict object at 0xfc2ab85ba280&gt;('pricing_type')
+E    +    where &lt;built-in method get of dict object at 0xfc2ab85ba280&gt; = {'product': {'base_price': 50.0, 'bullets': [], 'bullets_included': None, 'card_bullets': None, ...}}.get</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_adds_price" time="0.223"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:265: in test_boolean_yes_adds_price
     result = calc_price(boolean_product["id"], {"rush_delivery": "yes"})
-                        ^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_no_no_addition" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:268: in test_boolean_no_no_addition
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_no_no_addition" time="0.114"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:270: in test_boolean_no_no_addition
     result = calc_price(boolean_product["id"], {"rush_delivery": "no"})
-                        ^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_line_item" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:273: in test_boolean_yes_line_item
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_line_item" time="0.112"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:275: in test_boolean_yes_line_item
     result = calc_price(boolean_product["id"], {"rush_delivery": "yes"})
-                        ^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_true_string" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:281: in test_boolean_true_string
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_true_string" time="0.113"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:283: in test_boolean_true_string
     result = calc_price(boolean_product["id"], {"rush_delivery": "true"})
-                        ^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_missing_answer_no_charge" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:286: in test_boolean_missing_answer_no_charge
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_missing_answer_no_charge" time="0.117"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:288: in test_boolean_missing_answer_no_charge
     result = calc_price(boolean_product["id"], {})
-                        ^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_applied_when_below_minimum" time="0.154"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:297: in test_floor_applied_when_below_minimum
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_applied_when_below_minimum" time="0.252"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:299: in test_floor_applied_when_below_minimum
     result = calc_price(floor_ceiling_product["id"], {"hours": 1})
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_not_applied_when_above" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:302: in test_floor_not_applied_when_above
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_not_applied_when_above" time="0.114"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:304: in test_floor_not_applied_when_above
     result = calc_price(floor_ceiling_product["id"], {"hours": 3})
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_applied_when_above_maximum" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:307: in test_ceiling_applied_when_above_maximum
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_applied_when_above_maximum" time="0.116"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:309: in test_ceiling_applied_when_above_maximum
     result = calc_price(floor_ceiling_product["id"], {"hours": 15})
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_not_applied_when_below" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:312: in test_ceiling_not_applied_when_below
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_not_applied_when_below" time="0.119"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:314: in test_ceiling_not_applied_when_below
     result = calc_price(floor_ceiling_product["id"], {"hours": 8})
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_line_item_label" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:317: in test_floor_line_item_label
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_line_item_label" time="0.120"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:319: in test_floor_line_item_label
     result = calc_price(floor_ceiling_product["id"], {"hours": 1})
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_line_item_label" time="0.000"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:324: in test_ceiling_line_item_label
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_line_item_label" time="0.152"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:326: in test_ceiling_line_item_label
     result = calc_price(floor_ceiling_product["id"], {"hours": 15})
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestVisibilityRulesPricingExclusion" name="test_hidden_question_not_included_in_pricing" time="0.145"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:386: in test_hidden_question_not_included_in_pricing
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
+    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
+E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestVisibilityRulesPricingExclusion" name="test_hidden_question_not_included_in_pricing" time="0.112"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:388: in test_hidden_question_not_included_in_pricing
     pid = product["id"]
           ^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_boolean_and_tiered_and_caps" time="0.118"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:457: in test_save_product_with_boolean_and_tiered_and_caps
+E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_boolean_and_tiered_and_caps" time="0.107"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:459: in test_save_product_with_boolean_and_tiered_and_caps
     pid = product["id"]
           ^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_visibility_rule" time="0.129"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:535: in test_save_product_with_visibility_rule
+E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_visibility_rule" time="0.559"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:537: in test_save_product_with_visibility_rule
     pid = product["id"]
           ^^^^^^^^^^^^^
 E   KeyError: 'id'</failure></testcase></testsuite></testsuites>
