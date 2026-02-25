@@ -1,0 +1,43 @@
+{
+  "summary": "Tested all 6 pricing fix scenarios from the review request. All tests passed: base_price=0 products correctly show 'Price on request' on detail pages, MIG-BOOKS shows BooksMigrationForm with $999 price, admin pricing rules JSON editor works, and catalog cards show correct pricing labels.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "✅ TEST 1: prod_hours_pack (base_price=0, calculator/hours_pack) detail page shows 'Price on request' (not $750)",
+    "✅ TEST 2: prod_dev_enterprise (base_price=0, tiered) detail page shows 'Price on request' (not $13,999)",
+    "✅ TEST 3: prod_migrate_books (MIG-BOOKS) detail page shows BooksMigrationForm with $999 estimated price preview",
+    "✅ TEST 4: Admin catalog - editing prod_migrate_books (which has pricing_rules={calc_type: books_migration}) shows 'Pricing Rules (Advanced)' JSON editor in Pricing tab",
+    "✅ TEST 5: prod_hours_pack catalog card shows 'Contact us' (base_price=0)",
+    "✅ TEST 6: prod_zoho_books_express catalog card shows 'Starts from $999' (tiered, base_price=null)"
+  ],
+  "failed_tests": [],
+  "test_report_links": ["/app/test_reports/iteration_93.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ProductDetail.tsx: isRFQ logic correctly checks base_price === 0 explicitly. The condition `pricing !== null` ensures we wait for the pricing API before showing 'Price on request', which is correct behavior.",
+    "ProductForm.tsx: The pricing rules editor is only shown when `Object.keys(form.pricing_rules).length > 0`. This means products with empty pricing_rules={} won't show the editor - this is intentional and works correctly.",
+    "BooksMigrationForm.jsx: calculateBooksMigrationPrice correctly uses pricingRules.base_fee ?? 999 with proper fallbacks for all rate fields. Initial $999 price (1Y, QBO source, no premium) is correct."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only)",
+    "frontend": "100% (6/6 tests passed)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All pricing fixes are working. Login: admin@automateaccounts.local / ChangeMe123! with partner code 'automate-accounts'. Key: prod_hours_pack (base_price=0 calculator) and prod_dev_enterprise (base_price=0 tiered) both show 'Price on request' on detail pages. prod_migrate_books (MIG-BOOKS) shows BooksMigrationForm with $999 initial price from pricingRules.base_fee fallback. Admin pricing rules JSON editor visible for products with non-empty pricing_rules. One carry-over issue from iter_92: 'Migrate to Zoho Forms' (prod_migrate_forms) still shows no price on catalog card.",
+  "rca_of_issue": "N/A - All tested scenarios pass. Previous issue: ProductDetail.tsx line 366 previously did not check base_price===0, so isRFQ was false for calculator products with base_price=0 (like hours_pack) and the API returned a non-zero total ($750). Fix: Added `product?.base_price === 0` check to isRFQ so these products always show 'Price on request' regardless of API-computed total."
+}
