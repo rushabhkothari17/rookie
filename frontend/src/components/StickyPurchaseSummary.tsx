@@ -31,8 +31,22 @@ export default function StickyPurchaseSummary({
         className="text-4xl font-bold tracking-tight text-slate-900"
         data-testid="summary-total"
       >
-        {isRFQ ? <span className="text-2xl text-slate-400 font-medium">Price on request</span> : `$${pricing.total.toFixed(2)}`}
+        {isRFQ ? <span className="text-2xl text-slate-400 font-medium">Price on request</span> : `£${pricing.total.toFixed(2)}`}
       </div>
+
+      {/* Price breakdown */}
+      {hasBreakdown && (
+        <div className="mt-3 space-y-1 border-t border-slate-100 pt-3" data-testid="summary-line-items">
+          {lineItems!.map((item, i) => (
+            <div key={i} className="flex justify-between text-xs text-slate-500">
+              <span className="flex-1 truncate pr-2">{item.label}</span>
+              <span className={`font-mono shrink-0 ${item.amount < 0 ? "text-green-600" : ""}`}>
+                {item.amount >= 0 ? "+" : ""}£{item.amount.toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {warning && (
         <div
