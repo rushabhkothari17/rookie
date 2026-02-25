@@ -238,6 +238,12 @@ async def partner_login(payload: PartnerLoginRequest, response: Response):
     Requires partner_code to identify the tenant.
     Sets HttpOnly cookies with JWT access and refresh tokens.
     """
+    # automate-accounts is reserved for platform administration — partner login is blocked
+    if payload.partner_code.strip().lower() == DEFAULT_TENANT_ID:
+        raise HTTPException(
+            status_code=403,
+            detail="This code is reserved for platform administration. Please use the Platform Admin login portal."
+        )
     tenant = await resolve_tenant(payload.partner_code)
     partner_roles = ["partner_super_admin", "partner_admin", "partner_staff",
                      "platform_admin", "super_admin", "admin"]
