@@ -176,7 +176,10 @@ export function ProductsTab() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2 items-center">
-                    <Button variant="outline" size="sm" onClick={() => openEdit(product)} data-testid={`admin-edit-${product.id}`}>Edit</Button>
+                    <Button variant="outline" size="sm" onClick={() => openEdit(product)} className="gap-1" data-testid={`admin-edit-${product.id}`}>
+                      <ExternalLink size={14} />
+                      Edit
+                    </Button>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/products/${product.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-product-logs-${product.id}`}>Logs</Button>
                     <Button
                       variant={product.is_active ? "destructive" : "outline"}
