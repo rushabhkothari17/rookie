@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
 import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,11 +12,9 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import AppShell from "@/components/AppShell";
-import ProductHero from "@/components/ProductHero";
-import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
-import SectionCard from "@/components/SectionCard";
 import { displayCategory } from "@/lib/categories";
 import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
+import { ProductLayout, evaluateVisibilityRule, getEnabledIntakeQuestions } from "./store/layouts";
 
 // ── Dynamic form field renderer ─────────────────────────────
 function DynamicField({ field, value, onChange }: {
