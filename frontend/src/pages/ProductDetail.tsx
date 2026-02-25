@@ -301,6 +301,12 @@ export default function ProductDetail() {
   // Compute enabled intake questions & initialise answers with defaults
   const enabledIntakeQuestions = useMemo(() => getEnabledIntakeQuestions(product?.intake_schema_json), [product]);
 
+  // Filter by visibility rules using current answers
+  const visibleIntakeQuestions = useMemo(
+    () => enabledIntakeQuestions.filter(q => evaluateVisibilityRule(q.visibility_rule, intakeAnswers)),
+    [enabledIntakeQuestions, intakeAnswers]
+  );
+
   useEffect(() => {
     if (!enabledIntakeQuestions.length) return;
     const defaults: Record<string, any> = {};
