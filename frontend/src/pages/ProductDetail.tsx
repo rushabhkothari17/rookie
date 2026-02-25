@@ -573,18 +573,7 @@ export default function ProductDetail() {
           </div>
 
           <div>
-            {product.sku === "MIG-BOOKS" ? (
-              <StickyPurchaseSummary
-                pricing={{
-                  subtotal: migBooksData.price,
-                  fee: 0,
-                  total: migBooksData.price,
-                }}
-                cta={ctaConfig}
-                currency={customer?.currency}
-                disabled={false}
-              />
-            ) : scopeUnlock ? (
+            {scopeUnlock ? (
               <StickyPurchaseSummary
                 pricing={{
                   subtotal: scopeUnlock.price,
