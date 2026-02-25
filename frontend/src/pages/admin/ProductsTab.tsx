@@ -333,20 +333,20 @@ export function ProductsTab() {
           className="max-w-3xl max-h-[92vh] flex flex-col p-0 gap-0 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden"
           data-testid="admin-product-dialog"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 shrink-0">
+          {/* Header with accessible DialogTitle */}
+          <DialogHeader className="flex-row items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 shrink-0 space-y-0">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-[#1e40af]" />
-              <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+              <DialogTitle className="text-base font-semibold text-slate-900 tracking-tight">
                 {editProduct ? editProduct.name : "New Product"}
-              </h2>
+              </DialogTitle>
               {editProduct && (
                 <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700">
                   {editProduct.pricing_type || "internal"}
                 </span>
               )}
             </div>
-          </div>
+          </DialogHeader>
 
           {/* Body — scrollable */}
           <div className="flex-1 overflow-y-auto px-6 py-5 min-h-0">
