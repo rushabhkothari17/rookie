@@ -17,7 +17,6 @@ import ProductHero from "@/components/ProductHero";
 import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
 import SectionCard from "@/components/SectionCard";
 import { displayCategory } from "@/lib/categories";
-import BooksMigrationForm, { calculateBooksMigrationPrice } from "@/components/BooksMigrationForm";
 import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
 
 // ── Dynamic form field renderer ─────────────────────────────
