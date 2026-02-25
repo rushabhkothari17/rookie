@@ -162,6 +162,7 @@ export function ProductsTab() {
                     <TableHead>Billing</TableHead>
                     <TableHead>Price</TableHead>
                     <TableHead>Status</TableHead>
+                    {isPlatformAdmin && <TableHead>Partner</TableHead>}
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
