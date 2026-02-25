@@ -228,6 +228,23 @@ def calculate_price(
                     })
                     subtotal = new_sub
 
+        # ── Formula question — cross-field calculation ────────────────────
+        elif q_type == "formula":
+            expr = q.get("formula_expression", "")
+            if not expr:
+                continue
+            # Build context from all numeric inputs
+            ctx: Dict[str, float] = {}
+            for k, v in inputs.items():
+                try:
+                    ctx[k] = float(v or 0)
+                except (TypeError, ValueError):
+                    ctx[k] = 0.0
+            amount = eval_formula_expression(expr, ctx)
+            if amount > 0:
+                subtotal += amount
+                line_items.append({"label": q.get("label", key) or "Formula calculation", "amount": amount})
+
     # Price rounding (optional product-level config)
     price_rounding = product.get("price_rounding")
     if price_rounding and subtotal > 0:
