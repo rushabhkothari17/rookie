@@ -464,11 +464,11 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-slate-400 py-8 text-sm">Loading…</TableCell>
+                <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8 text-sm">Loading…</TableCell>
               </TableRow>
             ) : resources.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-slate-400 py-8 text-sm">No resources yet.</TableCell>
+                <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8 text-sm">No resources yet.</TableCell>
               </TableRow>
             ) : resources.map((a) => (
               <TableRow key={a.id} data-testid={`resource-row-${a.id}`}>
