@@ -51,6 +51,21 @@ async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code
     return DEFAULT_TENANT_ID
 
 
+async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
+    """Resolve tenant_id for public store listing pages.
+    Intentionally ignores X-View-As-Tenant so the admin impersonation header does not
+    bleed into public-facing store queries (platform admin always sees their own store)."""
+    if user and user.get("tenant_id"):
+        return user["tenant_id"]
+    if api_key_tid:
+        return api_key_tid
+    if partner_code:
+        tenant = await db.tenants.find_one({"code": partner_code.lower()}, {"_id": 0, "id": 1})
+        if tenant:
+            return tenant["id"]
+    return DEFAULT_TENANT_ID
+
+
 @router.get("/categories")
 async def get_categories(
     partner_code: Optional[str] = None,
