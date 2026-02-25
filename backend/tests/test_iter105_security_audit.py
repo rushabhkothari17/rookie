@@ -164,12 +164,21 @@ class TestRegisterBlocked:
     """Test 4 - register with partner_code=automate-accounts is blocked."""
 
     def test_register_automate_accounts_blocked(self):
+        # Must provide a valid body so Pydantic validation passes and security check fires
         resp = requests.post(
             f"{BASE_URL}/api/auth/register?partner_code={RESERVED_CODE}",
             json={
                 "email": "newuser@example.com",
                 "password": "SecurePass123!",
                 "full_name": "Test User",
+                "address": {
+                    "line1": "123 Test St",
+                    "line2": "",
+                    "city": "London",
+                    "region": "England",
+                    "postal": "EC1A 1BB",
+                    "country": "GB",
+                },
             },
         )
         assert resp.status_code == 403, f"Expected 403, got {resp.status_code}: {resp.text}"
