@@ -362,7 +362,9 @@ export default function ProductDetail() {
     } finally { setSubmittingScope(false); }
   };
 
-  const isRFQ = product?.sku !== "MIG-BOOKS" && !pricing?.is_scope_request && pricing !== null && (pricing?.total === 0 || (!product?.base_price && !pricing?.total));
+  // isRFQ: product is "price on request" when base_price is explicitly 0, or when pricing returns 0 / no total
+  const isRFQ = product?.sku !== "MIG-BOOKS" && !pricing?.is_scope_request && pricing !== null &&
+    (product?.base_price === 0 || pricing?.total === 0 || (!product?.base_price && !pricing?.total));
 
   const handleSubmitQuote = async () => {
     if (!quoteFormData.name || !quoteFormData.email) {
