@@ -238,6 +238,7 @@ class AdminProductUpdate(BaseModel):
     intake_schema_json: Optional[IntakeSchemaJson] = None
     price_rounding: Optional[str] = None
     custom_sections: Optional[List[CustomSection]] = None
+    display_layout: Optional[str] = "standard"
 
 
 class AdminCustomerPaymentUpdate(BaseModel):
