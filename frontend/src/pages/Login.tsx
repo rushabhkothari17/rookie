@@ -16,6 +16,7 @@ interface PartnerInfo {
   logo_url?: string;
   primary_color?: string;
   accent_color?: string;
+  is_platform?: boolean;
 }
 
 /** Simple luminance check — returns true if text should be dark on this bg */
