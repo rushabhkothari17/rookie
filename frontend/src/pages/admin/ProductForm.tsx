@@ -398,24 +398,73 @@ export function ProductForm({
       {/* ─── Tab: Pricing ─── */}
       {activeTab === "pricing" && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-slate-600">Base Price ($)</label>
-              <Input type="number" value={form.base_price} onChange={e => s("base_price")(parseFloat(e.target.value) || 0)} className="mt-1" data-testid="pf-price" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-600">Price Rounding</label>
-              <Select value={form.price_rounding || "none"} onValueChange={v => s("price_rounding")(v === "none" ? "" : v)}>
-                <SelectTrigger className="mt-1" data-testid="pf-price-rounding"><SelectValue placeholder="No rounding" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No rounding</SelectItem>
-                  <SelectItem value="25">Round to nearest $25</SelectItem>
-                  <SelectItem value="50">Round to nearest $50</SelectItem>
-                  <SelectItem value="100">Round to nearest $100</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Pricing Type */}
+          <div>
+            <label className="text-xs text-slate-600">Pricing Type</label>
+            <Select value={form.pricing_type || "fixed"} onValueChange={v => s("pricing_type")(v)}>
+              <SelectTrigger className="mt-1" data-testid="pf-pricing-type"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fixed">Fixed price</SelectItem>
+                <SelectItem value="tiered">Tiered (select a variant)</SelectItem>
+                <SelectItem value="calculator">Calculator (custom inputs)</SelectItem>
+                <SelectItem value="scope_request">Scope request (price on request)</SelectItem>
+                <SelectItem value="inquiry">Inquiry only (no pricing)</SelectItem>
+                <SelectItem value="external">External URL</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Fixed: base price */}
+          {(form.pricing_type === "fixed" || form.pricing_type === "calculator") && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-slate-600">Base Price ($){form.pricing_type === "calculator" ? " (starting/minimum)" : ""}</label>
+                <Input type="number" value={form.base_price} onChange={e => s("base_price")(parseFloat(e.target.value) || 0)} className="mt-1" data-testid="pf-price" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-600">Price Rounding</label>
+                <Select value={form.price_rounding || "none"} onValueChange={v => s("price_rounding")(v === "none" ? "" : v)}>
+                  <SelectTrigger className="mt-1" data-testid="pf-price-rounding"><SelectValue placeholder="No rounding" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No rounding</SelectItem>
+                    <SelectItem value="25">Round to nearest $25</SelectItem>
+                    <SelectItem value="50">Round to nearest $50</SelectItem>
+                    <SelectItem value="100">Round to nearest $100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {/* Tiered: variant editor */}
+          {form.pricing_type === "tiered" && (
+            <VariantEditor
+              variants={(form.pricing_rules?.variants || [])}
+              onChange={variants => setForm({ ...form, pricing_rules: { ...form.pricing_rules, variants } })}
+            />
+          )}
+
+          {/* Calculator: price inputs editor */}
+          {form.pricing_type === "calculator" && (
+            <PriceInputsEditor
+              inputs={(form.pricing_rules?.price_inputs || [])}
+              onChange={price_inputs => setForm({ ...form, pricing_rules: { ...form.pricing_rules, price_inputs } })}
+            />
+          )}
+
+          {/* External URL */}
+          {form.pricing_type === "external" && (
+            <div>
+              <label className="text-xs text-slate-600">External URL</label>
+              <Input
+                value={form.pricing_rules?.external_url || ""}
+                onChange={e => setForm({ ...form, pricing_rules: { ...form.pricing_rules, external_url: e.target.value } })}
+                placeholder="https://..."
+                className="mt-1"
+                data-testid="pf-external-url"
+              />
+            </div>
+          )}
 
           <label className="flex items-center gap-2 cursor-pointer text-sm">
             <input
@@ -446,24 +495,20 @@ export function ProductForm({
             </Select>
           </div>
 
-          {/* Advanced: Pricing Rules JSON */}
-          {form.pricing_rules && Object.keys(form.pricing_rules).length > 0 && (
+          {/* Legacy: Pricing Rules JSON — shown for products with existing complex rules */}
+          {form.pricing_rules && Object.keys(form.pricing_rules).length > 0 &&
+           form.pricing_type !== "tiered" && form.pricing_type !== "calculator" && (
             <div>
-              <label className="text-xs text-slate-600">Pricing Rules (Advanced)</label>
-              <p className="text-[10px] text-slate-400 mb-1">
-                JSON config for tiered/calculator pricing. Edit to update rates, variants, etc.
-              </p>
+              <label className="text-xs text-slate-600">Pricing Rules (Advanced JSON)</label>
               <Textarea
                 value={pricingRulesText}
                 onChange={e => handlePricingRulesChange(e.target.value)}
-                rows={6}
+                rows={5}
                 className="mt-1 font-mono text-xs"
                 placeholder="{}"
                 data-testid="pf-pricing-rules"
               />
-              {pricingRulesError && (
-                <p className="text-xs text-red-500 mt-1">{pricingRulesError}</p>
-              )}
+              {pricingRulesError && <p className="text-xs text-red-500 mt-1">{pricingRulesError}</p>}
             </div>
           )}
         </div>
