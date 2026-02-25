@@ -173,6 +173,8 @@ async def seed_admin_user():
         "phone": "",
         "is_verified": True,
         "is_admin": True,
+        "role": "platform_admin",
+        "tenant_id": None,
         "verification_code": None,
         "created_at": now_iso(),
     }
