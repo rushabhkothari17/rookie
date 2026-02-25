@@ -12,7 +12,7 @@ from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tena
 from db.session import db
 from models import AdminProductCreate, AdminProductUpdate, CategoryCreate, CategoryUpdate, IntakeSchemaJson
 from services.audit_service import create_audit_log
-from services.pricing_service import build_price_inputs
+from services.pricing_service import calculate_price
 
 router = APIRouter(prefix="/api", tags=["admin-catalog"])
 
