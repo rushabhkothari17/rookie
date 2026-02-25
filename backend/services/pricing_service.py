@@ -22,6 +22,25 @@ def round_nearest(v: float, nearest: int) -> float:
     return math.ceil(v / nearest) * nearest
 
 
+def _calculate_tiered_price(val: float, tiers: List[Dict]) -> float:
+    """Progressive tiered pricing — each tier covers its quantity range.
+
+    Example tiers: [{from:0, to:10, price_per_unit:5}, {from:10, to:None, price_per_unit:3}]
+    For val=15: (10-0)*5 + (15-10)*3 = 50 + 15 = 65
+    """
+    total = 0.0
+    for tier in sorted(tiers, key=lambda t: float(t.get("from", 0))):
+        from_v = float(tier.get("from", 0))
+        to_v = tier.get("to")
+        ppu = float(tier.get("price_per_unit", 0))
+        if val <= from_v:
+            break
+        qty_in_tier = (val - from_v) if to_v is None else (min(val, float(to_v)) - from_v)
+        if qty_in_tier > 0:
+            total += qty_in_tier * ppu
+    return round_cents(total)
+
+
 # ── Intake schema helpers ──────────────────────────────────────────────────────
 
 def _get_intake_questions(schema: Any) -> List[Dict]:
