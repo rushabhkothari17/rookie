@@ -334,9 +334,10 @@ export default function Login() {
                 setLoginLoading(true);
                 try {
                   const result = await login(email, password, partnerInfo!.code);
-                  navigate(redirect || (result?.is_admin ? "/admin" : "/portal"));
+                  const isAdminRedirect = result?.is_admin && (!redirect || redirect === "/store" || redirect === "/");
+                  navigate(isAdminRedirect ? "/admin" : (redirect || (result?.is_admin ? "/admin" : "/portal")));
                 } catch (err: any) {
-                  setLoginError(err.message || "Invalid email or password.");
+                  setLoginError(err.response?.data?.detail || err.message || "Invalid email or password.");
                 } finally {
                   setLoginLoading(false);
                 }
