@@ -105,6 +105,7 @@ Key: rate limiting, security headers, CORS restriction, IDOR fixes, NoSQL inject
 - Iter91 Email+Visibility+UI Fixes: `/app/test_reports/iteration_91.json` — 12/12 backend + 5/5 frontend pass (Feb 2026)
 - Pricing Display Fix: `/app/test_reports/iteration_92.json` — 95%+ frontend pass (all pricing types now display correctly)
 - Pricing Detail Page Fix: `/app/test_reports/iteration_93.json` — 6/6 frontend pass (base_price=0 shows "Price on request", admin pricing_rules editor added)
+- Catalog & Pricing Refactor: `/app/test_reports/iteration_94.json` — 18/18 backend + 95% frontend pass (new admin fields, pricing types, store labels)
 
 ### Catalog & Pricing Refactor (Feb 2026)
 - **Dead code removal**: Removed ~12 unused fields from Product model (`sku`, `pricing_complexity`, `bullets_excluded`, `bullets_needed`, `next_steps`, `outcome`, `requirements`, `support_details`, `inclusions`, `exclusions`, `automation_details`).
