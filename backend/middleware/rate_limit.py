@@ -19,7 +19,8 @@ RATE_LIMITS: Dict[str, Tuple[int, int]] = {
     "/api/auth/login":                         (10, 60),    # 10 per minute
     "/api/auth/partner-login":                 (10, 60),
     "/api/auth/customer-login":                (10, 60),
-    "/api/auth/register":                      (5, 60),     # 5 per minute
+    "/api/auth/register-partner":              (20, 60),    # 20 per minute (more generous for self-service partner reg)
+    "/api/auth/register":                      (5, 60),     # 5 per minute (customer reg)
     "/api/auth/forgot-password":               (5, 300),    # 5 per 5 min
     "/api/auth/resend-verification-email":     (3, 300),    # 3 per 5 min
     "/api/auth/reset-password":                (5, 300),
