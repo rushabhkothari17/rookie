@@ -68,7 +68,7 @@ interface ArticlesTabProps {
 
 export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
   const [showImportArticles, setShowImportArticles] = useState(false);
-  const [subTab, setSubTab] = useState<"articles" | "templates" | "email-templates" | "categories">("articles");
+  const [subTab, setSubTab] = useState<"articles" | "templates" | "email-templates" | "categories" | "override-codes">("articles");
   const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
 
   const loadCategories = useCallback(async () => {
