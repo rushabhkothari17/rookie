@@ -6,7 +6,7 @@ import { applyPartnerBranding } from "@/contexts/WebsiteContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, ArrowRight, ChevronLeft } from "lucide-react";
+import { AlertCircle, ArrowRight, ChevronLeft, Loader2 } from "lucide-react";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -18,6 +18,61 @@ interface PartnerInfo {
   accent_color?: string;
 }
 
+/** Simple luminance check — returns true if text should be dark on this bg */
+function isLightColor(hex?: string): boolean {
+  if (!hex) return false;
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return false;
+  const r = parseInt(m[1].slice(0, 2), 16);
+  const g = parseInt(m[1].slice(2, 4), 16);
+  const b = parseInt(m[1].slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 155;
+}
+
+const css = `
+  @keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .anim-slide-up   { animation: slideUpFade 0.45s cubic-bezier(.16,1,.3,1) both; }
+  .anim-scale-in   { animation: scaleIn 0.35s cubic-bezier(.16,1,.3,1) both; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .auth-input {
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .auth-input:focus {
+    border-color: #0f172a;
+    box-shadow: 0 0 0 3px rgba(15,23,42,0.08);
+    outline: none;
+  }
+  .auth-input.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.08);
+  }
+  .btn-primary {
+    transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .partner-pill {
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .partner-pill:hover {
+    background-color: #e2e8f0;
+  }
+`;
+
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -26,6 +81,7 @@ export default function Login() {
 
   const [step, setStep] = useState<"gateway" | "auth">("gateway");
   const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
+  const [authKey, setAuthKey] = useState(0); // force re-mount for animation replay
 
   const [codeInput, setCodeInput] = useState("");
   const [codeLoading, setCodeLoading] = useState(false);
@@ -57,6 +113,7 @@ export default function Login() {
         primary_color: branding.primary_color,
         accent_color: branding.accent_color,
       });
+      setAuthKey(k => k + 1);
       setStep("auth");
     } catch (err: any) {
       if (!silent) setCodeError(err.response?.data?.detail || "Partner code not found.");
@@ -79,227 +136,283 @@ export default function Login() {
 
   const primary = partnerInfo?.primary_color || "#0f172a";
   const accent = partnerInfo?.accent_color || primary;
+  const lightBg = isLightColor(primary);
+  const panelText = lightBg ? "#0f172a" : "#ffffff";
+  const panelMuted = lightBg ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.45)";
 
   // ── Gateway ──────────────────────────────────────────────────────────────────
   if (step === "gateway") {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4" data-testid="auth-gateway">
-        <div className="w-full max-w-[360px] space-y-6">
+      <>
+        <style>{css}</style>
+        <div
+          className="min-h-screen bg-white flex items-center justify-center px-4"
+          data-testid="auth-gateway"
+        >
+          <div className="w-full max-w-[400px]">
 
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Sign in</h1>
-            <p className="text-sm text-slate-400">Enter your partner code to continue.</p>
-          </div>
-
-          <form
-            onSubmit={async (e) => { e.preventDefault(); await validateAndProceed(codeInput); }}
-            className="space-y-3"
-            data-testid="partner-code-form"
-          >
-            <div className="space-y-1.5">
-              <Label htmlFor="partner-code" className="text-sm text-slate-600">Partner Code</Label>
-              <Input
-                id="partner-code"
-                placeholder="e.g. automate-accounts"
-                value={codeInput}
-                onChange={e => { setCodeInput(e.target.value); setCodeError(""); }}
-                required
-                autoFocus
-                className={`h-11 transition-colors ${codeError ? "border-red-400 focus:border-red-400" : "border-slate-200 focus:border-slate-400"}`}
-                data-testid="partner-code-input"
-              />
-              {codeError && (
-                <p className="flex items-center gap-1.5 text-xs text-red-500" data-testid="gateway-error">
-                  <AlertCircle size={12} /> {codeError}
-                </p>
-              )}
+            {/* Logo mark */}
+            <div className="anim-slide-up flex justify-center mb-10">
+              <div className="h-11 w-11 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="8" height="8" rx="1.5" fill="white" fillOpacity="0.9"/>
+                  <rect x="13" y="3" width="8" height="8" rx="1.5" fill="white" fillOpacity="0.5"/>
+                  <rect x="3" y="13" width="8" height="8" rx="1.5" fill="white" fillOpacity="0.5"/>
+                  <rect x="13" y="13" width="8" height="8" rx="1.5" fill="white" fillOpacity="0.9"/>
+                </svg>
+              </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-11 bg-slate-900 hover:bg-slate-700 text-white transition-colors"
-              disabled={codeLoading || !codeInput.trim()}
-              data-testid="partner-code-submit"
-            >
-              {codeLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Verifying…
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Continue <ArrowRight size={15} />
-                </span>
-              )}
-            </Button>
-          </form>
+            {/* Heading */}
+            <div className="anim-slide-up delay-100 text-center mb-8">
+              <h1 className="text-[2rem] font-bold text-slate-900 tracking-tight leading-tight">
+                Welcome
+              </h1>
+              <p className="text-slate-400 text-sm mt-1.5">Enter your partner code to sign in.</p>
+            </div>
 
-          <p className="text-center text-sm text-slate-400">
-            <Link
-              to="/signup?type=partner"
-              className="text-slate-500 hover:text-slate-800 transition-colors underline-offset-4 hover:underline"
-              data-testid="register-partner-link"
-            >
-              Register as a partner
-            </Link>
-          </p>
+            {/* Form */}
+            <div className="anim-slide-up delay-200 space-y-3">
+              <div className="relative">
+                <input
+                  placeholder="Partner code"
+                  value={codeInput}
+                  onChange={e => { setCodeInput(e.target.value); setCodeError(""); }}
+                  onKeyDown={e => e.key === "Enter" && codeInput.trim() && validateAndProceed(codeInput)}
+                  required
+                  autoFocus
+                  className={`auth-input w-full h-12 px-4 rounded-xl border text-sm text-slate-800 placeholder:text-slate-300 bg-white ${codeError ? "error" : "border-slate-200"}`}
+                  data-testid="partner-code-input"
+                />
+                {codeError && (
+                  <p
+                    className="flex items-center gap-1.5 mt-2 text-xs text-red-500 pl-1"
+                    data-testid="gateway-error"
+                  >
+                    <AlertCircle size={11} strokeWidth={2.5} /> {codeError}
+                  </p>
+                )}
+              </div>
 
+              <button
+                onClick={() => codeInput.trim() && validateAndProceed(codeInput)}
+                disabled={codeLoading || !codeInput.trim()}
+                className="btn-primary w-full h-12 rounded-xl bg-slate-900 text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                data-testid="partner-code-submit"
+              >
+                {codeLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>Continue <ArrowRight size={15} strokeWidth={2.5} /></>
+                )}
+              </button>
+            </div>
+
+            {/* Divider + register */}
+            <div className="anim-slide-up delay-300 mt-8 text-center">
+              <Link
+                to="/signup?type=partner"
+                className="text-sm text-slate-400 hover:text-slate-700 transition-colors"
+                data-testid="register-partner-link"
+              >
+                Register as a partner
+              </Link>
+            </div>
+
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // ── Auth screen ───────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white flex" data-testid="login-page">
+    <>
+      <style>{css}</style>
+      <div className="min-h-screen bg-white flex" data-testid="login-page" key={authKey}>
 
-      {/* Left brand strip */}
-      <div
-        className="hidden lg:flex w-72 xl:w-80 shrink-0 flex-col justify-between p-10"
-        style={{ backgroundColor: primary }}
-      >
-        <div className="flex items-center gap-2.5">
-          {partnerInfo?.logo_url ? (
-            <img src={partnerInfo.logo_url} alt={partnerInfo.name} className="h-7 object-contain" />
-          ) : (
-            <div className="h-8 w-8 rounded-lg bg-white/15 flex items-center justify-center text-white font-semibold text-sm">
-              {partnerInfo?.name?.[0] || "P"}
-            </div>
-          )}
-          <span className="text-white/90 font-medium text-sm">{partnerInfo?.name}</span>
-        </div>
-        <span className="text-white/20 text-xs">{partnerInfo?.code}</span>
-      </div>
+        {/* Left brand panel */}
+        <div
+          className="hidden lg:flex w-[340px] xl:w-[400px] shrink-0 flex-col justify-between p-10 relative overflow-hidden"
+          style={{ backgroundColor: primary }}
+        >
+          {/* Decorative circles */}
+          <div
+            className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full"
+            style={{ background: lightBg ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.06)" }}
+          />
+          <div
+            className="absolute -top-10 -left-10 w-40 h-40 rounded-full"
+            style={{ background: lightBg ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)" }}
+          />
 
-      {/* Right form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-[360px] space-y-6">
-
-          {/* Mobile partner label */}
-          <div className="lg:hidden flex items-center gap-2 mb-2">
+          {/* Partner identity */}
+          <div className="relative z-10 flex items-center gap-2.5">
             {partnerInfo?.logo_url ? (
-              <img src={partnerInfo.logo_url} alt={partnerInfo.name} className="h-6 object-contain" />
+              <img src={partnerInfo.logo_url} alt={partnerInfo.name} className="h-7 object-contain" />
             ) : (
               <div
-                className="h-6 w-6 rounded flex items-center justify-center text-white text-xs font-bold"
-                style={{ backgroundColor: primary }}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                style={{ background: lightBg ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.2)", color: panelText }}
               >
-                {partnerInfo?.name?.[0]}
+                {partnerInfo?.name?.[0] || "P"}
               </div>
             )}
-            <span className="text-sm text-slate-500">{partnerInfo?.name}</span>
+            <span className="text-sm font-semibold" style={{ color: panelText }}>{partnerInfo?.name}</span>
           </div>
 
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Welcome back</h1>
-            <p className="text-sm text-slate-400">Sign in to your account.</p>
-          </div>
-
-          {loginError && (
-            <p className="flex items-center gap-1.5 text-xs text-red-500" data-testid="login-error">
-              <AlertCircle size={12} /> {loginError}
-            </p>
-          )}
-
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setLoginError("");
-              setLoginLoading(true);
-              try {
-                const result = await login(email, password, partnerInfo!.code);
-                navigate(redirect || (result?.is_admin ? "/admin" : "/portal"));
-              } catch (err: any) {
-                setLoginError(err.message || "Invalid email or password.");
-              } finally {
-                setLoginLoading(false);
-              }
-            }}
-            className="space-y-3"
-            data-testid="login-form"
+          {/* Large decorative initial */}
+          <div
+            className="relative z-10 text-[7rem] font-black leading-none select-none"
+            style={{ color: lightBg ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.08)" }}
           >
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-sm text-slate-600">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                autoFocus
-                className="h-11 border-slate-200 focus:border-slate-400 transition-colors"
-                data-testid="login-email-input"
-              />
-            </div>
+            {partnerInfo?.name?.[0] || "P"}
+          </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm text-slate-600">Password</Label>
-                <Link
-                  to={`/forgot-password${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
-                  className="text-xs transition-colors hover:underline underline-offset-4"
-                  style={{ color: accent }}
-                  data-testid="forgot-password-link"
+          {/* Code label at very bottom */}
+          <span
+            className="relative z-10 text-xs font-mono"
+            style={{ color: panelMuted }}
+          >
+            {partnerInfo?.code}
+          </span>
+        </div>
+
+        {/* Right form panel */}
+        <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
+          <div className="w-full max-w-[360px] space-y-7" key={authKey}>
+
+            {/* Mobile partner badge */}
+            <div className="lg:hidden anim-slide-up flex items-center gap-2">
+              {partnerInfo?.logo_url ? (
+                <img src={partnerInfo.logo_url} alt={partnerInfo.name} className="h-6 object-contain" />
+              ) : (
+                <div
+                  className="h-6 w-6 rounded text-xs font-bold text-white flex items-center justify-center"
+                  style={{ backgroundColor: primary }}
                 >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                className="h-11 border-slate-200 focus:border-slate-400 transition-colors"
-                data-testid="login-password-input"
-              />
+                  {partnerInfo?.name?.[0]}
+                </div>
+              )}
+              <span className="text-sm text-slate-500">{partnerInfo?.name}</span>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-11 text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: primary }}
-              disabled={loginLoading}
-              data-testid="login-submit-button"
-            >
-              {loginLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in…
-                </span>
-              ) : "Sign In"}
-            </Button>
-          </form>
+            {/* Heading */}
+            <div className="anim-slide-up">
+              <h1 className="text-[1.75rem] font-bold text-slate-900 tracking-tight">Sign in</h1>
+              <p className="text-slate-400 text-sm mt-1">Welcome back. Enter your credentials to continue.</p>
+            </div>
 
-          <div className="space-y-3 pt-1">
-            <p className="text-center text-sm text-slate-400">
+            {/* Error */}
+            {loginError && (
+              <p className="anim-scale-in flex items-center gap-1.5 text-xs text-red-500" data-testid="login-error">
+                <AlertCircle size={12} strokeWidth={2.5} /> {loginError}
+              </p>
+            )}
+
+            {/* Form */}
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setLoginError("");
+                setLoginLoading(true);
+                try {
+                  const result = await login(email, password, partnerInfo!.code);
+                  navigate(redirect || (result?.is_admin ? "/admin" : "/portal"));
+                } catch (err: any) {
+                  setLoginError(err.message || "Invalid email or password.");
+                } finally {
+                  setLoginLoading(false);
+                }
+              }}
+              className="space-y-4"
+              data-testid="login-form"
+            >
+              <div className="anim-slide-up delay-100 space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Email
+                </Label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  className="auth-input w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder:text-slate-300 bg-white"
+                  data-testid="login-email-input"
+                />
+              </div>
+
+              <div className="anim-slide-up delay-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Password
+                  </Label>
+                  <Link
+                    to={`/forgot-password${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
+                    className="text-xs font-medium transition-colors hover:opacity-70"
+                    style={{ color: accent }}
+                    data-testid="forgot-password-link"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  className="auth-input w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder:text-slate-300 bg-white"
+                  data-testid="login-password-input"
+                />
+              </div>
+
+              <div className="anim-slide-up delay-300 pt-1">
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  className="btn-primary w-full h-11 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                  style={{ backgroundColor: primary }}
+                  data-testid="login-submit-button"
+                >
+                  {loginLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : "Sign In"}
+                </button>
+              </div>
+            </form>
+
+            {/* Footer links */}
+            <div className="anim-slide-up delay-400 text-center text-sm text-slate-400">
               New here?{" "}
               <Link
                 to={`/signup${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
-                className="font-medium hover:underline underline-offset-4 transition-colors"
+                className="font-semibold transition-colors hover:opacity-70"
                 style={{ color: accent }}
                 data-testid="register-customer-link"
               >
                 Create an account
               </Link>
-            </p>
+            </div>
 
-            <p className="text-center">
-              <button
-                onClick={handleChangePartner}
-                className="text-xs text-slate-300 hover:text-slate-500 transition-colors inline-flex items-center gap-1"
-                data-testid="change-partner-btn"
-              >
-                <ChevronLeft size={11} />
-                {partnerInfo?.code}
-              </button>
-            </p>
           </div>
+
+          {/* Floating partner pill — bottom right */}
+          <button
+            onClick={handleChangePartner}
+            className="partner-pill absolute bottom-6 right-6 flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-medium text-slate-500"
+            data-testid="change-partner-btn"
+          >
+            <ChevronLeft size={11} strokeWidth={2.5} />
+            {partnerInfo?.code}
+          </button>
 
         </div>
       </div>
-    </div>
+    </>
   );
 }
