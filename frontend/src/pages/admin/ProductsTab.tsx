@@ -53,20 +53,12 @@ export function ProductsTab() {
 
   useEffect(() => { load(); }, []);
 
-  const openCreate = () => {
-    navigate("/admin/products/new");
-  };
-
-  const openEdit = (p: any) => {
-    navigate(`/admin/products/${p.id}/edit`);
-  };
+  const openCreate = () => navigate("/admin/products/new");
+  const openEdit = (p: any) => navigate(`/admin/products/${p.id}/edit`);
 
   const handleToggleActive = async (p: any) => {
     try {
-      await api.put(`/admin/products/${p.id}`, {
-        name: p.name,
-        is_active: !p.is_active,
-      });
+      await api.put(`/admin/products/${p.id}`, { name: p.name, is_active: !p.is_active });
       toast.success(`Product ${p.is_active ? "deactivated" : "activated"}`);
       load();
     } catch {
@@ -78,9 +70,7 @@ export function ProductsTab() {
     try {
       const token = localStorage.getItem("aa_token");
       const baseUrl = process.env.REACT_APP_BACKEND_URL;
-      const res = await fetch(`${baseUrl}/api/admin/export/catalog`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${baseUrl}/api/admin/export/catalog`, { headers: { Authorization: `Bearer ${token}` } });
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -109,22 +99,13 @@ export function ProductsTab() {
 
   return (
     <div className="space-y-4">
-      {/* Sub-tabs for Products and Categories */}
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
         <TabsList className="bg-slate-100 p-1 rounded-lg w-fit">
-          <TabsTrigger 
-            value="products" 
-            className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2"
-            data-testid="products-subtab-products"
-          >
+          <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2" data-testid="products-subtab-products">
             <Package size={16} />
             Products
           </TabsTrigger>
-          <TabsTrigger 
-            value="categories" 
-            className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2"
-            data-testid="products-subtab-categories"
-          >
+          <TabsTrigger value="categories" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2" data-testid="products-subtab-categories">
             <FolderTree size={16} />
             Categories
           </TabsTrigger>
@@ -139,11 +120,9 @@ export function ProductsTab() {
                 <Button size="sm" onClick={openCreate} data-testid="admin-create-product-btn">+ New Product</Button>
               </>
             } />
-
-            {/* Filters */}
             <div className="rounded-xl border border-slate-200 bg-white p-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Input placeholder="Search products…" value={searchText} onChange={(e) => setSearchText(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-products-search" />
+                <Input placeholder="Search products..." value={searchText} onChange={(e) => setSearchText(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-products-search" />
                 <Select value={catalogFilter} onValueChange={v => { setCatalogFilter(v); setPage(1); }}>
                   <SelectTrigger className="h-8 text-xs w-32" data-testid="admin-catalog-filter"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -161,7 +140,6 @@ export function ProductsTab() {
                 <Button size="sm" variant="outline" onClick={() => { setSearchText(""); setCatalogFilter("all"); setCategoryFilter("all"); setPage(1); }} className="h-8 text-xs" data-testid="admin-catalog-clear-filters">Clear</Button>
               </div>
             </div>
-
             <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
               <Table data-testid="admin-catalog-table">
                 <TableHeader>
@@ -175,12 +153,8 @@ export function ProductsTab() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loading && (
-                    <TableRow><TableCell colSpan={6} className="text-center text-slate-400">Loading…</TableCell></TableRow>
-                  )}
-                  {!loading && filtered.length === 0 && (
-                    <TableRow><TableCell colSpan={6} className="text-center text-slate-400">No products found.</TableCell></TableRow>
-                  )}
+                  {loading && <TableRow><TableCell colSpan={6} className="text-center text-slate-400">Loading...</TableCell></TableRow>}
+                  {!loading && filtered.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-slate-400">No products found.</TableCell></TableRow>}
                   {paged.map((product) => (
                     <TableRow key={product.id} data-testid={`admin-product-row-${product.id}`}>
                       <TableCell>
@@ -202,27 +176,13 @@ export function ProductsTab() {
                       <TableCell>
                         <div className="flex gap-2 items-center">
                           <Button variant="outline" size="sm" onClick={() => openEdit(product)} className="gap-1" data-testid={`admin-edit-${product.id}`}>
-                            <ExternalLink size={14} />
-                            Edit
+                            <ExternalLink size={14} />Edit
                           </Button>
                           <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/products/${product.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-product-logs-${product.id}`}>Logs</Button>
-                          <Button
-                            variant={product.is_active ? "destructive" : "outline"}
-                            size="sm"
-                            onClick={() => setConfirmToggleProduct(product)}
-                            data-testid={`admin-toggle-${product.id}`}
-                          >
+                          <Button variant={product.is_active ? "destructive" : "outline"} size="sm" onClick={() => setConfirmToggleProduct(product)} data-testid={`admin-toggle-${product.id}`}>
                             {product.is_active ? "Deactivate" : "Activate"}
                           </Button>
-                          <a
-                            href={`/product/${product.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-xs text-slate-400 hover:text-slate-700 underline"
-                            data-testid={`admin-preview-${product.id}`}
-                          >
-                            Preview
-                          </a>
+                          <a href={`/product/${product.id}`} target="_blank" rel="noreferrer" className="text-xs text-slate-400 hover:text-slate-700 underline" data-testid={`admin-preview-${product.id}`}>Preview</a>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -231,17 +191,8 @@ export function ProductsTab() {
               </Table>
             </div>
             <AdminPagination page={page} totalPages={totalPages} total={filtered.length} perPage={PER_PAGE} onPage={(p) => setPage(p)} />
-
             <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Product Audit Logs" logsUrl={logsUrl} />
-            <ImportModal
-              entity="catalog"
-              entityLabel="Products"
-              open={showImport}
-              onClose={() => setShowImport(false)}
-              onSuccess={load}
-            />
-
-            {/* Deactivate/Activate Product Confirmation */}
+            <ImportModal entity="catalog" entityLabel="Products" open={showImport} onClose={() => setShowImport(false)} onSuccess={load} />
             <AlertDialog open={!!confirmToggleProduct} onOpenChange={(open) => !open && setConfirmToggleProduct(null)}>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -253,11 +204,7 @@ export function ProductsTab() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className={confirmToggleProduct?.is_active ? "bg-red-600 hover:bg-red-700" : ""}
-                    onClick={() => { handleToggleActive(confirmToggleProduct); setConfirmToggleProduct(null); }}
-                    data-testid="confirm-product-toggle"
-                  >
+                  <AlertDialogAction className={confirmToggleProduct?.is_active ? "bg-red-600 hover:bg-red-700" : ""} onClick={() => { handleToggleActive(confirmToggleProduct); setConfirmToggleProduct(null); }} data-testid="confirm-product-toggle">
                     {confirmToggleProduct?.is_active ? "Deactivate" : "Activate"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
