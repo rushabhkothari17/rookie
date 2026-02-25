@@ -134,8 +134,8 @@ async def admin_customers(
                     "line1": "$address_data.line1",
                     "line2": "$address_data.line2",
                     "city": "$address_data.city",
-                    "state": "$address_data.state",
-                    "postcode": "$address_data.postcode",
+                    "region": "$address_data.region",
+                    "postal": "$address_data.postal",
                     "country": "$address_data.country"
                 }
             }
