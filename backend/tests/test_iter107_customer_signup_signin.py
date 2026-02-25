@@ -536,15 +536,16 @@ class TestCustomerLogin:
         verify_resp = requests.post(f"{BASE_URL}/api/auth/verify-email", json={"email": email, "code": code})
         return signup_resp.json(), verify_resp.json()
 
-    def test_customer_login_success(self, tenant_a_id):
+    def test_customer_login_success(self, tenant_a_info):
         """Correct partner_code + email + password → 200 + token + role=customer"""
-        # First create and verify a customer
+        tenant_a_id = tenant_a_info["id"]
+        partner_code = tenant_a_info["code"]
         email = "TEST-login107@test.local"
-        self._signup_and_verify(TENANT_A_CODE, email)
+        self._signup_and_verify(partner_code, email)
 
         resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": email, "password": CUST_PASSWORD},
+            json={"partner_code": partner_code, "email": email, "password": CUST_PASSWORD},
         )
         assert resp.status_code == 200, f"Login failed: {resp.text}"
         data = resp.json()
@@ -552,18 +553,19 @@ class TestCustomerLogin:
         assert data["role"] == "customer"
         assert data["tenant_id"] == tenant_a_id
 
-    def test_customer_login_jwt_content(self, tenant_a_id):
+    def test_customer_login_jwt_content(self, tenant_a_info):
         """JWT token contains role=customer and correct tenant_id"""
         import base64
         import json as _json
+        tenant_a_id = tenant_a_info["id"]
+        partner_code = tenant_a_info["code"]
         email = "TEST-login107@test.local"
         resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": email, "password": CUST_PASSWORD},
+            json={"partner_code": partner_code, "email": email, "password": CUST_PASSWORD},
         )
         assert resp.status_code == 200
         token = resp.json()["token"]
-        # Decode JWT payload (no verification needed - just inspect claims)
         parts = token.split(".")
         assert len(parts) == 3, "JWT should have 3 parts"
         padded = parts[1] + "=" * (-len(parts[1]) % 4)
@@ -572,25 +574,25 @@ class TestCustomerLogin:
         assert claims.get("tenant_id") == tenant_a_id
         assert claims.get("is_admin") is False
 
-    def test_customer_login_wrong_password(self, tenant_a_id):
+    def test_customer_login_wrong_password(self, tenant_a_info):
         """Wrong password → 401 (generic message, no email-not-found leakage)"""
+        partner_code = tenant_a_info["code"]
         email = "TEST-login107@test.local"
         resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": email, "password": "WrongPass@999"},
+            json={"partner_code": partner_code, "email": email, "password": "WrongPass@999"},
         )
         assert resp.status_code == 401, f"Expected 401, got {resp.status_code}"
         detail = resp.json().get("detail", "")
         assert "invalid credentials" in detail.lower(), f"Expected 'Invalid credentials', got: {detail}"
-        # Should not say 'email not found' or 'user not found'
         assert "not found" not in detail.lower()
 
-    def test_customer_login_unverified_blocked(self, tenant_a_id):
+    def test_customer_login_unverified_blocked(self, tenant_a_info):
         """Unverified user login → 403 Email verification required"""
-        # CUST_EMAIL is unverified (created in TestCustomerSignup, not verified there)
+        partner_code = tenant_a_info["code"]
         resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": CUST_EMAIL, "password": CUST_PASSWORD},
+            json={"partner_code": partner_code, "email": CUST_EMAIL, "password": CUST_PASSWORD},
         )
         assert resp.status_code == 403, f"Expected 403 for unverified user, got {resp.status_code}"
         assert "verification" in resp.json().get("detail", "").lower()
@@ -603,18 +605,17 @@ class TestCustomerLogin:
         )
         assert resp.status_code in [400, 404], f"Expected 400/404, got {resp.status_code}"
 
-    def test_customer_login_case_insensitive_partner_code(self, tenant_a_id):
+    def test_customer_login_case_insensitive_partner_code(self, tenant_a_info):
         """Case-insensitive partner code: UPPERCASE and MixedCase → same result"""
+        partner_code = tenant_a_info["code"]
         email = "TEST-login107@test.local"
-        # UPPERCASE
         resp1 = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE.upper(), "email": email, "password": CUST_PASSWORD},
+            json={"partner_code": partner_code.upper(), "email": email, "password": CUST_PASSWORD},
         )
         assert resp1.status_code == 200, f"UPPERCASE partner_code failed: {resp1.text}"
 
-        # MixedCase
-        mixed = TENANT_A_CODE.title().replace("-", "-")
+        mixed = partner_code.title().replace("-", "-")
         resp2 = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
             json={"partner_code": mixed, "email": email, "password": CUST_PASSWORD},
@@ -629,23 +630,23 @@ class TestCustomerLogin:
         )
         assert resp.status_code == 403, f"Expected 403 for reserved code, got {resp.status_code}"
 
-    def test_customer_login_admin_user_blocked(self, tenant_a_id):
+    def test_customer_login_admin_user_blocked(self, tenant_a_info):
         """Admin user trying customer_login → 403 'Please use Partner Login'"""
+        partner_code = tenant_a_info["code"]
         resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": TENANT_A_ADMIN_EMAIL, "password": TENANT_A_ADMIN_PASSWORD},
+            json={"partner_code": partner_code, "email": TENANT_A_ADMIN_EMAIL, "password": TENANT_A_ADMIN_PASSWORD},
         )
         assert resp.status_code == 403, f"Expected 403 for admin via customer login, got {resp.status_code}"
         assert "partner login" in resp.json().get("detail", "").lower()
 
-    def test_customer_login_cross_tenant_isolated(self, tenant_a_id, tenant_b_id):
+    def test_customer_login_cross_tenant_isolated(self, tenant_a_info, tenant_b_info):
         """Customer from Tenant A cannot login with Tenant B slug"""
         email = "TEST-login107@test.local"  # Only in Tenant A (verified)
         resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_B_CODE, "email": email, "password": CUST_PASSWORD},
+            json={"partner_code": tenant_b_info["code"], "email": email, "password": CUST_PASSWORD},
         )
-        # Should fail: user doesn't exist in Tenant B
         assert resp.status_code in [401, 403], f"Expected 401/403 for cross-tenant, got {resp.status_code}"
 
 
