@@ -189,3 +189,21 @@ async def resolve_api_key_tenant(
     )
     return key_doc["tenant_id"]
 
+
+
+async def enrich_partner_codes(records: list, is_platform: bool) -> list:
+    """Add partner_code field to each record when viewed by platform admin.
+    Looks up tenant code from tenant_id. Records without tenant_id get '—'."""
+    if not is_platform or not records:
+        return records
+    tenant_ids = {r.get("tenant_id") for r in records if r.get("tenant_id")}
+    if not tenant_ids:
+        return records
+    tenants = await db.tenants.find(
+        {"id": {"$in": list(tenant_ids)}},
+        {"_id": 0, "id": 1, "code": 1}
+    ).to_list(500)
+    code_map = {t["id"]: t["code"] for t in tenants}
+    for r in records:
+        r["partner_code"] = code_map.get(r.get("tenant_id"), "—")
+    return records
