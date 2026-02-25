@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 
 from core.helpers import make_id, now_iso, round_cents, _deep_merge
 from core.security import get_current_user, optional_get_current_user
-from core.tenant import DEFAULT_TENANT_ID, resolve_api_key_tenant
+from core.tenant import DEFAULT_TENANT_ID, resolve_api_key_tenant, is_platform_admin
 from db.session import db
 from models import (
     PricingCalcRequest, OrderPreviewRequest, CancelSubscriptionBody,
