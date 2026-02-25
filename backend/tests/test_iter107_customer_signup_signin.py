@@ -673,14 +673,15 @@ class TestCountryLock:
             return None
         return login_resp.json()["token"]
 
-    def test_put_me_no_country_field(self, tenant_a_id):
+    def test_put_me_no_country_field(self, tenant_a_info):
         """PUT /api/me with country field → field silently ignored (UpdateProfileRequest has no country)"""
+        partner_code = tenant_a_info["code"]
+        tenant_a_id = tenant_a_info["id"]
         email = "TEST-countrylock107@test.local"
-        token = self._get_verified_customer_token(TENANT_A_CODE, email)
+        token = self._get_verified_customer_token(partner_code, email)
         assert token, "Could not get customer token"
 
         headers = {"Authorization": f"Bearer {token}"}
-        # Send country in request body (should be silently ignored by Pydantic model)
         resp = requests.put(
             f"{BASE_URL}/api/me",
             json={"full_name": "Updated Name", "country": "USA"},
@@ -696,16 +697,16 @@ class TestCountryLock:
         customer = db.customers.find_one({"user_id": user["id"]}) if user else None
         address = db.addresses.find_one({"customer_id": customer["id"]}) if customer else None
         client.close()
-        # Country should still be "Canada" from original signup
         assert address is not None, "Address not found"
         assert address.get("country") == "Canada", f"Country should not change, got {address.get('country')}"
 
-    def test_put_me_profile_update_works(self, tenant_a_id):
+    def test_put_me_profile_update_works(self, tenant_a_info):
         """PUT /api/me with allowed fields → profile updated"""
+        partner_code = tenant_a_info["code"]
         email = "TEST-countrylock107@test.local"
         login_resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": email, "password": CUST_PASSWORD},
+            json={"partner_code": partner_code, "email": email, "password": CUST_PASSWORD},
         )
         assert login_resp.status_code == 200
         token = login_resp.json()["token"]
@@ -718,8 +719,9 @@ class TestCountryLock:
         )
         assert resp.status_code == 200, f"PUT /api/me failed: {resp.text}"
 
-    def test_admin_can_update_country(self, tenant_a_id, tenant_a_admin_headers, mongo_db):
+    def test_admin_can_update_country(self, tenant_a_info, tenant_a_admin_headers, mongo_db):
         """Admin PUT to update customer address WITH country change works"""
+        tenant_a_id = tenant_a_info["id"]
         email = "TEST-countrylock107@test.local"
         user = mongo_db.users.find_one({"email": email.lower(), "tenant_id": tenant_a_id})
         assert user, "User not found"
@@ -742,7 +744,7 @@ class TestCountryLock:
         assert updated_address is not None
         assert updated_address.get("country") == "USA", f"Country should now be USA, got {updated_address.get('country')}"
 
-    def test_profile_updated_audit_log(self, tenant_a_id, mongo_db):
+    def test_profile_updated_audit_log(self, tenant_a_info, mongo_db):
         """profile_updated audit log created on profile change"""
         log = mongo_db.audit_logs.find_one({
             "action": "profile_updated",
