@@ -569,7 +569,9 @@ async def create_checkout_session(
                     "intake_answers": intake_answers,
                     "order_number": order_number,
                 },
-            )    host_url = payload.origin_url.rstrip("/")
+            )
+    
+    host_url = payload.origin_url.rstrip("/")
     success_url = f"{host_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{host_url}/cart"
     stripe_checkout = StripeCheckout(api_key=_stripe_api_key, webhook_url=f"{host_url}/api/webhook/stripe")
