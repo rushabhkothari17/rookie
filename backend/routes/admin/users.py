@@ -53,6 +53,19 @@ async def admin_create_admin_user(
     if payload.role not in valid_roles:
         raise HTTPException(status_code=400, detail=f"Role must be one of: {valid_roles}")
 
+    # Validate password complexity
+    import re as _re2
+    def _pw_ok(pw: str):
+        if len(pw) < 10: return "Password must be at least 10 characters"
+        if not _re2.search(r'[A-Z]', pw): return "Password must contain at least one uppercase letter"
+        if not _re2.search(r'[a-z]', pw): return "Password must contain at least one lowercase letter"
+        if not _re2.search(r'\d', pw): return "Password must contain at least one number"
+        if not _re2.search(r'[!@#$%^&*()\-_=+\[\]{}|;:,.<>?/~`"]', pw): return "Password must contain at least one special character"
+        return None
+    pw_err = _pw_ok(payload.password)
+    if pw_err:
+        raise HTTPException(status_code=400, detail=pw_err)
+
     # Enforce: only one partner_super_admin per tenant
     if payload.role == "partner_super_admin":
         existing_super = await db.users.find_one({**get_tenant_filter(admin), "role": "partner_super_admin"}, {"_id": 0, "id": 1})
