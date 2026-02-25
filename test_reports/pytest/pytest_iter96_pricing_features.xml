@@ -1,126 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="20" skipped="0" tests="20" time="3.787" timestamp="2026-02-25T04:16:02.285672+00:00" hostname="agent-env-050b32ac-1e40-4219-8fb1-d07351a2a45e"><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_within_first_tier" time="0.601"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:179: in test_tiered_within_first_tier
-    result = calc_price(tiered_product["id"], {"users": 5})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_at_boundary" time="0.128"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:185: in test_tiered_at_boundary
-    result = calc_price(tiered_product["id"], {"users": 10})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_spanning_two_tiers" time="0.122"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:190: in test_tiered_spanning_two_tiers
-    result = calc_price(tiered_product["id"], {"users": 15})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_has_line_items" time="0.115"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:195: in test_tiered_has_line_items
-    result = calc_price(tiered_product["id"], {"users": 15})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_zero_value_no_charge" time="0.123"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:205: in test_tiered_zero_value_no_charge
-    result = calc_price(tiered_product["id"], {"users": 0})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_product_save_with_tiered_intake" time="0.110"><failure message="AssertionError: assert None == 'internal'&#10; +  where None = &lt;built-in method get of dict object at 0xfc2ab85ba280&gt;('pricing_type')&#10; +    where &lt;built-in method get of dict object at 0xfc2ab85ba280&gt; = {'product': {'base_price': 50.0, 'bullets': [], 'bullets_included': None, 'card_bullets': None, ...}}.get">backend/tests/test_iter96_tiered_pricing_features.py:243: in test_product_save_with_tiered_intake
-    assert product.get("pricing_type") == "internal"
-E   AssertionError: assert None == 'internal'
-E    +  where None = &lt;built-in method get of dict object at 0xfc2ab85ba280&gt;('pricing_type')
-E    +    where &lt;built-in method get of dict object at 0xfc2ab85ba280&gt; = {'product': {'base_price': 50.0, 'bullets': [], 'bullets_included': None, 'card_bullets': None, ...}}.get</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_adds_price" time="0.223"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:265: in test_boolean_yes_adds_price
-    result = calc_price(boolean_product["id"], {"rush_delivery": "yes"})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_no_no_addition" time="0.114"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:270: in test_boolean_no_no_addition
-    result = calc_price(boolean_product["id"], {"rush_delivery": "no"})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_line_item" time="0.112"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:275: in test_boolean_yes_line_item
-    result = calc_price(boolean_product["id"], {"rush_delivery": "yes"})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_true_string" time="0.113"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:283: in test_boolean_true_string
-    result = calc_price(boolean_product["id"], {"rush_delivery": "true"})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_missing_answer_no_charge" time="0.117"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:288: in test_boolean_missing_answer_no_charge
-    result = calc_price(boolean_product["id"], {})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_applied_when_below_minimum" time="0.252"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:299: in test_floor_applied_when_below_minimum
-    result = calc_price(floor_ceiling_product["id"], {"hours": 1})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_not_applied_when_above" time="0.114"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:304: in test_floor_not_applied_when_above
-    result = calc_price(floor_ceiling_product["id"], {"hours": 3})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_applied_when_above_maximum" time="0.116"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:309: in test_ceiling_applied_when_above_maximum
-    result = calc_price(floor_ceiling_product["id"], {"hours": 15})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_not_applied_when_below" time="0.119"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:314: in test_ceiling_not_applied_when_below
-    result = calc_price(floor_ceiling_product["id"], {"hours": 8})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_line_item_label" time="0.120"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:319: in test_floor_line_item_label
-    result = calc_price(floor_ceiling_product["id"], {"hours": 1})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_line_item_label" time="0.152"><failure message="AssertionError: Price calc failed: {&quot;detail&quot;:&quot;Not authenticated&quot;}&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:326: in test_ceiling_line_item_label
-    result = calc_price(floor_ceiling_product["id"], {"hours": 15})
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-backend/tests/test_iter96_tiered_pricing_features.py:49: in calc_price
-    assert resp.status_code == 200, f"Price calc failed: {resp.text}"
-E   AssertionError: Price calc failed: {"detail":"Not authenticated"}
-E   assert 401 == 200
-E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestVisibilityRulesPricingExclusion" name="test_hidden_question_not_included_in_pricing" time="0.112"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:388: in test_hidden_question_not_included_in_pricing
-    pid = product["id"]
-          ^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_boolean_and_tiered_and_caps" time="0.107"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:459: in test_save_product_with_boolean_and_tiered_and_caps
-    pid = product["id"]
-          ^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_visibility_rule" time="0.559"><failure message="KeyError: 'id'">backend/tests/test_iter96_tiered_pricing_features.py:537: in test_save_product_with_visibility_rule
-    pid = product["id"]
-          ^^^^^^^^^^^^^
-E   KeyError: 'id'</failure></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="14" skipped="0" tests="20" time="5.014" timestamp="2026-02-25T04:17:46.375335+00:00" hostname="agent-env-050b32ac-1e40-4219-8fb1-d07351a2a45e"><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_within_first_tier" time="0.690"><failure message="AssertionError: Expected 125, got 100.0&#10;assert 100.0 == 125.0">backend/tests/test_iter96_tiered_pricing_features.py:180: in test_tiered_within_first_tier
+    assert result["subtotal"] == 125.0, f"Expected 125, got {result['subtotal']}"
+E   AssertionError: Expected 125, got 100.0
+E   assert 100.0 == 125.0</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_at_boundary" time="0.129"><failure message="AssertionError: Expected 150, got 100.0&#10;assert 100.0 == 150.0">backend/tests/test_iter96_tiered_pricing_features.py:186: in test_tiered_at_boundary
+    assert result["subtotal"] == 150.0, f"Expected 150, got {result['subtotal']}"
+E   AssertionError: Expected 150, got 100.0
+E   assert 100.0 == 150.0</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_spanning_two_tiers" time="0.120"><failure message="AssertionError: Expected 165, got 100.0&#10;assert 100.0 == 165.0">backend/tests/test_iter96_tiered_pricing_features.py:191: in test_tiered_spanning_two_tiers
+    assert result["subtotal"] == 165.0, f"Expected 165, got {result['subtotal']}"
+E   AssertionError: Expected 165, got 100.0
+E   assert 100.0 == 165.0</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_has_line_items" time="0.111"><failure message="AssertionError: Expected at least 2 line items, got [{'label': 'TEST96_Tiered_Pricing', 'amount': 100.0}]&#10;assert 1 &gt;= 2&#10; +  where 1 = len([{'amount': 100.0, 'label': 'TEST96_Tiered_Pricing'}])">backend/tests/test_iter96_tiered_pricing_features.py:197: in test_tiered_has_line_items
+    assert len(line_items) &gt;= 2, f"Expected at least 2 line items, got {line_items}"
+E   AssertionError: Expected at least 2 line items, got [{'label': 'TEST96_Tiered_Pricing', 'amount': 100.0}]
+E   assert 1 &gt;= 2
+E    +  where 1 = len([{'amount': 100.0, 'label': 'TEST96_Tiered_Pricing'}])</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_tiered_zero_value_no_charge" time="0.111" /><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestTieredPricing" name="test_product_save_with_tiered_intake" time="0.521"><failure message="assert 405 == 200&#10; +  where 405 = &lt;Response [405]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:245: in test_product_save_with_tiered_intake
+    assert get_resp.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = &lt;Response [405]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_adds_price" time="0.240"><failure message="AssertionError: Expected 250, got 200.0&#10;assert 200.0 == 250.0">backend/tests/test_iter96_tiered_pricing_features.py:266: in test_boolean_yes_adds_price
+    assert result["subtotal"] == 250.0, f"Expected 250, got {result['subtotal']}"
+E   AssertionError: Expected 250, got 200.0
+E   assert 200.0 == 250.0</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_no_no_addition" time="0.111" /><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_yes_line_item" time="0.112"><failure message="AssertionError: Expected 'Rush Delivery' line item in ['TEST96_Boolean_Pricing']&#10;assert False&#10; +  where False = any(&lt;generator object TestBooleanPricing.test_boolean_yes_line_item.&lt;locals&gt;.&lt;genexpr&gt; at 0xfbf9aaf6c200&gt;)">backend/tests/test_iter96_tiered_pricing_features.py:278: in test_boolean_yes_line_item
+    assert any("Rush Delivery" in lbl or "rush_delivery" in lbl.lower() for lbl in labels), \
+E   AssertionError: Expected 'Rush Delivery' line item in ['TEST96_Boolean_Pricing']
+E   assert False
+E    +  where False = any(&lt;generator object TestBooleanPricing.test_boolean_yes_line_item.&lt;locals&gt;.&lt;genexpr&gt; at 0xfbf9aaf6c200&gt;)</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_true_string" time="0.112"><failure message="AssertionError: Expected 250 for 'true', got 200.0&#10;assert 200.0 == 250.0">backend/tests/test_iter96_tiered_pricing_features.py:284: in test_boolean_true_string
+    assert result["subtotal"] == 250.0, f"Expected 250 for 'true', got {result['subtotal']}"
+E   AssertionError: Expected 250 for 'true', got 200.0
+E   assert 200.0 == 250.0</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestBooleanPricing" name="test_boolean_missing_answer_no_charge" time="0.110" /><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_applied_when_below_minimum" time="0.223"><failure message="AssertionError: Expected floor 50, got 20.0&#10;assert 20.0 == 50.0">backend/tests/test_iter96_tiered_pricing_features.py:300: in test_floor_applied_when_below_minimum
+    assert result["subtotal"] == 50.0, f"Expected floor 50, got {result['subtotal']}"
+E   AssertionError: Expected floor 50, got 20.0
+E   assert 20.0 == 50.0</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_not_applied_when_above" time="0.134" /><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_applied_when_above_maximum" time="0.105"><failure message="AssertionError: Expected ceiling 200, got 300.0&#10;assert 300.0 == 200.0">backend/tests/test_iter96_tiered_pricing_features.py:310: in test_ceiling_applied_when_above_maximum
+    assert result["subtotal"] == 200.0, f"Expected ceiling 200, got {result['subtotal']}"
+E   AssertionError: Expected ceiling 200, got 300.0
+E   assert 300.0 == 200.0</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_not_applied_when_below" time="0.108" /><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_floor_line_item_label" time="0.111"><failure message="AssertionError: Expected minimum pricing line item, got: ['Hours']&#10;assert False&#10; +  where False = any(&lt;generator object TestPriceFloorCeiling.test_floor_line_item_label.&lt;locals&gt;.&lt;genexpr&gt; at 0xfbf9aaf6c4a0&gt;)">backend/tests/test_iter96_tiered_pricing_features.py:321: in test_floor_line_item_label
+    assert any("Minimum pricing" in lbl or "floor" in lbl.lower() for lbl in labels), \
+E   AssertionError: Expected minimum pricing line item, got: ['Hours']
+E   assert False
+E    +  where False = any(&lt;generator object TestPriceFloorCeiling.test_floor_line_item_label.&lt;locals&gt;.&lt;genexpr&gt; at 0xfbf9aaf6c4a0&gt;)</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestPriceFloorCeiling" name="test_ceiling_line_item_label" time="0.110"><failure message="AssertionError: Expected maximum pricing cap line item, got: ['Hours']&#10;assert False&#10; +  where False = any(&lt;generator object TestPriceFloorCeiling.test_ceiling_line_item_label.&lt;locals&gt;.&lt;genexpr&gt; at 0xfbf9aaf6d2a0&gt;)">backend/tests/test_iter96_tiered_pricing_features.py:328: in test_ceiling_line_item_label
+    assert any("Maximum pricing cap" in lbl or "cap" in lbl.lower() for lbl in labels), \
+E   AssertionError: Expected maximum pricing cap line item, got: ['Hours']
+E   assert False
+E    +  where False = any(&lt;generator object TestPriceFloorCeiling.test_ceiling_line_item_label.&lt;locals&gt;.&lt;genexpr&gt; at 0xfbf9aaf6d2a0&gt;)</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestVisibilityRulesPricingExclusion" name="test_hidden_question_not_included_in_pricing" time="0.610" /><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_boolean_and_tiered_and_caps" time="0.375"><failure message="assert 405 == 200&#10; +  where 405 = &lt;Response [405]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:452: in test_save_product_with_boolean_and_tiered_and_caps
+    assert get_resp.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = &lt;Response [405]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_iter96_tiered_pricing_features.TestProductSaveNewFeatures" name="test_save_product_with_visibility_rule" time="0.700"><failure message="assert 405 == 200&#10; +  where 405 = &lt;Response [405]&gt;.status_code">backend/tests/test_iter96_tiered_pricing_features.py:524: in test_save_product_with_visibility_rule
+    assert get_resp.status_code == 200
+E   assert 405 == 200
+E    +  where 405 = &lt;Response [405]&gt;.status_code</failure></testcase></testsuite></testsuites>
