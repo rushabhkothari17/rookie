@@ -927,58 +927,56 @@ class TestTenantIsolation:
 class TestInactiveScenarios:
     """Scenario 4: Inactive tenant → customer_login returns 403. Inactive user → only that user blocked."""
 
-    def test_inactive_user_blocked(self, tenant_a_id, tenant_a_admin_headers, mongo_db):
+    def test_inactive_user_blocked(self, tenant_a_info, tenant_a_admin_headers, mongo_db):
         """Deactivating a customer prevents login"""
+        partner_code = tenant_a_info["code"]
+        tenant_a_id = tenant_a_info["id"]
         email = INACTIVE_USER_EMAIL
 
-        # Sign up and verify customer
         payload = make_customer_payload(email, password=INACTIVE_USER_PASSWORD)
-        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        signup_resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert signup_resp.status_code == 200
         code = signup_resp.json()["verification_code"]
         requests.post(f"{BASE_URL}/api/auth/verify-email", json={"email": email, "code": code})
 
-        # Find customer ID
         user = mongo_db.users.find_one({"email": email.lower(), "tenant_id": tenant_a_id})
         assert user, "User not found"
         customer = mongo_db.customers.find_one({"user_id": user["id"]})
         assert customer, "Customer not found"
         customer_id = customer["id"]
 
-        # Admin deactivates the customer
         deactivate_resp = requests.patch(
             f"{BASE_URL}/api/admin/customers/{customer_id}/active?active=false",
             headers=tenant_a_admin_headers,
         )
         assert deactivate_resp.status_code == 200, f"Deactivation failed: {deactivate_resp.text}"
 
-        # Login should now return 403
         login_resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": email, "password": INACTIVE_USER_PASSWORD},
+            json={"partner_code": partner_code, "email": email, "password": INACTIVE_USER_PASSWORD},
         )
         assert login_resp.status_code == 403, f"Expected 403 for inactive user, got {login_resp.status_code}"
         assert "inactive" in login_resp.json().get("detail", "").lower()
 
-    def test_reactivate_user_allows_login(self, tenant_a_id, tenant_a_admin_headers, mongo_db):
+    def test_reactivate_user_allows_login(self, tenant_a_info, tenant_a_admin_headers, mongo_db):
         """Re-activating a customer allows login again"""
+        partner_code = tenant_a_info["code"]
+        tenant_a_id = tenant_a_info["id"]
         email = INACTIVE_USER_EMAIL
         user = mongo_db.users.find_one({"email": email.lower(), "tenant_id": tenant_a_id})
         customer = mongo_db.customers.find_one({"user_id": user["id"]}) if user else None
         if not customer:
             pytest.skip("Customer not found")
 
-        # Re-activate
         activate_resp = requests.patch(
             f"{BASE_URL}/api/admin/customers/{customer['id']}/active?active=true",
             headers=tenant_a_admin_headers,
         )
         assert activate_resp.status_code == 200, f"Re-activation failed: {activate_resp.text}"
 
-        # Login should now succeed
         login_resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": email, "password": INACTIVE_USER_PASSWORD},
+            json={"partner_code": partner_code, "email": email, "password": INACTIVE_USER_PASSWORD},
         )
         assert login_resp.status_code == 200, f"Login after re-activation failed: {login_resp.text}"
 
