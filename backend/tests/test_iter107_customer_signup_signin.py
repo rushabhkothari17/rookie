@@ -111,60 +111,67 @@ def platform_admin_headers():
 
 @pytest.fixture(scope="module")
 def tenant_a_id(platform_admin_headers, mongo_db):
-    """Create Tenant A and return its ID."""
+    """Create Tenant A via register-partner and return its ID."""
+    # Use register-partner to create tenant + super admin in one shot
     resp = requests.post(
-        f"{BASE_URL}/api/admin/tenants",
-        json={"name": TENANT_A_ORG_NAME, "code": TENANT_A_CODE, "status": "active"},
-        headers=platform_admin_headers,
-    )
-    assert resp.status_code in [200, 201], f"Tenant A creation failed: {resp.text}"
-    tenant_id = resp.json().get("id") or resp.json().get("tenant_id")
-
-    # Create partner admin for Tenant A
-    resp2 = requests.post(
-        f"{BASE_URL}/api/admin/users",
+        f"{BASE_URL}/api/auth/register-partner",
         json={
-            "tenant_id": tenant_id,
-            "email": TENANT_A_ADMIN_EMAIL,
-            "full_name": "TEST Admin A107",
-            "password": TENANT_A_ADMIN_PASSWORD,
-            "role": "partner_super_admin",
+            "name": TENANT_A_ORG_NAME,
+            "admin_name": "TEST Admin A107",
+            "admin_email": TENANT_A_ADMIN_EMAIL,
+            "admin_password": TENANT_A_ADMIN_PASSWORD,
         },
-        headers=platform_admin_headers,
     )
-    assert resp2.status_code in [200, 201], f"Tenant A admin creation failed: {resp2.text}"
+    if resp.status_code == 200:
+        partner_code = resp.json()["partner_code"]
+    elif "already registered" in resp.text.lower() or resp.status_code == 400:
+        partner_code = TENANT_A_CODE
+    else:
+        pytest.fail(f"Tenant A creation failed: {resp.text}")
+
+    # Get tenant_id from admin API
+    tenants_resp = requests.get(f"{BASE_URL}/api/admin/tenants", headers=platform_admin_headers)
+    assert tenants_resp.status_code == 200
+    tenants = tenants_resp.json()["tenants"]
+    tenant = next((t for t in tenants if t["code"] == partner_code), None)
+    assert tenant is not None, f"Tenant A not found by code '{partner_code}'"
+    tenant_id = tenant["id"]
+
     yield tenant_id
     # Cleanup Tenant A data
-    _cleanup_tenant(mongo_db, tenant_id, TENANT_A_CODE)
+    _cleanup_tenant(mongo_db, tenant_id, partner_code)
 
 
 @pytest.fixture(scope="module")
 def tenant_b_id(platform_admin_headers, mongo_db):
-    """Create Tenant B and return its ID."""
+    """Create Tenant B via register-partner and return its ID."""
     resp = requests.post(
-        f"{BASE_URL}/api/admin/tenants",
-        json={"name": TENANT_B_ORG_NAME, "code": TENANT_B_CODE, "status": "active"},
-        headers=platform_admin_headers,
-    )
-    assert resp.status_code in [200, 201], f"Tenant B creation failed: {resp.text}"
-    tenant_id = resp.json().get("id") or resp.json().get("tenant_id")
-
-    # Create partner admin for Tenant B
-    resp2 = requests.post(
-        f"{BASE_URL}/api/admin/users",
+        f"{BASE_URL}/api/auth/register-partner",
         json={
-            "tenant_id": tenant_id,
-            "email": TENANT_B_ADMIN_EMAIL,
-            "full_name": "TEST Admin B107",
-            "password": TENANT_B_ADMIN_PASSWORD,
-            "role": "partner_super_admin",
+            "name": TENANT_B_ORG_NAME,
+            "admin_name": "TEST Admin B107",
+            "admin_email": TENANT_B_ADMIN_EMAIL,
+            "admin_password": TENANT_B_ADMIN_PASSWORD,
         },
-        headers=platform_admin_headers,
     )
-    assert resp2.status_code in [200, 201], f"Tenant B admin creation failed: {resp2.text}"
+    if resp.status_code == 200:
+        partner_code = resp.json()["partner_code"]
+    elif "already registered" in resp.text.lower() or resp.status_code == 400:
+        partner_code = TENANT_B_CODE
+    else:
+        pytest.fail(f"Tenant B creation failed: {resp.text}")
+
+    # Get tenant_id from admin API
+    tenants_resp = requests.get(f"{BASE_URL}/api/admin/tenants", headers=platform_admin_headers)
+    assert tenants_resp.status_code == 200
+    tenants = tenants_resp.json()["tenants"]
+    tenant = next((t for t in tenants if t["code"] == partner_code), None)
+    assert tenant is not None, f"Tenant B not found by code '{partner_code}'"
+    tenant_id = tenant["id"]
+
     yield tenant_id
     # Cleanup Tenant B data
-    _cleanup_tenant(mongo_db, tenant_id, TENANT_B_CODE)
+    _cleanup_tenant(mongo_db, tenant_id, partner_code)
 
 
 @pytest.fixture(scope="module")
