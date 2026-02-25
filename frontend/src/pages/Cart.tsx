@@ -745,45 +745,55 @@ export default function Cart() {
             </div>
 
             {/* Order Summary */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5" data-testid="cart-price-summary">
-              <h3 className="font-semibold text-slate-900 mb-4">Order Summary</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Subtotal</span>
-                  <span className="text-slate-900">${totalSubtotal.toFixed(2)}</span>
-                </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount ({promoApplied?.code})</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                {showFee && fee > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Processing fee ({stripeFeePercent}%)</span>
-                    <span className="text-slate-900">${fee.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="pt-3 border-t border-slate-200 flex justify-between">
-                  <span className="font-semibold text-slate-900">Total</span>
-                  <span className="font-bold text-lg text-slate-900">${total.toFixed(2)}</span>
-                </div>
+            <div className="rounded-2xl border overflow-hidden shadow-sm" style={{ borderColor: ws.primary_color ? `${ws.primary_color}30` : '#e2e8f0' }} data-testid="cart-price-summary">
+              <div className="p-4" style={{ backgroundColor: ws.primary_color || '#1e293b' }}>
+                <h3 className="font-semibold text-white">Order Summary</h3>
               </div>
-              {isFreeCheckout && (
-                <div className="mt-3 p-2 bg-green-50 rounded-lg text-center">
-                  <p className="text-sm font-medium text-green-700">This order is free!</p>
+              <div className="p-5 bg-white">
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Subtotal</span>
+                    <span className="text-slate-900">${totalSubtotal.toFixed(2)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({promoApplied?.code})</span>
+                      <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {showFee && fee > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Processing fee ({stripeFeePercent}%)</span>
+                      <span className="text-slate-900">${fee.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="pt-3 border-t border-slate-200 flex justify-between">
+                    <span className="font-semibold text-slate-900">Total</span>
+                    <span className="font-bold text-lg" style={{ color: ws.primary_color || '#1e293b' }}>${total.toFixed(2)}</span>
+                  </div>
                 </div>
-              )}
+                {isFreeCheckout && (
+                  <div className="mt-3 p-2 bg-green-50 rounded-lg text-center">
+                    <p className="text-sm font-medium text-green-700">This order is free!</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Terms & Checkout */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
               {ws.checkout_terms_enabled !== false && (
                 <label className="flex items-start gap-3 cursor-pointer" data-testid="cart-terms-section">
-                  <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-1 w-4 h-4" />
+                  <input 
+                    type="checkbox" 
+                    checked={termsAccepted} 
+                    onChange={(e) => setTermsAccepted(e.target.checked)} 
+                    className="mt-1 w-4 h-4 rounded"
+                    style={{ accentColor: ws.primary_color || '#1e293b' }}
+                  />
                   <span className="text-sm text-slate-600">
                     I accept the{" "}
-                    <button type="button" onClick={() => setShowTermsModal(true)} className="text-slate-900 underline font-medium hover:no-underline">
+                    <button type="button" onClick={() => setShowTermsModal(true)} className="underline font-medium hover:no-underline" style={{ color: ws.primary_color || '#1e293b' }}>
                       Terms & Conditions
                     </button>
                   </span>
@@ -791,13 +801,25 @@ export default function Cart() {
               )}
               
               {grouped.oneTime.length > 0 && (
-                <Button className="w-full h-12 text-base bg-slate-900 hover:bg-slate-800" onClick={() => handleCheckout(grouped.oneTime, "one_time")} disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing || (extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim()) : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!isFreeCheckout && !allowBankTransfer && !allowCardPayment)} data-testid="cart-checkout-one_time">
+                <Button 
+                  className="w-full h-12 text-base text-white transition-all hover:opacity-90" 
+                  style={{ backgroundColor: ws.primary_color || '#1e293b' }}
+                  onClick={() => handleCheckout(grouped.oneTime, "one_time")} 
+                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing || (extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim()) : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!isFreeCheckout && !allowBankTransfer && !allowCardPayment)} 
+                  data-testid="cart-checkout-one_time"
+                >
                   {loading ? "Processing..." : isFreeCheckout ? "Complete Free Order" : paymentMethod === "bank_transfer" ? "Create Order" : "Proceed to Checkout"}
                 </Button>
               )}
               
               {grouped.subscriptions.length > 0 && (
-                <Button className="w-full h-12 text-base bg-purple-600 hover:bg-purple-700" onClick={() => handleCheckout(grouped.subscriptions, "subscription")} disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!allowBankTransfer && !allowCardPayment) || (subscriptionMissingPrice && paymentMethod === "card")} data-testid="cart-checkout-subscription">
+                <Button 
+                  className="w-full h-12 text-base text-white transition-all hover:opacity-90" 
+                  style={{ backgroundColor: ws.accent_color || '#7c3aed' }}
+                  onClick={() => handleCheckout(grouped.subscriptions, "subscription")} 
+                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!allowBankTransfer && !allowCardPayment) || (subscriptionMissingPrice && paymentMethod === "card")} 
+                  data-testid="cart-checkout-subscription"
+                >
                   {loading ? "Processing..." : "Subscribe Now"}
                 </Button>
               )}
