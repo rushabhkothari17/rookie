@@ -1104,27 +1104,30 @@ class TestAdminCustomerAccess:
 class TestCrossTenantIsolation:
     """Scenario 1: Same email in Tenant A and Tenant B → each login only works for their tenant"""
 
-    def test_shared_email_signup_tenant_a(self, tenant_a_id, mongo_db):
+    def test_shared_email_signup_tenant_a(self, tenant_a_info, mongo_db):
         """Sign up SHARED email in Tenant A"""
+        partner_code = tenant_a_info["code"]
         payload = make_customer_payload(CUST_EMAIL_SHARED, password=CUST_PASSWORD_SHARED)
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_A_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 200, f"Shared email signup in A failed: {resp.text}"
         code = resp.json()["verification_code"]
         verify = requests.post(f"{BASE_URL}/api/auth/verify-email", json={"email": CUST_EMAIL_SHARED, "code": code})
-        # Note: verify-email has no tenant scoping — first match wins
         assert verify.status_code == 200
 
-    def test_shared_email_signup_tenant_b(self, tenant_b_id, mongo_db):
+    def test_shared_email_signup_tenant_b(self, tenant_b_info, mongo_db):
         """Sign up same SHARED email in Tenant B — should succeed (cross-tenant)"""
+        partner_code = tenant_b_info["code"]
         payload = make_customer_payload(CUST_EMAIL_SHARED, password=CUST_PASSWORD_SHARED)
-        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={TENANT_B_CODE}", json=payload)
+        resp = requests.post(f"{BASE_URL}/api/auth/register?partner_code={partner_code}", json=payload)
         assert resp.status_code == 200, f"Shared email signup in B failed: {resp.text}"
 
-    def test_shared_email_a_login_uses_tenant_a_only(self, tenant_a_id):
+    def test_shared_email_a_login_uses_tenant_a_only(self, tenant_a_info):
         """Shared email login via Tenant A slug → returns Tenant A token"""
+        tenant_a_id = tenant_a_info["id"]
+        partner_code = tenant_a_info["code"]
         resp = requests.post(
             f"{BASE_URL}/api/auth/customer-login",
-            json={"partner_code": TENANT_A_CODE, "email": CUST_EMAIL_SHARED, "password": CUST_PASSWORD_SHARED},
+            json={"partner_code": partner_code, "email": CUST_EMAIL_SHARED, "password": CUST_PASSWORD_SHARED},
         )
         assert resp.status_code == 200, f"Shared email login via A slug failed: {resp.text}"
         assert resp.json()["tenant_id"] == tenant_a_id
@@ -1132,18 +1135,10 @@ class TestCrossTenantIsolation:
     def test_verify_email_no_tenant_scoping_flag(self, mongo_db):
         """
         KNOWN DESIGN GAP: verify-email and resend-verification-email do NOT scope by tenant_id.
-        Flag: If same email exists in 2 tenants, first matching user gets verified.
-        This is a known design gap to report.
+        If same email exists in 2 tenants, first matching user gets verified.
         """
-        # Check both users with CUST_EMAIL_SHARED
         users = list(mongo_db.users.find({"email": CUST_EMAIL_SHARED.lower()}))
-        # There should be 2 users (one per tenant) if test order allows
-        # This test just flags the behavior - not a hard assertion on count
         if len(users) == 2:
-            # Only one can be verified via /api/auth/verify-email (no tenant scoping)
-            # This is the known design gap
             verified_count = sum(1 for u in users if u.get("is_verified"))
-            # Exactly 1 should be verified (the one that got the code first)
             print(f"DESIGN GAP: {len(users)} users with same email. Verified count: {verified_count}")
-            # Not a hard fail — flagging for review
         assert True, "Design gap flagged: verify-email and resend do not scope by tenant_id"
