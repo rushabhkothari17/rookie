@@ -111,11 +111,9 @@ E-commerce platform for professional services with:
 4. ✅ Product editing fixed (API endpoint corrected)
 5. ✅ Cart spacing increased
 
-## Completed in Latest Session (2026-02-26) — Auth Gateway
-1. ✅ **Auth Gateway Flow**: `/login` is now a two-step gateway. Step 1: neutral platform screen (no partner branding), enter partner code → validate against `/api/tenant-info`. Step 2: partner branding applied (logo, colors, store name), shows sign in form. Partner code persists in `localStorage` as `aa_partner_code`.
-2. ✅ **Signup + ForgotPassword protected**: Both pages now read `aa_partner_code` from localStorage. If missing, they redirect to `/login` (the gateway). Partner code field removed from both forms. Partner badge shown with "Change" link.
-3. ✅ **Dynamic branding**: `applyPartnerBranding(code)` exported from `WebsiteContext` fetches & applies partner CSS variables on-the-fly. `WebsiteContext` also auto-loads partner branding on mount if code is stored.
-4. ✅ **All 11/11 frontend tests passed** by testing agent.
+## Completed in Latest Session (2026-02-26) — Bug Fixes
+1. ✅ **P2 Recurring Bug Fixed (3rd+ time, now closed):** "Edit Article" button was visible to `partner_super_admin` because `user?.is_admin` is `true` for all admin roles. Changed to `user?.role === 'platform_admin'` in `ArticleView.tsx` line 14. Verified: platform_admin sees button ✓, partner_super_admin does NOT see button ✓.
+2. ✅ **Duplicate tenant `automate-accs` deleted:** Removed tenant (id: `3e50877e-...`) + 1 user, 1 product, 1 category, 1 article, 1 website_settings, 1 terms doc, 1 email template. Original `automate-accounts` intact.
 
 ## Pending Tasks (P1)
 1. Fix "Edit Article" button visibility for non-admin users (recurring bug)
