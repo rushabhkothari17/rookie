@@ -58,6 +58,7 @@ function productToForm(p: any): ProductFormData {
     restricted_to: p.restricted_to || [],
     intake_schema_json: p.intake_schema_json || EMPTY_INTAKE_SCHEMA,
     custom_sections: p.custom_sections || [],
+    display_layout: p.display_layout || "standard",
   };
 }
 
