@@ -226,6 +226,14 @@ export function ProductsTab() {
         <TabsContent value="categories" className="mt-4">
           <CategoriesTab />
         </TabsContent>
+
+        <TabsContent value="promo" className="mt-4">
+          <PromoCodesTab />
+        </TabsContent>
+
+        <TabsContent value="terms" className="mt-4">
+          <TermsTab />
+        </TabsContent>
       </Tabs>
     </div>
   );
