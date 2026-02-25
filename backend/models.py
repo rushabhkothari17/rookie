@@ -142,6 +142,20 @@ class IntakeOption(BaseModel):
     price_value: float = 0.0
 
 
+class PricingTier(BaseModel):
+    from_: float = Field(0.0, alias="from")
+    to: Optional[float] = None
+    price_per_unit: float = 0.0
+
+    model_config = {"populate_by_name": True}
+
+
+class VisibilityRule(BaseModel):
+    depends_on: str = ""
+    operator: str = "equals"
+    value: str = ""
+
+
 class IntakeQuestion(BaseModel):
     key: str
     label: str
@@ -154,12 +168,20 @@ class IntakeQuestion(BaseModel):
     affects_price: bool = False
     price_mode: str = "add"
     options: Optional[List[IntakeOption]] = None
-    # Number type
+    # Number type — flat
     price_per_unit: Optional[float] = None
+    pricing_mode: str = "flat"
+    tiers: Optional[List[PricingTier]] = None
     min: Optional[float] = None
     max: Optional[float] = None
     step: Optional[float] = None
     default_value: Optional[float] = None
+    # Boolean type
+    affects_price_boolean: bool = False
+    price_for_yes: Optional[float] = None
+    price_for_no: Optional[float] = None
+    # Conditional visibility
+    visibility_rule: Optional[VisibilityRule] = None
 
 
 class IntakeSchemaJson(BaseModel):
@@ -167,6 +189,8 @@ class IntakeSchemaJson(BaseModel):
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
     questions: List[IntakeQuestion] = Field(default_factory=list)
+    price_floor: Optional[float] = None
+    price_ceiling: Optional[float] = None
 
 
 class CustomSection(BaseModel):
