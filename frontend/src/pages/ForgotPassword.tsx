@@ -87,29 +87,28 @@ export default function ForgotPassword() {
       <div className="w-full max-w-sm space-y-8">
 
         {/* Partner brand header */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3 mb-4">
-            {partnerLogoUrl ? (
-              <img src={partnerLogoUrl} alt={partnerName} className="h-8 object-contain" />
-            ) : (
-              <div
-                className="h-9 w-9 rounded-xl flex items-center justify-center text-white font-bold text-base"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {(partnerName || partnerCode)[0]?.toUpperCase() || "P"}
-              </div>
-            )}
-            {partnerName && (
-              <span className="font-semibold text-slate-700 text-sm">{partnerName}</span>
-            )}
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            {step === "done" ? "Password reset!" : "Forgot password?"}
+        <div className="flex items-center gap-2.5">
+          {partnerLogoUrl ? (
+            <img src={partnerLogoUrl} alt={partnerName} className="h-7 object-contain" />
+          ) : (
+            <div
+              className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-xs font-semibold"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {(partnerName || partnerCode)[0]?.toUpperCase() || "P"}
+            </div>
+          )}
+          {partnerName && <span className="text-sm text-slate-500">{partnerName}</span>}
+        </div>
+
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+            {step === "done" ? "Password reset" : "Forgot password?"}
           </h1>
-          <p className="text-sm text-slate-500">
-            {step === "request" && "Enter your email and we'll send a reset code."}
+          <p className="text-sm text-slate-400">
+            {step === "request" && "We'll send a reset code to your email."}
             {step === "reset" && "Check your email for the 6-digit code."}
-            {step === "done" && "Your password has been updated successfully."}
+            {step === "done" && "Your password has been updated."}
           </p>
         </div>
 
