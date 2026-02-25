@@ -841,20 +841,29 @@ export default function Cart() {
       )}
 
       {/* Terms Modal */}
-      {showTermsModal && termsContent && (
+      {showTermsModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-slate-200 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">{termsContent.title}</h2>
+              <h2 className="text-xl font-semibold text-slate-900">{termsContent?.title || "Terms & Conditions"}</h2>
               <button onClick={() => setShowTermsModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             <div className="p-6 overflow-y-auto flex-1">
-              <div className="prose prose-sm max-w-none">
-                <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans">{termsContent.content}</pre>
-              </div>
+              {termsContent?.content ? (
+                <div className="prose prose-sm max-w-none">
+                  <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans">{termsContent.content}</pre>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-slate-500">No terms and conditions have been configured yet.</p>
+                  <p className="text-sm text-slate-400 mt-2">Please contact the administrator if you need to review the terms.</p>
+                </div>
+              )}
             </div>
             <div className="p-6 border-t border-slate-200">
-              <Button onClick={() => { setShowTermsModal(false); setTermsAccepted(true); }} className="w-full bg-slate-900 hover:bg-slate-800">Accept & Close</Button>
+              <Button onClick={() => { setShowTermsModal(false); setTermsAccepted(true); }} className="w-full bg-slate-900 hover:bg-slate-800">
+                {termsContent?.content ? "Accept & Close" : "Close"}
+              </Button>
             </div>
           </div>
         </div>
