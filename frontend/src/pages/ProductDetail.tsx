@@ -382,15 +382,8 @@ export default function ProductDetail() {
     pricing?.is_subscription && !product?.stripe_price_id;
 
   const ctaConfig = useMemo(() => {
-    if (!product || (!pricing && product.sku !== "MIG-BOOKS")) {
+    if (!product || !pricing) {
       return { label: "Add to cart" };
-    }
-    if (product.sku === "MIG-BOOKS") {
-      return {
-        label: migBooksData.isComplete ? "Add to cart" : "Complete form to add to cart",
-        onClick: migBooksData.isComplete ? handleAddToCart : undefined,
-        disabled: !migBooksData.isComplete,
-      };
     }
     if (isRFQ) {
       // If scope has been unlocked, switch CTA to Add to cart with the unlocked price
