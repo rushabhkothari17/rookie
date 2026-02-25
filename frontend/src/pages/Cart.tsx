@@ -363,16 +363,19 @@ export default function Cart() {
 
   return (
     <div className="max-w-6xl mx-auto" data-testid="cart-page">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{ws.cart_title || "Shopping Cart"}</h1>
-          <p className="text-slate-500 text-sm mt-1">{preview?.items?.length || 0} item{(preview?.items?.length || 0) !== 1 ? 's' : ''} in your cart</p>
+      {/* Header with Brand Accent */}
+      <div className="relative mb-8">
+        <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full opacity-10" style={{ backgroundColor: ws.primary_color || '#1e293b' }} />
+        <div className="flex items-center justify-between relative">
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: ws.primary_color || '#1e293b' }}>{ws.cart_title || "Shopping Cart"}</h1>
+            <p className="text-slate-500 text-sm mt-1">{preview?.items?.length || 0} item{(preview?.items?.length || 0) !== 1 ? 's' : ''} in your cart</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={clear} className="text-slate-500 hover:text-red-600 gap-2" data-testid="cart-clear-button">
+            <Trash2 size={16} />
+            Clear All
+          </Button>
         </div>
-        <Button variant="ghost" size="sm" onClick={clear} className="text-slate-500 hover:text-red-600 gap-2" data-testid="cart-clear-button">
-          <Trash2 size={16} />
-          Clear All
-        </Button>
       </div>
 
       {currencyUnsupported && (
@@ -390,9 +393,9 @@ export default function Cart() {
           {/* Main Content */}
           <div className="space-y-8">
             {/* Cart Items */}
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-              <div className="p-4 border-b border-slate-100 bg-slate-50">
-                <h2 className="font-semibold text-slate-900">Cart Items</h2>
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+              <div className="p-4 border-b" style={{ backgroundColor: ws.primary_color ? `${ws.primary_color}10` : '#f8fafc', borderColor: ws.primary_color ? `${ws.primary_color}20` : '#e2e8f0' }}>
+                <h2 className="font-semibold" style={{ color: ws.primary_color || '#1e293b' }}>Cart Items</h2>
               </div>
               <div className="divide-y divide-slate-100">
                 {[...grouped.oneTime, ...grouped.subscriptions].map((item: any) => (
