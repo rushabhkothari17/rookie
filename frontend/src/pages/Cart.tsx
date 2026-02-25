@@ -348,43 +348,77 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4" data-testid="cart-empty">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: ws.primary_color ? `${ws.primary_color}15` : '#f1f5f9' }}>
-          <ShoppingCart className="w-10 h-10" style={{ color: ws.primary_color || '#64748b' }} />
-        </div>
-        <h1 className="text-2xl font-semibold mb-2" style={{ color: ws.primary_color || '#1e293b' }}>Your cart is empty</h1>
-        <p className="text-slate-500 mb-6 max-w-md">Looks like you haven't added anything to your cart yet. Browse our products and find something you'll love.</p>
-        <Button 
-          onClick={() => navigate("/store")} 
-          className="text-white hover:opacity-90 transition-all"
-          style={{ backgroundColor: ws.primary_color || '#1e293b' }}
-          data-testid="cart-browse-btn"
+      <div className="space-y-8" data-testid="cart-empty">
+        {/* Hero Banner - matches Store */}
+        <section
+          className="relative overflow-hidden rounded-3xl px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+          style={{ backgroundColor: "var(--aa-primary)" }}
         >
-          Browse Products
-        </Button>
+          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
+          <div className="relative space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Checkout</p>
+            </div>
+            <h1 className="text-4xl font-bold text-white">{ws.cart_title || "Shopping Cart"}</h1>
+          </div>
+        </section>
+
+        {/* Empty state */}
+        <div className="flex flex-col items-center justify-center text-center py-16">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: "color-mix(in srgb, var(--aa-primary) 10%, transparent)" }}>
+            <ShoppingCart className="w-10 h-10" style={{ color: "var(--aa-primary)" }} />
+          </div>
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Your cart is empty</h2>
+          <p className="text-slate-500 mb-6 max-w-md">Looks like you haven't added anything to your cart yet. Browse our products and find something you'll love.</p>
+          <Button 
+            onClick={() => navigate("/store")} 
+            className="text-white hover:opacity-90 transition-all"
+            style={{ backgroundColor: "var(--aa-primary)" }}
+            data-testid="cart-browse-btn"
+          >
+            Browse Products
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto" data-testid="cart-page">
-      {/* Header with Brand Accent */}
-      <div className="relative mb-8">
-        <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full opacity-10" style={{ backgroundColor: ws.primary_color || '#1e293b' }} />
-        <div className="flex items-center justify-between relative">
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: ws.primary_color || '#1e293b' }}>{ws.cart_title || "Shopping Cart"}</h1>
-            <p className="text-slate-500 text-sm mt-1">{preview?.items?.length || 0} item{(preview?.items?.length || 0) !== 1 ? 's' : ''} in your cart</p>
+    <div className="space-y-8" data-testid="cart-page">
+      {/* Hero Banner - matches Store */}
+      <section
+        className="relative overflow-hidden rounded-3xl px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+        style={{ backgroundColor: "var(--aa-primary)" }}
+        data-testid="cart-hero"
+      >
+        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
+        <div className="relative flex items-center justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Checkout</p>
+            </div>
+            <h1 className="text-4xl font-bold text-white">{ws.cart_title || "Shopping Cart"}</h1>
+            <p className="text-slate-300">{preview?.items?.length || 0} item{(preview?.items?.length || 0) !== 1 ? 's' : ''} in your cart</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={clear} className="text-slate-500 hover:text-red-600 gap-2" data-testid="cart-clear-button">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={clear} 
+            className="border-white/30 text-white hover:bg-white/10 gap-2" 
+            data-testid="cart-clear-button"
+          >
             <Trash2 size={16} />
             Clear All
           </Button>
         </div>
-      </div>
+      </section>
 
       {currencyUnsupported && (
-        <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4" data-testid="cart-currency-block">
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4" data-testid="cart-currency-block">
           <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-800">Currency Not Supported</p>
@@ -394,9 +428,9 @@ export default function Cart() {
       )}
 
       {preview && (
-        <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           {/* Main Content */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Cart Items */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
               <div className="p-4 border-b" style={{ backgroundColor: ws.primary_color ? `${ws.primary_color}10` : '#f8fafc', borderColor: ws.primary_color ? `${ws.primary_color}20` : '#e2e8f0' }}>
