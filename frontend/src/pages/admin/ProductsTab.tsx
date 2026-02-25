@@ -16,6 +16,7 @@ import { CategoriesTab } from "./CategoriesTab";
 import { PromoCodesTab } from "./PromoCodesTab";
 import { TermsTab } from "./TermsTab";
 import { Download, Upload, ExternalLink, Package, FolderTree, Tag, FileText } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ProductsTab() {
   const [activeSubTab, setActiveSubTab] = useState("products");
