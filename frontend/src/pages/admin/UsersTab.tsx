@@ -250,7 +250,7 @@ export function UsersTab() {
                 </TableRow>
               );
             })}
-            {adminUsers.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-slate-400 py-4">No admin users found.</TableCell></TableRow>}
+            {adminUsers.length === 0 && <TableRow><TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-4">No admin users found.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
