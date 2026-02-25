@@ -366,7 +366,7 @@ export function ProductForm({
             </div>
             <div>
               <label className={labelCls}>Card description</label>
-              <Input value={form.card_description} onChange={e => s("card_description")(e.target.value)} placeholder={form.short_description || "Uses Short Description"} data-testid="pf-card-desc" />
+              <Input value={form.card_description} onChange={e => s("card_description")(e.target.value)} placeholder="Uses tagline if blank" data-testid="pf-card-desc" />
             </div>
             <BulletsList
               bullets={form.card_bullets.length > 0 ? form.card_bullets : [""]}
