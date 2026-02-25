@@ -459,13 +459,13 @@ function QuestionCard({
             {q.type === "boolean" && (
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
-                  <input type="checkbox" checked={q.affects_price_boolean || false}
-                    onChange={e => onChange({ ...q, affects_price_boolean: e.target.checked })}
+                  <input type="checkbox" checked={q.affects_price || false}
+                    onChange={e => onChange({ ...q, affects_price: e.target.checked })}
                     className="w-3.5 h-3.5 rounded accent-[#0f172a]"
                     data-testid="boolean-affects-price" />
                   Affects price
                 </label>
-                {q.affects_price_boolean && (
+                {q.affects_price && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Price if Yes (£)</label>
