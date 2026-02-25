@@ -68,6 +68,25 @@ Build a fully configurable, admin-driven SaaS platform for accounting/automation
 - **Live price preview** with itemized line items breakdown in StickyPurchaseSummary
 - Customer-facing form only sends visible questions' answers to pricing API
 
+### Phase 6 — Dynamic Product Layouts + Extended Fields (Feb 25, 2026)
+- **Dynamic Layout System**: New `layouts/` folder with layout components
+  - `ProductLayout` router in `ProductDetail.tsx` selects layout based on `product.display_layout`
+  - `ClassicLayout.tsx`: Two-column layout (product info left, price summary right)
+  - Other layouts (wizard, quick_buy, application, showcase) are placeholders
+- **New Field Types**:
+  - `boolean` (Yes/No with price_for_yes/price_for_no)
+  - `date` (single date or date range)
+  - `file` (upload with 24hr expiry via `/api/uploads`)
+  - `html_block` (content divider between questions)
+  - `formula` (cross-field calculations like `quantity * height * price_per_sq_ft`)
+- **Tooltips**: Question-level `tooltip_text` field rendered as info icon
+- **Product Tags**: `tag` field displayed as blue badges on product detail page
+- **Subscription Indicator**: Blue info box "This is a recurring subscription" for `is_subscription=true`
+- **Terms & Conditions Link**: Shows when product has `terms_id` set
+- **Scope ID Unlock Section**: For enquiry/scope_request products with validation
+- **File Upload Endpoint**: `POST /api/uploads` with 24hr TTL using MongoDB TTL index
+- **Formula Pricing Engine**: Safe AST-based evaluator supporting +, -, *, / operations
+
 ## Key DB Schema — products
 ```json
 {
