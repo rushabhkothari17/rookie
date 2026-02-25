@@ -330,18 +330,18 @@ export function ProductsTab() {
       {/* Product Create/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={(open) => { if (!open) setShowDialog(false); }}>
         <DialogContent
-          className="max-w-3xl max-h-[92vh] flex flex-col p-0 gap-0 bg-[#0c1524] border border-[#1e3a5f]/60 shadow-2xl rounded-xl overflow-hidden"
+          className="max-w-3xl max-h-[92vh] flex flex-col p-0 gap-0 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden"
           data-testid="admin-product-dialog"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e293b] bg-[#0f172a] shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#dc2626]" />
-              <h2 className="text-base font-semibold text-[#f8fafc] tracking-tight">
+              <div className="w-2 h-2 rounded-full bg-[#1e40af]" />
+              <h2 className="text-base font-semibold text-slate-900 tracking-tight">
                 {editProduct ? editProduct.name : "New Product"}
               </h2>
               {editProduct && (
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#1e293b] border border-[#334155] text-[#64748b]">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700">
                   {editProduct.pricing_type || "internal"}
                 </span>
               )}
@@ -361,11 +361,10 @@ export function ProductsTab() {
           </div>
 
           {/* Footer */}
-          <div className="flex gap-3 justify-end px-6 py-4 border-t border-[#1e293b] bg-[#0f172a] shrink-0">
+          <div className="flex gap-3 justify-end px-6 py-4 border-t border-slate-200 bg-slate-50 shrink-0">
             <Button
               variant="outline"
               onClick={() => setShowDialog(false)}
-              className="border-[#334155] text-[#94a3b8] hover:bg-[#1e293b] hover:text-[#f8fafc] bg-transparent"
             >
               Cancel
             </Button>
@@ -373,7 +372,7 @@ export function ProductsTab() {
               onClick={handleSave}
               disabled={saving}
               data-testid="admin-product-save-btn"
-              className="bg-[#dc2626] hover:bg-[#b91c1c] text-white border-0 min-w-[110px]"
+              className="bg-[#0f172a] hover:bg-[#1e293b] text-white border-0 min-w-[110px]"
             >
               {saving ? "Saving…" : "Save Product"}
             </Button>
