@@ -771,6 +771,8 @@ async def checkout_status(
                             "plan_name": product_name,
                             "status": "active",
                             "payment_method": "card",
+                            "currency": order.get("currency", "USD"),
+                            "base_currency": order.get("base_currency", "USD"),
                             "order_id": order["id"],
                             "session_id": session_id,
                             "payment_intent_id": payment_intent_id,
