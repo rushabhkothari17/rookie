@@ -41,6 +41,7 @@ export default function ProductEditor() {
     price_rounding: "",
     pricing_type: "internal",
     external_url: "",
+    currency: "USD",
     is_active: true,
     visible_to_customers: [],
     restricted_to: [],
