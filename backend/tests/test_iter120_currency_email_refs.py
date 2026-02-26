@@ -169,26 +169,29 @@ class TestArticleRefResolution:
 
     def test_create_article_with_ref_token(self, admin_session):
         """Create an article whose content contains a {{ref:key}} token."""
-        # Get valid categories first (need tenant admin access)
-        cat_res = admin_session.get(f"{BASE_URL}/api/admin/article-categories")
-        categories = []
-        if cat_res.status_code == 200:
-            cats = cat_res.json().get("categories", [])
-            categories = [c["name"] for c in cats if c.get("name")]
-            print(f"\n  Available article categories: {categories}")
+        # Valid article categories from ARTICLE_CATEGORIES constant
+        # Using "Blog" which is always a valid non-scope category
+        safe_cat = "Blog"
 
-        # Pick a non-scope category
-        safe_cat = next((c for c in categories if "scope" not in c.lower() and "Scope" not in c), None)
-        if not safe_cat and categories:
-            safe_cat = categories[0]
-        if not safe_cat:
-            # Fall back to public categories endpoint
-            pub_res = requests.get(f"{BASE_URL}/api/article-categories/public")
-            if pub_res.status_code == 200:
-                pub_cats = pub_res.json().get("categories", [])
-                safe_cat = next((c["name"] for c in pub_cats if "scope" not in c.get("name","").lower()), None)
-        if not safe_cat:
-            pytest.skip("Cannot determine valid article category")
+        article_payload = {
+            "title": "TEST_iter120 Ref Resolution Test",
+            "category": safe_cat,
+            "content": f"<p>This is a test. Reference value: {{{{ref:{self._ref_key}}}}}</p>",
+            "visibility": "all",
+        }
+        res = admin_session.post(f"{BASE_URL}/api/articles", json=article_payload)
+        if res.status_code == 400 and "Invalid category" in res.text:
+            # Try other fallback categories
+            for cat in ["Help", "Guide", "SOP", "Other"]:
+                article_payload["category"] = cat
+                res = admin_session.post(f"{BASE_URL}/api/articles", json=article_payload)
+                if res.status_code in (200, 201):
+                    break
+        assert res.status_code in (200, 201), f"Create article failed: {res.status_code} {res.text}"
+        data = res.json()
+        article = data.get("article", data)
+        TestArticleRefResolution._article_id = article.get("id")
+        print(f"\n✓ Created article id={self._article_id} with ref token in category '{article_payload['category']}'")
 
         article_payload = {
             "title": "TEST_iter120 Ref Resolution Test",
