@@ -491,6 +491,34 @@ function ProductConditionBuilder({
           <Plus size={11} /> Add group
         </button>
       )}
+
+      {/* Preview panel */}
+      {showPreview && customers.length > 0 && (() => {
+        const matched = customers.filter(c => evalCustomerVis(c, ruleSet));
+        return (
+          <div className="border-t border-indigo-100 pt-3 space-y-2" data-testid="vis-preview-panel">
+            {matched.length === 0 ? (
+              <p className="text-[11px] text-slate-400 italic">No customers match the current rules</p>
+            ) : (
+              <>
+                <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wide">
+                  {matched.length} matching customer{matched.length !== 1 ? "s" : ""}
+                </p>
+                <div className="max-h-36 overflow-y-auto space-y-1.5">
+                  {matched.slice(0, 25).map((c: any) => (
+                    <div key={c.id} className="flex items-center gap-2 text-[11px] text-slate-700 bg-white border border-indigo-100 rounded px-2.5 py-1.5">
+                      <span className="font-medium truncate">{c.company_name || c.full_name || c.email}</span>
+                      {c.company_name && c.email && <span className="text-slate-400 truncate">{c.email}</span>}
+                    </div>
+                  ))}
+                  {matched.length > 25 && <p className="text-[10px] text-slate-400 pl-1">...and {matched.length - 25} more</p>}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })()}
+
       <p className="text-[10px] text-slate-400 italic">Admins always see all products regardless of conditions.</p>
     </div>
   );
