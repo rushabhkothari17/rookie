@@ -336,7 +336,7 @@ async def scope_request(
         "subtotal": round_cents(subtotal),
         "fee": 0.0,
         "total": round_cents(subtotal),
-        "currency": customer.get("currency"),
+        "currency": scope_items[0]["product"].get("currency", "USD") if scope_items else "USD",
         "payment_method": "scope_request",
         "notes_json": {
             "product_intake": {item["product"]["id"]: item.get("inputs", {}) for item in scope_items},
