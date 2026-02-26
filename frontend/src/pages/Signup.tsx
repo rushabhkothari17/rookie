@@ -461,7 +461,16 @@ export default function Signup() {
                     <Input value={form.city} onChange={e => handleChange("city", e.target.value)} data-testid="signup-city-input" required />
                   </FieldWrapper>
                   <FieldWrapper label="State / Province">
-                    <Input value={form.region} onChange={e => handleChange("region", e.target.value)} data-testid="signup-region-input" required />
+                    {provinces.length > 0 ? (
+                      <Select value={form.region} onValueChange={v => handleChange("region", v)}>
+                        <SelectTrigger data-testid="signup-region-select"><SelectValue placeholder="Select province / state" /></SelectTrigger>
+                        <SelectContent>
+                          {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input value={form.region} onChange={e => handleChange("region", e.target.value)} data-testid="signup-region-input" required />
+                    )}
                   </FieldWrapper>
                   <FieldWrapper label="Postal / ZIP">
                     <Input value={form.postal} onChange={e => handleChange("postal", e.target.value)} data-testid="signup-postal-input" required />
