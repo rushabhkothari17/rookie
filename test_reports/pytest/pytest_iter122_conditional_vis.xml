@@ -1,27 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.170" timestamp="2026-02-26T07:36:13.483582+00:00" hostname="agent-env-72361239-4259-4a7c-a061-737a678443a6"><testcase classname="" name="backend.tests.test_iter122_product_conditional_visibility" time="0.000"><error message="collection failure">/root/.venv/lib/python3.11/site-packages/_pytest/python.py:507: in importtestmodule
-    mod = import_path(
-/root/.venv/lib/python3.11/site-packages/_pytest/pathlib.py:587: in import_path
-    importlib.import_module(module_name)
-/usr/local/lib/python3.11/importlib/__init__.py:126: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-&lt;frozen importlib._bootstrap&gt;:1204: in _gcd_import
-    ???
-&lt;frozen importlib._bootstrap&gt;:1176: in _find_and_load
-    ???
-&lt;frozen importlib._bootstrap&gt;:1147: in _find_and_load_unlocked
-    ???
-&lt;frozen importlib._bootstrap&gt;:690: in _load_unlocked
-    ???
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:188: in exec_module
-    source_stat, co = _rewrite_test(fn, self.config)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:357: in _rewrite_test
-    tree = ast.parse(source, filename=strfn)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/ast.py:50: in parse
-    return compile(source, filename, mode, flags,
-E     File "/app/backend/tests/test_iter122_product_conditional_visibility.py", line 281
-E       requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_OR_Logic_Product", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)(self, admin_headers, tenant_id):
-E                                                                                                                                                                                                                         ^
-E   SyntaxError: invalid syntax</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="14" time="3.158" timestamp="2026-02-26T07:36:33.103301+00:00" hostname="agent-env-72361239-4259-4a7c-a061-737a678443a6"><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductsEndpointFixed" name="test_get_products_returns_200" time="0.242" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductsEndpointFixed" name="test_get_products_returns_product_list" time="0.114" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductsEndpointFixed" name="test_get_products_no_body_required" time="0.110" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductConditionalVisibilityCreate" name="test_create_product_with_conditional_visibility" time="0.578" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductConditionalVisibilityCreate" name="test_product_with_conditions_not_visible_unauthenticated" time="0.111" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductConditionalVisibilityCreate" name="test_admin_sees_conditional_product" time="0.107"><failure message="AssertionError: Admin should see conditional product d2cb29df-46ce-430d-9cb6-3f1d27db2f53 in products-all&#10;assert 'd2cb29df-46ce-430d-9cb6-3f1d27db2f53' in ['prod_zoho_one_express', 'prod_zoho_books_express', 'prod_zoho_crm_express', 'prod_zoho_expense_setup', 'prod_zoho_people_setup', 'prod_health_check_starter', ...]">backend/tests/test_iter122_product_conditional_visibility.py:168: in test_admin_sees_conditional_product
+    assert pid in product_ids, f"Admin should see conditional product {pid} in products-all"
+E   AssertionError: Admin should see conditional product d2cb29df-46ce-430d-9cb6-3f1d27db2f53 in products-all
+E   assert 'd2cb29df-46ce-430d-9cb6-3f1d27db2f53' in ['prod_zoho_one_express', 'prod_zoho_books_express', 'prod_zoho_crm_express', 'prod_zoho_expense_setup', 'prod_zoho_people_setup', 'prod_health_check_starter', ...]</failure></testcase><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductConditionalVisibilityCreate" name="test_update_product_visibility_conditions_multi_condition" time="0.223"><failure message="AssertionError: Product d2cb29df-46ce-430d-9cb6-3f1d27db2f53 not found after update&#10;assert None is not None">backend/tests/test_iter122_product_conditional_visibility.py:200: in test_update_product_visibility_conditions_multi_condition
+    assert product is not None, f"Product {pid} not found after update"
+E   AssertionError: Product d2cb29df-46ce-430d-9cb6-3f1d27db2f53 not found after update
+E   assert None is not None</failure></testcase><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestProductConditionalVisibilityCreate" name="test_update_product_clear_visibility_conditions" time="0.214" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestEvalProductConditionsLogic" name="test_conditional_product_OR_logic_filtered_correctly" time="0.204" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestEvalProductConditionsLogic" name="test_conditional_product_with_empty_operator" time="0.195" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestEvalProductConditionsLogic" name="test_conditional_product_with_not_empty_operator" time="0.306" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestIntakeMultiConditionVisibility" name="test_create_product_with_intake_multi_condition_rule" time="0.209" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestIntakeMultiConditionVisibility" name="test_intake_backward_compat_legacy_rule" time="0.231" /><testcase classname="backend.tests.test_iter122_product_conditional_visibility.TestIntakeMultiConditionVisibility" name="test_intake_empty_operator_in_visibility_rule" time="0.203" /></testsuite></testsuites>
