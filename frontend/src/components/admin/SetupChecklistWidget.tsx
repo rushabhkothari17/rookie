@@ -15,9 +15,9 @@ interface ChecklistData {
 }
 
 const ITEMS = [
-  { key: "brand_customized", label: "Customize your brand", desc: "Website Content > Branding", tab: "website", section: "branding" },
+  { key: "brand_customized", label: "Customize your brand", desc: "Organization Info > Branding", tab: "org-info", section: undefined },
   { key: "first_product", label: "Add your first product", desc: "Catalog > Create product", tab: "catalog", section: undefined },
-  { key: "payment_configured", label: "Configure payment", desc: "Website Content > Payments", tab: "website", section: "payments" },
+  { key: "payment_configured", label: "Configure payment", desc: "Connect Services > Payments", tab: "integrations", section: undefined },
   { key: "first_customer", label: "Invite a customer", desc: "Customers > Add customer", tab: "customers", section: undefined },
   { key: "first_article", label: "Create a resource", desc: "Resources > Write guide", tab: "resources", section: undefined },
 ] as const;

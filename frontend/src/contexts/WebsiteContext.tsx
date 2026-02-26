@@ -164,6 +164,13 @@ export interface WebsiteSettings {
   bank_transaction_sources: string;
   bank_transaction_types: string;
   bank_transaction_statuses: string;
+  // Documents page
+  nav_documents_label: string;
+  documents_page_title: string;
+  documents_page_subtitle: string;
+  documents_page_upload_label: string;
+  documents_page_upload_hint: string;
+  documents_page_empty_text: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
