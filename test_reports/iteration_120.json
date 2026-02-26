@@ -1,0 +1,74 @@
+{
+  "summary": "Tested all 10 features in the multi-part currency/email/references refactor batch. Backend: 21/23 pass (2 skipped - no subscriptions or valid manual order data to test). Frontend: All currency display tests PASS. One backend correctness issue: legacy email templates NOT pruned from existing tenant DB.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/email-templates",
+        "issue": "For existing tenant 'automate-accounts', legacy quote_request_admin and quote_request_customer templates are still present in DB (returned in API response and visible in Admin UI). The _TEMPLATES list in email_service.py correctly excludes them (new tenants won't get them), but ensure_seeded() only ADDS missing templates and never REMOVES deprecated ones. Existing tenants need a migration to prune these.",
+        "priority": "MEDIUM"
+      },
+      {
+        "endpoint": "GET /api/admin/export/orders",
+        "issue": "base_currency_amount column NOT present in orders export CSV for existing orders (2 orders predate FX feature). This is expected behavior - the column auto-appears only when new checkout orders are created via the updated checkout flow that stores base_currency_amount. No new checkout orders exist in this environment to verify.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results_detail": {
+    "permissions_no_quote_requests": "PASS - quote_requests NOT in ADMIN_MODULES",
+    "email_templates_code_definition": "PASS - _TEMPLATES list does not define quote_request_admin or quote_request_customer",
+    "email_templates_existing_tenant_db": "FAIL - quote_request_admin and quote_request_customer still in DB for 'automate-accounts' tenant (ensure_seeded doesn't remove deprecated templates)",
+    "article_ref_resolution": "PASS - {{ref:key}} tokens correctly resolved in GET /api/articles/{id} (TestRefValue120 substituted correctly)",
+    "fx_cache_1h_ttl": "PASS - _fx_cache dict and _FX_CACHE_TTL=3600 defined in checkout_service.py, get_fx_rate async function exists, cache key and time.time() check present",
+    "fx_external_api": "PASS - open.er-api.com returns result=success, 166 rates",
+    "orders_export_csv": "PASS (informational) - Returns CSV, but base_currency_amount not in headers for pre-existing orders",
+    "subscriptions_export_csv": "SKIPPED - No subscriptions in system",
+    "store_currency_field": "PASS - All 21 products have currency field",
+    "prod_bookkeeping_cad": "PASS - prod_bookkeeping.currency=CAD",
+    "store_offering_card_cad": "PASS - Store card shows CA$1,000 (using product.currency=CAD)",
+    "product_detail_sticky_summary": "PASS - Summary total shows CA$1,000, currency note shows 'All prices in CAD'",
+    "usd_products_show_dollar": "PASS - USD products show $100, $2,499, $999, $1,499"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter120_currency_email_refs.py",
+    "/app/test_reports/pytest/pytest_iter120_currency_email_refs.xml"
+  ],
+  "action_items": [
+    "Fix ensure_seeded() in email_service.py to DELETE deprecated templates (quote_request_admin, quote_request_customer) that are no longer in _TEMPLATES list for existing tenants. Add a prune step: delete all templates with triggers not in [t['trigger'] for t in _TEMPLATES].",
+    "Verify base_currency_amount appears in orders export CSV by creating a new checkout order via the frontend (or ensure the checkout flow stores base_currency_amount which it does in checkout.py lines 356, 538)"
+  ],
+  "critical_code_review_comments": [
+    "email_service.py ensure_seeded(): only adds missing templates but never removes deprecated ones. For the promise of 'removed legacy quote_request_admin/customer' to hold for ALL tenants (not just new ones), a cleanup pass must be added.",
+    "The feature description says 'removed for new tenants' - if that's the intent (legacy tenants keep old templates), then the feature is CORRECT as-is. But if the intent is to remove these globally, ensure_seeded() needs a delete step.",
+    "The 'ensure_seeded' function logic should be: (1) seed missing templates, (2) update metadata of existing system templates, (3) DELETE templates with trigger in DEPRECATED_TRIGGERS list. Currently step 3 is missing."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter120_currency_email_refs.py"
+  ],
+  "success_rate": {
+    "backend": "91% (21/23 pass, 2 skipped due to no test data)",
+    "frontend": "100% - all currency display features verified"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "Created and cleaned up: reference key=TEST_iter120_ref (value=TestRefValue120), article with ref token in category Blog. Both deleted after test.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All currency display features verified: store cards show correct symbols ($, CA$), product detail page (prod_bookkeeping) shows CA$1,000 with 'All prices in CAD'. Article {{ref:key}} resolution works. FX cache implemented. Permissions modules has no quote_requests. Main issue: existing tenant 'automate-accounts' still has quote_request_admin + quote_request_customer templates in DB (seeded in a prior version). The _TEMPLATES list has removed them but ensure_seeded() doesn't prune. base_currency_amount column only appears in CSV for orders created post-FX-feature (existing 2 orders don't have it).",
+  "rca_of_issues": {
+    "legacy_email_templates_persist": {
+      "root_cause": "email_service.py ensure_seeded() has three behaviors: (1) if 0 templates exist: seed all, (2) if some exist: add missing ones, (3) always update metadata of system templates. It never DELETES templates that are removed from _TEMPLATES. The existing 'automate-accounts' tenant had quote_request_admin + quote_request_customer seeded in a previous version.",
+      "reproduction": "GET /api/admin/email-templates returns triggers including ['quote_request_admin', 'quote_request_customer'] for tenant automate-accounts",
+      "mitigation": "Add to ensure_seeded(): after seeding, delete any template where trigger not in {t['trigger'] for t in _TEMPLATES} AND is_system=True. Or maintain a DEPRECATED_TRIGGERS list."
+    }
+  }
+}
