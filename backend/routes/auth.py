@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, Response, Request
 from fastapi.responses import JSONResponse
 
-from core.helpers import make_id, now_iso, currency_for_country
+from core.helpers import make_id, now_iso
 from core.security import (
     pwd_context, create_access_token, create_refresh_token, 
     get_current_user, decode_token, ACCESS_TOKEN_EXPIRE_MINUTES
