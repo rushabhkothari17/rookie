@@ -118,7 +118,10 @@ export default function Admin() {
 
             {/* Website & Settings */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
-            <TabsTrigger value="website" data-testid="admin-tab-website" className={TAB_CLASS}>Website Content</TabsTrigger>
+            <TabsTrigger value="org-info" data-testid="admin-tab-org-info" className={TAB_CLASS}>Organization Info</TabsTrigger>
+            <TabsTrigger value="auth-pages" data-testid="admin-tab-auth-pages" className={TAB_CLASS}>Auth & Pages</TabsTrigger>
+            <TabsTrigger value="forms-tab" data-testid="admin-tab-forms" className={TAB_CLASS}>Forms</TabsTrigger>
+            <TabsTrigger value="system-config" data-testid="admin-tab-system-config" className={TAB_CLASS}>System Config</TabsTrigger>
             <TabsTrigger value="domains" data-testid="admin-tab-domains" className={TAB_CLASS}>Custom Domains</TabsTrigger>
 
             {/* Integrations */}
