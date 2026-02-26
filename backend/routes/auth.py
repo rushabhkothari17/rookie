@@ -765,6 +765,11 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
     admin_name = payload.get("admin_name", "").strip()
     admin_email = payload.get("admin_email", "").strip().lower()
     admin_password = payload.get("admin_password", "")
+    base_currency = payload.get("base_currency", "USD").strip().upper() or "USD"
+
+    VALID_CURRENCIES = ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]
+    if base_currency not in VALID_CURRENCIES:
+        base_currency = "USD"
 
     if not all([name, admin_name, admin_email, admin_password]):
         raise HTTPException(status_code=400, detail="All fields are required")
