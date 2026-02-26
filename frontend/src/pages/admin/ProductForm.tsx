@@ -356,18 +356,21 @@ export function ProductForm({
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [visSearch, setVisSearch] = useState("");
-  const [localVisMode, setLocalVisMode] = useState<"all" | "restricted" | "show_to_specific">(() => {
+  const [localVisMode, setLocalVisMode] = useState<"all" | "restricted" | "show_to_specific" | "conditional">(() => {
+    if (form.visibility_conditions) return "conditional";
     if (form.visible_to_customers.length > 0) return "show_to_specific";
     if (form.restricted_to.length > 0) return "restricted";
     return "all";
   });
 
   const visMode = localVisMode;
-  const setVisMode = (mode: "all" | "restricted" | "show_to_specific") => {
+  const setVisMode = (mode: "all" | "restricted" | "show_to_specific" | "conditional") => {
     setLocalVisMode(mode);
-    if (mode === "all") setForm({ ...form, visible_to_customers: [], restricted_to: [] });
-    else if (mode === "restricted") setForm({ ...form, visible_to_customers: [], restricted_to: [] });
-    else setForm({ ...form, restricted_to: [], visible_to_customers: [] });
+    if (mode === "all") setForm({ ...form, visible_to_customers: [], restricted_to: [], visibility_conditions: null });
+    else if (mode === "restricted") setForm({ ...form, visible_to_customers: [], visibility_conditions: null, restricted_to: [] });
+    else if (mode === "show_to_specific") setForm({ ...form, restricted_to: [], visibility_conditions: null, visible_to_customers: [] });
+    else if (mode === "conditional") setForm({ ...form, visible_to_customers: [], restricted_to: [],
+      visibility_conditions: { logic: "AND", conditions: [{ field: "country", operator: "equals", value: "" }] } });
   };
 
   const s = (key: keyof ProductFormData) => (v: any) => setForm({ ...form, [key]: v });
