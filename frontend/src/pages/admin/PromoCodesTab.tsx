@@ -160,10 +160,10 @@ export function PromoCodesTab() {
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.enabled} onChange={e => setF({ ...form, enabled: e.target.checked })} />Enabled</label>
       </div>
       <div className="space-y-1">
-        <label className="text-xs text-slate-500">Sponsorship Note <span className="text-slate-400">(optional — shown to customer at checkout if filled)</span></label>
+        <label className="text-xs text-slate-500">Promo Note <span className="text-slate-400">(optional — shown to customer at checkout if filled)</span></label>
         <Textarea
-          value={form.sponsorship_note}
-          onChange={e => setF({ ...form, sponsorship_note: e.target.value })}
+          value={form.promo_note}
+          onChange={e => setF({ ...form, promo_note: e.target.value })}
           placeholder="e.g. This code is part of the Zoho Partner Sponsorship Programme."
           className="text-xs resize-none"
           rows={2}
