@@ -269,7 +269,7 @@ export default function ApplicationLayout({
               className="w-full h-14 text-base font-semibold bg-blue-600 hover:bg-blue-700"
               data-testid="checkout-btn"
             >
-              {isRFQ && !scopeUnlock ? "Submit Enquiry" : "Proceed to Checkout"}
+              {scopeUnlock ? `Add to Cart — $${scopeUnlock.price}` : isRFQ && !scopeUnlock ? "Submit Enquiry" : "Proceed to Checkout"}
             </Button>
 
             {termsUrl && (
