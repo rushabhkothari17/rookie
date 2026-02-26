@@ -433,6 +433,7 @@ async def create_checkout_session(
         raise HTTPException(status_code=400, detail="Please indicate whether you have provided Zoho account access.")
 
     order_items = await build_order_items(payload.items, tenant_id)
+    base_currency = await get_tenant_base_currency(tenant_id)
 
     checkout_type = payload.checkout_type
     if checkout_type not in ["one_time", "subscription"]:
