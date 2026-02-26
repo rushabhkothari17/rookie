@@ -279,19 +279,6 @@ class PromoCodeUpdate(BaseModel):
     promo_note: Optional[str] = None
 
 
-class OverrideCodeCreate(BaseModel):
-    code: str
-    customer_id: str
-    expires_at: Optional[str] = None
-
-
-class OverrideCodeUpdate(BaseModel):
-    code: Optional[str] = None
-    customer_id: Optional[str] = None
-    status: Optional[str] = None
-    expires_at: Optional[str] = None
-
-
 class CustomerPartnerMapUpdate(BaseModel):
     partner_map: str
 
