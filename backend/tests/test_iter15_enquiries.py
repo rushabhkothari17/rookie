@@ -41,14 +41,12 @@ def admin_headers(admin_token):
 
 @pytest.fixture(scope="module")
 def customer_token():
-    """Get customer token to test scope-request-form endpoint."""
-    # Try to get a customer token via registration or login
-    # First attempt to login as an existing customer
+    """Get customer token to test scope-request-form endpoint.
+    Platform admin login (no partner_code)."""
     resp = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": "admin@automateaccounts.local",
         "password": "ChangeMe123!",
-        "partner_code": "automate-accounts",
-        "login_type": "partner",
+        # No partner_code for platform admin
     })
     if resp.status_code == 200:
         token = resp.json().get("token") or resp.json().get("access_token")
