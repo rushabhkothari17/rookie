@@ -376,6 +376,12 @@ async def update_article(
     elif effective_category not in SCOPE_FINAL_CATEGORIES:
         updates["price"] = None
 
+    if payload.currency is not None:
+        updates["currency"] = payload.currency
+        changes["currency"] = payload.currency
+    elif effective_category not in SCOPE_FINAL_CATEGORIES:
+        updates["currency"] = None
+
     if payload.content is not None:
         updates["content"] = _sanitize_html(payload.content)
     if payload.visibility is not None:
