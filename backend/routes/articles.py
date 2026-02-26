@@ -213,6 +213,20 @@ async def get_article_by_id(
             customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
             if not customer or customer["id"] not in article.get("restricted_to", []):
                 raise HTTPException(status_code=403, detail="You don't have access to this article")
+
+    # Resolve {{ref:key}} in article content (global references)
+    if article.get("content"):
+        import re as _re
+        _refs = await db.website_references.find(
+            {"$or": [{"tenant_id": article.get("tenant_id")}, {"tenant_id": {"$exists": False}}]},
+            {"_id": 0, "key": 1, "value": 1}
+        ).to_list(500)
+        _ref_map = {r["key"]: r["value"] for r in _refs}
+        article["content"] = _re.sub(
+            r"\{\{ref:([^}]+)\}\}",
+            lambda m: _ref_map.get(m.group(1).strip(), m.group(0)),
+            article["content"]
+        )
     return {"article": article}
 
 
