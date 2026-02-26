@@ -508,7 +508,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
 
         {/* Body */}
         <CollapsibleContent>
-          <div className="px-4 pb-4 pt-3 border-t border-slate-100 bg-slate-50/50 space-y-4">
+          <div className="px-6 pb-6 pt-5 border-t border-slate-100 bg-slate-50/30 space-y-5">
             {/* HTML Block */}
             {isHtmlBlock ? (
               <>
