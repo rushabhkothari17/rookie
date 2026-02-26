@@ -23,6 +23,7 @@ class RegisterRequest(BaseModel):
     phone: str = ""
     address: AddressInput
     profile_meta: Optional[Dict[str, Any]] = None
+    partner_code: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -433,6 +434,7 @@ class CompleteGoCardlessRedirect(BaseModel):
 class ApplyPromoRequest(BaseModel):
     code: str
     checkout_type: str
+    product_ids: List[str] = Field(default_factory=list)
 
 
 class ScopeRequestFormData(BaseModel):
