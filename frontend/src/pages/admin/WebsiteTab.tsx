@@ -839,40 +839,44 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
 
   return (
     <div data-testid="admin-website-tab">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Website Settings</h2>
-          <p className="text-sm text-slate-500 mt-0.5">Manage all content, branding, forms, and integrations.</p>
+      {!forcedSection && (
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Website Settings</h2>
+            <p className="text-sm text-slate-500 mt-0.5">Manage all content, branding, forms, and integrations.</p>
+          </div>
+          <Button onClick={save} disabled={saving} data-testid="website-save-btn">
+            {saving ? "Saving…" : "Save Changes"}
+          </Button>
         </div>
-        <Button onClick={save} disabled={saving} data-testid="website-save-btn">
-          {saving ? "Saving…" : "Save Changes"}
-        </Button>
-      </div>
+      )}
 
       <div className="flex gap-6">
-        {/* Sidebar */}
-        <div className="w-48 shrink-0 space-y-4">
-          {SIDEBAR.map(group => (
-            <div key={group.group}>
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pb-1">{group.group}</p>
-              <div className="space-y-0.5">
-                {group.items.map(item => (
-                  <button key={item.key} type="button" onClick={() => setActiveSection(item.key)}
-                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${activeSection === item.key ? "bg-slate-900 text-white font-medium" : "text-slate-600 hover:bg-slate-100"}`}
-                    data-testid={`website-section-${item.key}`}>
-                    {item.label}
-                  </button>
-                ))}
+        {/* Sidebar - only shown in standalone mode */}
+        {!forcedSection && (
+          <div className="w-48 shrink-0 space-y-4">
+            {SIDEBAR.map(group => (
+              <div key={group.group}>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pb-1">{group.group}</p>
+                <div className="space-y-0.5">
+                  {group.items.map(item => (
+                    <button key={item.key} type="button" onClick={() => setActiveSection(item.key)}
+                      className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${activeSection === item.key ? "bg-slate-900 text-white font-medium" : "text-slate-600 hover:bg-slate-100"}`}
+                      data-testid={`website-section-${item.key}`}>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Content panel */}
         <div className="flex-1 min-w-0 border border-slate-100 rounded-xl p-6 bg-white space-y-5">
 
-          {/* ── Branding & Hero ── */}
-          {activeSection === "branding" && (
+          {/* ── Organization Info (Branding & Hero) ── */}
+          {displaySection === "branding" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700">Store Information</h3>
               <Field label="Store Name" value={branding.store_name} onChange={b("store_name")} testId="ws-store-name" />
