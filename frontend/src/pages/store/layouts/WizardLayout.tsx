@@ -278,6 +278,20 @@ export default function WizardLayout({
         )}
       </div>
 
+      {/* Scope ID override — shown on review step for enquiry products */}
+      {isReviewStep && isRFQ && setScopeId && handleValidateScopeId && (
+        <div className="mt-4">
+          <ScopeIdBlock
+            scopeId={scopeId}
+            setScopeId={setScopeId}
+            handleValidateScopeId={handleValidateScopeId}
+            scopeValidating={scopeValidating}
+            scopeError={scopeError}
+            scopeUnlock={scopeUnlock}
+          />
+        </div>
+      )}
+
       {/* Custom Sections */}
       {(product.custom_sections || []).map((sec: any, i: number) => (
         <div key={sec.id || i} className="bg-white rounded-2xl border border-slate-200 p-6 mt-6">
