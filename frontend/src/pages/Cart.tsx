@@ -227,20 +227,22 @@ export default function Cart() {
     if (!cartQuoteProduct || !cartQuoteForm.name || !cartQuoteForm.email) return;
     setSubmittingCartQuote(true);
     try {
-      await api.post("/quote-requests", {
-        product_id: cartQuoteProduct.id,
-        name: cartQuoteForm.name,
-        email: cartQuoteForm.email,
-        company: cartQuoteForm.company,
-        phone: cartQuoteForm.phone,
-        message: cartQuoteForm.message,
+      await api.post("/orders/scope-request-form", {
+        items: [{ product_id: cartQuoteProduct.id, quantity: 1, inputs: {} }],
+        form_data: {
+          name: cartQuoteForm.name,
+          email: cartQuoteForm.email,
+          company: cartQuoteForm.company,
+          phone: cartQuoteForm.phone,
+          message: cartQuoteForm.message,
+        },
       });
-      toast.success("Quote request submitted!");
+      toast.success("Enquiry submitted! We'll be in touch shortly.");
       setShowCartQuoteModal(false);
       setCartQuoteForm({ name: "", email: "", company: "", phone: "", message: "" });
       removeItem(cartQuoteProduct.id);
     } catch (e: any) {
-      toast.error(e.response?.data?.detail || "Failed to submit quote request");
+      toast.error(e.response?.data?.detail || "Failed to submit enquiry");
     } finally {
       setSubmittingCartQuote(false);
     }
