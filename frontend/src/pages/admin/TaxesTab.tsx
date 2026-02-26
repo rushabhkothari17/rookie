@@ -52,7 +52,7 @@ function TaxSettingsPanel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/api/admin/taxes/settings").then((r) => {
+    api.get("/admin/taxes/settings").then((r) => {
       setSettings(r.data.tax_settings || {});
       setLoading(false);
     }).catch(() => setLoading(false));
