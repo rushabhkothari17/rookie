@@ -91,7 +91,6 @@ async def get_categories(
     return {"categories": categories, "category_blurbs": blurbs}
 
 
-@router.get("/products")
 def _eval_product_conditions(rule_set: dict, customer: dict) -> bool:
     """Evaluate ProductVisRuleSet conditions against a customer document."""
     conditions = rule_set.get("conditions") or []
@@ -123,6 +122,7 @@ def _eval_product_conditions(rule_set: dict, customer: dict) -> bool:
     return any(results) if logic == "OR" else all(results)
 
 
+@router.get("/products")
 async def get_products(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
