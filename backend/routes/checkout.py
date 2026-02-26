@@ -353,6 +353,7 @@ async def checkout_bank_transfer(
         "promo_code": promo_code_data["code"] if promo_code_data else None,
         "fee": 0.0, "total": total, "currency": order_items[0]["product"].get("currency", "USD"),
         "base_currency": base_currency,
+        "base_currency_amount": round(total * (await get_fx_rate(order_items[0]["product"].get("currency", "USD"), base_currency)), 2),
         "payment_method": "bank_transfer",
         "gocardless_redirect_flow_id": redirect_flow_id,
         "terms_id_used": terms_id, "rendered_terms_text": rendered_terms_text,
