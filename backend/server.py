@@ -478,6 +478,11 @@ async def startup_tasks():
         await db.client.get_default_database().drop_collection("override_codes")
     except Exception:
         pass
+    # Drop legacy quote_requests collection
+    try:
+        await db.client.get_default_database().drop_collection("quote_requests")
+    except Exception:
+        pass
 
 
 
