@@ -193,7 +193,8 @@ export default function Cart() {
   const handleApplyScopeToCart = async () => {
     if (!cartScopeUnlock) return;
     try {
-      const scopeItem = grouped.scope[0] || grouped.rfq[0];
+      // Apply scope unlock to scope, inquiry, or rfq items
+      const scopeItem = grouped.scope[0] || grouped.inquiry[0] || grouped.rfq[0];
       if (scopeItem) {
         updateItem(scopeItem.product.id, {
           ...scopeItem,
