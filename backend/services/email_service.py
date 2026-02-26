@@ -293,6 +293,12 @@ class EmailService:
                         {"$set": {"available_variables": t["available_variables"], "label": t["label"], "description": t["description"], "updated_at": now}},
                     )
 
+            # Prune deprecated system templates
+            if _DEPRECATED_TRIGGERS:
+                await db.email_templates.delete_many(
+                    {"tenant_id": tenant_id, "trigger": {"$in": list(_DEPRECATED_TRIGGERS)}, "is_system": True}
+                )
+
     @staticmethod
     async def send(
         trigger: str,
