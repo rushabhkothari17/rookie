@@ -114,9 +114,9 @@ async def _refresh_access_token(tenant_id: str, creds: Dict[str, Any]) -> str:
     if not new_access:
         raise RuntimeError(f"Token refresh failed: {data}")
 
-    await db.integrations.update_one(
-        {"tenant_id": tenant_id, "service": "zoho_workdrive"},
-        {"$set": {"access_token": new_access, "updated_at": now_iso()}},
+    await db.oauth_connections.update_one(
+        {"tenant_id": tenant_id, "provider": "zoho_workdrive"},
+        {"$set": {"credentials.access_token": new_access, "updated_at": now_iso()}},
     )
     return new_access
 
