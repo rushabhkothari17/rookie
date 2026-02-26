@@ -606,23 +606,22 @@ function BaseCurrencyWidget() {
       <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Base Currency</h4>
       <p className="text-xs text-slate-400 mb-3">The primary currency for your partner account. All transactions will reference this currency.</p>
       <div className="flex items-center gap-3">
-        <select
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
-          data-testid="base-currency-select"
-        >
-          {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <button
+        <Select value={currency} onValueChange={setCurrency}>
+          <SelectTrigger className="w-40" data-testid="base-currency-select">
+            <SelectValue placeholder="Select currency" />
+          </SelectTrigger>
+          <SelectContent>
+            {CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Button
           onClick={handleSave}
           disabled={saving}
-          className="h-9 px-4 rounded-md text-sm font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: "var(--aa-primary)" }}
+          size="sm"
           data-testid="base-currency-save-btn"
         >
           {saving ? "Saving..." : "Save"}
-        </button>
+        </Button>
       </div>
     </div>
   );
