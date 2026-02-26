@@ -1074,7 +1074,6 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
         "customers": db.customers,
         "orders": db.orders,
         "subscriptions": db.subscriptions,
-        "quote_requests": db.quote_requests,
     }
 
     # For customers, we need to join with users to get email and full_name
