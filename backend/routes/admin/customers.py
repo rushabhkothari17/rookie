@@ -394,6 +394,26 @@ async def update_customer(
         asyncio.create_task(auto_sync_to_zoho_crm(tf.get("tenant_id", ""), "customers", updated_customer, "update"))
         asyncio.create_task(auto_sync_to_zoho_books(tf.get("tenant_id", ""), "customers", updated_customer, "update"))
 
+    # Rename WorkDrive folder if customer full_name changed (fire and forget)
+    if "full_name" in user_updates:
+        new_name = user_updates["full_name"]
+        _tid = tf.get("tenant_id", "")
+        async def _rename_folder():
+            try:
+                from services.workdrive_service import rename_folder
+                folder_doc = await db.workdrive_folders.find_one({"tenant_id": _tid, "customer_id": customer_id}, {"_id": 0})
+                if not folder_doc:
+                    return
+                new_folder_name = f"{new_name} - {customer_id}"
+                await rename_folder(_tid, folder_doc["folder_id"], new_folder_name)
+                await db.workdrive_folders.update_one(
+                    {"tenant_id": _tid, "customer_id": customer_id},
+                    {"$set": {"folder_name": new_folder_name, "updated_at": now_iso()}},
+                )
+            except Exception:
+                pass  # Don't fail customer update if WorkDrive is down
+        asyncio.create_task(_rename_folder())
+
     return {"message": "Customer updated successfully"}
 
 
