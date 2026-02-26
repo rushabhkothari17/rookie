@@ -210,7 +210,7 @@ export function OrdersTab() {
       await api.post("/admin/orders/manual", manualOrder);
       toast.success("Manual order created");
       setShowManualDialog(false);
-      setManualOrder({ customer_email: "", product_id: "", quantity: 1, subtotal: 0, discount: 0, fee: 0, status: "paid", internal_note: "" });
+      setManualOrder({ customer_email: "", product_id: "", quantity: 1, subtotal: 0, discount: 0, fee: 0, status: "paid", currency: "USD", internal_note: "" });
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create order"); }
   };
