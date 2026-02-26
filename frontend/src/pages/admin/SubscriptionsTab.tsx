@@ -477,9 +477,12 @@ export function SubscriptionsTab() {
               <div className="space-y-1"><label className="text-xs text-slate-500">Amount</label><Input type="number" step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} /></div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Currency</label>
-                <select value={manualSub.currency} onChange={e => setManualSub({ ...manualSub, currency: e.target.value })} className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm">
-                  {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <Select value={manualSub.currency} onValueChange={v => setManualSub({ ...manualSub, currency: v })}>
+                  <SelectTrigger className="w-full bg-white" data-testid="manual-sub-currency-select"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1"><label className="text-xs text-slate-500">Renewal Date</label><Input type="date" value={manualSub.renewal_date} onChange={e => setManualSub({ ...manualSub, renewal_date: e.target.value })} /></div>
             </div>
