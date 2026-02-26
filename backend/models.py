@@ -680,6 +680,7 @@ class ArticleCreate(BaseModel):
     slug: Optional[str] = None
     category: str
     price: Optional[float] = None
+    currency: Optional[str] = None
     content: str = ""
     visibility: str = "all"
     restricted_to: List[str] = []
@@ -690,6 +691,7 @@ class ArticleUpdate(BaseModel):
     slug: Optional[str] = None
     category: Optional[str] = None
     price: Optional[float] = None
+    currency: Optional[str] = None
     content: Optional[str] = None
     visibility: Optional[str] = None
     restricted_to: Optional[List[str]] = None
