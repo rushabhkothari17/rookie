@@ -1041,14 +1041,6 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
           </div>
         )}
 
-        {/* Form Messages */}
-        {authSlide === "form_messages" && (
-          <div className="space-y-4">
-            <Field label="Quote request success" hint="Shown after submitting a quote request" value={ws.msg_quote_success} onChange={s("msg_quote_success")} testId="ws-msg-quote-success" />
-            <Field label="Scope request success" hint="Shown after submitting a scope request" value={ws.msg_scope_success} onChange={s("msg_scope_success")} testId="ws-msg-scope-success" />
-          </div>
-        )}
-
         {/* Footer Basics */}
         {authSlide === "footer_basics" && (
           <div className="space-y-4">
