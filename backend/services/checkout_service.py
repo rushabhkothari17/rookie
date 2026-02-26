@@ -1,14 +1,42 @@
 """Checkout-related shared services."""
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict, List, Optional
 
+import httpx
 from fastapi import HTTPException
 from core.helpers import make_id, now_iso
 from db.session import db
 from services.pricing_service import calculate_price
 from services.settings_service import SettingsService
 from core.constants import SERVICE_FEE_RATE
+
+logger = logging.getLogger(__name__)
+
+
+async def get_fx_rate(from_currency: str, to_currency: str) -> float:
+    """Fetch real-time FX rate via open.er-api.com (free, no key required).
+    Returns 1.0 as fallback if currencies match or the API is unavailable."""
+    from_currency = (from_currency or "USD").upper()
+    to_currency = (to_currency or "USD").upper()
+    if from_currency == to_currency:
+        return 1.0
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(
+                f"https://open.er-api.com/v6/latest/{from_currency}",
+                headers={"Accept": "application/json"},
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                rates = data.get("rates", {})
+                rate = rates.get(to_currency)
+                if rate:
+                    return float(rate)
+    except Exception as exc:
+        logger.warning("FX rate fetch failed (%s→%s): %s — using 1:1 fallback", from_currency, to_currency, exc)
+    return 1.0
 
 
 def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, Any], product_name: str) -> str:
