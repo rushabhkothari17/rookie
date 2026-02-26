@@ -103,6 +103,11 @@ E-commerce platform for professional services with:
 - [x] **Options empty state**: Dashed container + "Add your first option" button when no options exist
 - [x] **Better spacing**: px-6/pb-6/pt-5, space-y-5 throughout question cards
 
+### P1 — Subscription Renewal Webhook Logic (COMPLETED 2026-02-28)
+- [x] **Stripe `invoice.paid` handler** fixed: parses raw event body for `stripe_subscription_id` + `billing_reason`, skips `subscription_create`, creates renewal orders with `tenant_id` + full tax fields, deduplicates by `stripe_invoice_id`, dispatches `subscription.renewed` event
+- [x] **GoCardless renewal**: `payments.confirmed` for new mandate payment creates `subscription_renewal` order with full tax fields, deduplication by `gocardless_payment_id`, dispatches `subscription.renewed` event
+- [x] **Test coverage**: 30/30 tests passing across two test files
+
 ### P1 — Cleanup & Verification (COMPLETED 2026-02-27)
 - [x] **Email Trigger Verification**: Legacy `quote_request_admin` + `quote_request_customer` templates removed from `_TEMPLATES` list and pruned from all existing tenants via startup migration in `server.py`
 - [x] **Global References** (`{{ref:key}}`): Now resolved in article content (GET /api/articles/{id}), and `_resolve_refs` is now tenant-scoped in `email_service.py`
