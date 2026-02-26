@@ -145,6 +145,34 @@ E-commerce platform for professional services with:
 - Tenant management: Uses `require_platform_admin` — strictly `platform_admin` only
 - `platform_admin` role: Cannot be assigned via admin API (excluded from allowed_roles in user CRUD)
 
+## Completed in Latest Session (2026-03-current) — Articles→Resources Refactor & Platform Admin Overhaul
+
+### What Was Done
+1. ✅ **Articles renamed to Resources** everywhere: DB collections, backend routes, frontend files, UI text
+2. ✅ **Platform Admin unscoped view**: Admin sees all data from all tenants (Customers, Users, Products, Resources, Orders, Subscriptions) — achieved by removing `tenant_id` filter for `platform_admin` role in all list endpoints
+3. ✅ **"Partner" column** added to all admin tables (Customers, Users, Products, Resources, Orders, Subscriptions) — only visible when logged in as `platform_admin`
+4. ✅ **Default country fixed** in Create Customer dialog: was `"GB"`, now empty
+5. ✅ **Admin sidebar reordered**: "Partner Orgs" now appears before "Users"
+6. ✅ **Data enrichment**: `enrich_partner_codes` helper in `backend/core/tenant.py` injects `partner_code` into every admin list response
+7. ✅ **ResourceView isAdmin fix**: Extended to include `super_admin` and `partner_super_admin` roles
+8. ✅ **`_DT` NameError fixed** in `resources.py` get_article_by_id
+9. ✅ **All-Tenants ResourceView** fixed for platform admin (tid=None when no X-View-As-Tenant header)
+10. ✅ **SetupChecklistWidget** updated: "Create an article" → "Create a resource"
+11. ✅ **DB fix**: admin@automateaccounts.local role corrected to `platform_admin`
+
+### Architecture Changes
+- `backend/core/tenant.py` — `enrich_partner_codes()` helper function added
+- `backend/routes/resources.py` — replaces articles.py, platform-admin-unscoped
+- `backend/routes/resource_categories.py` — replaces article_categories.py
+- `backend/routes/admin/customers.py`, `users.py`, `orders.py`, `catalog.py`, `subscriptions.py`, `references.py`, `requests.py`, `terms.py`, `promo_codes.py`, `logs.py` — all enriched with `partner_code`
+- `frontend/src/pages/admin/ResourcesTab.tsx` — exports `ResourcesTab` (was `ArticlesTab`)
+- `frontend/src/pages/Resources.tsx`, `ResourceView.tsx` — public resource pages
+- DB collections renamed: `articles`→`resources`, `article_categories`→`resource_categories`, `article_templates`→`resource_templates`, `article_email_templates`→`resource_email_templates`
+
+### Test Results (iteration_110.json)
+- All 10 features tested: 100% PASS
+- Platform admin login, Partner columns, multi-tenant data, Resources pages all confirmed working
+
 ## Pending Tasks (P1)
 - None
 
@@ -152,6 +180,9 @@ E-commerce platform for professional services with:
 - Centralized email integration settings
 - Credential forms for "Coming Soon" integrations
 - Formal penetration testing
+- Verify complex intake form visibility (`AND`/`OR` operators)
+- Catalog field ↔ UI layout linkage summary
+- Ensure new platform admin accounts are always seeded with `role='platform_admin'` (not `role='custom'`)
 
 ## Test Credentials
 - Platform Admin: `admin@automateaccounts.local` / `ChangeMe123!`
