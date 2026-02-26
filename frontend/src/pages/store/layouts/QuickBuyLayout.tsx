@@ -138,6 +138,18 @@ export default function QuickBuyLayout({
         {ctaLabel}
       </Button>
 
+      {/* Scope ID Override for enquiry products */}
+      {isEnquiry && setScopeId && handleValidateScopeId && (
+        <ScopeIdBlock
+          scopeId={scopeId}
+          setScopeId={setScopeId}
+          handleValidateScopeId={handleValidateScopeId}
+          scopeValidating={scopeValidating}
+          scopeError={scopeError}
+          scopeUnlock={scopeUnlock}
+        />
+      )}
+
       {/* Terms link */}
       {termsUrl && (
         <a
