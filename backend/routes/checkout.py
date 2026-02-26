@@ -417,9 +417,6 @@ async def create_checkout_session(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     tenant_id = customer.get("tenant_id", "")
-    if customer.get("currency") not in ["USD", "CAD"]:
-        raise HTTPException(status_code=400, detail="Purchases not supported in your region yet")
-
     if not payload.zoho_subscription_type:
         raise HTTPException(status_code=400, detail="Please select your current Zoho subscription type.")
     if not payload.current_zoho_product:
@@ -777,9 +774,7 @@ async def checkout_status(
                         "body": f"Your subscription {product_name} is active.",
                         "type": "subscription_started", "status": "MOCKED", "created_at": now_iso(),
                     })
-            customer = await db.customers.find_one({"id": order["customer_id"]}, {"_id": 0})
-            if customer and not customer.get("currency_locked"):
-                await db.customers.update_one({"id": customer["id"]}, {"$set": {"currency_locked": True}})
+
             
             # Send order confirmation email with ToS PDF attachment
             from services.email_service import EmailService
