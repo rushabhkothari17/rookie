@@ -351,26 +351,29 @@ export default function Signup() {
                   <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Personal info</span>
                   <div className="h-px flex-1 bg-slate-100" />
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FieldWrapper label={(getFieldProp("full_name", "label") as string) || "Full name"} icon={User}>
-                    <Input value={form.full_name} onChange={e => handleChange("full_name", e.target.value)} data-testid="signup-fullname-input" required />
+              {/* Required field note */}
+              <p className="text-xs text-slate-400"><span className="text-red-500">*</span> Required field</p>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FieldWrapper label={(getFieldProp("full_name", "label") as string) || "Full name"} icon={User} required>
+                  <Input value={form.full_name} onChange={e => handleChange("full_name", e.target.value)} data-testid="signup-fullname-input" required />
+                </FieldWrapper>
+                {isFieldVisible("job_title") && (
+                  <FieldWrapper label={(getFieldProp("job_title", "label") as string) || "Job title"} icon={Briefcase} required={getFieldProp("job_title", "required") as boolean}>
+                    <Input value={form.job_title} onChange={e => handleChange("job_title", e.target.value)} data-testid="signup-jobtitle-input" required={getFieldProp("job_title", "required") as boolean} />
                   </FieldWrapper>
-                  {isFieldVisible("job_title") && (
-                    <FieldWrapper label={(getFieldProp("job_title", "label") as string) || "Job title"} icon={Briefcase}>
-                      <Input value={form.job_title} onChange={e => handleChange("job_title", e.target.value)} data-testid="signup-jobtitle-input" required={getFieldProp("job_title", "required") as boolean} />
-                    </FieldWrapper>
-                  )}
-                  {isFieldVisible("company_name") && (
-                    <FieldWrapper label={(getFieldProp("company_name", "label") as string) || "Company name"} icon={Building2}>
-                      <Input value={form.company_name} onChange={e => handleChange("company_name", e.target.value)} data-testid="signup-company-input" required={getFieldProp("company_name", "required") as boolean} />
-                    </FieldWrapper>
-                  )}
-                  {isFieldVisible("phone") && (
-                    <FieldWrapper label={(getFieldProp("phone", "label") as string) || "Phone"} icon={Phone}>
-                      <Input value={form.phone} onChange={e => handleChange("phone", e.target.value)} data-testid="signup-phone-input" required={getFieldProp("phone", "required") as boolean} />
-                    </FieldWrapper>
-                  )}
-                </div>
+                )}
+                {isFieldVisible("company_name") && (
+                  <FieldWrapper label={(getFieldProp("company_name", "label") as string) || "Company name"} icon={Building2} required={getFieldProp("company_name", "required") as boolean}>
+                    <Input value={form.company_name} onChange={e => handleChange("company_name", e.target.value)} data-testid="signup-company-input" required={getFieldProp("company_name", "required") as boolean} />
+                  </FieldWrapper>
+                )}
+                {isFieldVisible("phone") && (
+                  <FieldWrapper label={(getFieldProp("phone", "label") as string) || "Phone"} icon={Phone} required={getFieldProp("phone", "required") as boolean}>
+                    <Input value={form.phone} onChange={e => handleChange("phone", e.target.value)} data-testid="signup-phone-input" required={getFieldProp("phone", "required") as boolean} />
+                  </FieldWrapper>
+                )}
+              </div>
               </div>
 
               {/* Section: Account Details */}
