@@ -13,7 +13,7 @@ import {
   Sparkles
 } from "lucide-react";
 import type { LayoutProps } from "./types";
-import { QuestionLabel, renderIntakeField } from "./utils";
+import { QuestionLabel, renderIntakeField, ScopeIdBlock } from "./utils";
 
 export default function ShowcaseLayout({
   product,
@@ -26,6 +26,12 @@ export default function ShowcaseLayout({
   isSubscription,
   termsUrl,
   currency,
+  scopeId = "",
+  setScopeId,
+  handleValidateScopeId,
+  scopeValidating,
+  scopeError,
+  scopeUnlock,
 }: LayoutProps) {
   const formatCurrency = (amount: number) => {
     const symbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : "£";
