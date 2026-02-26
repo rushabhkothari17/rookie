@@ -13,6 +13,16 @@ import { SectionsEditor, CustomSection, DEFAULT_SECTION } from "./SectionsEditor
 
 interface FAQ { question: string; answer: string; }
 
+export interface ProductVisCondition {
+  field: string;
+  operator: string;
+  value: string;
+}
+export interface ProductVisRuleSet {
+  logic: "AND" | "OR";
+  conditions: ProductVisCondition[];
+}
+
 export interface ProductFormData {
   name: string;
   tagline: string;
@@ -36,6 +46,7 @@ export interface ProductFormData {
   currency: string;
   visible_to_customers: string[];
   restricted_to: string[];
+  visibility_conditions: ProductVisRuleSet | null;
   intake_schema_json: IntakeSchemaJson;
   custom_sections: CustomSection[];
   display_layout: string;
