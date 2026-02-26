@@ -40,7 +40,7 @@ E-commerce platform for professional services with:
 - [x] QuoteRequestsTab removed (legacy)
 - [x] OverrideCodesTab removed (legacy), override_codes collection dropped
 
-### Cart & Checkout (REDESIGNED 2026-02-25)
+### Cart & Checkout (UPDATED 2026-02-26)
 - [x] **Two-column layout**: Cart items on left, Order Summary sidebar on right
 - [x] **Modern payment method cards**: Bank Transfer (no fee) and Card Payment (5% fee)
 - [x] **Increased spacing** between sections (space-y-8, gap-10)
@@ -50,6 +50,9 @@ E-commerce platform for professional services with:
 - [x] Free product checkout (total = $0, no payment required)
 - [x] Multiple payment methods (Card, Bank Transfer, GoCardless)
 - [x] Terms & Conditions acceptance
+- [x] **Currency display**: prices shown with product currency code (e.g., EUR 99.00 instead of $99.00)
+- [x] **Partner tag / override code flow removed** completely
+- [x] Checkout payload no longer sends partner_tag_response or override_code
 
 ### Store
 - [x] Category sidebar with blurbs
