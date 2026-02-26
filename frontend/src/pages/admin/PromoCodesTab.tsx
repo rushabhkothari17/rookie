@@ -39,7 +39,7 @@ export function PromoCodesTab() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editPromo, setEditPromo] = useState<any>(null);
   const [newPromo, setNewPromo] = useState(INITIAL_PROMO);
-  const [editForm, setEditForm] = useState({ code: "", discount_type: "percent", discount_value: 10, applies_to: "both", applies_to_products: "all", product_ids: [] as string[], expiry_date: "", max_uses: "", one_time_code: false, enabled: true, sponsorship_note: "" });
+  const [editForm, setEditForm] = useState({ code: "", discount_type: "percent", discount_value: 10, applies_to: "both", applies_to_products: "all", product_ids: [] as string[], expiry_date: "", max_uses: "", one_time_code: false, enabled: true, promo_note: "" });
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmDeletePromo, setConfirmDeletePromo] = useState<any>(null);
@@ -85,7 +85,7 @@ export function PromoCodesTab() {
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create promo code"); }
   };
 
-  const openEdit = (p: any) => { setEditPromo(p); setEditForm({ code: p.code, discount_type: p.discount_type, discount_value: p.discount_value, applies_to: p.applies_to, applies_to_products: p.applies_to_products || "all", product_ids: p.product_ids || [], expiry_date: p.expiry_date?.slice(0, 10) || "", max_uses: p.max_uses ? String(p.max_uses) : "", one_time_code: p.one_time_code || false, enabled: p.enabled !== false, sponsorship_note: p.sponsorship_note || "" }); setShowEditDialog(true); };
+  const openEdit = (p: any) => { setEditPromo(p); setEditForm({ code: p.code, discount_type: p.discount_type, discount_value: p.discount_value, applies_to: p.applies_to, applies_to_products: p.applies_to_products || "all", product_ids: p.product_ids || [], expiry_date: p.expiry_date?.slice(0, 10) || "", max_uses: p.max_uses ? String(p.max_uses) : "", one_time_code: p.one_time_code || false, enabled: p.enabled !== false, promo_note: p.promo_note || "" }); setShowEditDialog(true); };
 
   const handleEdit = async () => {
     if (!editPromo) return;
