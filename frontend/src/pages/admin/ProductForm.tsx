@@ -843,6 +843,7 @@ export function ProductForm({
               <ProductConditionBuilder
                 value={form.visibility_conditions}
                 onChange={v => setForm({ ...form, visibility_conditions: v })}
+                customers={customers}
               />
             )}
           </div>
