@@ -130,6 +130,8 @@ async def checkout_bank_transfer(
     if checkout_type not in ["one_time", "subscription"]:
         raise HTTPException(status_code=400, detail="Invalid checkout type")
 
+    promo_code_data = None  # initialised early — subscription branch also references it in notes_json
+
     if checkout_type == "subscription":
         subscription_items = [i for i in order_items if i["pricing"].get("is_subscription")]
         if len(subscription_items) != len(order_items):
@@ -139,8 +141,6 @@ async def checkout_bank_transfer(
 
         product = subscription_items[0]["product"]
         subtotal = subscription_items[0]["pricing"]["subtotal"]
-
-        terms_id = payload.terms_id if payload.terms_id else product.get("terms_id")
         if not terms_id:
             default_terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
             terms_id = default_terms["id"] if default_terms else None
