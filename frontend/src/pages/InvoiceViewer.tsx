@@ -25,6 +25,23 @@ const TEMPLATES = [
   { value: "branded",      label: "Branded" },
 ];
 
+// Custom HTML template renderer
+function CustomHtmlTemplate({ html, d }: { html: string; d: InvoiceData }) {
+  // Simple variable substitution for custom templates
+  const o = d.order;
+  const rendered = html
+    .replace(/{{invoice_number}}/g, d.invoice_number)
+    .replace(/{{partner_name}}/g, d.partner.name)
+    .replace(/{{customer_name}}/g, d.customer.full_name)
+    .replace(/{{customer_email}}/g, d.customer.email)
+    .replace(/{{order_number}}/g, o.order_number || "")
+    .replace(/{{order_total}}/g, `${o.currency || "USD"} ${(o.total || 0).toFixed(2)}`)
+    .replace(/{{order_date}}/g, (o.created_at || "").slice(0, 10))
+    .replace(/{{payment_terms}}/g, d.invoice_settings.payment_terms || "")
+    .replace(/{{footer_notes}}/g, d.invoice_settings.footer_notes || "");
+  return <div dangerouslySetInnerHTML={{ __html: rendered }} />;
+}
+
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 function fmt(v: number, currency = "USD") { return `${currency} ${v.toFixed(2)}`; }
 function dateStr(s?: string) { return s ? s.slice(0, 10) : "—"; }
