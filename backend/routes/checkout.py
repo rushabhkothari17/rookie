@@ -926,7 +926,7 @@ async def checkout_free(
         entity_id=order_id,
         action="created",
         actor="customer",
-        details={"status": "paid", "payment_method": "free", "total": 0.0},
+        details={"status": "paid", "payment_method": "free", "total": 0.0, "currency": order_items[0]["product"].get("currency", "USD"), "base_currency": base_currency},
     )
     
     if promo_code_data:
