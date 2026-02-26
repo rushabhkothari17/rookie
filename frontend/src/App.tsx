@@ -24,6 +24,7 @@ import ArticleView from "@/pages/ResourceView";
 import Portal from "@/pages/Portal";
 import Admin from "@/pages/Admin";
 import ProductEditor from "@/pages/ProductEditor";
+import InvoiceViewer from "@/pages/InvoiceViewer";
 
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
