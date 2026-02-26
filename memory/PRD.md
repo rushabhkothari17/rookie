@@ -1,5 +1,11 @@
 # AutomateAccounts Product Requirements Document
 
+## Documentation
+- `/app/memory/PRD.md` — Product requirements and feature status
+- `/app/memory/API_DOCS.md` — **Full API reference** (all 130+ endpoints, request/response models, changelog)
+- `/app/memory/CHANGELOG.md` — Implementation history
+- `/app/memory/ROADMAP.md` — Prioritized backlog
+
 ## Original Problem Statement
 E-commerce platform for professional services with:
 - Product catalog with multiple pricing tiers
