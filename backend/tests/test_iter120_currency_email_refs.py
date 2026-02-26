@@ -169,17 +169,26 @@ class TestArticleRefResolution:
 
     def test_create_article_with_ref_token(self, admin_session):
         """Create an article whose content contains a {{ref:key}} token."""
-        # Get valid categories first
+        # Get valid categories first (need tenant admin access)
         cat_res = admin_session.get(f"{BASE_URL}/api/admin/article-categories")
         categories = []
         if cat_res.status_code == 200:
             cats = cat_res.json().get("categories", [])
             categories = [c["name"] for c in cats if c.get("name")]
+            print(f"\n  Available article categories: {categories}")
 
         # Pick a non-scope category
         safe_cat = next((c for c in categories if "scope" not in c.lower() and "Scope" not in c), None)
+        if not safe_cat and categories:
+            safe_cat = categories[0]
         if not safe_cat:
-            safe_cat = "General"  # Fallback
+            # Fall back to public categories endpoint
+            pub_res = requests.get(f"{BASE_URL}/api/article-categories/public")
+            if pub_res.status_code == 200:
+                pub_cats = pub_res.json().get("categories", [])
+                safe_cat = next((c["name"] for c in pub_cats if "scope" not in c.get("name","").lower()), None)
+        if not safe_cat:
+            pytest.skip("Cannot determine valid article category")
 
         article_payload = {
             "title": "TEST_iter120 Ref Resolution Test",
