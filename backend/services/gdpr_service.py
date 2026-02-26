@@ -61,13 +61,6 @@ async def export_customer_data(customer_id: str, tenant_id: str) -> Dict[str, An
     ).to_list(100)
     export_data["data"]["subscriptions"] = subscriptions
     
-    # 6. Quote requests
-    quote_requests = await db.quote_requests.find(
-        {"customer_id": customer_id, "tenant_id": tenant_id},
-        {"_id": 0}
-    ).to_list(100)
-    export_data["data"]["quote_requests"] = quote_requests
-    
     # 7. Customer notes (redact internal-only notes)
     notes = await db.customer_notes.find(
         {"customer_id": customer_id, "tenant_id": tenant_id},
