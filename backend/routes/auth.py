@@ -815,6 +815,14 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
         "code": code,
         "status": "active",
         "base_currency": base_currency,
+        "address": {
+            "line1": address.get("line1", "").strip(),
+            "line2": address.get("line2", "").strip(),
+            "city": address.get("city", "").strip(),
+            "region": address.get("region", "").strip(),
+            "postal": address.get("postal", "").strip(),
+            "country": address.get("country", "").strip(),
+        },
         "created_at": now,
         "updated_at": now,
     })
