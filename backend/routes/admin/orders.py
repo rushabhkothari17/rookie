@@ -727,3 +727,125 @@ async def auto_charge_order(
             details={"error": str(e), "payment_method": payment_method},
         )
         raise HTTPException(status_code=500, detail=f"Auto-charge failed: {str(e)}")
+
+
+# ── Enquiries (scope requests) ────────────────────────────────────────────────
+
+ENQUIRY_STATUSES = ["scope_pending", "scope_requested", "responded", "closed"]
+
+
+@router.get("/admin/enquiries")
+async def admin_enquiries(
+    page: int = 1,
+    per_page: int = 20,
+    status_filter: Optional[str] = None,
+    email_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tf = get_tenant_filter(admin)
+    query: Dict[str, Any] = {**tf, "type": "scope_request"}
+    if status_filter:
+        query["status"] = status_filter
+    if date_from:
+        query.setdefault("created_at", {})["$gte"] = date_from
+    if date_to:
+        query.setdefault("created_at", {})["$lte"] = date_to + "T23:59:59"
+
+    total = await db.orders.count_documents(query)
+    skip = (page - 1) * per_page
+    orders_raw = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+
+    # Enrich with customer/user data and order items
+    customer_ids = list({o["customer_id"] for o in orders_raw if o.get("customer_id")})
+    all_order_ids = [o["id"] for o in orders_raw]
+
+    customers_list = await db.customers.find({"id": {"$in": customer_ids}}, {"_id": 0}).to_list(len(customer_ids) + 1)
+    customer_map = {c["id"]: c for c in customers_list}
+
+    user_ids = list({c.get("user_id") for c in customers_list if c.get("user_id")})
+    users_list = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "email": 1, "full_name": 1}).to_list(len(user_ids) + 1)
+    user_map = {u["id"]: u for u in users_list}
+
+    items_list = await db.order_items.find({"order_id": {"$in": all_order_ids}}, {"_id": 0}).to_list(per_page * 10)
+    items_by_order: Dict[str, list] = {}
+    for it in items_list:
+        items_by_order.setdefault(it["order_id"], []).append(it)
+
+    product_ids = list({it["product_id"] for it in items_list if it.get("product_id")})
+    products_list = await db.products.find({"id": {"$in": product_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(len(product_ids) + 1)
+    product_name_map = {p["id"]: p.get("name", p["id"]) for p in products_list}
+
+    enquiries = []
+    for o in orders_raw:
+        cust = customer_map.get(o.get("customer_id", ""), {})
+        usr = user_map.get(cust.get("user_id", ""), {})
+        oi = items_by_order.get(o["id"], [])
+        product_names = [product_name_map.get(i.get("product_id", ""), i.get("product_id", "")) for i in oi]
+
+        # Filter by email if provided
+        if email_filter:
+            uem = (usr.get("email") or "").lower()
+            if email_filter.lower() not in uem:
+                continue
+
+        enquiries.append({
+            **o,
+            "customer_email": usr.get("email", ""),
+            "customer_name": usr.get("full_name") or cust.get("company_name", ""),
+            "products": product_names,
+            "partner_code": cust.get("partner_code") if is_platform_admin(admin) else None,
+        })
+
+    enquiries = await enrich_partner_codes(enquiries, is_platform_admin(admin))
+
+    return {
+        "enquiries": enquiries,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "total_pages": max(1, (total + per_page - 1) // per_page),
+    }
+
+
+@router.patch("/admin/enquiries/{order_id}/status")
+async def update_enquiry_status(
+    order_id: str,
+    payload: Dict[str, Any],
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tf = get_tenant_filter(admin)
+    order = await db.orders.find_one({**tf, "id": order_id, "type": "scope_request"}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Enquiry not found")
+    new_status = payload.get("status")
+    if not new_status:
+        raise HTTPException(status_code=400, detail="status is required")
+    await db.orders.update_one({"id": order_id}, {"$set": {"status": new_status, "updated_at": now_iso()}})
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="enquiry_status_updated",
+        actor=admin.get("email", "admin"),
+        details={"new_status": new_status, "order_number": order.get("order_number")},
+    )
+    return {"message": "Status updated", "status": new_status}
+
+
+@router.delete("/admin/enquiries/{order_id}")
+async def delete_enquiry(order_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    order = await db.orders.find_one({**tf, "id": order_id, "type": "scope_request"}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Enquiry not found")
+    await db.orders.delete_one({"id": order_id})
+    await db.order_items.delete_many({"order_id": order_id})
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="enquiry_deleted",
+        actor=admin.get("email", "admin"),
+        details={"order_number": order.get("order_number")},
+    )
+    return {"message": "Enquiry deleted"}
