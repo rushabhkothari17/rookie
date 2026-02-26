@@ -135,7 +135,7 @@ export default function Documents() {
       {docs.length === 0 ? (
         <div className="py-16 text-center" data-testid="no-documents">
           <FileText size={32} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-sm text-slate-400">No documents yet. Upload a file or wait for your account manager to share documents with you.</p>
+          <p className="text-sm text-slate-400">{ws.documents_page_empty_text || "No documents yet. Upload a file or wait for your account manager to share documents with you."}</p>
         </div>
       ) : (
         <div className="space-y-2" data-testid="documents-list">
