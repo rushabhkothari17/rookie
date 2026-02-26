@@ -81,15 +81,7 @@ export default function Documents() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-slate-400 text-sm">Loading documents…</p>
-      </div>
-    );
-  }
-
-  if (workdriveEnabled === false) {
+  if (!ws.workdrive_enabled) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center space-y-3" data-testid="documents-unavailable">
