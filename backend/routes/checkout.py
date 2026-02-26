@@ -96,6 +96,14 @@ async def is_gocardless_enabled(tenant_id: str) -> bool:
     return conn is not None
 
 
+async def get_tenant_base_currency(tenant_id: str) -> str:
+    """Get the tenant's base currency, defaulting to USD."""
+    if not tenant_id:
+        return "USD"
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "base_currency": 1})
+    return tenant.get("base_currency", "USD") if tenant else "USD"
+
+
 @router.post("/checkout/bank-transfer")
 async def checkout_bank_transfer(
     payload: BankTransferCheckoutRequest,
