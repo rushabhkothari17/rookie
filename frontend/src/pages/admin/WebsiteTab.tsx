@@ -958,7 +958,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
           )}
 
           {/* ── Auth & Pages ── */}
-          {activeSection === "auth" && (
+          {displaySection === "auth" && (
             <>
               <div className="mb-2">
                 <h3 className="text-sm font-semibold text-slate-700">Auth & Pages</h3>
@@ -978,6 +978,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
                 <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
                 <AuthTile title="Admin Panel" preview={ws.admin_page_title || "Admin Control Centre"} description="Admin panel heading, subtitle, and badge text" onEdit={() => setAuthSlide("admin_panel")} testId="auth-tile-admin-panel" />
                 <AuthTile title="404 Not Found" preview={ws.page_404_title || undefined} description="Error page content" onEdit={() => setAuthSlide("not_found")} testId="auth-tile-404" />
+                <AuthTile title="Documents Page" description="Page heading, subtitle, nav label, upload text" preview={ws.documents_page_title || undefined} onEdit={() => setAuthSlide("documents_page")} testId="auth-tile-documents" />
               </div>
 
               <SectionDivider label="Checkout Flow" />
@@ -989,6 +990,15 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
               <SectionDivider label="Messages" />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AuthTile title="Checkout Messages" description="Cart, payment errors & messages" onEdit={() => setAuthSlide("checkout_messages")} testId="auth-tile-checkout-messages" />
+              </div>
+
+              <SectionDivider label="Footer & Navigation" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <AuthTile title="Footer Text" description="Tagline and copyright" preview={ws.footer_tagline || ws.footer_copyright || undefined} onEdit={() => setAuthSlide("footer_basics")} testId="footer-tile-basics" />
+                <AuthTile title="About Us" description="About section heading and text" preview={ws.footer_about_title || undefined} onEdit={() => setAuthSlide("footer_about")} testId="footer-tile-about" />
+                <AuthTile title="Navigation" description="Nav section title and link labels" preview={ws.footer_nav_title || undefined} onEdit={() => setAuthSlide("footer_nav")} testId="footer-tile-nav" />
+                <AuthTile title="Contact Info" description="Email, phone, and address" preview={ws.contact_email || undefined} onEdit={() => setAuthSlide("footer_contact")} testId="footer-tile-contact" />
+                <AuthTile title="Social Media" description="Social network links" preview={ws.footer_social_title || undefined} onEdit={() => setAuthSlide("footer_social")} testId="footer-tile-social" />
               </div>
             </>
           )}
