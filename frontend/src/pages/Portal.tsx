@@ -594,5 +594,6 @@ export default function Portal() {
 
       {/* ── Renewal History ──────────────────────────────── */}
       <RenewalHistory orders={orders} subscriptions={subscriptions} navigate={navigate} />
+    </div>
   );
 }
