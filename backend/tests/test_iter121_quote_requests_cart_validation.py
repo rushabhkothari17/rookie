@@ -11,16 +11,22 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
-
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"
 PARTNER_CODE = "automate-accounts"
 
 
+def get_base_url():
+    url = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+    if not url:
+        pytest.skip("REACT_APP_BACKEND_URL not set")
+    return url
+
+
 @pytest.fixture(scope="module")
 def admin_token():
     """Login as tenant admin and return JWT token."""
+    BASE_URL = get_base_url()
     resp = requests.post(
         f"{BASE_URL}/api/auth/login",
         json={
