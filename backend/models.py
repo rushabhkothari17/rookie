@@ -201,8 +201,8 @@ class IntakeQuestion(BaseModel):
     max_size_mb: float = 10.0
     # HTML block (no key/pricing — pure content)
     content: Optional[str] = None
-    # Conditional visibility
-    visibility_rule: Optional[VisibilityRule] = None
+    # Conditional visibility — accepts both legacy VisibilityRule and new VisibilityRuleSet {logic, conditions}
+    visibility_rule: Optional[Any] = None
 
 
 class IntakeSchemaJson(BaseModel):
