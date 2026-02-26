@@ -66,7 +66,9 @@ E-commerce platform for professional services with:
 ### P1 — Cleanup & Verification (COMPLETED 2026-02-27)
 - [x] **Email Trigger Verification**: Legacy `quote_request_admin` + `quote_request_customer` templates removed from `_TEMPLATES` list and pruned from all existing tenants via startup migration in `server.py`
 - [x] **Global References** (`{{ref:key}}`): Now resolved in article content (GET /api/articles/{id}), and `_resolve_refs` is now tenant-scoped in `email_service.py`
-- [x] **Final Code Deprecation**: `quote_requests` dropped from permissions.py ADMIN_MODULES + preset roles; `quote_requests` collection dropped via startup migration
+- [x] **Final Code Deprecation (COMPLETE)**: Removed `quote_requests` artifacts from permissions.py, integrations.py, oauth.py, gdpr_service.py, imports.py (ALL dicts), and dropped collection via server.py migration
+- [x] **Cart Validation**: Type + currency enforcement — `CartContext.addItem()` returns string|null with descriptive errors; only one product type and one currency allowed per cart
+- [x] **ProductForm**: Subscription toggle hidden for `external` and `enquiry` pricing types
 - [x] Multiple payment methods (Card, Bank Transfer, GoCardless)
 - [x] Terms & Conditions acceptance
 - [x] **Currency display**: prices shown with product currency code (e.g., EUR 99.00 instead of $99.00)
