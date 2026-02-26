@@ -142,8 +142,8 @@ export default function Admin() {
           <TabsContent value="orders" className="space-y-4">
             <OrdersTab />
           </TabsContent>
-          <TabsContent value="quotes" className="space-y-4">
-            <QuoteRequestsTab />
+          <TabsContent value="enquiries" className="space-y-4">
+            <EnquiriesTab />
           </TabsContent>
           <TabsContent value="resources" className="space-y-4">
             <ResourcesTab editResourceId={editResourceId || undefined} />
