@@ -108,39 +108,64 @@ async def stripe_webhook(request: Request):
                     email_target = user["email"]
 
     if webhook_response.event_type == "invoice.paid":
-        stripe_invoice_id = webhook_response.metadata.get("stripe_invoice_id") or f"inv_{webhook_response.event_id}"
-        existing_renewal = await db.orders.find_one({"stripe_invoice_id": stripe_invoice_id}, {"_id": 0})
-        if not existing_renewal and order_id:
-            original_order = await db.orders.find_one({"id": order_id}, {"_id": 0})
-            if original_order and original_order.get("type") == "subscription_start":
+        # Parse raw Stripe event body for subscription renewal data.
+        # Renewal invoices do NOT carry the original order metadata, so we
+        # must look up our subscription via stripe_subscription_id instead.
+        try:
+            raw_event = json.loads(body)
+            invoice_obj = raw_event.get("data", {}).get("object", {})
+            stripe_invoice_id = invoice_obj.get("id") or f"inv_{webhook_response.event_id}"
+            stripe_sub_id = invoice_obj.get("subscription")
+            billing_reason = invoice_obj.get("billing_reason", "")
+        except Exception:
+            stripe_invoice_id = f"inv_{webhook_response.event_id}"
+            stripe_sub_id = None
+            billing_reason = ""
+
+        # "subscription_create" is the initial payment — already handled by checkout_status.
+        # Only process renewals (subscription_cycle) or any other reason except subscription_create.
+        if billing_reason != "subscription_create" and stripe_sub_id:
+            existing_renewal = await db.orders.find_one({"stripe_invoice_id": stripe_invoice_id}, {"_id": 0})
+            if not existing_renewal:
                 subscription = await db.subscriptions.find_one(
-                    {"order_id": order_id, "status": "active"}, {"_id": 0}
+                    {"stripe_subscription_id": stripe_sub_id}, {"_id": 0}
                 )
                 if subscription:
-                    # Get tenant_id from customer for fee rate lookup
-                    customer_for_fee = await db.customers.find_one({"id": original_order["customer_id"]}, {"_id": 0, "tenant_id": 1})
+                    customer_for_fee = await db.customers.find_one(
+                        {"id": subscription["customer_id"]}, {"_id": 0}
+                    )
                     tenant_id = customer_for_fee.get("tenant_id", "") if customer_for_fee else ""
+                    fee_rate = await get_stripe_fee_rate_for_tenant(tenant_id)
+
+                    renewal_amount = subscription.get("amount", 0)
+                    renewal_tax = subscription.get("tax_amount", 0.0)
+                    renewal_fee = round_cents(renewal_amount * fee_rate)
+                    renewal_total = round_cents(renewal_amount + renewal_fee + renewal_tax)
                     renewal_order_id = make_id()
                     renewal_order_number = f"AA-{renewal_order_id.split('-')[0].upper()}"
-                    renewal_amount = subscription.get("amount", 0)
-                    fee_rate = await get_stripe_fee_rate_for_tenant(tenant_id)
-                    renewal_fee = round_cents(renewal_amount * fee_rate)
-                    renewal_total = round_cents(renewal_amount + renewal_fee)
+
                     renewal_doc = {
                         "id": renewal_order_id,
                         "order_number": renewal_order_number,
-                        "customer_id": original_order["customer_id"],
+                        "tenant_id": tenant_id,
+                        "customer_id": subscription["customer_id"],
                         "type": "subscription_renewal",
                         "status": "paid",
                         "subtotal": renewal_amount,
                         "discount_amount": 0.0,
                         "fee": renewal_fee,
                         "total": renewal_total,
-                        "currency": original_order.get("currency"),
+                        "tax_amount": renewal_tax,
+                        "tax_rate": subscription.get("tax_rate", 0.0),
+                        "tax_name": subscription.get("tax_name"),
+                        "currency": subscription.get("currency"),
+                        "base_currency": subscription.get("base_currency"),
+                        "base_currency_amount": renewal_total,
                         "payment_method": "card",
                         "stripe_invoice_id": stripe_invoice_id,
                         "subscription_id": subscription["id"],
                         "subscription_number": subscription.get("subscription_number", ""),
+                        "payment_date": now_iso(),
                         "created_at": now_iso(),
                     }
                     await db.orders.insert_one(renewal_doc)
@@ -149,29 +174,71 @@ async def stripe_webhook(request: Request):
                         entity_id=renewal_order_id,
                         action="created_renewal",
                         actor="stripe_webhook",
-                        details={"subscription_id": subscription["id"], "stripe_invoice_id": stripe_invoice_id, "amount": renewal_total},
+                        details={
+                            "subscription_id": subscription["id"],
+                            "stripe_invoice_id": stripe_invoice_id,
+                            "stripe_subscription_id": stripe_sub_id,
+                            "amount": renewal_total,
+                            "billing_reason": billing_reason,
+                        },
                     )
-                    original_items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(100)
-                    for item in original_items:
-                        await db.order_items.insert_one({
-                            "id": make_id(),
-                            "order_id": renewal_order_id,
-                            "product_id": item["product_id"],
-                            "quantity": item["quantity"],
-                            "metadata_json": item["metadata_json"],
-                            "unit_price": item["unit_price"],
-                            "line_total": item["line_total"],
-                        })
+
+                    # Copy order items from the original subscription_start order
+                    original_order_for_items = await db.orders.find_one(
+                        {"subscription_id": subscription["id"], "type": "subscription_start"},
+                        {"_id": 0, "id": 1}
+                    )
+                    if original_order_for_items:
+                        original_items = await db.order_items.find(
+                            {"order_id": original_order_for_items["id"]}, {"_id": 0}
+                        ).to_list(100)
+                        for item in original_items:
+                            await db.order_items.insert_one({
+                                "id": make_id(),
+                                "order_id": renewal_order_id,
+                                "product_id": item["product_id"],
+                                "quantity": item["quantity"],
+                                "metadata_json": item.get("metadata_json"),
+                                "unit_price": item["unit_price"],
+                                "line_total": item["line_total"],
+                            })
+
                     await db.zoho_sync_logs.insert_one({
                         "id": make_id(),
                         "entity_type": "subscription_renewal",
                         "entity_id": renewal_order_id,
-                        "status": "Sent",
+                        "status": "Not Sent",
                         "last_error": None,
-                        "attempts": 1,
+                        "attempts": 0,
                         "created_at": now_iso(),
                         "mocked": True,
                     })
+
+                    # Resolve email target from subscription customer
+                    if not email_target and customer_for_fee:
+                        renewal_user = await db.users.find_one(
+                            {"id": customer_for_fee["user_id"]}, {"_id": 0}
+                        )
+                        if renewal_user:
+                            email_target = renewal_user["email"]
+
+                    # Dispatch subscription.renewed webhook event
+                    from services.webhook_service import dispatch_event as _dispatch
+                    await _dispatch(
+                        event="subscription.renewed",
+                        data={
+                            "id": subscription["id"],
+                            "subscription_number": subscription.get("subscription_number", ""),
+                            "plan_name": subscription.get("plan_name", ""),
+                            "amount": renewal_amount,
+                            "currency": subscription.get("currency", ""),
+                            "customer_email": email_target or "",
+                            "next_billing_date": subscription.get("renewal_date", ""),
+                            "renewed_at": now_iso(),
+                        },
+                        tenant_id=tenant_id,
+                    )
+
         if email_target:
             await db.email_outbox.insert_one({
                 "id": make_id(),
