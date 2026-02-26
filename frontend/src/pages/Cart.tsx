@@ -698,9 +698,9 @@ export default function Cart() {
 
                 {/* Or Request Scope */}
                 <div className="mt-4 pt-4 border-t border-blue-100">
-                  <p className="text-sm text-slate-600 mb-3">Don't have a Scope ID? Submit a scope request and we'll get back to you with pricing.</p>
+                  <p className="text-sm text-slate-600 mb-3">Don't have a Scope ID? Submit an enquiry and we'll get back to you with pricing.</p>
                   <Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50" onClick={handleScopeRequest} disabled={loading} data-testid="cart-scope-submit">
-                    Submit Scope Request
+                    Submit Enquiry
                   </Button>
                 </div>
               </div>
