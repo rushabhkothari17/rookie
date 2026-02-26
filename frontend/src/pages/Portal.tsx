@@ -317,12 +317,12 @@ export default function Portal() {
                               {orderItems(order.id).map(item => (
                                 <div key={item.id} className="flex justify-between text-sm" data-testid={`order-item-${item.id}`}>
                                   <span>{productMap[item.product_id]?.name || item.product_id}</span>
-                                  <span className="font-medium">${(item.line_total || 0).toFixed(2)}</span>
+                                  <span className="font-medium">{order.currency || ""} {(item.line_total || 0).toFixed(2)}</span>
                                 </div>
                               ))}
                               <div className="flex justify-between pt-2 border-t font-semibold">
                                 <span>Total</span>
-                                <span>${(order.total || 0).toFixed(2)}</span>
+                                <span>{order.currency || ""} {(order.total || 0).toFixed(2)}</span>
                               </div>
                             </div>
                           </DialogContent>
