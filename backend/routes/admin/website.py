@@ -217,8 +217,12 @@ async def get_website_settings_public(
         {"tenant_id": tid, "provider": {"$in": ["gocardless", "gocardless_sandbox"]}, "is_validated": True}, 
         {"_id": 0}
     )
+    workdrive_conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": "zoho_workdrive", "is_validated": True}, {"_id": 0}
+    )
     stripe_enabled = bool(stripe_conn)
     gocardless_enabled = bool(gocardless_conn)
+    workdrive_enabled = bool(workdrive_conn)
     
     # Fee rates and UI settings from oauth_connections settings field
     stripe_settings = stripe_conn.get("settings", {}) if stripe_conn else {}
