@@ -28,7 +28,6 @@ export default function Documents() {
   const ws = useWebsite();
   const [docs, setDocs] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
-  const [workdriveEnabled, setWorkdriveEnabled] = useState<boolean | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -36,22 +35,15 @@ export default function Documents() {
   const load = async () => {
     setLoading(true);
     try {
-      // Check if workdrive is enabled for this partner
-      const storeRes = await api.get("/store/settings");
-      const wd = storeRes.data?.settings?.workdrive_enabled;
-      setWorkdriveEnabled(wd === true);
-      if (wd) {
+      if (ws.workdrive_enabled) {
         const res = await api.get("/documents");
         setDocs(res.data.documents || []);
       }
-    } catch {
-      setWorkdriveEnabled(false);
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* silent */ }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => { if (user) load(); }, [user]);
+  useEffect(() => { if (user) load(); }, [user, ws.workdrive_enabled]);
 
   const handleDownload = async (doc: Document) => {
     try {
