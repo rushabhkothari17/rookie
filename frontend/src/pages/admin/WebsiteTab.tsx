@@ -150,13 +150,12 @@ const WEB_DEFAULTS: WebsiteData = {
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
-  { group: "Brand", items: [{ key: "branding", label: "Branding & Hero" }] },
+  { group: "Brand", items: [{ key: "branding", label: "Organization Info" }] },
   { group: "Content", items: [
     { key: "auth", label: "Auth & Pages" },
     { key: "forms", label: "Forms" },
   ]},
   { group: "Configuration", items: [
-    { key: "footer", label: "Footer & Nav" },
     { key: "sysconfig", label: "System Config" },
   ]},
 ];
