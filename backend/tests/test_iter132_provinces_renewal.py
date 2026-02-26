@@ -125,7 +125,7 @@ class TestAdminLoginRegression:
             json={
                 "partner_code": "test-iter109-a",
                 "email": "test.super.a@iter109.test",
-                "password": "ChangeMe123!"
+                "password": "TestSuper109!A"
             }
         )
         assert r.status_code == 200, f"Partner admin login failed: {r.status_code} {r.text}"
