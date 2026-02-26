@@ -72,6 +72,18 @@ E-commerce platform for professional services with:
 - [x] **Backward compatibility**: Both backend and frontend normalise legacy flat/single-condition rules into grouped format
 - [x] **Bug fixed**: `GET /api/products/{id}` now enforces visibility for unauthenticated users (was only checking authenticated users)
 
+### Product Editor UI Improvements (COMPLETED 2026-02-27)
+- [x] **Billing type selector**: Two cards "One-time" / "Subscription" replacing switch toggle; One-time is default on new product create
+- [x] **Preview matches button**: Conditional visibility tab shows "Preview matches" button — evaluates current rule against all customers client-side and shows matching list
+- [x] **Customer data enrichment**: ProductEditor enriches customers with email/address/status from API `users` + `addresses` arrays for accurate preview evaluation
+
+### IntakeSchemaBuilder UI Cleanup (COMPLETED 2026-02-27)
+- [x] **Advanced settings** collapsible: Key (read-only), Tooltip, Step group hidden behind "Advanced settings" toggle — default collapsed
+- [x] **MiniToggle controls**: Required/Enabled/Affects price converted to compact inline toggles in single row
+- [x] **Visibility rule collapsed row**: Single row "Visibility rule [toggle] [summary]" — full builder only shown when expanded
+- [x] **Options empty state**: Dashed container + "Add your first option" button when no options exist
+- [x] **Better spacing**: px-6/pb-6/pt-5, space-y-5 throughout question cards
+
 ### P1 — Cleanup & Verification (COMPLETED 2026-02-27)
 - [x] **Email Trigger Verification**: Legacy `quote_request_admin` + `quote_request_customer` templates removed from `_TEMPLATES` list and pruned from all existing tenants via startup migration in `server.py`
 - [x] **Global References** (`{{ref:key}}`): Now resolved in article content (GET /api/articles/{id}), and `_resolve_refs` is now tenant-scoped in `email_service.py`
