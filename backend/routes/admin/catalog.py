@@ -164,6 +164,7 @@ async def admin_create_product(
         "pricing_type": payload.pricing_type or "internal",
         "external_url": payload.external_url,
         "display_layout": payload.display_layout or "standard",
+        "currency": payload.currency or "USD",
         "created_at": now_iso(),
         "is_custom": True,
     }
