@@ -201,32 +201,6 @@ async def export_catalog_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     return _make_csv_response(products, f"catalog_{today}.csv")
 
 
-@router.get("/admin/export/quote-requests")
-async def export_quote_requests_csv(
-    status: Optional[str] = None,
-    email: Optional[str] = None,
-    product: Optional[str] = None,
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
-):
-    tf = get_tenant_filter(admin)
-    query: Dict[str, Any] = {**tf}
-    if status:
-        query["status"] = status
-    if email:
-        query["email"] = {"$regex": _re.escape(email), "$options": "i"}
-    if product:
-        query["product_name"] = {"$regex": _re.escape(product), "$options": "i"}
-    if date_from:
-        query.setdefault("created_at", {})["$gte"] = date_from
-    if date_to:
-        query.setdefault("created_at", {})["$lte"] = date_to + "T23:59:59"
-    quotes = await db.quote_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
-    return _make_csv_response(quotes, f"quote-requests-{ts}.csv")
-
-
 @router.get("/admin/export/articles")
 async def export_articles_csv(
     category: Optional[str] = None,
