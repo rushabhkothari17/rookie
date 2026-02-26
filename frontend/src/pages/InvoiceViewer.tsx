@@ -487,7 +487,11 @@ export default function InvoiceViewer() {
           )}
           {data && (
             <div id="invoice-printable" ref={printRef} className="shadow-xl">
-              <TemplateComponent d={data} />
+              {isCustomTemplate && customTemplateData ? (
+                <CustomHtmlTemplate html={customTemplateData.html_body} d={data} />
+              ) : TemplateComponent ? (
+                <TemplateComponent d={data} />
+              ) : null}
             </div>
           )}
         </div>
