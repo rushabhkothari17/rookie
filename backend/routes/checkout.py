@@ -222,6 +222,8 @@ async def checkout_bank_transfer(
             "cancel_at_period_end": False,
             "canceled_at": None,
             "amount": subtotal,
+            "currency": product.get("currency", "USD"),
+            "base_currency": base_currency,
             "payment_method": "bank_transfer",
             "terms_id_used": terms_id,
             "rendered_terms_text": rendered_terms_text,
