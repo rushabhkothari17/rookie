@@ -49,7 +49,7 @@
     "backend": "100% (12/12 passed, 6 skipped due to no customer accounts in platform tenant)",
     "frontend": "90% (admin UI all pass, product page shows error with admin token)"
   },
-  "seed_data_creation": "Seeded 1 test scope_request order in local MongoDB (id=5a049c98-bd6b-40b8-9cfe-c38eeb01db1e) - NOTE: this is local DB only, not in preview environment",
+  "seed_data_creation": "Seeded 1 test scope_request order in local MongoDB (id=scope-unified) - NOTE: this is local DB only, not in preview environment",
   "retest_needed": false,
   "should_main_agent_self_test": true,
   "context_for_next_testing_agent": "Tested iteration 15 - Enquiries system merge. Key findings: (1) Admin Enquiries tab works correctly. (2) Old /products/request-quote endpoint removed (returns 405). (3) scope-request-form tests skipped because platform admin has no customer record and platform tenant customer login is restricted. To test scope-request-form: need a non-platform-tenant customer account. (4) The handleSubmitQuote in ProductDetail.tsx still calls the removed endpoint for fixed products without payment config - this is a medium priority bug. Test file: /app/backend/tests/test_iter15_enquiries.py",

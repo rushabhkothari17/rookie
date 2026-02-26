@@ -21,7 +21,7 @@ def test_critical_bug_fixes():
     - Human-readable error messages
     """
     
-    base_url = "https://merge-enquiry.preview.emergentagent.com"
+    base_url = "https://scope-unified.preview.emergentagent.com"
     
     print("🔥 CRITICAL BUG FIXES - FINAL VALIDATION")
     print("="*80)
@@ -74,7 +74,7 @@ def test_critical_bug_fixes():
     payload = {
         "items": [{"product_id": "prod_bookkeeping", "quantity": 1, "inputs": {"transactions": 100, "inventory": False, "multi_currency": False, "offshore": False}}],
         "checkout_type": "subscription",
-        "origin_url": "https://merge-enquiry.preview.emergentagent.com", 
+        "origin_url": "https://scope-unified.preview.emergentagent.com", 
         "terms_accepted": True
     }
     
