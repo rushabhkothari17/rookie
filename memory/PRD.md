@@ -50,7 +50,12 @@ E-commerce platform for professional services with:
 - [x] QuoteRequestsTab removed (legacy)
 - [x] OverrideCodesTab removed (legacy), override_codes collection dropped
 
-### Cart & Checkout (UPDATED 2026-02-26)
+### Invoice System (NEW 2026-02-26)
+- [x] 5 invoice templates: Classic, Modern, Minimal, Professional, Branded
+- [x] Print/PDF via window.print() from `/invoice/:orderId`
+- [x] Invoice Settings sub-tab in Taxes: prefix, payment terms, template, footer, show T&C
+- [x] Invoice button in customer portal for paid/completed orders
+- [x] Backend `/api/orders/{id}/invoice` returns all invoice data with product names resolved
 - [x] **Two-column layout**: Cart items on left, Order Summary sidebar on right
 - [x] **Tax line item (NEW 2026-02-26)**: Tax shown as separate line item in order summary when applicable
 - [x] **Modern payment method cards**: Bank Transfer (no fee) and Card Payment (5% fee)
