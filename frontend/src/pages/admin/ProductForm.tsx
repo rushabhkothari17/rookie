@@ -259,6 +259,37 @@ function PricingTypeSelector({ value, onChange }: { value: string; onChange: (v:
 
 // ── Product Conditional Visibility Builder ────────────────────────────────────
 
+// Client-side evaluator (mirrors backend _eval_product_conditions)
+function evalCustomerVis(customer: any, ruleSet: ProductVisRuleSet): boolean {
+  const getF = (c: any, field: string): string => {
+    const d = c[field];
+    if (d !== undefined && d !== null) return String(d).toLowerCase();
+    if (field === "state_province") return String(c.address?.region ?? "").toLowerCase();
+    if (field === "country") return String(c.address?.country ?? "").toLowerCase();
+    return "";
+  };
+  const evalC = (cond: ProductVisCondition, c: any): boolean => {
+    const a = getF(c, cond.field), e = (cond.value || "").toLowerCase();
+    switch (cond.operator) {
+      case "equals": return a === e;
+      case "not_equals": return a !== e;
+      case "contains": return a.includes(e);
+      case "not_contains": return !a.includes(e);
+      case "empty": return !a;
+      case "not_empty": return !!a;
+      default: return true;
+    }
+  };
+  const evalG = (g: ProductVisGroup, c: any) => {
+    if (!g.conditions.length) return true;
+    const r = g.conditions.map(cond => evalC(cond, c));
+    return g.logic === "OR" ? r.some(Boolean) : r.every(Boolean);
+  };
+  if (!ruleSet.groups.length) return true;
+  const r = ruleSet.groups.map(g => evalG(g, customer));
+  return ruleSet.top_logic === "OR" ? r.some(Boolean) : r.every(Boolean);
+}
+
 const CUSTOMER_FIELDS = [
   { key: "country",        label: "Country" },
   { key: "company_name",   label: "Company Name" },
