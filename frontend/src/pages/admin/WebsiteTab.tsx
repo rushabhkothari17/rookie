@@ -1015,29 +1015,11 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
             </>
           )}
 
-          {/* ── Footer & Nav ── */}
-          {activeSection === "footer" && (
-            <>
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">Footer & Navigation</h3>
-              <p className="text-xs text-slate-400 mb-4">Click any tile to edit footer content and navigation settings.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <AuthTile title="Footer Text" description="Tagline and copyright" preview={ws.footer_tagline || ws.footer_copyright || undefined} onEdit={() => setAuthSlide("footer_basics")} testId="footer-tile-basics" />
-                <AuthTile title="About Us" description="About section heading and text" preview={ws.footer_about_title || undefined} onEdit={() => setAuthSlide("footer_about")} testId="footer-tile-about" />
-                <AuthTile title="Navigation" description="Nav section title and link labels" preview={ws.footer_nav_title || undefined} onEdit={() => setAuthSlide("footer_nav")} testId="footer-tile-nav" />
-                <AuthTile title="Contact Info" description="Email, phone, and address" preview={ws.contact_email || undefined} onEdit={() => setAuthSlide("footer_contact")} testId="footer-tile-contact" />
-                <AuthTile title="Social Media" description="Social network links" preview={ws.footer_social_title || undefined} onEdit={() => setAuthSlide("footer_social")} testId="footer-tile-social" />
-              </div>
-            </>
-          )}
-
           {/* ── System Config ── */}
-          {activeSection === "sysconfig" && (
+          {displaySection === "sysconfig" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700 mb-1">System Configuration</h3>
               <p className="text-xs text-slate-400 mb-4">Configure global settings for your partner account.</p>
-
-              {/* Base Currency */}
-              <BaseCurrencyWidget />
 
               {["Operations"].map(cat => {
                 const items = (structured[cat] || []);
