@@ -91,35 +91,45 @@ async def get_categories(
     return {"categories": categories, "category_blurbs": blurbs}
 
 
+def _eval_single_vis_cond(cond: dict, customer: dict) -> bool:
+    field = cond.get("field", "")
+    operator = cond.get("operator", "equals")
+    expected = str(cond.get("value", "") or "")
+    actual = (customer or {}).get(field)
+    actual_str = str(actual or "").lower() if actual is not None else ""
+    if operator == "equals":        return actual_str == expected.lower()
+    if operator == "not_equals":    return actual_str != expected.lower()
+    if operator == "contains":      return expected.lower() in actual_str
+    if operator == "not_contains":  return expected.lower() not in actual_str
+    if operator == "empty":         return not actual or actual in ("", [], {})
+    if operator == "not_empty":     return bool(actual) and actual not in ("", [], {})
+    return True
+
+
+def _eval_vis_group(group: dict, customer: dict) -> bool:
+    logic = group.get("logic", "AND")
+    conditions = group.get("conditions") or []
+    results = [_eval_single_vis_cond(c, customer) for c in conditions]
+    return any(results) if logic == "OR" else all(results)
+
+
 def _eval_product_conditions(rule_set: dict, customer: dict) -> bool:
-    """Evaluate ProductVisRuleSet conditions against a customer document."""
+    """Evaluate ProductVisRuleSet (grouped or legacy flat) against a customer document."""
+    if not rule_set:
+        return True
+    # New grouped format: { top_logic, groups }
+    groups = rule_set.get("groups")
+    if groups is not None:
+        if not groups:
+            return True
+        top_logic = rule_set.get("top_logic", "AND")
+        results = [_eval_vis_group(g, customer) for g in groups]
+        return any(results) if top_logic == "OR" else all(results)
+    # Legacy flat format: { logic, conditions }
     conditions = rule_set.get("conditions") or []
     if not conditions:
         return True
-    logic = rule_set.get("logic", "AND")
-    results = []
-    for cond in conditions:
-        field = cond.get("field", "")
-        operator = cond.get("operator", "equals")
-        expected = str(cond.get("value", "") or "")
-        actual = (customer or {}).get(field)
-        actual_str = str(actual or "").lower() if actual is not None else ""
-        if operator == "equals":
-            r = actual_str == expected.lower()
-        elif operator == "not_equals":
-            r = actual_str != expected.lower()
-        elif operator == "contains":
-            r = expected.lower() in actual_str
-        elif operator == "not_contains":
-            r = expected.lower() not in actual_str
-        elif operator == "empty":
-            r = not actual or actual in ("", [], {})
-        elif operator == "not_empty":
-            r = bool(actual) and actual not in ("", [], {})
-        else:
-            r = True
-        results.append(r)
-    return any(results) if logic == "OR" else all(results)
+    return _eval_vis_group(rule_set, customer)
 
 
 @router.get("/products")
