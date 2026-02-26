@@ -421,6 +421,9 @@ export function SettingsTab() {
         {saving ? "Saving…" : "Save Settings"}
       </Button>
 
+      {/* Organization Address (partner admins only) */}
+      <OrgAddressSection />
+
       {/* System Configuration (DB-backed, categorized) */}
       <div className="border-t border-slate-200 pt-6">
         <SystemConfigSection />
