@@ -173,8 +173,13 @@ E-commerce platform for professional services with:
 - All 10 features tested: 100% PASS
 - Platform admin login, Partner columns, multi-tenant data, Resources pages all confirmed working
 
-## Pending Tasks (P1)
-- None
+## Session: 5 QA-Driven Bug Fixes (2026-03-current)
+
+1. ✅ **Promo Code Product-Scope Enforcement** — `store.py` validate endpoint now rejects promos when `applies_to_products=selected` and cart contains ineligible product IDs. Also added `product_ids` to `ApplyPromoRequest` model.
+2. ✅ **ZOHOR Sponsorship Note** — When promo code contains "ZOHOR": validate returns `is_sponsored: true`; checkout `notes_json` includes `sponsorship_note`; Cart UI shows amber sponsorship banner. Fixed `/promo/validate` → `/promo-codes/validate` URL mismatch in Cart.tsx.
+3. ✅ **Category Rename Cascade** — `admin_update_category` now runs `products.update_many` to update all linked products when category name changes.
+4. ✅ **Category Delete Button UX** — Delete button is now `disabled` with a tooltip ("N product(s) linked — reassign them first") when `product_count > 0`. Uses Tooltip component from shadcn/ui.
+5. ✅ **Customer Registration partner_code in body** — Added `partner_code: Optional[str]` to `RegisterRequest` model; auth.py register uses `partner_code or payload.partner_code` so both query param and body field work.
 
 ## Future Tasks (P2)
 - Centralized email integration settings
