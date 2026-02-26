@@ -35,6 +35,9 @@ export default function Cart() {
   const [cartScopeValidating, setCartScopeValidating] = useState(false);
   const [cartScopeUnlock, setCartScopeUnlock] = useState<any>(null);
   const [cartScopeError, setCartScopeError] = useState("");
+
+  // Tax
+  const [taxInfo, setTaxInfo] = useState<{ tax_amount: number; tax_rate: number; tax_name: string | null } | null>(null);
   
   // Enquiry modal for RFQ items (unified scope request form)
   const [showCartQuoteModal, setShowCartQuoteModal] = useState(false);
