@@ -635,7 +635,7 @@ export default function Cart() {
                         <p className="font-semibold text-green-800">Scope Validated!</p>
                       </div>
                       <p className="text-sm text-green-700 mb-1">{cartScopeUnlock.title}</p>
-                      <p className="text-lg font-bold text-green-800 mb-3">${cartScopeUnlock.price}</p>
+                      <p className="text-lg font-bold text-green-800 mb-3">{displayCurrency} {cartScopeUnlock.price}</p>
                       <Button onClick={handleApplyScopeToCart} className="w-full bg-green-600 hover:bg-green-700" data-testid="cart-scope-apply-btn">
                         Apply Scope & Continue to Checkout
                       </Button>
