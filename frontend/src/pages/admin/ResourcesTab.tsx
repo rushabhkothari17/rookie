@@ -489,7 +489,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
                   })()}
                 </TableCell>
                 <TableCell className="text-sm font-medium text-slate-900">
-                  {a.price ? `$${a.price}` : "—"}
+                  {a.price ? `${a.currency || "USD"} ${a.price}` : "—"}
                 </TableCell>
                 <TableCell className="text-xs text-slate-600">
                   {a.visibility === "all" || !a.restricted_to?.length ? "All" : `${a.restricted_to.length} customer(s)`}
