@@ -53,9 +53,9 @@ def build_checkout_notes_json(
 
     promo_code_str = getattr(payload, "promo_code", None) or ""
     is_zohor = "ZOHOR" in promo_code_str.upper()
-    is_sponsored = bool(promo_data and promo_data.get("sponsorship_note")) or (bool(promo_data and promo_data.get("is_sponsored")) if promo_data else is_zohor)
-    sponsorship_note = (
-        (promo_data.get("sponsorship_note") if promo_data else None)
+    is_sponsored = bool(promo_data and promo_data.get("promo_note")) or (bool(promo_data and promo_data.get("is_sponsored")) if promo_data else is_zohor)
+    promo_note = (
+        (promo_data.get("promo_note") if promo_data else None)
         or ("This order was placed using a sponsored promo code." if (is_zohor or is_sponsored) else None)
     )
 
@@ -67,7 +67,7 @@ def build_checkout_notes_json(
             "zoho_account_access": getattr(payload, "zoho_account_access", None),
             "partner_tag_response": getattr(payload, "partner_tag_response", None),
             "promo_code": promo_code_str or None,
-            "sponsorship_note": sponsorship_note,
+            "promo_note": promo_note,
             "terms_accepted": getattr(payload, "terms_accepted", False),
             "override_code_used": bool(getattr(payload, "override_code", None)),
         },
