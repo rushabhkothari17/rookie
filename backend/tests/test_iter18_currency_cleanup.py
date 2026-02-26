@@ -21,16 +21,17 @@ PARTNER_CODE = "automate-accounts"
 
 @pytest.fixture(scope="module")
 def admin_token():
-    """Get admin token for tenant admin."""
+    """Get admin token for platform admin (no partner_code for platform admin login)."""
+    # Platform admin logs in WITHOUT partner_code
     res = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": ADMIN_EMAIL,
         "password": ADMIN_PASSWORD,
-        "partner_code": PARTNER_CODE,
     })
     assert res.status_code == 200, f"Login failed: {res.text}"
     data = res.json()
     token = data.get("access_token") or data.get("token")
     assert token, f"No token in response: {data}"
+    print(f"✓ Logged in as platform admin, role: {data.get('role')}")
     return token
 
 
