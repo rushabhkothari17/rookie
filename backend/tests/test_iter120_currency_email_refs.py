@@ -153,19 +153,29 @@ class TestArticleRefResolution:
 
     def test_create_reference_for_article(self, admin_session):
         """Create a test reference key/value in website_references."""
-        # Create a reference via the admin references API
+        # Create a reference via the admin references API (requires both key and label)
         res = admin_session.post(f"{BASE_URL}/api/admin/references", json={
             "key": self._ref_key,
+            "label": "Test Ref 120",
             "value": self._ref_value,
+            "type": "text",
         })
-        # If it already exists (409 or 400), that's fine, we just need it to exist
-        if res.status_code in (409, 400):
-            print(f"  Reference '{self._ref_key}' may already exist (status {res.status_code})")
+        if res.status_code == 400 and "already exists" in res.text:
+            print(f"  Reference '{self._ref_key}' already exists in DB")
+            # Find it and store id
+            list_res = admin_session.get(f"{BASE_URL}/api/admin/references")
+            if list_res.status_code == 200:
+                refs = list_res.json().get("references", [])
+                for r in refs:
+                    if r.get("key") == self._ref_key:
+                        TestArticleRefResolution._ref_id = r.get("id")
+                        print(f"  Found existing ref id: {self._ref_id}")
+                        break
         else:
             assert res.status_code in (200, 201), f"Create reference failed: {res.status_code} {res.text}"
             data = res.json()
             TestArticleRefResolution._ref_id = (data.get("reference") or data).get("id")
-            print(f"✓ Created reference: key={self._ref_key}, value={self._ref_value}")
+            print(f"\n✓ Created reference: key={self._ref_key}, value={self._ref_value}, id={self._ref_id}")
 
     def test_create_article_with_ref_token(self, admin_session):
         """Create an article whose content contains a {{ref:key}} token."""
