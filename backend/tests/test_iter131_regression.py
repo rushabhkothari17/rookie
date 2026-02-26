@@ -308,12 +308,21 @@ class TestStripeWebhookEndpoint:
 # GoCardless Renewal Logic via DB (asyncio-based, mirrors test_iter131 approach)
 # ─────────────────────────────────────────────────────────────────────────────
 
+def get_sync_db():
+    """Get a synchronous pymongo DB handle for test seeding/verification."""
+    import pymongo
+    import os
+    mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+    db_name = os.environ.get("DB_NAME", "test_database")
+    client = pymongo.MongoClient(mongo_url)
+    return client[db_name]
+
+
 class TestGocardlessRenewalViaHTTP:
     """Test GoCardless renewal order creation via actual HTTP webhook call.
     
-    These tests insert DB records directly to simulate a real subscription,
-    then fire webhook events and verify renewal orders are created.
-    Uses a single asyncio.run() per test to avoid Motor event-loop-closed issues.
+    Uses synchronous pymongo for DB seeding/verification to avoid Motor
+    event-loop-closed issues when asyncio.run() is called multiple times in pytest.
     """
 
     def test_gc_renewal_via_http_webhook(self, admin_session):
