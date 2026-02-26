@@ -537,7 +537,7 @@ async def create_checkout_session(
     await db.orders.insert_one(order_doc)
     await create_audit_log(
         entity_type="order", entity_id=order_id, action="created", actor="system",
-        details={"checkout_type": checkout_type, "payment_method": "card", "total": total, "extra_fields": list((payload.extra_fields or {}).keys())},
+        details={"checkout_type": checkout_type, "payment_method": "card", "total": total, "currency": order_items[0]["product"].get("currency", "USD"), "base_currency": base_currency, "extra_fields": list((payload.extra_fields or {}).keys())},
     )
 
     for item in order_items:
