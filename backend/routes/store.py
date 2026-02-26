@@ -153,12 +153,17 @@ def _eval_product_conditions(rule_set: dict, customer: dict) -> bool:
             return True
         whitelist = p.get("visible_to_customers", [])
         blacklist = p.get("restricted_to", [])
+        vis_cond = p.get("visibility_conditions")
         # Whitelist mode: show only to specific customers
         if whitelist:
             return customer_id in whitelist if customer_id else False
         # Blacklist mode: hide from specific customers
         if blacklist:
             return customer_id not in blacklist
+        # Conditional mode: evaluate customer-field conditions
+        if vis_cond and vis_cond.get("conditions"):
+            cust_doc = (customer or {}) if customer else {}
+            return _eval_product_conditions(vis_cond, cust_doc)
         # Default: visible to everyone
         return True
 
