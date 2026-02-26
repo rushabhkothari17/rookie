@@ -825,8 +825,7 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
 
               <SectionDivider label="Messages" />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <AuthTile title="Checkout Messages" description="Cart, payment errors & override prompts" onEdit={() => setAuthSlide("checkout_messages")} testId="auth-tile-checkout-messages" />
-                <AuthTile title="Form Responses" description="Quote & scope success messages" onEdit={() => setAuthSlide("form_messages")} testId="auth-tile-form-messages" />
+                <AuthTile title="Checkout Messages" description="Cart, payment errors & messages" onEdit={() => setAuthSlide("checkout_messages")} testId="auth-tile-checkout-messages" />
               </div>
             </>
           )}
