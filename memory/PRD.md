@@ -273,3 +273,15 @@ E-commerce platform for professional services with:
 
 ---
 *Last Updated: 2026-02-26*
+
+## 2026-02-27 Updates
+
+### Conditional Product Visibility (NEW)
+- 4th visibility option "Conditional" in ProductForm — up to 4 customer-field conditions (country, company_name, email, status, state_province, phone) with AND/OR logic and operators: equals, not_equals, contains, not_contains, empty, not_empty
+- Backend evaluates in store.py _eval_product_conditions() — admins always see all products
+
+### Advanced Intake Form Visibility (UPGRADED)  
+- VisibilityRuleEditor upgraded: single-rule → multi-condition VisibilityRuleSet with AND/OR toggle, up to 4 conditions, new empty/not_contains operators
+- evaluateVisibilityRule in utils.tsx handles both legacy and new format (backward compat)
+
+### Test reports: iteration_119.json, iteration_120.json, iteration_121.json, iteration_122.json
