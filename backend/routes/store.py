@@ -171,8 +171,8 @@ async def get_products(
         # Blacklist mode: hide from specific customers
         if blacklist:
             return customer_id not in blacklist
-        # Conditional mode: evaluate customer-field conditions
-        if vis_cond and vis_cond.get("conditions"):
+        # Conditional mode: evaluate customer-field conditions (supports both grouped and legacy flat)
+        if vis_cond and (vis_cond.get("groups") or vis_cond.get("conditions")):
             cust_doc = (customer or {}) if customer else {}
             return _eval_product_conditions(vis_cond, cust_doc)
         # Default: visible to everyone
