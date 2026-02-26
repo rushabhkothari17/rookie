@@ -250,6 +250,7 @@ async def get_website_settings_public(
         # Payment flags (from oauth_connections)
         "stripe_enabled": bool(stripe_enabled),
         "gocardless_enabled": bool(gocardless_enabled),
+        "workdrive_enabled": bool(workdrive_enabled),
         "stripe_fee_rate": float(stripe_fee_rate),
         "gocardless_fee_rate": float(gocardless_fee_rate),
         # Stripe UI settings
