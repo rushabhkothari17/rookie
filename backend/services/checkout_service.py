@@ -39,6 +39,7 @@ def build_checkout_notes_json(
     user_id: str,
     customer_id: str,
     payment_method: str = "unknown",
+    promo_data: Optional[dict] = None,
 ) -> dict:
     """Build JSON blob capturing all checkout inputs for order/subscription notes."""
     product_intake = {}
@@ -50,6 +51,14 @@ def build_checkout_notes_json(
             scope_unlocks[pid] = raw_inputs.pop("_scope_unlock")
         product_intake[pid] = raw_inputs
 
+    promo_code_str = getattr(payload, "promo_code", None) or ""
+    is_zohor = "ZOHOR" in promo_code_str.upper()
+    is_sponsored = bool(promo_data and promo_data.get("sponsorship_note")) or (bool(promo_data and promo_data.get("is_sponsored")) if promo_data else is_zohor)
+    sponsorship_note = (
+        (promo_data.get("sponsorship_note") if promo_data else None)
+        or ("This order was placed using a sponsored promo code." if (is_zohor or is_sponsored) else None)
+    )
+
     blob: dict = {
         "product_intake": product_intake,
         "checkout_intake": {
@@ -57,8 +66,8 @@ def build_checkout_notes_json(
             "current_zoho_product": getattr(payload, "current_zoho_product", None),
             "zoho_account_access": getattr(payload, "zoho_account_access", None),
             "partner_tag_response": getattr(payload, "partner_tag_response", None),
-            "promo_code": getattr(payload, "promo_code", None),
-            "sponsorship_note": "This order was placed using a sponsored promo code." if (getattr(payload, "promo_code", None) or "") and "ZOHOR" in (getattr(payload, "promo_code", None) or "").upper() else None,
+            "promo_code": promo_code_str or None,
+            "sponsorship_note": sponsorship_note,
             "terms_accepted": getattr(payload, "terms_accepted", False),
             "override_code_used": bool(getattr(payload, "override_code", None)),
         },
