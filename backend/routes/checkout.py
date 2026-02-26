@@ -208,6 +208,9 @@ async def checkout_bank_transfer(
                 gocardless_redirect_url = redirect_flow["redirect_url"]
 
         sub_number = f"SUB-{sub_id.split('-')[0].upper()}"
+        _sub_tx_currency = product.get("currency", "USD")
+        _sub_fx_rate = await get_fx_rate(_sub_tx_currency, base_currency)
+        _sub_base_amount = round(subtotal * _sub_fx_rate, 2)
         await db.subscriptions.insert_one({
             "id": sub_id,
             "subscription_number": sub_number,
@@ -225,8 +228,9 @@ async def checkout_bank_transfer(
             "cancel_at_period_end": False,
             "canceled_at": None,
             "amount": subtotal,
-            "currency": product.get("currency", "USD"),
+            "currency": _sub_tx_currency,
             "base_currency": base_currency,
+            "base_currency_amount": _sub_base_amount,
             "payment_method": "bank_transfer",
             "terms_id_used": terms_id,
             "rendered_terms_text": rendered_terms_text,
