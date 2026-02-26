@@ -208,7 +208,15 @@ E-commerce platform for professional services with:
 - All product modals (quote + scope) now use unified `scope_form_schema`
 - ensure_seeded: now upserts available_variables on system templates on each startup
 
-## QA Pass — Orders & Subscriptions (2026-02-26)
+## QA Pass — Resources/Articles, Categories, Override Codes, References, Scope Unlock, Enquiry Flow (2026-02-26)
+- Full QA via testing agent iteration_115.json — 53/53 backend tests passed (100%), 95% frontend
+- BUG-1 CRITICAL fixed (by testing agent): `references.py` public endpoint `NameError` — `admin` variable used outside auth scope; removed incorrect `enrich_partner_codes` call
+- BUG-2 CRITICAL fixed (by testing agent): `ProductDetail.tsx` called `/articles/${scopeId}/validate-scope` (404 always) — updated to `/resources/${scopeId}/validate-scope`
+- MINOR fixed: Cart "No purchasable items" message now context-aware — shows "Enquiry items are shown below…" when scope/enquiry items exist
+- MINOR fixed: Resource audit logs (created/updated/deleted) now use `create_audit_log` service (includes tenant_id) instead of raw `db.audit_logs.insert_one`
+- All NON-NEGOTIABLE INVARIANTS VERIFIED: tenant isolation ✅, Scope Final price enforcement ✅, audit trail with tenant_id ✅, email templates all present ✅
+
+
 - Full QA via testing agent iteration_114.json
 - BUG-1 CRITICAL fixed: `promo_code_data` NameError in bank-transfer subscription checkout (checkout.py line 133) — was crashing subscription checkout via bank transfer
 - BUG-2 LOW fixed: Fee badge in OrdersTab always showing `fee: —` even for zero-fee orders — now only shows when fee > 0
