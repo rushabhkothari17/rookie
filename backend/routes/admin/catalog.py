@@ -257,6 +257,8 @@ async def admin_update_product(
         update_fields["external_url"] = payload.external_url
     if payload.display_layout is not None:
         update_fields["display_layout"] = payload.display_layout
+    if payload.currency is not None:
+        update_fields["currency"] = payload.currency
     if payload.visible_to_customers is not None:
         update_fields["visible_to_customers"] = payload.visible_to_customers
     if payload.restricted_to is not None:
