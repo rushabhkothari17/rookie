@@ -86,7 +86,27 @@ export default function WizardLayout({
         )}
       </div>
 
+      {/* Description + Bullets (shown before steps) */}
+      {(product.description_long || (product.bullets && product.bullets.length > 0)) && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+          {product.description_long && (
+            <p className="text-slate-600 text-sm leading-relaxed mb-4">{product.description_long}</p>
+          )}
+          {product.bullets && product.bullets.length > 0 && (
+            <ul className="space-y-2">
+              {product.bullets.map((bullet: string, i: number) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                  {bullet}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* Progress Bar */}
+      <div className="mb-8">
         <div className="flex justify-between text-xs text-slate-500 mb-2">
           <span>Step {currentStep + 1} of {totalSteps}</span>
           <span>{Math.round(progress)}% complete</span>
