@@ -1004,7 +1004,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
           )}
 
           {/* ── Forms ── */}
-          {activeSection === "forms" && (
+          {displaySection === "forms" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700 mb-1">Forms</h3>
               <p className="text-xs text-slate-400 mb-4">Click to edit the enquiry form — used across all product enquiry flows.</p>
