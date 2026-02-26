@@ -185,7 +185,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editResourceId]);
 
-  const resetForm = () => setForm({ title: "", slug: "", category: "", price: "", content: "", visibility: "all", restricted_to: [] });
+  const resetForm = () => setForm({ title: "", slug: "", category: "", price: "", currency: "USD", content: "", visibility: "all", restricted_to: [] });
 
   const openCreate = () => {
     resetForm();
