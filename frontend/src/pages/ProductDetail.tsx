@@ -141,7 +141,11 @@ export default function ProductDetail() {
 
   const fetchPricing = async (nextInputs: Record<string, any>) => {
     if (!product) return;
-    if (product.pricing_type === "enquiry") return; // inquiry products have no calculator
+    if (product.pricing_type === "enquiry") {
+      // Enquiry products don't go through the pricing calculator; set a placeholder so layouts render correctly
+      setPricing({ subtotal: 0, fee: 0, total: 0, line_items: [], requires_checkout: false, is_subscription: false, is_enquiry: true, external_url: null });
+      return;
+    }
     // Only include visible questions' answers in the pricing calculation
     const visibleAnswers: Record<string, any> = {};
     for (const q of visibleIntakeQuestions) {
