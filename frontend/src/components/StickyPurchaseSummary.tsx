@@ -18,6 +18,10 @@ export default function StickyPurchaseSummary({
 }) {
   const lineItems = pricing?.line_items;
   const hasBreakdown = !isRFQ && lineItems && lineItems.length > 1;
+  const cur = currency || "USD";
+  const fmtAmt = (n: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+
   return (
     <div
       className="sticky top-28 rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]"
@@ -31,7 +35,7 @@ export default function StickyPurchaseSummary({
         className="text-4xl font-bold tracking-tight text-slate-900"
         data-testid="summary-total"
       >
-        {isRFQ ? <span className="text-2xl text-slate-400 font-medium">Price on request</span> : `£${pricing.total.toFixed(2)}`}
+        {isRFQ ? <span className="text-2xl text-slate-400 font-medium">Price on request</span> : fmtAmt(pricing.total)}
       </div>
 
       {/* Price breakdown */}
@@ -41,7 +45,7 @@ export default function StickyPurchaseSummary({
             <div key={i} className="flex justify-between text-xs text-slate-500">
               <span className="flex-1 truncate pr-2">{item.label}</span>
               <span className={`font-mono shrink-0 ${item.amount < 0 ? "text-green-600" : ""}`}>
-                {item.amount >= 0 ? "+" : ""}£{item.amount.toFixed(2)}
+                {item.amount >= 0 ? "+" : ""}{fmtAmt(item.amount)}
               </span>
             </div>
           ))}
