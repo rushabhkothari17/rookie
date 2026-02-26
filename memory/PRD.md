@@ -208,7 +208,14 @@ E-commerce platform for professional services with:
 - All product modals (quote + scope) now use unified `scope_form_schema`
 - ensure_seeded: now upserts available_variables on system templates on each startup
 
-## Test Reports
+## QA Pass — Orders & Subscriptions (2026-02-26)
+- Full QA via testing agent iteration_114.json
+- BUG-1 CRITICAL fixed: `promo_code_data` NameError in bank-transfer subscription checkout (checkout.py line 133) — was crashing subscription checkout via bank transfer
+- BUG-2 LOW fixed: Fee badge in OrdersTab always showing `fee: —` even for zero-fee orders — now only shows when fee > 0
+- BUG-3 LOW fixed: Cart.tsx fallback stripe_fee_rate was 0.029 (2.9%) — corrected to 0.05 (5%) to match backend SERVICE_FEE_RATE
+- All NON-NEGOTIABLE INVARIANTS VERIFIED: tenant isolation ✅, 5% fee ✅, notes_json MERGE ✅, payment authority server-side ✅, audit trail ✅
+
+
 - `/app/test_reports/iteration_13.json` — Pre-merge catalog tests
 - `/app/test_reports/iteration_14.json` — Promo note tests
 - `/app/test_reports/iteration_112.json` — Enquiries merge tests (100% backend)
