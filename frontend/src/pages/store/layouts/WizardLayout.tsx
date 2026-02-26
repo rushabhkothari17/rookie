@@ -87,7 +87,6 @@ export default function WizardLayout({
       </div>
 
       {/* Progress Bar */}
-      <div className="mb-8">
         <div className="flex justify-between text-xs text-slate-500 mb-2">
           <span>Step {currentStep + 1} of {totalSteps}</span>
           <span>{Math.round(progress)}% complete</span>
