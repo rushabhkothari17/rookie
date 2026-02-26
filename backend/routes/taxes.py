@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, tenant_id_of
+from core.security import get_current_user
 from db.session import db
 from models import TaxSettingsUpdate, TaxOverrideRuleCreate
 from services.tax_tables import get_seed_tax_table
