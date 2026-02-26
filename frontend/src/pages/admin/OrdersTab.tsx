@@ -638,7 +638,7 @@ export function OrdersTab() {
                 <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
                   <span className="text-slate-700 font-medium">Available to Refund</span>
                   <span className="font-bold text-emerald-600">
-                    ${(selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100).toFixed(2)}
+                    {selectedOrder.currency || "USD"} {(selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100).toFixed(2)}
                   </span>
                 </div>
               </div>
