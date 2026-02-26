@@ -810,7 +810,7 @@ export default function Cart() {
                   className="w-full h-12 text-base text-white transition-all hover:opacity-90 shadow-lg" 
                   style={{ backgroundColor: "var(--aa-primary)" }}
                   onClick={() => handleCheckout(grouped.oneTime, "one_time")} 
-                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing || (extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim()) : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!isFreeCheckout && !allowBankTransfer && !allowCardPayment)} 
+                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || (!isFreeCheckout && !allowBankTransfer && !allowCardPayment)} 
                   data-testid="cart-checkout-one_time"
                 >
                   {loading ? "Processing..." : isFreeCheckout ? "Complete Free Order" : paymentMethod === "bank_transfer" ? "Create Order" : "Proceed to Checkout"}
