@@ -108,6 +108,7 @@ export default function Admin() {
             {/* Content */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
             <TabsTrigger value="resources" data-testid="admin-tab-resources" className={TAB_CLASS}>Resources</TabsTrigger>
+            <TabsTrigger value="documents" data-testid="admin-tab-documents" className={TAB_CLASS}>Documents</TabsTrigger>
             <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
             <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
 
