@@ -153,6 +153,7 @@ export default function ProductEditor() {
         pricing_type: form.pricing_type || "internal",
         external_url: form.external_url || null,
         display_layout: form.display_layout || "standard",
+        currency: form.currency || "USD",
       };
 
       if (isNew) {
