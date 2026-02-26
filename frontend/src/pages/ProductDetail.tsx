@@ -363,7 +363,7 @@ export default function ProductDetail() {
           isRFQ={isRFQ}
           isSubscription={Boolean(product?.is_subscription)}
           termsUrl={termsUrl}
-          currency={customer?.currency}
+          currency={product?.currency}
           scopeUnlock={scopeUnlock}
           scopeId={scopeId}
           setScopeId={(v) => { setScopeId(v); setScopeUnlock(null); setScopeError(""); }}
