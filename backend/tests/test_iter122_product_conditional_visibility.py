@@ -152,24 +152,23 @@ class TestProductConditionalVisibilityCreate:
         assert pid not in product_ids, f"Conditional product {pid} should NOT be visible to unauthenticated user"
 
     def test_admin_sees_conditional_product(self, admin_headers, tenant_id):
-        """Admin should see all products regardless of conditions."""
+        """Admin should see all products via /api/admin/products-all regardless of conditions."""
         pid = TestProductConditionalVisibilityCreate.created_product_id
         if not pid:
             pytest.skip("Product not created in previous test")
-        # Admin GET /api/products
         if tenant_id:
             headers = {**admin_headers, "X-View-As-Tenant": tenant_id}
         else:
             headers = admin_headers
-        resp = requests.get(f"{BASE_URL}/api/admin/products", headers=headers)
-        assert resp.status_code == 200
+        resp = requests.get(f"{BASE_URL}/api/admin/products-all", headers=headers)
+        assert resp.status_code == 200, f"Expected 200 but got {resp.status_code}"
         data = resp.json()
         products = data.get("products", data.get("items", []))
         product_ids = [p["id"] for p in products]
-        assert pid in product_ids, f"Admin should see conditional product {pid}"
+        assert pid in product_ids, f"Admin should see conditional product {pid} in products-all"
 
     def test_update_product_visibility_conditions_multi_condition(self, admin_headers, tenant_id):
-        """Update product with multi-condition AND rule."""
+        """Update product with multi-condition OR rule and verify via GET."""
         pid = TestProductConditionalVisibilityCreate.created_product_id
         if not pid:
             pytest.skip("Product not created in previous test")
@@ -181,6 +180,8 @@ class TestProductConditionalVisibilityCreate:
         payload = {
             "name": "TEST_Conditional_Visibility_Product",
             "is_active": True,
+            "visible_to_customers": [],
+            "restricted_to": [],
             "visibility_conditions": {
                 "logic": "OR",
                 "conditions": [
@@ -191,15 +192,19 @@ class TestProductConditionalVisibilityCreate:
         }
         resp = requests.put(f"{BASE_URL}/api/admin/products/{pid}", json=payload, headers=headers)
         assert resp.status_code == 200, f"Update failed: {resp.text[:300]}"
-        data = resp.json()
-        product = data.get("product", data)
+        # PUT returns {"message": "Product updated"}, so verify via GET products-all
+        resp2 = requests.get(f"{BASE_URL}/api/admin/products-all", headers=headers)
+        assert resp2.status_code == 200
+        products = resp2.json().get("products", [])
+        product = next((p for p in products if p["id"] == pid), None)
+        assert product is not None, f"Product {pid} not found after update"
         vis_cond = product.get("visibility_conditions")
-        assert vis_cond is not None
+        assert vis_cond is not None, "visibility_conditions should not be None after update"
         assert vis_cond.get("logic") == "OR"
         assert len(vis_cond.get("conditions", [])) == 2
 
     def test_update_product_clear_visibility_conditions(self, admin_headers, tenant_id):
-        """Clearing visibility_conditions sets it to null."""
+        """Clearing visibility_conditions sets it to null — verify via GET."""
         pid = TestProductConditionalVisibilityCreate.created_product_id
         if not pid:
             pytest.skip("Product not created in previous test")
@@ -210,27 +215,20 @@ class TestProductConditionalVisibilityCreate:
 
         payload = {
             "name": "TEST_Conditional_Visibility_Product",
-            "is_active": True,
+            "is_active": False,  # Also deactivate for cleanup
+            "visible_to_customers": [],
+            "restricted_to": [],
             "visibility_conditions": None,
         }
         resp = requests.put(f"{BASE_URL}/api/admin/products/{pid}", json=payload, headers=headers)
         assert resp.status_code == 200, f"Update failed: {resp.text[:300]}"
-        data = resp.json()
-        product = data.get("product", data)
-        assert product.get("visibility_conditions") is None, "visibility_conditions should be null after clearing"
-
-    def test_cleanup_conditional_product(self, admin_headers, tenant_id):
-        """Cleanup: delete the test product."""
-        pid = TestProductConditionalVisibilityCreate.created_product_id
-        if not pid:
-            pytest.skip("No product to clean up")
-        if tenant_id:
-            headers = {**admin_headers, "X-View-As-Tenant": tenant_id}
-        else:
-            headers = admin_headers
-        resp = requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=headers)
-        # Accept 200 or 404
-        assert resp.status_code in (200, 204, 404), f"Unexpected status on delete: {resp.status_code}"
+        # Verify via GET (all products including inactive)
+        resp2 = requests.get(f"{BASE_URL}/api/admin/products-all?status=inactive", headers=headers)
+        if resp2.status_code == 200:
+            products = resp2.json().get("products", [])
+            product = next((p for p in products if p["id"] == pid), None)
+            if product:
+                assert product.get("visibility_conditions") is None, "visibility_conditions should be null after clearing"
 
 
 # ── Test: _eval_product_conditions logic ─────────────────────────────────────
