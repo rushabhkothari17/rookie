@@ -696,29 +696,60 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                   </div>
                 )}
 
-                {/* Flags */}
-                <div className="flex flex-wrap gap-4">
-                  {(["required", "enabled"] as const).map(flag => (
-                    <label key={flag} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
-                      <input type="checkbox" checked={q[flag] as boolean}
-                        onChange={e => onChange({ ...q, [flag]: e.target.checked })}
-                        className="w-3.5 h-3.5 rounded accent-[#0f172a]" />
-                      <span className="capitalize">{flag}</span>
-                    </label>
-                  ))}
-                  {hasOptions(q.type) && (
-                    <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
-                      <input type="checkbox" checked={q.affects_price || false}
-                        onChange={e => onChange({ ...q, affects_price: e.target.checked })}
-                        className="w-3.5 h-3.5 rounded accent-[#0f172a]" />
-                      Affects price
-                    </label>
+                {/* Divider */}
+                <div className="border-t border-slate-100" />
+
+                {/* Flags row — mini toggles */}
+                <div className="flex items-center gap-6 flex-wrap">
+                  <MiniToggle label="Required" checked={q.required} onChange={v => onChange({ ...q, required: v })} />
+                  <MiniToggle label="Enabled" checked={q.enabled} onChange={v => onChange({ ...q, enabled: v })} />
+                  {(hasOptions(q.type) || q.type === "boolean") && (
+                    <MiniToggle label="Affects price" checked={q.affects_price || false} onChange={v => onChange({ ...q, affects_price: v })} />
+                  )}
+                </div>
+
+                {/* Advanced (collapsible) */}
+                <div>
+                  <button type="button" onClick={() => setAdvancedOpen(v => !v)}
+                    className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+                    <ChevronRight size={12} className={`transition-transform ${advancedOpen ? "rotate-90" : ""}`} />
+                    <span>Advanced settings</span>
+                    {!advancedOpen && isDuplicate && <span className="text-[10px] text-red-500 ml-1">— duplicate key!</span>}
+                  </button>
+                  {advancedOpen && (
+                    <div className="mt-4 space-y-4 pl-4 border-l-2 border-slate-100">
+                      {/* Key */}
+                      <div>
+                        <label className={`text-[11px] font-semibold uppercase tracking-wider block mb-1.5 ${isDuplicate ? "text-red-500" : "text-slate-400"}`}>
+                          Field key {isDuplicate && <span className="text-red-500">(duplicate!)</span>}
+                        </label>
+                        <div className={`h-9 flex items-center px-3 rounded-md border text-xs font-mono ${
+                          isDuplicate ? "border-red-300 text-red-600 bg-red-50" : "border-slate-200 text-slate-500 bg-white"
+                        }`}>{q.key || <span className="italic text-slate-300">auto-generated from label</span>}</div>
+                      </div>
+                      {/* Tooltip */}
+                      <div>
+                        <label className="label-xs flex items-center gap-1"><Info size={10} /> Tooltip</label>
+                        <Input value={q.tooltip_text || ""} onChange={e => onChange({ ...q, tooltip_text: e.target.value })}
+                          placeholder="Info shown on hover (ⓘ icon)" className="h-9 text-sm" />
+                      </div>
+                      {/* Step group */}
+                      <div>
+                        <label className="label-xs">Step group <span className="text-slate-400 font-normal normal-case">(wizard layout)</span></label>
+                        <div className="flex items-center gap-3">
+                          <Input type="number" value={q.step_group ?? 0}
+                            onChange={e => onChange({ ...q, step_group: parseInt(e.target.value) || 0 })}
+                            className="h-8 text-xs w-20 font-mono" min={0} />
+                          <p className="text-[10px] text-slate-400">Group into wizard steps (0 = ungrouped)</p>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
 
                 {/* Visibility rule */}
-                <div className="border-t border-slate-100 pt-3">
-                <VisibilityRuleEditor rule={q.visibility_rule as any} onChange={r => onChange({ ...q, visibility_rule: r })} otherQuestions={otherQ} />
+                <div className="border-t border-slate-100 pt-4">
+                  <VisibilityRuleEditor rule={q.visibility_rule as any} onChange={r => onChange({ ...q, visibility_rule: r })} otherQuestions={otherQ} />
                 </div>
               </>
             )}
