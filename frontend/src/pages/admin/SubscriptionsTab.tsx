@@ -264,6 +264,7 @@ export function SubscriptionsTab() {
               <TableHead>Customer Email</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead>Tax</TableHead>
               <TableHead>Currency</TableHead>
               {sortHeader("renewal_date", "Renewal")}
               {sortHeader("start_date", "Start")}
