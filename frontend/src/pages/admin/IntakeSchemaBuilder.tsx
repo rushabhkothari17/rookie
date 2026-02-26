@@ -471,6 +471,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
   onChange: (q: IntakeQuestion) => void; onRemove: () => void; onMove: (dir: -1 | 1) => void;
 }) {
   const [open, setOpen] = useState(true);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const isDuplicate = q.type !== "html_block" && q.key !== "" && allKeys.filter(k => k === q.key).length > 1;
   const typeInfo = QUESTION_TYPES.find(t => t.type === q.type)!;
   const otherQ = allQuestions.filter((_, i) => i !== idx);
