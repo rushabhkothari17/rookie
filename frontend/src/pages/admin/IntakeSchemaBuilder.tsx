@@ -533,47 +533,19 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
               </>
             ) : (
               <>
-                {/* Label + Key */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="label-xs">Label *</label>
-                    <Input value={q.label}
-                      onChange={e => onChange({ ...q, label: e.target.value, key: labelToKey(e.target.value) })}
-                      placeholder="Question label" className="h-9 text-sm" />
-                  </div>
-                  <div>
-                    <label className={`text-[11px] font-semibold uppercase tracking-wider block mb-1.5 ${isDuplicate ? "text-red-500" : "text-slate-400"}`}>
-                      Key {isDuplicate && <span className="text-red-500">(duplicate!)</span>}
-                    </label>
-                    <div className={`h-9 flex items-center px-3 rounded-md border text-xs font-mono ${
-                      isDuplicate ? "border-red-300 text-red-600 bg-red-50" : "border-slate-200 text-slate-500 bg-white"
-                    }`}>{q.key || <span className="italic text-slate-300">auto</span>}</div>
-                  </div>
+                {/* Label */}
+                <div>
+                  <label className="label-xs">Label *</label>
+                  <Input value={q.label}
+                    onChange={e => onChange({ ...q, label: e.target.value, key: labelToKey(e.target.value) })}
+                    placeholder="Question label" className="h-9 text-sm" />
                 </div>
 
-                {/* Helper + Tooltip */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="label-xs">Helper text</label>
-                    <Input value={q.helper_text} onChange={e => onChange({ ...q, helper_text: e.target.value })}
-                      placeholder="Hint shown below field" className="h-9 text-sm" />
-                  </div>
-                  <div>
-                    <label className="label-xs flex items-center gap-1"><Info size={10} /> Tooltip</label>
-                    <Input value={q.tooltip_text || ""} onChange={e => onChange({ ...q, tooltip_text: e.target.value })}
-                      placeholder="Info shown on hover (ⓘ icon)" className="h-9 text-sm" />
-                  </div>
-                </div>
-
-                {/* Step group */}
-                <div className="flex items-center gap-3">
-                  <div className="w-28">
-                    <label className="label-xs">Step group</label>
-                    <Input type="number" value={q.step_group ?? 0}
-                      onChange={e => onChange({ ...q, step_group: parseInt(e.target.value) || 0 })}
-                      className="h-8 text-xs font-mono" min={0} />
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-4">Group questions into wizard steps (0 = ungrouped)</p>
+                {/* Helper text */}
+                <div>
+                  <label className="label-xs">Helper text</label>
+                  <Input value={q.helper_text} onChange={e => onChange({ ...q, helper_text: e.target.value })}
+                    placeholder="Hint shown below the field" className="h-9 text-sm" />
                 </div>
 
                 {/* Number */}
