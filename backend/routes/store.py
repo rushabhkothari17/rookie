@@ -463,7 +463,7 @@ async def create_scope_request_with_form(
         "subtotal": 0,
         "fee": 0,
         "total": 0,
-        "currency": order_items[0]["inputs"].get("product_currency", "USD") if order_items else "USD",
+        "currency": first_product_currency,
         "payment_method": None,
         "scope_form_data": {
             "project_summary": payload.form_data.project_summary or "",
