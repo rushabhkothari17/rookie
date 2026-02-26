@@ -448,7 +448,7 @@ export function ProductForm({
     else if (mode === "restricted") setForm({ ...form, visible_to_customers: [], visibility_conditions: null, restricted_to: [] });
     else if (mode === "show_to_specific") setForm({ ...form, restricted_to: [], visibility_conditions: null, visible_to_customers: [] });
     else if (mode === "conditional") setForm({ ...form, visible_to_customers: [], restricted_to: [],
-      visibility_conditions: { logic: "AND", conditions: [{ field: "country", operator: "equals", value: "" }] } });
+      visibility_conditions: { top_logic: "AND", groups: [{ logic: "AND", conditions: [{ field: "country", operator: "equals", value: "" }] }] } });
   };
 
   const s = (key: keyof ProductFormData) => (v: any) => setForm({ ...form, [key]: v });
