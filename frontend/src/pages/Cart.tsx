@@ -822,7 +822,7 @@ export default function Cart() {
                   className="w-full h-12 text-base text-white transition-all hover:opacity-90 shadow-lg" 
                   style={{ backgroundColor: "var(--aa-accent)" }}
                   onClick={() => handleCheckout(grouped.subscriptions, "subscription")} 
-                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_partner_enabled !== false && !partnerTagResponse) || (ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || currencyUnsupported || (!allowBankTransfer && !allowCardPayment) || (subscriptionMissingPrice && paymentMethod === "card")} 
+                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || (!allowBankTransfer && !allowCardPayment) || (subscriptionMissingPrice && paymentMethod === "card")} 
                   data-testid="cart-checkout-subscription"
                 >
                   {loading ? "Processing..." : "Subscribe Now"}
