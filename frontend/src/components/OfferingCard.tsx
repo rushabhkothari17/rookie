@@ -42,6 +42,7 @@ const getStartingPrice = (product: any): number | null => {
 
 const formatPrice = (product: any): { label: string; prefix?: string } => {
   const type = product.pricing_type;
+  const currency = product.currency || "USD";
 
   if (type === "external") return { label: "Visit site", prefix: "" };
   if (type === "enquiry") return { label: "Get in touch", prefix: "" };
@@ -52,7 +53,7 @@ const formatPrice = (product: any): { label: string; prefix?: string } => {
       ? product.intake_schema_json.questions.some((q: any) => q.enabled !== false && (q.price_per_unit > 0 || q.affects_price))
       : false;
     const prefix = (hasIntake || !product.base_price) ? "From" : "";
-    return { label: fmt(starting), prefix };
+    return { label: fmtPrice(starting, currency), prefix };
   }
   if (starting === 0 && product.base_price === 0) return { label: "Free", prefix: "" };
 
