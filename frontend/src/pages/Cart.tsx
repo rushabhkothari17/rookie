@@ -481,7 +481,11 @@ export default function Cart() {
                   </div>
                 ))}
                 {grouped.oneTime.length === 0 && grouped.subscriptions.length === 0 && (
-                  <div className="p-8 text-center text-slate-500">No purchasable items in cart</div>
+                  <div className="p-8 text-center text-slate-500">
+                    {(grouped.scope.length > 0 || grouped.inquiry.length > 0)
+                      ? "Enquiry items are shown below — no fixed-price items in cart."
+                      : "No purchasable items in cart"}
+                  </div>
                 )}
               </div>
             </div>
