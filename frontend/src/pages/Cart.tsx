@@ -28,8 +28,7 @@ export default function Cart() {
   const [futureStartEnabled, setFutureStartEnabled] = useState(false);
   const [partnerTagResponse, setPartnerTagResponse] = useState("");
   const [overrideCode, setOverrideCode] = useState("");
-  const [zohoSubscriptionType, setZohoSubscriptionType] = useState("");
-  const [currentZohoProduct, setCurrentZohoProduct] = useState("");
+  const [zohoSubscriptionType, setZohoSubscriptionType] = useState("");  const [currentZohoProduct, setCurrentZohoProduct] = useState("");
   const [zohoAccountAccess, setZohoAccountAccess] = useState("");
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
   
