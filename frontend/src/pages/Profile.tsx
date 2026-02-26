@@ -42,7 +42,14 @@ export default function Profile() {
       postal: address?.postal || "",
       country: address?.country || "",
     });
-  }, [user, address]);
+    // For admins, fetch their tenant's country from tax settings
+    if (isAdmin) {
+      api.get("/admin/taxes/settings").then(r => {
+        const country = r.data.tax_settings?.country || "";
+        setTenantCountry(country);
+      }).catch(() => {});
+    }
+  }, [user, address, isAdmin]);
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
