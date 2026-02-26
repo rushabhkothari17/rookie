@@ -401,16 +401,6 @@ export default function Cart() {
         </div>
       </section>
 
-      {currencyUnsupported && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4" data-testid="cart-currency-block">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-amber-800">Currency Not Supported</p>
-            <p className="text-sm text-amber-700 mt-1">{ws.msg_currency_unsupported || "Purchases are not supported in your region yet. Please contact admin for an override."}</p>
-          </div>
-        </div>
-      )}
-
       {preview && (
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           {/* Main Content */}
