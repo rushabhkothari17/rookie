@@ -739,6 +739,10 @@ async def checkout_status(
                     contract_end = period_start + timedelta(days=365)
                     sub_id = make_id()
                     sub_number = f"SUB-{sub_id.split('-')[0].upper()}"
+                    _stripe_sub_tx_currency = order.get("currency", "USD")
+                    _stripe_sub_base_currency = order.get("base_currency", "USD")
+                    _stripe_sub_fx = await get_fx_rate(_stripe_sub_tx_currency, _stripe_sub_base_currency)
+                    _stripe_sub_base_amount = round((order.get("subtotal") or 0) * _stripe_sub_fx, 2)
                     await db.subscriptions.insert_one({
                         "id": sub_id,
                         "subscription_number": sub_number,
@@ -757,8 +761,9 @@ async def checkout_status(
                         "cancel_at_period_end": False,
                         "canceled_at": None,
                         "amount": order.get("subtotal"),
-                        "currency": order.get("currency", "USD"),
-                        "base_currency": order.get("base_currency", "USD"),
+                        "currency": _stripe_sub_tx_currency,
+                        "base_currency": _stripe_sub_base_currency,
+                        "base_currency_amount": _stripe_sub_base_amount,
                         "payment_method": "card",
                         "notes": [],
                         "internal_note": "",
