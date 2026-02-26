@@ -277,10 +277,8 @@ class TestEvalProductConditionsLogic:
         assert vis_cond["logic"] == "OR"
         assert len(vis_cond["conditions"]) == 2
 
-        # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=headers)
-
-    def test_conditional_product_with_empty_operator(self, admin_headers, tenant_id):
+        # Cleanup - deactivate the product (no delete endpoint)
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_OR_Logic_Product", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)(self, admin_headers, tenant_id):
         """Products with 'empty' operator should be created correctly."""
         if tenant_id:
             headers = {**admin_headers, "X-View-As-Tenant": tenant_id}
