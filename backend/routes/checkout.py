@@ -350,7 +350,7 @@ async def checkout_bank_transfer(
         "terms_id_used": terms_id, "rendered_terms_text": rendered_terms_text,
         "terms_accepted_at": now_iso(), "partner_tag_response": payload.partner_tag_response,
         "override_code_id": None, "partner_tag_timestamp": now_iso(),
-        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="bank_transfer"),
+        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="bank_transfer", promo_data=promo_code_data),
         "extra_fields": payload.extra_fields or {},
         "created_at": now_iso(),
     }
