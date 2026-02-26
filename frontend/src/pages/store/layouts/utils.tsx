@@ -25,10 +25,18 @@ function evaluateSingleRule(rule: any, answers: Record<string, any>): boolean {
   }
 }
 
+function evalGroup(group: any, answers: Record<string, any>): boolean {
+  const { logic = "AND", conditions = [] } = group;
+  if (!conditions.length) return true;
+  const results = (conditions as any[]).map(c => evaluateSingleRule(c, answers));
+  return logic === "OR" ? results.some(Boolean) : results.every(Boolean);
+}
+
 /**
- * Evaluate visibility with multi-level chaining support.
- * Handles both legacy single-rule {depends_on, operator, value} and new
- * multi-condition {logic: "AND"|"OR", conditions: [...]} format.
+ * Evaluate visibility. Supports three formats (newest first):
+ *   1. Grouped: { top_logic, groups: [{ logic, conditions }] }
+ *   2. Flat multi: { logic, conditions }  (legacy from previous version)
+ *   3. Single rule: { depends_on, operator, value }  (oldest legacy)
  */
 export function evaluateVisibilityRule(
   rule: any,
@@ -38,30 +46,20 @@ export function evaluateVisibilityRule(
 ): boolean {
   if (!rule) return true;
 
-  // ── New multi-condition format ──────────────────────────────────────────
-  if (rule.conditions && Array.isArray(rule.conditions)) {
-    const { logic = "AND", conditions } = rule as { logic: string; conditions: any[] };
-    if (!conditions.length) return true;
-
-    // For each condition's dependency, ensure that dep is itself visible
-    if (allQuestions) {
-      for (const cond of conditions) {
-        const dep = cond.depends_on;
-        if (!dep || visited.has(dep)) continue;
-        const depQ = allQuestions.find(q => q.key === dep);
-        if (depQ?.visibility_rule) {
-          const clone = new Set(visited);
-          clone.add(dep);
-          const depVisible = evaluateVisibilityRule(depQ.visibility_rule, answers, allQuestions, clone);
-          if (!depVisible) return false;
-        }
-      }
-    }
-    const results = conditions.map((c: any) => evaluateSingleRule(c, answers));
-    return logic === "OR" ? results.some(Boolean) : results.every(Boolean);
+  // ── Format 1: Grouped { top_logic, groups } ────────────────────────────
+  if (rule.groups && Array.isArray(rule.groups)) {
+    const { top_logic = "AND", groups } = rule as { top_logic: string; groups: any[] };
+    if (!groups.length) return true;
+    const results = groups.map(g => evalGroup(g, answers));
+    return top_logic === "OR" ? results.some(Boolean) : results.every(Boolean);
   }
 
-  // ── Legacy single-rule format ────────────────────────────────────────────
+  // ── Format 2: Flat multi-condition { logic, conditions } ────────────────
+  if (rule.conditions && Array.isArray(rule.conditions)) {
+    return evalGroup(rule, answers);
+  }
+
+  // ── Format 3: Legacy single { depends_on, operator, value } ────────────
   const { depends_on } = rule;
   if (visited.has(depends_on)) return true;
   visited.add(depends_on);
