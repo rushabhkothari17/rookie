@@ -239,16 +239,17 @@ async def stripe_webhook(request: Request):
                         tenant_id=tenant_id,
                     )
 
-        if email_target:
-            await db.email_outbox.insert_one({
-                "id": make_id(),
-                "to": email_target,
-                "subject": "Subscription renewal paid",
-                "body": "Your subscription renewal has been paid successfully.",
-                "type": "subscription_renewal",
-                "status": "MOCKED",
-                "created_at": now_iso(),
-            })
+                    # Send renewal email notification
+                    if email_target:
+                        await db.email_outbox.insert_one({
+                            "id": make_id(),
+                            "to": email_target,
+                            "subject": "Subscription renewal paid",
+                            "body": "Your subscription renewal has been paid successfully.",
+                            "type": "subscription_renewal",
+                            "status": "MOCKED",
+                            "created_at": now_iso(),
+                        })
 
     if webhook_response.event_type == "payment_intent.payment_failed" and email_target:
         await db.email_outbox.insert_one({
