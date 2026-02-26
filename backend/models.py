@@ -440,12 +440,19 @@ class ApplyPromoRequest(BaseModel):
 
 
 class ScopeRequestFormData(BaseModel):
-    project_summary: str
-    desired_outcomes: str
-    apps_involved: str
-    timeline_urgency: str
+    # Scope-specific fields (optional to support simple enquiry forms too)
+    project_summary: Optional[str] = ""
+    desired_outcomes: Optional[str] = ""
+    apps_involved: Optional[str] = ""
+    timeline_urgency: Optional[str] = ""
     budget_range: Optional[str] = ""
     additional_notes: Optional[str] = ""
+    # Simple contact/enquiry fields
+    name: Optional[str] = ""
+    email: Optional[str] = ""
+    company: Optional[str] = ""
+    phone: Optional[str] = ""
+    message: Optional[str] = ""
     extra_fields: Optional[Dict[str, Any]] = None
 
 
