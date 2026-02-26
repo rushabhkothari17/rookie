@@ -25,10 +25,16 @@ export interface VisibilityConditionRow {
   value: string;
 }
 
-/** New multi-condition rule set (supports up to 4 conditions with AND/OR) */
-export interface VisibilityRuleSet {
+/** One group: conditions joined by group-level AND/OR */
+export interface VisibilityGroup {
   logic: "AND" | "OR";
   conditions: VisibilityConditionRow[];
+}
+
+/** New grouped rule set (top_logic joins groups) */
+export interface VisibilityRuleSet {
+  top_logic: "AND" | "OR";
+  groups: VisibilityGroup[];
 }
 
 /** Legacy single-rule format kept for backward compat */
