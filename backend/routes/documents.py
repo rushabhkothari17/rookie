@@ -256,13 +256,13 @@ async def delete_document(
 async def sync_customer_folders(admin: Dict[str, Any] = Depends(require_admin)):
     """Create WorkDrive folders for all existing customers that don't have one yet."""
     tid = tenant_id_of(admin)
-    integration = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "zoho_workdrive"}, {"_id": 0}
+    integration = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": "zoho_workdrive", "is_validated": True}, {"_id": 0}
     )
     if not integration or not integration.get("is_validated"):
         raise HTTPException(status_code=400, detail="WorkDrive is not connected")
 
-    parent_folder_url = integration.get("parent_folder_url", "")
+    parent_folder_url = (integration.get("settings") or {}).get("parent_folder_url", "")
     parent_folder_id = wd.extract_folder_id_from_url(parent_folder_url)
     if not parent_folder_id:
         raise HTTPException(status_code=400, detail="Parent folder URL not configured")
