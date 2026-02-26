@@ -222,21 +222,9 @@ async def request_data_deletion(
     # 4. Delete address
     await db.addresses.delete_one({"customer_id": customer_id})
     
-    # 5. Delete customer notes
+    # 6. Delete customer notes
     await db.customer_notes.delete_many(
         {"customer_id": customer_id, "tenant_id": tenant_id}
-    )
-    
-    # 6. Anonymize quote requests (keep for business records, anonymize PII)
-    await db.quote_requests.update_many(
-        {"customer_id": customer_id, "tenant_id": tenant_id},
-        {"$set": {
-            "email": anonymized_email,
-            "contact_name": "Deleted User",
-            "company_name": "Deleted",
-            "phone": "",
-            "gdpr_anonymized": True
-        }}
     )
     
     # 7. Create audit log
