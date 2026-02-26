@@ -253,17 +253,22 @@ export default function ProductDetail() {
     try {
       const stdFields = Object.fromEntries(QUOTE_STD.map(k => [k, quoteFormData[k] || ""]));
       const extra = Object.fromEntries(Object.entries(quoteFormData).filter(([k]) => !QUOTE_STD.includes(k)));
-      await api.post("/products/request-quote", {
-        product_id: product.id,
-        product_name: product.name,
-        ...stdFields,
-        ...(Object.keys(extra).length ? { extra_fields: extra } : {}),
+      const response = await api.post("/orders/scope-request-form", {
+        items: [{ product_id: product.id, quantity: 1, inputs: {} }],
+        form_data: {
+          name: stdFields.name,
+          email: stdFields.email,
+          company: stdFields.company,
+          phone: stdFields.phone,
+          message: stdFields.message,
+          ...(Object.keys(extra).length ? { extra_fields: extra } : {}),
+        },
       });
-      toast.success(ws.msg_quote_success || "Quote request submitted! We'll be in touch shortly.");
+      toast.success(ws.msg_quote_success || `Enquiry submitted! Reference: ${response.data.order_number}`);
       setShowQuoteModal(false);
       setQuoteFormData({ name: "", email: "", company: "", phone: "", message: "" });
     } catch (e: any) {
-      toast.error(e?.response?.data?.detail || "Failed to submit quote request");
+      toast.error(e?.response?.data?.detail || "Failed to submit enquiry");
     } finally { setSubmittingQuote(false); }
   };
 
