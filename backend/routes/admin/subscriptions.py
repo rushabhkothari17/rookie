@@ -209,6 +209,7 @@ async def create_manual_subscription(
         "status": payload.status,
         "payment_method": "offline",
         "amount": payload.amount,
+        "currency": payload.currency or product.get("currency", "USD"),
         "renewal_date": renewal_date_dt.isoformat(),
         "start_date": payload.start_date or now_iso(),
         "cancel_at_period_end": False,
