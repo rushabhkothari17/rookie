@@ -719,14 +719,15 @@ function OrgAddressSection() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function WebsiteTab({ defaultSection }: { defaultSection?: Section }) {
+export default function WebsiteTab({ defaultSection, forcedSection }: { defaultSection?: Section; forcedSection?: Section }) {
   const [activeSection, setActiveSection] = useState<Section>(defaultSection ?? "branding");
+  const displaySection = forcedSection ?? activeSection;
   const [ws, setWs] = useState<WebsiteData>(WEB_DEFAULTS);
 
   // Allow external navigation to a specific section (from checklist widget)
   useEffect(() => {
-    if (defaultSection) setActiveSection(defaultSection);
-  }, [defaultSection]);
+    if (defaultSection && !forcedSection) setActiveSection(defaultSection);
+  }, [defaultSection, forcedSection]);
   const [branding, setBranding] = useState<BrandingData>({
     store_name: "", primary_color: "", accent_color: "",
     danger_color: "", success_color: "", warning_color: "",
