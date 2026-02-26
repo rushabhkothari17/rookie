@@ -38,7 +38,10 @@ export default function ClassicLayout({
   // Build CTA config
   const ctaConfig = (() => {
     if (isEnquiry) {
-      return { label: "Proceed to request quote", onClick: handleAddToCart };
+      if (scopeUnlock) {
+        return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
+      }
+      return { label: "Proceed to checkout", onClick: handleAddToCart };
     }
     if (isFree) {
       return { label: "Get it free", onClick: handleAddToCart };
