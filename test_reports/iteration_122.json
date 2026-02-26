@@ -1,0 +1,69 @@
+{
+  "summary": "Tested Product Conditional Visibility (4th option) and IntakeSchemaBuilder multi-condition visibility. Found and fixed a CRITICAL backend bug where @router.get('/products') decorator was misplaced on helper function _eval_product_conditions instead of get_products. Fixed TypeScript compilation error in ProductEditor.tsx. All 14 backend tests pass. All frontend features working end-to-end.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/products",
+        "issue": "CRITICAL BUG FIXED: @router.get('/products') decorator was applied to _eval_product_conditions() helper function instead of get_products() in /app/backend/routes/store.py. This caused the endpoint to return 422 requiring body params (rule_set, customer) instead of the product list. FIX APPLIED: Moved the decorator to the correct async def get_products() function.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ProductEditor.tsx",
+        "issue": "FIXED: Missing visibility_conditions: null in initial form state. Caused TypeScript compilation error: 'Property visibility_conditions is missing in type but required in type ProductFormData'.",
+        "selector": "/app/frontend/src/pages/ProductEditor.tsx line ~42",
+        "priority": "HIGH"
+      },
+      {
+        "component": "ProductForm.tsx",
+        "issue": "React key warning: Each child in a list should have a unique 'key' prop. Check the render method of Primitive.div. It was passed a child from ProductForm. Non-blocking but should be fixed.",
+        "selector": "Primitive.div in ProductForm",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter122_product_conditional_visibility.py",
+    "/app/test_reports/pytest/pytest_iter122_conditional_vis.xml"
+  ],
+  "action_items": [
+    "Fix React key prop warning in ProductForm.tsx (Primitive.div mapping without key props) - minor but worth fixing"
+  ],
+  "critical_code_review_comments": [
+    "CRITICAL: @router.get('/products') decorator was on _eval_product_conditions() not get_products() in store.py - completely broke the public store products endpoint. FIX APPLIED in store.py.",
+    "ProductEditor.tsx was missing visibility_conditions: null in initial state causing TypeScript compilation error. FIX APPLIED.",
+    "Backend _eval_product_conditions function is now a pure helper (no route decorator) - correctly evaluates AND/OR logic, all operators (equals, not_equals, contains, not_contains, empty, not_empty)",
+    "evaluateVisibilityRule in utils.tsx correctly handles both legacy {depends_on, operator, value} and new {logic, conditions: [...]} format with circular dep prevention"
+  ],
+  "updated_files": [
+    "/app/backend/routes/store.py (fixed @router.get('/products') decorator placement)",
+    "/app/frontend/src/pages/ProductEditor.tsx (added visibility_conditions: null to initial state)",
+    "/app/backend/tests/test_iter122_product_conditional_visibility.py (new test file)"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 tests pass after fix)",
+    "frontend": "100% (all 13 feature points verified)"
+  },
+  "seed_data_creation": "Created TEST_UI_Conditional_Save product with visibility_conditions during UI testing. Multiple TEST_ prefixed products created and deactivated during backend testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Two major bugs were fixed this iteration: (1) CRITICAL: @router.get('/products') was on _eval_product_conditions() not get_products() - now fixed. (2) ProductEditor.tsx missing visibility_conditions: null in initial state - now fixed. All conditional visibility features are working: 4 radio options, condition builder with field/operator/value, AND/OR toggle, empty/not_empty hides value input, max 4 conditions. Intake multi-condition visibility also works with all operators. Backend API correctly filters conditional products. Admin always sees all products.",
+  "rca_of_issues": {
+    "critical_decorator_bug": {
+      "description": "In /app/backend/routes/store.py, a helper function _eval_product_conditions() was introduced to evaluate conditional visibility rules. The @router.get('/products') decorator was accidentally placed ABOVE this helper function instead of above the async def get_products() function below it. FastAPI registered _eval_product_conditions as the GET /products handler, causing it to require rule_set and customer body params. get_products was never registered.",
+      "reproduction": "GET /api/products?partner_code=automate-accounts returned 422 {'detail': [{'type': 'missing', 'loc': ['body', 'rule_set']}, {'type': 'missing', 'loc': ['body', 'customer']}]}",
+      "fix": "Removed @router.get('/products') from _eval_product_conditions() and placed it on async def get_products() instead.",
+      "impact": "Entire public store product listing was broken - no products were returned to any customer"
+    },
+    "typescript_compilation_error": {
+      "description": "ProductEditor.tsx had an initial form state object missing the visibility_conditions field that was added to ProductFormData interface. TypeScript strict mode caught this as a type error preventing compilation.",
+      "fix": "Added visibility_conditions: null to the initial form state object in ProductEditor.tsx"
+    }
+  }
+}
