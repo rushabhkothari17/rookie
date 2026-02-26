@@ -307,6 +307,7 @@ export function OrdersTab() {
               <TableHead>Subtotal</TableHead>
               <TableHead>Fee</TableHead>
               <TableHead>Total</TableHead>
+              <TableHead>Currency</TableHead>
               <TableHead>Pay Date</TableHead>
               <TableHead>Method</TableHead>
               <TableHead>Status</TableHead>
