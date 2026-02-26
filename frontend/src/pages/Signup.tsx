@@ -218,20 +218,21 @@ export default function Signup() {
           <form className="space-y-3" onSubmit={handlePartnerSubmit}>
             <div className="relative">
               <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" placeholder="Organization name" value={partnerOrg.name} onChange={e => setPartnerOrg(p => ({ ...p, name: e.target.value }))} required data-testid="partner-org-name" />
+              <Input className="pl-9" placeholder="Organization name *" value={partnerOrg.name} onChange={e => setPartnerOrg(p => ({ ...p, name: e.target.value }))} required data-testid="partner-org-name" />
             </div>
             <div className="relative">
               <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" placeholder="Your full name" value={partnerOrg.admin_name} onChange={e => setPartnerOrg(p => ({ ...p, admin_name: e.target.value }))} required data-testid="partner-admin-name" />
+              <Input className="pl-9" placeholder="Your full name *" value={partnerOrg.admin_name} onChange={e => setPartnerOrg(p => ({ ...p, admin_name: e.target.value }))} required data-testid="partner-admin-name" />
             </div>
             <div className="relative">
               <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" type="email" placeholder="Admin email address" value={partnerOrg.admin_email} onChange={e => setPartnerOrg(p => ({ ...p, admin_email: e.target.value }))} required data-testid="partner-admin-email" />
+              <Input className="pl-9" type="email" placeholder="Admin email address *" value={partnerOrg.admin_email} onChange={e => setPartnerOrg(p => ({ ...p, admin_email: e.target.value }))} required data-testid="partner-admin-email" />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" type="password" placeholder="Password (min 10 chars, upper, lower, number, symbol)" value={partnerOrg.admin_password} onChange={e => setPartnerOrg(p => ({ ...p, admin_password: e.target.value }))} required data-testid="partner-admin-password" />
+              <Input className="pl-9" type="password" placeholder="Password * (min 10 chars, upper, lower, number, symbol)" value={partnerOrg.admin_password} onChange={e => setPartnerOrg(p => ({ ...p, admin_password: e.target.value }))} required data-testid="partner-admin-password" />
             </div>
+            <p className="text-xs text-slate-400"><span className="text-red-500">*</span> Required field</p>
             <Select value={partnerOrg.base_currency} onValueChange={v => setPartnerOrg(p => ({ ...p, base_currency: v }))}>
               <SelectTrigger className="w-full" data-testid="partner-base-currency">
                 <SelectValue placeholder="Select base currency" />
