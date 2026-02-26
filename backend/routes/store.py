@@ -210,6 +210,15 @@ async def get_product(
                 cust_doc = customer or {}
                 if not _eval_product_conditions(vis_cond, cust_doc):
                     raise HTTPException(status_code=404, detail="Product not found")
+    else:
+        # Unauthenticated users: enforce conditional visibility against empty customer doc
+        vis_cond = product.get("visibility_conditions")
+        whitelist = product.get("visible_to_customers", [])
+        if whitelist:
+            raise HTTPException(status_code=404, detail="Product not found")
+        if vis_cond and (vis_cond.get("groups") or vis_cond.get("conditions")):
+            if not _eval_product_conditions(vis_cond, {}):
+                raise HTTPException(status_code=404, detail="Product not found")
     return {"product": product}
 
 
