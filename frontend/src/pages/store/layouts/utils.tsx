@@ -319,3 +319,65 @@ export function renderIntakeField(
     />
   );
 }
+
+// ── Shared Scope ID block ─────────────────────────────────────────────────────
+interface ScopeIdBlockProps {
+  scopeId: string;
+  setScopeId: (v: string) => void;
+  handleValidateScopeId: () => void;
+  scopeValidating?: boolean;
+  scopeError?: string;
+  scopeUnlock?: any;
+  dark?: boolean; // for dark-background layouts (QuickBuy hero)
+}
+
+export function ScopeIdBlock({
+  scopeId, setScopeId, handleValidateScopeId,
+  scopeValidating, scopeError, scopeUnlock, dark = false,
+}: ScopeIdBlockProps) {
+  const border = dark ? "border-white/20 bg-white/10" : "border-blue-100 bg-blue-50/60";
+  const label = dark ? "text-white/90" : "text-slate-700";
+  const hint = dark ? "text-white/60" : "text-slate-500";
+  const inputCls = dark ? "bg-white/10 border-white/20 text-white placeholder:text-white/40 font-mono text-sm h-8" : "font-mono text-sm h-8";
+
+  return (
+    <div className={`rounded-xl border p-4 space-y-2 ${border}`} data-testid="product-scope-id-section">
+      <div className="flex items-center gap-2">
+        <Key size={14} className={dark ? "text-blue-300" : "text-blue-600"} />
+        <p className={`text-sm font-medium ${label}`}>Already have a Scope ID?</p>
+      </div>
+      <p className={`text-xs ${hint}`}>Enter it to unlock direct checkout at a fixed price.</p>
+      <div className="flex gap-2">
+        <Input
+          value={scopeId}
+          onChange={e => setScopeId(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && scopeId.trim() && handleValidateScopeId()}
+          placeholder="e.g. SCOPE-ABC123"
+          className={`flex-1 ${inputCls}`}
+          data-testid="product-scope-id-input"
+        />
+        <Button
+          variant={dark ? "secondary" : "outline"}
+          size="sm"
+          className="h-8 text-xs"
+          onClick={handleValidateScopeId}
+          disabled={scopeValidating || !scopeId.trim()}
+          data-testid="product-scope-id-validate-btn"
+        >
+          {scopeValidating ? "Checking…" : "Validate"}
+        </Button>
+      </div>
+      {scopeError && <p className="text-xs text-red-400" data-testid="product-scope-id-error">{scopeError}</p>}
+      {scopeUnlock && (
+        <div className={`flex items-center gap-2 p-2 rounded-lg ${dark ? "bg-green-500/20 border border-green-400/30" : "bg-green-50 border border-green-200"}`} data-testid="product-scope-id-success">
+          <Check size={14} className="text-green-500" />
+          <div>
+            <p className={`text-xs font-semibold ${dark ? "text-green-300" : "text-green-800"}`}>{scopeUnlock.title}</p>
+            <p className={`text-sm font-bold ${dark ? "text-green-200" : "text-green-700"}`}>${scopeUnlock.price}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
