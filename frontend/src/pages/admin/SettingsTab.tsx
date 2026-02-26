@@ -1,9 +1,85 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Eye, EyeOff, Upload, Save, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+const COUNTRIES = [
+  {v:"Canada",l:"Canada"},{v:"USA",l:"United States"},{v:"UK",l:"United Kingdom"},
+  {v:"Australia",l:"Australia"},{v:"India",l:"India"},{v:"Germany",l:"Germany"},
+  {v:"France",l:"France"},{v:"Netherlands",l:"Netherlands"},{v:"Singapore",l:"Singapore"},
+  {v:"New Zealand",l:"New Zealand"},
+];
+
+function OrgAddressSection() {
+  const { user } = useAuth();
+  const [tenantId, setTenantId] = useState("");
+  const [addr, setAddr] = useState({ line1:"", line2:"", city:"", region:"", postal:"", country:"Canada" });
+  const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
+  const [saving, setSaving] = useState(false);
+  const isPlatformAdmin = user?.role && ["platform_admin", "admin"].includes(user.role);
+  // Don't show for platform admins (no org address for the platform tenant)
+  if (isPlatformAdmin) return null;
+
+  useEffect(() => {
+    api.get("/admin/tenants/my").then(r => {
+      setTenantId(r.data.tenant?.id || "");
+      const a = r.data.tenant?.address || {};
+      setAddr({ line1: a.line1||"", line2: a.line2||"", city: a.city||"", region: a.region||"", postal: a.postal||"", country: a.country||"Canada" });
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (addr.country === "Canada" || addr.country === "USA") {
+      api.get(`/utils/provinces?country_code=${addr.country}`).then(r => setProvinces(r.data.regions || [])).catch(() => setProvinces([]));
+    } else { setProvinces([]); }
+  }, [addr.country]);
+
+  const save = async () => {
+    if (!tenantId) return;
+    setSaving(true);
+    try {
+      await api.put(`/admin/tenants/${tenantId}/address`, { address: addr });
+      toast.success("Organization address saved");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to save address");
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4" data-testid="org-address-section">
+      <h3 className="text-sm font-semibold text-slate-900">Organization Address</h3>
+      <p className="text-xs text-slate-400">Your organization's registered address. Used on invoices and tax documents.</p>
+      <div className="space-y-2">
+        <Input placeholder="Line 1 *" value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} required data-testid="org-addr-line1" />
+        <Input placeholder="Line 2 (optional)" value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
+        <div className="grid grid-cols-2 gap-2">
+          <Input placeholder="City *" value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} required data-testid="org-addr-city" />
+          <Input placeholder="Postal Code *" value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} required data-testid="org-addr-postal" />
+        </div>
+        <Select value={addr.country} onValueChange={v => setAddr(p=>({...p,country:v,region:""}))}>
+          <SelectTrigger data-testid="org-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
+          <SelectContent>{COUNTRIES.map(c=><SelectItem key={c.v} value={c.v}>{c.l}</SelectItem>)}</SelectContent>
+        </Select>
+        {provinces.length > 0 ? (
+          <Select value={addr.region} onValueChange={v => setAddr(p=>({...p,region:v}))}>
+            <SelectTrigger data-testid="org-addr-region-select"><SelectValue placeholder="Province / State *" /></SelectTrigger>
+            <SelectContent>{provinces.map(p=><SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+          </Select>
+        ) : (
+          <Input placeholder="State / Province *" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} required data-testid="org-addr-region-input" />
+        )}
+      </div>
+      <Button onClick={save} disabled={saving} size="sm" data-testid="org-addr-save-btn">
+        {saving ? "Saving…" : "Save Address"}
+      </Button>
+    </div>
+  );
+}
+
 
 interface Settings {
   primary_color?: string;
