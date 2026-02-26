@@ -39,7 +39,7 @@ export default function Cart() {
   const [cartScopeUnlock, setCartScopeUnlock] = useState<any>(null);
   const [cartScopeError, setCartScopeError] = useState("");
   
-  // Quote modal for RFQ items
+  // Enquiry modal for RFQ items (unified scope request form)
   const [showCartQuoteModal, setShowCartQuoteModal] = useState(false);
   const [cartQuoteProduct, setCartQuoteProduct] = useState<any>(null);
   const [cartQuoteForm, setCartQuoteForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
