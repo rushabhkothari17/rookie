@@ -247,7 +247,9 @@ class TestOldQuoteEndpointRemoved:
     """Verify that the customer-facing /products/request-quote is REMOVED."""
 
     def test_request_quote_endpoint_returns_404(self):
-        """POST /api/products/request-quote should return 404 (endpoint removed)."""
+        """POST /api/products/request-quote should return 404 or 405 (endpoint removed).
+        The path /products/{product_id} matches, but there's no POST on it → 405.
+        Both 404 and 405 confirm the customer-facing POST endpoint is removed."""
         resp = requests.post(
             f"{BASE_URL}/api/products/request-quote",
             json={
@@ -259,11 +261,11 @@ class TestOldQuoteEndpointRemoved:
             }
         )
         print(f"Old request-quote response: {resp.status_code} {resp.text[:200]}")
-        assert resp.status_code == 404, (
-            f"Expected 404 (endpoint removed), but got {resp.status_code}. "
+        assert resp.status_code in [404, 405], (
+            f"Expected 404 or 405 (endpoint removed), but got {resp.status_code}. "
             f"The old /products/request-quote endpoint should have been removed!"
         )
-        print("PASS: POST /products/request-quote returns 404 - endpoint correctly removed")
+        print(f"PASS: POST /products/request-quote returns {resp.status_code} - endpoint correctly removed")
 
     def test_request_quote_with_auth_returns_404(self, admin_headers):
         """Even with auth, /products/request-quote should be 404."""
