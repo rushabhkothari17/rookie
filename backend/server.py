@@ -484,6 +484,16 @@ async def startup_tasks():
     except Exception:
         pass
 
+    # Prune deprecated email templates across all tenants
+    try:
+        from services.email_service import _DEPRECATED_TRIGGERS
+        if _DEPRECATED_TRIGGERS:
+            await db.email_templates.delete_many(
+                {"trigger": {"$in": list(_DEPRECATED_TRIGGERS)}, "is_system": True}
+            )
+    except Exception:
+        pass
+
 
 
 
