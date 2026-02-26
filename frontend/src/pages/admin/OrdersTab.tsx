@@ -87,7 +87,7 @@ export function OrdersTab() {
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [manualOrder, setManualOrder] = useState({
     customer_email: "", product_id: "", quantity: 1,
-    subtotal: 0, discount: 0, fee: 0, status: "paid", internal_note: "",
+    subtotal: 0, discount: 0, fee: 0, status: "paid", currency: "USD", internal_note: "",
   });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmChargeId, setConfirmChargeId] = useState<string | null>(null);
