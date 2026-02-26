@@ -162,9 +162,14 @@ class ProductVisCondition(BaseModel):
     value: str = ""       # empty for empty/not_empty operators
 
 
-class ProductVisRuleSet(BaseModel):
-    logic: str = "AND"   # "AND" | "OR"
+class ProductVisGroup(BaseModel):
+    logic: str = "AND"
     conditions: List[ProductVisCondition] = Field(default_factory=list)
+
+
+class ProductVisRuleSet(BaseModel):
+    top_logic: str = "AND"   # "AND" | "OR" — logic between groups
+    groups: List[ProductVisGroup] = Field(default_factory=list)
 
 
 class IntakeQuestion(BaseModel):
