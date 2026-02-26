@@ -148,6 +148,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
     slug: "",
     category: "",
     price: "",
+    currency: "USD",
     content: "",
     visibility: "all",
     restricted_to: [] as string[],
