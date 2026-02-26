@@ -931,7 +931,7 @@ async def checkout_free(
         "partner_tag_response": payload.partner_tag_response,
         "override_code_id": None,
         "partner_tag_timestamp": now_iso(),
-        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="free"),
+        "notes_json": build_checkout_notes_json(order_items, payload, user["id"], customer["id"], payment_method="free", promo_data=promo_code_data),
         "extra_fields": payload.extra_fields or {},
         "payment_date": now_iso(),
         "created_at": now_iso(),
