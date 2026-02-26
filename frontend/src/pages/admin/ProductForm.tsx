@@ -384,20 +384,7 @@ export function ProductForm({
           <PricingTypeSelector value={form.pricing_type || "internal"} onChange={s("pricing_type")} />
 
           {/* Currency - always required for internal pricing */}
-          {(form.pricing_type === "internal" || !form.pricing_type) && (
-            <div>
-              <label className={labelCls}>Currency <span className="text-red-500">*</span></label>
-              <Select value={form.currency || "USD"} onValueChange={v => s("currency")(v)}>
-                <SelectTrigger data-testid="pf-currency"><SelectValue placeholder="Select currency" /></SelectTrigger>
-                <SelectContent>
-                  {["USD — US Dollar", "CAD — Canadian Dollar", "EUR — Euro", "AUD — Australian Dollar", "GBP — British Pound", "INR — Indian Rupee", "MXN — Mexican Peso"].map(opt => {
-                    const code = opt.split(" — ")[0];
-                    return <SelectItem key={code} value={code}>{opt}</SelectItem>;
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {/* Embedded directly in the pricing card below for cleaner layout */}
 
           {/* Internal */}
           {(form.pricing_type === "internal" || !form.pricing_type) && (
@@ -417,9 +404,9 @@ export function ProductForm({
                     <p className="text-[11px] text-slate-400 mt-1">Leave 0 for free or intake-only pricing</p>
                   </div>
                   <div>
-                    <label className={labelCls}>Currency</label>
+                    <label className={labelCls}>Currency <span className="text-red-500">*</span></label>
                     <Select value={form.currency || "USD"} onValueChange={v => s("currency")(v)}>
-                      <SelectTrigger data-testid="pf-currency-inline"><SelectValue /></SelectTrigger>
+                      <SelectTrigger data-testid="pf-currency"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
@@ -440,6 +427,7 @@ export function ProductForm({
                     </Select>
                   </div>
                   <div />
+                </div>
               </div>
 
               <div className="rounded-lg border border-slate-200 bg-white p-4">
