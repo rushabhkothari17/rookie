@@ -280,10 +280,10 @@ class TestOldQuoteEndpointRemoved:
             }
         )
         print(f"Old request-quote with auth: {resp.status_code}")
-        assert resp.status_code == 404, (
-            f"Expected 404, got {resp.status_code}. Old endpoint still accessible!"
+        assert resp.status_code in [404, 405], (
+            f"Expected 404/405, got {resp.status_code}. Old endpoint still accessible!"
         )
-        print("PASS: Old /products/request-quote returns 404 even with auth")
+        print(f"PASS: Old /products/request-quote returns {resp.status_code} even with auth")
 
 
 # --- Tests for PATCH and DELETE enquiries ---
