@@ -129,6 +129,7 @@ class TestManualOrderCurrencyAPI:
         # Create a manual order with EUR currency
         payload = {
             "customer_id": None,
+            "customer_email": "TEST_fx_order@test.invalid",
             "product_id": product_id,
             "subtotal": 100.0,
             "discount": 0.0,
