@@ -20,7 +20,7 @@ type AuthSlide =
   | "login" | "signup" | "verify_email"
   | "portal" | "profile" | "not_found" | "admin_panel"
   | "checkout_builder" | "checkout_success" | "gocardless_callback"
-  | "checkout_messages" | "form_messages"
+  | "checkout_messages"
   | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social";
 
 interface WebsiteData {
@@ -35,14 +35,12 @@ interface WebsiteData {
   social_twitter: string; social_linkedin: string; social_facebook: string;
   social_instagram: string; social_youtube: string;
   nav_store_label: string; nav_articles_label: string; nav_portal_label: string;
-  quote_form_title: string; quote_form_subtitle: string; quote_form_response_time: string;
   scope_form_title: string; scope_form_subtitle: string;
   signup_form_title: string; signup_form_subtitle: string;
-  quote_form_schema: string; scope_form_schema: string; signup_form_schema: string;
+  scope_form_schema: string; signup_form_schema: string;
   email_from_name: string; email_article_subject_template: string;
   email_article_cta_text: string; email_article_footer_text: string;
   email_verification_subject: string; email_verification_body: string;
-  msg_partner_tagging_prompt: string; msg_override_required: string;
   msg_cart_empty: string; msg_quote_success: string; msg_scope_success: string;
   msg_currency_unsupported: string; msg_no_payment_methods: string;
   payment_gocardless_label: string; payment_gocardless_description: string;
