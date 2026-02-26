@@ -16,14 +16,15 @@ import { CustomDomainsSection } from "@/components/admin/CustomDomainsSection";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Section = "branding" | "auth" | "forms" | "footer" | "sysconfig";
+type Section = "branding" | "auth" | "forms" | "sysconfig";
 
 type AuthSlide =
   | "login" | "signup" | "verify_email"
   | "portal" | "profile" | "not_found" | "admin_panel"
   | "checkout_builder" | "checkout_success" | "gocardless_callback"
   | "checkout_messages"
-  | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social";
+  | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social"
+  | "documents_page";
 
 interface WebsiteData {
   hero_label: string; hero_title: string; hero_subtitle: string;
