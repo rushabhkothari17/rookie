@@ -116,13 +116,6 @@ async def checkout_bank_transfer(
     if not customer.get("allow_bank_transfer", True):
         raise HTTPException(status_code=403, detail="Bank transfer not enabled")
 
-    await validate_and_consume_partner_tag(
-        customer_id=customer["id"],
-        partner_tag_response=payload.partner_tag_response,
-        override_code=payload.override_code,
-        order_id=None,
-    )
-
     order_items = await build_order_items(payload.items, tenant_id)
 
     checkout_type = payload.checkout_type
@@ -433,13 +426,6 @@ async def create_checkout_session(
         raise HTTPException(status_code=400, detail="Please select your current Zoho product.")
     if not payload.zoho_account_access:
         raise HTTPException(status_code=400, detail="Please indicate whether you have provided Zoho account access.")
-
-    await validate_and_consume_partner_tag(
-        customer_id=customer["id"],
-        partner_tag_response=payload.partner_tag_response,
-        override_code=payload.override_code,
-        order_id=None,
-    )
 
     order_items = await build_order_items(payload.items, tenant_id)
 
@@ -859,13 +845,6 @@ async def checkout_free(
         raise HTTPException(status_code=404, detail="Customer not found")
 
     tenant_id = customer.get("tenant_id", "")
-
-    await validate_and_consume_partner_tag(
-        customer_id=customer["id"],
-        partner_tag_response=payload.partner_tag_response,
-        override_code=payload.override_code,
-        order_id=None,
-    )
 
     order_items = await build_order_items(payload.items, tenant_id)
     
