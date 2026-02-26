@@ -37,7 +37,8 @@ async def update_tax_settings(
         return {"message": "Nothing to update"}
 
     tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "tax_settings": 1})
-    merged = {**(tenant or {}).get("tax_settings") or {}, **update}
+    existing = ((tenant or {}).get("tax_settings") or {})
+    merged = {**existing, **update}
     await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": merged}})
     return {"message": "Tax settings updated", "tax_settings": merged}
 
