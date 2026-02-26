@@ -291,6 +291,161 @@ async def get_invoice_data(
     }
 
 
+# ── Send Invoice Email ─────────────────────────────────────────────────────────
+
+@router.post("/orders/{order_id}/send-invoice")
+async def send_invoice_email(
+    order_id: str,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Send the invoice for an order to the customer's email."""
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Auth check
+    if user.get("role") == "customer":
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+        if not customer or order.get("customer_id") != customer.get("id"):
+            raise HTTPException(status_code=403, detail="Access denied")
+        tenant_id = order.get("tenant_id") or customer.get("tenant_id")
+    else:
+        tenant_id = order.get("tenant_id") or user.get("tenant_id")
+
+    # Customer email
+    customer = await db.customers.find_one({"id": order.get("customer_id")}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=400, detail="Customer not found")
+    customer_user = await db.users.find_one({"id": customer.get("user_id")}, {"_id": 0, "password_hash": 0}) or {}
+    recipient_email = customer_user.get("email", "")
+    if not recipient_email:
+        raise HTTPException(status_code=400, detail="Customer has no email address")
+
+    # Partner / invoice settings
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0}) or {}
+    ts = tenant.get("tax_settings") or {}
+    invoice_settings = ts.get("invoice_settings") or {"prefix": "INV", "payment_terms": "Due on receipt", "footer_notes": ""}
+    prefix = invoice_settings.get("prefix", "INV")
+    inv_number = f"{prefix}-{order.get('order_number', order_id[:8])}" if prefix else order.get("order_number", order_id[:8])
+
+    # Build items rows HTML
+    items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(50)
+    product_ids = [i.get("product_id") for i in items if i.get("product_id")]
+    pmap: Dict[str, str] = {}
+    if product_ids:
+        products = await db.products.find({"id": {"$in": product_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(len(product_ids))
+        pmap = {p["id"]: p["name"] for p in products}
+
+    currency = order.get("currency", "USD")
+    items_rows = ""
+    for item in items:
+        name = pmap.get(item.get("product_id", ""), item.get("product_name", "Item"))
+        amount = f"{currency} {(item.get('line_total') or 0):.2f}"
+        items_rows += f'<tr><td style="padding:6px 4px;color:#1e293b;font-size:13px">{name}</td><td style="padding:6px 4px;text-align:right;color:#1e293b;font-size:13px">{amount}</td></tr>'
+
+    # Tax row
+    tax_row_html = ""
+    if (order.get("tax_amount") or 0) > 0:
+        tax_row_html = f'<p style="color:#64748b;font-size:13px;margin:8px 0 0">Tax ({order.get("tax_name","Tax")}): {currency} {order.get("tax_amount",0):.2f}</p>'
+
+    from services.email_service import EmailService
+    result = await EmailService.send(
+        trigger="invoice_email",
+        recipient=recipient_email,
+        variables={
+            "customer_name": customer_user.get("full_name", "Customer"),
+            "customer_email": recipient_email,
+            "partner_name": tenant.get("name", ""),
+            "invoice_number": inv_number,
+            "invoice_date": (order.get("created_at") or "")[:10],
+            "order_number": order.get("order_number", ""),
+            "order_total": f"{(order.get('total') or 0):.2f}",
+            "order_currency": currency,
+            "invoice_items_rows": items_rows,
+            "tax_row": tax_row_html,
+            "footer_notes": invoice_settings.get("footer_notes", ""),
+        },
+        db=db,
+        tenant_id=tenant_id,
+    )
+    return {"message": "Invoice email sent", "status": result.get("status"), "recipient": recipient_email}
+
+
+# ── Partner-Specific Invoice Templates ────────────────────────────────────────
+
+@router.get("/admin/taxes/invoice-templates")
+async def get_invoice_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tid = tenant_id_of(admin)
+    templates = await db.partner_invoice_templates.find(
+        {"tenant_id": tid}, {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return {"templates": templates}
+
+
+@router.post("/admin/taxes/invoice-templates")
+async def create_invoice_template(
+    payload: Dict[str, Any],
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tid = tenant_id_of(admin)
+    if not payload.get("name"):
+        raise HTTPException(status_code=400, detail="name is required")
+    tmpl = {
+        "id": make_id(),
+        "tenant_id": tid,
+        "name": payload["name"],
+        "html_body": payload.get("html_body", ""),
+        "is_active": True,
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+    }
+    await db.partner_invoice_templates.insert_one(tmpl)
+    tmpl.pop("_id", None)
+    return {"template": tmpl}
+
+
+@router.put("/admin/taxes/invoice-templates/{tmpl_id}")
+async def update_invoice_template(
+    tmpl_id: str,
+    payload: Dict[str, Any],
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tid = tenant_id_of(admin)
+    existing = await db.partner_invoice_templates.find_one({"id": tmpl_id, "tenant_id": tid}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Template not found")
+    update = {k: v for k, v in payload.items() if k in {"name", "html_body", "is_active"}}
+    update["updated_at"] = now_iso()
+    await db.partner_invoice_templates.update_one({"id": tmpl_id, "tenant_id": tid}, {"$set": update})
+    return {"message": "Template updated"}
+
+
+@router.delete("/admin/taxes/invoice-templates/{tmpl_id}")
+async def delete_invoice_template(
+    tmpl_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tid = tenant_id_of(admin)
+    result = await db.partner_invoice_templates.delete_one({"id": tmpl_id, "tenant_id": tid})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"message": "Template deleted"}
+
+
+# ── Invoice data endpoint updated to include custom templates ─────────────────
+
+@router.get("/admin/taxes/invoice-templates-for-viewer")
+async def get_invoice_templates_for_viewer(
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Used by the InvoiceViewer to load custom templates for the selector."""
+    tid = tenant_id_of(admin)
+    templates = await db.partner_invoice_templates.find(
+        {"tenant_id": tid, "is_active": {"$ne": False}}, {"_id": 0}
+    ).to_list(50)
+    return {"templates": templates}
+
+
 # ── Tax Summary ───────────────────────────────────────────────────────────────
 
 @router.get("/admin/taxes/summary")
