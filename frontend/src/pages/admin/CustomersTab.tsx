@@ -122,6 +122,12 @@ export function CustomersTab() {
           allowed_payment_modes: selectedCustomer.allowed_payment_modes || [],
         });
       }
+      // Save tax_exempt if changed
+      if (selectedCustomer._tax_exempt_changed) {
+        await api.patch(`/admin/customers/${selectedCustomer.id}/tax-exempt`, {
+          tax_exempt: !!selectedCustomer.tax_exempt,
+        });
+      }
       toast.success("Customer updated"); setSelectedCustomer(null); load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
   };
