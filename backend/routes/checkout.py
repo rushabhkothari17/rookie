@@ -106,6 +106,22 @@ async def get_tenant_base_currency(tenant_id: str) -> str:
     return tenant.get("base_currency", "USD") if tenant else "USD"
 
 
+@router.post("/checkout/calculate-tax")
+async def checkout_calculate_tax(
+    payload: TaxCalculateRequest,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Calculate tax for a given subtotal (after discounts, before fees).
+    Used by Cart.tsx to display the tax line item before completing checkout.
+    """
+    customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not customer:
+        return {"tax_amount": 0.0, "tax_rate": 0.0, "tax_name": None, "tax_details": None}
+    tenant_id = customer.get("tenant_id", "")
+    result = await calculate_tax(payload.subtotal, tenant_id, customer["id"])
+    return result
+
+
 @router.post("/checkout/bank-transfer")
 async def checkout_bank_transfer(
     payload: BankTransferCheckoutRequest,
