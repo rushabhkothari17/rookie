@@ -909,6 +909,7 @@ async def checkout_free(
         "fee": 0.0,
         "total": 0.0,  # Free!
         "currency": order_items[0]["product"].get("currency", "USD"),
+        "base_currency": base_currency,
         "payment_method": "free",
         "terms_id_used": terms_id,
         "rendered_terms_text": rendered_terms_text,
