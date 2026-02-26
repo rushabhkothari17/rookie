@@ -352,7 +352,7 @@ function OverrideRulesPanel() {
         await api.put(`/admin/taxes/overrides/${editingId}`, payload);
         toast.success("Override rule updated");
       } else {
-        await api.post("/api/admin/taxes/overrides", payload);
+        await api.post("/admin/taxes/overrides", payload);
         toast.success("Override rule created");
       }
       setShowForm(false);
