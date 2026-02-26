@@ -638,10 +638,11 @@ export function ProductForm({
             <label className={labelCls}>Customer visibility</label>
             <div className="space-y-2.5 mt-1">
               {([
-                ["all",              "All customers"],
-                ["restricted",       "Restrict from specific customers"],
-                ["show_to_specific", "Show only to specific customers"],
-              ] as const).map(([mode, label]) => (
+                ["all",              "All customers",                           null],
+                ["restricted",       "Restrict from specific customers",        null],
+                ["show_to_specific", "Show only to specific customers",         null],
+                ["conditional",      "Conditional — based on customer profile", <GitBranch size={14} className="text-indigo-500" />],
+              ] as const).map(([mode, label, icon]) => (
                 <label key={mode} className="flex items-center gap-3 cursor-pointer group">
                   <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
                     visMode === mode ? "border-[#1e40af] bg-[#1e40af]" : "border-slate-300 group-hover:border-slate-400"
@@ -649,13 +650,22 @@ export function ProductForm({
                     {visMode === mode && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </span>
                   <input type="radio" className="sr-only" checked={visMode === mode} onChange={() => setVisMode(mode)} data-testid={`vis-mode-${mode}`} />
-                  <span className="text-sm text-slate-700">{label}</span>
+                  <span className="flex items-center gap-1.5 text-sm text-slate-700">
+                    {icon}{label}
+                  </span>
                 </label>
               ))}
             </div>
+
+            {visMode === "conditional" && (
+              <ProductConditionBuilder
+                value={form.visibility_conditions}
+                onChange={v => setForm({ ...form, visibility_conditions: v })}
+              />
+            )}
           </div>
 
-          {visMode !== "all" && (
+          {(visMode === "restricted" || visMode === "show_to_specific") && (
             <div className={cardCls}>
               <label className={labelCls}>
                 {visMode === "restricted" ? "Hidden from" : "Visible only to"}
