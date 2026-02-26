@@ -1,4 +1,4 @@
-"""Admin: Quote requests routes."""
+"""Admin: Quote requests routes (legacy - admin CRUD only; customer flow now uses scope requests)."""
 from __future__ import annotations
 
 import asyncio
@@ -17,53 +17,6 @@ from services.webhook_service import dispatch_event
 from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 
 router = APIRouter(prefix="/api", tags=["quote-requests"])
-
-
-@router.post("/products/request-quote")
-async def request_quote(
-    payload: QuoteRequest,
-    user: Dict[str, Any] = Depends(get_current_user),
-):
-    quote: Dict[str, Any] = {
-        "id": make_id(),
-        "tenant_id": user.get("tenant_id") or DEFAULT_TENANT_ID,
-        "product_id": payload.product_id,
-        "product_name": payload.product_name,
-        "name": payload.name,
-        "email": payload.email,
-        "company": payload.company,
-        "phone": payload.phone,
-        "message": payload.message,
-        "user_id": user["id"],
-        "created_at": now_iso(),
-        "status": "pending",
-    }
-    await db.quote_requests.insert_one(quote)
-    quote.pop("_id", None)
-    await AuditService.log(
-        action="QUOTE_REQUEST_SUBMITTED",
-        description=f"Quote request submitted for '{payload.product_name}' by {payload.email}",
-        entity_type="QuoteRequest",
-        entity_id=quote["id"],
-        actor_type="user",
-        actor_email=user.get("email"),
-        source="customer_ui",
-        meta_json={"product_id": payload.product_id, "company": payload.company},
-    )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "quote_request", "entity_id": quote["id"], "action": "submitted", "actor": user.get("email", ""), "details": {"product_name": payload.product_name, "company": payload.company}, "created_at": now_iso()})
-    # Webhook: quote_request.submitted
-    await dispatch_event("quote_request.submitted", {
-        "id": quote["id"],
-        "email": quote.get("email", ""),
-        "company": quote.get("company", ""),
-        "product_name": quote.get("product_name", ""),
-        "message": quote.get("message", ""),
-        "phone": quote.get("phone", ""),
-        "submitted_at": quote.get("created_at", ""),
-    }, user.get("tenant_id", DEFAULT_TENANT_ID))
-    return {"message": "Quote request submitted. We will be in touch shortly.", "quote_id": quote["id"]}
-
-
 @router.get("/admin/quote-requests")
 async def admin_list_quote_requests(
     page: int = 1,
