@@ -187,7 +187,7 @@ function TaxTablePanel() {
   const saveEdit = async (entry: any) => {
     try {
       await api.put(
-        `/api/admin/taxes/tables/${entry.country_code}/${entry.state_code || "_"}`,
+        `/admin/taxes/tables/${entry.country_code}/${entry.state_code || "_"}`,
         { rate: parseFloat(editRate) / 100, label: editLabel }
       );
       toast.success("Rate updated");
