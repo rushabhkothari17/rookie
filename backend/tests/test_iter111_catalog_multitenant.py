@@ -61,11 +61,13 @@ def tenant_a_id():
 
 @pytest.fixture(scope="session")
 def customer_a_token():
-    """Register and login test customer for tenant-a"""
+    """Register and login test customer for tenant-a.
+    partner_code must be passed as query parameter in registration.
+    """
     reg_payload = {
-        "email": "TEST_cust_iter111@test.local",
+        "email": "test_cust_iter111b@test.local",
         "password": "TestCustomer123!",
-        "full_name": "TEST Customer 111",
+        "full_name": "TEST Customer 111 B",
         "company_name": "Test Co",
         "phone": "1234567890",
         "address": {
@@ -75,14 +77,26 @@ def customer_a_token():
             "region": "England",
             "postal": "SW1A 1AA",
             "country": "GB"
-        },
-        "partner_code": "test-iter109-a"
+        }
     }
-    # Try registration (may already exist)
-    r = requests.post(f"{BASE_URL}/api/auth/register", json=reg_payload)
+    # Try registration - partner_code is a query param NOT body
+    reg_r = requests.post(
+        f"{BASE_URL}/api/auth/register",
+        json=reg_payload,
+        params={"partner_code": "test-iter109-a"}
+    )
+    if reg_r.status_code == 200:
+        # New registration - verify email
+        verif_code = reg_r.json().get("verification_code")
+        if verif_code:
+            requests.post(f"{BASE_URL}/api/auth/verify-email", json={
+                "email": "test_cust_iter111b@test.local",
+                "code": verif_code
+            })
+    
     # Login
     login_r = requests.post(f"{BASE_URL}/api/auth/customer-login", json={
-        "email": "TEST_cust_iter111@test.local",
+        "email": "test_cust_iter111b@test.local",
         "password": "TestCustomer123!",
         "partner_code": "test-iter109-a"
     })
