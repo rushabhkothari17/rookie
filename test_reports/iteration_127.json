@@ -1,0 +1,58 @@
+{
+  "summary": "Frontend-only testing of new UI features: BillingTypeSelector (card-based billing type), Preview matches button in Conditional Visibility, and IntakeSchemaBuilder UI cleanup (collapsible Advanced section, MiniToggle controls, compact Visibility rule row, Options empty state). Most features work. One functional bug found: client-side preview evaluator uses wrong field paths for email/country/status/phone fields.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ProductConditionBuilder (Visibility tab preview)",
+        "issue": "Preview matches shows 0 for email/country/status/phone/state_province conditions. Only 'Company Name' works. Root cause: evalCustomerVis in ProductForm.tsx accesses c.email, c.address?.country etc., but ProductEditor.tsx only stores data.customers (no email, no address object). Email is in data.users[] and address in data.addresses[] (separate arrays, not joined to customer objects). c.address is always undefined → country always evaluates to '' → 'Country equals (blank)' shows ALL customers as fake matches.",
+        "priority": "HIGH",
+        "affected_fields": ["email", "country", "state_province", "status", "phone"]
+      },
+      {
+        "component": "ProductForm SelectItem lists",
+        "issue": "React console warning: 'Each child in a list should have a unique key prop' in ProductForm's SelectItem render",
+        "selector": "Primitive.div > SelectItem",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "test_1_login": "PASS - Login with partner code 'automate-accounts' + admin credentials works",
+    "test_2_billing_type_cards": "PASS - Pricing tab shows 'Billing type' section with 'One-time' (highlighted/blue, default) and 'Subscription' cards. One-time active by default (is_subscription=false)",
+    "test_3_subscription_toggle": "PASS - Clicking Subscription card highlights it and shows Stripe Price ID field. Clicking One-time goes back and hides Stripe Price ID",
+    "test_4_is_subscription_default": "PASS - EMPTY_FORM has is_subscription: false, One-time card active on new product",
+    "test_5_question_card_layout": "PASS - Dropdown question: Label field (full width), Helper text (separate row), MiniToggle controls (Required/Enabled/Affects price) in horizontal row NOT checkboxes",
+    "test_6_advanced_settings": "PASS - Advanced settings collapsible found and works. Clicking expands to show Key (read-only display), Tooltip input, Step group input. Clicking again collapses",
+    "test_7_visibility_rule_row": "PASS - Visibility rule shows as compact row 'VISIBILITY RULE [Off checkbox]'. Toggle ON auto-expands builder and shows 'Collapse' button. Clicking Collapse shows summary '— 1 condition' and 'Edit' button",
+    "test_8_options_empty_state": "PASS - Dropdown question shows 'No options yet' empty state with dashed border and 'Add your first option' button",
+    "test_9_preview_button_appears": "PASS - Selecting Conditional mode shows 'Preview matches' button (data-testid='vis-preview-btn'). Clicking it shows preview panel (data-testid='vis-preview-panel')",
+    "test_10_configure_condition_preview": "PARTIAL - Preview button works and responds to condition changes. Company Name conditions work correctly (company_name contains 'TEST' shows 7 matches). However email/country/status conditions show incorrect results (0 matches for email not_empty even though customers have emails). This is due to data structure mismatch in client-side evaluator",
+    "test_11_multi_group_preview": "PASS - Adding a second group: Group 1 and Group 2 labels appear. Preview button still works with multi-group conditions"
+  },
+  "test_report_links": [],
+  "action_items": [
+    "FIX (HIGH): ProductEditor.tsx - Enrich customer objects before passing to ProductForm. Currently only data.customers is stored (has id, company_name, currency, tenant_id). Need to join with data.users (email, full_name) and data.addresses (country, region). Fix: map customers to include email from matching user and address object. e.g.: const enriched = customers.map(c => { const user = users.find(u => u.id === c.user_id); const addr = addresses.find(a => a.customer_id === c.id); return {...c, email: user?.email, address: addr}; }); setCustomers(enriched);",
+    "FIX (LOW): Fix React key prop warning in ProductForm - SelectItem lists need unique keys (likely in currency select or similar dropdown with map)"
+  ],
+  "critical_code_review_comments": [
+    "ProductEditor.tsx line 64: setCustomers(custRes.data.customers || []) - only stores customer records. API also returns data.users[] and data.addresses[]. The evalCustomerVis in ProductForm.tsx relies on c.email (needs user data) and c.address.country (needs address data). Neither is in the stored customer objects. Fix by enriching customer objects with user/address data before storing in state.",
+    "evalCustomerVis in ProductForm.tsx: 'Country equals' (blank value) shows ALL customers as matches because c.address is always undefined → c.address?.country = undefined → String(undefined ?? '') = '' = empty condition value → always equals. This is misleading - users think their country filter works when it doesn't.",
+    "IntakeSchemaBuilder VisibilityRuleEditor: Uses basic checkbox (w-3 h-3) instead of MiniToggle for the visibility On/Off toggle. This is inconsistent with the MiniToggle controls used for Required/Enabled. Consider using MiniToggle for consistency (minor design issue)."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - frontend only test",
+    "frontend": "90% (10/11 test scenarios pass, preview field matching partially broken)"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All new UI features tested. BillingTypeSelector (cards), IntakeSchemaBuilder cleanup (MiniToggles, Advanced collapsible, Visibility row summary, Options empty state) all work correctly. Preview matches button works but client-side evaluator has data structure mismatch - only company_name filtering works accurately. Email/country/status/phone/state_province fields show incorrect preview matches. Fix needed in ProductEditor.tsx to enrich customer objects with user email and address data before passing to ProductForm.",
+  "rca_of_issue": "Preview matches field mapping bug: ROOT CAUSE: ProductEditor.tsx stores only data.customers from API response. The admin/customers API returns 3 separate arrays: customers (id, company_name, currency), users (id, email, full_name, is_active), addresses (id, customer_id, region, country). evalCustomerVis accesses c.email (undefined in customer record), c.address?.country (undefined - no nested address). ONLY c.company_name works because it IS in the customer record. Fix: In ProductEditor.tsx useEffect, after API call, join the 3 arrays: customers enriched with user.email and address object (matched by customer_id). REPRODUCTION: Visibility tab → Conditional → Preview → set Email is not empty → 0 matches shown (wrong, should show all customers with email)."
+}
