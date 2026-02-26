@@ -129,7 +129,7 @@ export default function Cart() {
   // Payment settings
   const allowBankTransfer = ws.gocardless_enabled !== false;
   const allowCardPayment = ws.stripe_enabled !== false;
-  const stripeFeeRate = ws.stripe_fee_rate || 0.029;
+  const stripeFeeRate = ws.stripe_fee_rate || 0.05;
   const stripeFeePercent = Math.round(stripeFeeRate * 1000) / 10; // Convert to percentage for display
   const showFee = paymentMethod === "card";
   const currencyUnsupported = preview?.currency && !["USD", "CAD"].includes(preview.currency);
