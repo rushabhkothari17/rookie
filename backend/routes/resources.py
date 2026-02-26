@@ -305,6 +305,7 @@ async def create_article(
         "slug": slug,
         "category": payload.category,
         "price": payload.price if payload.category in SCOPE_FINAL_CATEGORIES else None,
+        "currency": payload.currency if payload.category in SCOPE_FINAL_CATEGORIES else None,
         "content": _sanitize_html(payload.content),
         "visibility": payload.visibility,
         "restricted_to": payload.restricted_to,
