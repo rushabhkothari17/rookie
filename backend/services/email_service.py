@@ -381,9 +381,10 @@ class EmailService:
         subject = _resolve_vars(template["subject"], all_vars)
         body = _resolve_vars(template["html_body"], all_vars)
 
-        # Resolve {{ref:key}} references
-        subject = await _resolve_refs(subject, db)
-        body = await _resolve_refs(body, db)
+        # Resolve {{ref:key}} references (tenant-scoped)
+        _tid = tenant_id or ""
+        subject = await _resolve_refs(subject, db, _tid)
+        body = await _resolve_refs(body, db, _tid)
 
         log_entry: Dict[str, Any] = {
             "id": make_id(),
