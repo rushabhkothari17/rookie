@@ -497,7 +497,7 @@ async def email_article(
                 "article_category": article.get("category", ""),
                 "resource_url": resource_url,
                 "article_message": payload.message or "",
-                "article_price": f"${article['price']}" if article.get("price") else "",
+                "article_price": f"{article.get('currency', 'USD')} {article['price']}" if article.get("price") else "",
                 "cta_text": cta_text,
                 "footer_text": footer_text,
                 "customer_name": "",
