@@ -1205,7 +1205,6 @@ async def bulk_sync_zoho_books(admin: Dict[str, Any] = Depends(get_tenant_admin)
         "customers": db.customers,
         "orders": db.orders,
         "subscriptions": db.subscriptions,
-        "quote_requests": db.quote_requests,
     }
     
     # Zoho Books module to API endpoint mapping
