@@ -330,7 +330,7 @@ async def create_article(
         source="admin_ui",
         after_json={"title": payload.title, "category": payload.category, "visibility": payload.visibility},
     )
-    await db.audit_logs.insert_one({"id": make_id(), "entity_type": "resource", "entity_id": resource_id, "action": "created", "actor": admin.get("email", "admin"), "details": {"title": payload.title, "category": payload.category}, "created_at": now_iso()})
+    await create_audit_log(entity_type="resource", entity_id=resource_id, action="created", actor=admin.get("email", "admin"), details={"title": payload.title, "category": payload.category})
     doc.pop("_id", None)
     return {"resource": doc}
 
