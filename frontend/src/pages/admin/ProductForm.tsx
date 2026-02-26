@@ -233,25 +233,51 @@ function PricingTypeSelector({ value, onChange }: { value: string; onChange: (v:
 // ── Product Conditional Visibility Builder ────────────────────────────────────
 
 const CUSTOMER_FIELDS = [
-  { key: "country",       label: "Country" },
-  { key: "company_name",  label: "Company Name" },
-  { key: "email",         label: "Email" },
-  { key: "status",        label: "Account Status" },
-  { key: "state_province",label: "State / Province" },
-  { key: "phone",         label: "Phone" },
+  { key: "country",        label: "Country" },
+  { key: "company_name",   label: "Company Name" },
+  { key: "email",          label: "Email" },
+  { key: "status",         label: "Account Status" },
+  { key: "state_province", label: "State / Province" },
+  { key: "phone",          label: "Phone" },
 ];
 
 const VIS_OPERATORS = [
-  { value: "equals",      label: "equals" },
-  { value: "not_equals",  label: "does not equal" },
-  { value: "contains",    label: "contains" },
-  { value: "not_contains",label: "does not contain" },
-  { value: "empty",       label: "is empty / null" },
-  { value: "not_empty",   label: "is not empty" },
+  { value: "equals",       label: "equals" },
+  { value: "not_equals",   label: "does not equal" },
+  { value: "contains",     label: "contains" },
+  { value: "not_contains", label: "does not contain" },
+  { value: "empty",        label: "is empty / null" },
+  { value: "not_empty",    label: "is not empty" },
 ];
 const VIS_NO_VALUE = new Set(["empty", "not_empty"]);
-const VIS_MAX = 4;
-const VIS_EMPTY_COND: ProductVisCondition = { field: "country", operator: "equals", value: "" };
+const VIS_MAX_CONDS = 4;
+const VIS_MAX_GROUPS = 3;
+const VIS_EMPTY_COND = (): ProductVisCondition => ({ field: "country", operator: "equals", value: "" });
+const VIS_DEFAULT_GROUP = (): ProductVisGroup => ({ logic: "AND", conditions: [VIS_EMPTY_COND()] });
+
+/** Normalise legacy flat or missing rule into the current grouped format */
+function normaliseVisRuleSet(v: ProductVisRuleSet | null | any): ProductVisRuleSet {
+  if (!v) return { top_logic: "AND", groups: [VIS_DEFAULT_GROUP()] };
+  if (v.groups && Array.isArray(v.groups)) return v as ProductVisRuleSet;
+  // Legacy flat: { logic, conditions }
+  if (v.conditions && Array.isArray(v.conditions))
+    return { top_logic: "AND", groups: [{ logic: v.logic || "AND", conditions: v.conditions }] };
+  return { top_logic: "AND", groups: [VIS_DEFAULT_GROUP()] };
+}
+
+function LogicBtnVis({ value, onChange, small }: { value: "AND" | "OR"; onChange: (v: "AND" | "OR") => void; small?: boolean }) {
+  const sz = small ? "px-1.5 py-0.5 text-[9px]" : "px-2 py-0.5 text-[10px]";
+  return (
+    <div className="flex rounded overflow-hidden border border-indigo-200">
+      {(["AND", "OR"] as const).map(l => (
+        <button key={l} type="button" onClick={() => onChange(l)}
+          className={`${sz} font-bold transition-colors ${value === l ? "bg-indigo-600 text-white" : "bg-white text-indigo-600 hover:bg-indigo-50"}`}>
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function ProductConditionBuilder({
   value,
@@ -260,86 +286,134 @@ function ProductConditionBuilder({
   value: ProductVisRuleSet | null;
   onChange: (v: ProductVisRuleSet | null) => void;
 }) {
-  const ruleSet: ProductVisRuleSet = value ?? { logic: "AND", conditions: [{ ...VIS_EMPTY_COND }] };
+  const ruleSet = normaliseVisRuleSet(value);
 
-  const updateLogic = (logic: "AND" | "OR") => onChange({ ...ruleSet, logic });
-  const updateCond = (i: number, patch: Partial<ProductVisCondition>) => {
-    const conds = ruleSet.conditions.map((c, idx) => idx === i ? { ...c, ...patch } : c);
-    onChange({ ...ruleSet, conditions: conds });
+  const setTopLogic = (tl: "AND" | "OR") => onChange({ ...ruleSet, top_logic: tl });
+  const setGroupLogic = (gi: number, logic: "AND" | "OR") =>
+    onChange({ ...ruleSet, groups: ruleSet.groups.map((g, i) => i === gi ? { ...g, logic } : g) });
+
+  const setCond = (gi: number, ci: number, patch: Partial<ProductVisCondition>) =>
+    onChange({
+      ...ruleSet,
+      groups: ruleSet.groups.map((g, i) => i !== gi ? g : {
+        ...g, conditions: g.conditions.map((c, j) => j !== ci ? c : { ...c, ...patch }),
+      }),
+    });
+
+  const addCond = (gi: number) => {
+    if (ruleSet.groups[gi].conditions.length >= VIS_MAX_CONDS) return;
+    onChange({
+      ...ruleSet,
+      groups: ruleSet.groups.map((grp, i) => i !== gi ? grp : { ...grp, conditions: [...grp.conditions, VIS_EMPTY_COND()] }),
+    });
   };
-  const addCond = () => {
-    if (ruleSet.conditions.length >= VIS_MAX) return;
-    onChange({ ...ruleSet, conditions: [...ruleSet.conditions, { ...VIS_EMPTY_COND }] });
+
+  const removeCond = (gi: number, ci: number) => {
+    const newGroups = ruleSet.groups
+      .map((g, i) => i !== gi ? g : { ...g, conditions: g.conditions.filter((_, j) => j !== ci) })
+      .filter(g => g.conditions.length > 0);
+    onChange(newGroups.length ? { ...ruleSet, groups: newGroups } : null);
   };
-  const removeCond = (i: number) => {
-    const conds = ruleSet.conditions.filter((_, idx) => idx !== i);
-    onChange(conds.length ? { ...ruleSet, conditions: conds } : null);
+
+  const addGroup = () => {
+    if (ruleSet.groups.length >= VIS_MAX_GROUPS) return;
+    onChange({ ...ruleSet, groups: [...ruleSet.groups, VIS_DEFAULT_GROUP()] });
+  };
+
+  const removeGroup = (gi: number) => {
+    const newGroups = ruleSet.groups.filter((_, i) => i !== gi);
+    onChange(newGroups.length ? { ...ruleSet, groups: newGroups } : null);
   };
 
   return (
     <div className="bg-indigo-50/60 border border-indigo-100 rounded-lg p-4 space-y-3 mt-3">
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold text-indigo-700 uppercase tracking-wide">Show product when customer matches</p>
-        {ruleSet.conditions.length > 1 && (
-          <div className="flex rounded-md overflow-hidden border border-indigo-200 text-[10px] font-semibold">
-            {(["AND", "OR"] as const).map(l => (
-              <button key={l} type="button" onClick={() => updateLogic(l)}
-                className={`px-2.5 py-1 transition-colors ${ruleSet.logic === l ? "bg-indigo-600 text-white" : "bg-white text-indigo-600 hover:bg-indigo-50"}`}>
-                {l}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <p className="text-[11px] font-semibold text-indigo-700 uppercase tracking-wide">Show product when customer matches</p>
 
-      {ruleSet.conditions.map((cond, i) => (
-        <div key={i} className="space-y-2">
-          {i > 0 && (
-            <div className="flex items-center gap-2 my-1">
-              <div className="flex-1 border-t border-indigo-100" />
-              <span className="text-[10px] font-bold text-indigo-400">{ruleSet.logic}</span>
-              <div className="flex-1 border-t border-indigo-100" />
+      {ruleSet.groups.map((group, gi) => (
+        <div key={gi}>
+          {gi > 0 && (
+            <div className="flex items-center gap-2 my-2">
+              <div className="flex-1 border-t border-dashed border-indigo-200" />
+              <LogicBtnVis value={ruleSet.top_logic} onChange={setTopLogic} />
+              <div className="flex-1 border-t border-dashed border-indigo-200" />
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Customer field</label>
-              <Select value={cond.field} onValueChange={v => updateCond(i, { field: v })}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CUSTOMER_FIELDS.map(f => <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Operator</label>
-              <div className="flex gap-1">
-                <Select value={cond.operator} onValueChange={v => updateCond(i, { operator: v, value: VIS_NO_VALUE.has(v) ? "" : cond.value })}>
-                  <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>{VIS_OPERATORS.map(op => <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>)}</SelectContent>
-                </Select>
-                {ruleSet.conditions.length > 1 && (
-                  <button type="button" onClick={() => removeCond(i)} className="text-slate-300 hover:text-red-400 transition-colors">
-                    <X size={13} />
+
+          <div className="bg-white border border-indigo-100 rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide">
+                {ruleSet.groups.length > 1 ? `Group ${gi + 1}` : "Conditions"}
+              </span>
+              <div className="flex items-center gap-2">
+                {group.conditions.length > 1 && (
+                  <LogicBtnVis value={group.logic} onChange={l => setGroupLogic(gi, l)} small />
+                )}
+                {ruleSet.groups.length > 1 && (
+                  <button type="button" onClick={() => removeGroup(gi)} className="text-slate-300 hover:text-red-400 transition-colors ml-1">
+                    <X size={12} />
                   </button>
                 )}
               </div>
             </div>
+
+            {group.conditions.map((cond, ci) => (
+              <div key={ci} className="space-y-1.5">
+                {ci > 0 && (
+                  <div className="flex items-center gap-2 my-1">
+                    <div className="flex-1 border-t border-indigo-100" />
+                    <span className="text-[9px] font-bold text-indigo-400">{group.logic}</span>
+                    <div className="flex-1 border-t border-indigo-100" />
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-500 block mb-1">Customer field</label>
+                    <Select value={cond.field} onValueChange={v => setCond(gi, ci, { field: v })}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CUSTOMER_FIELDS.map(f => <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-500 block mb-1">Operator</label>
+                    <div className="flex gap-1">
+                      <Select value={cond.operator} onValueChange={v => setCond(gi, ci, { operator: v, value: VIS_NO_VALUE.has(v) ? "" : cond.value })}>
+                        <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>{VIS_OPERATORS.map(op => <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                      {(group.conditions.length > 1 || ruleSet.groups.length > 1) && (
+                        <button type="button" onClick={() => removeCond(gi, ci)} className="text-slate-300 hover:text-red-400 transition-colors">
+                          <X size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {!VIS_NO_VALUE.has(cond.operator) && (
+                  <div>
+                    <label className="text-[10px] text-slate-500 block mb-1">Value</label>
+                    <Input value={cond.value || ""} onChange={e => setCond(gi, ci, { value: e.target.value })}
+                      placeholder="e.g. United Kingdom, Ltd, active" className="h-8 text-xs" />
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {group.conditions.length < VIS_MAX_CONDS && (
+              <button type="button" onClick={() => addCond(gi)}
+                className="flex items-center gap-1 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium transition-colors mt-1">
+                <Plus size={11} /> Add condition
+              </button>
+            )}
           </div>
-          {!VIS_NO_VALUE.has(cond.operator) && (
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Value</label>
-              <Input value={cond.value || ""} onChange={e => updateCond(i, { value: e.target.value })}
-                placeholder="e.g. United Kingdom, Ltd, active" className="h-8 text-xs" />
-            </div>
-          )}
         </div>
       ))}
 
-      {ruleSet.conditions.length < VIS_MAX && (
-        <button type="button" onClick={addCond}
-          className="flex items-center gap-1 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium transition-colors">
-          <Plus size={11} /> Add condition
+      {ruleSet.groups.length < VIS_MAX_GROUPS && (
+        <button type="button" onClick={addGroup}
+          className="flex items-center gap-1.5 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium transition-colors border border-dashed border-indigo-200 rounded-md px-2.5 py-1.5 w-full justify-center hover:bg-indigo-50/50">
+          <Plus size={11} /> Add group
         </button>
       )}
       <p className="text-[10px] text-slate-400 italic">Admins always see all products regardless of conditions.</p>
