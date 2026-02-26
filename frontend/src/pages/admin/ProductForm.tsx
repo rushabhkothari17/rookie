@@ -387,17 +387,15 @@ export function ProductForm({
           {(form.pricing_type === "internal" || !form.pricing_type) && (
             <div>
               <label className={labelCls}>Currency <span className="text-red-500">*</span></label>
-              <select
-                value={form.currency || "USD"}
-                onChange={e => s("currency")(e.target.value)}
-                className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
-                required
-                data-testid="pf-currency"
-              >
-                {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+              <Select value={form.currency || "USD"} onValueChange={v => s("currency")(v)}>
+                <SelectTrigger data-testid="pf-currency"><SelectValue placeholder="Select currency" /></SelectTrigger>
+                <SelectContent>
+                  {["USD — US Dollar", "CAD — Canadian Dollar", "EUR — Euro", "AUD — Australian Dollar", "GBP — British Pound", "INR — Indian Rupee", "MXN — Mexican Peso"].map(opt => {
+                    const code = opt.split(" — ")[0];
+                    return <SelectItem key={code} value={code}>{opt}</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -419,18 +417,29 @@ export function ProductForm({
                     <p className="text-[11px] text-slate-400 mt-1">Leave 0 for free or intake-only pricing</p>
                   </div>
                   <div>
+                    <label className={labelCls}>Currency</label>
+                    <Select value={form.currency || "USD"} onValueChange={v => s("currency")(v)}>
+                      <SelectTrigger data-testid="pf-currency-inline"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
                     <label className={labelCls}>Price rounding</label>
                     <Select value={form.price_rounding || "none"} onValueChange={v => s("price_rounding")(v === "none" ? "" : v)}>
                       <SelectTrigger data-testid="pf-price-rounding"><SelectValue placeholder="No rounding" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">No rounding</SelectItem>
-                        <SelectItem value="25">Round to nearest £25</SelectItem>
-                        <SelectItem value="50">Round to nearest £50</SelectItem>
-                        <SelectItem value="100">Round to nearest £100</SelectItem>
+                        <SelectItem value="25">Round to nearest 25</SelectItem>
+                        <SelectItem value="50">Round to nearest 50</SelectItem>
+                        <SelectItem value="100">Round to nearest 100</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
+                  <div />
               </div>
 
               <div className="rounded-lg border border-slate-200 bg-white p-4">
