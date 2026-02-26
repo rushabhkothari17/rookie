@@ -224,10 +224,7 @@ export default function Profile() {
             />
           </div>
         </div>
-        <div className="mt-6 flex items-center justify-between">
-          <div className="text-xs text-slate-500" data-testid="profile-currency-note">
-            Preferred currency: {customer?.currency || ""}
-          </div>
+        <div className="mt-6 flex items-center justify-end">
           <Button
             type="submit"
             className="rounded-full bg-slate-900 text-white hover:bg-slate-800"
