@@ -516,34 +516,55 @@ export default function Cart() {
             )}
 
             {/* Payment Method */}
-            {(allowBankTransfer || allowCardPayment) && !isFreeCheckout && (
+            {!isFreeCheckout && (grouped.oneTime.length > 0 || grouped.subscriptions.length > 0) && (
               <div className="rounded-2xl border border-slate-200 bg-white p-5" data-testid="cart-payment-method">
                 <h3 className="font-semibold text-slate-900 mb-4">Payment Method</h3>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {allowBankTransfer && (
-                    <button type="button" onClick={() => setPaymentMethod("bank_transfer")} className={`flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${paymentMethod === "bank_transfer" ? "border-slate-900 bg-slate-50" : "border-slate-200 hover:border-slate-300"}`} data-testid="payment-bank-option">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === "bank_transfer" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
-                        <Building2 size={20} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">{ws.payment_gocardless_label || "Bank Transfer"}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">No processing fee</p>
-                      </div>
-                      {paymentMethod === "bank_transfer" && <Check size={20} className="text-slate-900" />}
-                    </button>
-                  )}
-                  {allowCardPayment && (
-                    <button type="button" onClick={() => setPaymentMethod("card")} className={`flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${paymentMethod === "card" ? "border-slate-900 bg-slate-50" : "border-slate-200 hover:border-slate-300"}`} data-testid="payment-card-option">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === "card" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
-                        <CreditCard size={20} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">{ws.payment_stripe_label || "Credit Card"}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{stripeFeePercent}% processing fee</p>
-                      </div>
-                      {paymentMethod === "card" && <Check size={20} className="text-slate-900" />}
-                    </button>
-                  )}
+                  {/* Bank Transfer / GoCardless */}
+                  <button
+                    type="button"
+                    onClick={() => allowBankTransfer && setPaymentMethod("bank_transfer")}
+                    disabled={!allowBankTransfer}
+                    className={`flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all
+                      ${!allowBankTransfer ? "opacity-40 cursor-not-allowed border-slate-200" : paymentMethod === "bank_transfer" ? "border-slate-900 bg-slate-50" : "border-slate-200 hover:border-slate-300"}`}
+                    data-testid="payment-bank-option"
+                    title={!allowBankTransfer ? "Bank transfer is not configured for this partner" : ""}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                      ${!allowBankTransfer ? "bg-slate-100 text-slate-400" : paymentMethod === "bank_transfer" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      <Building2 size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-slate-900">{ws.payment_gocardless_label || "Bank Transfer"}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {!allowBankTransfer ? "Not available" : "No processing fee"}
+                      </p>
+                    </div>
+                    {allowBankTransfer && paymentMethod === "bank_transfer" && <Check size={20} className="text-slate-900" />}
+                  </button>
+
+                  {/* Card / Stripe */}
+                  <button
+                    type="button"
+                    onClick={() => allowCardPayment && setPaymentMethod("card")}
+                    disabled={!allowCardPayment}
+                    className={`flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all
+                      ${!allowCardPayment ? "opacity-40 cursor-not-allowed border-slate-200" : paymentMethod === "card" ? "border-slate-900 bg-slate-50" : "border-slate-200 hover:border-slate-300"}`}
+                    data-testid="payment-card-option"
+                    title={!allowCardPayment ? "Card payment is not configured for this partner" : ""}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                      ${!allowCardPayment ? "bg-slate-100 text-slate-400" : paymentMethod === "card" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      <CreditCard size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-slate-900">{ws.payment_stripe_label || "Credit Card"}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {!allowCardPayment ? "Not available" : `${stripeFeePercent}% processing fee`}
+                      </p>
+                    </div>
+                    {allowCardPayment && paymentMethod === "card" && <Check size={20} className="text-slate-900" />}
+                  </button>
                 </div>
               </div>
             )}
