@@ -161,7 +161,7 @@ export default function Cart() {
     try {
       const productIds = items.map((i: any) => i.productId || i.product_id || i.id).filter(Boolean);
       const checkoutType = items.some((i: any) => i.is_subscription || i.pricing?.is_subscription) ? "subscription" : "one_time";
-      const r = await api.post("/promo/validate", { code: promoCode.trim(), checkout_type: checkoutType, product_ids: productIds });
+      const r = await api.post("/promo-codes/validate", { code: promoCode.trim(), checkout_type: checkoutType, product_ids: productIds });
       setPromoApplied(r.data.promo || r.data);
       setPromoCode("");
       toast.success("Promo code applied!");
