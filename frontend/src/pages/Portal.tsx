@@ -68,6 +68,144 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+// ── Renewal History Component ────────────────────────────────────────────────
+function RenewalHistory({ orders, subscriptions, navigate }: { orders: any[]; subscriptions: any[]; navigate: (path: string) => void }) {
+  const renewals = orders.filter(o => o.type === "subscription_renewal");
+  const [expandedSubs, setExpandedSubs] = useState<Record<string, boolean>>({});
+
+  const grouped = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    renewals.forEach(r => {
+      const sid = r.subscription_id || "unknown";
+      if (!map[sid]) map[sid] = [];
+      map[sid].push(r);
+    });
+    // Sort renewals within each group by date desc
+    Object.values(map).forEach(arr => arr.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")));
+    return map;
+  }, [renewals]);
+
+  const subIds = Object.keys(grouped);
+
+  if (subIds.length === 0) {
+    return (
+      <section className="space-y-3" data-testid="portal-renewal-history">
+        <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+          <History size={16} className="text-slate-400" /> Renewal History
+          <span className="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">0</span>
+        </h2>
+        <div className="rounded-xl border border-slate-100 bg-slate-50 py-10 text-center text-sm text-slate-400" data-testid="portal-renewal-history-empty">
+          No renewal payments yet.
+        </div>
+      </section>
+    );
+  }
+
+  const toggle = (sid: string) => setExpandedSubs(prev => ({ ...prev, [sid]: !prev[sid] }));
+
+  return (
+    <section className="space-y-3" data-testid="portal-renewal-history">
+      <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+        <History size={16} className="text-slate-400" /> Renewal History
+        <span className="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{renewals.length}</span>
+      </h2>
+
+      <div className="space-y-3">
+        {subIds.map(sid => {
+          const subRenewals = grouped[sid];
+          const sub = subscriptions.find(s => s.id === sid);
+          const planName = sub?.plan_name || "Subscription";
+          const subNumber = sub?.subscription_number || sid.slice(0, 8);
+          const isExpanded = expandedSubs[sid] !== false; // default open
+          const totalPaid = subRenewals.filter(r => r.status === "paid").reduce((s: number, r: any) => s + (r.total || 0), 0);
+          const currency = subRenewals[0]?.currency || "";
+
+          return (
+            <div key={sid} className="rounded-xl border border-slate-200 bg-white overflow-hidden" data-testid={`renewal-history-sub-${sid}`}>
+              {/* Header row */}
+              <button
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50/50 transition-colors"
+                onClick={() => toggle(sid)}
+                data-testid={`renewal-history-toggle-${sid}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                    <RefreshCw size={14} className="text-slate-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-900 text-sm">{planName}</p>
+                    <p className="text-xs text-slate-400 font-mono">{subNumber}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right hidden sm:block">
+                    <p className="text-xs text-slate-400">Total paid</p>
+                    <p className="text-sm font-semibold text-slate-700">{currency} {totalPaid.toFixed(2)}</p>
+                  </div>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{subRenewals.length} renewal{subRenewals.length !== 1 ? "s" : ""}</span>
+                  {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                </div>
+              </button>
+
+              {/* Renewals table */}
+              {isExpanded && (
+                <div className="border-t border-slate-100 overflow-x-auto">
+                  <Table data-testid={`renewal-history-table-${sid}`}>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50">
+                        <TableHead className="text-xs">Order #</TableHead>
+                        <TableHead className="text-xs">Date</TableHead>
+                        <TableHead className="text-xs">Subtotal</TableHead>
+                        <TableHead className="text-xs">Tax</TableHead>
+                        <TableHead className="text-xs">Total</TableHead>
+                        <TableHead className="text-xs">Method</TableHead>
+                        <TableHead className="text-xs">Status</TableHead>
+                        <TableHead className="text-xs"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {subRenewals.map(renewal => (
+                        <TableRow key={renewal.id} className="hover:bg-slate-50/50" data-testid={`renewal-row-${renewal.id}`}>
+                          <TableCell className="font-mono text-xs font-medium" data-testid={`renewal-order-number-${renewal.id}`}>{renewal.order_number || "—"}</TableCell>
+                          <TableCell className="text-xs text-slate-500" data-testid={`renewal-date-${renewal.id}`}>{renewal.payment_date?.slice(0, 10) || renewal.created_at?.slice(0, 10) || "—"}</TableCell>
+                          <TableCell className="text-xs" data-testid={`renewal-subtotal-${renewal.id}`}>{currency} {(renewal.subtotal || 0).toFixed(2)}</TableCell>
+                          <TableCell className="text-xs text-slate-500" data-testid={`renewal-tax-${renewal.id}`}>
+                            {(renewal.tax_amount || 0) > 0 ? `${currency} ${renewal.tax_amount.toFixed(2)}` : "—"}
+                          </TableCell>
+                          <TableCell className="text-xs font-semibold" data-testid={`renewal-total-${renewal.id}`}>{currency} {(renewal.total || 0).toFixed(2)}</TableCell>
+                          <TableCell className="text-xs" data-testid={`renewal-method-${renewal.id}`}>
+                            {renewal.payment_method === "bank_transfer" ? "Bank Transfer" : renewal.payment_method === "card" ? "Card" : renewal.payment_method || "—"}
+                          </TableCell>
+                          <TableCell data-testid={`renewal-status-${renewal.id}`}>
+                            <StatusBadge status={renewal.status} />
+                          </TableCell>
+                          <TableCell>
+                            {renewal.status === "paid" && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-xs text-slate-500 hover:text-slate-900"
+                                onClick={() => navigate(`/invoice/${renewal.id}`)}
+                                data-testid={`renewal-invoice-btn-${renewal.id}`}
+                              >
+                                <FileText size={12} className="mr-1" />Invoice
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function Paginator({ page, total, perPage, onChange }: { page: number; total: number; perPage: number; onChange: (p: number) => void }) {
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   if (totalPages <= 1) return null;
