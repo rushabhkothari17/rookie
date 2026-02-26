@@ -186,3 +186,139 @@ async def set_customer_tax_exempt(
         {"$set": {"tax_exempt": tax_exempt}},
     )
     return {"message": "Customer tax-exempt status updated", "tax_exempt": tax_exempt}
+
+
+# ── Invoice Settings ─────────────────────────────────────────────────────────
+
+@router.get("/admin/taxes/invoice-settings")
+async def get_invoice_settings(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tid = tenant_id_of(admin)
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "tax_settings": 1})
+    ts = (tenant or {}).get("tax_settings") or {}
+    return {"invoice_settings": ts.get("invoice_settings") or {
+        "prefix": "INV",
+        "payment_terms": "Due on receipt",
+        "footer_notes": "",
+        "show_terms": True,
+        "template": "classic",
+    }}
+
+
+@router.put("/admin/taxes/invoice-settings")
+async def update_invoice_settings(
+    payload: Dict[str, Any],
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tid = tenant_id_of(admin)
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "tax_settings": 1})
+    ts = (tenant or {}).get("tax_settings") or {}
+    existing_inv = ts.get("invoice_settings") or {}
+    merged = {**existing_inv, **payload}
+    ts["invoice_settings"] = merged
+    await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": ts}})
+    return {"message": "Invoice settings updated", "invoice_settings": merged}
+
+
+# ── Invoice data endpoint (used by InvoiceViewer) ─────────────────────────────
+
+@router.get("/orders/{order_id}/invoice")
+async def get_invoice_data(
+    order_id: str,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Returns all data needed to render an invoice. Accessible by customer (own orders) or admin."""
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Auth check: customer can only see their own orders
+    if user.get("role") == "customer":
+        customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
+        if not customer or order.get("customer_id") != customer.get("id"):
+            raise HTTPException(status_code=403, detail="Access denied")
+        tenant_id = order.get("tenant_id") or customer.get("tenant_id")
+    else:
+        tenant_id = order.get("tenant_id") or user.get("tenant_id")
+
+    # Customer details
+    customer = await db.customers.find_one({"id": order.get("customer_id")}, {"_id": 0})
+    customer_user = {}
+    if customer:
+        customer_user = await db.users.find_one({"id": customer.get("user_id")}, {"_id": 0, "password_hash": 0}) or {}
+    address = await db.addresses.find_one({"customer_id": order.get("customer_id")}, {"_id": 0}) or {}
+
+    # Partner / tenant details
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0}) or {}
+    ts = tenant.get("tax_settings") or {}
+    invoice_settings = ts.get("invoice_settings") or {
+        "prefix": "INV", "payment_terms": "Due on receipt",
+        "footer_notes": "", "show_terms": True, "template": "classic",
+    }
+
+    # Order items
+    items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(50)
+
+    # Build invoice number
+    prefix = invoice_settings.get("prefix", "INV")
+    inv_number = f"{prefix}-{order.get('order_number', order_id[:8])}" if prefix else order.get("order_number", order_id[:8])
+
+    return {
+        "invoice_number": inv_number,
+        "order": order,
+        "customer": {
+            "full_name": customer_user.get("full_name", ""),
+            "email": customer_user.get("email", ""),
+            "company_name": customer_user.get("company_name", ""),
+            "phone": customer_user.get("phone", ""),
+        },
+        "address": address,
+        "partner": {
+            "name": tenant.get("name", ""),
+            "code": tenant.get("code", ""),
+            "address": tenant.get("address") or {},
+        },
+        "invoice_settings": invoice_settings,
+        "items": items,
+    }
+
+
+# ── Tax Summary ───────────────────────────────────────────────────────────────
+
+@router.get("/admin/taxes/summary")
+async def get_tax_summary(
+    months: int = 12,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Aggregate tax collected by month and tax type."""
+    from core.tenant import get_tenant_filter
+    tf = get_tenant_filter(admin)
+    query = {**tf, "tax_amount": {"$gt": 0}}
+
+    pipeline = [
+        {"$match": query},
+        {"$group": {
+            "_id": {
+                "month": {"$substr": ["$created_at", 0, 7]},
+                "tax_name": "$tax_name",
+                "currency": "$currency",
+            },
+            "total_tax": {"$sum": "$tax_amount"},
+            "total_revenue": {"$sum": "$total"},
+            "order_count": {"$sum": 1},
+        }},
+        {"$sort": {"_id.month": -1, "_id.tax_name": 1}},
+        {"$limit": months * 10},
+    ]
+
+    results = await db.orders.aggregate(pipeline).to_list(500)
+    rows = []
+    for r in results:
+        rows.append({
+            "month": r["_id"]["month"],
+            "tax_name": r["_id"]["tax_name"] or "Tax",
+            "currency": r["_id"]["currency"] or "USD",
+            "total_tax": round(r["total_tax"], 2),
+            "total_revenue": round(r["total_revenue"], 2),
+            "order_count": r["order_count"],
+        })
+    return {"summary": rows}
