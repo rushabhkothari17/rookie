@@ -3,10 +3,11 @@ Iteration 121 — Quote Requests Cleanup & Cart Validation
 Tests:
 1. integrations.py: webapp_modules has NO quote_requests
 2. imports.py: POST /api/admin/import/quote-requests returns 400 (not in ENTITY_COLLECTIONS)
-3. imports.py: quote-requests template download should still work (TEMPLATES still has it — artifact)
-4. gdpr_service & oauth.py: verified via code; no quote_requests in collection_map
+3. imports.py: POST /api/admin/import/override-codes returns 400 (removed from ENTITY_COLLECTIONS)
+4. Valid entities still work
 """
 
+import io
 import pytest
 import requests
 import os
@@ -24,11 +25,15 @@ def get_base_url():
 
 
 @pytest.fixture(scope="module")
-def admin_token():
+def base_url():
+    return get_base_url()
+
+
+@pytest.fixture(scope="module")
+def admin_token(base_url):
     """Login as tenant admin and return JWT token."""
-    BASE_URL = get_base_url()
     resp = requests.post(
-        f"{BASE_URL}/api/auth/login",
+        f"{base_url}/api/auth/login",
         json={
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD,
@@ -41,6 +46,7 @@ def admin_token():
     token = data.get("access_token") or data.get("token")
     if not token:
         pytest.skip("No token in login response")
+    print(f"Logged in as admin, token starts with: {token[:20]}...")
     return token
 
 
@@ -54,19 +60,19 @@ def admin_headers(admin_token):
 class TestCRMMappingsNoQuoteRequests:
     """integrations.py — webapp_modules cleanup"""
 
-    def test_crm_mappings_returns_200(self, admin_headers):
+    def test_crm_mappings_returns_200(self, base_url, admin_headers):
         """GET /api/admin/integrations/crm-mappings should return 200."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/integrations/crm-mappings",
+            f"{base_url}/api/admin/integrations/crm-mappings",
             headers=admin_headers,
         )
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         print("PASS: /api/admin/integrations/crm-mappings returns 200")
 
-    def test_webapp_modules_structure(self, admin_headers):
+    def test_webapp_modules_structure(self, base_url, admin_headers):
         """Response must include webapp_modules key with a list."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/integrations/crm-mappings",
+            f"{base_url}/api/admin/integrations/crm-mappings",
             headers=admin_headers,
         )
         data = resp.json()
@@ -74,10 +80,10 @@ class TestCRMMappingsNoQuoteRequests:
         assert isinstance(data["webapp_modules"], list), "webapp_modules should be a list"
         print(f"PASS: webapp_modules is a list with {len(data['webapp_modules'])} entries")
 
-    def test_webapp_modules_no_quote_requests(self, admin_headers):
+    def test_webapp_modules_no_quote_requests(self, base_url, admin_headers):
         """webapp_modules must NOT contain quote_requests entry."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/integrations/crm-mappings",
+            f"{base_url}/api/admin/integrations/crm-mappings",
             headers=admin_headers,
         )
         data = resp.json()
@@ -87,10 +93,10 @@ class TestCRMMappingsNoQuoteRequests:
         )
         print(f"PASS: quote_requests NOT in webapp_modules. Modules: {module_names}")
 
-    def test_webapp_modules_contains_expected_modules(self, admin_headers):
+    def test_webapp_modules_contains_expected_modules(self, base_url, admin_headers):
         """webapp_modules should still have customers, orders, subscriptions."""
         resp = requests.get(
-            f"{BASE_URL}/api/admin/integrations/crm-mappings",
+            f"{base_url}/api/admin/integrations/crm-mappings",
             headers=admin_headers,
         )
         data = resp.json()
@@ -105,15 +111,13 @@ class TestCRMMappingsNoQuoteRequests:
 class TestImportsQuoteRequestsRemoved:
     """imports.py — quote-requests removed from ENTITY_COLLECTIONS"""
 
-    def test_import_quote_requests_returns_400(self, admin_headers):
+    def test_import_quote_requests_returns_400(self, base_url, admin_headers):
         """POST /api/admin/import/quote-requests should return 400 (unknown entity)."""
-        import io
-        # Send a minimal CSV file
         csv_content = b"email,full_name\nlead@example.com,Test Lead\n"
         files = {"file": ("test.csv", io.BytesIO(csv_content), "text/csv")}
         headers_no_ct = {k: v for k, v in admin_headers.items() if k != "Content-Type"}
         resp = requests.post(
-            f"{BASE_URL}/api/admin/import/quote-requests",
+            f"{base_url}/api/admin/import/quote-requests",
             headers=headers_no_ct,
             files=files,
         )
@@ -122,32 +126,29 @@ class TestImportsQuoteRequestsRemoved:
         )
         print(f"PASS: POST /api/admin/import/quote-requests returns {resp.status_code}")
 
-    def test_import_quote_requests_error_message(self, admin_headers):
+    def test_import_quote_requests_error_message(self, base_url, admin_headers):
         """Error response should mention 'Unknown entity' or similar."""
-        import io
         csv_content = b"email,full_name\nlead@example.com,Test Lead\n"
         files = {"file": ("test.csv", io.BytesIO(csv_content), "text/csv")}
         headers_no_ct = {k: v for k, v in admin_headers.items() if k != "Content-Type"}
         resp = requests.post(
-            f"{BASE_URL}/api/admin/import/quote-requests",
+            f"{base_url}/api/admin/import/quote-requests",
             headers=headers_no_ct,
             files=files,
         )
         body = resp.text.lower()
-        # Should contain either "unknown" or "valid" in error message
         assert any(kw in body for kw in ["unknown", "valid", "not found", "invalid"]), (
             f"Expected error message about unknown entity, got: {resp.text}"
         )
-        print(f"PASS: Error message mentions unknown entity: {resp.text[:200]}")
+        print(f"PASS: Error message about unknown entity: {resp.text[:200]}")
 
-    def test_import_override_codes_returns_400(self, admin_headers):
+    def test_import_override_codes_returns_400(self, base_url, admin_headers):
         """POST /api/admin/import/override-codes should return 400 (removed from ENTITY_COLLECTIONS)."""
-        import io
         csv_content = b"code,type,value\nOVERRIDE123,discount,50\n"
         files = {"file": ("test.csv", io.BytesIO(csv_content), "text/csv")}
         headers_no_ct = {k: v for k, v in admin_headers.items() if k != "Content-Type"}
         resp = requests.post(
-            f"{BASE_URL}/api/admin/import/override-codes",
+            f"{base_url}/api/admin/import/override-codes",
             headers=headers_no_ct,
             files=files,
         )
@@ -156,18 +157,16 @@ class TestImportsQuoteRequestsRemoved:
         )
         print(f"PASS: POST /api/admin/import/override-codes returns {resp.status_code}")
 
-    def test_import_valid_entity_still_works(self, admin_headers):
-        """POST /api/admin/import/categories with valid CSV should NOT return 400 for unknown entity."""
-        import io
+    def test_import_valid_entity_still_works(self, base_url, admin_headers):
+        """POST /api/admin/import/categories with valid CSV should work (not unknown entity)."""
         csv_content = b"name,description,is_active,display_order\nTEST_Iter121_Category,Test Category for iter121,true,99\n"
         files = {"file": ("test.csv", io.BytesIO(csv_content), "text/csv")}
         headers_no_ct = {k: v for k, v in admin_headers.items() if k != "Content-Type"}
         resp = requests.post(
-            f"{BASE_URL}/api/admin/import/categories",
+            f"{base_url}/api/admin/import/categories",
             headers=headers_no_ct,
             files=files,
         )
-        # Should be 200 (valid entity), not 400 for unknown entity
         assert resp.status_code == 200, (
             f"Expected 200 for valid entity 'categories', got {resp.status_code}: {resp.text}"
         )
@@ -182,22 +181,21 @@ class TestEntityCollectionsIntegrity:
     """Verify imports endpoint rejects removed entities while accepting valid ones."""
 
     @pytest.mark.parametrize("entity", ["customers", "orders", "subscriptions", "articles", "catalog"])
-    def test_valid_entities_recognized(self, admin_headers, entity):
-        """Valid entities should NOT get 'Unknown entity' error (may fail for other reasons like empty CSV)."""
-        import io
-        # Send valid CSV headers for the entity (minimal)
-        minimal_csv = b"id,name\n"  # Just headers, no rows
+    def test_valid_entities_recognized(self, base_url, admin_headers, entity):
+        """Valid entities should NOT get 'Unknown entity' 400 error."""
+        # Minimal CSV with just headers, no rows
+        minimal_csv = b"id,name\n"
         files = {"file": ("test.csv", io.BytesIO(minimal_csv), "text/csv")}
         headers_no_ct = {k: v for k, v in admin_headers.items() if k != "Content-Type"}
         resp = requests.post(
-            f"{BASE_URL}/api/admin/import/{entity}",
+            f"{base_url}/api/admin/import/{entity}",
             headers=headers_no_ct,
             files=files,
         )
-        # Should not be 400 with "Unknown entity" — can be 200 (empty result) or other validation errors
+        # Should not be 400 with "Unknown entity"
         if resp.status_code == 400:
             body = resp.text.lower()
             assert "unknown entity" not in body, (
                 f"Entity '{entity}' incorrectly rejected as unknown: {resp.text}"
             )
-        print(f"PASS: Entity '{entity}' is recognized (status={resp.status_code})")
+        print(f"PASS: Entity '{entity}' recognized (status={resp.status_code})")
