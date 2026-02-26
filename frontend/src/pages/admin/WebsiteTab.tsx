@@ -559,6 +559,7 @@ function getAuthSlideTitle(key: AuthSlide | null): string {
     checkout_messages: "Checkout Messages",
     footer_basics: "Footer Text", footer_about: "About Us Section",
     footer_nav: "Navigation", footer_contact: "Contact Info", footer_social: "Social Media",
+    documents_page: "Documents Page",
   };
   return key ? map[key] : "";
 }
