@@ -545,7 +545,7 @@ function getAuthSlideTitle(key: AuthSlide | null): string {
     not_found: "404 Not Found Page", admin_panel: "Admin Panel",
     checkout_builder: "Checkout Page Builder", checkout_success: "Checkout Success",
     gocardless_callback: "GoCardless Callback Page",
-    checkout_messages: "Checkout Messages", form_messages: "Form Response Messages",
+    checkout_messages: "Checkout Messages",
     footer_basics: "Footer Text", footer_about: "About Us Section",
     footer_nav: "Navigation", footer_contact: "Contact Info", footer_social: "Social Media",
   };
