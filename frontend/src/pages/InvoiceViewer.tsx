@@ -445,13 +445,32 @@ export default function InvoiceViewer() {
           </button>
           <div className="flex items-center gap-3">
             <Select value={template} onValueChange={setTemplate}>
-              <SelectTrigger className="w-40 h-8 text-sm" data-testid="invoice-template-select">
+              <SelectTrigger className="w-48 h-8 text-sm" data-testid="invoice-template-select">
                 <SelectValue placeholder="Template" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="" disabled className="text-xs text-slate-400 font-semibold">— Default Templates —</SelectItem>
                 {TEMPLATES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                {customTemplates.length > 0 && (
+                  <>
+                    <SelectItem value="" disabled className="text-xs text-slate-400 font-semibold">— Custom Templates —</SelectItem>
+                    {customTemplates.map(t => (
+                      <SelectItem key={`custom:${t.id}`} value={`custom:${t.id}`}>{t.name}</SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleEmailInvoice}
+              disabled={!data || sendingEmail}
+              data-testid="invoice-email-btn"
+            >
+              {sendingEmail ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Mail size={14} className="mr-1.5" />}
+              {sendingEmail ? "Sending..." : "Email Invoice"}
+            </Button>
             <Button size="sm" onClick={handlePrint} disabled={!data} data-testid="invoice-print-btn">
               <Printer size={14} className="mr-1.5" /> Print / Save PDF
             </Button>
