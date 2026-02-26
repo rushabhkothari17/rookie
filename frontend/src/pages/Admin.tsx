@@ -102,6 +102,7 @@ export default function Admin() {
             <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>
             <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>
             <TabsTrigger value="enquiries" data-testid="admin-tab-enquiries" className={TAB_CLASS}>Enquiries</TabsTrigger>
+            <TabsTrigger value="taxes" data-testid="admin-tab-taxes" className={TAB_CLASS}>Taxes</TabsTrigger>
 
             {/* Content */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
