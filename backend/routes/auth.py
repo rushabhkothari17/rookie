@@ -898,15 +898,12 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
     await db.users.insert_one(user_doc)
 
     customer_id = make_id()
-    currency = currency_for_country(payload.address.country)
     await db.customers.insert_one({
         "id": customer_id,
         "user_id": user_id,
         "tenant_id": tenant_id,
         "company_name": payload.company_name,
         "phone": payload.phone,
-        "currency": currency,
-        "currency_locked": False,
         "allow_bank_transfer": True,
         "allow_card_payment": False,
         "stripe_customer_id": None,
