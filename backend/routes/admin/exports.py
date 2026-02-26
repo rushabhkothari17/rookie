@@ -233,19 +233,6 @@ async def export_terms_csv(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     return _make_csv_response(terms, f"terms-{ts}.csv")
 
 
-@router.get("/admin/export/override-codes")
-async def export_override_codes_csv(
-    status: Optional[str] = None,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
-):
-    tf = get_tenant_filter(admin)
-    codes = await db.override_codes.find(tf, {"_id": 0}).sort("created_at", -1).to_list(10000)
-    if status:
-        codes = [c for c in codes if c.get("status") == status]
-    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
-    return _make_csv_response(codes, f"override-codes-{ts}.csv")
-
-
 @router.get("/admin/export/promo-codes")
 async def export_promo_codes_csv(
     applies_to: Optional[str] = None,
