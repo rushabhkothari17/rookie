@@ -131,7 +131,7 @@ async def create_manual_order(
         "discount_amount": round_cents(payload.discount),
         "fee": round_cents(payload.fee),
         "total": total,
-        "currency": customer.get("currency", "USD"),
+        "currency": payload.currency or "USD",
         "payment_method": "offline",
         "internal_note": payload.internal_note or "",
         "created_at": now_iso(),
