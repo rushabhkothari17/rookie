@@ -220,14 +220,16 @@ export default function ApplicationLayout({
         {/* Pricing Section */}
         {activeSection === "pricing" && (
           <div className="space-y-6" data-testid="section-pricing">
-            {/* Scope ID notice - directing users to cart */}
-            {(isRFQ || pricing?.is_enquiry) && (
-              <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6">
-                <h3 className="font-semibold text-slate-900 mb-2">Scope-Based Pricing</h3>
-                <p className="text-sm text-slate-600">
-                  This product requires scoping. Add it to your cart and enter your Scope ID during checkout, or request a new scope.
-                </p>
-              </div>
+            {/* Scope ID Entry (replaces old static notice) */}
+            {(isRFQ || pricing?.is_enquiry) && setScopeId && handleValidateScopeId && (
+              <ScopeIdBlock
+                scopeId={scopeId || ""}
+                setScopeId={setScopeId}
+                handleValidateScopeId={handleValidateScopeId}
+                scopeValidating={scopeValidating}
+                scopeError={scopeError}
+                scopeUnlock={scopeUnlock}
+              />
             )}
 
             {/* Price breakdown */}
