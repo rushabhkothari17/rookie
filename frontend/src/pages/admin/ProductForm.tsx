@@ -84,7 +84,7 @@ export const EMPTY_FORM: ProductFormData = {
 const labelCls = "text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide";
 const sectionCls = "space-y-4";
 const dividerCls = "border-t border-slate-100 pt-5 mt-1";
-const cardCls = "rounded-lg border border-slate-200 bg-white p-4 space-y-4";
+const cardCls = "rounded-lg border border-slate-200 bg-white p-5 space-y-5";
 const MAX_BULLETS = 8;
 
 // ── Toggle ─────────────────────────────────────────────────────────────────────
@@ -105,7 +105,34 @@ function Toggle({ checked, onChange, label, note, testId }: {
   );
 }
 
-// ── BulletsList ────────────────────────────────────────────────────────────────
+// ── BillingTypeSelector ────────────────────────────────────────────────────────
+
+const BILLING_TYPES = [
+  { isSubscription: false, label: "One-time", icon: CreditCard, desc: "Single payment. No recurring charges." },
+  { isSubscription: true,  label: "Subscription", icon: RefreshCw, desc: "Recurring billing at regular intervals." },
+];
+
+function BillingTypeSelector({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {BILLING_TYPES.map(bt => {
+        const active = value === bt.isSubscription;
+        const Icon = bt.icon;
+        return (
+          <button key={String(bt.isSubscription)} type="button" onClick={() => onChange(bt.isSubscription)}
+            data-testid={`billing-type-${bt.isSubscription ? "subscription" : "one-time"}`}
+            className={`flex flex-col items-start p-4 rounded-lg border text-left transition-all ${
+              active ? "bg-blue-50 border-[#1e40af] ring-1 ring-[#1e40af]/20 shadow-sm" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+            }`}>
+            <Icon size={16} className={`mb-2 ${active ? "text-[#1e40af]" : "text-slate-400"}`} />
+            <span className={`text-sm font-semibold mb-0.5 ${active ? "text-[#1e40af]" : "text-slate-700"}`}>{bt.label}</span>
+            <span className="text-[11px] text-slate-500 leading-relaxed">{bt.desc}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function BulletsList({ bullets, onChange, placeholder = "Feature or detail" }: {
   bullets: string[]; onChange: (v: string[]) => void; placeholder?: string;
