@@ -571,6 +571,62 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
   return key ? map[key] : "";
 }
 
+// ─── Base Currency Widget ─────────────────────────────────────────────────────
+const CURRENCIES = ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"];
+
+function BaseCurrencyWidget() {
+  const [currency, setCurrency] = useState("USD");
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    api.get("/admin/tenant/base-currency").then(r => {
+      setCurrency(r.data.base_currency || "USD");
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.put("/admin/tenant/base-currency", { base_currency: currency });
+      toast.success("Base currency updated");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to update currency");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
+      <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Base Currency</h4>
+      <p className="text-xs text-slate-400 mb-3">The primary currency for your partner account. All transactions will reference this currency.</p>
+      <div className="flex items-center gap-3">
+        <select
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+          data-testid="base-currency-select"
+        >
+          {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="h-9 px-4 rounded-md text-sm font-medium text-white disabled:opacity-50"
+          style={{ backgroundColor: "var(--aa-primary)" }}
+          data-testid="base-currency-save-btn"
+        >
+          {saving ? "Saving..." : "Save"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function WebsiteTab({ defaultSection }: { defaultSection?: Section }) {
