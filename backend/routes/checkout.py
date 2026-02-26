@@ -228,6 +228,8 @@ async def checkout_bank_transfer(
         _sub_tx_currency = product.get("currency", "USD")
         _sub_fx_rate = await get_fx_rate(_sub_tx_currency, base_currency)
         _sub_base_amount = round(subtotal * _sub_fx_rate, 2)
+        # Tax on subscription
+        _sub_tax = await calculate_tax(subtotal, tenant_id, customer["id"])
         await db.subscriptions.insert_one({
             "id": sub_id,
             "subscription_number": sub_number,
@@ -248,6 +250,9 @@ async def checkout_bank_transfer(
             "currency": _sub_tx_currency,
             "base_currency": base_currency,
             "base_currency_amount": _sub_base_amount,
+            "tax_amount": _sub_tax.get("tax_amount", 0.0),
+            "tax_rate": _sub_tax.get("tax_rate", 0.0),
+            "tax_name": _sub_tax.get("tax_name"),
             "payment_method": "bank_transfer",
             "terms_id_used": terms_id,
             "rendered_terms_text": rendered_terms_text,
