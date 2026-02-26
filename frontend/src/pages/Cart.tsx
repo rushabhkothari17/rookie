@@ -784,6 +784,12 @@ export default function Cart() {
                       <span className="text-slate-900">{displayCurrency} {fee.toFixed(2)}</span>
                     </div>
                   )}
+                  {taxInfo && taxInfo.tax_amount > 0 && (
+                    <div className="flex justify-between" data-testid="cart-tax-line">
+                      <span className="text-slate-500">{taxInfo.tax_name || "Tax"} ({(taxInfo.tax_rate * 100).toFixed(2)}%)</span>
+                      <span className="text-slate-900">{displayCurrency} {taxInfo.tax_amount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="pt-3 border-t border-slate-200 flex justify-between">
                     <span className="font-semibold text-slate-900">Total</span>
                     <span className="font-bold text-lg" style={{ color: "var(--aa-primary)" }}>{displayCurrency} {total.toFixed(2)}</span>
