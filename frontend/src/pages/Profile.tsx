@@ -235,12 +235,23 @@ export default function Profile() {
           </div>
           <div className="space-y-2">
             <label className="text-sm text-slate-600">State / Province</label>
-            <Input
-              value={form.region}
-              onChange={(e) => handleChange("region", e.target.value)}
-              data-testid="profile-region-input"
-              required
-            />
+            {provinces.length > 0 ? (
+              <Select value={form.region} onValueChange={(v) => handleChange("region", v)}>
+                <SelectTrigger data-testid="profile-region-select">
+                  <SelectValue placeholder="Select province / state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                value={form.region}
+                onChange={(e) => handleChange("region", e.target.value)}
+                data-testid="profile-region-input"
+                required
+              />
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-sm text-slate-600">Postal / ZIP</label>
