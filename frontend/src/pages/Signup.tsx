@@ -384,10 +384,10 @@ export default function Signup() {
                   <div className="h-px flex-1 bg-slate-100" />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FieldWrapper label="Email address" icon={Mail}>
+                  <FieldWrapper label="Email address" icon={Mail} required>
                     <Input type="email" value={form.email} onChange={e => handleChange("email", e.target.value)} data-testid="signup-email-input" required />
                   </FieldWrapper>
-                  <FieldWrapper label="Password" icon={Lock}>
+                  <FieldWrapper label="Password" icon={Lock} required>
                     <Input type="password" value={form.password} onChange={e => handleChange("password", e.target.value)} data-testid="signup-password-input" required />
                   </FieldWrapper>
                 </div>
