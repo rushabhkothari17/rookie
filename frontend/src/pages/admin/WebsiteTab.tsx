@@ -77,6 +77,11 @@ interface WebsiteData {
   cart_title: string; cart_clear_btn_text: string;
   admin_page_badge: string; admin_page_title: string; admin_page_subtitle: string;
   bank_transaction_sources: string; bank_transaction_types: string; bank_transaction_statuses: string;
+  // Documents page customization
+  nav_documents_label: string;
+  documents_page_title: string; documents_page_subtitle: string;
+  documents_page_upload_label: string; documents_page_upload_hint: string;
+  documents_page_empty_text: string;
 }
 
 interface BrandingData {
