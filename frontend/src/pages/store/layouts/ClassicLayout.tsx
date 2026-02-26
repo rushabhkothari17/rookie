@@ -4,10 +4,12 @@
  * Right: Sticky price summary with live pricing
  */
 import ReactMarkdown from "react-markdown";
-import { RefreshCcw, FileText } from "lucide-react";
+import { RefreshCcw, FileText, Key, Check } from "lucide-react";
 import ProductHero from "@/components/ProductHero";
 import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
 import SectionCard from "@/components/SectionCard";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import type { LayoutProps } from "./types";
 import { QuestionLabel, renderIntakeField } from "./utils";
 
