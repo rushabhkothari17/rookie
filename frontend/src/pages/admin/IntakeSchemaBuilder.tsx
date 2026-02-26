@@ -139,27 +139,40 @@ function OptionsEditor({ options, onChange, affects_price }: {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="label-xs">Options</span>
-        {affects_price && <span className="text-[10px] text-slate-400">Price adj. (£)</span>}
+        {affects_price && <span className="text-[10px] text-slate-400">Price adj.</span>}
       </div>
-      {options.map((opt, i) => (
-        <div key={i} className="flex gap-2 items-center">
-          <Input value={opt.label} onChange={e => {
-            const n = [...options]; n[i] = { ...n[i], label: e.target.value, value: labelToKey(e.target.value) }; onChange(n);
-          }} placeholder="Option label" className="h-8 text-xs flex-1" />
-          {affects_price && (
-            <Input type="number" value={opt.price_value ?? 0} onChange={e => {
-              const n = [...options]; n[i] = { ...n[i], price_value: parseFloat(e.target.value) || 0 }; onChange(n);
-            }} placeholder="0" className="h-8 text-xs w-20 font-mono" />
-          )}
-          <button type="button" onClick={() => onChange(options.filter((_, j) => j !== i))}
-            className="text-slate-400 hover:text-red-500 transition-colors"><X size={13} /></button>
+      {options.length === 0 ? (
+        <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center bg-white">
+          <p className="text-xs text-slate-400 mb-2">No options yet</p>
+          <Button type="button" variant="outline" size="sm"
+            onClick={() => onChange([{ label: "", value: "", price_value: 0 }])}
+            className="h-7 text-xs px-3 text-slate-500 hover:text-slate-700">
+            <Plus size={11} className="mr-1" /> Add your first option
+          </Button>
         </div>
-      ))}
-      <Button type="button" variant="outline" size="sm"
-        onClick={() => onChange([...options, { label: "", value: "", price_value: 0 }])}
-        className="h-7 text-xs px-2 text-slate-500 hover:text-slate-700">
-        <Plus size={11} className="mr-1" /> Add option
-      </Button>
+      ) : (
+        <>
+          {options.map((opt, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <Input value={opt.label} onChange={e => {
+                const n = [...options]; n[i] = { ...n[i], label: e.target.value, value: labelToKey(e.target.value) }; onChange(n);
+              }} placeholder="Option label" className="h-8 text-xs flex-1" />
+              {affects_price && (
+                <Input type="number" value={opt.price_value ?? 0} onChange={e => {
+                  const n = [...options]; n[i] = { ...n[i], price_value: parseFloat(e.target.value) || 0 }; onChange(n);
+                }} placeholder="0" className="h-8 text-xs w-20 font-mono" />
+              )}
+              <button type="button" onClick={() => onChange(options.filter((_, j) => j !== i))}
+                className="text-slate-400 hover:text-red-500 transition-colors"><X size={13} /></button>
+            </div>
+          ))}
+          <Button type="button" variant="outline" size="sm"
+            onClick={() => onChange([...options, { label: "", value: "", price_value: 0 }])}
+            className="h-7 text-xs px-2 text-slate-500 hover:text-slate-700">
+            <Plus size={11} className="mr-1" /> Add option
+          </Button>
+        </>
+      )}
     </div>
   );
 }
