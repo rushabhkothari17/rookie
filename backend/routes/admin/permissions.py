@@ -54,13 +54,13 @@ PRESET_ROLES = {
         "name": "Manager",
         "description": "Manage customers, orders, and subscriptions",
         "access_level": "full_access",
-        "modules": ["customers", "orders", "subscriptions", "products", "promo_codes", "quote_requests", "bank_transactions"]
+        "modules": ["customers", "orders", "subscriptions", "products", "promo_codes", "bank_transactions"]
     },
     "support": {
         "name": "Support Agent",
         "description": "Handle customer inquiries and view orders",
         "access_level": "full_access",
-        "modules": ["customers", "orders", "subscriptions", "quote_requests"]
+        "modules": ["customers", "orders", "subscriptions"]
     },
     "viewer": {
         "name": "Viewer",
