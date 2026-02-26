@@ -183,6 +183,13 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "payment_processing_msg": "Processing your payment, please wait…",
     "payment_terms_label": "I have read and agree to the",
     "payment_terms_link_text": "Terms & Conditions",
+    # Documents page
+    "nav_documents_label": "",
+    "documents_page_title": "",
+    "documents_page_subtitle": "",
+    "documents_page_upload_label": "",
+    "documents_page_upload_hint": "",
+    "documents_page_empty_text": "",
 }
 
 
