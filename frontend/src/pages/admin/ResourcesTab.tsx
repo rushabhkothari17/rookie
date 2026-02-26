@@ -71,7 +71,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const { user: authUser } = useAuth();
   const isPlatformAdmin = authUser?.role === "platform_admin";
   const [showImportResources, setShowImportResources] = useState(false);
-  const [subTab, setSubTab] = useState<"resources" | "templates" | "email-templates" | "categories" | "override-codes">("resources");
+  const [subTab, setSubTab] = useState<"resources" | "templates" | "email-templates" | "categories">("resources");
   const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
 
   const loadCategories = useCallback(async () => {
