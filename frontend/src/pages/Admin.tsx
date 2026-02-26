@@ -22,6 +22,7 @@ import { IntegrationsOverview } from "./admin/IntegrationsOverview";
 import { EmailTemplatesTab } from "./admin/EmailTemplatesTab";
 import { ReferencesTab } from "./admin/ReferencesTab";
 import { CustomDomainsTab } from "./admin/CustomDomainsTab";
+import { TaxesTab } from "./admin/TaxesTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
