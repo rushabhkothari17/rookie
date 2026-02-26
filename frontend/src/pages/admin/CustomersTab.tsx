@@ -400,20 +400,3 @@ export function CustomersTab() {
   );
 }
 
-function CurrencyOverrideWidget() {
-  const [val, setVal] = useState({ email: "", currency: "USD" });
-  const handle = async () => {
-    try { await api.post("/admin/currency-override", { customer_email: val.email, currency: val.currency }); toast.success("Currency overridden"); }
-    catch (e: any) { toast.error(e.response?.data?.detail || "Override failed"); }
-  };
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-slate-900 mb-3">Currency override</h3>
-      <div className="grid gap-3 md:grid-cols-3">
-        <Input placeholder="Customer email" value={val.email} onChange={(e) => setVal({ ...val, email: e.target.value })} data-testid="admin-currency-email" />
-        <Input placeholder="Currency (USD/CAD)" value={val.currency} onChange={(e) => setVal({ ...val, currency: e.target.value })} data-testid="admin-currency-value" />
-        <Button onClick={handle} data-testid="admin-currency-submit">Override</Button>
-      </div>
-    </div>
-  );
-}
