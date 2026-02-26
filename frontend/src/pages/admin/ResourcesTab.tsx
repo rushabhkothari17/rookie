@@ -15,7 +15,6 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { ArticleTemplatesTab } from "./ResourceTemplatesTab";
 import { ArticleEmailTemplatesTab } from "./ResourceEmailTemplatesTab";
 import { ArticleCategoriesTab } from "./ResourceCategoriesTab";
-import { OverrideCodesTab } from "./OverrideCodesTab";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 const HARDCODED_CATEGORIES = [
