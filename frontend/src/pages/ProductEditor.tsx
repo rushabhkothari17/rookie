@@ -60,7 +60,16 @@ export default function ProductEditor() {
           api.get("/admin/terms"),
         ]);
         setCategories(catRes.data.categories || []);
-        setCustomers(custRes.data.customers || []);
+        // Enrich customers with email (from users) and address data for client-side preview
+        const rawCustomers = custRes.data.customers || [];
+        const users: any[] = custRes.data.users || [];
+        const addresses: any[] = custRes.data.addresses || [];
+        const enriched = rawCustomers.map((c: any) => {
+          const user = users.find((u: any) => u.id === c.user_id);
+          const addr = addresses.find((a: any) => a.customer_id === c.id);
+          return { ...c, email: user?.email ?? "", full_name: user?.full_name ?? "", status: user?.is_active ? "active" : "inactive", country: addr?.country ?? "", state_province: addr?.region ?? "", phone: user?.phone ?? "" };
+        });
+        setCustomers(enriched);
         setTerms(termsRes.data.terms || []);
 
         if (id) {
