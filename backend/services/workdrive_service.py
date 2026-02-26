@@ -76,12 +76,23 @@ def extract_folder_id_from_url(url: str) -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 async def _get_credentials(tenant_id: str) -> Optional[Dict[str, Any]]:
-    """Load WorkDrive OAuth credentials from integrations collection."""
-    doc = await db.integrations.find_one(
-        {"tenant_id": tenant_id, "service": "zoho_workdrive"},
+    """Load WorkDrive OAuth credentials from oauth_connections collection."""
+    doc = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": "zoho_workdrive"},
         {"_id": 0},
     )
-    return doc
+    if not doc:
+        return None
+    # Normalize: credentials are nested under "credentials" key
+    creds = doc.get("credentials", {})
+    dc = doc.get("data_center", "us").lower()
+    dc_map = {"us": "US", "eu": "EU", "au": "AU", "in": "IN", "jp": "JP", "ca": "CA"}
+    return {
+        **creds,
+        "datacenter": dc_map.get(dc, "US"),
+        "is_validated": doc.get("is_validated", False),
+        "settings": doc.get("settings", {}),
+    }
 
 
 async def _refresh_access_token(tenant_id: str, creds: Dict[str, Any]) -> str:
