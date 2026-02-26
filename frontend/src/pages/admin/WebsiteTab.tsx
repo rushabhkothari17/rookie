@@ -579,6 +579,7 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
     footer_nav: "Navigation section title and link labels.",
     footer_contact: "Contact details shown in the footer.",
     footer_social: "Social media platform links.",
+    documents_page: "Customize the Documents page heading, subtitle, nav label, and upload instructions.",
   };
   return key ? map[key] : "";
 }
