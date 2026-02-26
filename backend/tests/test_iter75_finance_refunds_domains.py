@@ -14,7 +14,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://currency-refactor.preview.emergentagent.com")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://visibility-groups.preview.emergentagent.com")
 
 # Test credentials
 TENANT_B_ADMIN = {
