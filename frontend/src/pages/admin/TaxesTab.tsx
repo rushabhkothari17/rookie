@@ -764,6 +764,8 @@ export function TaxesTab() {
           <TabsTrigger value="settings" data-testid="taxes-tab-settings">Tax Settings</TabsTrigger>
           <TabsTrigger value="table" data-testid="taxes-tab-table">Rate Table</TabsTrigger>
           <TabsTrigger value="overrides" data-testid="taxes-tab-overrides">Override Rules</TabsTrigger>
+          <TabsTrigger value="invoices" data-testid="taxes-tab-invoices">Invoice Settings</TabsTrigger>
+          <TabsTrigger value="summary" data-testid="taxes-tab-summary">Tax Summary</TabsTrigger>
         </TabsList>
 
         <TabsContent value="settings" className="pt-5">
@@ -776,6 +778,14 @@ export function TaxesTab() {
 
         <TabsContent value="overrides" className="pt-5">
           <OverrideRulesPanel />
+        </TabsContent>
+
+        <TabsContent value="invoices" className="pt-5">
+          <InvoiceSettingsPanel />
+        </TabsContent>
+
+        <TabsContent value="summary" className="pt-5">
+          <TaxSummaryPanel />
         </TabsContent>
       </Tabs>
     </div>
