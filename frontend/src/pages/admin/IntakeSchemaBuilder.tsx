@@ -283,9 +283,10 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
   otherQuestions: IntakeQuestion[];
 }) {
   const isOn = !!rule;
+  const [isExpanded, setIsExpanded] = useState(false);
   const ruleSet: VisibilityRuleSet = isOn ? normaliseRule(rule) : { top_logic: "AND", groups: [DEFAULT_GROUP()] };
 
-  const toggle = (checked: boolean) => onChange(checked ? ruleSet : null);
+  const toggle = (checked: boolean) => { onChange(checked ? ruleSet : null); if (checked) setIsExpanded(true); };
 
   const setTopLogic = (tl: "AND" | "OR") => onChange({ ...ruleSet, top_logic: tl });
   const setGroupLogic = (gi: number, logic: "AND" | "OR") =>
