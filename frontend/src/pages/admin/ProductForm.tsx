@@ -340,10 +340,13 @@ function LogicBtnVis({ value, onChange, small }: { value: "AND" | "OR"; onChange
 function ProductConditionBuilder({
   value,
   onChange,
+  customers = [],
 }: {
   value: ProductVisRuleSet | null;
   onChange: (v: ProductVisRuleSet | null) => void;
+  customers?: any[];
 }) {
+  const [showPreview, setShowPreview] = useState(false);
   const ruleSet = normaliseVisRuleSet(value);
 
   const setTopLogic = (tl: "AND" | "OR") => onChange({ ...ruleSet, top_logic: tl });
