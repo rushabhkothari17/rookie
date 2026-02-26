@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="47" failures="0" skipped="0" tests="53" time="1.850" timestamp="2026-02-26T03:49:44.564999+00:00" hostname="agent-env-2bc30ba4-cd6e-4f31-887a-30f978b97e69"><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResourceCategories" name="test_list_categories" time="0.477"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResourceCategories" name="test_create_category" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResourceCategories" name="test_create_duplicate_category_rejected" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResourceCategories" name="test_update_category" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResourceCategories" name="test_delete_category" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResourceCategories" name="test_categories_require_auth" time="0.156" /><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_list_resources" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_create_resource_missing_required_fails" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_create_resource_scope_final_without_price_fails" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_create_resource_scope_final_lost_without_price_fails" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_create_regular_resource" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_create_scope_final_resource" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_list_with_category_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_list_with_search_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_list_pagination" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_edit_resource" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_edit_scope_final_price" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_get_resource_by_id" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestResources" name="test_resource_audit_logs" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEmailTemplates" name="test_list_email_templates" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEmailTemplates" name="test_email_template_has_required_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEmailTemplates" name="test_email_template_update_subject" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEmailTemplates" name="test_email_template_toggle_disable" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEmailTemplates" name="test_email_templates_require_auth" time="0.154" /><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestOverrideCodes" name="test_list_override_codes" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestOverrideCodes" name="test_create_override_code" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestOverrideCodes" name="test_create_duplicate_override_code_rejected" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestOverrideCodes" name="test_override_code_filters" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestOverrideCodes" name="test_create_expired_override_code" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestOverrideCodes" name="test_deactivate_override_code" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestOverrideCodes" name="test_override_code_logs" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestScopeUnlock" name="test_validate_scope_requires_auth" time="0.119" /><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestScopeUnlock" name="test_validate_scope_invalid_id" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestScopeUnlock" name="test_validate_scope_non_final_category" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestScopeUnlock" name="test_validate_scope_valid_scope_final" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestScopeUnlock" name="test_scope_resource_has_no_price_rejected" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestReferences" name="test_list_references" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestReferences" name="test_create_reference" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestReferences" name="test_create_duplicate_key_rejected" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestReferences" name="test_update_reference" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestReferences" name="test_delete_reference" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestReferences" name="test_references_require_auth" time="0.137" /><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEnquiryFlow" name="test_enquiries_admin_list" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEnquiryFlow" name="test_enquiries_status_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEnquiryFlow" name="test_enquiries_date_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEnquiryFlow" name="test_scope_request_form_requires_auth" time="0.152" /><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEnquiryFlow" name="test_enquiry_nonexistent_status_update" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestEnquiryFlow" name="test_email_outbox_exists" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestCrossTenantSecurity" name="test_validate_scope_cross_tenant_blocked" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestCrossTenantSecurity" name="test_resources_admin_list_tenant_filtered" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestCrossTenantSecurity" name="test_resource_public_list_requires_no_auth" time="0.124" /><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestCleanup" name="test_cleanup_scope_resource" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase><testcase classname="backend.tests.test_iter115_resources_overrides_references.TestCleanup" name="test_cleanup_regular_resource" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">backend/tests/test_iter115_resources_overrides_references.py:21: in admin_token
+    return r.json()["access_token"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'access_token'</error></testcase></testsuite></testsuites>
