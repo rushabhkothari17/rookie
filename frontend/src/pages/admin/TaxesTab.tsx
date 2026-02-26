@@ -171,7 +171,7 @@ function TaxTablePanel() {
   const load = useCallback(async () => {
     setLoading(true);
     const params = filterCountry ? `?country_code=${filterCountry}` : "";
-    const r = await api.get(`/api/admin/taxes/tables${params}`);
+    const r = await api.get(`/admin/taxes/tables${params}`);
     setEntries(r.data.entries || []);
     setLoading(false);
   }, [filterCountry]);
