@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import api from "@/lib/api";
-import { Search, ChevronLeft, ChevronRight, Package, RefreshCw, ArrowUp, ArrowDown, FileText } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Package, RefreshCw, ArrowUp, ArrowDown, FileText, History, ChevronDown, ChevronUp } from "lucide-react";
 
 const ORDERS_PER_PAGE = 8;
 const SUBS_PER_PAGE = 5;
