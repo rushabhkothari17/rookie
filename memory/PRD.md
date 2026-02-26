@@ -188,17 +188,21 @@ E-commerce platform for professional services with:
 - Formal penetration testing
 - Verify complex intake form visibility (`AND`/`OR` operators)
 - Catalog field ↔ UI layout linkage summary
-- Ensure new platform admin accounts are always seeded with `role='platform_admin'` (not `role='custom'`)
 
-## Test Credentials
-- Platform Admin: `admin@automateaccounts.local` / `ChangeMe123!`
-- Platform Admin Code: `automate-accounts` (reserved — only for platform admin login, NOT partner_login)
-- Login path for platform admin: `POST /api/auth/login` without `partner_code`
+## Enquiries System (Merged 2026-02-26)
+- Old "Quote Request" flow (quote_requests collection, /products/request-quote) REMOVED
+- Unified "Enquiries" system uses orders with type="scope_request"
+- New admin `Enquiries` tab (replaces "Requests") at `/admin` → Commerce → Enquiries
+- Backend: GET/PATCH/DELETE /api/admin/enquiries endpoints
+- Frontend: EnquiriesTab.tsx with status management, detail view, filter by email/status/date
+- ProductDetail.tsx: enquiry products now show "Request a Quote" button → scope modal
+- Cart.tsx: RFQ "Enquiries" section uses /orders/scope-request-form
+- ScopeRequestFormData: all fields now optional; added name/email/company/phone/message
 
 ## Test Reports
-- `/app/test_reports/iteration_99.json` — Sidebar restructure tests (100% pass)
-- `/app/test_reports/iteration_100.json` — Cart redesign tests (100% pass)
-- `/app/test_reports/iteration_101.json` — Admin UI restructuring tests (100% pass)
+- `/app/test_reports/iteration_13.json` — Pre-merge catalog tests
+- `/app/test_reports/iteration_14.json` — Promo note tests
+- `/app/test_reports/iteration_112.json` — Enquiries merge tests (100% backend, 90% frontend)
 
 ---
-*Last Updated: 2026-03-[current]*
+*Last Updated: 2026-02-26*
