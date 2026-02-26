@@ -127,10 +127,13 @@ export default function Cart() {
   const allowBankTransfer = ws.gocardless_enabled !== false;
   const allowCardPayment = ws.stripe_enabled !== false;
   const stripeFeeRate = ws.stripe_fee_rate || 0.05;
-  const stripeFeePercent = Math.round(stripeFeeRate * 1000) / 10; // Convert to percentage for display
+  const stripeFeePercent = Math.round(stripeFeeRate * 1000) / 10;
   const showFee = paymentMethod === "card";
   const currencyUnsupported = false; // Currency is now product-based, no regional restrictions
   const subscriptionMissingPrice = grouped.subscriptions.some((i: any) => !i.product.stripe_price_id);
+
+  // Determine display currency from first purchasable item
+  const displayCurrency = [...grouped.oneTime, ...grouped.subscriptions][0]?.product?.currency || "USD";
 
   // Calculate totals
   const oneTimeSubtotal = grouped.oneTime.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
