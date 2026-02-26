@@ -58,7 +58,7 @@ async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any
         "product_ids": payload.product_ids, "expiry_date": payload.expiry_date,
         "max_uses": payload.max_uses, "one_time_code": payload.one_time_code,
         "enabled": payload.enabled, "usage_count": 0, "created_at": now_iso(),
-        "sponsorship_note": payload.sponsorship_note,
+        "promo_note": payload.promo_note,
     }
     await db.promo_codes.insert_one(doc)
     await create_audit_log(
@@ -78,7 +78,7 @@ async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin:
     if not existing:
         raise HTTPException(status_code=404, detail="Promo code not found")
     update: Dict[str, Any] = {}
-    for field in ["discount_type", "discount_value", "applies_to", "applies_to_products", "product_ids", "expiry_date", "max_uses", "one_time_code", "enabled", "sponsorship_note"]:
+    for field in ["discount_type", "discount_value", "applies_to", "applies_to_products", "product_ids", "expiry_date", "max_uses", "one_time_code", "enabled", "promo_note"]:
         val = getattr(payload, field, None)
         if val is not None:
             update[field] = val
