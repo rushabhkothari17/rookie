@@ -92,6 +92,14 @@ export default function QuickBuyLayout({
         </div>
       )}
 
+      {/* Description */}
+      {product.description_long && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+          <h3 className="text-sm font-semibold text-slate-900 mb-3">About this product</h3>
+          <p className="text-sm text-slate-600 leading-relaxed">{product.description_long}</p>
+        </div>
+      )}
+
       {/* Minimal intake form (if any) */}
       {hasQuestions && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
