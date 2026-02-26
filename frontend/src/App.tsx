@@ -19,6 +19,7 @@ import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import BankTransferSuccess from "@/pages/BankTransferSuccess";
 import GoCardlessCallback from "@/pages/GoCardlessCallback";
 import Articles from "@/pages/Resources";
+import Documents from "@/pages/Documents";
 import ArticleView from "@/pages/ResourceView";
 
 import Portal from "@/pages/Portal";
