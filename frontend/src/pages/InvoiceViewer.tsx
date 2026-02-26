@@ -449,13 +449,11 @@ export default function InvoiceViewer() {
                 <SelectValue placeholder="Template" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="" disabled className="text-xs text-slate-400 font-semibold">— Default Templates —</SelectItem>
                 {TEMPLATES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 {customTemplates.length > 0 && (
                   <>
-                    <SelectItem value="" disabled className="text-xs text-slate-400 font-semibold">— Custom Templates —</SelectItem>
                     {customTemplates.map(t => (
-                      <SelectItem key={`custom:${t.id}`} value={`custom:${t.id}`}>{t.name}</SelectItem>
+                      <SelectItem key={`custom:${t.id}`} value={`custom:${t.id}`}>{t.name} (Custom)</SelectItem>
                     ))}
                   </>
                 )}
