@@ -9,8 +9,8 @@ const formatTag = (product: any) => {
   return "Project based";
 };
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+const fmtPrice = (amount: number, currency = "USD") =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
 
 /** Derive a minimum starting price from intake questions for data-driven pricing. */
 const getStartingPrice = (product: any): number | null => {
