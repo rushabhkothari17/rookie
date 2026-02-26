@@ -388,7 +388,21 @@ function ProductConditionBuilder({
 
   return (
     <div className="bg-indigo-50/60 border border-indigo-100 rounded-lg p-4 space-y-3 mt-3">
-      <p className="text-[11px] font-semibold text-indigo-700 uppercase tracking-wide">Show product when customer matches</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-semibold text-indigo-700 uppercase tracking-wide">Show product when customer matches</p>
+        {customers.length > 0 && (
+          <button type="button" onClick={() => setShowPreview(v => !v)}
+            data-testid="vis-preview-btn"
+            className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors px-2.5 py-1 rounded-md border ${
+              showPreview ? "bg-indigo-100 border-indigo-200 text-indigo-700" : "bg-white border-slate-200 text-slate-500 hover:border-indigo-200 hover:text-indigo-600"
+            }`}>
+            <Users size={11} />
+            {showPreview
+              ? `${customers.filter(c => evalCustomerVis(c, ruleSet)).length} match${customers.filter(c => evalCustomerVis(c, ruleSet)).length !== 1 ? "es" : ""}`
+              : "Preview matches"}
+          </button>
+        )}
+      </div>
 
       {ruleSet.groups.map((group, gi) => (
         <div key={gi}>
