@@ -201,55 +201,133 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
 }
 
 const OPERATORS = [
-  { value: "equals", label: "= equals" }, { value: "not_equals", label: "≠ not equals" },
-  { value: "greater_than", label: "> greater than" }, { value: "less_than", label: "< less than" },
-  { value: "contains", label: "contains" }, { value: "not_empty", label: "is not empty" },
+  { value: "equals",       label: "= equals" },
+  { value: "not_equals",   label: "≠ not equals" },
+  { value: "greater_than", label: "> greater than" },
+  { value: "less_than",    label: "< less than" },
+  { value: "contains",     label: "contains" },
+  { value: "not_contains", label: "does not contain" },
+  { value: "not_empty",    label: "is not empty" },
+  { value: "empty",        label: "is empty / null" },
 ];
 
+const NO_VALUE_OPS = new Set(["not_empty", "empty"]);
+const MAX_CONDITIONS = 4;
+
+/** Normalise any rule (legacy or new) into a VisibilityRuleSet */
+function normaliseRule(raw: any): VisibilityRuleSet {
+  if (!raw) return { logic: "AND", conditions: [{ depends_on: "", operator: "equals", value: "" }] };
+  if (raw.conditions) return raw as VisibilityRuleSet;
+  // Legacy single-rule → wrap
+  return { logic: "AND", conditions: [{ depends_on: raw.depends_on ?? "", operator: raw.operator ?? "equals", value: raw.value ?? "" }] };
+}
+
 function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
-  rule: VisibilityRule | null | undefined; onChange: (r: VisibilityRule | null) => void;
+  rule: VisibilityRuleSet | VisibilityRule | null | undefined;
+  onChange: (r: VisibilityRuleSet | null) => void;
   otherQuestions: IntakeQuestion[];
 }) {
+  const isOn = !!rule;
+  const ruleSet: VisibilityRuleSet = isOn ? normaliseRule(rule) : { logic: "AND", conditions: [{ depends_on: "", operator: "equals", value: "" }] };
+
+  const toggle = (checked: boolean) => onChange(checked ? ruleSet : null);
+
+  const setLogic = (logic: "AND" | "OR") => onChange({ ...ruleSet, logic });
+
+  const setCondition = (i: number, patch: Partial<VisibilityConditionRow>) => {
+    const conds = ruleSet.conditions.map((c, idx) => idx === i ? { ...c, ...patch } : c);
+    onChange({ ...ruleSet, conditions: conds });
+  };
+
+  const addCondition = () => {
+    if (ruleSet.conditions.length >= MAX_CONDITIONS) return;
+    onChange({ ...ruleSet, conditions: [...ruleSet.conditions, { depends_on: "", operator: "equals", value: "" }] });
+  };
+
+  const removeCondition = (i: number) => {
+    const conds = ruleSet.conditions.filter((_, idx) => idx !== i);
+    onChange(conds.length ? { ...ruleSet, conditions: conds } : null);
+  };
+
+  const eligibleQs = otherQuestions.filter(q => q.key && q.type !== "html_block");
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-1.5 label-xs cursor-pointer"><Eye size={11} /> Visibility rule</label>
         <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
-          <input type="checkbox" checked={!!rule}
-            onChange={e => e.target.checked ? onChange({ depends_on: "", operator: "equals", value: "" }) : onChange(null)}
-            className="w-3 h-3 rounded accent-[#0f172a]" />
-          {rule ? "On" : "Off"}
+          <input type="checkbox" checked={isOn} onChange={e => toggle(e.target.checked)} className="w-3 h-3 rounded accent-[#0f172a]" />
+          {isOn ? "On" : "Off"}
         </label>
       </div>
-      {rule && (
-        <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2">
-          <p className="text-[11px] text-blue-600 font-medium">Show this question only when:</p>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Question</label>
-              <Select value={rule.depends_on || ""} onValueChange={v => onChange({ ...rule, depends_on: v })}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select question…" /></SelectTrigger>
-                <SelectContent>
-                  {otherQuestions.filter(q => q.key && q.type !== "html_block").map(q => (
-                    <SelectItem key={q.key} value={q.key}>{q.label || q.key || "(untitled)"}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Condition</label>
-              <Select value={rule.operator} onValueChange={v => onChange({ ...rule, operator: v as any })}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>{OPERATORS.map(op => <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
+      {isOn && (
+        <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] text-blue-600 font-medium">Show this question only when:</p>
+            {ruleSet.conditions.length > 1 && (
+              <div className="flex rounded-md overflow-hidden border border-blue-200 text-[10px] font-semibold">
+                {(["AND", "OR"] as const).map(l => (
+                  <button key={l} type="button"
+                    onClick={() => setLogic(l)}
+                    className={`px-2 py-0.5 transition-colors ${ruleSet.logic === l ? "bg-blue-600 text-white" : "bg-white text-blue-600 hover:bg-blue-50"}`}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {rule.operator !== "not_empty" && (
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Value</label>
-              <Input value={rule.value || ""} onChange={e => onChange({ ...rule, value: e.target.value })}
-                placeholder="e.g. yes, 5, premium" className="h-8 text-xs" />
+
+          {ruleSet.conditions.map((cond, i) => (
+            <div key={i} className="space-y-1.5">
+              {i > 0 && (
+                <div className="flex items-center gap-1.5 my-1">
+                  <div className="flex-1 border-t border-blue-100" />
+                  <span className="text-[10px] font-bold text-blue-400">{ruleSet.logic}</span>
+                  <div className="flex-1 border-t border-blue-100" />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-slate-500 block mb-1">Question</label>
+                  <Select value={cond.depends_on || ""} onValueChange={v => setCondition(i, { depends_on: v })}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select question…" /></SelectTrigger>
+                    <SelectContent>
+                      {eligibleQs.map(q => (
+                        <SelectItem key={q.key} value={q.key}>{q.label || q.key || "(untitled)"}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 block mb-1">Condition</label>
+                  <div className="flex gap-1">
+                    <Select value={cond.operator} onValueChange={v => setCondition(i, { operator: v as any, value: NO_VALUE_OPS.has(v) ? "" : cond.value })}>
+                      <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>{OPERATORS.map(op => <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                    {ruleSet.conditions.length > 1 && (
+                      <button type="button" onClick={() => removeCondition(i)} className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0">
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {!NO_VALUE_OPS.has(cond.operator) && (
+                <div>
+                  <label className="text-[10px] text-slate-500 block mb-1">Value</label>
+                  <Input value={cond.value || ""} onChange={e => setCondition(i, { value: e.target.value })}
+                    placeholder="e.g. yes, 5, premium" className="h-8 text-xs" />
+                </div>
+              )}
             </div>
+          ))}
+
+          {ruleSet.conditions.length < MAX_CONDITIONS && (
+            <button type="button" onClick={addCondition}
+              className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium transition-colors mt-1">
+              <Plus size={11} /> Add condition
+            </button>
           )}
         </div>
       )}
