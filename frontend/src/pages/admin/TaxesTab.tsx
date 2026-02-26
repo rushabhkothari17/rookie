@@ -565,13 +565,22 @@ function InvoiceSettingsPanel() {
   const [settings, setSettings] = useState<any>({ prefix: "INV", payment_terms: "Due on receipt", footer_notes: "", show_terms: true, template: "classic" });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [customTemplates, setCustomTemplates] = useState<any[]>([]);
+  const [showNewTemplate, setShowNewTemplate] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<any>(null);
+  const [tmplForm, setTmplForm] = useState({ name: "", html_body: "" });
 
   useEffect(() => {
     api.get("/admin/taxes/invoice-settings").then(r => {
       setSettings(r.data.invoice_settings || {});
       setLoading(false);
     }).catch(() => setLoading(false));
+    loadCustomTemplates();
   }, []);
+
+  const loadCustomTemplates = () => {
+    api.get("/admin/taxes/invoice-templates").then(r => setCustomTemplates(r.data.templates || [])).catch(() => {});
+  };
 
   const save = async () => {
     setSaving(true);
@@ -581,6 +590,47 @@ function InvoiceSettingsPanel() {
     } catch { toast.error("Failed to save invoice settings"); }
     finally { setSaving(false); }
   };
+
+  const saveTemplate = async () => {
+    if (!tmplForm.name.trim()) return toast.error("Template name is required");
+    try {
+      if (editingTemplate) {
+        await api.put(`/admin/taxes/invoice-templates/${editingTemplate.id}`, tmplForm);
+        toast.success("Template updated");
+      } else {
+        await api.post("/admin/taxes/invoice-templates", tmplForm);
+        toast.success("Template created");
+      }
+      setShowNewTemplate(false);
+      setEditingTemplate(null);
+      setTmplForm({ name: "", html_body: "" });
+      loadCustomTemplates();
+    } catch { toast.error("Failed to save template"); }
+  };
+
+  const deleteTemplate = async (id: string) => {
+    if (!confirm("Delete this custom template?")) return;
+    try {
+      await api.delete(`/admin/taxes/invoice-templates/${id}`);
+      toast.success("Template deleted");
+      loadCustomTemplates();
+    } catch { toast.error("Failed to delete template"); }
+  };
+
+  const startEditTemplate = (t: any) => {
+    setEditingTemplate(t);
+    setTmplForm({ name: t.name, html_body: t.html_body });
+    setShowNewTemplate(true);
+  };
+
+  const STARTER_HTML = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;padding:40px;color:#1e293b">
+  <h1>Invoice {{invoice_number}}</h1>
+  <p>Date: {{order_date}} &bull; From: {{partner_name}}</p>
+  <p>Bill To: {{customer_name}} ({{customer_email}})</p>
+  <hr/>
+  <p style="font-size:18px;font-weight:bold">Total: {{order_total}}</p>
+  <p style="color:#64748b;font-size:12px">{{footer_notes}}</p>
+</body></html>`;
 
   if (loading) return <div className="text-sm text-slate-500 py-4">Loading...</div>;
 
