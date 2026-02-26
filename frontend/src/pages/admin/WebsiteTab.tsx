@@ -1122,21 +1122,11 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
       <SlideOver
         open={formSlide !== null}
         onClose={() => setFormSlide(null)}
-        title={formSlide === "quote" ? "Quote Request Form" : "Scope Request Form"}
-        description={formSlide === "quote" ? "Shown when a customer requests a quote on a product." : "Shown for fixed-scope / RFQ products."}
+        title="Enquiry Form"
+        description="Shown across all product enquiry flows — quote requests and scope requests."
         onSave={() => saveSection(() => setFormSlide(null))}
         saving={slideSaving}
       >
-        {formSlide === "quote" && (
-          <div className="space-y-4">
-            <Field label="Form title" value={ws.quote_form_title} onChange={s("quote_form_title")} testId="ws-quote-title" />
-            <Field label="Subtitle" value={ws.quote_form_subtitle} onChange={s("quote_form_subtitle")} multiline testId="ws-quote-subtitle" />
-            <Field label="Response time message" hint='Shown at the bottom of the form.' value={ws.quote_form_response_time} onChange={s("quote_form_response_time")} testId="ws-quote-response" />
-            <div className="border-t border-slate-100 pt-3">
-              <FormSchemaBuilder title="Form fields" value={ws.quote_form_schema} onChange={s("quote_form_schema")} />
-            </div>
-          </div>
-        )}
         {formSlide === "scope" && (
           <div className="space-y-4">
             <Field label="Form title" value={ws.scope_form_title} onChange={s("scope_form_title")} testId="ws-scope-title" />
