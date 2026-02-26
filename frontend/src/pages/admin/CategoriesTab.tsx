@@ -13,7 +13,8 @@ import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Upload } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent as _TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+const TooltipContent = _TooltipContent as unknown as React.FC<{ side?: string; className?: string; children?: React.ReactNode }>;
 
 export function CategoriesTab() {
   const [categories, setCategories] = useState<any[]>([]);
