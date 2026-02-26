@@ -223,6 +223,33 @@ const MAX_GROUPS = 3;
 const DEFAULT_COND = (): VisibilityConditionRow => ({ depends_on: "", operator: "equals", value: "" });
 const DEFAULT_GROUP = (): VisibilityGroup => ({ logic: "AND", conditions: [DEFAULT_COND()] });
 
+// ── Mini toggle ────────────────────────────────────────────────────────────────
+const MiniToggle = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) => (
+  <label className="flex items-center gap-2 cursor-pointer select-none group">
+    <span className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-[#0f172a]" : "bg-slate-200 group-hover:bg-slate-300"}`}>
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="sr-only" />
+      <span className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-3.5" : "translate-x-0.5"}`} />
+    </span>
+    <span className="text-xs text-slate-600">{label}</span>
+  </label>
+);
+
+// ── Visibility summary ─────────────────────────────────────────────────────────
+function getVisibilitySummary(rule: any): string {
+  try {
+    const rs = normaliseRule(rule);
+    const totalConds = rs.groups.reduce((s, g) => s + g.conditions.length, 0);
+    if (!totalConds) return "";
+    const first = rs.groups[0]?.conditions[0];
+    if (!first?.depends_on) return `${totalConds} condition${totalConds !== 1 ? "s" : ""}`;
+    const opMap: Record<string, string> = { equals: "=", not_equals: "≠", greater_than: ">", less_than: "<", contains: "contains", not_contains: "!contains", not_empty: "≠ empty", empty: "= empty" };
+    const op = opMap[first.operator] ?? first.operator;
+    const val = NO_VALUE_OPS.has(first.operator) ? "" : ` "${first.value}"`;
+    const line = `${first.depends_on} ${op}${val}`;
+    return totalConds > 1 ? `${line} +${totalConds - 1} more` : line;
+  } catch { return ""; }
+}
+
 /** Normalise any saved rule (legacy or flat or grouped) into the current grouped VisibilityRuleSet */
 function normaliseRule(raw: any): VisibilityRuleSet {
   if (!raw) return { top_logic: "AND", groups: [DEFAULT_GROUP()] };
