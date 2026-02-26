@@ -31,15 +31,6 @@ SETTINGS_DEFAULTS: List[Dict[str, Any]] = [
         "description": "Default service fee rate (0.05 = 5%). Individual provider rates are in Connected Services.",
         "is_secret": False,
     },
-    # ---- Override Codes ----
-    {
-        "key": "override_code_expiry_hours",
-        "value_json": 48,
-        "value_type": "number",
-        "category": "OverrideCodes",
-        "description": "Default expiry in hours for newly generated override codes.",
-        "is_secret": False,
-    },
     # ---- Email ----
     {
         "key": "email_provider",
