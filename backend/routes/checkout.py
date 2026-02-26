@@ -535,7 +535,11 @@ async def create_checkout_session(
     _stripe_api_key, _, _fee_rate = await get_stripe_creds(tenant_id)
     discounted_subtotal = subtotal - discount_amount
     fee = round_cents(discounted_subtotal * _fee_rate)
-    total = round_cents(discounted_subtotal + fee)
+
+    # ── Tax calculation ───────────────────────────────────────────────────────
+    _tax_result_st = await calculate_tax(round_cents(discounted_subtotal), tenant_id, customer["id"])
+    _tax_amount_st = _tax_result_st.get("tax_amount", 0.0)
+    total = round_cents(discounted_subtotal + fee + _tax_amount_st)
 
     primary_product = order_items[0]["product"]
     terms_id = payload.terms_id if payload.terms_id else primary_product.get("terms_id")
@@ -559,7 +563,11 @@ async def create_checkout_session(
         "status": "pending",
         "subtotal": round_cents(subtotal), "discount_amount": discount_amount,
         "promo_code": promo_code_data["code"] if promo_code_data else None,
-        "fee": fee, "total": total, "currency": order_items[0]["product"].get("currency", "USD"),
+        "fee": fee, "total": total,
+        "tax_amount": _tax_amount_st,
+        "tax_rate": _tax_result_st.get("tax_rate", 0.0),
+        "tax_name": _tax_result_st.get("tax_name"),
+        "currency": order_items[0]["product"].get("currency", "USD"),
         "base_currency": base_currency,
         "base_currency_amount": round(total * (await get_fx_rate(order_items[0]["product"].get("currency", "USD"), base_currency)), 2),
         "payment_method": "card",
