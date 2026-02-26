@@ -29,7 +29,6 @@ def admin_session():
     res = session.post(f"{BASE_URL}/api/auth/login", json={
         "email": ADMIN_EMAIL,
         "password": ADMIN_PASSWORD,
-        "partner_code": PARTNER_CODE,
     })
     assert res.status_code == 200, f"Admin login failed: {res.text}"
     data = res.json()
