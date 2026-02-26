@@ -167,6 +167,7 @@ class TestManualOrderCurrencyAPI:
         # Create a manual subscription with GBP currency
         payload = {
             "customer_id": None,
+            "customer_email": "TEST_fx_sub@test.invalid",
             "product_id": product_id,
             "amount": 50.0,
             "currency": "GBP",
