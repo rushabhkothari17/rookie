@@ -278,7 +278,9 @@ class TestEvalProductConditionsLogic:
         assert len(vis_cond["conditions"]) == 2
 
         # Cleanup - deactivate the product (no delete endpoint)
-        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_OR_Logic_Product", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)(self, admin_headers, tenant_id):
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_OR_Logic_Product", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)
+
+    def test_conditional_product_with_empty_operator(self, admin_headers, tenant_id):
         """Products with 'empty' operator should be created correctly."""
         if tenant_id:
             headers = {**admin_headers, "X-View-As-Tenant": tenant_id}
