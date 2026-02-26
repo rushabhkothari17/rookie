@@ -1,0 +1,128 @@
+{
+  "summary": "Iter 115: Comprehensive QA of Resources, Categories, Override Codes, References, Email Templates, Scope Unlock (E1-E5), Enquiry Flow (G1-G4), and Cross-Tenant Security. All 53 backend tests passed. Two critical bugs found and FIXED. Scope unlock flow (E2/E3) now fully working. Email delivery is MOCKED.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/audit-logs",
+        "issue": "Audit log entries use 'action' field (e.g., USER_LOGIN), not 'event_type'. The backend test for resource audit used /api/resources/{id}/logs which works, but article_created/updated/deleted events should be verified to be present."
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Cart (Scope-Based Items section)",
+        "issue": "Cart shows 'No purchasable items in cart' even when scope-based items are in the cart (they appear in separate Scope-Based Items section). This may confuse users.",
+        "selector": ".cart-items-section",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Cart page",
+        "issues": ["Scope ID input in Cart (inside Scope-Based Items section) is missing data-testid attribute. The input placeholder is 'Enter Scope ID (e.g., SCOPE-ABC123)' but has no testid for automated testing."]
+      }
+    ]
+  },
+
+  "bugs_fixed_in_this_iteration": [
+    {
+      "file": "/app/backend/routes/admin/references.py",
+      "bug": "CRITICAL: Public endpoint list_references_public used undefined 'admin' variable in 'enrich_partner_codes(refs, is_platform_admin(admin))'. This would cause NameError on GET /api/references.",
+      "fix": "Removed the incorrect enrich_partner_codes call from the public endpoint"
+    },
+    {
+      "file": "/app/frontend/src/pages/ProductDetail.tsx",
+      "bug": "CRITICAL (E2 broken): handleValidateScopeId called api.get('/articles/${scopeId}/validate-scope') which does NOT exist — returns 404 always. The endpoint is /resources/{id}/validate-scope.",
+      "fix": "Changed '/articles/${scopeId.trim()}/validate-scope' to '/resources/${scopeId.trim()}/validate-scope'"
+    }
+  ],
+
+  "test_results": {
+    "A1_resource_categories_crud": "PASS — create, read, update, delete all work; required fields validated; duplicate rejected",
+    "A2_categories_tenant_isolation": "PASS — unauthenticated access blocked (401)",
+    "B1_resource_create_validation": "PASS — Scope Final Won/Lost requires price; missing title returns 400/422",
+    "B2_resource_edit": "PASS — content and price updates work",
+    "B3_resource_visibility": "PASS — get by ID works",
+    "B4_resource_list_filters": "PASS — category filter, search, pagination all work",
+    "B5_resource_audit": "PASS — /api/resources/{id}/logs returns entries",
+    "B6_customer_facing": "PASS — /api/resources/public is accessible without auth",
+    "C1_email_templates_list": "PASS — all templates present including enquiry_customer and scope_request_admin",
+    "C2_email_template_update": "PASS — subject update works",
+    "C3_email_template_toggle": "PASS — is_enabled toggle works",
+    "C4_email_template_auth": "PASS — requires authentication",
+    "D1_override_codes_crud": "PASS — create, list, filter by status all work",
+    "D2_override_code_expiry": "PASS — expired codes detected in expired filter",
+    "D3_override_code_deactivate": "PASS — deactivate (delete) works",
+    "D4_override_code_logs": "PASS — logs endpoint works",
+    "E1_scope_resource_create": "PASS — Scope Final Won with price created successfully",
+    "E2_scope_validate_valid": "PASS (after fix) — valid scope ID returns title+price; button changes to 'Add to cart — $2500'",
+    "E3_scope_validate_invalid": "PASS — invalid/non-scope ID returns 'Invalid Scope Id'",
+    "E4_scope_add_to_cart": "PASS — scope-unlocked product added to cart, navigated to cart page",
+    "E5_scope_cart_validation": "PASS — Cart shows Scope-Based Items section with its own scope ID validation",
+    "F1_references_crud": "PASS — create, update, delete all work; duplicate key rejected",
+    "F2_references_auth": "PASS — admin references require auth",
+    "G1_enquiry_submission_auth": "PASS — scope-request-form requires auth",
+    "G2_enquiries_admin_tab": "PASS — lists 2 records with status filter, date filter, View/Delete",
+    "G3_enquiry_emails": "PASS (MOCKED) — email_outbox has enquiry_customer and scope_request_admin entries with status=mocked",
+    "G4_enquiry_tenant_isolation": "PASS — enquiries endpoint requires auth",
+    "SEC1_cross_tenant_resources": "PASS — admin resource list is tenant-filtered",
+    "SEC2_cross_tenant_scope": "PASS — fake cross-tenant scope ID returns 404"
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_iter115_resources_overrides_references.py",
+    "/app/test_reports/pytest/pytest_iter115_resources.xml"
+  ],
+
+  "action_items": [
+    "MINOR: Add data-testid to Cart scope ID input (in Scope-Based Items section of Cart.tsx)",
+    "MINOR: Consider showing a message like 'Cart total excludes scope-based items' instead of 'No purchasable items in cart' to reduce confusion",
+    "MINOR: Verify article_created/updated/deleted audit log events are being written to audit_logs (backend test for B5 uses /api/resources/{id}/logs which is a different endpoint than /api/admin/audit-logs)"
+  ],
+
+  "critical_code_review_comments": [
+    "references.py public endpoint bug (NameError on admin variable) — FIXED in this iteration",
+    "ProductDetail.tsx used wrong API path /articles/ instead of /resources/ for validate-scope — FIXED in this iteration",
+    "Both Cart.tsx and ProductDetail.tsx now consistently use /resources/{id}/validate-scope ✅",
+    "Email templates endpoint returns 11 templates; both enquiry_customer and scope_request_admin are enabled ✅",
+    "Override codes have correct expiry detection and status filters ✅",
+    "validate-scope correctly enforces: resource exists, tenant matches, category in SCOPE_FINAL_CATEGORIES, price set ✅"
+  ],
+
+  "updated_files": [
+    "/app/backend/routes/admin/references.py (removed undefined admin variable from public endpoint)",
+    "/app/frontend/src/pages/ProductDetail.tsx (fixed /articles/ → /resources/ in validate-scope URL)"
+  ],
+
+  "success_rate": {
+    "backend": "100% (53/53 passed)",
+    "frontend": "95% (all critical flows pass; minor UX note on cart messaging)"
+  },
+
+  "seed_data_creation": "Created and deleted: TEST_Scope_Final_Won_Iter115 resource, TEST_Override_ITER115 code, TEST_Reference_Iter115, TEST_Resource_Help_Iter115, TEST_Category_Iter115, UI Test Scope Final Won Iter115. All cleaned up.",
+
+  "mocked_apis": "Email delivery is MOCKED — email_outbox collection has enquiry_customer and scope_request_admin entries with status=mocked. No actual emails sent.",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Iter 115 fixed 2 critical bugs: (1) references.py NameError, (2) ProductDetail.tsx /articles/ wrong path for validate-scope. All 53 backend tests pass. Scope unlock flow E1-E5 fully working after the fix. Email templates: 11 templates exist including enquiry_customer and scope_request_admin (MOCKED). Enquiries tab shows scope_pending records. Override Codes sub-tab shows active/inactive/expired codes. Resource Categories sub-tab shows 0 custom categories. Cart shows Scope-Based Items section separately from purchasable items.",
+
+  "rca_of_issues": {
+    "issue_1_references_nameerror": {
+      "root_cause": "references.py list_references_public function called enrich_partner_codes(refs, is_platform_admin(admin)) where admin is not a parameter of the function. The admin variable is available in authenticated admin routes but not in this unauthenticated public endpoint.",
+      "reproduction": "GET /api/references without auth token → NameError: name 'admin' is not defined",
+      "fix": "Removed the enrich_partner_codes call from the public endpoint since it doesn't need partner code enrichment"
+    },
+    "issue_2_scope_validate_wrong_path": {
+      "root_cause": "When Articles was renamed to Resources, the validate-scope endpoint path was updated in the backend (/resources/{id}/validate-scope) but ProductDetail.tsx was not updated and still called /articles/{id}/validate-scope. The /articles/ path doesn't exist, so every validate-scope call returned 404.",
+      "reproduction": "Navigate to product page with Scope ID field → enter any valid Scope Final Won resource ID → shows 'Invalid Scope Id' error",
+      "fix": "Changed api.get('/articles/${scopeId.trim()}/validate-scope') to api.get('/resources/${scopeId.trim()}/validate-scope') in ProductDetail.tsx line 177"
+    }
+  }
+}
