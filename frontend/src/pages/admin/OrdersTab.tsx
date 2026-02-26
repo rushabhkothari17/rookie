@@ -567,7 +567,10 @@ export function OrdersTab() {
               <label className="text-xs text-slate-500">Product</label>
               <SearchableSelect
                 value={manualOrder.product_id || undefined}
-                onValueChange={v => setManualOrder({ ...manualOrder, product_id: v })}
+                onValueChange={v => {
+                  const p = products.find((p: any) => p.id === v);
+                  setManualOrder({ ...manualOrder, product_id: v, currency: p?.currency || "USD" });
+                }}
                 options={products.map((p: any) => ({ value: p.id, label: p.name }))}
                 placeholder="Select product"
                 searchPlaceholder="Search products..."
@@ -579,17 +582,23 @@ export function OrdersTab() {
               <div className="space-y-1"><label className="text-xs text-slate-500">Discount</label><Input type="number" step="0.01" value={manualOrder.discount} onChange={e => setManualOrder({ ...manualOrder, discount: parseFloat(e.target.value) || 0 })} /></div>
               <div className="space-y-1"><label className="text-xs text-slate-500">Fee</label><Input type="number" step="0.01" value={manualOrder.fee} onChange={e => setManualOrder({ ...manualOrder, fee: parseFloat(e.target.value) || 0 })} /></div>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500">Status</label>
-              <Select value={manualOrder.status} onValueChange={v => setManualOrder({ ...manualOrder, status: v })}>
-                <SelectTrigger className="w-full bg-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="paid">Paid (Manual)</SelectItem>
-                  <SelectItem value="unpaid">Unpaid (Manual)</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Currency</label>
+                <select value={manualOrder.currency} onChange={e => setManualOrder({ ...manualOrder, currency: e.target.value })} className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm">
+                  {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Status</label>
+                <Select value={manualOrder.status} onValueChange={v => setManualOrder({ ...manualOrder, status: v })}>
+                  <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="paid">Paid (Manual)</SelectItem>
+                    <SelectItem value="unpaid">Unpaid (Manual)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Internal Note</label>
