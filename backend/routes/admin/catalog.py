@@ -160,6 +160,7 @@ async def admin_create_product(
         "is_active": payload.is_active,
         "visible_to_customers": payload.visible_to_customers,
         "restricted_to": payload.restricted_to,
+        "visibility_conditions": payload.visibility_conditions.model_dump() if payload.visibility_conditions else None,
         "price_rounding": payload.price_rounding or None,
         "pricing_type": payload.pricing_type or "internal",
         "external_url": payload.external_url,
