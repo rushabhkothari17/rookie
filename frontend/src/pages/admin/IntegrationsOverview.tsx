@@ -193,6 +193,29 @@ const ICON_MAP: Record<string, any> = {
 
 // Setup guides for each integration
 const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; url: string }[]; tips?: string[] }> = {
+  zoho_workdrive: {
+    steps: [
+      "Log in to Zoho API Console: api-console.zoho.com",
+      "Create a new 'Server-based Application' (or use an existing one)",
+      "Set redirect URI to: https://www.zoho.com/workdrive",
+      "Under 'Scopes', add: WorkDrive.files.CREATE, WorkDrive.files.READ, WorkDrive.files.UPDATE, WorkDrive.files.DELETE, WorkDrive.teamfolders.READ",
+      "Copy your Client ID and Client Secret and paste them below",
+      "Click 'Save Credentials' to generate your Authorization URL",
+      "Open the Authorization URL in your browser and grant access",
+      "Copy the one-time Authorization Code (expires in 3 minutes) and paste in the Code field",
+      "Click 'Connect' — tokens are stored automatically (no manual refresh token needed)",
+      "After validation, paste your WorkDrive parent folder URL where client folders will be created",
+    ],
+    links: [
+      { label: "Zoho API Console", url: "https://api-console.zoho.com" },
+      { label: "WorkDrive API Docs", url: "https://workdrive.zoho.com/apidocs/v1" },
+    ],
+    tips: [
+      "The parent folder URL is the WorkDrive folder that will contain all your client sub-folders",
+      "Client folders are named: '{Client Name} - {Client ID}' and are auto-created when customers are added",
+      "You can trigger an initial sync from the Documents tab in the admin panel to create folders for existing customers",
+    ],
+  },
   stripe: {
     steps: [
       "Log in to your Stripe Dashboard",
