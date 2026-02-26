@@ -748,6 +748,8 @@ async def checkout_status(
                         "cancel_at_period_end": False,
                         "canceled_at": None,
                         "amount": order.get("subtotal"),
+                        "currency": order.get("currency", "USD"),
+                        "base_currency": order.get("base_currency", "USD"),
                         "payment_method": "card",
                         "notes": [],
                         "internal_note": "",
