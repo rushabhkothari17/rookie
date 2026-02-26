@@ -467,7 +467,7 @@ export default function ProductDetail() {
               );
             })()}
             <Button className="w-full" onClick={handleSubmitScopeForm} disabled={submittingScope} data-testid="scope-submit-button">
-              {submittingScope ? "Submitting..." : "Submit Scope Request"}
+              {submittingScope ? "Submitting..." : "Submit Enquiry"}
             </Button>
           </div>
         </DialogContent>
