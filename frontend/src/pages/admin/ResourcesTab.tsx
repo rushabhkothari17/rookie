@@ -204,6 +204,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
         slug: a.slug || "",
         category: a.category || "",
         price: a.price ? String(a.price) : "",
+        currency: a.currency || "USD",
         content: a.content || "",
         visibility: a.visibility || "all",
         restricted_to: a.restricted_to || [],
