@@ -293,6 +293,7 @@ class EmailService:
         
         - Seeds all templates if none exist for the tenant
         - Seeds any missing templates if some exist (for new templates added later)
+        - Updates existing system templates when their definition changes
         """
         existing_count = await db.email_templates.count_documents({"tenant_id": tenant_id})
         now = now_iso()
@@ -316,6 +317,14 @@ class EmailService:
             if missing:
                 docs = [{"id": make_id(), "tenant_id": tenant_id, "created_at": now, "updated_at": now, **t} for t in missing]
                 await db.email_templates.insert_many(docs)
+            
+            # Update system templates that have new available_variables (non-destructive: only if admin hasn't edited them)
+            for t in _TEMPLATES:
+                if t.get("is_system") and t["trigger"] in existing_triggers:
+                    await db.email_templates.update_one(
+                        {"tenant_id": tenant_id, "trigger": t["trigger"]},
+                        {"$set": {"available_variables": t["available_variables"], "label": t["label"], "description": t["description"], "updated_at": now}},
+                    )
 
     @staticmethod
     async def send(
