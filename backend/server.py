@@ -164,6 +164,12 @@ async def seed_admin_user():
         return
     existing = await db.users.find_one({"email": ADMIN_EMAIL}, {"_id": 0})
     if existing:
+        # Ensure the platform admin always has the correct role, even if it was changed
+        if existing.get("role") != "platform_admin" or existing.get("tenant_id") is not None:
+            await db.users.update_one(
+                {"email": ADMIN_EMAIL},
+                {"$set": {"role": "platform_admin", "tenant_id": None, "is_admin": True}}
+            )
         return
     user_id = make_id()
     hashed = pwd_context.hash(ADMIN_PASSWORD)
