@@ -895,4 +895,4 @@ See Section 14 for OAuth endpoints. Additional endpoints:
 | 2026-02-27 | **References in Articles**: `{ref:key}` variables now resolved in public article content (previously emails only). |
 | 2026-02-27 | **Cart Validation**: Backend and frontend enforce no mixing of billing types or currencies per cart. |
 | 2026-02-27 | **Email Templates**: `quote_request_admin` / `quote_request_customer` templates removed. Replaced by `scope_request_admin` / `enquiry_customer`. |
-| 2026-02-27 | **Tenant Base Currency**: New `GET/PUT /admin/tenant/base-currency` endpoints. |
+| 2026-02-27 | **Removed preferred_currency**: `currency` and `currency_locked` fields removed from customer documents. Stripped from `auth.py` registration flow and unset via migration. Currency is now driven entirely by the product's `currency` field. Portal orders/subscriptions now display `order.currency` / `sub.currency` instead of a customer-level preference. |
