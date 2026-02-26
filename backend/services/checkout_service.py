@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+import time
+from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 from fastapi import HTTPException
@@ -14,14 +15,26 @@ from core.constants import SERVICE_FEE_RATE
 
 logger = logging.getLogger(__name__)
 
+# ── FX rate cache (1-hour TTL) ─────────────────────────────────────────────
+_fx_cache: Dict[str, Tuple[float, float]] = {}  # key -> (rate, timestamp)
+_FX_CACHE_TTL = 3600  # seconds
+
 
 async def get_fx_rate(from_currency: str, to_currency: str) -> float:
     """Fetch real-time FX rate via open.er-api.com (free, no key required).
-    Returns 1.0 as fallback if currencies match or the API is unavailable."""
+    Results are cached for 1 hour.  Returns 1.0 on any failure."""
     from_currency = (from_currency or "USD").upper()
     to_currency = (to_currency or "USD").upper()
     if from_currency == to_currency:
         return 1.0
+
+    cache_key = f"{from_currency}:{to_currency}"
+    cached = _fx_cache.get(cache_key)
+    if cached:
+        rate, ts = cached
+        if time.time() - ts < _FX_CACHE_TTL:
+            return rate
+
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(
@@ -33,6 +46,7 @@ async def get_fx_rate(from_currency: str, to_currency: str) -> float:
                 rates = data.get("rates", {})
                 rate = rates.get(to_currency)
                 if rate:
+                    _fx_cache[cache_key] = (float(rate), time.time())
                     return float(rate)
     except Exception as exc:
         logger.warning("FX rate fetch failed (%s→%s): %s — using 1:1 fallback", from_currency, to_currency, exc)
