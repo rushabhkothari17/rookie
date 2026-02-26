@@ -1,41 +1,49 @@
-"""Admin: Currency override, sync logs, partner map."""
+"""Admin: Sync logs, partner map, tenant base currency."""
 from __future__ import annotations
 
 from typing import Any, Dict
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 
 from core.security import require_admin
 from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from core.helpers import now_iso
 from db.session import db
-from models import CurrencyOverrideRequest, CustomerPartnerMapUpdate
+from models import CustomerPartnerMapUpdate
 from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["admin-misc"])
 
+VALID_CURRENCIES = ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]
 
-@router.post("/admin/currency-override")
-async def admin_currency_override(
-    payload: CurrencyOverrideRequest,
+
+@router.get("/admin/tenant/base-currency")
+async def get_base_currency(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tid = tenant_id_of(admin)
+    if not tid:
+        return {"base_currency": "USD"}
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "base_currency": 1})
+    return {"base_currency": tenant.get("base_currency", "USD") if tenant else "USD"}
+
+
+@router.put("/admin/tenant/base-currency")
+async def update_base_currency(
+    payload: Dict[str, Any] = Body(...),
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    tf = get_tenant_filter(admin)
-    user = await db.users.find_one({**tf, "email": payload.customer_email.lower()}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    customer = await db.customers.find_one({**tf, "user_id": user["id"]}, {"_id": 0})
-    if not customer:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    await db.customers.update_one({"id": customer["id"]}, {"$set": {"currency": payload.currency, "currency_locked": True}})
+    tid = tenant_id_of(admin)
+    if not tid:
+        raise HTTPException(status_code=403, detail="Platform admin cannot change base currency here")
+    currency = payload.get("base_currency", "").strip().upper()
+    if currency not in VALID_CURRENCIES:
+        raise HTTPException(status_code=400, detail=f"Invalid currency. Must be one of: {', '.join(VALID_CURRENCIES)}")
+    await db.tenants.update_one({"id": tid}, {"$set": {"base_currency": currency, "updated_at": now_iso()}})
     await create_audit_log(
-        entity_type="customer",
-        entity_id=customer["id"],
-        action="currency_override",
-        actor=f"admin:{admin.get('email', admin['id'])}",
-        details={"currency": payload.currency, "email": payload.customer_email},
+        entity_type="tenant", entity_id=tid,
+        action="base_currency_updated", actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"base_currency": currency},
     )
-    return {"message": "Currency overridden"}
+    return {"message": "Base currency updated", "base_currency": currency}
 
 
 @router.get("/admin/sync-logs")
