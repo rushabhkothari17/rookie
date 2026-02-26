@@ -16,7 +16,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import type { LayoutProps } from "./types";
-import { QuestionLabel, renderIntakeField } from "./utils";
+import { QuestionLabel, renderIntakeField, ScopeIdBlock } from "./utils";
 
 type Section = "overview" | "questions" | "pricing" | "faqs";
 
