@@ -190,10 +190,15 @@ async def get_product(
         if not is_admin:
             whitelist = product.get("visible_to_customers", [])
             blacklist = product.get("restricted_to", [])
+            vis_cond = product.get("visibility_conditions")
             if whitelist and (not cid or cid not in whitelist):
                 raise HTTPException(status_code=404, detail="Product not found")
             if blacklist and cid and cid in blacklist:
                 raise HTTPException(status_code=404, detail="Product not found")
+            if vis_cond and vis_cond.get("conditions") and not whitelist and not blacklist:
+                cust_doc = customer or {}
+                if not _eval_product_conditions(vis_cond, cust_doc):
+                    raise HTTPException(status_code=404, detail="Product not found")
     return {"product": product}
 
 
