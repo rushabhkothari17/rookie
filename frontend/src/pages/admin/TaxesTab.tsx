@@ -311,7 +311,7 @@ function OverrideRulesPanel() {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const r = await api.get("/api/admin/taxes/overrides");
+    const r = await api.get("/admin/taxes/overrides");
     setRules(r.data.rules || []);
     setLoading(false);
   }, []);
