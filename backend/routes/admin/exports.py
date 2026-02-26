@@ -106,6 +106,10 @@ async def export_orders_csv(
             continue
         o["_customer_email"] = user.get("email", "")
         o["_customer_name"] = user.get("full_name", "")
+        # Ensure these columns always appear
+        o.setdefault("base_currency_amount", 0.0)
+        o.setdefault("tax_amount", 0.0)
+        o.setdefault("tax_name", "")
         enriched.append(o)
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
