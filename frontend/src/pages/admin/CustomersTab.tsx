@@ -333,6 +333,20 @@ export function CustomersTab() {
                   })}
                 </div>
               </div>
+              <hr />
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Tax Exempt</label>
+                  <p className="text-xs text-slate-400">Customer will not be charged any tax at checkout.</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={!!selectedCustomer.tax_exempt}
+                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, tax_exempt: e.target.checked, _tax_exempt_changed: true })}
+                  className="h-4 w-4 rounded border-slate-300 accent-slate-900"
+                  data-testid="edit-customer-tax-exempt"
+                />
+              </div>
               <Button onClick={handleCustomerEdit} className="w-full" data-testid="admin-customer-save-btn">Save Changes</Button>
             </div>
           )}
