@@ -155,6 +155,18 @@ class VisibilityRule(BaseModel):
     value: str = ""
 
 
+# ── Product conditional visibility ────────────────────────────────────────────
+class ProductVisCondition(BaseModel):
+    field: str = ""       # customer field key
+    operator: str = "equals"  # equals | not_equals | contains | not_contains | empty | not_empty
+    value: str = ""       # empty for empty/not_empty operators
+
+
+class ProductVisRuleSet(BaseModel):
+    logic: str = "AND"   # "AND" | "OR"
+    conditions: List[ProductVisCondition] = Field(default_factory=list)
+
+
 class IntakeQuestion(BaseModel):
     key: str = ""
     label: str = ""
