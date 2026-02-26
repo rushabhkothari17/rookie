@@ -110,6 +110,21 @@ export default function Cart() {
     loadTerms();
   }, []);
 
+  // Calculate tax whenever discounted subtotal changes
+  useEffect(() => {
+    const discSub = totalSubtotal - (promoApplied ? (promoApplied.discount_type === "percent"
+      ? Math.round(totalSubtotal * promoApplied.discount_value) / 100
+      : Math.min(promoApplied.discount_value, totalSubtotal)) : 0);
+    if (discSub <= 0 || items.length === 0) { setTaxInfo(null); return; }
+    const fetchTax = async () => {
+      try {
+        const r = await api.post("/checkout/calculate-tax", { subtotal: discSub });
+        setTaxInfo(r.data.tax_amount > 0 ? r.data : null);
+      } catch { setTaxInfo(null); }
+    };
+    fetchTax();
+  }, [totalSubtotal, promoApplied, items.length]);
+
   // Group items by type
   const grouped = useMemo(() => {
     if (!preview) return { oneTime: [], subscriptions: [], scope: [], rfq: [], external: [], inquiry: [] };
