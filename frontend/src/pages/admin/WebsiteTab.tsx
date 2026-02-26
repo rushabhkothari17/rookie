@@ -840,10 +840,9 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
           {activeSection === "forms" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700 mb-1">Forms</h3>
-              <p className="text-xs text-slate-400 mb-4">Click to edit form text labels and custom fields.</p>
+              <p className="text-xs text-slate-400 mb-4">Click to edit the enquiry form — used across all product enquiry flows.</p>
               <div className="space-y-3">
-                <FormTile title="Quote Request Form" description="Shown when a customer requests a quote" fieldCount={getFieldCount(ws.quote_form_schema)} onEdit={() => setFormSlide("quote")} testId="form-tile-quote" />
-                <FormTile title="Scope Request Form" description="Shown for fixed-scope / RFQ products" fieldCount={getFieldCount(ws.scope_form_schema)} onEdit={() => setFormSlide("scope")} testId="form-tile-scope" />
+                <FormTile title="Enquiry Form" description="Shown when a customer requests a quote or submits an enquiry" fieldCount={getFieldCount(ws.scope_form_schema)} onEdit={() => setFormSlide("scope")} testId="form-tile-enquiry" />
               </div>
               <p className="text-xs text-slate-400 mt-3">The customer Sign-up form is managed in <button onClick={() => setActiveSection("auth")} className="text-slate-600 underline">Auth &amp; Pages → Sign Up</button>.</p>
             </>
