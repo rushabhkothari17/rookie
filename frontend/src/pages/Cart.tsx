@@ -724,7 +724,7 @@ export default function Cart() {
                         <button onClick={() => removeItem(item.product.id)} className="text-xs text-red-500 hover:text-red-700">Remove</button>
                       </div>
                       <Button variant="outline" size="sm" className="w-full" onClick={() => { setCartQuoteProduct(item.product); setShowCartQuoteModal(true); }} data-testid={`cart-rfq-request-quote-btn-${item.product.id}`}>
-                        Request Quote
+                        Request a Quote
                       </Button>
                     </div>
                   ))}
