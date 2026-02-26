@@ -310,7 +310,7 @@ export default function ProductDetail() {
       return {
         label: "Proceed to checkout",
         onClick: () => {
-          addItem({ product_id: product.id, quantity: 1, inputs: { ...inputs, ...intakeAnswers } });
+          if (!tryAddItem({ product_id: product.id, quantity: 1, inputs: { ...inputs, ...intakeAnswers } })) return;
           toast.success("Added to cart");
           navigate("/cart");
         },
