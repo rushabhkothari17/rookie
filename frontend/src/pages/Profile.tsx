@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import api from "@/lib/api";
@@ -28,6 +29,7 @@ export default function Profile() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -50,6 +52,18 @@ export default function Profile() {
       }).catch(() => {});
     }
   }, [user, address, isAdmin]);
+
+  // Fetch provinces/states when country changes
+  useEffect(() => {
+    const country = form.country;
+    if (country === "Canada" || country === "USA") {
+      api.get(`/utils/provinces?country_code=${country}`).then(r => {
+        setProvinces(r.data.regions || []);
+      }).catch(() => setProvinces([]));
+    } else {
+      setProvinces([]);
+    }
+  }, [form.country]);
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
