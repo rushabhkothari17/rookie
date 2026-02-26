@@ -19,15 +19,16 @@ E-commerce platform for professional services with:
 - [x] Advanced intake forms with conditional visibility
 - [x] Tiered pricing engine with formulas
 
-### Admin Interface (RESTRUCTURED 2026-02-25)
+### Admin Interface (UPDATED 2026-02-26)
 - [x] **Products tab** now contains: Products, Categories, Promo Codes, Terms (as sub-tabs)
 - [x] **Articles tab** now contains: Articles, Templates, Email Templates, Categories, Override Codes (as sub-tabs)
 - [x] **Main sidebar** updated:
   - PEOPLE: Users, Customers
-  - COMMERCE: Products, Subscriptions, Orders, Requests
-  - CONTENT: Articles, Email Templates, References
+  - COMMERCE: Products, Subscriptions, Orders, **Enquiries** (replaces Requests)
+  - CONTENT: Resources, Email Templates, References
   - SETTINGS: Website Content, Custom Domains
   - INTEGRATIONS: Connect Services, API, Webhooks, Logs
+- [x] **Enquiries tab**: Unified tab showing all scope_request orders with status management, filtering, and detail view
 - [x] **Website Content** streamlined:
   - Removed Payments section (keep in Connected Services)
   - Removed Bank Transaction Form from Forms
