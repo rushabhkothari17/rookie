@@ -60,46 +60,6 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "is_system": True,
     },
     {
-        "trigger": "quote_request_admin",
-        "label": "New Quote Request (Admin Notification)",
-        "description": "Sent to the admin when a customer submits a quote request.",
-        "subject": "New Quote Request: {{product_name}} from {{customer_name}}",
-        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
-<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
-  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}} — Admin Notification</p>
-  <h2 style="color:#1e293b;margin:0 0 16px">New Quote Request</h2>
-  <table style="width:100%;border-collapse:collapse">
-    <tr><td style="padding:8px 0;color:#64748b;font-size:13px;width:140px">Product</td><td style="padding:8px 0;color:#1e293b;font-weight:600">{{product_name}}</td></tr>
-    <tr><td style="padding:8px 0;color:#64748b;font-size:13px">Name</td><td style="padding:8px 0;color:#1e293b">{{customer_name}}</td></tr>
-    <tr><td style="padding:8px 0;color:#64748b;font-size:13px">Email</td><td style="padding:8px 0;color:#1e293b">{{customer_email}}</td></tr>
-    <tr><td style="padding:8px 0;color:#64748b;font-size:13px">Company</td><td style="padding:8px 0;color:#1e293b">{{company}}</td></tr>
-    <tr><td style="padding:8px 0;color:#64748b;font-size:13px">Phone</td><td style="padding:8px 0;color:#1e293b">{{phone}}</td></tr>
-    <tr><td style="padding:8px 0;color:#64748b;font-size:13px;vertical-align:top">Message</td><td style="padding:8px 0;color:#1e293b">{{message}}</td></tr>
-  </table>
-  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
-</div></body></html>""",
-        "is_enabled": True,
-        "available_variables": ["{{store_name}}", "{{product_name}}", "{{customer_name}}", "{{customer_email}}", "{{company}}", "{{phone}}", "{{message}}"],
-        "is_system": True,
-    },
-    {
-        "trigger": "quote_request_customer",
-        "label": "Quote Request Confirmation (Customer)",
-        "description": "Sent to the customer confirming their quote request was received.",
-        "subject": "We've received your quote request — {{product_name}}",
-        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
-<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
-  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
-  <h2 style="color:#1e293b;margin:0 0 16px">Quote Request Received</h2>
-  <p style="color:#475569;">Hi {{customer_name}},</p>
-  <p style="color:#475569;">Thank you for your interest in <strong>{{product_name}}</strong>. We've received your request and will get back to you shortly.</p>
-  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
-</div></body></html>""",
-        "is_enabled": False,
-        "available_variables": ["{{store_name}}", "{{product_name}}", "{{customer_name}}", "{{customer_email}}"],
-        "is_system": True,
-    },
-    {
         "trigger": "scope_request_admin",
         "label": "New Enquiry (Admin Notification)",
         "description": "Sent to the admin when a customer submits an enquiry (scope request or quote request).",
