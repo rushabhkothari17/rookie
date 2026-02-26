@@ -19,6 +19,19 @@ export type QType =
 
 export interface IntakeOption { label: string; value: string; price_value: number; }
 export interface PricingTier { from: number; to: number | null; price_per_unit: number; }
+export interface VisibilityConditionRow {
+  depends_on: string;
+  operator: "equals" | "not_equals" | "greater_than" | "less_than" | "contains" | "not_contains" | "not_empty" | "empty";
+  value: string;
+}
+
+/** New multi-condition rule set (supports up to 4 conditions with AND/OR) */
+export interface VisibilityRuleSet {
+  logic: "AND" | "OR";
+  conditions: VisibilityConditionRow[];
+}
+
+/** Legacy single-rule format kept for backward compat */
 export interface VisibilityRule {
   depends_on: string;
   operator: "equals" | "not_equals" | "greater_than" | "less_than" | "contains" | "not_empty";
@@ -59,8 +72,8 @@ export interface IntakeQuestion {
   max_size_mb?: number;
   // HTML block
   content?: string;
-  // Visibility
-  visibility_rule?: VisibilityRule | null;
+  // Visibility — supports both new VisibilityRuleSet and legacy VisibilityRule
+  visibility_rule?: VisibilityRuleSet | VisibilityRule | null;
 }
 
 export interface IntakeSchemaJson {
