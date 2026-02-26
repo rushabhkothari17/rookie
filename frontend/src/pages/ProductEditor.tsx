@@ -155,6 +155,7 @@ export default function ProductEditor() {
         external_url: form.external_url || null,
         display_layout: form.display_layout || "standard",
         currency: form.currency || "USD",
+        visibility_conditions: form.visibility_conditions || null,
       };
 
       if (isNew) {
