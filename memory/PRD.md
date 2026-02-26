@@ -54,7 +54,20 @@ E-commerce platform for professional services with:
 - [x] **Partner tag / override code flow removed** completely
 - [x] Checkout payload no longer sends partner_tag_response or override_code
 
-### Store
+### Currency System (NEW 2026-02-26)
+- [x] **Global currency list**: USD, CAD, EUR, AUD, GBP, INR, MXN
+- [x] **Partner base currency**: Set during signup, changeable via Website Content > System Config
+- [x] **Product currency**: Mandatory field for internal pricing products
+- [x] **Checkout currency**: Based on product currency (not customer currency)
+- [x] **Orders & Subscriptions**: Store `currency` (product's) and `base_currency` (tenant's)
+- [x] **Currency display**: Orders/Subscriptions tables show currency column
+- [x] **Resources scope-final**: Currency field alongside price
+- [x] **Manual orders/subscriptions**: Currency selector (auto-fills from product)
+- [x] **Audit logs**: Include currency and base_currency in details
+- [x] **Payment processors**: Pass product currency to Stripe and GoCardless
+- [x] **Customer currency override**: Removed (redundant)
+- [x] **API**: GET/PUT /api/admin/tenant/base-currency
+
 - [x] Category sidebar with blurbs
 - [x] Blank category filtering (fixed)
 - [x] Product search and filters
