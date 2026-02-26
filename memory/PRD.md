@@ -31,10 +31,14 @@ E-commerce platform for professional services with:
 - [x] **Resources tab** now contains: Resources, Templates, Email Templates, Categories (Override Codes REMOVED)
 - [x] **Main sidebar** updated:
   - PEOPLE: Users, Customers (Currency Override removed from Customers)
-  - COMMERCE: Products, Subscriptions, Orders, **Enquiries** (replaces Requests)
+  - COMMERCE: Products, Subscriptions, Orders, **Enquiries** (replaces Requests), **Taxes** (NEW)
   - CONTENT: Resources, Email Templates, References
   - SETTINGS: Website Content, Custom Domains
   - INTEGRATIONS: Connect Services, API, Webhooks, Logs
+- [x] **Taxes tab (NEW 2026-02-26)**: 3 sub-tabs:
+  - Tax Settings: Enable/disable tax collection, configure partner's country/state
+  - Rate Table: Browse/edit global rates (Canada provinces, US states, UK/AU/IN/EU)
+  - Override Rules: Partner-specific CRUD rules with priority and conditions
 - [x] **Enquiries tab**: Unified tab showing all scope_request orders with status management, filtering, and detail view
 - [x] **Website Content** streamlined:
   - Removed Payments section (keep in Connected Services)
