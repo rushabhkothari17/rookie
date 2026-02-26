@@ -154,7 +154,8 @@ export default function Cart() {
   
   const discountedSubtotal = totalSubtotal - discountAmount;
   const fee = showFee ? Math.round(discountedSubtotal * stripeFeeRate * 100) / 100 : 0;
-  const total = discountedSubtotal + fee;
+  const taxAmount = taxInfo?.tax_amount || 0;
+  const total = discountedSubtotal + fee + taxAmount;
   const isFreeCheckout = total <= 0 && grouped.oneTime.length > 0;
 
   // Handlers
