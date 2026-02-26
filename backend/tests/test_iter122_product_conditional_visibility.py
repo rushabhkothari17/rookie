@@ -359,7 +359,7 @@ class TestEvalProductConditionsLogic:
         assert pid not in product_ids, f"Product with not_empty condition should not be visible to user with empty company_name"
 
         # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=headers)
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_cleanup", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)
 
 
 # ── Test: Intake form with visibility_conditions in schema ────────────────────
@@ -473,7 +473,7 @@ class TestIntakeMultiConditionVisibility:
         assert conds[0]["operator"] == "not_contains"
 
         # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=headers)
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_cleanup", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)
 
     def test_intake_backward_compat_legacy_rule(self, admin_headers, tenant_id):
         """Legacy single-rule format still works when creating/updating products."""
@@ -545,7 +545,7 @@ class TestIntakeMultiConditionVisibility:
         assert vis_rule is not None, "Legacy visibility rule must be preserved"
 
         # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=headers)
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_cleanup", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)
 
     def test_intake_empty_operator_in_visibility_rule(self, admin_headers, tenant_id):
         """Intake visibility rule with 'empty' operator saves correctly."""
@@ -616,4 +616,4 @@ class TestIntakeMultiConditionVisibility:
         assert conds[0]["value"] == ""
 
         # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=headers)
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_cleanup", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)
