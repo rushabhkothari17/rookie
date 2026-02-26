@@ -119,6 +119,7 @@ export default function App() {
                 <Route path="/profile" element={<Profile />} />
 
                 <Route path="/portal" element={<Portal />} />
+                <Route path="/invoice/:orderId" element={<InvoiceViewer />} />
                 <Route
                   path="/admin"
                   element={
