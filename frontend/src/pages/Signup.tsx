@@ -78,6 +78,22 @@ export default function Signup() {
     }).catch(() => {});
   }, [isPartnerMode, navigate]);
 
+  // Fetch provinces/states when country changes
+  useEffect(() => {
+    const country = form.country;
+    if (country === "Canada" || country === "USA") {
+      api.get(`/utils/provinces?country_code=${country}`).then(r => {
+        setProvinces(r.data.regions || []);
+        // Clear region if current value is not in the new list
+        if (r.data.regions && !r.data.regions.find((p: any) => p.value === form.region || p.label === form.region)) {
+          handleChange("region", "");
+        }
+      }).catch(() => setProvinces([]));
+    } else {
+      setProvinces([]);
+    }
+  }, [form.country]);
+
   const handleChange = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
   const schema: FormField[] = parseSchema(ws.signup_form_schema);
