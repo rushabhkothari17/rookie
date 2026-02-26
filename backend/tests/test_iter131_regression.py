@@ -428,52 +428,41 @@ class TestGocardlessRenewalViaHTTP:
 
     def test_gc_mandate_cancelled_marks_subscription_unpaid_via_webhook(self, admin_session):
         """GoCardless: mandate.cancelled event marks active subscriptions as unpaid via HTTP."""
-        import asyncio
         import sys
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from core.helpers import make_id, now_iso
 
-        async def run_all():
-            from db.session import db
-            from core.helpers import make_id, now_iso
+        db = get_sync_db()
+        cust_id = make_id()
+        user_id = make_id()
+        sub_id = make_id()
+        mandate_id = f"MD_cancel_{sub_id[:8]}"
+        now = datetime.now(timezone.utc)
 
-            cust_id = make_id()
-            user_id = make_id()
-            sub_id = make_id()
-            mandate_id = f"MD_cancel_{sub_id[:8]}"
-            now = datetime.now(timezone.utc)
+        db.users.insert_one({"id": user_id, "email": f"gc_cancel_{cust_id[:6]}@test.com", "full_name": "Cancel Test", "tenant_id": "TEST_cancel_tenant", "is_active": True})
+        db.customers.insert_one({"id": cust_id, "user_id": user_id, "tenant_id": "TEST_cancel_tenant"})
+        db.subscriptions.insert_one({
+            "id": sub_id, "subscription_number": f"SUB-CANCEL-{sub_id[:6].upper()}",
+            "customer_id": cust_id, "plan_name": "Cancel Plan",
+            "status": "active", "gocardless_mandate_id": mandate_id,
+            "amount": 40.0, "currency": "GBP", "base_currency": "GBP",
+            "payment_method": "bank_transfer",
+            "created_at": now_iso(), "updated_at": now_iso(),
+        })
 
-            await db.users.insert_one({"id": user_id, "email": f"gc_cancel_{cust_id[:6]}@test.com", "full_name": "Cancel Test", "tenant_id": "TEST_cancel_tenant", "is_active": True})
-            await db.customers.insert_one({"id": cust_id, "user_id": user_id, "tenant_id": "TEST_cancel_tenant"})
-            await db.subscriptions.insert_one({
-                "id": sub_id, "subscription_number": f"SUB-CANCEL-{sub_id[:6].upper()}",
-                "customer_id": cust_id, "plan_name": "Cancel Plan",
-                "status": "active", "gocardless_mandate_id": mandate_id,
-                "amount": 40.0, "currency": "GBP", "base_currency": "GBP",
-                "payment_method": "bank_transfer",
-                "created_at": now_iso(), "updated_at": now_iso(),
-            })
-
-            import asyncio as _a
-            loop = _a.get_event_loop()
+        try:
             payload = {"events": [{"id": f"EV_CANCEL_{sub_id[:8]}", "resource_type": "mandates", "action": "cancelled", "links": {"mandate": mandate_id}}]}
-            resp = await loop.run_in_executor(None, lambda: requests.post(f"{API}/api/webhook/gocardless", json=payload, timeout=15))
+            resp = requests.post(f"{API}/api/webhook/gocardless", json=payload, timeout=15)
+            assert resp.status_code == 200
+            assert resp.json().get("status") == "ok"
 
-            await _a.sleep(0.3)
-            sub = await db.subscriptions.find_one({"id": sub_id}, {"_id": 0})
-
-            # Cleanup
-            await db.subscriptions.delete_one({"id": sub_id})
-            await db.customers.delete_one({"id": cust_id})
-            await db.users.delete_one({"id": user_id})
-
-            return resp, sub
-
-        resp, sub = asyncio.run(run_all())
-
-        assert resp.status_code == 200
-        assert resp.json().get("status") == "ok"
-        assert sub is not None
-        assert sub["status"] == "unpaid", f"Mandate cancelled should set subscription to unpaid, got {sub['status']}"
+            sub = db.subscriptions.find_one({"id": sub_id}, {"_id": 0})
+            assert sub is not None
+            assert sub["status"] == "unpaid", f"Mandate cancelled should set subscription to unpaid, got {sub['status']}"
+        finally:
+            db.subscriptions.delete_one({"id": sub_id})
+            db.customers.delete_one({"id": cust_id})
+            db.users.delete_one({"id": user_id})
 
     def test_gc_renewal_deduplication_via_http(self, admin_session):
         """GoCardless: same payment_id twice does NOT create duplicate renewal orders."""
