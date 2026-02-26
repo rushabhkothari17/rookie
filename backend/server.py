@@ -117,6 +117,7 @@ from routes.downloads import router as downloads_router
 from routes.oauth import router as oauth_router
 from routes.taxes import router as taxes_router
 from routes.utils import router as utils_router
+from routes.documents import router as documents_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
