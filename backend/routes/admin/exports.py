@@ -192,6 +192,10 @@ async def export_subscriptions_csv(
         user = user_map.get(cust.get("user_id"), {})
         s["_customer_email"] = user.get("email", "")
         s["_customer_name"] = user.get("full_name", "")
+        # Ensure these columns always appear
+        s.setdefault("base_currency_amount", 0.0)
+        s.setdefault("tax_amount", 0.0)
+        s.setdefault("tax_name", "")
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     return _make_csv_response(subs, f"subscriptions_{today}.csv")
