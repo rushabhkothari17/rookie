@@ -734,7 +734,7 @@ export function IntegrationsOverview() {
       {/* Category Sidebar */}
       <div className="w-48 shrink-0">
         <div className="sticky top-4 space-y-1">
-          {(["all", "payments", "email", "crm", "accounting"] as CategoryFilter[]).map(cat => {
+          {(["all", "payments", "email", "crm", "accounting", "cloud_storage"] as CategoryFilter[]).map(cat => {
             const config = CATEGORY_CONFIG[cat];
             const Icon = config.icon;
             const isActive = activeCategory === cat;
