@@ -255,14 +255,16 @@ export default function WizardLayout({
         </Button>
         
         {isReviewStep ? (
-          <Button
-            onClick={handleAddToCart}
-            className="gap-2 bg-blue-600 hover:bg-blue-700"
-            data-testid="wizard-submit-btn"
-          >
-            {isRFQ ? "Submit Enquiry" : "Proceed to Checkout"}
-            <ChevronRight size={16} />
-          </Button>
+          <>
+            <Button
+              onClick={handleAddToCart}
+              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              data-testid="wizard-submit-btn"
+            >
+              {scopeUnlock ? `Add to Cart — $${scopeUnlock.price}` : isRFQ ? "Submit Enquiry" : "Proceed to Checkout"}
+              <ChevronRight size={16} />
+            </Button>
+          </>
         ) : (
           <Button
             onClick={() => setCurrentStep(s => s + 1)}
