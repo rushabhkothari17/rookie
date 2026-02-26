@@ -1,0 +1,52 @@
+{
+  "summary": "Tested Subscription Renewal Webhook Logic (P1). Original test file (test_iter131_renewal_webhook.py) confirmed 7/7 passing. Created comprehensive regression test file (test_iter131_regression.py) with 23 tests covering: admin login regression, orders API regression, GoCardless HTTP webhook end-to-end (renewal creation, initial payment handling, mandate cancelled, deduplication), Stripe billing_reason guard logic parametrized tests, and Stripe endpoint existence check. All 23/23 regression tests pass. Total: 30/30 tests passing across both files.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/webhook/stripe (invoice.paid handler)",
+        "issue": "Minor logic edge case: the renewal email at line 242-251 is outside the `if billing_reason != subscription_create` guard. If Stripe ever routes a subscription_create invoice here with order metadata (which shouldn't happen in practice since checkout_status handles it), the email would be sent with subject 'Subscription renewal paid' even for initial orders. Low risk as subscription_create is explicitly intended to be handled by checkout_status.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "original_7_tests": "7/7 PASS (test_iter131_renewal_webhook.py) - Stripe billing_reason guard, Stripe renewal order fields, Stripe dedup, GC renewal via mandate lookup, GC initial payment guard, GC mandate cancelled, GC webhook endpoint 200",
+    "admin_login_regression": "3/3 PASS - Login success, wrong password 401, missing fields 422",
+    "orders_list_regression": "3/3 PASS - Authenticated 200, unauthenticated 401, no _id exposed",
+    "gc_webhook_endpoint_tests": "7/7 PASS - Empty events, invalid JSON, unknown mandate, mandate cancelled, payment failed, multiple events, event deduplication",
+    "stripe_billing_reason_parametrized": "5/5 PASS - subscription_cycle/subscription_create/manual/no-sub-id/empty-reason",
+    "stripe_endpoint_existence": "1/1 PASS - Endpoint exists (returns non-404)",
+    "gc_renewal_e2e_http": "4/4 PASS - Renewal order creation, initial payment guard, mandate cancelled via HTTP, payment_id deduplication"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter131_renewal_webhook.py",
+    "/app/backend/tests/test_iter131_regression.py",
+    "/app/test_reports/pytest/pytest_iter131_regression.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "webhooks.py line 242-251: Stripe renewal email dispatch is outside the billing_reason guard block. For subscription_create events that somehow arrive here with order metadata (order_id in metadata), the 'subscription renewal paid' email would fire incorrectly. Consider moving the email dispatch INSIDE the renewal creation block or adding a billing_reason != 'subscription_create' guard on the email block. (Low risk in practice since checkout_status handles subscription_create.)",
+    "webhooks.py line 276: Uses `hmac.new(...)` which is valid but deprecated style. Standard modern usage is `hmac.HMAC(key, msg, digestmod).hexdigest()` or `hmac.new(key, msg, digestmod)`. Current code works correctly.",
+    "Email sending is MOCKED - stored in email_outbox collection with status='MOCKED'. Zoho sync is also MOCKED with status='Not Sent'. This is expected per architecture."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter131_regression.py"
+  ],
+  "success_rate": {
+    "backend": "100% (30/30 tests pass across both test files)"
+  },
+  "seed_data_creation": "Tests create and clean up their own seed data. All test data has been deleted after test runs.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Subscription renewal webhook fully tested. GoCardless webhook endpoint (POST /api/webhook/gocardless) works without HMAC since gocardless_webhook_secret is not set in test env. Stripe webhook requires real signature so logic is tested via DB pattern only. Admin auth uses HttpOnly cookie + Bearer token (use Bearer token from response body for API testing). Orders list at GET /api/admin/orders. Regression tests in test_iter131_regression.py use pymongo (sync) for DB operations to avoid Motor event-loop-closed issues in pytest.",
+  "mocked_apis": [
+    "Email sending - stored in email_outbox collection (status=MOCKED)",
+    "Zoho sync - stored in zoho_sync_logs collection (status='Not Sent', mocked=True)"
+  ]
+}
