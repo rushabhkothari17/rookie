@@ -753,6 +753,20 @@ async def admin_enquiries(
     if date_to:
         query.setdefault("created_at", {})["$lte"] = date_to + "T23:59:59"
 
+    # Push email filter down to MongoDB via customer lookup
+    if email_filter:
+        matching_users = await db.users.find(
+            {"email": {"$regex": _re.escape(email_filter), "$options": "i"}},
+            {"_id": 0, "id": 1},
+        ).to_list(500)
+        matching_user_ids = [u["id"] for u in matching_users]
+        matching_customers = await db.customers.find(
+            {"user_id": {"$in": matching_user_ids}},
+            {"_id": 0, "id": 1},
+        ).to_list(500)
+        matching_customer_ids = [c["id"] for c in matching_customers]
+        query["customer_id"] = {"$in": matching_customer_ids}
+
     total = await db.orders.count_documents(query)
     skip = (page - 1) * per_page
     orders_raw = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
@@ -783,12 +797,6 @@ async def admin_enquiries(
         usr = user_map.get(cust.get("user_id", ""), {})
         oi = items_by_order.get(o["id"], [])
         product_names = [product_name_map.get(i.get("product_id", ""), i.get("product_id", "")) for i in oi]
-
-        # Filter by email if provided
-        if email_filter:
-            uem = (usr.get("email") or "").lower()
-            if email_filter.lower() not in uem:
-                continue
 
         enquiries.append({
             **o,
