@@ -710,8 +710,8 @@ export default function Cart() {
             {grouped.rfq.length > 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden" data-testid="cart-rfq-section">
                 <div className="p-4 border-b border-slate-100 bg-slate-50">
-                  <h2 className="font-semibold text-slate-900">Quote Requests</h2>
-                  <p className="text-sm text-slate-500">These items require a quote before purchase</p>
+                  <h2 className="font-semibold text-slate-900">Enquiries</h2>
+                  <p className="text-sm text-slate-500">Submit an enquiry to get pricing for these items</p>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {grouped.rfq.map((item: any) => (
