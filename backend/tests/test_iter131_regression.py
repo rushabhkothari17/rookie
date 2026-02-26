@@ -466,62 +466,48 @@ class TestGocardlessRenewalViaHTTP:
 
     def test_gc_renewal_deduplication_via_http(self, admin_session):
         """GoCardless: same payment_id twice does NOT create duplicate renewal orders."""
-        import asyncio
         import sys
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from core.helpers import make_id, now_iso
 
-        async def run_all():
-            from db.session import db
-            from core.helpers import make_id, now_iso
+        db = get_sync_db()
+        cust_id = make_id()
+        user_id = make_id()
+        sub_id = make_id()
+        mandate_id = f"MD_dedup_{sub_id[:8]}"
+        initial_pm_id = f"PM_init_dedup_{sub_id[:8]}"
+        renewal_pm_id = f"PM_dedup_renew_{sub_id[:8]}"
+        now = datetime.now(timezone.utc)
 
-            cust_id = make_id()
-            user_id = make_id()
-            sub_id = make_id()
-            mandate_id = f"MD_dedup_{sub_id[:8]}"
-            initial_pm_id = f"PM_init_dedup_{sub_id[:8]}"
-            renewal_pm_id = f"PM_dedup_renew_{sub_id[:8]}"
-            now = datetime.now(timezone.utc)
+        db.users.insert_one({"id": user_id, "email": f"gc_dedup_{cust_id[:6]}@test.com", "full_name": "Dedup Test", "tenant_id": "TEST_dedup_tenant", "is_active": True})
+        db.customers.insert_one({"id": cust_id, "user_id": user_id, "tenant_id": "TEST_dedup_tenant"})
+        db.subscriptions.insert_one({
+            "id": sub_id, "subscription_number": f"SUB-DEDUP-{sub_id[:6].upper()}",
+            "customer_id": cust_id, "plan_name": "Dedup Plan",
+            "status": "active", "gocardless_mandate_id": mandate_id, "gocardless_payment_id": initial_pm_id,
+            "amount": 30.0, "currency": "GBP", "base_currency": "GBP",
+            "tax_amount": 3.0, "tax_rate": 0.10, "tax_name": "VAT",
+            "payment_method": "bank_transfer",
+            "current_period_start": now.isoformat(),
+            "current_period_end": (now + timedelta(days=30)).isoformat(),
+            "created_at": now_iso(), "updated_at": now_iso(),
+        })
 
-            await db.users.insert_one({"id": user_id, "email": f"gc_dedup_{cust_id[:6]}@test.com", "full_name": "Dedup Test", "tenant_id": "TEST_dedup_tenant", "is_active": True})
-            await db.customers.insert_one({"id": cust_id, "user_id": user_id, "tenant_id": "TEST_dedup_tenant"})
-            await db.subscriptions.insert_one({
-                "id": sub_id, "subscription_number": f"SUB-DEDUP-{sub_id[:6].upper()}",
-                "customer_id": cust_id, "plan_name": "Dedup Plan",
-                "status": "active", "gocardless_mandate_id": mandate_id, "gocardless_payment_id": initial_pm_id,
-                "amount": 30.0, "currency": "GBP", "base_currency": "GBP",
-                "tax_amount": 3.0, "tax_rate": 0.10, "tax_name": "VAT",
-                "payment_method": "bank_transfer",
-                "current_period_start": now.isoformat(),
-                "current_period_end": (now + timedelta(days=30)).isoformat(),
-                "created_at": now_iso(), "updated_at": now_iso(),
-            })
-
-            import asyncio as _a
-            loop = _a.get_event_loop()
-
+        try:
+            # First call
             payload1 = {"events": [{"id": f"EV_DEDUP_A_{sub_id[:8]}", "resource_type": "payments", "action": "confirmed", "links": {"payment": renewal_pm_id, "mandate": mandate_id}}]}
-            resp1 = await loop.run_in_executor(None, lambda: requests.post(f"{API}/api/webhook/gocardless", json=payload1, timeout=15))
+            resp1 = requests.post(f"{API}/api/webhook/gocardless", json=payload1, timeout=15)
+            assert resp1.status_code == 200
 
-            await _a.sleep(0.3)
-
-            # Second call — same payment_id, different event_id
+            # Second call with same payment_id but different event_id (simulates retry)
             payload2 = {"events": [{"id": f"EV_DEDUP_B_{sub_id[:8]}", "resource_type": "payments", "action": "confirmed", "links": {"payment": renewal_pm_id, "mandate": mandate_id}}]}
-            resp2 = await loop.run_in_executor(None, lambda: requests.post(f"{API}/api/webhook/gocardless", json=payload2, timeout=15))
+            resp2 = requests.post(f"{API}/api/webhook/gocardless", json=payload2, timeout=15)
+            assert resp2.status_code == 200
 
-            await _a.sleep(0.3)
-
-            count = await db.orders.count_documents({"gocardless_payment_id": renewal_pm_id, "type": "subscription_renewal"})
-
-            # Cleanup
-            await db.subscriptions.delete_one({"id": sub_id})
-            await db.customers.delete_one({"id": cust_id})
-            await db.users.delete_one({"id": user_id})
-            await db.orders.delete_many({"gocardless_payment_id": renewal_pm_id})
-
-            return resp1, resp2, count
-
-        resp1, resp2, count = asyncio.run(run_all())
-
-        assert resp1.status_code == 200
-        assert resp2.status_code == 200
-        assert count == 1, f"Expected exactly 1 renewal order, got {count} (deduplication failed)"
+            count = db.orders.count_documents({"gocardless_payment_id": renewal_pm_id, "type": "subscription_renewal"})
+            assert count == 1, f"Expected exactly 1 renewal order, got {count} (deduplication failed)"
+        finally:
+            db.subscriptions.delete_one({"id": sub_id})
+            db.customers.delete_one({"id": cust_id})
+            db.users.delete_one({"id": user_id})
+            db.orders.delete_many({"gocardless_payment_id": renewal_pm_id})
