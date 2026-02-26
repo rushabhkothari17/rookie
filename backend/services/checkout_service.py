@@ -58,6 +58,7 @@ def build_checkout_notes_json(
             "zoho_account_access": getattr(payload, "zoho_account_access", None),
             "partner_tag_response": getattr(payload, "partner_tag_response", None),
             "promo_code": getattr(payload, "promo_code", None),
+            "sponsorship_note": "This order was placed using a sponsored promo code." if (getattr(payload, "promo_code", None) or "") and "ZOHOR" in (getattr(payload, "promo_code", None) or "").upper() else None,
             "terms_accepted": getattr(payload, "terms_accepted", False),
             "override_code_used": bool(getattr(payload, "override_code", None)),
         },
