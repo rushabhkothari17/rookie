@@ -751,23 +751,23 @@ export default function Cart() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Subtotal</span>
-                    <span className="text-slate-900">${totalSubtotal.toFixed(2)}</span>
+                    <span className="text-slate-900">{displayCurrency} {totalSubtotal.toFixed(2)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between" style={{ color: "var(--aa-accent)" }}>
                       <span>Discount ({promoApplied?.code})</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
+                      <span>-{displayCurrency} {discountAmount.toFixed(2)}</span>
                     </div>
                   )}
                   {showFee && fee > 0 && (
                     <div className="flex justify-between">
                       <span className="text-slate-500">Processing fee ({stripeFeePercent}%)</span>
-                      <span className="text-slate-900">${fee.toFixed(2)}</span>
+                      <span className="text-slate-900">{displayCurrency} {fee.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="pt-3 border-t border-slate-200 flex justify-between">
                     <span className="font-semibold text-slate-900">Total</span>
-                    <span className="font-bold text-lg" style={{ color: "var(--aa-primary)" }}>${total.toFixed(2)}</span>
+                    <span className="font-bold text-lg" style={{ color: "var(--aa-primary)" }}>{displayCurrency} {total.toFixed(2)}</span>
                   </div>
                 </div>
                 {isFreeCheckout && (
