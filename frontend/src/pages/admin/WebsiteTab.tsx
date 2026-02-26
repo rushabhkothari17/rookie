@@ -1245,6 +1245,23 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
             </div>
           </div>
         )}
+
+        {/* Documents Page */}
+        {authSlide === "documents_page" && (
+          <div className="space-y-4">
+            <Field label="Nav tab label" hint='Label shown in the top navigation bar (defaults to "Documents")' value={ws.nav_documents_label} onChange={s("nav_documents_label")} testId="ws-docs-nav-label" />
+            <Field label="Page title" hint='Main heading on the Documents page (defaults to "My Documents")' value={ws.documents_page_title} onChange={s("documents_page_title")} testId="ws-docs-page-title" />
+            <Field label="Page subtitle" hint="Description shown below the title" value={ws.documents_page_subtitle} onChange={s("documents_page_subtitle")} multiline testId="ws-docs-page-subtitle" />
+            <div className="border-t border-slate-100 pt-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Upload Section</p>
+              <div className="space-y-3">
+                <Field label="Upload section label" hint='Heading above the upload area (defaults to "Upload a Document")' value={ws.documents_page_upload_label} onChange={s("documents_page_upload_label")} testId="ws-docs-upload-label" />
+                <Field label="Upload hint text" hint="Supported file types and size limit text" value={ws.documents_page_upload_hint} onChange={s("documents_page_upload_hint")} multiline testId="ws-docs-upload-hint" />
+                <Field label="Empty state text" hint="Shown when no documents exist yet" value={ws.documents_page_empty_text} onChange={s("documents_page_empty_text")} multiline testId="ws-docs-empty-text" />
+              </div>
+            </div>
+          </div>
+        )}
       </SlideOver>
 
       {/* ── Forms SlideOver ── */}
