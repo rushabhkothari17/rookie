@@ -276,6 +276,31 @@ export default function Signup() {
               </SelectContent>
             </Select>
 
+            {/* Organization Address */}
+            <div className="pt-2 space-y-1">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Organization Address</p>
+              <Input placeholder="Line 1 *" value={partnerOrg.address.line1} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, line1: e.target.value } }))} required data-testid="partner-addr-line1" />
+              <Input placeholder="Line 2 (optional)" value={partnerOrg.address.line2} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, line2: e.target.value } }))} data-testid="partner-addr-line2" />
+              <div className="grid grid-cols-2 gap-1">
+                <Input placeholder="City *" value={partnerOrg.address.city} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, city: e.target.value } }))} required data-testid="partner-addr-city" />
+                <Input placeholder="Postal Code *" value={partnerOrg.address.postal} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, postal: e.target.value } }))} required data-testid="partner-addr-postal" />
+              </div>
+              <Select value={partnerOrg.address.country} onValueChange={v => setPartnerOrg(p => ({ ...p, address: { ...p.address, country: v, region: "" } }))}>
+                <SelectTrigger data-testid="partner-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
+                <SelectContent>
+                  {[{v:"Canada",l:"Canada"},{v:"USA",l:"United States"},{v:"UK",l:"United Kingdom"},{v:"Australia",l:"Australia"},{v:"India",l:"India"},{v:"Germany",l:"Germany"},{v:"France",l:"France"},{v:"Netherlands",l:"Netherlands"},{v:"Singapore",l:"Singapore"},{v:"New Zealand",l:"New Zealand"}].map(c => <SelectItem key={c.v} value={c.v}>{c.l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {partnerProvinces.length > 0 ? (
+                <Select value={partnerOrg.address.region} onValueChange={v => setPartnerOrg(p => ({ ...p, address: { ...p.address, region: v } }))}>
+                  <SelectTrigger data-testid="partner-addr-region-select"><SelectValue placeholder="Province / State *" /></SelectTrigger>
+                  <SelectContent>{partnerProvinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+                </Select>
+              ) : (
+                <Input placeholder="State / Province *" value={partnerOrg.address.region} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, region: e.target.value } }))} required data-testid="partner-addr-region-input" />
+              )}
+            </div>
+
             <Button
               type="submit"
               className="w-full h-11 font-semibold bg-slate-900 hover:bg-slate-700 text-white"
