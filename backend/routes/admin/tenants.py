@@ -97,7 +97,52 @@ async def deactivate_tenant(tenant_id: str, admin: Dict[str, Any] = Depends(requ
     return {"message": "Tenant deactivated"}
 
 
-@router.post("/admin/tenants/{tenant_id}/create-admin")
+@router.put("/admin/tenants/{tenant_id}/address")
+async def update_tenant_address(tenant_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Update tenant's organization address. Platform admins can update any tenant; partner admins only their own."""
+    actor_tid = tenant_id_of(admin)
+    is_platform = admin.get("role") in ("platform_admin", "admin")
+    if not is_platform and actor_tid != tenant_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this tenant's address")
+
+    tenant = await db.tenants.find_one({"id": tenant_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    addr = payload.get("address", {})
+    mandatory = ["line1", "city", "postal", "region", "country"]
+    missing = [f for f in mandatory if not str(addr.get(f, "")).strip()]
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Address fields required: {', '.join(missing)}")
+
+    update_doc: Dict[str, Any] = {
+        "address": {
+            "line1": addr.get("line1", "").strip(),
+            "line2": addr.get("line2", "").strip(),
+            "city": addr.get("city", "").strip(),
+            "region": addr.get("region", "").strip(),
+            "postal": addr.get("postal", "").strip(),
+            "country": addr.get("country", "").strip(),
+        },
+        "updated_at": now_iso(),
+    }
+    await db.tenants.update_one({"id": tenant_id}, {"$set": update_doc})
+    await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="address_updated", actor=admin.get("email", "admin"), details={"country": addr.get("country")})
+    updated = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    return {"tenant": updated}
+
+
+@router.get("/admin/tenants/my")
+async def get_my_tenant(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Get the current admin's own tenant details (including address)."""
+    tid = tenant_id_of(admin)
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {"tenant": tenant}
+
+
+
 async def create_partner_admin(
     tenant_id: str,
     payload: CreatePartnerAdminRequest,
