@@ -341,9 +341,11 @@ export function OrdersTab() {
                   </TableCell>
                   <TableCell>${order.subtotal?.toFixed(2)}</TableCell>
                   <TableCell>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-100 text-amber-700">
-                      fee: {order.fee > 0 ? `$${order.fee.toFixed(2)}` : "—"}
-                    </span>
+                    {order.fee > 0 && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-100 text-amber-700">
+                        fee: ${order.fee.toFixed(2)}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="font-semibold">${order.total?.toFixed(2)}</TableCell>
                   <TableCell className="whitespace-nowrap">{order.payment_date?.slice(0, 10) || "—"}</TableCell>
