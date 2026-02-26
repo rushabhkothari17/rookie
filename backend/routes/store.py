@@ -324,7 +324,7 @@ async def orders_preview(
     tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     # Use stripe_fee_rate from oauth_connections for card payment preview
     fee_rate = await get_stripe_fee_rate(tid)
-    customer = await db.customers.find_one({"tenant_id": tid, "user_id": user["id"]}, {"_id": 0})
+    _ = await db.customers.find_one({"tenant_id": tid, "user_id": user["id"]}, {"_id": 0})
     results = []
     for item in payload.items:
         product = await db.products.find_one({"tenant_id": tid, "id": item.product_id}, {"_id": 0})
