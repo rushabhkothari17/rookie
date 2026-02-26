@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Printer, ArrowLeft, ChevronDown } from "lucide-react";
+import { Printer, ArrowLeft, Mail, Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
 import api from "@/lib/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
