@@ -82,7 +82,7 @@ export const EMPTY_FORM: ProductFormData = {
 // ── Style tokens (light theme — matches admin panel) ───────────────────────────
 
 const labelCls = "text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide";
-const sectionCls = "space-y-4";
+const sectionCls = "space-y-6";
 const dividerCls = "border-t border-slate-100 pt-5 mt-1";
 const cardCls = "rounded-lg border border-slate-200 bg-white p-5 space-y-5";
 const MAX_BULLETS = 8;
