@@ -285,8 +285,6 @@ export default function Cart() {
         terms_accepted: termsAccepted,
         terms_id: termsContent?.id || null,
         start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
-        partner_tag_response: partnerTag,
-        override_code: overrideVal,
         zoho_subscription_type: zohoSubType,
         current_zoho_product: zohoProduct,
         zoho_account_access: zohoAccess,
