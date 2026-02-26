@@ -21,9 +21,10 @@ E-commerce platform for professional services with:
 
 ### Admin Interface (UPDATED 2026-02-26)
 - [x] **Products tab** now contains: Products, Categories, Promo Codes, Terms (as sub-tabs)
-- [x] **Articles tab** now contains: Articles, Templates, Email Templates, Categories, Override Codes (as sub-tabs)
+- [x] **Articles tab** now contains: Articles, Templates, Email Templates, Categories (Override Codes REMOVED)
+- [x] **Resources tab** now contains: Resources, Templates, Email Templates, Categories (Override Codes REMOVED)
 - [x] **Main sidebar** updated:
-  - PEOPLE: Users, Customers
+  - PEOPLE: Users, Customers (Currency Override removed from Customers)
   - COMMERCE: Products, Subscriptions, Orders, **Enquiries** (replaces Requests)
   - CONTENT: Resources, Email Templates, References
   - SETTINGS: Website Content, Custom Domains
@@ -32,8 +33,12 @@ E-commerce platform for professional services with:
 - [x] **Website Content** streamlined:
   - Removed Payments section (keep in Connected Services)
   - Removed Bank Transaction Form from Forms
-  - Removed Email Templates, References, Custom Domains (moved to sidebar)
+  - Removed Form Responses tile (quote/scope success messages)
+  - Checkout Messages: Removed Partner Tagging Prompt and Override Code Required fields
+  - System Config: **Base Currency** widget added (change tenant's base currency)
 - [x] Bank Transactions module fully removed
+- [x] QuoteRequestsTab removed (legacy)
+- [x] OverrideCodesTab removed (legacy), override_codes collection dropped
 
 ### Cart & Checkout (REDESIGNED 2026-02-25)
 - [x] **Two-column layout**: Cart items on left, Order Summary sidebar on right
