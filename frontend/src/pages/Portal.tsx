@@ -94,6 +94,7 @@ function Paginator({ page, total, perPage, onChange }: { page: number; total: nu
 export default function Portal() {
   const { user } = useAuth();
   const ws = useWebsite();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
