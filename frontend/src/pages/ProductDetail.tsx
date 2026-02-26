@@ -54,6 +54,19 @@ function DynamicField({ field, value, onChange }: {
 const QUOTE_STD = ["name", "email", "company", "phone", "message"];
 const SCOPE_STD = ["project_summary", "desired_outcomes", "apps_involved", "timeline_urgency", "budget_range", "additional_notes"];
 
+export default function ProductDetail() {
+  const { productId } = useParams();
+  const navigate = useNavigate();
+  const { addItem } = useCart();
+  const { customer } = useAuth();
+  const ws = useWebsite();
+
+  const [product, setProduct] = useState<any>(null);
+  const [inputs, setInputs] = useState<Record<string, any>>({});
+  const [intakeAnswers, setIntakeAnswers] = useState<Record<string, any>>({});
+  const [pricing, setPricing] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   /** Build the metadata payload that CartContext uses for type/currency validation */
   const cartMeta = () => ({
     pricing_type: product?.pricing_type || "internal",
@@ -70,11 +83,6 @@ const SCOPE_STD = ["project_summary", "desired_outcomes", "apps_involved", "time
     }
     return true;
   };
-  const [product, setProduct] = useState<any>(null);
-  const [inputs, setInputs] = useState<Record<string, any>>({});
-  const [intakeAnswers, setIntakeAnswers] = useState<Record<string, any>>({});
-  const [pricing, setPricing] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [showScopeModal, setShowScopeModal] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteFormData, setQuoteFormData] = useState<Record<string, string>>({ name: "", email: "", company: "", phone: "", message: "" });
