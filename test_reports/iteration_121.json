@@ -1,0 +1,74 @@
+{
+  "summary": "Tested all 8 features for the quote_requests cleanup, cart validation, and ProductForm subscription toggle batch. Backend: 13/13 PASS. Frontend: 8/8 PASS. All features working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/import/template/quote-requests",
+        "issue": "Template download still returns 200/CSV for 'quote-requests' entity. The TEMPLATES, REQUIRED_FIELDS, JSON_FIELDS, and SAMPLE_DATA dicts in imports.py still contain quote-requests and override-codes entries despite these being removed from ENTITY_COLLECTIONS. The import endpoint (POST) correctly rejects them with 400, but the template download endpoint still serves them.",
+        "priority": "LOW - incomplete cleanup, no functional impact"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "ProductForm.tsx",
+        "issues": [
+          "Console warning: 'Each child in a list should have a unique key prop' in ProductForm Primitive.div render. Non-blocking but should be fixed."
+        ]
+      }
+    ]
+  },
+  "test_results_detail": {
+    "crm_mappings_no_quote_requests": "PASS - GET /api/admin/integrations/crm-mappings: webapp_modules=['customers','orders','subscriptions'], quote_requests NOT present",
+    "import_quote_requests_rejected": "PASS - POST /api/admin/import/quote-requests returns 400: 'Unknown entity: quote-requests. Valid: ...'",
+    "import_override_codes_rejected": "PASS - POST /api/admin/import/override-codes returns 400",
+    "import_valid_entities_still_work": "PASS - POST /api/admin/import/categories returns 200",
+    "productform_subscription_internal": "PASS - Subscription toggle visible when pricing_type='internal'",
+    "productform_subscription_external": "PASS - Subscription toggle NOT in DOM when pricing_type='external'",
+    "productform_subscription_enquiry": "PASS - Subscription toggle NOT in DOM when pricing_type='enquiry'",
+    "productform_subscription_back_to_internal": "PASS - Subscription toggle reappears when switching back to 'internal'",
+    "cart_type_validation": "PASS - Adding subscription (CAD, prod_bookkeeping) to cart with one-time (USD, prod_zoho_one_express) shows toast: 'Your cart already contains a one-time product. Please remove it before adding a subscription product — only one type of product is allowed per checkout.'",
+    "cart_currency_validation": "PASS - Adding AUD one-time (prod_hours_pack) to cart with USD one-time (prod_zoho_one_express) shows toast: 'Your cart contains USD products. All items must use the same currency — please remove existing items before adding AUD products.'",
+    "cart_same_product_update": "PASS - Adding same product again updates cart (navigates to /cart, cart still has 1 item, no error)"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter121_quote_requests_cart_validation.py",
+    "/app/test_reports/pytest/pytest_iter121_quote_cart.xml"
+  ],
+  "action_items": [
+    "Low priority: Remove leftover quote-requests and override-codes entries from imports.py REQUIRED_FIELDS (lines 86, 91), JSON_FIELDS (line 78), TEMPLATES (lines 244-247, 263-266), and SAMPLE_DATA (lines 288, 293). These do not cause functional issues but are incomplete cleanup.",
+    "Low priority: Fix React key prop warning in ProductForm.tsx - 'Each child in a list should have a unique key prop' in Primitive.div component."
+  ],
+  "critical_code_review_comments": [
+    "imports.py: ENTITY_COLLECTIONS correctly removes quote-requests and override-codes, but REQUIRED_FIELDS, JSON_FIELDS, TEMPLATES, and SAMPLE_DATA still have these entities. The template download endpoint uses TEMPLATES (not ENTITY_COLLECTIONS) so it still serves templates for removed entities. Complete cleanup needed.",
+    "gdpr_service.py: quote_requests removal verified (lines 64-69 fetch and lines 237-247 anonymize are absent). PASS.",
+    "oauth.py: Both collection_maps at lines 1073-1077 and 1204-1208 correctly contain [customers, orders, subscriptions] without quote_requests. PASS."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter121_quote_requests_cart_validation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 pass)",
+    "frontend": "100% (8/8 features verified)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "note": "Login WITHOUT partner_code for this admin user"
+  },
+  "seed_data_creation": "Created TEST_Iter121_Category via import test (auto-cleaned or not found during cleanup). Cart test used localStorage manipulation, no backend data created.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 8 features from iteration 121 (quote_requests cleanup + cart validation + ProductForm subscription toggle) are working correctly. Backend tests: 13/13 pass (admin login works WITHOUT partner_code). Frontend tests: ProductForm pricing type toggle works via click on card buttons (Internal Checkout, External Link, Enquiry Only). Cart tests: Used localStorage seeding + product detail page. Products useful for testing: prod_zoho_one_express (USD, internal, one-time), prod_bookkeeping (CAD, internal, subscription), prod_hours_pack (AUD, internal, one-time), prod_dev_enterprise (USD, enquiry, not subscription). Minor leftover in imports.py: TEMPLATES/REQUIRED_FIELDS/JSON_FIELDS/SAMPLE_DATA still have quote-requests and override-codes (ENTITY_COLLECTIONS correctly removed them). Template download still serves CSVs for these. React key warning in ProductForm is non-blocking.",
+  "rca_of_issues": {
+    "imports_incomplete_cleanup": {
+      "root_cause": "ENTITY_COLLECTIONS was updated to remove quote-requests and override-codes, but 4 other dicts (REQUIRED_FIELDS, JSON_FIELDS, TEMPLATES, SAMPLE_DATA) still retain entries for these removed entities. The import endpoint checks ENTITY_COLLECTIONS (correctly 400), but the template endpoint checks TEMPLATES (still serves 200).",
+      "reproduction": "GET /api/admin/import/template/quote-requests returns 200 with CSV",
+      "mitigation": "Remove quote-requests and override-codes entries from all 4 dicts in imports.py"
+    }
+  }
+}
