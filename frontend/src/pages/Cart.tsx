@@ -559,12 +559,6 @@ export default function Cart() {
                           </div>
                         );
                       })}
-                      {sectionFields.some((f: any) => (f.id || f.key || f.name) === 'partner_tag_response') && extraFields['partner_tag_response'] === 'Not yet' && (
-                        <div>
-                          <label className="text-sm font-medium text-slate-700 block mb-1.5">Partner Override Code</label>
-                          <Input placeholder="Enter override code" value={overrideCode} onChange={e => setOverrideCode(e.target.value)} data-testid="section-override-code" />
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
