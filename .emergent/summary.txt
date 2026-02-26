@@ -1,0 +1,172 @@
+<analysis>**original_problem_statement:**
+The user's initial request was to refactor the application to remove legacy Quote Requests and Override Codes and introduce a multi-currency system. The project's scope has since expanded significantly to include:
+1.  **Advanced Conditional Visibility (Multi-phase):** A nested/grouped logic engine for complex visibility rules on Products and Intake Forms.
+2.  **UI/UX Overhaul:** A major cleanup of product and intake form creation pages.
+3.  **Feature Removal:** Complete removal of a legacy  feature.
+4.  **Global Tax & Invoicing System:** A large, custom-built tax calculation engine to handle complex, destination-based tax rules for multiple countries, allow partner-specific overrides, and integrate with checkout and invoicing.
+5.  **Invoice Generation:** A system for generating, downloading, and emailing PDF invoices with multiple templates and partner-specific customizations.
+6.  **Subscription Tax Calculation:** A processor-agnostic method to calculate tax for subscription products at checkout.
+7.  **Dynamic UI Elements:** Country-dependent dropdowns for province/state fields.
+8.  **Payment Gateway Logic:** A mechanism to disable payment options on the checkout page if the corresponding gateway is not configured for the partner.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The application is in a stable, functional state. The multi-currency system, advanced conditional visibility, and major UI/UX improvements are complete. The new Global Tax and Invoicing system is fully implemented and tested for one-time orders, including invoice generation (PDF download/email) and partner-specific customizations. The agent has just received user approval on a revised architecture for the next set of tasks, which focus on extending the tax system to subscriptions and improving UI dynamism.
+
+**Last working item**:
+    - Last item agent was working: Finalizing the implementation architecture for three user-requested features after a multi-step clarification dialogue. The user has just given the final approval (yes) to proceed with this plan.
+    - Status: NOT STARTED (Implementation of the approved architecture is the next action).
+    - Agent Testing Done: N/A
+    - Which testing method agent to use? both
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  - There are no outstanding bugs or issues. All work is part of the planned feature development.
+
+**In progress Task List**:
+  - **Task 1: Implement Approved Architecture for Subscriptions, Provinces, and Payments (P0)**
+     - **Where to resume**: Begin implementation based on the user-approved architecture.
+        1.  **Subscription Tax**: In , modify the subscription creation logic for Stripe and GoCardless. The total amount passed to the payment processor must include the tax calculated by the internal . This ensures the tax logic is processor-agnostic.
+        2.  **Dynamic Province/State Dropdowns**: Create a new utility endpoint (e.g., ) to return a list of states/provinces. Update frontend components (, , ) to fetch data from this endpoint and render a dropdown instead of a text input for the province/state field when a country is selected.
+        3.  **Greyed-out Payment Options**: In the frontend checkout component ( or similar), fetch the active partner's settings. Before rendering the Stripe and GoCardless payment sections, check if  or  is true. If not, render the corresponding payment button as disabled/greyed out.
+     - **What will be achieved with this?**: This will make subscription tax calculations consistent with one-time orders, improve user experience with accurate location dropdowns, and make the checkout process more robust by hiding unavailable payment methods.
+     - **Status**: NOT STARTED
+     - **Should Test frontend/backend/both after fix?**: both
+     - **Blocked on something**: No.
+
+**Upcoming and Future Tasks**
+*   **Upcoming Tasks:**
+    *   **(P1) Subscription Renewal Webhook Logic**: Implement a system where, upon a subscription renewal event, a new  document is created with a  status. A generic webhook handler should then listen for payment success notifications from processors (like Stripe's ) to update the corresponding order's status to . The user agreed this should be deferred if no such webhook infrastructure currently exists.
+
+*   **Future Tasks:**
+    *   **(P2) Customer Portal Enhancements**:
+        *   Self-service subscription cancellation.
+        *   Display subscription renewal date and next billing amount.
+        *   Reorder button for past orders.
+        *   A Documents tab to access assigned articles.
+    *   **(P2) Security Audit**: Conduct a formal penetration test.
+    *   **(P2) Centralize Email Settings**: Consolidate all email integration settings.
+
+**Completed work in this session**
+- **Global Tax & Invoicing System (for one-time orders)**: A complete, custom tax engine was built from the ground up, including backend models (), services (), and a full-featured admin UI (). This was integrated into all one-time checkout flows.
+- **Invoice Generation & Management**: Implemented a system for generating, downloading (), and emailing PDF invoices from a new  page. This includes 5 standard templates, partner-specific custom templates, and an Invoice Settings panel.
+- **Email Invoice Feature**: Added a button to email invoices directly to customers, using a new  template in .
+- **P1 Task Completion**:
+    - Added a Tax column to the  and .
+    - Added red star  indicators for required fields on signup forms.
+    - Ensured  is present in CSV exports ().
+    - Added a read-only country display to admin/partner profile pages ().
+- **Test User Seeding**: Created two distinct partners and four customer accounts via API for comprehensive testing.
+
+**Earlier issues found/mentioned but not fixed**
+   - None.
+
+**Known issue recurrence from previous fork**
+  - None.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Custom Tax Engine**: The application uses a custom, database-driven tax engine () to calculate taxes based on a hierarchy of global and partner-specific rules. This was an explicit choice to avoid third-party APIs.
+- **Frontend PDF Generation**: Invoices are generated on the client side using  and  in the  component, which renders different HTML templates based on settings.
+- **Processor-Agnostic Logic**: The user has mandated that business logic like tax calculation must happen within the application *before* data is sent to external payment processors (Stripe, GoCardless). This is the core principle for the upcoming subscription tax implementation.
+
+**key DB schema**
+- ****: 
+- ****: 
+- ****: Modified to add .
+- ** & **: Modified to add  and .
+- ****: Modified to add , .
+
+**changes in tech stack**
+- **Frontend**: Added  and  for client-side PDF generation.
+
+**All files of reference**
+*   **Files for Next Task (Subscription Tax, Province Dropdowns, Payment Logic)**:
+    *    (Subscription tax logic)
+    *    (Payment gateway disabling)
+    *    (Province dropdown)
+    *    (Province dropdown)
+    *    (Province dropdown in tax rule creation)
+*   **Key Files Created/Modified in this Session**:
+    *    (New)
+    -    (New)
+    *    (New)
+    *    (New)
+
+**Areas that need refactoring**:
+- None identified.
+
+**key api endpoints**
+- **Existing (Tax & Invoice)**:
+    - 
+    - 
+    - 
+    - 
+    - 
+- **To Be Created**:
+    -  (for dynamic province/state dropdowns)
+
+**Critical Info for New Agent**
+1.  **Implement Approved Architecture First**: Your immediate priority is to implement the three-part architecture the user just approved: (1) processor-agnostic subscription tax calculation, (2) dynamic province/state dropdowns, and (3) disabling unconfigured payment options at checkout.
+2.  **Subscription Tax is Non-Negotiable**: The user was very specific: tax for subscriptions must be calculated by your internal  *before* creating the subscription with Stripe or GoCardless. Do not use the payment provider's tax features. The final, tax-inclusive amount should be passed to the provider.
+3.  **Defer Renewal Logic**: The user agreed to postpone the subscription renewal-to-order creation feature. Before planning, you must first investigate if a webhook handling system already exists. If not, treat it as a new, future feature.
+
+**documents and test reports created in this job**
+  -  (Continuously updated)
+  - 
+  - 
+  - 
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  User requested four new features around invoicing and subscriptions.
+2.  Agent successfully implemented all four features.
+3.  User provided three more complex requirements: correct subscription tax flow, dynamic province dropdowns, and greying out inactive payment options, asking for an architecture plan first.
+4.  Agent proposed an initial architecture.
+5.  User rejected the subscription tax portion, clarifying that tax must be calculated in-app, not by the payment processor.
+6.  Agent presented a revised architecture for subscription tax.
+7.  User approved the revised tax architecture and added a new requirement for handling subscription renewals via webhooks.
+8.  Agent incorporated the renewal logic into a new plan.
+9.  User clarified to defer the renewal logic if the webhook infrastructure isn't already in place and refined the payment gateway logic.
+10. Agent presented the final, corrected architecture for the three core tasks.
+11. **PENDING HUMAN MESSAGE**: User replied with yes, giving final approval to the architecture. The agent's next action is to begin implementation.
+
+**Project Health Check:**
+- **Broken**: No.
+- **Mocked**: No.
+
+**3rd Party Integrations**
+*   GoCardless (Payments)
+*   Stripe (Payments)
+*   Zoho Mail (Email)
+*    (FX rates)
+*    &  (Frontend PDF Generation)
+
+**Testing status**
+  - Testing agent used after significant changes: YES. The testing agent was used successfully three times to validate major features (Tax System, Invoicing, Custom Templates). All reported bugs were fixed.
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: []
+  - Known regressions: None.
+
+**Credentials to test flow:**
+- **Platform Admin:**
+    - Partner Code: 
+    - Email: 
+    - Password: 
+- **Partner 1 (Liger Inc):**
+    - Email: 
+    - Password: 
+- **Customer 1 (for Liger Inc):**
+    - Email: 
+    - Password: 
+- **Partner 2 (Tigon Corp):**
+    - Email: 
+    - Password: 
+- **Customer 2 (for Tigon Corp):**
+    - Email: 
+    - Password: 
+
+**What agent forgot to execute**
+- Nothing has been forgotten. The agent was in a planning and architecture refinement loop as directed by the user and is now poised to begin the implementation of the approved plan.</analysis>
