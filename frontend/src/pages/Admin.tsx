@@ -12,6 +12,7 @@ import { ProductsTab } from "./admin/ProductsTab";
 import { CategoriesTab } from "./admin/CategoriesTab";
 import { EnquiriesTab } from "./admin/EnquiriesTab";
 import { ResourcesTab } from "./admin/ResourcesTab";
+import { AdminDocumentsTab } from "./admin/AdminDocumentsTab";
 import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
 import { TenantsTab } from "./admin/TenantsTab";
