@@ -550,6 +550,203 @@ function OverrideRulesPanel() {
   );
 }
 
+// ── Invoice Settings Panel ────────────────────────────────────────────────────
+
+const PAYMENT_TERMS = ["Due on receipt", "Net 7", "Net 14", "Net 30", "Net 60"];
+const TEMPLATE_OPTIONS = [
+  { value: "classic",      label: "Classic — serif, clean monochrome" },
+  { value: "modern",       label: "Modern — dark header, colored accents" },
+  { value: "minimal",      label: "Minimal — whitespace, essentials only" },
+  { value: "professional", label: "Professional — grid lines, dark header" },
+  { value: "branded",      label: "Branded — logo area, gradient accent" },
+];
+
+function InvoiceSettingsPanel() {
+  const [settings, setSettings] = useState<any>({ prefix: "INV", payment_terms: "Due on receipt", footer_notes: "", show_terms: true, template: "classic" });
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get("/admin/taxes/invoice-settings").then(r => {
+      setSettings(r.data.invoice_settings || {});
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.put("/admin/taxes/invoice-settings", settings);
+      toast.success("Invoice settings saved");
+    } catch { toast.error("Failed to save invoice settings"); }
+    finally { setSaving(false); }
+  };
+
+  if (loading) return <div className="text-sm text-slate-500 py-4">Loading...</div>;
+
+  return (
+    <div className="space-y-6 max-w-lg">
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Invoice Configuration</h3>
+          <p className="text-xs text-slate-500 mt-1">These settings apply to all invoices generated for your customers.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Invoice Prefix</Label>
+            <Input data-testid="invoice-prefix-input" placeholder="INV" value={settings.prefix || ""} onChange={e => setSettings({ ...settings, prefix: e.target.value })} className="w-28" maxLength={10} />
+            <p className="text-xs text-slate-400">e.g. INV → INV-AA-0001234</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Default Payment Terms</Label>
+            <Select value={settings.payment_terms || "Due on receipt"} onValueChange={v => setSettings({ ...settings, payment_terms: v })}>
+              <SelectTrigger data-testid="invoice-terms-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Default Template</Label>
+          <Select value={settings.template || "classic"} onValueChange={v => setSettings({ ...settings, template: v })}>
+            <SelectTrigger data-testid="invoice-template-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TEMPLATE_OPTIONS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Footer Notes</Label>
+          <textarea
+            data-testid="invoice-footer-input"
+            className="w-full rounded-lg border border-slate-200 text-sm p-3 min-h-[80px] resize-none focus:outline-none focus:ring-1 focus:ring-slate-400"
+            placeholder="e.g. Thank you for your business. Please contact us at billing@example.com for queries."
+            value={settings.footer_notes || ""}
+            onChange={e => setSettings({ ...settings, footer_notes: e.target.value })}
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <input type="checkbox" id="show-terms" checked={!!settings.show_terms} onChange={e => setSettings({ ...settings, show_terms: e.target.checked })} className="h-4 w-4 accent-slate-900" />
+          <Label htmlFor="show-terms" className="text-sm cursor-pointer">Include Terms & Conditions on invoice</Label>
+        </div>
+        <Button data-testid="invoice-settings-save-btn" onClick={save} disabled={saving}>
+          {saving ? "Saving..." : "Save Invoice Settings"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ── Tax Summary Panel ─────────────────────────────────────────────────────────
+
+function TaxSummaryPanel() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [months, setMonths] = useState("12");
+
+  useEffect(() => {
+    api.get(`/admin/taxes/summary?months=${months}`).then(r => {
+      setRows(r.data.summary || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [months]);
+
+  // Group by month for display
+  const byMonth: Record<string, any[]> = {};
+  rows.forEach(r => {
+    if (!byMonth[r.month]) byMonth[r.month] = [];
+    byMonth[r.month].push(r);
+  });
+
+  const months_list = Object.keys(byMonth).sort((a, b) => b.localeCompare(a));
+  const grandTotal = rows.reduce((s, r) => s + r.total_tax, 0);
+  const totalOrders = rows.reduce((s, r) => s + r.order_count, 0);
+
+  return (
+    <div className="space-y-5" data-testid="tax-summary-panel">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Tax Collected Summary</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Aggregated from all paid orders with tax.</p>
+        </div>
+        <Select value={months} onValueChange={v => { setMonths(v); setLoading(true); }}>
+          <SelectTrigger className="w-36 h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="3">Last 3 months</SelectItem>
+            <SelectItem value="6">Last 6 months</SelectItem>
+            <SelectItem value="12">Last 12 months</SelectItem>
+            <SelectItem value="24">Last 24 months</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs text-slate-500 uppercase tracking-wide">Total Tax Collected</p>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{grandTotal.toFixed(2)}</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs text-slate-500 uppercase tracking-wide">Taxed Orders</p>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{totalOrders}</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <p className="text-xs text-slate-500 uppercase tracking-wide">Tax Types</p>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{new Set(rows.map(r => r.tax_name)).size}</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-sm text-slate-500 py-8 text-center">Loading summary...</div>
+      ) : rows.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-slate-300 py-12 text-center">
+          <p className="text-sm text-slate-500">No taxed orders found in this period.</p>
+          <p className="text-xs text-slate-400 mt-1">Tax will appear here once orders with tax are placed.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {months_list.map(month => (
+            <div key={month} className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="bg-slate-50 px-4 py-2.5 flex items-center justify-between border-b border-slate-200">
+                <span className="text-sm font-semibold text-slate-700">{month}</span>
+                <span className="text-xs text-slate-400">
+                  {byMonth[month].reduce((s, r) => s + r.order_count, 0)} orders ·{" "}
+                  {byMonth[month][0]?.currency} {byMonth[month].reduce((s, r) => s + r.total_tax, 0).toFixed(2)} tax
+                </span>
+              </div>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-slate-100">
+                  {byMonth[month].map((row, i) => (
+                    <tr key={i} className="hover:bg-slate-50">
+                      <td className="px-4 py-2.5">
+                        <span className="font-medium text-slate-800">{row.tax_name}</span>
+                      </td>
+                      <td className="px-4 py-2.5 text-slate-500">{row.order_count} order{row.order_count !== 1 ? "s" : ""}</td>
+                      <td className="px-4 py-2.5 text-right">
+                        <span className="text-xs text-slate-400 mr-2">Revenue: {row.currency} {row.total_revenue.toFixed(2)}</span>
+                        <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs">
+                          Tax: {row.currency} {row.total_tax.toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main TaxesTab Component ────────────────────────────────────────────────────
 
 export function TaxesTab() {
