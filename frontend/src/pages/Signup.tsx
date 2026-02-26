@@ -58,6 +58,7 @@ export default function Signup() {
   });
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
   const [verificationCode, setVerificationCode] = useState("");
 
   // On mount: require partner code for customer signup
