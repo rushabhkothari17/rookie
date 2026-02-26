@@ -264,6 +264,8 @@ async def admin_update_product(
         update_fields["visible_to_customers"] = payload.visible_to_customers
     if payload.restricted_to is not None:
         update_fields["restricted_to"] = payload.restricted_to
+    # Always update visibility_conditions (None clears it)
+    update_fields["visibility_conditions"] = payload.visibility_conditions.model_dump() if payload.visibility_conditions else None
     if payload.price_rounding is not None:
         update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
     if payload.intake_schema_json is not None:
