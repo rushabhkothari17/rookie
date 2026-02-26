@@ -302,8 +302,8 @@ export default function ProductDetail() {
     }
     if (product.pricing_type === "enquiry") {
       return {
-        label: "Contact sales",
-        href: `mailto:${contactEmail}`,
+        label: "Request a Quote",
+        onClick: () => setShowScopeModal(true),
       };
     }
     if (pricing?.is_enquiry || product.pricing_type === "enquiry") {
