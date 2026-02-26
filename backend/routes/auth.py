@@ -766,6 +766,13 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
     admin_email = payload.get("admin_email", "").strip().lower()
     admin_password = payload.get("admin_password", "")
     base_currency = payload.get("base_currency", "USD").strip().upper() or "USD"
+    address = payload.get("address", {})
+
+    # Validate mandatory address fields
+    mandatory_addr = ["line1", "city", "postal", "region", "country"]
+    missing = [f for f in mandatory_addr if not str(address.get(f, "")).strip()]
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Address fields required: {', '.join(missing)}")
 
     VALID_CURRENCIES = ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]
     if base_currency not in VALID_CURRENCIES:
