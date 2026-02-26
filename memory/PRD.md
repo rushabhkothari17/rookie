@@ -195,14 +195,24 @@ E-commerce platform for professional services with:
 - New admin `Enquiries` tab (replaces "Requests") at `/admin` → Commerce → Enquiries
 - Backend: GET/PATCH/DELETE /api/admin/enquiries endpoints
 - Frontend: EnquiriesTab.tsx with status management, detail view, filter by email/status/date
-- ProductDetail.tsx: enquiry products now show "Request a Quote" button → scope modal
+- ProductDetail.tsx: enquiry products now show "Request a Quote" button → scope modal, fixed "Calculating pricing..." indefinitely bug
 - Cart.tsx: RFQ "Enquiries" section uses /orders/scope-request-form
 - ScopeRequestFormData: all fields now optional; added name/email/company/phone/message
+
+## Email Notifications for Enquiries (2026-02-26)
+- `enquiry_customer` template: sent to customer on every enquiry submission with full summary (products, order number, message/project summary)
+- `scope_request_admin` template: updated - now includes company, phone, products, message alongside all scope fields
+- Both emails fire on `/orders/scope-request-form` (form-based) and `/orders/scope-request` (cart-based)
+- Email uses active provider per tenant (Zoho Mail or Resend); falls back to email_outbox (mocked) if not configured
+- WebsiteTab > Forms: now shows ONE "Enquiry Form" tile (merged from 2)
+- All product modals (quote + scope) now use unified `scope_form_schema`
+- ensure_seeded: now upserts available_variables on system templates on each startup
 
 ## Test Reports
 - `/app/test_reports/iteration_13.json` — Pre-merge catalog tests
 - `/app/test_reports/iteration_14.json` — Promo note tests
-- `/app/test_reports/iteration_112.json` — Enquiries merge tests (100% backend, 90% frontend)
+- `/app/test_reports/iteration_112.json` — Enquiries merge tests (100% backend)
+- `/app/test_reports/iteration_113.json` — Email notification tests (77% backend, email flow verified)
 
 ---
 *Last Updated: 2026-02-26*
