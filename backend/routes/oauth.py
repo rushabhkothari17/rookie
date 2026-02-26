@@ -709,7 +709,39 @@ async def validate_connection(
                         except Exception:
                             detail = f"HTTP {test_resp.status_code}"
                         result = {"success": False, "message": f"Could not access {config['name']} API: {detail}"}
-            
+
+            elif provider == "zoho_workdrive":
+                dc = conn.get("data_center", "us")
+                dc_config = ZOHO_DATA_CENTERS.get(dc, ZOHO_DATA_CENTERS["us"])
+                token_resp = await client.post(
+                    f"{dc_config['accounts_url']}/oauth/v2/token",
+                    data={
+                        "grant_type": "refresh_token",
+                        "client_id": creds.get("client_id", ""),
+                        "client_secret": creds.get("client_secret", ""),
+                        "refresh_token": creds.get("refresh_token", ""),
+                    }
+                )
+                if token_resp.status_code != 200 or token_resp.json().get("error"):
+                    err = token_resp.json().get("error", f"HTTP {token_resp.status_code}") if token_resp.status_code == 200 else f"HTTP {token_resp.status_code}"
+                    result = {"success": False, "message": f"WorkDrive token refresh failed: {err}"}
+                else:
+                    access_token = token_resp.json().get("access_token", "")
+                    api_domain = dc_config["api_domain"]
+                    wd_resp = await client.get(
+                        f"{api_domain}/workdrive/api/v1/privatespace",
+                        headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                    )
+                    if wd_resp.status_code in (200, 404):
+                        result = {"success": True, "message": "Zoho WorkDrive connected successfully"}
+                        # Store access token for immediate use
+                        await db.oauth_connections.update_one(
+                            {"tenant_id": tid, "provider": provider},
+                            {"$set": {"credentials.access_token": access_token}}
+                        )
+                    else:
+                        result = {"success": False, "message": f"WorkDrive API returned {wd_resp.status_code}"}
+
             else:
                 result = {"success": False, "message": "Validation not implemented"}
     
