@@ -160,7 +160,11 @@ class TestProductConditionalVisibilityCreate:
             headers = {**admin_headers, "X-View-As-Tenant": tenant_id}
         else:
             headers = admin_headers
-        resp = requests.get(f"{BASE_URL}/api/admin/products-all", headers=headers)
+        # Search for the specific product by name
+        resp = requests.get(
+            f"{BASE_URL}/api/admin/products-all?search=TEST_Conditional_Visibility_Product",
+            headers=headers
+        )
         assert resp.status_code == 200, f"Expected 200 but got {resp.status_code}"
         data = resp.json()
         products = data.get("products", data.get("items", []))
@@ -192,8 +196,11 @@ class TestProductConditionalVisibilityCreate:
         }
         resp = requests.put(f"{BASE_URL}/api/admin/products/{pid}", json=payload, headers=headers)
         assert resp.status_code == 200, f"Update failed: {resp.text[:300]}"
-        # PUT returns {"message": "Product updated"}, so verify via GET products-all
-        resp2 = requests.get(f"{BASE_URL}/api/admin/products-all", headers=headers)
+        # PUT returns {"message": "Product updated"}, verify via search
+        resp2 = requests.get(
+            f"{BASE_URL}/api/admin/products-all?search=TEST_Conditional_Visibility_Product",
+            headers=headers
+        )
         assert resp2.status_code == 200
         products = resp2.json().get("products", [])
         product = next((p for p in products if p["id"] == pid), None)
@@ -222,8 +229,11 @@ class TestProductConditionalVisibilityCreate:
         }
         resp = requests.put(f"{BASE_URL}/api/admin/products/{pid}", json=payload, headers=headers)
         assert resp.status_code == 200, f"Update failed: {resp.text[:300]}"
-        # Verify via GET (all products including inactive)
-        resp2 = requests.get(f"{BASE_URL}/api/admin/products-all?status=inactive", headers=headers)
+        # Verify via search
+        resp2 = requests.get(
+            f"{BASE_URL}/api/admin/products-all?search=TEST_Conditional_Visibility_Product",
+            headers=headers
+        )
         if resp2.status_code == 200:
             products = resp2.json().get("products", [])
             product = next((p for p in products if p["id"] == pid), None)
