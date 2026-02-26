@@ -290,6 +290,36 @@ async def admin_create_customer(
     asyncio.create_task(auto_sync_to_zoho_crm(tid, "customers", customer_doc, "create"))
     asyncio.create_task(auto_sync_to_zoho_books(tid, "customers", customer_doc, "create"))
 
+    # Auto-create WorkDrive folder if integration is active (fire and forget)
+    async def _create_workdrive_folder():
+        try:
+            from services.workdrive_service import create_folder, extract_folder_id_from_url
+            integration = await db.integrations.find_one(
+                {"tenant_id": tid, "service": "zoho_workdrive", "is_validated": True}, {"_id": 0}
+            )
+            if not integration:
+                return
+            parent_id = extract_folder_id_from_url(integration.get("parent_folder_url", ""))
+            if not parent_id:
+                return
+            existing = await db.workdrive_folders.find_one({"tenant_id": tid, "customer_id": customer_id}, {"_id": 0, "id": 1})
+            if existing:
+                return
+            folder_name = f"{payload.full_name} - {customer_id}"
+            result = await create_folder(tid, parent_id, folder_name)
+            await db.workdrive_folders.insert_one({
+                "id": make_id(),
+                "tenant_id": tid,
+                "customer_id": customer_id,
+                "folder_id": result["folder_id"],
+                "folder_name": folder_name,
+                "created_at": now_iso(),
+                "updated_at": now_iso(),
+            })
+        except Exception as _exc:
+            pass  # Don't fail customer creation if WorkDrive is down
+    asyncio.create_task(_create_workdrive_folder())
+
     return {"message": "Customer created", "customer_id": customer_id, "user_id": user_id}
 
 
