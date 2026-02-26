@@ -522,15 +522,11 @@ class WebsiteSettingsUpdate(BaseModel):
     nav_articles_label: Optional[str] = None
     nav_portal_label: Optional[str] = None
     # Forms (text labels)
-    quote_form_title: Optional[str] = None
-    quote_form_subtitle: Optional[str] = None
-    quote_form_response_time: Optional[str] = None
     scope_form_title: Optional[str] = None
     scope_form_subtitle: Optional[str] = None
     signup_form_title: Optional[str] = None
     signup_form_subtitle: Optional[str] = None
     # Form schemas (JSON strings)
-    quote_form_schema: Optional[str] = None
     scope_form_schema: Optional[str] = None
     signup_form_schema: Optional[str] = None
     # Email templates
@@ -541,8 +537,6 @@ class WebsiteSettingsUpdate(BaseModel):
     email_verification_subject: Optional[str] = None
     email_verification_body: Optional[str] = None
     # Error / UI messages
-    msg_partner_tagging_prompt: Optional[str] = None
-    msg_override_required: Optional[str] = None
     msg_cart_empty: Optional[str] = None
     msg_quote_success: Optional[str] = None
     msg_scope_success: Optional[str] = None
