@@ -294,12 +294,12 @@ async def admin_create_customer(
     async def _create_workdrive_folder():
         try:
             from services.workdrive_service import create_folder, extract_folder_id_from_url
-            integration = await db.integrations.find_one(
-                {"tenant_id": tid, "service": "zoho_workdrive", "is_validated": True}, {"_id": 0}
+            integration = await db.oauth_connections.find_one(
+                {"tenant_id": tid, "provider": "zoho_workdrive", "is_validated": True}, {"_id": 0}
             )
             if not integration:
                 return
-            parent_id = extract_folder_id_from_url(integration.get("parent_folder_url", ""))
+            parent_id = extract_folder_id_from_url((integration.get("settings") or {}).get("parent_folder_url", ""))
             if not parent_id:
                 return
             existing = await db.workdrive_folders.find_one({"tenant_id": tid, "customer_id": customer_id}, {"_id": 0, "id": 1})
