@@ -348,7 +348,7 @@ class TestEmailTemplateInvoice:
 
     def test_email_templates_list_contains_invoice(self, admin_headers):
         """Email templates list should contain invoice_email trigger"""
-        resp = requests.get(f"{BASE_URL}/api/admin/website/email-templates", headers=admin_headers)
+        resp = requests.get(f"{BASE_URL}/api/admin/email-templates", headers=admin_headers)
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
         data = resp.json()
         templates = data.get("templates", [])
