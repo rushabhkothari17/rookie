@@ -5,8 +5,6 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Check, RefreshCcw, FileText } from "lucide-react";
-import ProductHero from "@/components/ProductHero";
-import SectionCard from "@/components/SectionCard";
 import type { LayoutProps, IntakeQuestion } from "./types";
 import { QuestionLabel, renderIntakeField } from "./utils";
 
