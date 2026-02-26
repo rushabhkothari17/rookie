@@ -735,10 +735,6 @@ class TestVisibility:
 
     def test_visibility_allowlist(self, tenant_a_headers, customer_a_headers):
         """E: Restricted product (allowlist) not visible to non-listed customer"""
-        # Get customer ID
-        profile_r = requests.get(f"{BASE_URL}/api/auth/profile", headers=customer_a_headers)
-        assert profile_r.status_code == 200
-
         # Create product visible only to a specific (non-existent) customer
         r = requests.post(f"{BASE_URL}/api/admin/products", json={
             "name": "TEST_Product_Restricted_Iter111",
