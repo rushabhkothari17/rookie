@@ -141,6 +141,10 @@ const WEB_DEFAULTS: WebsiteData = {
   cart_title: "", cart_clear_btn_text: "",
   admin_page_badge: "", admin_page_title: "", admin_page_subtitle: "",
   bank_transaction_sources: "", bank_transaction_types: "", bank_transaction_statuses: "",
+  nav_documents_label: "",
+  documents_page_title: "", documents_page_subtitle: "",
+  documents_page_upload_label: "", documents_page_upload_hint: "",
+  documents_page_empty_text: "",
 };
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
