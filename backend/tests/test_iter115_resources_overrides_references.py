@@ -18,7 +18,7 @@ ADMIN_PASS = "ChangeMe123!"
 def admin_token():
     r = requests.post(f"{BASE_URL}/api/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASS})
     assert r.status_code == 200, f"Admin login failed: {r.text}"
-    return r.json()["access_token"]
+    return r.json().get("access_token") or r.json().get("token")
 
 
 @pytest.fixture(scope="module")
