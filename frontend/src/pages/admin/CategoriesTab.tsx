@@ -14,7 +14,10 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Upload } from "lucide-react";
 import { Tooltip, TooltipContent as _TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-const TooltipContent = _TooltipContent as unknown as React.FC<{ side?: string; className?: string; children?: React.ReactNode }>;
+function TooltipContent({ side, children }: { side?: "top" | "bottom" | "left" | "right"; children?: React.ReactNode }) {
+  const TC = _TooltipContent as any;
+  return <TC side={side}>{children}</TC>;
+}
 
 export function CategoriesTab() {
   const [categories, setCategories] = useState<any[]>([]);
