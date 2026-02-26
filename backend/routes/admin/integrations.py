@@ -816,3 +816,152 @@ async def validate_gocardless(admin: Dict[str, Any] = Depends(get_tenant_admin))
                 return {"success": False, "message": f"Validation failed: {response.status_code}"}
     except Exception as e:
         return {"success": False, "message": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Zoho WorkDrive Integration
+# ═══════════════════════════════════════════════════════════════════
+
+class WorkDriveCredentials(BaseModel):
+    client_id: str
+    client_secret: str
+    datacenter: str = "US"
+
+
+class WorkDriveTokenExchange(BaseModel):
+    code: str
+    client_id: str
+    client_secret: str
+    datacenter: str = "US"
+    redirect_uri: str = "https://www.zoho.com/workdrive"
+
+
+class WorkDriveParentFolder(BaseModel):
+    parent_folder_url: str
+
+
+@router.get("/admin/integrations/workdrive")
+async def get_workdrive_status(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Return current WorkDrive integration status for the tenant."""
+    tid = tenant_id_of(admin)
+    doc = await db.integrations.find_one({"tenant_id": tid, "service": "zoho_workdrive"}, {"_id": 0})
+    if not doc:
+        return {"status": "not_connected", "is_validated": False}
+    return {
+        "status": "connected" if doc.get("is_validated") else "pending",
+        "is_validated": bool(doc.get("is_validated")),
+        "datacenter": doc.get("datacenter", "US"),
+        "parent_folder_url": doc.get("parent_folder_url", ""),
+        "connected_at": doc.get("connected_at"),
+        "validated_at": doc.get("validated_at"),
+    }
+
+
+@router.post("/admin/integrations/workdrive/save-credentials")
+async def workdrive_save_credentials(body: WorkDriveCredentials, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Save Client ID + Secret and return the OAuth auth URL."""
+    from services.workdrive_service import build_auth_url
+    tid = tenant_id_of(admin)
+    redirect_uri = "https://www.zoho.com/workdrive"
+    await db.integrations.update_one(
+        {"tenant_id": tid, "service": "zoho_workdrive"},
+        {"$set": {
+            "tenant_id": tid, "service": "zoho_workdrive",
+            "client_id": body.client_id,
+            "client_secret": body.client_secret,
+            "datacenter": body.datacenter.upper(),
+            "is_validated": False,
+            "updated_at": __import__("core.helpers", fromlist=["now_iso"]).now_iso(),
+        }},
+        upsert=True,
+    )
+    auth_url = build_auth_url(body.client_id, body.datacenter.upper(), redirect_uri)
+    await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="credentials_saved", actor=admin.get("email", "admin"), details={"datacenter": body.datacenter})
+    return {"auth_url": auth_url, "message": "Open auth_url in your browser, grant access, then copy the auth code and call exchange-token."}
+
+
+@router.post("/admin/integrations/workdrive/exchange-token")
+async def workdrive_exchange_token(body: WorkDriveTokenExchange, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Exchange OAuth auth code for tokens and mark integration as connected."""
+    from services.workdrive_service import exchange_code_for_tokens
+    from core.helpers import now_iso as _now
+    tid = tenant_id_of(admin)
+    try:
+        tokens = await exchange_code_for_tokens(
+            client_id=body.client_id,
+            client_secret=body.client_secret,
+            code=body.code,
+            datacenter=body.datacenter.upper(),
+            redirect_uri=body.redirect_uri,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Token exchange failed: {exc}")
+
+    now = _now()
+    await db.integrations.update_one(
+        {"tenant_id": tid, "service": "zoho_workdrive"},
+        {"$set": {
+            "tenant_id": tid, "service": "zoho_workdrive",
+            "client_id": body.client_id,
+            "client_secret": body.client_secret,
+            "datacenter": body.datacenter.upper(),
+            "access_token": tokens["access_token"],
+            "refresh_token": tokens["refresh_token"],
+            "api_domain": tokens["api_domain"],
+            "is_validated": False,
+            "connected_at": now,
+            "updated_at": now,
+        }},
+        upsert=True,
+    )
+    await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="token_exchanged", actor=admin.get("email", "admin"), details={"datacenter": body.datacenter})
+    return {"message": "Tokens saved. Now call validate to confirm the connection."}
+
+
+@router.post("/admin/integrations/workdrive/validate")
+async def workdrive_validate(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Validate WorkDrive connection by making a test API call."""
+    from services.workdrive_service import validate_connection
+    from core.helpers import now_iso as _now
+    tid = tenant_id_of(admin)
+    ok = await validate_connection(tid)
+    now = _now()
+    await db.integrations.update_one(
+        {"tenant_id": tid, "service": "zoho_workdrive"},
+        {"$set": {"is_validated": ok, "validated_at": now if ok else None, "updated_at": now}},
+    )
+    await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="validation_attempted", actor=admin.get("email", "admin"), details={"success": ok})
+    if not ok:
+        raise HTTPException(status_code=400, detail="WorkDrive validation failed. Check your credentials and token.")
+    return {"success": True, "message": "WorkDrive connected successfully."}
+
+
+@router.put("/admin/integrations/workdrive/parent-folder")
+async def workdrive_set_parent_folder(body: WorkDriveParentFolder, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Set (or update) the parent folder URL after connection is validated."""
+    from services.workdrive_service import extract_folder_id_from_url
+    from core.helpers import now_iso as _now
+    tid = tenant_id_of(admin)
+    folder_id = extract_folder_id_from_url(body.parent_folder_url)
+    if not folder_id:
+        raise HTTPException(status_code=400, detail="Could not extract folder ID from URL. Ensure the URL is a valid WorkDrive folder link.")
+    await db.integrations.update_one(
+        {"tenant_id": tid, "service": "zoho_workdrive"},
+        {"$set": {"parent_folder_url": body.parent_folder_url, "parent_folder_id": folder_id, "updated_at": _now()}},
+    )
+    await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="parent_folder_set", actor=admin.get("email", "admin"), details={"folder_id": folder_id})
+    return {"folder_id": folder_id, "parent_folder_url": body.parent_folder_url}
+
+
+@router.delete("/admin/integrations/workdrive/disconnect")
+async def workdrive_disconnect(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Disconnect WorkDrive integration."""
+    from core.helpers import now_iso as _now
+    tid = tenant_id_of(admin)
+    await db.integrations.update_one(
+        {"tenant_id": tid, "service": "zoho_workdrive"},
+        {"$set": {"is_validated": False, "access_token": "", "refresh_token": "", "updated_at": _now()}},
+    )
+    await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="disconnected", actor=admin.get("email", "admin"), details={})
+    return {"message": "WorkDrive disconnected."}
+
