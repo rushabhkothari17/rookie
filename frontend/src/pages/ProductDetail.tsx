@@ -174,7 +174,7 @@ export default function ProductDetail() {
     setScopeError("");
     setScopeUnlock(null);
     try {
-      const res = await api.get(`/articles/${scopeId.trim()}/validate-scope`);
+      const res = await api.get(`/resources/${scopeId.trim()}/validate-scope`);
       setScopeUnlock(res.data);
     } catch (e: any) {
       setScopeError(e.response?.data?.detail || "Invalid Scope ID");
