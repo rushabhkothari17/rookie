@@ -110,6 +110,7 @@ export default function App() {
               <Route path="/product/:productId" element={<ProductDetail />} />
               <Route path="/articles" element={<Articles />} />
               <Route path="/articles/:articleId" element={<ArticleView />} />
+              <Route path="/documents" element={<Documents />} />
               <Route path="/resources" element={<Articles />} />
               <Route path="/resources/:articleId" element={<ArticleView />} />
               <Route element={<BaseLayout />}>
