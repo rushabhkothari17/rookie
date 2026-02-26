@@ -437,10 +437,13 @@ async def create_scope_request_with_form(
     order_id = make_id()
     order_number = f"AA-{order_id[:8].upper()}"
     order_items = []
+    first_product_currency = "USD"
     for item in payload.items:
         product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
         if not product:
             continue
+        if first_product_currency == "USD":
+            first_product_currency = product.get("currency", "USD")
         order_items.append({
             "id": make_id(),
             "order_id": order_id,
