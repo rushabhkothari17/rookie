@@ -151,6 +151,46 @@ export default function ClassicLayout({
               disabled={false}
             />
 
+            {/* Scope ID Override (for enquiry/scope products) */}
+            {isEnquiry && (
+              <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 space-y-2" data-testid="product-scope-id-section">
+                <div className="flex items-center gap-2">
+                  <Key size={15} className="text-blue-600" />
+                  <p className="text-sm font-medium text-slate-700">Already have a Scope ID?</p>
+                </div>
+                <p className="text-xs text-slate-500">Enter your Scope ID to unlock direct checkout at a fixed price.</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={scopeId}
+                    onChange={(e) => setScopeId(e.target.value)}
+                    placeholder="e.g. SCOPE-ABC123"
+                    className="flex-1 font-mono text-sm h-8"
+                    data-testid="product-scope-id-input"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={handleValidateScopeId}
+                    disabled={scopeValidating || !scopeId.trim()}
+                    data-testid="product-scope-id-validate-btn"
+                  >
+                    {scopeValidating ? "Checking…" : "Validate"}
+                  </Button>
+                </div>
+                {scopeError && <p className="text-xs text-red-600" data-testid="product-scope-id-error">{scopeError}</p>}
+                {scopeUnlock && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200" data-testid="product-scope-id-success">
+                    <Check size={14} className="text-green-600" />
+                    <div>
+                      <p className="text-xs font-semibold text-green-800">{scopeUnlock.title}</p>
+                      <p className="text-sm font-bold text-green-700">${scopeUnlock.price}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Subscription indicator */}
             {isSubscription && (
               <div
