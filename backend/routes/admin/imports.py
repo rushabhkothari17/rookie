@@ -253,10 +253,6 @@ TEMPLATES: Dict[str, List[str]] = {
     "article-categories": [
         "id", "name", "slug", "description", "display_order", "is_active",
     ],
-    "override-codes": [
-        "id", "code", "type", "value", "description", "is_active",
-        "expires_at", "max_uses", "used_count",
-    ],
     "categories": [
         "id", "name", "description", "is_active", "display_order",
     ],
