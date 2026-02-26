@@ -348,7 +348,8 @@ export function OrdersTab() {
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="font-semibold">${order.total?.toFixed(2)}</TableCell>
+                  <TableCell className="font-semibold">{order.currency || "USD"} {order.total?.toFixed(2)}</TableCell>
+                  <TableCell><span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{order.currency || "USD"}</span></TableCell>
                   <TableCell className="whitespace-nowrap">{order.payment_date?.slice(0, 10) || "—"}</TableCell>
                   <TableCell>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] ${order.payment_method === "bank_transfer" ? "bg-blue-100 text-blue-700" : order.payment_method === "offline" ? "bg-gray-100 text-gray-700" : "bg-green-100 text-green-700"}`}>
