@@ -390,10 +390,11 @@ async def admin_delete_category(
     cat_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    cat = await db.categories.find_one({**get_tenant_filter(admin), "id": cat_id})
+    tf = get_tenant_filter(admin)
+    cat = await db.categories.find_one({**tf, "id": cat_id})
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
-    product_count = await db.products.count_documents({"category": cat["name"]})
+    product_count = await db.products.count_documents({**tf, "category": cat["name"]})
     if product_count > 0:
         raise HTTPException(
             status_code=409,
