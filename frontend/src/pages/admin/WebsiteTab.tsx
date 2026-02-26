@@ -562,7 +562,6 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
     checkout_success: "Success page content for Stripe and bank transfer payments.",
     gocardless_callback: "Processing, success, and error page text shown during GoCardless direct debit setup.",
     checkout_messages: "Customer-facing error and instruction messages during checkout.",
-    form_messages: "Success messages shown after quote / scope requests.",
     footer_basics: "Tagline and copyright text shown in the footer.",
     footer_about: "About us section heading and descriptive text.",
     footer_nav: "Navigation section title and link labels.",
