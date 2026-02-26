@@ -224,10 +224,6 @@ export default function ProductDetail() {
         return;
       }
     }
-    if (!scopeFormData.project_summary || !scopeFormData.desired_outcomes || !scopeFormData.apps_involved || !scopeFormData.timeline_urgency) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
     setSubmittingScope(true);
     try {
       const stdFields = Object.fromEntries(SCOPE_STD.map(k => [k, scopeFormData[k] || ""]));
@@ -236,11 +232,11 @@ export default function ProductDetail() {
         items: [{ product_id: product.id, quantity: 1, inputs }],
         form_data: { ...stdFields, extra_fields: Object.keys(extra).length ? extra : undefined },
       });
-      toast.success(ws.msg_scope_success || `Scope request submitted! Order: ${response.data.order_number}`);
+      toast.success(ws.msg_scope_success || `Enquiry submitted! Reference: ${response.data.order_number}`);
       setShowScopeModal(false);
       navigate("/portal");
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Failed to submit scope request");
+      toast.error(error.response?.data?.detail || "Failed to submit enquiry");
     } finally { setSubmittingScope(false); }
   };
 
