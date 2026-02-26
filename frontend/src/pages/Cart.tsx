@@ -112,10 +112,21 @@ export default function Cart() {
 
   // Calculate tax whenever discounted subtotal changes
   useEffect(() => {
-    const discSub = totalSubtotal - (promoApplied ? (promoApplied.discount_type === "percent"
-      ? Math.round(totalSubtotal * promoApplied.discount_value) / 100
-      : Math.min(promoApplied.discount_value, totalSubtotal)) : 0);
-    if (discSub <= 0 || items.length === 0) { setTaxInfo(null); return; }
+    if (!preview || items.length === 0) { setTaxInfo(null); return; }
+    const previewItems = preview.items || [];
+    const rawSubtotal = previewItems.reduce((s: number, item: any) => {
+      const p = item.product;
+      const isPurchasable = p.pricing_type !== "scope_request" && p.pricing_type !== "external_checkout" && p.pricing_type !== "enquiry";
+      return isPurchasable ? s + (item.pricing?.subtotal || 0) : s;
+    }, 0);
+    let discAmt = 0;
+    if (promoApplied) {
+      discAmt = promoApplied.discount_type === "percent"
+        ? Math.round(rawSubtotal * promoApplied.discount_value) / 100
+        : Math.min(promoApplied.discount_value, rawSubtotal);
+    }
+    const discSub = rawSubtotal - discAmt;
+    if (discSub <= 0) { setTaxInfo(null); return; }
     const fetchTax = async () => {
       try {
         const r = await api.post("/checkout/calculate-tax", { subtotal: discSub });
@@ -123,7 +134,7 @@ export default function Cart() {
       } catch { setTaxInfo(null); }
     };
     fetchTax();
-  }, [totalSubtotal, promoApplied, items.length]);
+  }, [preview, promoApplied, items.length]);
 
   // Group items by type
   const grouped = useMemo(() => {
