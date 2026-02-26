@@ -330,15 +330,30 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-1.5 label-xs cursor-pointer"><Eye size={11} /> Visibility rule</label>
-        <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
-          <input type="checkbox" checked={isOn} onChange={e => toggle(e.target.checked)} className="w-3 h-3 rounded accent-[#0f172a]" />
-          {isOn ? "On" : "Off"}
-        </label>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <Eye size={12} className="text-slate-400 shrink-0" />
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide shrink-0">Visibility rule</span>
+          {isOn && !isExpanded && (
+            <span className="text-[10px] text-blue-500 italic truncate">— {getVisibilitySummary(rule)}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {isOn && (
+            <button type="button" onClick={() => setIsExpanded(v => !v)}
+              className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600 transition-colors">
+              <ChevronRight size={11} className={`transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+              {isExpanded ? "Collapse" : "Edit"}
+            </button>
+          )}
+          <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
+            <input type="checkbox" checked={isOn} onChange={e => toggle(e.target.checked)} className="w-3 h-3 rounded accent-[#0f172a]" />
+            {isOn ? "On" : "Off"}
+          </label>
+        </div>
       </div>
 
-      {isOn && (
+      {isOn && isExpanded && (
         <div className="space-y-2">
           <p className="text-[11px] text-blue-600 font-medium">Show this question only when:</p>
 
