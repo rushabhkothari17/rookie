@@ -92,6 +92,37 @@ async def get_categories(
 
 
 @router.get("/products")
+def _eval_product_conditions(rule_set: dict, customer: dict) -> bool:
+    """Evaluate ProductVisRuleSet conditions against a customer document."""
+    conditions = rule_set.get("conditions") or []
+    if not conditions:
+        return True
+    logic = rule_set.get("logic", "AND")
+    results = []
+    for cond in conditions:
+        field = cond.get("field", "")
+        operator = cond.get("operator", "equals")
+        expected = str(cond.get("value", "") or "")
+        actual = (customer or {}).get(field)
+        actual_str = str(actual or "").lower() if actual is not None else ""
+        if operator == "equals":
+            r = actual_str == expected.lower()
+        elif operator == "not_equals":
+            r = actual_str != expected.lower()
+        elif operator == "contains":
+            r = expected.lower() in actual_str
+        elif operator == "not_contains":
+            r = expected.lower() not in actual_str
+        elif operator == "empty":
+            r = not actual or actual in ("", [], {})
+        elif operator == "not_empty":
+            r = bool(actual) and actual not in ("", [], {})
+        else:
+            r = True
+        results.append(r)
+    return any(results) if logic == "OR" else all(results)
+
+
 async def get_products(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
