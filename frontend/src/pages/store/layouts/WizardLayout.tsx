@@ -6,7 +6,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Check, RefreshCcw, FileText } from "lucide-react";
 import type { LayoutProps, IntakeQuestion } from "./types";
-import { QuestionLabel, renderIntakeField } from "./utils";
+import { QuestionLabel, renderIntakeField, ScopeIdBlock } from "./utils";
 
 export default function WizardLayout({
   product,
@@ -19,6 +19,12 @@ export default function WizardLayout({
   isSubscription,
   termsUrl,
   currency,
+  scopeId = "",
+  setScopeId,
+  handleValidateScopeId,
+  scopeValidating,
+  scopeError,
+  scopeUnlock,
 }: LayoutProps) {
   // Group questions by step_group or create auto-groups of 3-4 questions
   const steps = useMemo(() => {
