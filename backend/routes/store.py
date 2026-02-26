@@ -453,50 +453,61 @@ async def create_scope_request_with_form(
         if p:
             product_names.append(p.get("name", item.product_id))
 
-    email_body = f"""
-New Scope Request from {user.get('full_name', 'Unknown')}
+    products_str = ", ".join(product_names) if product_names else "—"
+    fd = payload.form_data
+    # Build a readable summary for the customer confirmation email
+    summary_parts = []
+    if fd.project_summary: summary_parts.append(fd.project_summary)
+    if fd.message: summary_parts.append(fd.message)
+    if fd.desired_outcomes: summary_parts.append(f"Outcomes: {fd.desired_outcomes}")
+    if fd.additional_notes: summary_parts.append(fd.additional_notes)
+    summary_str = " | ".join(summary_parts) if summary_parts else "—"
 
-Customer: {user.get('full_name', 'Unknown')}
-Email: {user.get('email', 'Unknown')}
-Company: {customer.get('company_name', 'Unknown')}
+    from services.email_service import EmailService
+    tenant_id = user.get("tenant_id") or DEFAULT_TENANT_ID
 
-Products: {', '.join(product_names)}
-
-PROJECT DETAILS:
-----------------
-Project Summary: {payload.form_data.project_summary}
-
-Desired Outcomes: {payload.form_data.desired_outcomes}
-
-Apps Involved: {payload.form_data.apps_involved}
-
-Timeline/Urgency: {payload.form_data.timeline_urgency}
-
-Budget Range: {payload.form_data.budget_range or 'Not specified'}
-
-Additional Notes: {payload.form_data.additional_notes or 'None'}
-
-Order/Deal ID: {order_number}
-"""
+    # Admin notification
     admin_email = await SettingsService.get("admin_notification_email", "")
     if admin_email:
-        from services.email_service import EmailService
         await EmailService.send(
             trigger="scope_request_admin",
             recipient=admin_email,
+            tenant_id=tenant_id,
             variables={
                 "order_number": order_number,
                 "customer_name": user.get("full_name", "Customer"),
                 "customer_email": user.get("email", ""),
-                "project_summary": payload.form_data.project_summary,
-                "desired_outcomes": payload.form_data.desired_outcomes,
-                "apps_involved": payload.form_data.apps_involved,
-                "timeline_urgency": payload.form_data.timeline_urgency,
-                "budget_range": payload.form_data.budget_range or "Not specified",
-                "additional_notes": payload.form_data.additional_notes or "",
+                "company": fd.company or customer.get("company_name", "") or "—",
+                "phone": fd.phone or "—",
+                "products": products_str,
+                "message": fd.message or "—",
+                "project_summary": fd.project_summary or "—",
+                "desired_outcomes": fd.desired_outcomes or "—",
+                "apps_involved": fd.apps_involved or "—",
+                "timeline_urgency": fd.timeline_urgency or "—",
+                "budget_range": fd.budget_range or "—",
+                "additional_notes": fd.additional_notes or "—",
             },
             db=db,
         )
+
+    # Customer confirmation email
+    customer_email_addr = user.get("email", "")
+    if customer_email_addr:
+        await EmailService.send(
+            trigger="enquiry_customer",
+            recipient=customer_email_addr,
+            tenant_id=tenant_id,
+            variables={
+                "order_number": order_number,
+                "customer_name": user.get("full_name", "Customer"),
+                "customer_email": customer_email_addr,
+                "products": products_str,
+                "summary": summary_str,
+            },
+            db=db,
+        )
+
     await db.zoho_sync_logs.insert_one({
         "id": make_id(),
         "entity_type": "scope_request",
@@ -508,13 +519,11 @@ Order/Deal ID: {order_number}
         "created_at": now_iso(),
         "mocked": True,
     })
-    await create_audit_log(entity_type="order", entity_id=order_id, action="scope_request_form_created", actor=user["email"], details={"order_number": order_number, "timeline": payload.form_data.timeline_urgency})
+    await create_audit_log(entity_type="order", entity_id=order_id, action="scope_request_form_created", actor=user["email"], details={"order_number": order_number})
     return {
-        "message": "Scope request submitted",
+        "message": "Enquiry submitted",
         "order_id": order_id,
         "order_number": order_number,
-        "email_sent_to": "rushabh@automateaccounts.com",
-        "email_delivery": "MOCKED",
     }
 
 
