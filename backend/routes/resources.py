@@ -405,7 +405,7 @@ async def update_article(
             source="admin_ui",
             after_json=changes,
         )
-        await db.audit_logs.insert_one({"id": make_id(), "entity_type": "resource", "entity_id": resource_id, "action": "updated", "actor": admin.get("email", "admin"), "details": changes, "created_at": now_iso()})
+        await create_audit_log(entity_type="resource", entity_id=resource_id, action="updated", actor=admin.get("email", "admin"), details=changes)
 
     updated = await db.resources.find_one({"id": resource_id}, {"_id": 0})
     updated.pop("_id", None)
