@@ -32,7 +32,6 @@ async def list_references_public(
     else:
         tid = DEFAULT_TENANT_ID
     refs = await db.website_references.find({"tenant_id": tid}, {"_id": 0}).sort("label", 1).to_list(500)
-    refs = await enrich_partner_codes(refs, is_platform_admin(admin))
     return {"references": refs}
 
 
