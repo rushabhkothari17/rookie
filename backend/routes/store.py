@@ -206,7 +206,7 @@ async def get_product(
                 raise HTTPException(status_code=404, detail="Product not found")
             if blacklist and cid and cid in blacklist:
                 raise HTTPException(status_code=404, detail="Product not found")
-            if vis_cond and vis_cond.get("conditions") and not whitelist and not blacklist:
+            if vis_cond and (vis_cond.get("groups") or vis_cond.get("conditions")) and not whitelist and not blacklist:
                 cust_doc = customer or {}
                 if not _eval_product_conditions(vis_cond, cust_doc):
                     raise HTTPException(status_code=404, detail="Product not found")
