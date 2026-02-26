@@ -17,6 +17,7 @@ from services.checkout_service import (
     build_order_items,
     build_checkout_notes_json,
     resolve_terms_tags,
+    get_fx_rate,
 )
 from services.settings_service import SettingsService
 from core.constants import SERVICE_FEE_RATE
