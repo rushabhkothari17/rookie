@@ -162,7 +162,7 @@ function TaxSettingsPanel() {
 function TaxTablePanel() {
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterCountry, setFilterCountry] = useState("");
+  const [filterCountry, setFilterCountry] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editRate, setEditRate] = useState("");
