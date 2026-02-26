@@ -52,14 +52,21 @@ E-commerce platform for professional services with:
 ### Currency System (ADDED 2026-02-26, COMPLETED 2026-02-27)
 - [x] `base_currency` field on partner tenants (set at signup, changeable in WebsiteTab)
 - [x] Mandatory `currency` field on all products (Shadcn Select in ProductForm)
-- [x] Orders and Subscriptions store `currency` (transaction) + `base_currency` (partner base)
+- [x] Orders and Subscriptions store `currency` (transaction) + `base_currency` (partner base) + `base_currency_amount` (FX-converted)
 - [x] **FX Conversion**: Real-time rate via `open.er-api.com` (free, no API key needed)
   - `base_currency_amount` stored in every order/subscription for export purposes
   - Fallback to 1:1 rate if external API is unavailable
+  - **1-hour in-memory TTL cache** on FX rates (no per-request latency)
 - [x] All 6 currency dropdowns use Shadcn Select (fixed from broken native `<select>`)
-  - WebsiteTab BaseCurrencyWidget, OrdersTab manual order, SubscriptionsTab manual sub
-  - ResourcesTab resource form, ProductForm, Signup (partner base_currency)
 - [x] Partner signup: no labels, placeholders only, base_currency Shadcn Select
+- [x] **Service cards** (`OfferingCard`, `ProductCard`) use `product.currency` via `Intl.NumberFormat` — shows £, CA$, €, $ correctly
+- [x] **Product detail page** `StickyPurchaseSummary` and `PriceSummary` use product currency (not hardcoded £)
+- [x] `base_currency_amount` auto-included in Orders/Subscriptions CSV exports
+
+### P1 — Cleanup & Verification (COMPLETED 2026-02-27)
+- [x] **Email Trigger Verification**: Legacy `quote_request_admin` + `quote_request_customer` templates removed from `_TEMPLATES` list and pruned from all existing tenants via startup migration in `server.py`
+- [x] **Global References** (`{{ref:key}}`): Now resolved in article content (GET /api/articles/{id}), and `_resolve_refs` is now tenant-scoped in `email_service.py`
+- [x] **Final Code Deprecation**: `quote_requests` dropped from permissions.py ADMIN_MODULES + preset roles; `quote_requests` collection dropped via startup migration
 - [x] Multiple payment methods (Card, Bank Transfer, GoCardless)
 - [x] Terms & Conditions acceptance
 - [x] **Currency display**: prices shown with product currency code (e.g., EUR 99.00 instead of $99.00)
