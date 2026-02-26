@@ -1033,8 +1033,6 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
         {/* Checkout Messages */}
         {authSlide === "checkout_messages" && (
           <div className="space-y-4">
-            <Field label="Partner tagging prompt" hint="Shown at checkout when partner status not selected" value={ws.msg_partner_tagging_prompt} onChange={s("msg_partner_tagging_prompt")} multiline testId="ws-msg-partner" />
-            <Field label="Override code required message" hint="Shown when customer hasn't tagged you as partner" value={ws.msg_override_required} onChange={s("msg_override_required")} multiline testId="ws-msg-override" />
             <Field label="Cart empty message" value={ws.msg_cart_empty} onChange={s("msg_cart_empty")} testId="ws-msg-cart-empty" />
             <Field label="Currency unsupported message" value={ws.msg_currency_unsupported} onChange={s("msg_currency_unsupported")} multiline testId="ws-msg-currency" />
             <Field label="No payment methods message" value={ws.msg_no_payment_methods} onChange={s("msg_no_payment_methods")} multiline testId="ws-msg-no-payment" />
