@@ -19,6 +19,9 @@ from services.settings_service import SettingsService
 # Default email templates
 # ---------------------------------------------------------------------------
 
+# Triggers that have been removed and should be pruned from existing tenants
+_DEPRECATED_TRIGGERS = {"quote_request_admin", "quote_request_customer"}
+
 _TEMPLATES: list[Dict[str, Any]] = [
     {
         "trigger": "verification",
