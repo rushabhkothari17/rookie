@@ -297,6 +297,13 @@ export function SubscriptionsTab() {
                 <TableCell className="max-w-[160px] truncate">{customerEmails[sub.customer_id] || sub.customer_id?.slice(0, 8)}</TableCell>
                 <TableCell className="max-w-[120px] truncate">{sub.plan_name || "—"}</TableCell>
                 <TableCell>{sub.currency || "USD"} {sub.amount?.toFixed(2)}</TableCell>
+                <TableCell>
+                  {sub.tax_amount > 0 ? (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700" title={sub.tax_name || "Tax"}>
+                      {sub.currency || "USD"} {sub.tax_amount?.toFixed(2)}
+                    </span>
+                  ) : <span className="text-slate-300 text-xs">—</span>}
+                </TableCell>
                 <TableCell><span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{sub.currency || "USD"}</span></TableCell>
                 <TableCell className="whitespace-nowrap">{sub.renewal_date?.slice(0, 10) || "—"}</TableCell>
                 <TableCell className="whitespace-nowrap">{sub.start_date?.slice(0, 10) || "—"}</TableCell>
