@@ -590,6 +590,17 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
                     data-testid="resource-price-input"
                   />
                 </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700">Currency</label>
+                  <select
+                    value={form.currency || "USD"}
+                    onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+                    data-testid="resource-currency-input"
+                  >
+                    {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
               )}
             </div>
 
