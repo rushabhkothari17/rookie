@@ -18,9 +18,13 @@ export interface ProductVisCondition {
   operator: string;
   value: string;
 }
-export interface ProductVisRuleSet {
+export interface ProductVisGroup {
   logic: "AND" | "OR";
   conditions: ProductVisCondition[];
+}
+export interface ProductVisRuleSet {
+  top_logic: "AND" | "OR";
+  groups: ProductVisGroup[];
 }
 
 export interface ProductFormData {
