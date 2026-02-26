@@ -535,6 +535,7 @@ async def create_checkout_session(
         "promo_code": promo_code_data["code"] if promo_code_data else None,
         "fee": fee, "total": total, "currency": order_items[0]["product"].get("currency", "USD"),
         "base_currency": base_currency,
+        "base_currency_amount": round(total * (await get_fx_rate(order_items[0]["product"].get("currency", "USD"), base_currency)), 2),
         "payment_method": "card",
         "terms_id_used": terms_id, "rendered_terms_text": rendered_terms_text,
         "terms_accepted_at": now_iso(),
