@@ -414,7 +414,7 @@ export default function Portal() {
                         <TableCell data-testid={`portal-subscription-status-${sub.id}`}>
                           <StatusBadge status={sub.status} />
                         </TableCell>
-                        <TableCell className="text-xs font-semibold" data-testid={`portal-subscription-amount-${sub.id}`}>${(sub.amount || 0).toFixed(2)}</TableCell>
+                        <TableCell className="text-xs font-semibold" data-testid={`portal-subscription-amount-${sub.id}`}>{sub.currency || ""} {(sub.amount || 0).toFixed(2)}</TableCell>
                         <TableCell className="text-xs text-slate-400" data-testid={`portal-subscription-cancel-date-${sub.id}`}>{cancelDate}</TableCell>
                         <TableCell>
                           {sub.status !== "cancelled" && sub.status !== "canceled_pending" && contractExpired && (
