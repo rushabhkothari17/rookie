@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/sonner";
 import { Eye, EyeOff, FileText, LayoutTemplate, Pencil, Save, Upload, X } from "lucide-react";
 import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
 import ReferencesSection from "./ReferencesSection";
 import EmailSection from "./EmailSection";
