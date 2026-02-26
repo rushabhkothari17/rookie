@@ -250,9 +250,7 @@ class AdminOrderUpdate(BaseModel):
     internal_note: Optional[str] = None
 
 
-class CurrencyOverrideRequest(BaseModel):
-    customer_email: str
-    currency: str
+class PromoCodeCreate(BaseModel):
     code: str
     discount_type: str
     discount_value: float
