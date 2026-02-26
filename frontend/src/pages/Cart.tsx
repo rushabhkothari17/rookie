@@ -129,7 +129,7 @@ export default function Cart() {
   const stripeFeeRate = ws.stripe_fee_rate || 0.05;
   const stripeFeePercent = Math.round(stripeFeeRate * 1000) / 10; // Convert to percentage for display
   const showFee = paymentMethod === "card";
-  const currencyUnsupported = preview?.currency && !["USD", "CAD"].includes(preview.currency);
+  const currencyUnsupported = false; // Currency is now product-based, no regional restrictions
   const subscriptionMissingPrice = grouped.subscriptions.some((i: any) => !i.product.stripe_price_id);
 
   // Calculate totals
