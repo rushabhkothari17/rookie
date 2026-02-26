@@ -103,6 +103,13 @@ E-commerce platform for professional services with:
 - [x] **Options empty state**: Dashed container + "Add your first option" button when no options exist
 - [x] **Better spacing**: px-6/pb-6/pt-5, space-y-5 throughout question cards
 
+### P0 — Province Dropdowns, Greyed-out Payments, Renewal History (COMPLETED 2026-02-28)
+- [x] **`GET /api/utils/provinces?country_code=XX`** (new `routes/utils.py`): Returns 13 Canadian provinces or 51 US states; returns empty list for unsupported countries; public endpoint, no auth required
+- [x] **Dynamic Province/State Dropdown** on `Signup.tsx` and `Profile.tsx`: When country = Canada or USA, a Shadcn Select dropdown appears; falls back to free-text Input for other countries. Province list fetched live from `/api/utils/provinces`
+- [x] **Greyed-out Payment Options** in `Cart.tsx`: Both Bank Transfer and Card options always visible; unconfigured gateways shown with `opacity-40 cursor-not-allowed` and "Not available" subtitle — users can see what's theoretically available even when not configured
+- [x] **Renewal History tab** in Customer Portal (`Portal.tsx`): New `RenewalHistory` component below Subscriptions; filters `subscription_renewal` orders, groups by `subscription_id`, shows collapsible per-subscription sections with date/subtotal/tax/total/method/status/invoice-link columns; empty state when no renewals exist
+- [x] **Subscription Tax (already done)**: `calculate_tax()` called in `checkout.py` for all subscription types before passing amount to Stripe/GoCardless
+
 ### P1 — Subscription Renewal Webhook Logic (COMPLETED 2026-02-28)
 - [x] **Stripe `invoice.paid` handler** fixed: parses raw event body for `stripe_subscription_id` + `billing_reason`, skips `subscription_create`, creates renewal orders with `tenant_id` + full tax fields, deduplicates by `stripe_invoice_id`, dispatches `subscription.renewed` event
 - [x] **GoCardless renewal**: `payments.confirmed` for new mandate payment creates `subscription_renewal` order with full tax fields, deduplication by `gocardless_payment_id`, dispatches `subscription.renewed` event
