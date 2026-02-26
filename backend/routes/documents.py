@@ -41,14 +41,14 @@ async def _ensure_folder(tenant_id: str, customer_id: str) -> str:
     if folder_id:
         return folder_id
 
-    # Get parent folder from integration settings
-    integration = await db.integrations.find_one(
-        {"tenant_id": tenant_id, "service": "zoho_workdrive"}, {"_id": 0}
+    # Get parent folder from integration settings (stored in oauth_connections)
+    integration = await db.oauth_connections.find_one(
+        {"tenant_id": tenant_id, "provider": "zoho_workdrive", "is_validated": True}, {"_id": 0}
     )
-    if not integration or not integration.get("is_validated"):
+    if not integration:
         raise HTTPException(status_code=400, detail="WorkDrive is not connected for this partner")
 
-    parent_folder_url = integration.get("parent_folder_url", "")
+    parent_folder_url = (integration.get("settings") or {}).get("parent_folder_url", "")
     parent_folder_id = wd.extract_folder_id_from_url(parent_folder_url)
     if not parent_folder_id:
         raise HTTPException(status_code=400, detail="Parent folder URL is not configured. Set it in Connected Services → WorkDrive.")
