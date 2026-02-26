@@ -218,14 +218,36 @@ const OPERATORS = [
 ];
 
 const NO_VALUE_OPS = new Set(["not_empty", "empty"]);
-const MAX_CONDITIONS = 4;
+const MAX_CONDS_PER_GROUP = 4;
+const MAX_GROUPS = 3;
+const DEFAULT_COND = (): VisibilityConditionRow => ({ depends_on: "", operator: "equals", value: "" });
+const DEFAULT_GROUP = (): VisibilityGroup => ({ logic: "AND", conditions: [DEFAULT_COND()] });
 
-/** Normalise any rule (legacy or new) into a VisibilityRuleSet */
+/** Normalise any saved rule (legacy or flat or grouped) into the current grouped VisibilityRuleSet */
 function normaliseRule(raw: any): VisibilityRuleSet {
-  if (!raw) return { logic: "AND", conditions: [{ depends_on: "", operator: "equals", value: "" }] };
-  if (raw.conditions) return raw as VisibilityRuleSet;
-  // Legacy single-rule → wrap
-  return { logic: "AND", conditions: [{ depends_on: raw.depends_on ?? "", operator: raw.operator ?? "equals", value: raw.value ?? "" }] };
+  if (!raw) return { top_logic: "AND", groups: [DEFAULT_GROUP()] };
+  // Already grouped format
+  if (raw.groups && Array.isArray(raw.groups)) return raw as VisibilityRuleSet;
+  // Old flat format: { logic, conditions }
+  if (raw.conditions && Array.isArray(raw.conditions))
+    return { top_logic: "AND", groups: [{ logic: raw.logic || "AND", conditions: raw.conditions }] };
+  // Legacy single-rule: { depends_on, operator, value }
+  return { top_logic: "AND", groups: [{ logic: "AND", conditions: [{ depends_on: raw.depends_on ?? "", operator: raw.operator ?? "equals", value: raw.value ?? "" }] }] };
+}
+
+// ── Logic pill (AND / OR toggle) ───────────────────────────────────────────────
+function LogicPill({ value, onChange, small }: { value: "AND" | "OR"; onChange: (v: "AND" | "OR") => void; small?: boolean }) {
+  const base = small ? "px-1.5 py-0.5 text-[9px]" : "px-2 py-0.5 text-[10px]";
+  return (
+    <div className="flex rounded overflow-hidden border border-blue-200">
+      {(["AND", "OR"] as const).map(l => (
+        <button key={l} type="button" onClick={() => onChange(l)}
+          className={`${base} font-bold transition-colors ${value === l ? "bg-blue-600 text-white" : "bg-white text-blue-500 hover:bg-blue-50"}`}>
+          {l}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
@@ -234,25 +256,46 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
   otherQuestions: IntakeQuestion[];
 }) {
   const isOn = !!rule;
-  const ruleSet: VisibilityRuleSet = isOn ? normaliseRule(rule) : { logic: "AND", conditions: [{ depends_on: "", operator: "equals", value: "" }] };
+  const ruleSet: VisibilityRuleSet = isOn ? normaliseRule(rule) : { top_logic: "AND", groups: [DEFAULT_GROUP()] };
 
   const toggle = (checked: boolean) => onChange(checked ? ruleSet : null);
 
-  const setLogic = (logic: "AND" | "OR") => onChange({ ...ruleSet, logic });
+  const setTopLogic = (tl: "AND" | "OR") => onChange({ ...ruleSet, top_logic: tl });
+  const setGroupLogic = (gi: number, logic: "AND" | "OR") =>
+    onChange({ ...ruleSet, groups: ruleSet.groups.map((g, i) => i === gi ? { ...g, logic } : g) });
 
-  const setCondition = (i: number, patch: Partial<VisibilityConditionRow>) => {
-    const conds = ruleSet.conditions.map((c, idx) => idx === i ? { ...c, ...patch } : c);
-    onChange({ ...ruleSet, conditions: conds });
+  const setCond = (gi: number, ci: number, patch: Partial<VisibilityConditionRow>) =>
+    onChange({
+      ...ruleSet,
+      groups: ruleSet.groups.map((g, i) => i !== gi ? g : {
+        ...g, conditions: g.conditions.map((c, j) => j !== ci ? c : { ...c, ...patch }),
+      }),
+    });
+
+  const addCond = (gi: number) => {
+    const g = ruleSet.groups[gi];
+    if (g.conditions.length >= MAX_CONDS_PER_GROUP) return;
+    onChange({
+      ...ruleSet,
+      groups: ruleSet.groups.map((grp, i) => i !== gi ? grp : { ...grp, conditions: [...grp.conditions, DEFAULT_COND()] }),
+    });
   };
 
-  const addCondition = () => {
-    if (ruleSet.conditions.length >= MAX_CONDITIONS) return;
-    onChange({ ...ruleSet, conditions: [...ruleSet.conditions, { depends_on: "", operator: "equals", value: "" }] });
+  const removeCond = (gi: number, ci: number) => {
+    const newGroups = ruleSet.groups
+      .map((g, i) => i !== gi ? g : { ...g, conditions: g.conditions.filter((_, j) => j !== ci) })
+      .filter(g => g.conditions.length > 0);
+    onChange(newGroups.length ? { ...ruleSet, groups: newGroups } : null);
   };
 
-  const removeCondition = (i: number) => {
-    const conds = ruleSet.conditions.filter((_, idx) => idx !== i);
-    onChange(conds.length ? { ...ruleSet, conditions: conds } : null);
+  const addGroup = () => {
+    if (ruleSet.groups.length >= MAX_GROUPS) return;
+    onChange({ ...ruleSet, groups: [...ruleSet.groups, DEFAULT_GROUP()] });
+  };
+
+  const removeGroup = (gi: number) => {
+    const newGroups = ruleSet.groups.filter((_, i) => i !== gi);
+    onChange(newGroups.length ? { ...ruleSet, groups: newGroups } : null);
   };
 
   const eligibleQs = otherQuestions.filter(q => q.key && q.type !== "html_block");
@@ -266,73 +309,97 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
           {isOn ? "On" : "Off"}
         </label>
       </div>
-      {isOn && (
-        <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] text-blue-600 font-medium">Show this question only when:</p>
-            {ruleSet.conditions.length > 1 && (
-              <div className="flex rounded-md overflow-hidden border border-blue-200 text-[10px] font-semibold">
-                {(["AND", "OR"] as const).map(l => (
-                  <button key={l} type="button"
-                    onClick={() => setLogic(l)}
-                    className={`px-2 py-0.5 transition-colors ${ruleSet.logic === l ? "bg-blue-600 text-white" : "bg-white text-blue-600 hover:bg-blue-50"}`}>
-                    {l}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {ruleSet.conditions.map((cond, i) => (
-            <div key={i} className="space-y-1.5">
-              {i > 0 && (
-                <div className="flex items-center gap-1.5 my-1">
-                  <div className="flex-1 border-t border-blue-100" />
-                  <span className="text-[10px] font-bold text-blue-400">{ruleSet.logic}</span>
-                  <div className="flex-1 border-t border-blue-100" />
+      {isOn && (
+        <div className="space-y-2">
+          <p className="text-[11px] text-blue-600 font-medium">Show this question only when:</p>
+
+          {ruleSet.groups.map((group, gi) => (
+            <div key={gi}>
+              {/* Top-level connector between groups */}
+              {gi > 0 && (
+                <div className="flex items-center gap-2 my-2">
+                  <div className="flex-1 border-t border-dashed border-slate-300" />
+                  <LogicPill value={ruleSet.top_logic} onChange={setTopLogic} />
+                  <div className="flex-1 border-t border-dashed border-slate-300" />
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[10px] text-slate-500 block mb-1">Question</label>
-                  <Select value={cond.depends_on || ""} onValueChange={v => setCondition(i, { depends_on: v })}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select question…" /></SelectTrigger>
-                    <SelectContent>
-                      {eligibleQs.map(q => (
-                        <SelectItem key={q.key} value={q.key}>{q.label || q.key || "(untitled)"}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-500 block mb-1">Condition</label>
-                  <div className="flex gap-1">
-                    <Select value={cond.operator} onValueChange={v => setCondition(i, { operator: v as any, value: NO_VALUE_OPS.has(v) ? "" : cond.value })}>
-                      <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>{OPERATORS.map(op => <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                    {ruleSet.conditions.length > 1 && (
-                      <button type="button" onClick={() => removeCondition(i)} className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0">
-                        <X size={13} />
+
+              {/* Group card */}
+              <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">
+                    {ruleSet.groups.length > 1 ? `Group ${gi + 1}` : "Conditions"}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {group.conditions.length > 1 && (
+                      <LogicPill value={group.logic} onChange={l => setGroupLogic(gi, l)} small />
+                    )}
+                    {ruleSet.groups.length > 1 && (
+                      <button type="button" onClick={() => removeGroup(gi)} className="text-slate-300 hover:text-red-400 transition-colors ml-1">
+                        <X size={12} />
                       </button>
                     )}
                   </div>
                 </div>
+
+                {group.conditions.map((cond, ci) => (
+                  <div key={ci} className="space-y-1.5">
+                    {ci > 0 && (
+                      <div className="flex items-center gap-1.5 my-1">
+                        <div className="flex-1 border-t border-blue-100" />
+                        <span className="text-[9px] font-bold text-blue-400">{group.logic}</span>
+                        <div className="flex-1 border-t border-blue-100" />
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] text-slate-500 block mb-1">Question</label>
+                        <Select value={cond.depends_on || ""} onValueChange={v => setCond(gi, ci, { depends_on: v })}>
+                          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Pick…" /></SelectTrigger>
+                          <SelectContent>
+                            {eligibleQs.map(q => (
+                              <SelectItem key={q.key} value={q.key}>{q.label || q.key || "(untitled)"}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-slate-500 block mb-1">Condition</label>
+                        <div className="flex gap-1">
+                          <Select value={cond.operator} onValueChange={v => setCond(gi, ci, { operator: v as any, value: NO_VALUE_OPS.has(v) ? "" : cond.value })}>
+                            <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
+                            <SelectContent>{OPERATORS.map(op => <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>)}</SelectContent>
+                          </Select>
+                          {(group.conditions.length > 1 || ruleSet.groups.length > 1) && (
+                            <button type="button" onClick={() => removeCond(gi, ci)} className="text-slate-300 hover:text-red-400 transition-colors">
+                              <X size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {!NO_VALUE_OPS.has(cond.operator) && (
+                      <Input value={cond.value || ""} onChange={e => setCond(gi, ci, { value: e.target.value })}
+                        placeholder="e.g. yes, 5, premium" className="h-8 text-xs" />
+                    )}
+                  </div>
+                ))}
+
+                {group.conditions.length < MAX_CONDS_PER_GROUP && (
+                  <button type="button" onClick={() => addCond(gi)}
+                    className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium transition-colors mt-1">
+                    <Plus size={11} /> Add condition
+                  </button>
+                )}
               </div>
-              {!NO_VALUE_OPS.has(cond.operator) && (
-                <div>
-                  <label className="text-[10px] text-slate-500 block mb-1">Value</label>
-                  <Input value={cond.value || ""} onChange={e => setCondition(i, { value: e.target.value })}
-                    placeholder="e.g. yes, 5, premium" className="h-8 text-xs" />
-                </div>
-              )}
             </div>
           ))}
 
-          {ruleSet.conditions.length < MAX_CONDITIONS && (
-            <button type="button" onClick={addCondition}
-              className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium transition-colors mt-1">
-              <Plus size={11} /> Add condition
+          {ruleSet.groups.length < MAX_GROUPS && (
+            <button type="button" onClick={addGroup}
+              className="flex items-center gap-1.5 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium transition-colors border border-dashed border-indigo-200 rounded-md px-2.5 py-1.5 w-full justify-center hover:bg-indigo-50/50">
+              <Plus size={11} /> Add group
             </button>
           )}
         </div>
