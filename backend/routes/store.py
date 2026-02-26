@@ -113,39 +113,9 @@ async def get_products(
         # Admins always see all active products
         is_admin = user.get("is_admin", False)
     else:
+        customer = None
         customer_id = None
         is_admin = False
-
-def _eval_product_conditions(rule_set: dict, customer: dict) -> bool:
-    """Evaluate ProductVisRuleSet conditions against a customer document."""
-    conditions = rule_set.get("conditions") or []
-    if not conditions:
-        return True
-    logic = rule_set.get("logic", "AND")
-    results = []
-    for cond in conditions:
-        field = cond.get("field", "")
-        operator = cond.get("operator", "equals")
-        expected = str(cond.get("value", "") or "")
-        actual = (customer or {}).get(field)
-        actual_str = str(actual or "").lower() if actual is not None else ""
-        if operator == "equals":
-            r = actual_str == expected.lower()
-        elif operator == "not_equals":
-            r = actual_str != expected.lower()
-        elif operator == "contains":
-            r = expected.lower() in actual_str
-        elif operator == "not_contains":
-            r = expected.lower() not in actual_str
-        elif operator == "empty":
-            r = not actual or actual in ("", [], {})
-        elif operator == "not_empty":
-            r = bool(actual) and actual not in ("", [], {})
-        else:
-            r = True
-        results.append(r)
-    return any(results) if logic == "OR" else all(results)
-
 
     def is_visible(p: Dict) -> bool:
         # Admins see everything
