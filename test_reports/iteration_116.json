@@ -1,0 +1,47 @@
+{
+  "summary": "Full testing of currency feature addition and legacy cleanup (iteration 18 → report 116). Tested backend APIs and frontend UI for: base-currency GET/PUT, product currency field, override_codes removal, form_responses removal, checkout messages cleanup, partner registration base_currency, orders/subscriptions currency columns, scope-final resource currency, system config base currency widget. All 15 feature tests PASS.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/admin/exports (quote-requests, override-codes CSVs)",
+        "issue": "exports.py still has export_quote_requests_csv and export_override_codes_csv functions referencing db.quote_requests and db.override_codes. These collections are empty/dropped so exports return empty CSVs. Non-critical but legacy code could be cleaned up.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter18_currency_cleanup.py",
+    "/app/test_reports/pytest/pytest_iter18_currency_cleanup.xml"
+  ],
+  "action_items": [
+    "Optional: Clean up exports.py - remove export_quote_requests_csv and export_override_codes_csv functions (legacy cleanup, non-breaking)",
+    "Optional: Consider removing/archiving ArticlesTab.tsx since it is no longer imported in Admin.tsx (orphaned file)"
+  ],
+  "critical_code_review_comments": [
+    "checkout.py: currency correctly sourced from product (not customer), base_currency from tenant - GOOD",
+    "misc.py: GET/PUT base-currency endpoints properly implemented with all 7 currencies validated",
+    "ResourcesTab.tsx: currency appears ONLY when scope-final category selected - GOOD conditional rendering",
+    "ProductForm.tsx: CURRENCY field is mandatory (marked with *) in Pricing tab - GOOD",
+    "Cart.tsx: override code and partner tag removed, currency display from product - GOOD",
+    "Admin.tsx: No ArticlesTab import - ArticlesTab.tsx is an orphaned file (not rendered anywhere)",
+    "PUT /admin/tenant/base-currency: platform admin (automate-accounts) CAN update currency because tenant_id_of(platform_admin) returns DEFAULT_TENANT_ID which is non-empty. Check if this is intended behavior."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter18_currency_cleanup.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 tests pass)",
+    "frontend": "100% (15/15 feature checks pass)"
+  },
+  "seed_data_creation": "No seed data created",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All currency feature additions and legacy cleanup verified working. Base currency: GET/PUT API on /api/admin/tenant/base-currency, System Config UI widget with 7 currencies (USD/CAD/EUR/AUD/GBP/INR/MXN). Products have required currency field in Pricing tab. Orders/Subscriptions tables show Currency column. scope-final resources show currency dropdown. Partner registration (/login -> 'Register as a partner' -> /signup?type=partner) has BASE CURRENCY field. Override codes: removed from Resources/Articles subtabs, from Customers tab, from checkout messages, and endpoint returns 404. Form Responses tile gone from Auth & Pages. ArticlesTab.tsx exists but is NOT imported in Admin.tsx (orphaned file).",
+  "rca_of_issues": "No critical bugs found. Only minor legacy code remaining in exports.py (will not cause errors as collections are empty/dropped)."
+}
