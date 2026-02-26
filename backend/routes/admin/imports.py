@@ -278,7 +278,6 @@ SAMPLE_DATA: Dict[str, List[Dict[str, Any]]] = {
     "articles": [{"title": "Getting Started Guide", "slug": "getting-started", "category": "Setup Guides", "status": "published", "content": "<h1>Welcome</h1><p>This guide helps you get started.</p>", "visible_to_customers": "true"}],
     "article-templates": [{"name": "Monthly Report Template", "category": "Reports", "content": "<h1>Monthly Report</h1><p>{{company_name}}</p>"}],
     "article-categories": [{"name": "Setup Guides", "slug": "setup-guides", "description": "Step-by-step guides for setting up your account", "is_active": "true", "display_order": "1"}],
-    "override-codes": [{"code": "OVERRIDE123", "type": "discount", "value": "50", "description": "Partner override code", "is_active": "true"}],
     "categories": [{"name": "Accounting Services", "description": "Bookkeeping and accounting services", "is_active": "true", "display_order": "1"}],
     "catalog": [{"name": "Starter Package", "category": "Accounting Services", "tagline": "Perfect for small businesses", "card_title": "Starter Package", "card_description": "Bookkeeping and VAT for small businesses.", "base_price": "499.00", "pricing_type": "fixed", "is_active": "true", "is_subscription": "true", "visible_to_customers": "true", "price_inputs": "[]", "intake_schema_json": "[]", "faqs": "[]", "bullets_included": '["Bookkeeping","VAT returns"]'}],
     "terms": [{"title": "Standard Service Agreement", "content": "<h1>Terms</h1><p>This agreement...</p>", "version": "1.0", "is_active": "true"}],
