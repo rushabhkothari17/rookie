@@ -944,8 +944,6 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
                   <Field label="Subtitle" value={ws.articles_hero_subtitle} onChange={s("articles_hero_subtitle")} multiline testId="ws-articles-hero-subtitle" />
                 </div>
               </div>
-              {/* Organization Address */}
-              <OrgAddressSection />
               {/* Base Currency */}
               <BaseCurrencyWidget />
               {/* Save button when rendered as top-level tab */}
