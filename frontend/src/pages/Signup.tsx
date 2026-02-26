@@ -253,6 +253,19 @@ export default function Signup() {
                 data-testid="partner-admin-password"
               />
             </FieldWrapper>
+            <FieldWrapper label="Base Currency" icon={DollarSign}>
+              <select
+                value={partnerOrg.base_currency}
+                onChange={e => setPartnerOrg(p => ({ ...p, base_currency: e.target.value }))}
+                className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                required
+                data-testid="partner-base-currency"
+              >
+                {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </FieldWrapper>
 
             <Button
               type="submit"
