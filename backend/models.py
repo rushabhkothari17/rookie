@@ -253,9 +253,6 @@ class AdminOrderUpdate(BaseModel):
 class CurrencyOverrideRequest(BaseModel):
     customer_email: str
     currency: str
-
-
-class PromoCodeCreate(BaseModel):
     code: str
     discount_type: str
     discount_value: float
