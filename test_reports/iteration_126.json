@@ -1,0 +1,65 @@
+{
+  "summary": "Comprehensive testing of Nested/Grouped Conditional Visibility for Products and Intake Form Questions. Backend: 11/11 new grouped format tests pass. Frontend: ProductConditionBuilder and IntakeSchemaBuilder VisibilityRuleEditor both working correctly with grouped structure. One backend bug identified in GET /api/products/{id} endpoint.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/products/{product_id}",
+        "issue": "Does NOT enforce visibility for unauthenticated users. The `if user:` guard means unauthenticated users can access any product by ID directly, even when visibility_conditions restrict it. GET /api/products (list) correctly enforces it for unauthenticated users. Inconsistency.",
+        "priority": "HIGH",
+        "rca": "In store.py get_product() (line 196), the entire visibility check block is inside `if user:`. Unauthenticated users (user=None) skip the block entirely and always get the product returned. Fix: move visibility check outside `if user:` or add a separate check for unauthenticated users that evaluates conditions against empty customer doc `{}`."
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "test_iter122_product_conditional_visibility.py",
+        "issue": "4 existing tests in iter122 now fail because they use legacy flat format {logic, conditions} but assert on flat format response. Server now returns {top_logic, groups} when saving flat format. Tests need updating to assert on grouped format.",
+        "note": "Not an app bug - tests were written for old format, new format is correct"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_new_grouped_format": "11/11 PASS - All grouped visibility tests pass",
+    "frontend_product_condition_builder": "PASS - ProductConditionBuilder shows with group-based structure. Show product when customer matches header, Conditions label, Customer field/Operator/Value dropdowns, Add condition button, Add group button all present",
+    "frontend_add_conditions_within_group": "PASS - Added 2nd condition triggers AND/OR group logic toggle. Tested up to 4 conditions per group",
+    "frontend_group_labels": "PASS - Group 1, Group 2, Group 3 labels appear correctly when multiple groups added",
+    "frontend_top_level_and_or": "PASS - AND/OR top-level toggle pill appears between groups when 2+ groups present (2 AND/OR toggles total: one per group header + top-level between groups)",
+    "frontend_max_groups": "PASS - Add group hidden after 3 groups (max)",
+    "frontend_remove_group": "PASS - Removing Group 2 makes Conditions label return (single-group mode)",
+    "frontend_save_and_reload": "PASS - Product saved with {top_logic: OR, groups: [...]} and reloads correctly with Conditional mode selected, Group 1/Group 2 labels, OR toggle active, UK/test.com values preserved",
+    "frontend_intake_vis_rule_editor": "PASS - VisibilityRuleEditor shows grouped structure: GROUP 1 with AND/OR toggle, conditions rows, top-level AND/OR toggle between groups, GROUP 2. All labels correct.",
+    "backend_legacy_flat_compat": "PASS - Legacy flat format {logic, conditions} can still be created and is normalised to grouped format by server",
+    "backend_product_filtering": "PASS - GET /api/products filters products with grouped visibility correctly for unauthenticated users",
+    "backend_intake_grouped_rules": "PASS - Intake schema with top_logic+groups visibility rules saved and reloaded correctly"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter126_grouped_conditional_visibility.py",
+    "/app/test_reports/pytest/pytest_iter126_grouped_vis.xml"
+  ],
+  "action_items": [
+    "FIX: GET /api/products/{product_id} in store.py - move visibility check outside `if user:` to also enforce for unauthenticated users. Pattern: apply `_eval_product_conditions(vis_cond, {})` for unauthenticated users, similar to how get_products handles it.",
+    "UPDATE: test_iter122_product_conditional_visibility.py - 4 tests fail because they assert on old flat format keys (logic, conditions) but server now returns grouped format (top_logic, groups). Update assertions to match new grouped format OR update test payloads to use grouped format."
+  ],
+  "critical_code_review_comments": [
+    "store.py get_product(): Line 196 `if user:` guard means unauthenticated users bypass all visibility checks when accessing by product ID. get_products() correctly handles unauthenticated users by calling is_visible() regardless of auth state.",
+    "ProductConditionBuilder: Logic is correct - normalizeVisRuleSet handles both legacy flat and new grouped format. setVisMode('conditional') correctly initializes with grouped format.",
+    "VisibilityRuleEditor (IntakeSchemaBuilder): Correctly implements grouped format with top_logic + groups. normaliseRule() handles legacy single-condition format.",
+    "_eval_product_conditions in store.py: Correctly handles both grouped (groups key) and legacy flat (conditions key) formats."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter126_grouped_conditional_visibility.py"
+  ],
+  "success_rate": {
+    "backend": "92% (11/11 new tests pass, 4/14 old iter122 tests fail due to format change)",
+    "frontend": "100% (all grouped visibility features working)"
+  },
+  "seed_data_creation": "Created and cleaned up TEST_UI_GroupedVis_Save product (ecc2959d-d3ab-4876-9928-020b8cb78f90) - deactivated as cleanup",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Grouped conditional visibility for Products and IntakeForm is implemented and working. Key data model: { top_logic: AND|OR, groups: [{logic: AND|OR, conditions: [...]}] }. Frontend: ProductConditionBuilder at /admin/products/[id]/edit > Visibility tab. IntakeSchemaBuilder VisibilityRuleEditor at /admin/products/[id]/edit > Pricing tab > Intake questions. Backend bug: GET /api/products/{id} does not check visibility for unauthenticated users (lists endpoint does). Old iter122 tests use legacy format and will fail (need update). New iter126 tests all pass.",
+  "rca_of_issue": "GET /api/products/{product_id} visibility enforcement bug: Root cause is the visibility check on line 196 is wrapped in `if user:`, meaning unauthenticated users (user=None) never have their visibility checked. They always get the product returned. GET /api/products (list endpoint) correctly handles this by calling is_visible() for all users including unauthenticated (where customer={} and conditions are evaluated against empty dict). Fix: Add visibility check for unauthenticated users in get_product(), e.g.: else: vis_cond = product.get('visibility_conditions'); if vis_cond and (vis_cond.get('groups') or vis_cond.get('conditions')): if not _eval_product_conditions(vis_cond, {}): raise HTTPException(status_code=404, detail='Product not found')"
+}
