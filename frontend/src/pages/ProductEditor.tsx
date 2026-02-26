@@ -45,6 +45,7 @@ export default function ProductEditor() {
     is_active: true,
     visible_to_customers: [],
     restricted_to: [],
+    visibility_conditions: null,
     intake_schema_json: EMPTY_INTAKE_SCHEMA,
     custom_sections: [],
     display_layout: "standard",
