@@ -304,6 +304,7 @@ class ManualOrderCreate(BaseModel):
     discount: float = 0.0
     fee: float = 0.0
     status: str = "paid"
+    currency: str = "USD"
     internal_note: Optional[str] = ""
 
 
@@ -313,6 +314,7 @@ class ManualSubscriptionCreate(BaseModel):
     quantity: int = 1
     inputs: Dict[str, Any] = Field(default_factory=dict)
     amount: float
+    currency: str = "USD"
     renewal_date: str
     start_date: Optional[str] = None
     status: str = "active"
