@@ -16,7 +16,6 @@ from services.audit_service import create_audit_log
 from services.checkout_service import (
     build_order_items,
     build_checkout_notes_json,
-    validate_and_consume_partner_tag,
     resolve_terms_tags,
 )
 from services.settings_service import SettingsService
