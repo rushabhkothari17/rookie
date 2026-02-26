@@ -1,0 +1,148 @@
+{
+  "summary": "Tested admin panel settings tab restructure. All 5 new SETTINGS tabs verified (Organization Info, Auth & Pages, Forms, System Config, Custom Domains). Website Content tab correctly removed. Documents Page slide with 6 fields working. OrgAddressSection visible for partner admin, hidden for platform admin. Backend: Fixed critical missing documents fields in WebsiteSettingsUpdate model and DEFAULT_WEBSITE_SETTINGS. All 17 backend tests pass.",
+
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "PUT /api/admin/website-settings + GET /api/admin/website-settings + GET /api/website-settings",
+        "issue": "FIXED: nav_documents_label, documents_page_title, documents_page_subtitle, documents_page_upload_label, documents_page_upload_hint, documents_page_empty_text were missing from WebsiteSettingsUpdate Pydantic model (models.py) and DEFAULT_WEBSITE_SETTINGS dict (routes/admin/website.py). Result: PUT silently ignored these fields; GET did not return them; TopNav ws.nav_documents_label always fell back to 'Documents'; Documents.tsx ws.* fields always used hardcoded defaults.",
+        "priority": "CRITICAL",
+        "status": "FIXED by testing agent"
+      }
+    ],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "OrgAddressSection - province dropdown",
+        "issue": "Province/State select dropdown shows empty when stored address uses full province name (e.g. 'Alberta') instead of abbreviation ('AB'). Provinces API returns value='AB', label='Alberta'. If address was saved with full name via API, dropdown won't show selection. UI saves correctly (abbreviation), so only affects programmatically-saved data.",
+        "selector": "[data-testid='org-addr-region-select']",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "test_results": {
+    "backend_tests": "17/17 passed",
+    "admin_sidebar_settings_section": {
+      "Organization Info tab": "PASS",
+      "Auth & Pages tab": "PASS",
+      "Forms tab": "PASS",
+      "System Config tab": "PASS",
+      "Custom Domains tab": "PASS",
+      "Website Content tab removed": "PASS"
+    },
+    "org_info_tab": {
+      "Store Name field": "PASS",
+      "Logo section": "PASS",
+      "Brand Colors section": "PASS",
+      "Store Hero Banner": "PASS",
+      "Articles Hero Banner": "PASS",
+      "Base Currency widget in Org Info": "PASS",
+      "Save Changes button": "PASS",
+      "Address section hidden for platform_admin": "PASS",
+      "Address section visible for partner_admin": "PASS",
+      "Address appears right below Store Name": "PASS"
+    },
+    "auth_pages_tab": {
+      "Authentication tiles (Login, SignUp, VerifyEmail)": "PASS",
+      "App Pages tiles (Portal, Profile, Admin Panel, 404)": "PASS",
+      "Documents Page tile in App Pages": "PASS",
+      "Checkout Flow tiles": "PASS",
+      "Messages tiles": "PASS",
+      "Footer & Navigation tiles at bottom": "PASS"
+    },
+    "documents_page_slide": {
+      "Slide opens on click": "PASS",
+      "Nav tab label field": "PASS",
+      "Page title field": "PASS",
+      "Page subtitle field": "PASS",
+      "Upload section label field": "PASS",
+      "Upload hint text field": "PASS",
+      "Empty state text field": "PASS"
+    },
+    "forms_tab": {
+      "Enquiry Form tile with 6 fields": "PASS"
+    },
+    "system_config_tab": {
+      "Heading present": "PASS",
+      "Base Currency NOT in System Config": "PASS",
+      "Empty for test tenant (no Operations/FeatureFlags settings)": "EXPECTED"
+    },
+    "setup_checklist_widget": {
+      "Payment item navigates to integrations tab": "PASS",
+      "org-info navigation via handleChecklistNavigate": "PASS (brand_customized item was completed for test tenant)"
+    },
+    "backend_api": {
+      "GET /api/admin/tenants/my unauthenticated": "PASS - 401",
+      "GET /api/admin/tenants/my as platform_admin": "PASS",
+      "GET /api/admin/tenants/my as partner_admin with address": "PASS",
+      "GET /api/admin/tenants/my no MongoDB _id": "PASS",
+      "GET /api/admin/tenants/my platform_admin has is_platform=true": "PASS",
+      "PUT /api/admin/tenants/{id}/address unauthenticated": "PASS - 401",
+      "PUT /api/admin/tenants/{id}/address missing fields": "PASS - 400",
+      "PUT /api/admin/tenants/{id}/address partner_admin": "PASS",
+      "PUT /api/admin/tenants/{id}/address verify persistence via GET": "PASS",
+      "PUT /api/admin/tenants/{id}/address partner cannot update other tenant": "PASS - 403",
+      "PUT /api/admin/tenants/{id}/address platform_admin can update any tenant": "PASS",
+      "GET /admin/website-settings includes documents fields": "PASS (after fix)",
+      "PUT /admin/website-settings saves documents fields": "PASS (after fix)",
+      "GET /website-settings (public) includes documents fields": "PASS (after fix)",
+      "GET /admin/tenant/base-currency": "PASS",
+      "PUT /admin/tenant/base-currency": "PASS"
+    }
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_iter134_admin_settings_tabs.py",
+    "/app/test_reports/pytest/pytest_iter134.xml"
+  ],
+
+  "action_items": [
+    "LOW: Province display in OrgAddressSection shows empty when region stored as full name ('Alberta') vs abbreviation ('AB'). Only affects programmatically-saved data. UI saves abbreviations correctly. Consider normalizing on save or accepting both formats in the dropdown.",
+    "INFO: System Config tab shows empty content for platform admin in 'All Tenants' mode. This is expected behavior as there are no Operations/FeatureFlags settings for the default tenant."
+  ],
+
+  "critical_code_review_comments": [
+    "FIXED: WebsiteSettingsUpdate Pydantic model (models.py) was missing 6 documents page fields. Pydantic silently strips unknown fields, so PUT /admin/website-settings accepted the payload with 200 but didn't save the fields. This caused ws.nav_documents_label/documents_page_* to always use hardcoded fallbacks.",
+    "FIXED: DEFAULT_WEBSITE_SETTINGS in routes/admin/website.py was also missing the 6 documents page fields, so GET didn't return them even as empty strings.",
+    "NOTE: OrgAddressSection correctly places hooks before early return (React Rules of Hooks compliance - the iter133 violation is fixed).",
+    "NOTE: handleChecklistNavigate in Admin.tsx correctly maps old 'website' tab references to new split tabs (org-info, auth-pages, forms-tab, system-config)."
+  ],
+
+  "updated_files": [
+    "/app/backend/models.py (added 6 documents page fields to WebsiteSettingsUpdate)",
+    "/app/backend/routes/admin/website.py (added 6 documents page fields to DEFAULT_WEBSITE_SETTINGS)",
+    "/app/backend/tests/test_iter134_admin_settings_tabs.py (new test file)"
+  ],
+
+  "success_rate": {
+    "backend": "100% (17/17 tests pass after fixing documents fields)",
+    "frontend": "97% (all major features working, 1 minor province display issue)"
+  },
+
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123! (partner_code: automate-accounts)",
+    "partner_admin": "TEST_valid_iter133@test.local / ChangeMe123! (partner_code: test-org-iter133-valid)"
+  },
+
+  "seed_data_creation": "Used existing TEST_valid_iter133@test.local partner from iter133. Backend tests updated address data for this tenant.",
+
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+
+  "context_for_next_testing_agent": "Iter134 tested the admin panel settings tab restructure (4 new tabs: org-info, auth-pages, forms-tab, system-config replacing old website tab). Fixed critical backend bug: documents page fields missing from WebsiteSettingsUpdate model and DEFAULT_WEBSITE_SETTINGS. Test partner admin: TEST_valid_iter133@test.local / ChangeMe123! / test-org-iter133-valid. Platform admin: admin@automateaccounts.local / ChangeMe123!. Two-step login: first enter partner code, then credentials.",
+
+  "rca_of_the_issue": {
+    "documents_fields_missing_from_backend": {
+      "issue": "ws.nav_documents_label and ws.documents_page_* fields in TopNav.tsx and Documents.tsx always used hardcoded fallbacks",
+      "root_cause": "Two-part backend omission: (1) WebsiteSettingsUpdate Pydantic model in models.py did not include the 6 documents fields, causing Pydantic to silently drop them on PUT. (2) DEFAULT_WEBSITE_SETTINGS dict in routes/admin/website.py did not include these fields, causing GET to not return them at all.",
+      "fix": "Added nav_documents_label, documents_page_title, documents_page_subtitle, documents_page_upload_label, documents_page_upload_hint, documents_page_empty_text to both WebsiteSettingsUpdate (models.py) and DEFAULT_WEBSITE_SETTINGS (routes/admin/website.py).",
+      "verification": "All 3 previously failing tests now pass: test_website_settings_includes_documents_fields, test_documents_settings_saved_and_retrievable, test_public_website_settings_includes_documents_fields"
+    }
+  }
+}
