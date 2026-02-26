@@ -74,7 +74,7 @@ export function SubscriptionsTab() {
   const [subNotesJson, setSubNotesJson] = useState<any>(null);
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
-  const [manualSub, setManualSub] = useState({ customer_email: "", product_id: "", quantity: 1, amount: 0, renewal_date: "", status: "active", internal_note: "" });
+  const [manualSub, setManualSub] = useState({ customer_email: "", product_id: "", quantity: 1, amount: 0, currency: "USD", renewal_date: "", status: "active", internal_note: "" });
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const [confirmRenewId, setConfirmRenewId] = useState<string | null>(null);
 
