@@ -648,7 +648,7 @@ export function OrdersTab() {
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder={`Max: ${(selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100).toFixed(2)}`}
+                  placeholder={`Max: ${selectedOrder.currency || "USD"} ${(selectedOrder.total - (selectedOrder.refunded_amount || 0) / 100).toFixed(2)}`}
                   value={refundForm.amount}
                   onChange={(e) => setRefundForm({ ...refundForm, amount: e.target.value })}
                   data-testid="admin-refund-amount-input"
