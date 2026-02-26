@@ -462,6 +462,23 @@ async def startup_tasks():
         if updates:
             await db.app_settings.update_one({}, {"$set": updates})
 
+    # ── Currency migrations ──────────────────────────────────────────────────
+    # Backfill products with currency="USD" where not set
+    await db.products.update_many(
+        {"currency": {"$exists": False}},
+        {"$set": {"currency": "USD"}}
+    )
+    # Backfill tenants with base_currency="USD" where not set
+    await db.tenants.update_many(
+        {"base_currency": {"$exists": False}},
+        {"$set": {"base_currency": "USD"}}
+    )
+    # Drop legacy override_codes collection
+    try:
+        await db.client.get_default_database().drop_collection("override_codes")
+    except Exception:
+        pass
+
 
 
 
