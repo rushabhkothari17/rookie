@@ -148,13 +148,14 @@ class TestCustomerLoginRegression:
     """Customer login regression test — uses test-iter109-a tenant"""
 
     def test_customer_login_success(self):
-        """Customer can login with valid credentials"""
+        """Customer can login with valid credentials (login_type=customer required)"""
         r = requests.post(
             f"{BASE_URL}/api/auth/login",
             json={
                 "partner_code": "test-iter109-a",
                 "email": "test_cust3_iter111@test.local",
-                "password": "ChangeMe123!"
+                "password": "TestCustomer123!",
+                "login_type": "customer"
             }
         )
         assert r.status_code == 200, f"Customer login failed: {r.status_code} {r.text}"
@@ -168,7 +169,8 @@ class TestCustomerLoginRegression:
             json={
                 "partner_code": "test-iter109-a",
                 "email": "test_cust3_iter111@test.local",
-                "password": "ChangeMe123!"
+                "password": "TestCustomer123!",
+                "login_type": "customer"
             }
         )
         if login_r.status_code != 200:
@@ -191,7 +193,8 @@ class TestCustomerLoginRegression:
             json={
                 "partner_code": "test-iter109-a",
                 "email": "test_cust3_iter111@test.local",
-                "password": "ChangeMe123!"
+                "password": "TestCustomer123!",
+                "login_type": "customer"
             }
         )
         if login_r.status_code != 200:
