@@ -629,7 +629,7 @@ export function OrdersTab() {
                 </div>
                 <div className="flex justify-between mb-1">
                   <span className="text-slate-500">Order Total</span>
-                  <span className="font-medium">${selectedOrder.total?.toFixed(2)}</span>
+                  <span className="font-medium">{selectedOrder.currency || "USD"} {selectedOrder.total?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Already Refunded</span>
