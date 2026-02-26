@@ -135,7 +135,7 @@ interface MappingFormState {
   field_mappings: FieldMapping[];
 }
 
-type CategoryFilter = "all" | "payments" | "email" | "crm" | "accounting";
+type CategoryFilter = "all" | "payments" | "email" | "crm" | "accounting" | "cloud_storage";
 
 // Sensible default field mappings for common webapp+zoho module combos
 const DEFAULT_FIELD_MAPS: Record<string, Record<string, FieldMapping[]>> = {
