@@ -861,20 +861,10 @@ export default function WebsiteTab({ defaultSection }: { defaultSection?: Sectio
           {activeSection === "sysconfig" && (
             <>
               <h3 className="text-sm font-semibold text-slate-700 mb-1">System Configuration</h3>
-              <p className="text-xs text-slate-400 mb-4">Click any value to edit inline.</p>
+              <p className="text-xs text-slate-400 mb-4">Configure global settings for your partner account.</p>
 
-              {/* Override Codes sub-section */}
-              {(() => {
-                const items = structured["OverrideCodes"] || [];
-                if (!items.length) return null;
-                return (
-                  <div className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
-                    <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Override Codes</h4>
-                    <p className="text-xs text-slate-400 mb-3">Settings for the override code system used in the checkout flow.</p>
-                    {items.map((item: any) => <SettingRow key={item.key} item={item} onSaved={onStructuredSaved} />)}
-                  </div>
-                );
-              })()}
+              {/* Base Currency */}
+              <BaseCurrencyWidget />
 
               {["Operations"].map(cat => {
                 const items = (structured[cat] || []);
