@@ -383,6 +383,24 @@ export function ProductForm({
         <div className={sectionCls}>
           <PricingTypeSelector value={form.pricing_type || "internal"} onChange={s("pricing_type")} />
 
+          {/* Currency - always required for internal pricing */}
+          {(form.pricing_type === "internal" || !form.pricing_type) && (
+            <div>
+              <label className={labelCls}>Currency <span className="text-red-500">*</span></label>
+              <select
+                value={form.currency || "USD"}
+                onChange={e => s("currency")(e.target.value)}
+                className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                required
+                data-testid="pf-currency"
+              >
+                {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Internal */}
           {(form.pricing_type === "internal" || !form.pricing_type) && (
             <>
