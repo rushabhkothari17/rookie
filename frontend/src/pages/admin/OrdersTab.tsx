@@ -585,9 +585,12 @@ export function OrdersTab() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Currency</label>
-                <select value={manualOrder.currency} onChange={e => setManualOrder({ ...manualOrder, currency: e.target.value })} className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm">
-                  {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <Select value={manualOrder.currency} onValueChange={v => setManualOrder({ ...manualOrder, currency: v })}>
+                  <SelectTrigger className="w-full bg-white" data-testid="manual-order-currency-select"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Status</label>
