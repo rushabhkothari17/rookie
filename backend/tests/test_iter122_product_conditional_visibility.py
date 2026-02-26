@@ -314,8 +314,8 @@ class TestEvalProductConditionsLogic:
         assert vis_cond["conditions"][0]["operator"] == "empty"
         assert vis_cond["conditions"][0]["value"] == ""
 
-        # Cleanup
-        requests.delete(f"{BASE_URL}/api/admin/products/{pid}", headers=headers)
+        # Cleanup - deactivate (no delete endpoint)
+        requests.put(f"{BASE_URL}/api/admin/products/{pid}", json={"name": "TEST_Empty_Operator_Product", "is_active": False, "visible_to_customers": [], "restricted_to": []}, headers=headers)
 
     def test_conditional_product_with_not_empty_operator(self, admin_headers, tenant_id):
         """Products with 'not_empty' operator should be created correctly."""
