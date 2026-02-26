@@ -239,16 +239,28 @@ export default function ShowcaseLayout({
             </div>
 
             {/* CTA */}
-            <div className="p-6 pt-4">
+            <div className="p-6 pt-4 space-y-3">
               <Button
                 onClick={handleAddToCart}
                 size="lg"
                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 font-semibold"
                 data-testid="showcase-cta"
               >
-                {isRFQ ? "Request Quote" : "Add to Cart"}
+                {scopeUnlock ? `Add to Cart — $${scopeUnlock.price}` : isRFQ ? "Request Quote" : "Add to Cart"}
                 <ArrowRight size={16} className="ml-2" />
               </Button>
+
+              {/* Scope ID override for enquiry products */}
+              {isRFQ && setScopeId && handleValidateScopeId && (
+                <ScopeIdBlock
+                  scopeId={scopeId}
+                  setScopeId={setScopeId}
+                  handleValidateScopeId={handleValidateScopeId}
+                  scopeValidating={scopeValidating}
+                  scopeError={scopeError}
+                  scopeUnlock={scopeUnlock}
+                />
+              )}
 
               {termsUrl && (
                 <a
