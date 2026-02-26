@@ -571,9 +571,6 @@ async def get_crm_mappings(
         ]},
         {"name": "subscriptions", "label": "Subscriptions", "fields": [
             "subscription_number", "plan_name", "status", "amount", "currency", "billing_cycle", "created_at"
-        ]},
-        {"name": "quote_requests", "label": "Quote Requests", "fields": [
-            "email", "contact_name", "company_name", "phone", "message", "status", "created_at"
         ]}
     ]
     
