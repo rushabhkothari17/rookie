@@ -334,7 +334,7 @@ async def gocardless_webhook(request: Request):
                         details={"payment_id": payment_id, "gocardless_event": action},
                     )
 
-            # Check subscriptions
+            # Check subscriptions — by initial payment_id first
             sub = await db.subscriptions.find_one({"gocardless_payment_id": payment_id}, {"_id": 0})
             if sub:
                 if action == "confirmed":
@@ -357,6 +357,113 @@ async def gocardless_webhook(request: Request):
                         action="payment_failed", actor="gocardless_webhook",
                         details={"payment_id": payment_id, "gocardless_event": action},
                     )
+            elif action == "confirmed" and mandate_id:
+                # Not the initial payment — check if this mandate belongs to an active subscription.
+                # If so, this is a renewal payment created against the same mandate.
+                renewal_sub = await db.subscriptions.find_one(
+                    {"gocardless_mandate_id": mandate_id, "status": "active"}, {"_id": 0}
+                )
+                if renewal_sub:
+                    existing_renewal = await db.orders.find_one(
+                        {"gocardless_payment_id": payment_id, "type": "subscription_renewal"},
+                        {"_id": 0}
+                    )
+                    if not existing_renewal:
+                        gc_customer_doc = await db.customers.find_one(
+                            {"id": renewal_sub["customer_id"]}, {"_id": 0}
+                        )
+                        tenant_id = gc_customer_doc.get("tenant_id", "") if gc_customer_doc else ""
+
+                        renewal_amount = renewal_sub.get("amount", 0)
+                        renewal_tax = renewal_sub.get("tax_amount", 0.0)
+                        renewal_total = round_cents(renewal_amount + renewal_tax)
+                        renewal_order_id = make_id()
+                        renewal_order_number = f"AA-{renewal_order_id.split('-')[0].upper()}"
+
+                        gc_renewal_doc = {
+                            "id": renewal_order_id,
+                            "order_number": renewal_order_number,
+                            "tenant_id": tenant_id,
+                            "customer_id": renewal_sub["customer_id"],
+                            "type": "subscription_renewal",
+                            "status": "paid",
+                            "subtotal": renewal_amount,
+                            "discount_amount": 0.0,
+                            "fee": 0.0,
+                            "total": renewal_total,
+                            "tax_amount": renewal_tax,
+                            "tax_rate": renewal_sub.get("tax_rate", 0.0),
+                            "tax_name": renewal_sub.get("tax_name"),
+                            "currency": renewal_sub.get("currency"),
+                            "base_currency": renewal_sub.get("base_currency"),
+                            "base_currency_amount": renewal_total,
+                            "payment_method": "bank_transfer",
+                            "gocardless_payment_id": payment_id,
+                            "gocardless_mandate_id": mandate_id,
+                            "subscription_id": renewal_sub["id"],
+                            "subscription_number": renewal_sub.get("subscription_number", ""),
+                            "payment_date": now_iso(),
+                            "created_at": now_iso(),
+                        }
+                        await db.orders.insert_one(gc_renewal_doc)
+                        await create_audit_log(
+                            entity_type="order",
+                            entity_id=renewal_order_id,
+                            action="created_renewal",
+                            actor="gocardless_webhook",
+                            details={
+                                "subscription_id": renewal_sub["id"],
+                                "payment_id": payment_id,
+                                "mandate_id": mandate_id,
+                                "amount": renewal_total,
+                            },
+                        )
+                        await db.zoho_sync_logs.insert_one({
+                            "id": make_id(),
+                            "entity_type": "subscription_renewal",
+                            "entity_id": renewal_order_id,
+                            "status": "Not Sent",
+                            "last_error": None,
+                            "attempts": 0,
+                            "created_at": now_iso(),
+                            "mocked": True,
+                        })
+
+                        # Dispatch subscription.renewed event
+                        from services.webhook_service import dispatch_event as _dispatch_gc
+                        if gc_customer_doc:
+                            gc_user = await db.users.find_one(
+                                {"id": gc_customer_doc["user_id"]}, {"_id": 0, "email": 1}
+                            )
+                            gc_email = gc_user["email"] if gc_user else ""
+                        else:
+                            gc_email = ""
+                        await _dispatch_gc(
+                            event="subscription.renewed",
+                            data={
+                                "id": renewal_sub["id"],
+                                "subscription_number": renewal_sub.get("subscription_number", ""),
+                                "plan_name": renewal_sub.get("plan_name", ""),
+                                "amount": renewal_amount,
+                                "currency": renewal_sub.get("currency", ""),
+                                "customer_email": gc_email,
+                                "next_billing_date": renewal_sub.get("renewal_date", ""),
+                                "renewed_at": now_iso(),
+                            },
+                            tenant_id=tenant_id,
+                        )
+
+                        # Renewal email notification
+                        if gc_email:
+                            await db.email_outbox.insert_one({
+                                "id": make_id(),
+                                "to": gc_email,
+                                "subject": "Subscription renewal paid",
+                                "body": "Your subscription renewal has been paid successfully.",
+                                "type": "subscription_renewal",
+                                "status": "MOCKED",
+                                "created_at": now_iso(),
+                            })
 
         elif resource_type == "mandates" and mandate_id:
             if action in ("cancelled", "failed", "expired"):
