@@ -266,18 +266,12 @@ class TestFXRateCaching:
 
     def test_fx_cache_constants_in_checkout_service(self):
         """Verify the _fx_cache dict and TTL constant are defined in checkout_service.py."""
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(
-            "checkout_service",
-            "/app/backend/services/checkout_service.py"
-        )
-        mod = importlib.util.load_from_spec(spec)  # type: ignore
-        spec.loader.exec_module(mod)  # type: ignore
-        # Check cache dict exists
-        assert hasattr(mod, "_fx_cache"), "_fx_cache dict not found in checkout_service"
-        assert hasattr(mod, "_FX_CACHE_TTL"), "_FX_CACHE_TTL constant not found"
-        assert mod._FX_CACHE_TTL == 3600, f"Expected TTL=3600, got {mod._FX_CACHE_TTL}"
-        print(f"✓ _fx_cache dict present, _FX_CACHE_TTL = {mod._FX_CACHE_TTL}s")
+        with open("/app/backend/services/checkout_service.py") as f:
+            source = f.read()
+        assert "_fx_cache" in source, "_fx_cache dict not found in checkout_service.py"
+        assert "_FX_CACHE_TTL" in source, "_FX_CACHE_TTL constant not found"
+        assert "_FX_CACHE_TTL = 3600" in source, f"Expected _FX_CACHE_TTL = 3600 in source"
+        print("✓ _fx_cache dict present, _FX_CACHE_TTL = 3600s defined in checkout_service.py")
 
     def test_fx_get_rate_function_exists(self):
         """get_fx_rate async function must exist in checkout_service."""
