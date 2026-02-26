@@ -270,7 +270,6 @@ class PromoCodeCreate(BaseModel):
     max_uses: Optional[int] = None
     one_time_code: bool = False
     enabled: bool = True
-    sponsorship_note: Optional[str] = None  # kept for backward compat
     promo_note: Optional[str] = None
 
 
@@ -284,7 +283,6 @@ class PromoCodeUpdate(BaseModel):
     max_uses: Optional[int] = None
     one_time_code: Optional[bool] = None
     enabled: Optional[bool] = None
-    sponsorship_note: Optional[str] = None  # kept for backward compat
     promo_note: Optional[str] = None
 
 
