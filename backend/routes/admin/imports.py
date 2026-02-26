@@ -75,7 +75,6 @@ JSON_FIELDS: Dict[str, List[str]] = {
     "customers": ["payment_modes_available"],
     "subscriptions": ["metadata"],
     "orders": ["items", "metadata"],
-    "quote-requests": ["fields", "answers"],
 }
 
 REQUIRED_FIELDS: Dict[str, List[str]] = {
