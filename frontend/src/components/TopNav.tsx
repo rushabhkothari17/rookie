@@ -13,15 +13,24 @@ import { useCart } from "@/contexts/CartContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { TenantSwitcher } from "@/components/TenantSwitcher";
 import { CustomerSwitcher } from "@/components/CustomerSwitcher";
+import { useEffect, useState } from "react";
+import api from "@/lib/api";
 
 export default function TopNav() {
   const { user, logout } = useAuth();
   const { items } = useCart();
   const location = useLocation();
   const ws = useWebsite();
+  const [showDocuments, setShowDocuments] = useState(false);
 
   const storeName = ws.store_name || "Store";
   const logoUrl = ws.logo_url || null;
+
+  useEffect(() => {
+    api.get("/store/settings").then(r => {
+      setShowDocuments(r.data?.settings?.workdrive_enabled === true);
+    }).catch(() => setShowDocuments(false));
+  }, []);
 
   const isActive = (path: string) =>
     location.pathname.startsWith(path)
