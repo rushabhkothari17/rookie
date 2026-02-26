@@ -1,0 +1,83 @@
+{
+  "summary": "Iteration 113: Testing email notifications for enquiries, single Enquiry Form tile in WebsiteTab, and unified scope_form_schema in ProductDetail modals. Backend tests: 10/13 passed, 3 skipped (admin has no customer record). All critical email notification features verified via API and e2e flow. Frontend: ONE Enquiry Form tile confirmed, slide editor opens with scope_form fields. Code review confirms both quote/scope modals use scope_form_title and scope_form_schema. Bug found: enquiry products show 'Calculating pricing...' indefinitely on ProductDetail (pricing never set for enquiry type).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/orders/scope-request (cart-based)",
+        "issue": "Always returns 400 'No scope request items found' because pricing service never sets is_scope_request=True. The filter `i['pricing'].get('is_scope_request')` never matches any product. Email notifications for this flow cannot be tested. This is a pre-existing issue.",
+        "priority": "MEDIUM"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ProductDetail.tsx (ClassicLayout)",
+        "issue": "Enquiry products (pricing_type='enquiry') show 'Calculating pricing...' indefinitely. Root cause: fetchPricing() at line 144 returns early without setting pricing state: `if (product.pricing_type === 'enquiry') return;`. ClassicLayout at line 134 only renders StickyPurchaseSummary when pricing is truthy. Fix: set a default pricing state for enquiry products when fetchPricing returns early (e.g., setPricing({subtotal:0,fee:0,total:0,is_enquiry:true})).",
+        "selector": "[data-testid='summary-cta-button']",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter16_email_notifications.py",
+    "/app/test_reports/pytest/pytest_results_iter16_emails.xml"
+  ],
+  "action_items": [
+    "CRITICAL FIX: ProductDetail.tsx - fetchPricing() returns early for enquiry products without setting pricing state. ClassicLayout hides CTA button when pricing=null. Fix: add setPricing({subtotal:0,fee:0,total:0,line_items:[],is_enquiry:true}) before the return statement at line 144.",
+    "MEDIUM: Cart-based /api/orders/scope-request: pricing service never sets is_scope_request=True. Need to either pass product.is_scope_request through checkout_service.build_order_items() to pricing dict, or check i['product'].get('is_scope_request') instead.",
+    "DOCUMENTATION: admin_notification_email must be configured in System Config for admin notification emails (scope_request_admin) to be sent. Currently conditional: `if admin_email:` check at store.py. Consider noting this in admin UI or auto-populating from primary_email."
+  ],
+  "critical_code_review_comments": [
+    "ProductDetail.tsx line 144: fetchPricing early return for enquiry products leaves pricing=null, causing ClassicLayout to show 'Calculating pricing...' indefinitely. CTA button never renders for enquiry-type products. This blocks the quote modal from being opened through the UI.",
+    "store.py cart scope-request: scope_items filter uses pricing.get('is_scope_request') but no code in pricing service sets this to True. Email notifications for this flow can never be triggered.",
+    "Both quote_form modals (line 376, 433) correctly use ws.scope_form_title and ws.scope_form_schema - confirmed via code review and WebsiteTab form slide editor shows scope_form fields."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter16_email_notifications.py"
+  ],
+  "success_rate": {
+    "backend": "77%",
+    "frontend": "70% (2/3 verifiable tests pass, 1 blocked by enquiry product CTA bug)"
+  },
+  "test_credentials": {
+    "admin": "admin@automateaccounts.local / ChangeMe123!",
+    "customer_test": "test_enq_iter16@test.local / TestPass123! (partner_code=test-iter109-a, login_type=customer)"
+  },
+  "seed_data_creation": "Created test customer: test_enq_iter16@test.local at test-iter109-a tenant. Created 2 scope-request enquiries (order AA-2B316A11, AA-84B27B90). Set admin_notification_email=admin@automateaccounts.local in admin settings.",
+  "tests_passed": [
+    "GET /api/admin/email-templates returns 200 with 11 templates",
+    "enquiry_customer template exists with is_enabled=True",
+    "enquiry_customer has expected available_variables",
+    "scope_request_admin template exists",
+    "scope_request_admin has new variables: company, phone, products, message",
+    "email-templates requires authentication (401)",
+    "POST /api/orders/scope-request-form creates order (AA-84B27B90)",
+    "enquiry_customer email logged as mocked after scope-request-form submission",
+    "scope_request_admin email logged as mocked when admin_notification_email configured",
+    "GET /api/admin/enquiries returns 200 with 2 test enquiries",
+    "Website Content > Forms shows exactly ONE 'Enquiry Form' tile (data-testid=form-tile-enquiry)",
+    "Clicking Enquiry Form tile opens slide editor with scope_form_title field (ws-scope-title)",
+    "Quote/Scope modals in ProductDetail both use ws.scope_form_title (code verified)",
+    "Quote/Scope modals in ProductDetail both use ws.scope_form_schema (code verified)"
+  ],
+  "tests_skipped": [
+    "scope-request-form order creation via admin token - admin has no customer record (expected)",
+    "email_logs after scope-request-form (via admin) - skipped due to no admin customer",
+    "email outbox after submission via admin - skipped due to no admin customer"
+  ],
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Email notification system is working: enquiry_customer (mocked) fires on scope-request-form POST; scope_request_admin fires when admin_notification_email is configured. Test customer test_enq_iter16@test.local exists in test-iter109-a tenant. Admin notification email was set to admin@automateaccounts.local. KEY BUG to fix first: enquiry products (pricing_type=enquiry) show 'Calculating pricing...' indefinitely because fetchPricing returns early without setting pricing state - CTA button never shows for enquiry products. This prevents testing the quote modal UI flow end-to-end.",
+  "rca_of_issues": {
+    "enquiry_product_cta_bug": {
+      "description": "Enquiry products show 'Calculating pricing...' indefinitely on ProductDetail",
+      "root_cause": "ProductDetail.tsx fetchPricing() line 144: early return for enquiry products does not set pricing state. ClassicLayout shows loading div when pricing===null.",
+      "reproduction": "1. Login as customer 2. Navigate to any enquiry product 3. Observe 'Calculating pricing...' never resolves 4. CTA button never appears",
+      "fix": "In ProductDetail.tsx fetchPricing(), replace `if (product.pricing_type === 'enquiry') return;` with `if (product.pricing_type === 'enquiry') { setPricing({ subtotal: 0, fee: 0, total: 0, line_items: [], requires_checkout: false, is_subscription: false, is_enquiry: true, external_url: null }); return; }`"
+    }
+  }
+}
