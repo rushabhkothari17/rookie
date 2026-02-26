@@ -369,16 +369,16 @@ export default function ProductDetail() {
         />
       </div>
 
-      {/* Quote Request Modal */}
+      {/* Quote / Enquiry Modal (for fixed-price products without payment configured) */}
       <Dialog open={showQuoteModal} onOpenChange={setShowQuoteModal}>
         <DialogContent className="max-w-md" data-testid="quote-request-modal">
           <DialogHeader>
-            <DialogTitle>{ws.quote_form_title || "Request a Quote"} — {product?.name}</DialogTitle>
+            <DialogTitle>{ws.scope_form_title || "Request a Quote"} — {product?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {ws.quote_form_subtitle && <p className="text-sm text-slate-500">{ws.quote_form_subtitle}</p>}
+            {ws.scope_form_subtitle && <p className="text-sm text-slate-500">{ws.scope_form_subtitle}</p>}
             {(() => {
-              const schema = parseSchema(ws.quote_form_schema).filter(f => f.enabled !== false);
+              const schema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false);
               if (schema.length > 0) {
                 return schema.map(field => (
                   <div key={field.id} className="space-y-1">
@@ -420,11 +420,8 @@ export default function ProductDetail() {
               );
             })()}
             <Button className="w-full" onClick={handleSubmitQuote} disabled={submittingQuote} data-testid="quote-submit-button">
-              {submittingQuote ? "Submitting…" : "Submit Quote Request"}
+              {submittingQuote ? "Submitting…" : "Submit Enquiry"}
             </Button>
-            {ws.quote_form_response_time && (
-              <p className="text-xs text-slate-400 text-center">{ws.quote_form_response_time}</p>
-            )}
           </div>
         </DialogContent>
       </Dialog>
