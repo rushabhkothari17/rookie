@@ -204,6 +204,32 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "is_system": True,
     },
     {
+        "trigger": "invoice_email",
+        "label": "Invoice (Customer)",
+        "description": "Sent to the customer when an invoice is emailed from the invoice viewer.",
+        "subject": "Invoice {{invoice_number}} from {{partner_name}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{partner_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">Invoice {{invoice_number}}</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 20px">{{invoice_date}}</p>
+  <p style="color:#475569;">Hi {{customer_name}},</p>
+  <p style="color:#475569;">Please find your invoice details below.</p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin:20px 0">
+    <table style="width:100%;border-collapse:collapse">
+      <tr style="border-bottom:1px solid #e2e8f0"><th style="text-align:left;padding:8px 4px;color:#64748b;font-size:13px;font-weight:600">Item</th><th style="text-align:right;padding:8px 4px;color:#64748b;font-size:13px;font-weight:600">Amount</th></tr>
+      {{invoice_items_rows}}
+      <tr style="border-top:2px solid #1e293b"><td style="padding:10px 4px;color:#1e293b;font-weight:700;font-size:15px">Total</td><td style="padding:10px 4px;text-align:right;color:#1e293b;font-weight:700;font-size:15px">{{order_currency}} {{order_total}}</td></tr>
+    </table>
+  </div>
+  {{tax_row}}
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">{{footer_notes}}<br>© {{partner_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{partner_name}}", "{{customer_name}}", "{{customer_email}}", "{{invoice_number}}", "{{invoice_date}}", "{{order_number}}", "{{order_total}}", "{{order_currency}}", "{{invoice_items_rows}}", "{{tax_row}}", "{{footer_notes}}"],
+        "is_system": True,
+    },
+    {
         "trigger": "password_reset",
         "label": "Password Reset",
         "description": "Sent when a customer requests a password reset.",
