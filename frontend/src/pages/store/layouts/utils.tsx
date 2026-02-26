@@ -18,19 +18,17 @@ function evaluateSingleRule(rule: any, answers: Record<string, any>): boolean {
     case "greater_than": return parseFloat(answer) > parseFloat(value);
     case "less_than": return parseFloat(answer) < parseFloat(value);
     case "contains": return Array.isArray(answer) ? answer.includes(value) : String(answer ?? "").includes(value);
+    case "not_contains": return Array.isArray(answer) ? !answer.includes(value) : !String(answer ?? "").includes(value);
     case "not_empty": return !!answer && answer !== "" && !(Array.isArray(answer) && answer.length === 0);
+    case "empty": return !answer || answer === "" || (Array.isArray(answer) && answer.length === 0);
     default: return true;
   }
 }
 
 /**
  * Evaluate visibility with multi-level chaining support.
- * If question A depends on B, and B depends on C, then:
- * - C must be visible and its rule must pass
- * - B must be visible and its rule must pass
- * - Only then A is evaluated
- * 
- * This prevents showing a question whose dependency is itself hidden.
+ * Handles both legacy single-rule {depends_on, operator, value} and new
+ * multi-condition {logic: "AND"|"OR", conditions: [...]} format.
  */
 export function evaluateVisibilityRule(
   rule: any,
@@ -39,32 +37,45 @@ export function evaluateVisibilityRule(
   visited: Set<string> = new Set()
 ): boolean {
   if (!rule) return true;
-  
+
+  // ── New multi-condition format ──────────────────────────────────────────
+  if (rule.conditions && Array.isArray(rule.conditions)) {
+    const { logic = "AND", conditions } = rule as { logic: string; conditions: any[] };
+    if (!conditions.length) return true;
+
+    // For each condition's dependency, ensure that dep is itself visible
+    if (allQuestions) {
+      for (const cond of conditions) {
+        const dep = cond.depends_on;
+        if (!dep || visited.has(dep)) continue;
+        const depQ = allQuestions.find(q => q.key === dep);
+        if (depQ?.visibility_rule) {
+          const clone = new Set(visited);
+          clone.add(dep);
+          const depVisible = evaluateVisibilityRule(depQ.visibility_rule, answers, allQuestions, clone);
+          if (!depVisible) return false;
+        }
+      }
+    }
+    const results = conditions.map((c: any) => evaluateSingleRule(c, answers));
+    return logic === "OR" ? results.some(Boolean) : results.every(Boolean);
+  }
+
+  // ── Legacy single-rule format ────────────────────────────────────────────
   const { depends_on } = rule;
-  
-  // Prevent infinite loops in circular dependencies
   if (visited.has(depends_on)) return true;
   visited.add(depends_on);
-  
-  // First, check if the dependency question itself is visible
+
   if (allQuestions) {
     const depQuestion = allQuestions.find(q => q.key === depends_on);
     if (depQuestion?.visibility_rule) {
-      // Recursively check if the dependency is visible
       const depVisible = evaluateVisibilityRule(
-        depQuestion.visibility_rule,
-        answers,
-        allQuestions,
-        visited
+        depQuestion.visibility_rule, answers, allQuestions, visited
       );
-      if (!depVisible) {
-        // The question we depend on is hidden, so we should also be hidden
-        return false;
-      }
+      if (!depVisible) return false;
     }
   }
-  
-  // Now evaluate our own rule
+
   return evaluateSingleRule(rule, answers);
 }
 
