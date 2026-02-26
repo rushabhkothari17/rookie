@@ -853,6 +853,7 @@ async def checkout_free(
     tenant_id = customer.get("tenant_id", "")
 
     order_items = await build_order_items(payload.items, tenant_id)
+    base_currency = await get_tenant_base_currency(tenant_id)
     
     # Calculate total and verify it's actually free
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
