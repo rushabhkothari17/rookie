@@ -367,7 +367,7 @@ function OverrideRulesPanel() {
   const deleteRule = async (id: string) => {
     if (!confirm("Delete this override rule?")) return;
     try {
-      await api.delete(`/api/admin/taxes/overrides/${id}`);
+      await api.delete(`/admin/taxes/overrides/${id}`);
       toast.success("Override rule deleted");
       load();
     } catch {
