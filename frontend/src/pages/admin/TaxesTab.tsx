@@ -688,6 +688,77 @@ function InvoiceSettingsPanel() {
           {saving ? "Saving..." : "Save Invoice Settings"}
         </Button>
       </div>
+
+      {/* Custom Invoice Templates */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900">Custom Invoice Templates</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Create your own HTML templates visible only to your organisation.</p>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => { setEditingTemplate(null); setTmplForm({ name: "", html_body: "" }); setShowNewTemplate(true); }} data-testid="new-custom-template-btn">
+            <Plus className="h-3.5 w-3.5 mr-1.5" />New Template
+          </Button>
+        </div>
+
+        {showNewTemplate && (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Template Name <span className="text-red-500">*</span></Label>
+              <Input value={tmplForm.name} onChange={e => setTmplForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Company Branded Template" data-testid="custom-template-name" />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs">HTML Body</Label>
+                {!tmplForm.html_body && (
+                  <button onClick={() => setTmplForm(f => ({ ...f, html_body: STARTER_HTML }))} className="text-xs text-blue-600 hover:underline">
+                    Use starter template
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-slate-400">Variables: <code className="bg-slate-200 px-1 rounded">{"{{invoice_number}}"}</code> <code className="bg-slate-200 px-1 rounded">{"{{partner_name}}"}</code> <code className="bg-slate-200 px-1 rounded">{"{{customer_name}}"}</code> <code className="bg-slate-200 px-1 rounded">{"{{order_total}}"}</code> <code className="bg-slate-200 px-1 rounded">{"{{footer_notes}}"}</code></p>
+              <textarea
+                data-testid="custom-template-html"
+                className="w-full rounded-lg border border-slate-200 text-xs font-mono p-3 min-h-[200px] resize-y focus:outline-none focus:ring-1 focus:ring-slate-400"
+                value={tmplForm.html_body}
+                onChange={e => setTmplForm(f => ({ ...f, html_body: e.target.value }))}
+                placeholder="<!DOCTYPE html><html>...</html>"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={saveTemplate} data-testid="custom-template-save-btn">
+                {editingTemplate ? "Update Template" : "Create Template"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setShowNewTemplate(false); setEditingTemplate(null); }}>Cancel</Button>
+            </div>
+          </div>
+        )}
+
+        {customTemplates.length === 0 && !showNewTemplate ? (
+          <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-sm text-slate-400">
+            No custom templates yet. They will appear in the invoice viewer alongside the 5 defaults.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {customTemplates.map(t => (
+              <div key={t.id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{t.name}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Created {(t.created_at || "").slice(0, 10)}</p>
+                </div>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => startEditTemplate(t)}>
+                    <Edit2 className="h-3.5 w-3.5 text-slate-400" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => deleteTemplate(t.id)}>
+                    <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
