@@ -484,6 +484,15 @@ async def startup_tasks():
     except Exception:
         pass
 
+    # Remove deprecated preferred_currency fields from customer documents
+    try:
+        await db.customers.update_many(
+            {"$or": [{"currency": {"$exists": True}}, {"currency_locked": {"$exists": True}}]},
+            {"$unset": {"currency": "", "currency_locked": ""}}
+        )
+    except Exception:
+        pass
+
     # Prune deprecated email templates across all tenants
     try:
         from services.email_service import _DEPRECATED_TRIGGERS
