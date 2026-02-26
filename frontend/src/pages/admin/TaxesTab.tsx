@@ -84,10 +84,12 @@ function TaxSettingsPanel() {
 
         <div className="flex items-center justify-between">
           <Label className="text-sm">Enable Tax Collection</Label>
-          <Switch
+          <input
+            type="checkbox"
             data-testid="tax-enabled-toggle"
             checked={!!settings.enabled}
-            onCheckedChange={(v) => setSettings({ ...settings, enabled: v })}
+            onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
+            className="h-4 w-4 rounded border-slate-300 accent-slate-900"
           />
         </div>
 
