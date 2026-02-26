@@ -251,27 +251,11 @@ export default function Cart() {
       toast.error("Please accept the Terms & Conditions to proceed");
       return;
     }
-    if (!checkoutSections) {
-      if (ws.checkout_partner_enabled !== false && !partnerTagResponse) {
-        toast.error(ws.msg_partner_tagging_prompt || "Please select whether you have tagged us as your partner");
-        return;
-      }
-      if (ws.checkout_partner_enabled !== false && partnerTagResponse === "Not yet" && !overrideCode.trim()) {
-        toast.error(ws.msg_override_required || "An override code is required");
-        return;
-      }
-    }
     if (checkoutSections && sectionRequiredFieldsMissing) {
       toast.error("Please complete all required fields");
       return;
     }
-    if (checkoutSections && extraFields['partner_tag_response'] === 'Not yet' && !overrideCode.trim()) {
-      toast.error(ws.msg_override_required || "An override code is required");
-      return;
-    }
 
-    const partnerTag = checkoutSections ? (extraFields['partner_tag_response'] || null) : (partnerTagResponse || null);
-    const overrideVal = partnerTag === 'Not yet' ? overrideCode.trim() : null;
     const zohoSubType = checkoutSections ? (extraFields['zoho_subscription_type'] || null) : zohoSubscriptionType;
     const zohoProduct = checkoutSections ? (extraFields['current_zoho_product'] || null) : currentZohoProduct;
     const zohoAccess = checkoutSections ? (extraFields['zoho_account_access'] || null) : zohoAccountAccess;
