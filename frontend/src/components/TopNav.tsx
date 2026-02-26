@@ -53,7 +53,7 @@ export default function TopNav() {
             <Link to="/articles" className={isActive("/articles")} data-testid="nav-articles">
               {ws.nav_articles_label || "Articles"}
             </Link>
-            {showDocuments && (
+            {ws.workdrive_enabled && (
               <Link to="/documents" className={isActive("/documents")} data-testid="nav-documents">
                 Documents
               </Link>
