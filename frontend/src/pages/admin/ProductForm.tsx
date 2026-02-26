@@ -407,7 +407,7 @@ export function ProductForm({
               <div className={cardCls}>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={labelCls}>Base price (£)</label>
+                    <label className={labelCls}>Base price</label>
                     <Input
                       type="number"
                       value={form.base_price || ""}
