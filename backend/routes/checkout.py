@@ -956,6 +956,9 @@ async def checkout_free(
         "promo_code": promo_code_data["code"] if promo_code_data else None,
         "fee": 0.0,
         "total": 0.0,  # Free!
+        "tax_amount": 0.0,
+        "tax_rate": 0.0,
+        "tax_name": None,
         "currency": order_items[0]["product"].get("currency", "USD"),
         "base_currency": base_currency,
         "base_currency_amount": 0.0,
