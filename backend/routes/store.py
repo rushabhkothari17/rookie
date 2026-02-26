@@ -407,12 +407,17 @@ async def create_scope_request_with_form(
         "currency": customer.get("currency", "USD"),
         "payment_method": None,
         "scope_form_data": {
-            "project_summary": payload.form_data.project_summary,
-            "desired_outcomes": payload.form_data.desired_outcomes,
-            "apps_involved": payload.form_data.apps_involved,
-            "timeline_urgency": payload.form_data.timeline_urgency,
+            "project_summary": payload.form_data.project_summary or "",
+            "desired_outcomes": payload.form_data.desired_outcomes or "",
+            "apps_involved": payload.form_data.apps_involved or "",
+            "timeline_urgency": payload.form_data.timeline_urgency or "",
             "budget_range": payload.form_data.budget_range or "",
             "additional_notes": payload.form_data.additional_notes or "",
+            "name": payload.form_data.name or "",
+            "email": payload.form_data.email or "",
+            "company": payload.form_data.company or "",
+            "phone": payload.form_data.phone or "",
+            "message": payload.form_data.message or "",
         },
         "notes_json": _deep_merge(
             {
@@ -422,12 +427,17 @@ async def create_scope_request_with_form(
             },
             {
                 "scope_form": {
-                    "project_summary": payload.form_data.project_summary,
-                    "desired_outcomes": payload.form_data.desired_outcomes,
-                    "apps_involved": payload.form_data.apps_involved,
-                    "timeline_urgency": payload.form_data.timeline_urgency,
+                    "project_summary": payload.form_data.project_summary or "",
+                    "desired_outcomes": payload.form_data.desired_outcomes or "",
+                    "apps_involved": payload.form_data.apps_involved or "",
+                    "timeline_urgency": payload.form_data.timeline_urgency or "",
                     "budget_range": payload.form_data.budget_range or "",
                     "additional_notes": payload.form_data.additional_notes or "",
+                    "name": payload.form_data.name or "",
+                    "email": payload.form_data.email or "",
+                    "company": payload.form_data.company or "",
+                    "phone": payload.form_data.phone or "",
+                    "message": payload.form_data.message or "",
                 }
             },
         ),
