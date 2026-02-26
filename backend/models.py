@@ -653,6 +653,13 @@ class WebsiteSettingsUpdate(BaseModel):
     bank_transaction_sources: Optional[str] = None
     bank_transaction_types: Optional[str] = None
     bank_transaction_statuses: Optional[str] = None
+    # Documents page customization
+    nav_documents_label: Optional[str] = None
+    documents_page_title: Optional[str] = None
+    documents_page_subtitle: Optional[str] = None
+    documents_page_upload_label: Optional[str] = None
+    documents_page_upload_hint: Optional[str] = None
+    documents_page_empty_text: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
