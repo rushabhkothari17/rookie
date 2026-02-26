@@ -181,7 +181,7 @@ export default function Cart() {
     setCartScopeError("");
     setCartScopeUnlock(null);
     try {
-      const r = await api.post("/scope/validate", { scope_id: cartScopeId.trim() });
+      const r = await api.get(`/resources/${cartScopeId.trim()}/validate-scope`);
       setCartScopeUnlock(r.data);
     } catch (e: any) {
       setCartScopeError(e.response?.data?.detail || "Invalid Scope ID");
