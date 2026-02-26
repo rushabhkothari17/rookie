@@ -764,15 +764,23 @@ export default function Cart() {
               {showPromoSection && (
                 <div className="px-4 pb-4">
                   {promoApplied ? (
-                    <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)", borderColor: "var(--aa-accent)" }}>
-                      <div className="flex items-center gap-2">
-                        <Check size={16} style={{ color: "var(--aa-accent)" }} />
-                        <span className="font-mono font-medium" style={{ color: "var(--aa-primary)" }}>{promoApplied.code}</span>
-                        <span className="text-sm text-slate-600">({promoApplied.discount_type === "percent" ? `${promoApplied.discount_value}% off` : `$${promoApplied.discount_value} off`})</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)", borderColor: "var(--aa-accent)" }}>
+                        <div className="flex items-center gap-2">
+                          <Check size={16} style={{ color: "var(--aa-accent)" }} />
+                          <span className="font-mono font-medium" style={{ color: "var(--aa-primary)" }}>{promoApplied.code}</span>
+                          <span className="text-sm text-slate-600">({promoApplied.discount_type === "percent" ? `${promoApplied.discount_value}% off` : `$${promoApplied.discount_value} off`})</span>
+                        </div>
+                        <button onClick={handleRemovePromo} className="text-red-500 hover:text-red-700" data-testid="cart-promo-remove">
+                          <X size={16} />
+                        </button>
                       </div>
-                      <button onClick={handleRemovePromo} className="text-red-500 hover:text-red-700" data-testid="cart-promo-remove">
-                        <X size={16} />
-                      </button>
+                      {promoApplied.is_sponsored && (
+                        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800" data-testid="cart-sponsorship-note">
+                          <span className="mt-0.5">★</span>
+                          <span><strong>Sponsored discount:</strong> This code is part of a Zoho partner sponsorship programme. Your order will be flagged for sponsorship reporting.</span>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex gap-2">
