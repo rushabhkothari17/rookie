@@ -274,9 +274,13 @@ def _resolve_vars(template: str, variables: Dict[str, Any]) -> str:
     return re.sub(r"\{\{([^}]+)\}\}", replacer, template)
 
 
-async def _resolve_refs(text: str, db) -> str:
-    """Replace {{ref:key}} with values from website_references collection."""
-    refs = await db.website_references.find({}, {"_id": 0}).to_list(500)
+async def _resolve_refs(text: str, db, tenant_id: str = "") -> str:
+    """Replace {{ref:key}} with values from website_references collection.
+    Looks up tenant-scoped refs first, then falls back to global (no tenant_id)."""
+    query: dict = {}
+    if tenant_id:
+        query = {"$or": [{"tenant_id": tenant_id}, {"tenant_id": {"$exists": False}}]}
+    refs = await db.website_references.find(query, {"_id": 0}).to_list(500)
     ref_map = {r["key"]: r["value"] for r in refs}
 
     def replacer(m: re.Match) -> str:  # type: ignore[type-arg]
