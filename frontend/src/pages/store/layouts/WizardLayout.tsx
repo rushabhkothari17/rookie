@@ -271,6 +271,31 @@ export default function WizardLayout({
           </Button>
         )}
       </div>
+
+      {/* Custom Sections */}
+      {(product.custom_sections || []).map((sec: any, i: number) => (
+        <div key={sec.id || i} className="bg-white rounded-2xl border border-slate-200 p-6 mt-6">
+          <h3 className="font-semibold text-slate-900 mb-3">{sec.name}</h3>
+          {sec.content && (
+            <p className="text-sm text-slate-600 leading-relaxed">{sec.content}</p>
+          )}
+        </div>
+      ))}
+
+      {/* FAQs */}
+      {(product.faqs || []).length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-6">
+          <h3 className="font-semibold text-slate-900 mb-4">FAQs</h3>
+          <div className="space-y-4">
+            {(product.faqs || []).map((faq: any, i: number) => (
+              <div key={i} className="pb-4 border-b border-slate-100 last:border-0 last:pb-0">
+                <p className="font-medium text-slate-900 mb-1">{faq.question}</p>
+                <p className="text-sm text-slate-600">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
