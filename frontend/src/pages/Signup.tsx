@@ -19,14 +19,15 @@ const countries = [
   { value: "Other", label: "Other" },
 ];
 
-function FieldWrapper({ label, icon: Icon, children, fullWidth = false }: {
-  label: string; icon?: any; children: React.ReactNode; fullWidth?: boolean;
+function FieldWrapper({ label, icon: Icon, children, fullWidth = false, required = false }: {
+  label: string; icon?: any; children: React.ReactNode; fullWidth?: boolean; required?: boolean;
 }) {
   return (
     <div className={`space-y-1.5 ${fullWidth ? "sm:col-span-2" : ""}`}>
       <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
         {Icon && <Icon size={12} className="text-slate-400" />}
         {label}
+        {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {children}
     </div>
