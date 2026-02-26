@@ -132,7 +132,29 @@ export function CategoriesTab() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => openEdit(cat)} data-testid={`admin-edit-cat-${cat.id}`}>Edit</Button>
                     <Button variant={cat.is_active ? "destructive" : "outline"} size="sm" onClick={() => setConfirmToggleCat(cat)} data-testid={`admin-toggle-cat-${cat.id}`}>{cat.is_active ? "Deactivate" : "Activate"}</Button>
-                    <Button variant="ghost" size="sm" className={`${(cat.product_count ?? 0) > 0 ? "text-slate-300 cursor-not-allowed" : "text-red-500 hover:text-red-700"}`} onClick={() => { if ((cat.product_count ?? 0) > 0) { toast.error(`Cannot delete: ${cat.product_count} product(s) linked. Reassign first.`); return; } setConfirmDeleteCat(cat); }} data-testid={`admin-delete-cat-${cat.id}`}>Delete</Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={(cat.product_count ?? 0) > 0}
+                              className={(cat.product_count ?? 0) > 0 ? "text-slate-300 cursor-not-allowed pointer-events-none" : "text-red-500 hover:text-red-700"}
+                              onClick={() => setConfirmDeleteCat(cat)}
+                              data-testid={`admin-delete-cat-${cat.id}`}
+                            >
+                              Delete
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {(cat.product_count ?? 0) > 0 && (
+                          <TooltipContent side="top">
+                            <p>{cat.product_count} product(s) linked — reassign them first</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/categories/${cat.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-cat-logs-${cat.id}`}>Logs</Button>
                   </div>
                 </TableCell>
