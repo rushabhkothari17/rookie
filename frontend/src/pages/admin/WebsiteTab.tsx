@@ -639,6 +639,84 @@ function BaseCurrencyWidget() {
   );
 }
 
+// ─── Organization Address (partner admin only) ────────────────────────────────
+const ORG_COUNTRIES = [
+  {v:"Canada",l:"Canada"},{v:"USA",l:"United States"},{v:"UK",l:"United Kingdom"},
+  {v:"Australia",l:"Australia"},{v:"India",l:"India"},{v:"Germany",l:"Germany"},
+  {v:"France",l:"France"},{v:"Netherlands",l:"Netherlands"},{v:"Singapore",l:"Singapore"},
+  {v:"New Zealand",l:"New Zealand"},
+];
+
+function OrgAddressSection() {
+  const { user } = useAuth();
+  const [tenantId, setTenantId] = useState("");
+  const [addr, setAddr] = useState({ line1:"", line2:"", city:"", region:"", postal:"", country:"Canada" });
+  const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
+  const [saving, setSaving] = useState(false);
+  const isPlatformAdmin = !!(user?.role && ["platform_admin", "admin"].includes(user.role));
+
+  // All hooks MUST come before any early return (Rules of Hooks)
+  useEffect(() => {
+    if (isPlatformAdmin) return;
+    api.get("/admin/tenants/my").then(r => {
+      setTenantId(r.data.tenant?.id || "");
+      const a = r.data.tenant?.address || {};
+      setAddr({ line1: a.line1||"", line2: a.line2||"", city: a.city||"", region: a.region||"", postal: a.postal||"", country: a.country||"Canada" });
+    }).catch(() => {});
+  }, [isPlatformAdmin]);
+
+  useEffect(() => {
+    if (isPlatformAdmin) return;
+    if (addr.country === "Canada" || addr.country === "USA") {
+      api.get(`/utils/provinces?country_code=${addr.country}`).then(r => setProvinces(r.data.regions || [])).catch(() => setProvinces([]));
+    } else { setProvinces([]); }
+  }, [addr.country, isPlatformAdmin]);
+
+  // Early return AFTER all hooks
+  if (isPlatformAdmin) return null;
+
+  const save = async () => {
+    if (!tenantId) return;
+    setSaving(true);
+    try {
+      await api.put(`/admin/tenants/${tenantId}/address`, { address: addr });
+      toast.success("Organization address saved");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to save address");
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="border-t border-slate-100 pt-4">
+      <h3 className="text-sm font-semibold text-slate-700 mb-1">Organization Address</h3>
+      <p className="text-xs text-slate-400 mb-3">Your organization's registered address. Used on invoices and tax documents.</p>
+      <div className="space-y-2" data-testid="org-address-section">
+        <Input placeholder="Line 1 *" value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} required data-testid="org-addr-line1" />
+        <Input placeholder="Line 2 (optional)" value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
+        <div className="grid grid-cols-2 gap-2">
+          <Input placeholder="City *" value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} required data-testid="org-addr-city" />
+          <Input placeholder="Postal Code *" value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} required data-testid="org-addr-postal" />
+        </div>
+        <Select value={addr.country} onValueChange={v => setAddr(p=>({...p,country:v,region:""}))}>
+          <SelectTrigger data-testid="org-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
+          <SelectContent>{ORG_COUNTRIES.map(c=><SelectItem key={c.v} value={c.v}>{c.l}</SelectItem>)}</SelectContent>
+        </Select>
+        {provinces.length > 0 ? (
+          <Select value={addr.region} onValueChange={v => setAddr(p=>({...p,region:v}))}>
+            <SelectTrigger data-testid="org-addr-region-select"><SelectValue placeholder="Province / State *" /></SelectTrigger>
+            <SelectContent>{provinces.map(p=><SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+          </Select>
+        ) : (
+          <Input placeholder="State / Province *" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} required data-testid="org-addr-region-input" />
+        )}
+      </div>
+      <Button onClick={save} disabled={saving} size="sm" className="mt-3" data-testid="org-addr-save-btn">
+        {saving ? "Saving…" : "Save Address"}
+      </Button>
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function WebsiteTab({ defaultSection }: { defaultSection?: Section }) {
