@@ -8,8 +8,8 @@ from fastapi.responses import Response
 
 from db.session import db
 from core.helpers import make_id, now_iso
-from core.auth import get_current_user, require_admin
-from core.helpers import tenant_id_of
+from core.security import require_admin
+from core.tenant import get_current_user, tenant_id_of
 from services import workdrive_service as wd
 
 logger = logging.getLogger(__name__)
