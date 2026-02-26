@@ -170,15 +170,6 @@ const DEFAULT_FIELD_MAPS: Record<string, Record<string, FieldMapping[]>> = {
       { webapp_field: "total", crm_field: "total" },
     ],
   },
-  quote_requests: {
-    Leads: [
-      { webapp_field: "email", crm_field: "Email" },
-      { webapp_field: "contact_name", crm_field: "Last_Name" },
-      { webapp_field: "company_name", crm_field: "Company" },
-      { webapp_field: "phone", crm_field: "Phone" },
-      { webapp_field: "message", crm_field: "Description" },
-    ],
-  },
 };
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
