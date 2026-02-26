@@ -329,6 +329,17 @@ export default function Portal() {
                             </div>
                           </DialogContent>
                         </Dialog>
+                        {(order.status === "paid" || order.status === "completed") && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-slate-500 hover:text-slate-900"
+                            onClick={() => navigate(`/invoice/${order.id}`)}
+                            data-testid={`portal-order-invoice-btn-${order.id}`}
+                          >
+                            <FileText size={12} className="mr-1" />Invoice
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
