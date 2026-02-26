@@ -101,25 +101,67 @@ _TEMPLATES: list[Dict[str, Any]] = [
     },
     {
         "trigger": "scope_request_admin",
-        "label": "New Scope Request (Admin Notification)",
-        "description": "Sent to the admin when a customer submits a scope request.",
-        "subject": "New Scope Request: {{order_number}} from {{customer_name}}",
+        "label": "New Enquiry (Admin Notification)",
+        "description": "Sent to the admin when a customer submits an enquiry (scope request or quote request).",
+        "subject": "New Enquiry: {{order_number}} from {{customer_name}}",
         "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
   <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}} — Admin Notification</p>
-  <h2 style="color:#1e293b;margin:0 0 16px">New Scope Request: {{order_number}}</h2>
-  <p><strong>Customer:</strong> {{customer_name}} ({{customer_email}})</p>
-  <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">
-  <p><strong>Project Summary:</strong><br>{{project_summary}}</p>
-  <p><strong>Desired Outcomes:</strong><br>{{desired_outcomes}}</p>
-  <p><strong>Apps Involved:</strong> {{apps_involved}}</p>
-  <p><strong>Timeline:</strong> {{timeline_urgency}}</p>
-  <p><strong>Budget:</strong> {{budget_range}}</p>
-  <p><strong>Notes:</strong> {{additional_notes}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">New Enquiry</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 20px">Reference: <strong>{{order_number}}</strong></p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin-bottom:20px">
+    <p style="color:#1e293b;font-weight:600;margin:0 0 10px;font-size:14px">Customer</p>
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:140px">Name</td><td style="padding:4px 0;color:#1e293b">{{customer_name}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px">Email</td><td style="padding:4px 0;color:#1e293b">{{customer_email}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px">Company</td><td style="padding:4px 0;color:#1e293b">{{company}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px">Phone</td><td style="padding:4px 0;color:#1e293b">{{phone}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px">Products</td><td style="padding:4px 0;color:#1e293b;font-weight:600">{{products}}</td></tr>
+    </table>
+  </div>
+  <div style="border-top:1px solid #e2e8f0;padding-top:16px">
+    <p style="color:#1e293b;font-weight:600;margin:0 0 10px;font-size:14px">Submission Details</p>
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:160px;vertical-align:top">Message</td><td style="padding:6px 0;color:#1e293b">{{message}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;vertical-align:top">Project Summary</td><td style="padding:6px 0;color:#1e293b">{{project_summary}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;vertical-align:top">Desired Outcomes</td><td style="padding:6px 0;color:#1e293b">{{desired_outcomes}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Apps Involved</td><td style="padding:6px 0;color:#1e293b">{{apps_involved}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Timeline / Urgency</td><td style="padding:6px 0;color:#1e293b">{{timeline_urgency}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Budget Range</td><td style="padding:6px 0;color:#1e293b">{{budget_range}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;vertical-align:top">Additional Notes</td><td style="padding:6px 0;color:#1e293b">{{additional_notes}}</td></tr>
+    </table>
+  </div>
   <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
 </div></body></html>""",
         "is_enabled": True,
-        "available_variables": ["{{store_name}}", "{{order_number}}", "{{customer_name}}", "{{customer_email}}", "{{project_summary}}", "{{desired_outcomes}}", "{{apps_involved}}", "{{timeline_urgency}}", "{{budget_range}}", "{{additional_notes}}"],
+        "available_variables": ["{{store_name}}", "{{order_number}}", "{{customer_name}}", "{{customer_email}}", "{{company}}", "{{phone}}", "{{products}}", "{{message}}", "{{project_summary}}", "{{desired_outcomes}}", "{{apps_involved}}", "{{timeline_urgency}}", "{{budget_range}}", "{{additional_notes}}"],
+        "is_system": True,
+    },
+    {
+        "trigger": "enquiry_customer",
+        "label": "Enquiry Confirmation (Customer)",
+        "description": "Sent to the customer confirming their enquiry was received, with a full summary of what they submitted.",
+        "subject": "We've received your enquiry — {{order_number}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 8px">Enquiry Received</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 20px">Reference: <strong>{{order_number}}</strong></p>
+  <p style="color:#475569;">Hi {{customer_name}},</p>
+  <p style="color:#475569;">Thank you for getting in touch. We've received your enquiry about <strong>{{products}}</strong> and will be in touch with you shortly.</p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin:20px 0">
+    <p style="color:#1e293b;font-weight:600;margin:0 0 10px;font-size:13px">Your Submission Summary</p>
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:140px">Reference</td><td style="padding:4px 0;color:#1e293b;font-weight:600">{{order_number}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px">Products</td><td style="padding:4px 0;color:#1e293b">{{products}}</td></tr>
+      <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Message / Summary</td><td style="padding:4px 0;color:#1e293b">{{summary}}</td></tr>
+    </table>
+  </div>
+  <p style="color:#475569;font-size:13px">We aim to respond within 1-2 business days. If you have any urgent questions, please contact us directly.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{order_number}}", "{{customer_name}}", "{{customer_email}}", "{{products}}", "{{summary}}"],
         "is_system": True,
     },
     {
