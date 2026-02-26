@@ -761,6 +761,26 @@ class ArticleCategoryUpdate(BaseModel):
     is_scope_final: Optional[bool] = None
 
 
+# ── Tax models ────────────────────────────────────────────────────────────────
+
+class TaxSettingsUpdate(BaseModel):
+    enabled: Optional[bool] = None
+    country: Optional[str] = None
+    state: Optional[str] = None
+
+
+class TaxOverrideRuleCreate(BaseModel):
+    name: str
+    conditions: List[Dict[str, Any]] = Field(default_factory=list)
+    tax_rate: float
+    tax_name: str
+    priority: int = 0
+
+
+class TaxCalculateRequest(BaseModel):
+    subtotal: float
+
+
 # Resource model aliases (Articles renamed to Resources)
 ResourceCreate = ArticleCreate
 ResourceUpdate = ArticleUpdate
