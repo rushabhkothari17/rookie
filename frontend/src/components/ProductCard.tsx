@@ -2,14 +2,18 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
+const fmtPrice = (amount: number, currency = "USD") =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+
 const getPriceLabel = (product: any) => {
+  const currency = product.currency || "USD";
   if (product.base_price) {
-    return `$${product.base_price.toFixed(2)}`;
+    return fmtPrice(product.base_price, currency);
   }
   if (product.pricing_type === "tiered") {
     const prices = (product.pricing_rules?.variants || []).map((v: any) => v.price);
     if (prices.length) {
-      return `$${Math.min(...prices).toFixed(2)}`;
+      return fmtPrice(Math.min(...prices), currency);
     }
   }
   return "Calculator";
