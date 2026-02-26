@@ -116,9 +116,9 @@ export default function Cart() {
     const groups: any = { oneTime: [], subscriptions: [], scope: [], rfq: [], external: [], inquiry: [] };
     preview.items.forEach((item: any) => {
       const p = item.product;
-      if (p.product_type === "scope_request") groups.scope.push(item);
-      else if (p.product_type === "external_checkout") groups.external.push(item);
-      else if (p.product_type === "enquiry") groups.inquiry.push(item);
+      if (p.pricing_type === "scope_request") groups.scope.push(item);
+      else if (p.pricing_type === "external_checkout") groups.external.push(item);
+      else if (p.pricing_type === "enquiry") groups.inquiry.push(item);
       else if (item.pricing.subtotal === 0 && !item.inputs?._scope_unlock) groups.rfq.push(item);
       else if (p.is_subscription) groups.subscriptions.push(item);
       else groups.oneTime.push(item);
