@@ -489,6 +489,7 @@ class AdminProductCreate(BaseModel):
     is_active: bool = True
     visible_to_customers: List[str] = Field(default_factory=list)
     restricted_to: List[str] = Field(default_factory=list)
+    visibility_conditions: Optional[ProductVisRuleSet] = None
     intake_schema_json: Optional[IntakeSchemaJson] = None
     price_rounding: Optional[str] = None
     custom_sections: Optional[List[CustomSection]] = None
