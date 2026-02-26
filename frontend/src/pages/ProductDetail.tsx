@@ -197,7 +197,7 @@ export default function ProductDetail() {
         ...inputs,
         ...intakeAnswers,
         _scope_unlock: {
-          scope_id: scopeUnlock.article_id,
+          scope_id: scopeUnlock.resource_id || scopeUnlock.article_id,
           article_title: scopeUnlock.title,
           category: scopeUnlock.category,
           price: scopeUnlock.price,
