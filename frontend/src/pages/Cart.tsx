@@ -598,30 +598,6 @@ export default function Cart() {
                     </div>
                   </div>
                 )}
-                {/* Legacy Partner Section */}
-                {ws.checkout_partner_enabled !== false && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5" data-testid="partner-checkout-section">
-                    <h3 className="font-semibold text-slate-900 mb-1">{ws.checkout_partner_title || "Partner Tag"}</h3>
-                    {ws.checkout_partner_description && <p className="text-sm text-slate-500 mb-4">{ws.checkout_partner_description}</p>}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1.5">{ws.checkout_partner_question || "Have you tagged us as your Partner?"}<span className="text-red-500 ml-1">*</span></label>
-                        <Select value={partnerTagResponse || undefined} onValueChange={setPartnerTagResponse}>
-                          <SelectTrigger className="w-full bg-white" data-testid="partner-tag-response"><SelectValue placeholder="Select..." /></SelectTrigger>
-                          <SelectContent>
-                            {(ws.checkout_partner_options?.split('\n').filter(Boolean) || ["Yes", "Not yet"]).map((o: string) => { const {label, value} = parseOptionItem(o); return <SelectItem key={value} value={value}>{label}</SelectItem>; })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {partnerTagResponse === "Not yet" && (
-                        <div>
-                          <label className="text-sm font-medium text-slate-700 block mb-1.5">Partner Override Code</label>
-                          <Input placeholder="Enter override code" value={overrideCode} onChange={e => setOverrideCode(e.target.value)} data-testid="partner-override-code" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </>
             )}
 
