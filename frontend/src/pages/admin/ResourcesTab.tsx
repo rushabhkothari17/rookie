@@ -421,9 +421,6 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
       {/* Categories sub-tab */}
       {subTab === "categories" && <ArticleCategoriesTab />}
 
-      {/* Override Codes sub-tab */}
-      {subTab === "override-codes" && <OverrideCodesTab />}
-
       {/* Resources sub-tab */}
       {subTab === "resources" && (<>
 
