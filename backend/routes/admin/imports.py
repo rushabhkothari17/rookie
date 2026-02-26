@@ -274,7 +274,6 @@ SAMPLE_DATA: Dict[str, List[Dict[str, Any]]] = {
     "subscriptions": [{"customer_id": "cust_xxx", "product_id": "prod_xxx", "product_name": "Monthly Plan", "billing_cycle": "monthly", "amount": "99.00", "currency": "GBP", "status": "active", "start_date": "2025-01-01"}],
     "orders": [{"customer_id": "cust_xxx", "status": "complete", "total_amount": "199.00", "currency": "GBP", "items": '[{"product_name":"Setup","quantity":1,"price":199.0}]'}],
     "promo-codes": [{"code": "SAVE20", "discount_type": "percentage", "discount_value": "20", "max_uses": "100", "is_active": "true", "expires_at": "2026-12-31"}],
-    "quote-requests": [{"email": "lead@example.com", "full_name": "John Doe", "product_name": "Enterprise Plan", "status": "pending", "notes": "Interested in annual pricing"}],
     "bank-transactions": [{"date": "2025-01-15", "description": "Client payment", "amount": "500.00", "currency": "GBP", "type": "credit", "reference": "INV-001", "reconciled": "false"}],
     "articles": [{"title": "Getting Started Guide", "slug": "getting-started", "category": "Setup Guides", "status": "published", "content": "<h1>Welcome</h1><p>This guide helps you get started.</p>", "visible_to_customers": "true"}],
     "article-templates": [{"name": "Monthly Report Template", "category": "Reports", "content": "<h1>Monthly Report</h1><p>{{company_name}}</p>"}],
