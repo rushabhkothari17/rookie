@@ -177,8 +177,17 @@ export default function Admin() {
           <TabsContent value="references" className="space-y-4">
             <ReferencesTab />
           </TabsContent>
-          <TabsContent value="website" className="space-y-4">
-            <WebsiteTab defaultSection={websiteSection as any} />
+          <TabsContent value="org-info" className="space-y-4">
+            <WebsiteTab forcedSection="branding" />
+          </TabsContent>
+          <TabsContent value="auth-pages" className="space-y-4">
+            <WebsiteTab forcedSection="auth" />
+          </TabsContent>
+          <TabsContent value="forms-tab" className="space-y-4">
+            <WebsiteTab forcedSection="forms" />
+          </TabsContent>
+          <TabsContent value="system-config" className="space-y-4">
+            <WebsiteTab forcedSection="sysconfig" />
           </TabsContent>
           <TabsContent value="domains" className="space-y-4">
             <CustomDomainsTab />
