@@ -382,59 +382,49 @@ class TestGocardlessRenewalViaHTTP:
 
     def test_gc_initial_payment_only_updates_subscription_not_renewal(self, admin_session):
         """GoCardless: initial payment (matched by gocardless_payment_id) updates subscription, not renewal."""
-        import asyncio
         import sys
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from core.helpers import make_id, now_iso
 
-        async def run_all():
-            from db.session import db
-            from core.helpers import make_id, now_iso
+        db = get_sync_db()
+        cust_id = make_id()
+        user_id = make_id()
+        sub_id = make_id()
+        mandate_id = f"MD_init_{sub_id[:8]}"
+        initial_pm_id = f"PM_initial_only_{sub_id[:8]}"
+        now = datetime.now(timezone.utc)
 
-            cust_id = make_id()
-            user_id = make_id()
-            sub_id = make_id()
-            mandate_id = f"MD_init_{sub_id[:8]}"
-            initial_pm_id = f"PM_initial_only_{sub_id[:8]}"
-            now = datetime.now(timezone.utc)
+        db.users.insert_one({"id": user_id, "email": f"gc_init_{cust_id[:6]}@test.com", "full_name": "Init Test", "tenant_id": "TEST_init_only_tenant", "is_active": True})
+        db.customers.insert_one({"id": cust_id, "user_id": user_id, "tenant_id": "TEST_init_only_tenant"})
+        db.subscriptions.insert_one({
+            "id": sub_id, "subscription_number": f"SUB-INIT-{sub_id[:6].upper()}",
+            "customer_id": cust_id, "plan_name": "Init Only Plan",
+            "status": "pending",  # not yet active
+            "gocardless_mandate_id": mandate_id, "gocardless_payment_id": initial_pm_id,
+            "amount": 50.0, "currency": "GBP", "base_currency": "GBP",
+            "tax_amount": 5.0, "tax_rate": 0.10, "tax_name": "VAT",
+            "payment_method": "bank_transfer",
+            "current_period_start": now.isoformat(),
+            "current_period_end": (now + timedelta(days=30)).isoformat(),
+            "created_at": now_iso(), "updated_at": now_iso(),
+        })
 
-            await db.users.insert_one({"id": user_id, "email": f"gc_init_{cust_id[:6]}@test.com", "full_name": "Init Test", "tenant_id": "TEST_init_only_tenant", "is_active": True})
-            await db.customers.insert_one({"id": cust_id, "user_id": user_id, "tenant_id": "TEST_init_only_tenant"})
-            await db.subscriptions.insert_one({
-                "id": sub_id, "subscription_number": f"SUB-INIT-{sub_id[:6].upper()}",
-                "customer_id": cust_id, "plan_name": "Init Only Plan",
-                "status": "pending",  # not yet active
-                "gocardless_mandate_id": mandate_id, "gocardless_payment_id": initial_pm_id,
-                "amount": 50.0, "currency": "GBP", "base_currency": "GBP",
-                "tax_amount": 5.0, "tax_rate": 0.10, "tax_name": "VAT",
-                "payment_method": "bank_transfer",
-                "current_period_start": now.isoformat(),
-                "current_period_end": (now + timedelta(days=30)).isoformat(),
-                "created_at": now_iso(), "updated_at": now_iso(),
-            })
-
-            import asyncio as _a
-            loop = _a.get_event_loop()
+        try:
             payload = {"events": [{"id": f"EV_INIT_{sub_id[:8]}", "resource_type": "payments", "action": "confirmed", "links": {"payment": initial_pm_id, "mandate": mandate_id}}]}
-            resp = await loop.run_in_executor(None, lambda: requests.post(f"{API}/api/webhook/gocardless", json=payload, timeout=15))
+            resp = requests.post(f"{API}/api/webhook/gocardless", json=payload, timeout=15)
+            assert resp.status_code == 200
 
-            await _a.sleep(0.3)
-            sub = await db.subscriptions.find_one({"id": sub_id}, {"_id": 0})
-            renewal = await db.orders.find_one({"gocardless_payment_id": initial_pm_id, "type": "subscription_renewal"}, {"_id": 0})
+            sub = db.subscriptions.find_one({"id": sub_id}, {"_id": 0})
+            renewal = db.orders.find_one({"gocardless_payment_id": initial_pm_id, "type": "subscription_renewal"}, {"_id": 0})
 
-            # Cleanup
-            await db.subscriptions.delete_one({"id": sub_id})
-            await db.customers.delete_one({"id": cust_id})
-            await db.users.delete_one({"id": user_id})
-            await db.orders.delete_many({"subscription_id": sub_id})
-
-            return resp, sub, renewal
-
-        resp, sub, renewal = asyncio.run(run_all())
-
-        assert resp.status_code == 200
-        assert sub is not None
-        assert sub["status"] == "active", f"Initial payment should set subscription to active, got {sub['status']}"
-        assert renewal is None, "Initial payment must NOT create a subscription_renewal order"
+            assert sub is not None
+            assert sub["status"] == "active", f"Initial payment should set subscription to active, got {sub['status']}"
+            assert renewal is None, "Initial payment must NOT create a subscription_renewal order"
+        finally:
+            db.subscriptions.delete_one({"id": sub_id})
+            db.customers.delete_one({"id": cust_id})
+            db.users.delete_one({"id": user_id})
+            db.orders.delete_many({"subscription_id": sub_id})
 
     def test_gc_mandate_cancelled_marks_subscription_unpaid_via_webhook(self, admin_session):
         """GoCardless: mandate.cancelled event marks active subscriptions as unpaid via HTTP."""
