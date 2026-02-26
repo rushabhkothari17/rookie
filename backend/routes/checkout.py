@@ -142,6 +142,7 @@ async def checkout_bank_transfer(
 
         product = subscription_items[0]["product"]
         subtotal = subscription_items[0]["pricing"]["subtotal"]
+        terms_id = payload.terms_id if payload.terms_id else product.get("terms_id")
         if not terms_id:
             default_terms = await db.terms_and_conditions.find_one({"is_default": True, "status": "active"}, {"_id": 0})
             terms_id = default_terms["id"] if default_terms else None
