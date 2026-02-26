@@ -366,7 +366,61 @@ async def scope_request(
         "mocked": True,
     })
     await create_audit_log(entity_type="order", entity_id=order_id, action="scope_request_created", actor=user["email"], details={"order_number": order_number, "product_count": len(scope_items)})
-    return {"message": "Scope request created", "order_id": order_id, "order_number": order_number}
+
+    # Email notifications for cart-based scope request
+    try:
+        from services.email_service import EmailService
+        # Gather product names
+        scope_product_names = []
+        for si in scope_items:
+            p = await db.products.find_one({"id": si.get("product", {}).get("id")}, {"_id": 0, "name": 1})
+            if p:
+                scope_product_names.append(p.get("name", ""))
+        products_str = ", ".join(scope_product_names) if scope_product_names else "—"
+        tenant_id = user.get("tenant_id") or DEFAULT_TENANT_ID
+
+        admin_email = await SettingsService.get("admin_notification_email", "")
+        if admin_email:
+            await EmailService.send(
+                trigger="scope_request_admin",
+                recipient=admin_email,
+                tenant_id=tenant_id,
+                variables={
+                    "order_number": order_number,
+                    "customer_name": user.get("full_name", "Customer"),
+                    "customer_email": user.get("email", ""),
+                    "company": customer.get("company_name", "—"),
+                    "phone": "—",
+                    "products": products_str,
+                    "message": "—",
+                    "project_summary": "—",
+                    "desired_outcomes": "—",
+                    "apps_involved": "—",
+                    "timeline_urgency": "—",
+                    "budget_range": "—",
+                    "additional_notes": "—",
+                },
+                db=db,
+            )
+        customer_email_addr = user.get("email", "")
+        if customer_email_addr:
+            await EmailService.send(
+                trigger="enquiry_customer",
+                recipient=customer_email_addr,
+                tenant_id=tenant_id,
+                variables={
+                    "order_number": order_number,
+                    "customer_name": user.get("full_name", "Customer"),
+                    "customer_email": customer_email_addr,
+                    "products": products_str,
+                    "summary": f"Scope enquiry for: {products_str}",
+                },
+                db=db,
+            )
+    except Exception:
+        pass  # Don't fail the order creation if email fails
+
+    return {"message": "Enquiry submitted", "order_id": order_id, "order_number": order_number}
 
 
 @router.post("/orders/scope-request-form")
