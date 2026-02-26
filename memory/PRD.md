@@ -63,6 +63,15 @@ E-commerce platform for professional services with:
 - [x] **Product detail page** `StickyPurchaseSummary` and `PriceSummary` use product currency (not hardcoded £)
 - [x] `base_currency_amount` auto-included in Orders/Subscriptions CSV exports
 
+### Conditional Visibility V2 — Nested/Grouped Logic (COMPLETED 2026-02-27)
+- [x] **Data model**: `{ top_logic: 'AND'|'OR', groups: [{ logic: 'AND'|'OR', conditions: [...] }] }` — enables `(A AND B) OR C`
+- [x] **Products** (`ProductConditionBuilder` in `ProductForm.tsx`): Grouped UI with up to 3 groups, 4 conditions/group, AND/OR at both group and top level
+- [x] **Intake Questions** (`VisibilityRuleEditor` in `IntakeSchemaBuilder.tsx`): Same grouped structure, depends on other question answers
+- [x] **Backend evaluation** (`_eval_product_conditions`, `_eval_vis_group` in `store.py`): Correctly handles new grouped format + legacy flat format
+- [x] **Frontend evaluation** (`evaluateVisibilityRule` in `store/layouts/utils.tsx`): Handles grouped, flat, and single-rule legacy formats
+- [x] **Backward compatibility**: Both backend and frontend normalise legacy flat/single-condition rules into grouped format
+- [x] **Bug fixed**: `GET /api/products/{id}` now enforces visibility for unauthenticated users (was only checking authenticated users)
+
 ### P1 — Cleanup & Verification (COMPLETED 2026-02-27)
 - [x] **Email Trigger Verification**: Legacy `quote_request_admin` + `quote_request_customer` templates removed from `_TEMPLATES` list and pruned from all existing tenants via startup migration in `server.py`
 - [x] **Global References** (`{{ref:key}}`): Now resolved in article content (GET /api/articles/{id}), and `_resolve_refs` is now tenant-scoped in `email_service.py`
