@@ -221,9 +221,9 @@ export default function ProductDetail() {
           price: scopeUnlock.price,
         },
       };
-      addItem({ product_id: product.id, quantity: 1, inputs: scopeInputs, price_override: scopeUnlock.price });
+      if (!tryAddItem({ product_id: product.id, quantity: 1, inputs: scopeInputs, price_override: scopeUnlock.price })) return;
     } else {
-      addItem({ product_id: product.id, quantity: 1, inputs: { ...inputs, ...intakeAnswers } });
+      if (!tryAddItem({ product_id: product.id, quantity: 1, inputs: { ...inputs, ...intakeAnswers } })) return;
     }
     toast.success("Added to cart");
     navigate("/cart");
