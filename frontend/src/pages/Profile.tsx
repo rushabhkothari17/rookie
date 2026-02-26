@@ -178,6 +178,21 @@ export default function Profile() {
               required
             />
           </div>
+          {isAdmin && tenantCountry && (
+            <div className="space-y-2">
+              <label className="text-sm text-slate-600">Business Country (from Tax Settings)</label>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={tenantCountry}
+                  readOnly
+                  className="bg-slate-50 cursor-not-allowed font-mono text-sm"
+                  data-testid="profile-admin-country"
+                />
+                <span className="text-xs text-slate-400 whitespace-nowrap">Read-only</span>
+              </div>
+              <p className="text-xs text-slate-400">Set via Admin &rsaquo; Taxes &rsaquo; Tax Settings.</p>
+            </div>
+          )}
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm text-slate-600">Address line 1</label>
             <Input
