@@ -419,7 +419,6 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
       {subTab === "categories" && <ArticleCategoriesTab />}
 
       {/* Override Codes sub-tab */}
-      {subTab === "override-codes" && <OverrideCodesTab />}
 
       {/* Articles sub-tab */}
       {subTab === "articles" && (<>
