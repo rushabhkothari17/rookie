@@ -232,6 +232,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
         slug: form.slug || slugify(form.title),
         category: form.category,
         price: form.price ? parseFloat(form.price) : null,
+        currency: SCOPE_FINAL.has(form.category) ? (form.currency || "USD") : null,
         content: form.content,
         visibility: form.visibility,
         restricted_to: form.restricted_to,
