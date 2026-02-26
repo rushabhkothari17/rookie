@@ -807,6 +807,7 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
         "name": name,
         "code": code,
         "status": "active",
+        "base_currency": base_currency,
         "created_at": now,
         "updated_at": now,
     })
