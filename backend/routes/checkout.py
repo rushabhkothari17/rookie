@@ -345,6 +345,7 @@ async def checkout_bank_transfer(
         "subtotal": round_cents(subtotal), "discount_amount": discount_amount,
         "promo_code": promo_code_data["code"] if promo_code_data else None,
         "fee": 0.0, "total": total, "currency": order_items[0]["product"].get("currency", "USD"),
+        "base_currency": base_currency,
         "payment_method": "bank_transfer",
         "gocardless_redirect_flow_id": redirect_flow_id,
         "terms_id_used": terms_id, "rendered_terms_text": rendered_terms_text,
@@ -356,7 +357,7 @@ async def checkout_bank_transfer(
     await db.orders.insert_one(order_doc)
     await create_audit_log(
         entity_type="order", entity_id=order_id, action="created", actor="customer",
-        details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer", "total": total, "extra_fields": list((payload.extra_fields or {}).keys())},
+        details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer", "total": total, "currency": order_items[0]["product"].get("currency", "USD"), "base_currency": base_currency, "extra_fields": list((payload.extra_fields or {}).keys())},
     )
     if promo_code_data:
         await db.promo_codes.update_one({"id": promo_code_data["id"]}, {"$inc": {"usage_count": 1}})
