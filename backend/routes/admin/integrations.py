@@ -43,7 +43,7 @@ class SetActiveProviderRequest(BaseModel):
 
 class CRMFieldMapping(BaseModel):
     id: Optional[str] = None
-    webapp_module: str  # customers, orders, subscriptions, quote_requests
+    webapp_module: str  # customers, orders, subscriptions
     crm_module: str  # Leads, Contacts, Accounts, Deals
     field_mappings: List[Dict[str, str]]  # [{webapp_field: "email", crm_field: "Email"}]
     sync_on_create: bool = True
