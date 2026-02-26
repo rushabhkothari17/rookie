@@ -48,6 +48,18 @@ E-commerce platform for professional services with:
 - [x] **Clean empty cart state** with shopping cart icon and Browse CTA
 - [x] **Scope ID validation in Cart** (moved from product pages)
 - [x] Free product checkout (total = $0, no payment required)
+
+### Currency System (ADDED 2026-02-26, COMPLETED 2026-02-27)
+- [x] `base_currency` field on partner tenants (set at signup, changeable in WebsiteTab)
+- [x] Mandatory `currency` field on all products (Shadcn Select in ProductForm)
+- [x] Orders and Subscriptions store `currency` (transaction) + `base_currency` (partner base)
+- [x] **FX Conversion**: Real-time rate via `open.er-api.com` (free, no API key needed)
+  - `base_currency_amount` stored in every order/subscription for export purposes
+  - Fallback to 1:1 rate if external API is unavailable
+- [x] All 6 currency dropdowns use Shadcn Select (fixed from broken native `<select>`)
+  - WebsiteTab BaseCurrencyWidget, OrdersTab manual order, SubscriptionsTab manual sub
+  - ResourcesTab resource form, ProductForm, Signup (partner base_currency)
+- [x] Partner signup: no labels, placeholders only, base_currency Shadcn Select
 - [x] Multiple payment methods (Card, Bank Transfer, GoCardless)
 - [x] Terms & Conditions acceptance
 - [x] **Currency display**: prices shown with product currency code (e.g., EUR 99.00 instead of $99.00)
