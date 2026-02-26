@@ -252,19 +252,22 @@ async def validate_promo_code(
         eligible_ids = code.get("product_ids", [])
         if not all(pid in eligible_ids for pid in payload.product_ids):
             raise HTTPException(status_code=400, detail="Promo code is not valid for one or more products in your cart")
-    is_sponsored = "ZOHOR" in code["code"].upper()
+    is_sponsored = "ZOHOR" in code["code"].upper() or bool(code.get("sponsorship_note"))
+    note = code.get("sponsorship_note") or ("This order was placed using a sponsored promo code." if is_sponsored else None)
     return {
         "valid": True,
         "code": code["code"],
         "discount_type": code["discount_type"],
         "discount_value": code["discount_value"],
         "is_sponsored": is_sponsored,
+        "sponsorship_note": note,
         "promo": {
             "id": code["id"],
             "code": code["code"],
             "discount_type": code["discount_type"],
             "discount_value": code["discount_value"],
             "is_sponsored": is_sponsored,
+            "sponsorship_note": note,
         },
     }
 
