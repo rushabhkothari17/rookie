@@ -256,8 +256,16 @@ async def get_invoice_data(
         "footer_notes": "", "show_terms": True, "template": "classic",
     }
 
-    # Order items
+    # Order items with product names
     items = await db.order_items.find({"order_id": order_id}, {"_id": 0}).to_list(50)
+    product_ids = [i.get("product_id") for i in items if i.get("product_id")]
+    if product_ids:
+        products = await db.products.find(
+            {"id": {"$in": product_ids}},
+            {"_id": 0, "id": 1, "name": 1}
+        ).to_list(len(product_ids))
+        pmap = {p["id"]: p["name"] for p in products}
+        items = [{**i, "product_name": pmap.get(i.get("product_id", ""), i.get("product_name", ""))} for i in items]
 
     # Build invoice number
     prefix = invoice_settings.get("prefix", "INV")
