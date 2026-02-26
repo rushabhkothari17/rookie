@@ -310,6 +310,11 @@ async def checkout_bank_transfer(
 
     total = round_cents(subtotal - discount_amount)
 
+    # ── Tax calculation ───────────────────────────────────────────────────────
+    _tax_result_bt = await calculate_tax(round_cents(subtotal - discount_amount), tenant_id, customer["id"])
+    _tax_amount_bt = _tax_result_bt.get("tax_amount", 0.0)
+    total = round_cents(subtotal - discount_amount + _tax_amount_bt)
+
     primary_product = order_items[0]["product"]
     terms_id = payload.terms_id if payload.terms_id else primary_product.get("terms_id")
     if not terms_id:
