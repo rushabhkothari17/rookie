@@ -745,7 +745,7 @@ class TestPriceTamperingPrevention:
             json={
                 "items": [{"product_id": product_id, "quantity": 1, "inputs": {}, "price_override": tampered_price}],
                 "checkout_type": "one_time",
-                "origin_url": "https://payment-gateway-hub-7.preview.emergentagent.com",
+                "origin_url": "https://docs-address-feature.preview.emergentagent.com",
                 "terms_accepted": True,
                 "partner_tag_response": "Yes",
                 "zoho_subscription_type": "Paid - Annual",
@@ -990,7 +990,7 @@ class TestCheckoutAPIValidations:
             json={
                 "items": [{"product_id": a_product["id"], "quantity": 1, "inputs": {}}],
                 "checkout_type": "one_time",
-                "origin_url": "https://payment-gateway-hub-7.preview.emergentagent.com",
+                "origin_url": "https://docs-address-feature.preview.emergentagent.com",
                 "terms_accepted": False,  # <-- Must be rejected
                 "partner_tag_response": "Yes",
                 "zoho_subscription_type": "Paid - Annual",
@@ -1014,7 +1014,7 @@ class TestCheckoutAPIValidations:
             json={
                 "items": [{"product_id": a_product["id"], "quantity": 1, "inputs": {}}],
                 "checkout_type": "one_time",
-                "origin_url": "https://payment-gateway-hub-7.preview.emergentagent.com",
+                "origin_url": "https://docs-address-feature.preview.emergentagent.com",
                 "terms_accepted": True,
                 "partner_tag_response": None,  # <-- Missing
                 "zoho_subscription_type": "Paid - Annual",
@@ -1040,7 +1040,7 @@ class TestCheckoutAPIValidations:
             json={
                 "items": [{"product_id": a_product["id"], "quantity": 1, "inputs": {}}],
                 "checkout_type": "one_time",
-                "origin_url": "https://payment-gateway-hub-7.preview.emergentagent.com",
+                "origin_url": "https://docs-address-feature.preview.emergentagent.com",
                 "terms_accepted": True,
                 "partner_tag_response": "Not yet",
                 "override_code": "",  # Empty - should be rejected
@@ -1174,7 +1174,7 @@ class TestPaymentMethodDisable:
             json={
                 "items": [{"product_id": a_product["id"], "quantity": 1, "inputs": {}}],
                 "checkout_type": "one_time",
-                "origin_url": "https://payment-gateway-hub-7.preview.emergentagent.com",
+                "origin_url": "https://docs-address-feature.preview.emergentagent.com",
                 "terms_accepted": True,
                 "partner_tag_response": "Yes",
                 "zoho_subscription_type": "Paid - Annual",

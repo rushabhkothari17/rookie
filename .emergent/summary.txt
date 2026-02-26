@@ -1,63 +1,81 @@
 <analysis>**original_problem_statement:**
-The user's initial request was to refactor the application to remove legacy Quote Requests and Override Codes and introduce a multi-currency system. The project's scope has since expanded significantly to include:
-1.  **Advanced Conditional Visibility (Multi-phase):** A nested/grouped logic engine for complex visibility rules on Products and Intake Forms.
-2.  **UI/UX Overhaul:** A major cleanup of product and intake form creation pages.
-3.  **Feature Removal:** Complete removal of a legacy  feature.
-4.  **Global Tax & Invoicing System:** A large, custom-built tax calculation engine to handle complex, destination-based tax rules for multiple countries, allow partner-specific overrides, and integrate with checkout and invoicing.
-5.  **Invoice Generation:** A system for generating, downloading, and emailing PDF invoices with multiple templates and partner-specific customizations.
-6.  **Subscription Tax Calculation:** A processor-agnostic method to calculate tax for subscription products at checkout.
-7.  **Dynamic UI Elements:** Country-dependent dropdowns for province/state fields.
-8.  **Payment Gateway Logic:** A mechanism to disable payment options on the checkout page if the corresponding gateway is not configured for the partner.
+The user has requested two new features:
+1.  **Product 1: Mandatory Partner Address:**
+    *   Make address fields (Line 1, City, Postal, State/Province, Country) mandatory during partner signup.
+    *   Country and State/Province should be dropdowns populated from existing data.
+    *   The partner's address should be editable by the admin in the admin panel.
+    *   Customers should not be able to edit the country.
+
+2.  **Product 2: Zoho WorkDrive Integration:**
+    *   Add Zoho WorkDrive to the Connected Services section under a Cloud Storage category, with a similar OAuth flow to the existing Zoho Mail integration.
+    *   Allow partners to set a Parent Folder URL in the WorkDrive settings.
+    *   Automatically create a specific folder for each customer in WorkDrive upon their creation (). The folder name should update if the client's name is edited.
+    *   Implement a backfill mechanism to create folders for all existing customers.
+    *   Add a Documents tab to the main e-shop navigation for customers of partners who have WorkDrive enabled. This page should allow customers to upload files (max 5MB), view/download files uploaded by admins, but not delete files.
+    *   Add a Documents tab in the admin panel for partners to manage documents. This should be a table showing file details (created time, modified time, customer, size, etc.) with options to add notes, edit, and delete. Admins should also be able to upload files to a specific customer's folder from this view.
+    *   For partners without WorkDrive integrated, the admin Documents tab should prompt them to connect a cloud service, showing Google Drive and OneDrive as Coming Soon.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is in a stable, functional state. The multi-currency system, advanced conditional visibility, and major UI/UX improvements are complete. The new Global Tax and Invoicing system is fully implemented and tested for one-time orders, including invoice generation (PDF download/email) and partner-specific customizations. The agent has just received user approval on a revised architecture for the next set of tasks, which focus on extending the tax system to subscriptions and improving UI dynamism.
+The agent has just completed the full implementation for both the Mandatory Partner Address feature and the Zoho WorkDrive Integration feature. This includes all backend models, services, API endpoints, and the corresponding frontend components for partner signup, admin settings, the admin-facing documents manager, and the customer-facing documents portal. The implementation is code-complete, and the agent has just initiated a comprehensive test cycle.
 
 **Last working item**:
-    - Last item agent was working: Finalizing the implementation architecture for three user-requested features after a multi-step clarification dialogue. The user has just given the final approval (yes) to proceed with this plan.
-    - Status: NOT STARTED (Implementation of the approved architecture is the next action).
-    - Agent Testing Done: N/A
-    - Which testing method agent to use? both
+    - Last item agent was working: The agent invoked the  to run a full suite of tests against the newly implemented Partner Address and Zoho WorkDrive features. The agent is awaiting the results.
+    - Status: IN PROGRESS
+    - Agent Testing Done: Y
+    - Which testing method agent to use? The  is currently running. The next agent must analyze the report located at .
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - There are no outstanding bugs or issues. All work is part of the planned feature development.
+  - **Issue 1: Analyze Test Results and Fix Bugs (P0)**
+     - **Description**: The testing agent was just invoked. Its results must be analyzed to identify and resolve any regressions or bugs introduced by the recent, large-scale implementation of the Partner Address and WorkDrive features.
+     - **Next debug checklist**:
+        1.  Read the test report file: .
+        2.  Identify all FAILED tests or ACTION_NEEDED items.
+        3.  For each failure, review the relevant code files (, , , , , etc.) and apply fixes.
+        4.  After fixing, re-run the relevant tests or the entire testing agent to confirm the fix and ensure no new regressions were introduced.
+     - **Why fix this issue and what will be achieved with the fix?**: This is critical to validate that the new features work as expected and did not break any existing functionality before presenting the work to the user.
+     - **Status**: NOT STARTED
+     - **Is recurring issue?**: N
+     - **Should Test frontend/backend/both after fix?**: both
+     - **Blocked on other issue**: No.
 
 **In progress Task List**:
-  - **Task 1: Implement Approved Architecture for Subscriptions, Provinces, and Payments (P0)**
-     - **Where to resume**: Begin implementation based on the user-approved architecture.
-        1.  **Subscription Tax**: In , modify the subscription creation logic for Stripe and GoCardless. The total amount passed to the payment processor must include the tax calculated by the internal . This ensures the tax logic is processor-agnostic.
-        2.  **Dynamic Province/State Dropdowns**: Create a new utility endpoint (e.g., ) to return a list of states/provinces. Update frontend components (, , ) to fetch data from this endpoint and render a dropdown instead of a text input for the province/state field when a country is selected.
-        3.  **Greyed-out Payment Options**: In the frontend checkout component ( or similar), fetch the active partner's settings. Before rendering the Stripe and GoCardless payment sections, check if  or  is true. If not, render the corresponding payment button as disabled/greyed out.
-     - **What will be achieved with this?**: This will make subscription tax calculations consistent with one-time orders, improve user experience with accurate location dropdowns, and make the checkout process more robust by hiding unavailable payment methods.
-     - **Status**: NOT STARTED
+  - **Task 1: Validate and Finalize Partner Address & WorkDrive Integration**
+     - **Where to resume**: This task is awaiting the results of the testing agent. The next step is to analyze the report and fix any discovered bugs.
+     - **What will be achieved with this?**: Successful completion and validation of the two major features requested by the user.
+     - **Status**: TESTING PENDING
      - **Should Test frontend/backend/both after fix?**: both
-     - **Blocked on something**: No.
+     - **Blocked on something**: Pending results from the .
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   **(P1) Subscription Renewal Webhook Logic**: Implement a system where, upon a subscription renewal event, a new  document is created with a  status. A generic webhook handler should then listen for payment success notifications from processors (like Stripe's ) to update the corresponding order's status to . The user agreed this should be deferred if no such webhook infrastructure currently exists.
-
+    *   None. The current focus is on stabilizing the implemented features.
 *   **Future Tasks:**
-    *   **(P2) Customer Portal Enhancements**:
-        *   Self-service subscription cancellation.
-        *   Display subscription renewal date and next billing amount.
-        *   Reorder button for past orders.
-        *   A Documents tab to access assigned articles.
+    *   **(P1) Google Drive & OneDrive Integration**: Implement the Coming Soon cloud storage integrations for partners.
+    *   **(P2) Customer Portal Enhancements**: Self-service subscription cancellation, display renewal dates, and a Reorder button.
     *   **(P2) Security Audit**: Conduct a formal penetration test.
     *   **(P2) Centralize Email Settings**: Consolidate all email integration settings.
 
 **Completed work in this session**
-- **Global Tax & Invoicing System (for one-time orders)**: A complete, custom tax engine was built from the ground up, including backend models (), services (), and a full-featured admin UI (). This was integrated into all one-time checkout flows.
-- **Invoice Generation & Management**: Implemented a system for generating, downloading (), and emailing PDF invoices from a new  page. This includes 5 standard templates, partner-specific custom templates, and an Invoice Settings panel.
-- **Email Invoice Feature**: Added a button to email invoices directly to customers, using a new  template in .
-- **P1 Task Completion**:
-    - Added a Tax column to the  and .
-    - Added red star  indicators for required fields on signup forms.
-    - Ensured  is present in CSV exports ().
-    - Added a read-only country display to admin/partner profile pages ().
-- **Test User Seeding**: Created two distinct partners and four customer accounts via API for comprehensive testing.
+- **Product 1: Mandatory Partner Address (Implemented)**
+  - Updated  model in  to include a structured  object.
+  - Added a  endpoint in  for admins to edit the address.
+  - Integrated mandatory address fields with dynamic dropdowns into .
+  - Added an Organization Address editing section for partners in .
+- **Product 2: Zoho WorkDrive Integration (Implemented)**
+  - **Backend**:
+    - Created  to handle all Zoho WorkDrive API logic.
+    - Created  to manage file metadata, uploads, downloads, and permissions.
+    - Updated  to manage the WorkDrive auth flow and display Coming Soon integrations.
+    - Hooked into  to trigger customer folder creation/renaming in WorkDrive.
+    - Added a  endpoint for the initial backfill of customer folders.
+  - **Frontend**:
+    - Created  for admin-level document management.
+    - Created  as the customer-facing portal for file uploads/downloads.
+    - Updated  to include a Cloud Storage category and the WorkDrive integration card.
+    - Updated  and  to conditionally display the Documents tab based on whether the partner has WorkDrive enabled.
 
 **Earlier issues found/mentioned but not fixed**
    - None.
@@ -69,86 +87,90 @@ The application is in a stable, functional state. The multi-currency system, adv
 
 
 **Key Technical Concepts**
-- **Custom Tax Engine**: The application uses a custom, database-driven tax engine () to calculate taxes based on a hierarchy of global and partner-specific rules. This was an explicit choice to avoid third-party APIs.
-- **Frontend PDF Generation**: Invoices are generated on the client side using  and  in the  component, which renders different HTML templates based on settings.
-- **Processor-Agnostic Logic**: The user has mandated that business logic like tax calculation must happen within the application *before* data is sent to external payment processors (Stripe, GoCardless). This is the core principle for the upcoming subscription tax implementation.
+- **3rd Party API Integration**: Full OAuth 2.0 flow implemented for Zoho WorkDrive, including token management and API calls for file/folder operations.
+- **Conditional Rendering**: Frontend components (e.g., , ) dynamically change visibility and behavior based on partner-specific settings () fetched from the backend.
+- **Backend Service Hooks**: Business logic (creating a WorkDrive folder) is automatically triggered by other events in the system (customer creation/update) by placing hooks in the relevant API endpoints.
 
 **key DB schema**
-- ****: 
-- ****: 
-- ****: Modified to add .
-- ** & **: Modified to add  and .
-- ****: Modified to add , .
+- ****: Modified to include .
+- ****: Now used to store Zoho WorkDrive credentials and settings, including .
+- ** (Implicit)**: A new collection is implicitly managed by  to store file metadata with a schema like: .
 
 **changes in tech stack**
-- **Frontend**: Added  and  for client-side PDF generation.
+- Integration with a new external service: **Zoho WorkDrive API**. No new libraries were installed.
 
 **All files of reference**
-*   **Files for Next Task (Subscription Tax, Province Dropdowns, Payment Logic)**:
-    *    (Subscription tax logic)
-    *    (Payment gateway disabling)
-    *    (Province dropdown)
-    *    (Province dropdown)
-    *    (Province dropdown in tax rule creation)
-*   **Key Files Created/Modified in this Session**:
-    *    (New)
-    -    (New)
+*   **Backend (New/Heavily Modified)**:
     *    (New)
     *    (New)
+    *   
+    *   
+    *   
+    *   
+*   **Frontend (New/Heavily Modified)**:
+    *    (New)
+    *    (New)
+    *   
+    *   
+    *   
+    *   
+    *   
 
 **Areas that need refactoring**:
 - None identified.
 
 **key api endpoints**
-- **Existing (Tax & Invoice)**:
+- **New (WorkDrive & Documents)**:
     - 
     - 
+    -  (Admin: get all files)
+    -  (Customer: get their files)
+    -  (Generate presigned upload URL)
     - 
     - 
+    -  (Trigger backfill)
+- **New (Partner Address)**:
     - 
-- **To Be Created**:
-    -  (for dynamic province/state dropdowns)
 
 **Critical Info for New Agent**
-1.  **Implement Approved Architecture First**: Your immediate priority is to implement the three-part architecture the user just approved: (1) processor-agnostic subscription tax calculation, (2) dynamic province/state dropdowns, and (3) disabling unconfigured payment options at checkout.
-2.  **Subscription Tax is Non-Negotiable**: The user was very specific: tax for subscriptions must be calculated by your internal  *before* creating the subscription with Stripe or GoCardless. Do not use the payment provider's tax features. The final, tax-inclusive amount should be passed to the provider.
-3.  **Defer Renewal Logic**: The user agreed to postpone the subscription renewal-to-order creation feature. Before planning, you must first investigate if a webhook handling system already exists. If not, treat it as a new, future feature.
+1.  **You are in a testing cycle.** Your immediate priority is to wait for the testing agent to finish, then **read the report at **. Do not start any new implementation until you have analyzed the results and fixed all reported bugs.
+2.  The implementation of the two main user requests (Partner Address and WorkDrive Integration) is considered **code-complete**. The current phase is about validation and stabilization.
+3.  The WorkDrive integration relies heavily on the  collection and the  file. Refer to  to understand how the auth flow is managed.
+4.  The customer-facing Documents tab visibility is controlled by the  flag in the . This flag is set based on a backend check in .
 
 **documents and test reports created in this job**
-  -  (Continuously updated)
-  - 
-  - 
-  - 
+-  (Continuously updated)
+-  (This will be generated by the currently running test agent)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  User requested four new features around invoicing and subscriptions.
-2.  Agent successfully implemented all four features.
-3.  User provided three more complex requirements: correct subscription tax flow, dynamic province dropdowns, and greying out inactive payment options, asking for an architecture plan first.
-4.  Agent proposed an initial architecture.
-5.  User rejected the subscription tax portion, clarifying that tax must be calculated in-app, not by the payment processor.
-6.  Agent presented a revised architecture for subscription tax.
-7.  User approved the revised tax architecture and added a new requirement for handling subscription renewals via webhooks.
-8.  Agent incorporated the renewal logic into a new plan.
-9.  User clarified to defer the renewal logic if the webhook infrastructure isn't already in place and refined the payment gateway logic.
-10. Agent presented the final, corrected architecture for the three core tasks.
-11. **PENDING HUMAN MESSAGE**: User replied with yes, giving final approval to the architecture. The agent's next action is to begin implementation.
+1.  User requested architecture for two new products: Mandatory Partner Address and Zoho WorkDrive integration.
+2.  Agent asked clarifying questions about address fields and WorkDrive auth flow.
+3.  User confirmed details for the Partner Address feature.
+4.  User confirmed details for the WorkDrive integration, asking the agent to check existing Zoho integrations for the auth pattern.
+5.  Agent asked further clarifying questions about admin upload capabilities, notes, document page location, and parent folder scope.
+6.  User answered all questions and added new requirements: hide the Documents tab for customers if the partner hasn't integrated WorkDrive, and perform an initial sync to create folders for existing customers.
+7.  Agent confirmed understanding and asked for any final questions.
+8.  User replied, Any questions?, indicating they were ready for the agent to proceed.
+9.  Agent presented the final, confirmed architecture plan for both features.
+10. **PENDING HUMAN MESSAGE**: User replied with confirmed, giving final approval to begin implementation. The agent then proceeded to implement everything and is now running tests.
 
 **Project Health Check:**
-- **Broken**: No.
+- **Broken**: Unknown (pending test results).
 - **Mocked**: No.
 
 **3rd Party Integrations**
 *   GoCardless (Payments)
 *   Stripe (Payments)
 *   Zoho Mail (Email)
+*   **Zoho WorkDrive (Cloud Storage) - NEW**
 *    (FX rates)
 *    &  (Frontend PDF Generation)
 
 **Testing status**
-  - Testing agent used after significant changes: YES. The testing agent was used successfully three times to validate major features (Tax System, Invoicing, Custom Templates). All reported bugs were fixed.
+  - Testing agent used after significant changes: YES. The testing agent has been invoked for the latest changes and is currently running.
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: []
-  - Known regressions: None.
+  - Test files created:  (from a previous task).
+  - Known regressions: None known, but the current test run is intended to detect them.
 
 **Credentials to test flow:**
 - **Platform Admin:**
@@ -161,12 +183,6 @@ The application is in a stable, functional state. The multi-currency system, adv
 - **Customer 1 (for Liger Inc):**
     - Email: 
     - Password: 
-- **Partner 2 (Tigon Corp):**
-    - Email: 
-    - Password: 
-- **Customer 2 (for Tigon Corp):**
-    - Email: 
-    - Password: 
 
 **What agent forgot to execute**
-- Nothing has been forgotten. The agent was in a planning and architecture refinement loop as directed by the user and is now poised to begin the implementation of the approved plan.</analysis>
+- Nothing. The agent successfully followed the user-approved plan, completed the implementation, and is now correctly following the development workflow by running a comprehensive test suite.</analysis>
