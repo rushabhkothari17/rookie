@@ -357,7 +357,7 @@ class TestEmailTemplateInvoice:
 
     def test_invoice_email_template_has_correct_label(self, admin_headers):
         """invoice_email template should have label 'Invoice (Customer)'"""
-        resp = requests.get(f"{BASE_URL}/api/admin/website/email-templates", headers=admin_headers)
+        resp = requests.get(f"{BASE_URL}/api/admin/email-templates", headers=admin_headers)
         assert resp.status_code == 200
         templates = resp.json().get("templates", [])
         invoice_tmpl = next((t for t in templates if t.get("trigger") == "invoice_email"), None)
