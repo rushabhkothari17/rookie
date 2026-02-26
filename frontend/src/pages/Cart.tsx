@@ -435,7 +435,7 @@ export default function Cart() {
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-slate-900" data-testid={`cart-item-total-${item.product.id}`}>
-                              ${(showFee ? item.pricing.total : item.pricing.subtotal).toFixed(2)}
+                              {item.product.currency || displayCurrency} {(showFee ? item.pricing.total : item.pricing.subtotal).toFixed(2)}
                             </p>
                             {showFee && item.pricing.fee > 0 && (
                               <p className="text-xs text-slate-500">incl. ${item.pricing.fee.toFixed(2)} fee</p>
