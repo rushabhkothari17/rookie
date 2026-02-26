@@ -52,6 +52,7 @@ E-commerce platform for professional services with:
 
 ### Cart & Checkout (UPDATED 2026-02-26)
 - [x] **Two-column layout**: Cart items on left, Order Summary sidebar on right
+- [x] **Tax line item (NEW 2026-02-26)**: Tax shown as separate line item in order summary when applicable
 - [x] **Modern payment method cards**: Bank Transfer (no fee) and Card Payment (5% fee)
 - [x] **Increased spacing** between sections (space-y-8, gap-10)
 - [x] **Collapsible promo code section**
