@@ -178,6 +178,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string;
   email: { label: "Email", icon: Mail, color: "text-blue-600", bgColor: "bg-blue-100" },
   crm: { label: "CRM", icon: Users, color: "text-purple-600", bgColor: "bg-purple-100" },
   accounting: { label: "Accounting", icon: Receipt, color: "text-amber-600", bgColor: "bg-amber-100" },
+  cloud_storage: { label: "Cloud Storage", icon: Cloud, color: "text-sky-600", bgColor: "bg-sky-100" },
 };
 
 const ICON_MAP: Record<string, any> = {
