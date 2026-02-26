@@ -372,8 +372,16 @@ async def admin_update_category(
     update = {k: v for k, v in payload.dict().items() if v is not None}
     if payload.description is not None:
         update["description"] = payload.description
+    old_name = cat.get("name")
     if update:
         await db.categories.update_one({"id": cat_id}, {"$set": update})
+    # Cascade rename: if name changed, update all linked products
+    new_name = update.get("name")
+    if new_name and new_name != old_name:
+        await db.products.update_many(
+            {**tf, "category": old_name},
+            {"$set": {"category": new_name}}
+        )
     cat.update(update)
     await create_audit_log(
         entity_type="category",
