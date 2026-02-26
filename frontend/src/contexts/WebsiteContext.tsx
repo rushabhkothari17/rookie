@@ -217,6 +217,7 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   msg_scope_success: "Scope request submitted!",
   stripe_enabled: false,
   gocardless_enabled: false,
+  workdrive_enabled: false,
   stripe_fee_rate: 0.05,
   gocardless_fee_rate: 0.0,
   payment_gocardless_label: "Bank Transfer (GoCardless)",
