@@ -122,7 +122,17 @@ export default function ApplicationLayout({
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
               <h1 className="text-2xl font-bold text-slate-900 mb-2">{product.name}</h1>
               {product.tagline && (
-                <p className="text-lg text-slate-500 mb-6">{product.tagline}</p>
+                <p className="text-lg text-slate-500 mb-4">{product.tagline}</p>
+              )}
+              {/* Tags */}
+              {product.tag && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {product.tag.split(",").map((tag: string, i: number) => (
+                    <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100" data-testid={`product-tag-${i}`}>
+                      {tag.trim()}
+                    </span>
+                  ))}
+                </div>
               )}
               
               {product.description_long && (

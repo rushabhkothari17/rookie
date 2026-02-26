@@ -74,6 +74,16 @@ export default function WizardLayout({
         {product.tagline && (
           <p className="text-slate-500 mt-1">{product.tagline}</p>
         )}
+        {/* Tags */}
+        {product.tag && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {product.tag.split(",").map((tag: string, i: number) => (
+              <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100" data-testid={`product-tag-${i}`}>
+                {tag.trim()}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Progress Bar */}
