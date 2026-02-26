@@ -103,70 +103,79 @@ class TestProvincesEndpoint:
 
 
 class TestAdminLoginRegression:
-    """Admin login regression test"""
+    """Admin login regression test — platform admin uses no partner_code"""
 
-    def test_admin_login_success(self):
-        """Admin can login with valid credentials"""
+    def test_platform_admin_login_success(self):
+        """Platform admin can login without partner_code"""
         r = requests.post(
             f"{BASE_URL}/api/auth/login",
             json={
-                "partner_code": "automate-accounts",
                 "email": "admin@automateaccounts.local",
                 "password": "ChangeMe123!"
             }
         )
-        assert r.status_code == 200, f"Admin login failed: {r.status_code} {r.text}"
+        assert r.status_code == 200, f"Platform admin login failed: {r.status_code} {r.text}"
         data = r.json()
-        assert "access_token" in data or "token" in data, "Response must have access token"
+        assert "token" in data, "Response must have 'token' key"
 
     def test_partner_admin_login_success(self):
-        """Partner admin can login with valid credentials"""
+        """Partner admin can login with valid partner_code — uses test-iter109-a tenant"""
         r = requests.post(
             f"{BASE_URL}/api/auth/login",
             json={
-                "partner_code": "ligerinc",
-                "email": "admin@ligerinc.local",
+                "partner_code": "test-iter109-a",
+                "email": "test.super.a@iter109.test",
                 "password": "ChangeMe123!"
             }
         )
         assert r.status_code == 200, f"Partner admin login failed: {r.status_code} {r.text}"
         data = r.json()
-        assert "access_token" in data or "token" in data, "Response must have access token"
+        assert "token" in data, "Response must have 'token' key"
+
+    def test_admin_login_wrong_password_401(self):
+        """Admin login with wrong password returns 401"""
+        r = requests.post(
+            f"{BASE_URL}/api/auth/login",
+            json={
+                "email": "admin@automateaccounts.local",
+                "password": "WrongPassword999!"
+            }
+        )
+        assert r.status_code == 401, f"Expected 401, got {r.status_code}"
 
 
 class TestCustomerLoginRegression:
-    """Customer login regression test"""
+    """Customer login regression test — uses test-iter109-a tenant"""
 
     def test_customer_login_success(self):
         """Customer can login with valid credentials"""
         r = requests.post(
             f"{BASE_URL}/api/auth/login",
             json={
-                "partner_code": "ligerinc",
-                "email": "customer1@ligerinc.local",
+                "partner_code": "test-iter109-a",
+                "email": "test_cust3_iter111@test.local",
                 "password": "ChangeMe123!"
             }
         )
         assert r.status_code == 200, f"Customer login failed: {r.status_code} {r.text}"
         data = r.json()
-        assert "access_token" in data or "token" in data, "Response must have access token"
+        assert "token" in data, "Response must have 'token' key"
 
     def test_customer_can_access_orders(self):
         """Customer can access their orders after login"""
-        # First login
         login_r = requests.post(
             f"{BASE_URL}/api/auth/login",
             json={
-                "partner_code": "ligerinc",
-                "email": "customer1@ligerinc.local",
+                "partner_code": "test-iter109-a",
+                "email": "test_cust3_iter111@test.local",
                 "password": "ChangeMe123!"
             }
         )
         if login_r.status_code != 200:
             pytest.skip("Customer login failed, skipping order access test")
-        
-        token = login_r.json().get("access_token") or login_r.json().get("token")
-        
+
+        token = login_r.json().get("token")
+
         r = requests.get(
             f"{BASE_URL}/api/orders",
             headers={"Authorization": f"Bearer {token}"}
@@ -177,20 +186,19 @@ class TestCustomerLoginRegression:
 
     def test_customer_can_access_subscriptions(self):
         """Customer can access their subscriptions after login"""
-        # First login
         login_r = requests.post(
             f"{BASE_URL}/api/auth/login",
             json={
-                "partner_code": "ligerinc",
-                "email": "customer1@ligerinc.local",
+                "partner_code": "test-iter109-a",
+                "email": "test_cust3_iter111@test.local",
                 "password": "ChangeMe123!"
             }
         )
         if login_r.status_code != 200:
             pytest.skip("Customer login failed, skipping subscriptions access test")
-        
-        token = login_r.json().get("access_token") or login_r.json().get("token")
-        
+
+        token = login_r.json().get("token")
+
         r = requests.get(
             f"{BASE_URL}/api/subscriptions",
             headers={"Authorization": f"Bearer {token}"}
