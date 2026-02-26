@@ -102,15 +102,15 @@ export default function Documents() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">My Documents</h1>
-          <p className="text-sm text-slate-500 mt-0.5">View and upload documents shared with your account</p>
+          <h1 className="text-xl font-semibold text-slate-900">{ws.documents_page_title || "My Documents"}</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{ws.documents_page_subtitle || "View and upload documents shared with your account"}</p>
         </div>
       </div>
 
       {/* Upload section */}
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5" data-testid="upload-section">
-        <p className="text-sm font-medium text-slate-700 mb-2">Upload a Document</p>
-        <p className="text-xs text-slate-400 mb-3">Supported: PDF, Word, Excel, images. Max 5 MB.</p>
+        <p className="text-sm font-medium text-slate-700 mb-2">{ws.documents_page_upload_label || "Upload a Document"}</p>
+        <p className="text-xs text-slate-400 mb-3">{ws.documents_page_upload_hint || "Supported: PDF, Word, Excel, images. Max 5 MB."}</p>
         <div className="flex items-center gap-3 flex-wrap">
           <input
             ref={fileRef}

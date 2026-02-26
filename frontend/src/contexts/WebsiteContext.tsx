@@ -319,6 +319,12 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   bank_transaction_sources: "",
   bank_transaction_types: "",
   bank_transaction_statuses: "",
+  nav_documents_label: "",
+  documents_page_title: "",
+  documents_page_subtitle: "",
+  documents_page_upload_label: "",
+  documents_page_upload_hint: "",
+  documents_page_empty_text: "",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
