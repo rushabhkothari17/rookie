@@ -778,7 +778,7 @@ export default function Cart() {
                       {promoApplied.is_sponsored && (
                         <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800" data-testid="cart-sponsorship-note">
                           <span className="mt-0.5">★</span>
-                          <span><strong>Sponsored discount:</strong> This code is part of a Zoho partner sponsorship programme. Your order will be flagged for sponsorship reporting.</span>
+                          <span><strong>Sponsored discount:</strong> {promoApplied.sponsorship_note || "This code is part of a sponsored promo programme."}</span>
                         </div>
                       )}
                     </div>
