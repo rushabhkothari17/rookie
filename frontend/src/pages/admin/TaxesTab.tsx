@@ -61,7 +61,7 @@ function TaxSettingsPanel() {
   const save = async () => {
     setSaving(true);
     try {
-      await api.put("/api/admin/taxes/settings", settings);
+      await api.put("/admin/taxes/settings", settings);
       toast.success("Tax settings saved");
     } catch {
       toast.error("Failed to save tax settings");
