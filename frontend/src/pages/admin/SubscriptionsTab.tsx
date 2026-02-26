@@ -463,15 +463,24 @@ export function SubscriptionsTab() {
             <div className="space-y-1"><label className="text-xs text-slate-500">Product</label>
               <SearchableSelect
                 value={manualSub.product_id || undefined}
-                onValueChange={v => setManualSub({ ...manualSub, product_id: v })}
+                onValueChange={v => {
+                  const p = products.find((p: any) => p.id === v);
+                  setManualSub({ ...manualSub, product_id: v, currency: p?.currency || "USD" });
+                }}
                 options={products.map((p: any) => ({ value: p.id, label: p.name }))}
                 placeholder="Select product"
                 searchPlaceholder="Search products..."
                 data-testid="manual-sub-product-select"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1"><label className="text-xs text-slate-500">Amount</label><Input type="number" step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} /></div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Currency</label>
+                <select value={manualSub.currency} onChange={e => setManualSub({ ...manualSub, currency: e.target.value })} className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm">
+                  {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
               <div className="space-y-1"><label className="text-xs text-slate-500">Renewal Date</label><Input type="date" value={manualSub.renewal_date} onChange={e => setManualSub({ ...manualSub, renewal_date: e.target.value })} /></div>
             </div>
             <Button onClick={handleCreateManual} className="w-full">Create Subscription</Button>
