@@ -247,7 +247,26 @@ async def validate_promo_code(
             used = await db.orders.find_one({"customer_id": customer["id"], "promo_code": code["code"]}, {"_id": 0})
             if used:
                 raise HTTPException(status_code=400, detail="You have already used this promo code")
-    return {"valid": True, "code": code["code"], "discount_type": code["discount_type"], "discount_value": code["discount_value"]}
+    # Check product-scope restriction
+    if code.get("applies_to_products") == "selected" and payload.product_ids:
+        eligible_ids = code.get("product_ids", [])
+        if not all(pid in eligible_ids for pid in payload.product_ids):
+            raise HTTPException(status_code=400, detail="Promo code is not valid for one or more products in your cart")
+    is_sponsored = "ZOHOR" in code["code"].upper()
+    return {
+        "valid": True,
+        "code": code["code"],
+        "discount_type": code["discount_type"],
+        "discount_value": code["discount_value"],
+        "is_sponsored": is_sponsored,
+        "promo": {
+            "id": code["id"],
+            "code": code["code"],
+            "discount_type": code["discount_type"],
+            "discount_value": code["discount_value"],
+            "is_sponsored": is_sponsored,
+        },
+    }
 
 
 @router.post("/orders/preview")
