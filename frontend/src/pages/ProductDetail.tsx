@@ -424,11 +424,11 @@ export default function ProductDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* Scope Request Modal */}
+      {/* Scope / Enquiry Request Modal */}
       <Dialog open={showScopeModal} onOpenChange={setShowScopeModal}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="scope-request-modal">
           <DialogHeader>
-            <DialogTitle>{ws.scope_form_title || "Request Scope"} — {product?.name}</DialogTitle>
+            <DialogTitle>{ws.scope_form_title || "Request a Quote"} — {product?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {ws.scope_form_subtitle && <p className="text-sm text-slate-500">{ws.scope_form_subtitle}</p>}
