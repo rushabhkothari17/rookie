@@ -511,10 +511,14 @@ async def create_scope_request_with_form(
     fd = payload.form_data
     # Build a readable summary for the customer confirmation email
     summary_parts = []
-    if fd.project_summary: summary_parts.append(fd.project_summary)
-    if fd.message: summary_parts.append(fd.message)
-    if fd.desired_outcomes: summary_parts.append(f"Outcomes: {fd.desired_outcomes}")
-    if fd.additional_notes: summary_parts.append(fd.additional_notes)
+    if fd.project_summary:
+        summary_parts.append(fd.project_summary)
+    if fd.message:
+        summary_parts.append(fd.message)
+    if fd.desired_outcomes:
+        summary_parts.append(f"Outcomes: {fd.desired_outcomes}")
+    if fd.additional_notes:
+        summary_parts.append(fd.additional_notes)
     summary_str = " | ".join(summary_parts) if summary_parts else "—"
 
     from services.email_service import EmailService
