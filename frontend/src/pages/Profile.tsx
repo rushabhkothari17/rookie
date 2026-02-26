@@ -10,6 +10,8 @@ import { Download, Trash2, AlertTriangle } from "lucide-react";
 export default function Profile() {
   const { user, customer, address, refresh } = useAuth();
   const ws = useWebsite();
+  const isAdmin = user?.role && ["partner_admin", "platform_admin", "admin"].includes(user.role);
+  const [tenantCountry, setTenantCountry] = useState<string>("");
   const [form, setForm] = useState({
     full_name: "",
     company_name: "",
