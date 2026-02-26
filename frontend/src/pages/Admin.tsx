@@ -10,7 +10,7 @@ import { OrdersTab } from "./admin/OrdersTab";
 import { UsersTab } from "./admin/UsersTab";
 import { ProductsTab } from "./admin/ProductsTab";
 import { CategoriesTab } from "./admin/CategoriesTab";
-import { QuoteRequestsTab } from "./admin/QuoteRequestsTab";
+import { EnquiriesTab } from "./admin/EnquiriesTab";
 import { ResourcesTab } from "./admin/ResourcesTab";
 import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
