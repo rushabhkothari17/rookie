@@ -108,8 +108,6 @@ class CheckoutSessionRequestBody(BaseModel):
     terms_accepted: bool = False
     terms_id: Optional[str] = None
     start_date: Optional[str] = None
-    partner_tag_response: Optional[str] = None
-    override_code: Optional[str] = None
     zoho_subscription_type: Optional[str] = None
     current_zoho_product: Optional[str] = None
     zoho_account_access: Optional[str] = None
@@ -123,8 +121,6 @@ class BankTransferCheckoutRequest(BaseModel):
     terms_accepted: bool = False
     terms_id: Optional[str] = None
     start_date: Optional[str] = None
-    partner_tag_response: Optional[str] = None
-    override_code: Optional[str] = None
     zoho_subscription_type: Optional[str] = None
     current_zoho_product: Optional[str] = None
     zoho_account_access: Optional[str] = None
