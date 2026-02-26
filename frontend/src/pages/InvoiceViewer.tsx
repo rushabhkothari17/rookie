@@ -374,6 +374,8 @@ export default function InvoiceViewer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [template, setTemplate] = useState("classic");
+  const [customTemplates, setCustomTemplates] = useState<any[]>([]);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -385,11 +387,39 @@ export default function InvoiceViewer() {
       })
       .catch(() => setError("Failed to load invoice. Make sure you have access to this order."))
       .finally(() => setLoading(false));
+
+    // Try to load partner custom templates (admin only)
+    api.get("/admin/taxes/invoice-templates-for-viewer")
+      .then(r => setCustomTemplates(r.data.templates || []))
+      .catch(() => {}); // Not available for customers — silently ignore
   }, [orderId]);
 
   const handlePrint = () => window.print();
 
-  const TemplateComponent = TEMPLATE_MAP[template] || ClassicTemplate;
+  const handleEmailInvoice = async () => {
+    if (!orderId) return;
+    setSendingEmail(true);
+    try {
+      const r = await api.post(`/orders/${orderId}/send-invoice`, {});
+      toast.success(`Invoice emailed to ${r.data.recipient}`);
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to send invoice email");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  // Build full template list (defaults + custom)
+  const allTemplates = [
+    ...TEMPLATES,
+    ...customTemplates.map(t => ({ value: `custom:${t.id}`, label: `${t.name} (Custom)` })),
+  ];
+
+  // Determine what to render
+  const isCustomTemplate = template.startsWith("custom:");
+  const customTemplateId = isCustomTemplate ? template.slice("custom:".length) : null;
+  const customTemplateData = customTemplates.find(t => t.id === customTemplateId);
+  const TemplateComponent = !isCustomTemplate ? (TEMPLATE_MAP[template] || ClassicTemplate) : null;
 
   return (
     <>
