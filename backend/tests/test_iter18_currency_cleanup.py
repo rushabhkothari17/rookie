@@ -133,7 +133,7 @@ class TestProductCurrencyField:
 
     def test_products_have_currency_field(self, admin_headers):
         """Products returned by API should have currency field"""
-        res = requests.get(f"{BASE_URL}/api/admin/catalog", headers=admin_headers)
+        res = requests.get(f"{BASE_URL}/api/admin/products-all", headers=admin_headers)
         assert res.status_code == 200, f"Catalog request failed: {res.status_code}"
         data = res.json()
         products = data.get("products", [])
