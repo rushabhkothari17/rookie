@@ -1,0 +1,54 @@
+{
+  "summary": "Complete testing of Large-scale currency refactoring. All 6 Shadcn Select currency dropdowns working. FX API verified. Backend 24/24 tests pass. All UI flows verified end-to-end.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter18_currency_cleanup.py",
+    "/app/backend/tests/test_iter119_fx_currency_refactor.py",
+    "/app/test_reports/pytest/pytest_iter119_currency_refactor.xml",
+    "/app/test_reports/pytest/pytest_iter119_fx_currency.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "checkout_service.py get_fx_rate uses 5-second timeout for external API call; if open.er-api.com is slow/unreachable, all checkout flows will wait 5s per request. Consider caching the FX rate (e.g., 1-hour TTL) to avoid latency per-request. Fallback to 1:1 is already in place, which is good.",
+    "No input validation on base_currency in GET/PUT endpoint beyond the allowed list - the 400 validation is correctly implemented per backend tests."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter119_fx_currency_refactor.py"
+  ],
+  "success_rate": {
+    "backend": "100% (24/24 tests pass - 12 existing + 12 new FX tests)",
+    "frontend": "100% - all 6 currency dropdowns verified as Shadcn Select"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "Two manual test records created during backend tests: TEST_fx_order@test.invalid (order with EUR currency), TEST_fx_sub@test.invalid (subscription with GBP currency). These were deleted after test where possible.",
+  "features_verified": {
+    "WebsiteTab_BaseCurrencyWidget_Shadcn_Select": "PASS - 7 currencies selectable, EUR selected, USD restored. Save button works, persists after reload. 'Base currency updated' toast shown.",
+    "OrdersTab_manual_order_currency_Shadcn_Select": "PASS - [data-testid=manual-order-currency-select] found, 7 options, CAD selected",
+    "SubscriptionsTab_manual_sub_currency_Shadcn_Select": "PASS - [data-testid=manual-sub-currency-select] found, 7 options, GBP selected",
+    "ResourcesTab_resource_currency_Shadcn_Select": "PASS - [data-testid=resource-currency-input] found (shown when category=Scope-Final Lost/Won), 7 options, AUD selected",
+    "ProductForm_currency_Shadcn_Select": "PASS - [data-testid=pf-currency] found on Pricing tab, 7 options, GBP selected",
+    "PartnerSignup_base_currency_Shadcn_Select": "PASS - [data-testid=partner-base-currency] found, 7 options with full names (USD — US Dollar, etc.), EUR selected. No visible labels (only placeholders) confirmed.",
+    "FX_external_API_open_er_api_com": "PASS - GET https://open.er-api.com/v6/latest/USD returns result=success, USD=1.0, EUR=0.847304, GBP=0.738487. Multi-currency bases tested (EUR base also works).",
+    "Backend_startup_no_import_errors": "PASS - Backend starts cleanly, checkout_service.py import of get_fx_rate/httpx works, all admin endpoints accessible",
+    "manual_order_creation_with_currency_EUR": "PASS - POST /api/admin/orders/manual accepts currency=EUR field without 422",
+    "manual_sub_creation_with_currency_GBP": "PASS - POST /api/admin/subscriptions/manual accepts currency=GBP field without 422",
+    "base_currency_GET_PUT_authenticated": "PASS - GET/PUT /api/admin/tenant/base-currency works, validates currencies, rejects invalid ones with 400",
+    "no_native_select_in_currency_contexts": "PASS - No native <select> elements found on admin pages where currency dropdowns exist"
+  },
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Currency refactoring complete and verified. All 4 native <select> elements replaced with Shadcn Select: WebsiteTab BaseCurrencyWidget, OrdersTab manual order dialog, SubscriptionsTab manual sub dialog, ResourcesTab resource form (Scope-Final category). Also ProductForm and Signup page use Shadcn Select. FX API (open.er-api.com) is live and working. Backend checkout_service.py imports httpx/get_fx_rate cleanly. base_currency_amount is now stored in orders/subscriptions. All 24 backend tests pass. Minor note: ResourcesTab currency field is conditional - only visible when category is 'Scope - Final Lost' or 'Scope - Final Won'.",
+  "mocked_apis": "None - all APIs are real, including FX rate from open.er-api.com"
+}
