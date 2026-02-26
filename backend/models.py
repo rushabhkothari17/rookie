@@ -238,6 +238,7 @@ class AdminProductUpdate(BaseModel):
     price_rounding: Optional[str] = None
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
+    currency: Optional[str] = None
 
 
 class AdminCustomerPaymentUpdate(BaseModel):
@@ -477,6 +478,7 @@ class AdminProductCreate(BaseModel):
     price_rounding: Optional[str] = None
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
+    currency: str = "USD"
 
 
 class AppSettingsUpdate(BaseModel):
