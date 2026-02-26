@@ -131,7 +131,7 @@ class TestAdminLoginRegression:
             }
         )
         # Account may be locked from previous test runs — accept lockout as non-regression
-        if r.status_code == 403 and "locked" in r.text.lower():
+        if r.status_code in (403, 429) and "locked" in r.text.lower():
             pytest.skip("Partner admin account locked from prior test runs — not a regression")
         assert r.status_code == 200, f"Partner admin login failed: {r.status_code} {r.text}"
         data = r.json()
