@@ -232,7 +232,7 @@ export default function ProductDetail() {
   const handleScopeRequest = () => {
     // All scope request products (including BUILD-FIXED-SCOPE) navigate to cart
     // The cart's "Quote Requests" section provides both Scope ID unlock and Request a Quote form
-    addItem({ product_id: product.id, quantity: 1, inputs });
+    if (!tryAddItem({ product_id: product.id, quantity: 1, inputs })) return;
     toast.success("Added to cart");
     navigate("/cart");
   };
