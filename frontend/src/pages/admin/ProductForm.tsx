@@ -33,6 +33,7 @@ export interface ProductFormData {
   pricing_type: string;
   external_url: string;
   is_active: boolean;
+  currency: string;
   visible_to_customers: string[];
   restricted_to: string[];
   intake_schema_json: IntakeSchemaJson;
