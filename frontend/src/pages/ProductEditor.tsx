@@ -114,6 +114,7 @@ export default function ProductEditor() {
       is_active: p.is_active ?? true,
       visible_to_customers: p.visible_to_customers || [],
       restricted_to: p.restricted_to || [],
+      visibility_conditions: p.visibility_conditions || null,
       intake_schema_json: p.intake_schema_json || EMPTY_INTAKE_SCHEMA,
       custom_sections: p.custom_sections || [],
       display_layout: p.display_layout || "standard",
