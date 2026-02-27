@@ -40,9 +40,7 @@ WORKDRIVE_SCOPES = (
     "WorkDrive.files.CREATE,WorkDrive.files.READ,"
     "WorkDrive.files.UPDATE,WorkDrive.files.DELETE,"
     "WorkDrive.teamfolders.READ,WorkDrive.teamfolders.CREATE,"
-    "WorkDrive.teamfolders.UPDATE,"
-    "WorkDrive.privatespace.READ,WorkDrive.privatespace.CREATE,"
-    "WorkDrive.privatespace.UPDATE,WorkDrive.privatespace.DELETE"
+    "WorkDrive.teamfolders.UPDATE"
 )
 
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
