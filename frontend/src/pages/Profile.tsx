@@ -9,15 +9,6 @@ import api from "@/lib/api";
 import { parseSchema, getAddressConfig } from "@/components/FormSchemaBuilder";
 import { Download, Lock, Trash2, AlertTriangle } from "lucide-react";
 
-// Parse signup form schema to get field settings
-function parseProfileSchema(raw: string): Record<string, { required?: boolean; enabled?: boolean }> {
-  try {
-    const fields = JSON.parse(raw);
-    if (!Array.isArray(fields)) return {};
-    return Object.fromEntries(fields.map((f: any) => [f.key, { required: !!f.required, enabled: f.enabled !== false }]));
-  } catch { return {}; }
-}
-
 function validatePhone(phone: string) {
   if (!phone) return "";
   const clean = phone.replace(/[\s\-().+]/g, "");
