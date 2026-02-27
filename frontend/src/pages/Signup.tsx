@@ -55,22 +55,13 @@ export default function Signup() {
   const [partnerLoading, setPartnerLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
-  const [partnerProvinces, setPartnerProvinces] = useState<{ value: string; label: string }[]>([]);
 
-  // Fetch provinces for partner signup address
-  useEffect(() => {
-    const c = partnerOrg.address.country;
-    if (c === "Canada" || c === "USA") {
-      api.get(`/utils/provinces?country_code=${c}`).then(r => setPartnerProvinces(r.data.regions || [])).catch(() => setPartnerProvinces([]));
-    } else {
-      setPartnerProvinces([]);
-    }
-  }, [partnerOrg.address.country]);
-
+  // Fetch provinces/states for customer signup when country changes
+  const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
   const [form, setForm] = useState({
     full_name: "", job_title: "", company_name: "",
     email: "", phone: "", password: "",
-    line1: "", line2: "", city: "", region: "", postal: "", country: "Canada",
+    line1: "", line2: "", city: "", region: "", postal: "", country: "",
   });
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
