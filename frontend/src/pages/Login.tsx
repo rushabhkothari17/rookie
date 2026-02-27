@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import api from "@/lib/api";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
