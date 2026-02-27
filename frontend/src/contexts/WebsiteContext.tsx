@@ -171,6 +171,10 @@ export interface WebsiteSettings {
   documents_page_upload_label: string;
   documents_page_upload_hint: string;
   documents_page_empty_text: string;
+  // Signup page bullets
+  signup_bullet_1: string;
+  signup_bullet_2: string;
+  signup_bullet_3: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
@@ -325,6 +329,9 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   documents_page_upload_label: "",
   documents_page_upload_hint: "",
   documents_page_empty_text: "",
+  signup_bullet_1: "",
+  signup_bullet_2: "",
+  signup_bullet_3: "",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
