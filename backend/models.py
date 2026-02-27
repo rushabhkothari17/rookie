@@ -257,6 +257,7 @@ class AdminProductUpdate(BaseModel):
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
     currency: Optional[str] = None
+    enquiry_form_id: Optional[str] = None
 
 
 class AdminCustomerPaymentUpdate(BaseModel):
@@ -500,6 +501,7 @@ class AdminProductCreate(BaseModel):
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
     currency: str = "USD"
+    enquiry_form_id: Optional[str] = None
 
 
 class AppSettingsUpdate(BaseModel):
