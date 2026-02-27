@@ -159,6 +159,25 @@ export function CustomersTab() {
   };
 
   const handleCreateCustomer = async () => {
+    // Validate required fields from schema
+    const schemaField = (key: string) => signupSchema.find((f: any) => f.key === key);
+    const errors: string[] = [];
+    if (!newCustomer.full_name.trim()) errors.push("Full Name");
+    if (!newCustomer.email.trim()) errors.push("Email");
+    if (!newCustomer.password.trim()) errors.push("Password");
+    const addrField = schemaField("address");
+    const addrEnabled = !addrField || addrField.enabled !== false;
+    if (addrEnabled) {
+      if (addrField?.required && !newCustomer.line1.trim()) errors.push("Address Line 1");
+      if (addrField?.required && !newCustomer.city.trim()) errors.push("City");
+      if (addrField?.required && !newCustomer.postal.trim()) errors.push("Postal Code");
+      if (addrField?.required && !newCustomer.country) errors.push("Country");
+    }
+    ["company_name", "job_title", "phone"].forEach(key => {
+      const f = schemaField(key);
+      if (f?.required && !(newCustomer as any)[key]?.trim()) errors.push(f.label || key);
+    });
+    if (errors.length) { toast.error(`Required: ${errors.join(", ")}`); return; }
     try {
       await api.post("/admin/customers/create", newCustomer);
       toast.success("Customer created"); setShowCreateDialog(false);
