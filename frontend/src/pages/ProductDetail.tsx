@@ -162,7 +162,7 @@ export default function ProductDetail() {
     const defaults: Record<string, any> = {};
     for (const q of enabledIntakeQuestions) {
       if (q.type === "multiselect") defaults[q.key] = [];
-      else if (q.type === "dropdown") defaults[q.key] = q.options?.[0]?.value || "";
+      else if (q.type === "dropdown") defaults[q.key] = "";  // no default — avoid accidental pricing changes
       else defaults[q.key] = "";
     }
     setIntakeAnswers(defaults);
