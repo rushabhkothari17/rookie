@@ -651,6 +651,15 @@ function BaseCurrencyWidget() {
   );
 }
 
+// ─── Default signup form fields (seeded when schema is empty) ─────────────────
+const SIGNUP_DEFAULT_SCHEMA = JSON.stringify([
+  { id: "sf_full_name",    key: "full_name",    label: "Full Name",    type: "text", required: true,  placeholder: "", options: [], locked: true,  enabled: true,  order: 0 },
+  { id: "sf_company_name", key: "company_name", label: "Company Name", type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 1 },
+  { id: "sf_job_title",    key: "job_title",    label: "Job Title",    type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 2 },
+  { id: "sf_phone",        key: "phone",        label: "Phone",        type: "tel",  required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 3 },
+  { id: "sf_address",      key: "address",      label: "Address",      type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 4 },
+]);
+
 // ─── Organization Address (partner admin only) ────────────────────────────────
 const ORG_COUNTRIES = [
   {v:"Canada",l:"Canada"},{v:"USA",l:"United States"},{v:"UK",l:"United Kingdom"},
