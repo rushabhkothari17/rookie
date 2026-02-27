@@ -1,0 +1,97 @@
+{
+  "summary": "Tested all 14 features listed in iteration 135: back button on login/signup, countries API, bank_transactions removed from admin modules, signup bullet fields, change-password endpoint, hero banners moved to Auth & Pages, profile email lock/hint, phone validation. Backend: 16/17 pass (1 skipped as expected). Frontend: all features visually verified and working.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "ForcePasswordChangeModal (Login.tsx)",
+        "issue": "Hint text says 'Min. 8 characters' but backend /auth/change-password requires min 10 chars (from _validate_password_complexity). Frontend modal also validates min 8 before sending, so user gets confusing backend 422 for passwords of length 8-9. Also same issue in Signup.tsx hint text. Consider aligning frontend hint/validation to 'Min. 10 characters' to match backend.",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "test_results": {
+    "backend_api": {
+      "GET /api/utils/countries (no partner code)": "PASS - returns list with value/label",
+      "GET /api/utils/countries?partner_code=automate-accounts": "PASS - returns valid list",
+      "GET /api/utils/countries with invalid partner_code": "PASS - falls back to defaults",
+      "GET /api/admin/permissions/modules - bank_transactions absent": "PASS",
+      "GET /api/admin/permissions/modules - expected keys present": "PASS",
+      "POST /api/auth/change-password unauthenticated": "PASS - returns 401",
+      "POST /api/auth/change-password with valid token": "PASS - returns 200",
+      "POST /api/auth/change-password weak password": "PASS - returns 422",
+      "POST /api/auth/partner-login automate-accounts blocked": "PASS - returns 403",
+      "GET /api/admin/website-settings has signup_bullet_1/2/3": "PASS",
+      "PUT /api/admin/website-settings saves signup bullets": "PASS",
+      "GET /api/website-settings (public)": "PASS",
+      "GET /api/me includes must_change_password": "PASS",
+      "GET /api/tenant-info automate-accounts is_platform=true": "PASS",
+      "GET /api/tenant-info invalid code returns 404": "PASS",
+      "must_change_password in partner-login response": "SKIPPED (automate-accounts blocked from partner-login, expected behavior)"
+    },
+    "frontend": {
+      "Login page back button above heading": "PASS - signin-back-btn with text 'Back to partner select' is above h1",
+      "Back button click returns to gateway": "PASS",
+      "Customer signup back link at top of card": "PASS - signup-back-link 'Back to sign in' at y=76.5",
+      "Signup password criteria hint text": "PASS - 'Min. 8 characters · at least one uppercase letter · one number · one special character'",
+      "Signup 3 bullet points on left panel": "PASS - ws.signup_bullet_1/2/3 used",
+      "Profile email read-only bg-slate-50": "PASS - readonly attribute, bg-slate-50 class",
+      "Profile email Lock icon": "PASS - SVG Lock icon found near email address label",
+      "Profile email 'Admins can change' hint": "PASS - 'Email can only be changed by an admin from the admin panel.'",
+      "Profile phone validation for 'abc'": "PASS - 'Enter a valid phone number (7-15 digits)' shown",
+      "Admin Auth & Pages: Store Hero Banner tile": "PASS - auth-tile-store-hero found",
+      "Admin Auth & Pages: Articles Hero Banner tile": "PASS - auth-tile-articles-hero found",
+      "Admin Auth & Pages: Hero Banners section": "PASS - 'HERO BANNERS' section divider visible in screenshot",
+      "Admin Auth & Pages: Signup slide 3 bullet fields": "PASS - ws-signup-bullet-1/2/3 fields found",
+      "Admin Org Info: NO Store Hero Banner": "PASS - Store Hero Banner not in Org Info page text",
+      "Admin Org Info: NO Articles Hero Banner": "PASS - Articles Hero Banner not in Org Info page text",
+      "Admin Users: Bank Transactions NOT in module list": "PASS - not found in page text or modal",
+      "Admin Org Info shows Store Name, Brand Colors": "PASS - expected fields present"
+    }
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_iter135_auth_profile_fixes.py",
+    "/app/test_reports/pytest/pytest_iter135.xml"
+  ],
+
+  "action_items": [
+    "LOW: ForcePasswordChangeModal hint text says 'Min. 8 characters' but backend requires 10. Align to 'Min. 10 characters'. Also frontend modal validates length < 8 locally but backend requires 10. Fix both hint text and local validation in ForcePasswordChangeModal in Login.tsx.",
+    "LOW: Signup.tsx password criteria hint also says 'Min. 8 characters' - same 8 vs 10 discrepancy. Update hint to say 'Min. 10 characters'."
+  ],
+
+  "critical_code_review_comments": [
+    "MINOR: ForcePasswordChangeModal in Login.tsx checks `newPassword.length < 8` and shows 'Min. 8 characters' hint, but the backend _validate_password_complexity requires >= 10 chars. This means passwords of length 8-9 pass frontend validation but fail with backend 422. Fix: change length check to < 10 and update hint text.",
+    "NOTE: The must_change_password test was skipped because automate-accounts is correctly blocked from /auth/partner-login. To test must_change_password in partner-login response, a real partner tenant (e.g. liger-inc) would need to be used. The backend code (auth.py line 257) correctly includes must_change_password in partner_login response.",
+    "NOTE: 403 console errors in profile page are expected for admin user (no customer record), not a bug."
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_iter135_auth_profile_fixes.py"
+  ],
+
+  "success_rate": {
+    "backend": "94% (16/17 tests pass, 1 skipped as expected)",
+    "frontend": "100% (all features verified working)"
+  },
+
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123! (partner_code: automate-accounts)",
+    "context": "Two-step login: enter partner code at gateway, then credentials"
+  },
+
+  "seed_data_creation": "None - tests cleaned up after themselves (signup bullets restored to empty)",
+
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+
+  "context_for_next_testing_agent": "Iter135 tested: back button on login/signup, GET /utils/countries, bank_transactions removed from ADMIN_MODULES, signup_bullet_1/2/3 in website settings, POST /auth/change-password, must_change_password in /me response, Store/Articles Hero Banner moved to Auth & Pages (from Org Info), profile email read-only with Lock icon, phone validation. All pass. Minor issue: ForcePasswordChangeModal hints say 'Min. 8 chars' but backend requires 10. Also Signup.tsx hint has same discrepancy. Partner admin credentials for liger-inc: admin@ligerinc.local / ChangeMe123! (partner code not confirmed, need to look up)."
+}
