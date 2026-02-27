@@ -262,7 +262,7 @@ function StoreCardPreview({ form, onClose }: { form: ProductFormData; onClose: (
     external_url: form.external_url || "",
     intake_schema_json: form.intake_schema_json,
     price_rounding: form.price_rounding || null,
-    currency: form.currency || "GBP",
+    currency: form.currency || "USD",
   };
 
   const hasCardContent = form.card_description || (form.card_bullets || []).filter(b => b.trim()).length > 0;
