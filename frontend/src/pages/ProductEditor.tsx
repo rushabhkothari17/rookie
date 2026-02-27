@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Eye, X as XIcon, Store } from "lucide-react";
 import api from "@/lib/api";
 import { ProductForm, type ProductFormData, EMPTY_FORM } from "./admin/ProductForm";
 import { EMPTY_INTAKE_SCHEMA } from "./admin/IntakeSchemaBuilder";
+import OfferingCard from "@/components/OfferingCard";
 
 export default function ProductEditor() {
   const { id } = useParams<{ id: string }>();
