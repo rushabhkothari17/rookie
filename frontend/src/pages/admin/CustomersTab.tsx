@@ -102,6 +102,23 @@ export function CustomersTab() {
 
   useEffect(() => { load(1); }, [search, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter]);
 
+  // Fetch signup form schema to drive the Create Customer form
+  useEffect(() => {
+    api.get("/admin/website-settings").then(r => {
+      try { setSignupSchema(JSON.parse(r.data.settings?.signup_form_schema || "[]")); }
+      catch { setSignupSchema([]); }
+    }).catch(() => {});
+  }, []);
+
+  // Fetch provinces when country changes in create form
+  useEffect(() => {
+    if (newCustomer.country === "Canada" || newCustomer.country === "USA") {
+      api.get(`/utils/provinces?country_code=${newCustomer.country}`)
+        .then(r => setProvinces(r.data.regions || []))
+        .catch(() => setProvinces([]));
+    } else { setProvinces([]); }
+  }, [newCustomer.country]);
+
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
     const baseUrl = process.env.REACT_APP_BACKEND_URL || "";
