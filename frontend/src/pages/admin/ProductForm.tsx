@@ -734,7 +734,17 @@ export function ProductForm({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div />
+                  <div>
+                    <label className={labelCls}>Show price breakdown</label>
+                    <Select value={form.show_price_breakdown ? "yes" : "no"} onValueChange={v => s("show_price_breakdown")(v === "yes")}>
+                      <SelectTrigger data-testid="pf-show-breakdown"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no">No — show total only</SelectItem>
+                        <SelectItem value="yes">Yes — show line-by-line breakdown</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[11px] text-slate-400 mt-1">Show itemised pricing to customers at checkout</p>
+                  </div>
                 </div>
               </div>
 
