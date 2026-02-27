@@ -247,71 +247,111 @@ export default function Profile() {
               <p className="text-xs text-slate-400">Set via Admin &rsaquo; Taxes &rsaquo; Tax Settings.</p>
             </div>
           )}
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm text-slate-600">Address line 1</label>
-            <Input
-              value={form.line1}
-              onChange={(e) => handleChange("line1", e.target.value)}
-              data-testid="profile-line1-input"
-              required
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm text-slate-600">Address line 2</label>
-            <Input
-              value={form.line2}
-              onChange={(e) => handleChange("line2", e.target.value)}
-              data-testid="profile-line2-input"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-slate-600">City</label>
-            <Input
-              value={form.city}
-              onChange={(e) => handleChange("city", e.target.value)}
-              data-testid="profile-city-input"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-slate-600">State / Province</label>
-            {provinces.length > 0 ? (
-              <Select value={form.region} onValueChange={(v) => handleChange("region", v)}>
-                <SelectTrigger data-testid="profile-region-select">
-                  <SelectValue placeholder="Select province / state" />
-                </SelectTrigger>
-                <SelectContent>
-                  {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                value={form.region}
-                onChange={(e) => handleChange("region", e.target.value)}
-                data-testid="profile-region-input"
-                required
-              />
-            )}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-slate-600">Postal / ZIP</label>
-            <Input
-              value={form.postal}
-              onChange={(e) => handleChange("postal", e.target.value)}
-              data-testid="profile-postal-input"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-slate-600">Country (locked)</label>
-            <Input
-              value={form.country}
-              readOnly
-              disabled
-              className="bg-slate-50 cursor-not-allowed"
-              data-testid="profile-country-input"
-            />
-          </div>
+          {/* Address — driven by address_config from signup schema */}
+          {addrVisible && (
+            <>
+              {sf("line1").enabled && (
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm text-slate-600">
+                    Address line 1{sf("line1").required && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
+                  <Input
+                    value={form.line1}
+                    onChange={(e) => handleChange("line1", e.target.value)}
+                    data-testid="profile-line1-input"
+                    required={sf("line1").required}
+                  />
+                </div>
+              )}
+              {sf("line2").enabled && (
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm text-slate-600">
+                    Address line 2{sf("line2").required && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
+                  <Input
+                    value={form.line2}
+                    onChange={(e) => handleChange("line2", e.target.value)}
+                    data-testid="profile-line2-input"
+                    required={sf("line2").required}
+                  />
+                </div>
+              )}
+              {sf("city").enabled && (
+                <div className="space-y-2">
+                  <label className="text-sm text-slate-600">
+                    City{sf("city").required && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
+                  <Input
+                    value={form.city}
+                    onChange={(e) => handleChange("city", e.target.value)}
+                    data-testid="profile-city-input"
+                    required={sf("city").required}
+                  />
+                </div>
+              )}
+              {sf("state").enabled && (
+                <div className="space-y-2">
+                  <label className="text-sm text-slate-600">
+                    State / Province{sf("state").required && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
+                  {provinces.length > 0 ? (
+                    <Select value={form.region} onValueChange={(v) => handleChange("region", v)}>
+                      <SelectTrigger data-testid="profile-region-select">
+                        <SelectValue placeholder="Select province / state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      value={form.region}
+                      onChange={(e) => handleChange("region", e.target.value)}
+                      data-testid="profile-region-input"
+                      required={sf("state").required}
+                    />
+                  )}
+                </div>
+              )}
+              {sf("postal").enabled && (
+                <div className="space-y-2">
+                  <label className="text-sm text-slate-600">
+                    Postal / ZIP{sf("postal").required && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
+                  <Input
+                    value={form.postal}
+                    onChange={(e) => handleChange("postal", e.target.value)}
+                    data-testid="profile-postal-input"
+                    required={sf("postal").required}
+                  />
+                </div>
+              )}
+              {sf("country").enabled && (
+                <div className="space-y-2">
+                  <label className="text-sm text-slate-600">
+                    Country{sf("country").required && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
+                  {countries.length > 0 ? (
+                    <Select value={form.country} onValueChange={(v) => { handleChange("country", v); handleChange("region", ""); }}>
+                      <SelectTrigger data-testid="profile-country-select">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      value={form.country}
+                      onChange={(e) => handleChange("country", e.target.value)}
+                      data-testid="profile-country-input"
+                      required={sf("country").required}
+                    />
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
         <div className="mt-6 flex items-center justify-end">
           <Button
