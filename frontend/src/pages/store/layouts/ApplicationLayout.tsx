@@ -223,18 +223,23 @@ export default function ApplicationLayout({
               />
             )}
 
-            {/* Price breakdown */}
+            {/* Price breakdown - only shown if product.show_price_breakdown is enabled */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
               <h3 className="font-semibold text-slate-900 mb-4">Price Summary</h3>
               
-              {pricing?.line_items && pricing.line_items.length > 0 && (
+              {product?.show_price_breakdown && pricing?.line_items && pricing.line_items.length > 0 && (
                 <div className="space-y-2 mb-4 pb-4 border-b border-slate-100">
-                  {pricing.line_items.map((item, i) => (
+                  {pricing.line_items.map((item: any, i: number) => (
                     <div key={i} className="flex justify-between text-sm">
                       <span className="text-slate-600">{item.label}</span>
                       <span className="text-slate-900">{formatCurrency(item.amount)}</span>
                     </div>
                   ))}
+                  {product?.price_rounding && (
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      * Total rounded to the nearest {product.price_rounding}
+                    </p>
+                  )}
                 </div>
               )}
 
