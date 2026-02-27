@@ -75,25 +75,10 @@ export default function ShowcaseLayout({
             {product.name}
           </h1>
           
-          {product.tagline && (
+          {product.card_description && (
             <p className="text-lg lg:text-xl text-slate-300 max-w-2xl mb-8">
-              {product.tagline}
+              {product.card_description}
             </p>
-          )}
-
-          {/* Tags */}
-          {product.tag && (
-            <div className="flex flex-wrap gap-2">
-              {product.tag.split(",").map((tag, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 bg-white/10 text-white/80 text-xs font-medium rounded-full backdrop-blur-sm"
-                  data-testid={`product-tag-${i}`}
-                >
-                  {tag.trim()}
-                </span>
-              ))}
-            </div>
           )}
         </div>
       </div>
