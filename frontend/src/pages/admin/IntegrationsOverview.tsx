@@ -808,8 +808,8 @@ export function IntegrationsOverview() {
         )}
 
         {/* Missing Cloud Storage alert */}
-        {(activeCategory === "all" || activeCategory === "storage") &&
-          !integrations.filter(i => i.category === "storage").some(i => i.is_validated) && (
+        {(activeCategory === "all" || activeCategory === "cloud_storage") &&
+          !integrations.filter(i => i.category === "cloud_storage").some(i => i.is_validated) && (
           <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-xl flex items-center gap-3" data-testid="alert-no-storage">
             <AlertCircle size={18} className="text-orange-500 shrink-0" />
             <div>
