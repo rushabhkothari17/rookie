@@ -6,37 +6,26 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Eye, EyeOff, Upload, Save, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
-const COUNTRIES = [
-  {v:"Canada",l:"Canada"},{v:"USA",l:"United States"},{v:"UK",l:"United Kingdom"},
-  {v:"Australia",l:"Australia"},{v:"India",l:"India"},{v:"Germany",l:"Germany"},
-  {v:"France",l:"France"},{v:"Netherlands",l:"Netherlands"},{v:"Singapore",l:"Singapore"},
-  {v:"New Zealand",l:"New Zealand"},
-];
+import { useCountries, useProvinces } from "@/hooks/useCountries";
 
 function OrgAddressSection() {
   const { user } = useAuth();
   const [tenantId, setTenantId] = useState("");
-  const [addr, setAddr] = useState({ line1:"", line2:"", city:"", region:"", postal:"", country:"Canada" });
-  const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
+  const [addr, setAddr] = useState({ line1:"", line2:"", city:"", region:"", postal:"", country:"" });
   const [saving, setSaving] = useState(false);
   const isPlatformAdmin = user?.role && ["platform_admin", "admin"].includes(user.role);
-  // Don't show for platform admins (no org address for the platform tenant)
   if (isPlatformAdmin) return null;
+
+  const countries = useCountries();
+  const provinces = useProvinces(addr.country);
 
   useEffect(() => {
     api.get("/admin/tenants/my").then(r => {
       setTenantId(r.data.tenant?.id || "");
       const a = r.data.tenant?.address || {};
-      setAddr({ line1: a.line1||"", line2: a.line2||"", city: a.city||"", region: a.region||"", postal: a.postal||"", country: a.country||"Canada" });
+      setAddr({ line1: a.line1||"", line2: a.line2||"", city: a.city||"", region: a.region||"", postal: a.postal||"", country: a.country||"" });
     }).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (addr.country === "Canada" || addr.country === "USA") {
-      api.get(`/utils/provinces?country_code=${addr.country}`).then(r => setProvinces(r.data.regions || [])).catch(() => setProvinces([]));
-    } else { setProvinces([]); }
-  }, [addr.country]);
 
   const save = async () => {
     if (!tenantId) return;
@@ -62,7 +51,7 @@ function OrgAddressSection() {
         </div>
         <Select value={addr.country} onValueChange={v => setAddr(p=>({...p,country:v,region:""}))}>
           <SelectTrigger data-testid="org-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
-          <SelectContent>{COUNTRIES.map(c=><SelectItem key={c.v} value={c.v}>{c.l}</SelectItem>)}</SelectContent>
+          <SelectContent>{countries.map(c=><SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
         </Select>
         {provinces.length > 0 ? (
           <Select value={addr.region} onValueChange={v => setAddr(p=>({...p,region:v}))}>
@@ -70,7 +59,7 @@ function OrgAddressSection() {
             <SelectContent>{provinces.map(p=><SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
           </Select>
         ) : (
-          <Input placeholder="State / Province *" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} required data-testid="org-addr-region-input" />
+          <Input placeholder="State / Province" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} data-testid="org-addr-region-input" />
         )}
       </div>
       <Button onClick={save} disabled={saving} size="sm" data-testid="org-addr-save-btn">
