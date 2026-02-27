@@ -49,6 +49,7 @@ export default function ProductEditor() {
     intake_schema_json: EMPTY_INTAKE_SCHEMA,
     custom_sections: [],
     display_layout: "standard",
+    enquiry_form_id: "",
   });
 
   useEffect(() => {
