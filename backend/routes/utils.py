@@ -1,5 +1,6 @@
-"""Public utility endpoints — province/state lists, etc."""
+"""Public utility endpoints — province/state lists, country lists from tax tables, etc."""
 from fastapi import APIRouter, Query
+from db.session import db
 
 router = APIRouter(prefix="/api", tags=["utils"])
 

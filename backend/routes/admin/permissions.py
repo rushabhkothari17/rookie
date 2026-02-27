@@ -26,7 +26,6 @@ ADMIN_MODULES = {
     "subscriptions": {"name": "Subscriptions", "description": "View and manage subscriptions"},
     "products": {"name": "Products & Catalog", "description": "Manage products, categories, pricing"},
     "promo_codes": {"name": "Promo Codes", "description": "Create and manage promotional codes"},
-    "bank_transactions": {"name": "Bank Transactions", "description": "Reconcile bank transactions"},
     "content": {"name": "Content", "description": "Manage articles, terms, website content"},
     "integrations": {"name": "Integrations", "description": "Configure CRM, payment, email integrations"},
     "webhooks": {"name": "Webhooks", "description": "Configure and manage webhooks"},
