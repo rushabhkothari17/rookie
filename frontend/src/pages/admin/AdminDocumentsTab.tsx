@@ -90,6 +90,21 @@ export function AdminDocumentsTab() {
 
   useEffect(() => { load(); }, []);
 
+  const fetchCustomers = useCallback(async (search: string) => {
+    setCustLoading(true);
+    try {
+      const params = new URLSearchParams({ per_page: "15" });
+      if (search.trim()) params.set("search", search.trim());
+      const res = await api.get(`/admin/customers?${params}`);
+      const userMap: Record<string, any> = {};
+      (res.data.users || []).forEach((u: any) => { userMap[u.id] = u; });
+      setCustomers((res.data.customers || []).map((c: any) => {
+        const user = userMap[c.user_id] || {};
+        return { id: c.id, email: user.email || "", name: user.full_name || user.email || c.company_name || c.id };
+      }));
+    } catch { /* silent */ } finally { setCustLoading(false); }
+  }, []);
+
   const filtered = docs.filter(d =>
     d.file_name.toLowerCase().includes(search.toLowerCase()) ||
     (d.customer_name || "").toLowerCase().includes(search.toLowerCase()) ||
