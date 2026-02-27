@@ -8,6 +8,7 @@ import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
 import { OrdersTab } from "./admin/OrdersTab";
 import { UsersTab } from "./admin/UsersTab";
+import { RolesTab } from "./admin/RolesTab";
 import { ProductsTab } from "./admin/ProductsTab";
 import { CategoriesTab } from "./admin/CategoriesTab";
 import { EnquiriesTab } from "./admin/EnquiriesTab";
