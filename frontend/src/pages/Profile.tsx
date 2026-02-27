@@ -215,13 +215,17 @@ export default function Profile() {
             <p className="text-xs text-slate-400">Use this code when logging in via the partner portal.</p>
           </div>
           <div className="space-y-2">
-            <label className="text-sm text-slate-600">Phone</label>
+            <label className="text-sm text-slate-600">Phone{phoneRequired && <span className="text-red-500 ml-0.5">*</span>}</label>
             <Input
               value={form.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
+              onChange={(e) => { handleChange("phone", e.target.value); setPhoneError(validatePhone(e.target.value)); }}
+              onBlur={e => setPhoneError(validatePhone(e.target.value))}
               data-testid="profile-phone-input"
-              required
+              required={phoneRequired}
+              type="tel"
+              placeholder="+1 (555) 000-0000"
             />
+            {phoneError && <p className="text-xs text-red-500">{phoneError}</p>}
           </div>
           {isAdmin && tenantCountry && (
             <div className="space-y-2">
