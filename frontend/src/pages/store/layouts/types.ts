@@ -60,6 +60,7 @@ export interface Product {
   terms_id?: string;
   display_layout?: string;
   price_rounding?: string;
+  show_price_breakdown?: boolean;
   intake_schema_json?: {
     version: number;
     questions: IntakeQuestion[];
