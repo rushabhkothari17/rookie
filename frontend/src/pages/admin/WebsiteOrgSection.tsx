@@ -23,6 +23,7 @@ export function OrgInfoSection({ ws, branding, b, save, saving, forcedSection, u
     <>
       <h3 className="text-sm font-semibold text-slate-700">Store Information</h3>
       <Field label="Store Name" value={branding.store_name} onChange={b("store_name")} testId="ws-store-name" />
+      <BaseCurrencyWidget />
       <OrgAddressSection />
       <div className="border-t border-slate-100 pt-4">
         <h3 className="text-sm font-semibold text-slate-700 mb-3">Logo</h3>
