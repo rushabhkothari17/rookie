@@ -342,7 +342,7 @@ export function TenantsTab() {
               <Input placeholder="City *" value={addrForm.city || ""} onChange={e => setAddrForm(p => ({...p, city: e.target.value}))} data-testid="tenant-addr-city" />
               <Input placeholder="Postal Code *" value={addrForm.postal || ""} onChange={e => setAddrForm(p => ({...p, postal: e.target.value}))} data-testid="tenant-addr-postal" />
             </div>
-            <Select value={addrForm.country || ""} onValueChange={v => { setAddrForm(p => ({...p, country: v, region: ""})); fetchProvinces(v); }}>
+            <Select value={addrForm.country || ""} onValueChange={v => { setAddrForm(p => ({...p, country: v, region: ""})); }}>
               <SelectTrigger data-testid="tenant-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
               <SelectContent>{countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
             </Select>
