@@ -1,54 +1,32 @@
 # Changelog
 
-## Session: Feb 2026 — Bug Fix Sprint (Fork 9 continuation)
+## Feb 26, 2026 — Admin Panel Settings Restructure
+- Renamed "Branding & Hero" → "Organization Info" as top-level SETTINGS tab
+- "Auth & Pages", "Forms", "System Config" as separate top-level SETTINGS tabs
+- Footer & Nav merged into Auth & Pages; Store Hero + Articles Hero moved as tiles
+- "Website Content" tab deleted
+- OrgAddressSection added to Organization Info (right under Store Name)
+- Base Currency moved from System Config to Organization Info
+- Documents page customization: nav label, title, subtitle, upload text, empty text
+- SetupChecklistWidget updated to new tab names
 
-### Fixed Bugs
-- **Portal status filter dropdowns** — replaced broken native `<select>` elements with Shadcn `Select` components in `Portal.tsx` (orders & subscriptions filters now work correctly)
-- **Users & Customers "Logs" buttons** — fixed `require_super_admin` in `security.py` to allow `partner_super_admin` and `platform_admin` roles (was previously 403 for all users); added try-catch error handling to all logs buttons
-- **Subscription logs display** — fixed field name (`timestamp` → `created_at`), now shows actor, action, timestamp, and details in a clean layout
+## Feb 27, 2026 — Multi-Feature Auth, Signup & Admin Fixes
+- **Back buttons**: Login signin step + customer/partner signup → partner signin page
+- **Email read-only in Profile**: Lock icon, bg-slate-50 styling, "Admins can change" hint
+- **Phone validation**: 7–15 digit regex validation on signup & My Profile
+- **Password criteria hint**: "Min. 10 chars · uppercase · number · special char" shown on signup + force-change modal
+- **bank_transactions removed** from Admin > Users > Modules (ADMIN_MODULES)
+- **First-time login password change**: `must_change_password` flag in partner-login response; ForcePasswordChangeModal in Login.tsx; POST /api/auth/change-password endpoint
+- **Signup bullets editable**: signup_bullet_1/2/3 configurable via Admin > Auth & Pages > Sign Up Page slide
+- **Address as one block** in signup form: isFieldVisible("address") controls visibility; required from schema controls asterisks; LOCKED_STANDARD_KEYS ensures backward compat
+- **Company/Address asterisk bug fixed**: SIGNUP_DEFAULT_SCHEMA seeds locked standard fields so required flags work correctly
+- **Countries from tax tables**: GET /api/utils/countries endpoint; signup page uses dynamic list
+- **Phone required synced with signup form**: Profile.tsx reads phoneRequired from ws.signup_form_schema
+- **Hero banners as tiles**: Store Hero Banner + Articles Hero Banner tiles added to Auth & Pages; removed from Org Info inline fields
 
-### New Features
-- **Confirmation dialogs (AlertDialog)** for all destructive/critical actions:
-  - Subscriptions: Cancel, Renew
-  - Orders: Delete, Charge
-  - Users/Customers: Deactivate/Activate
-  - Products: Deactivate/Activate
-  - Categories: Toggle active, Delete
-  - Promo Codes: Delete button added + confirmation
-  - Terms: Delete button added + confirmation
-  - Quote Requests: Delete button added + confirmation
-- **Logs functionality** added to previously missing modules:
-  - Article Categories (frontend + backend endpoint)
-  - Article Templates (frontend + backend endpoint)
-  - Article Email Templates (frontend + backend endpoint)
-- **Backend DELETE endpoint** for quote requests (`DELETE /api/admin/quote-requests/{id}`)
-- **Seed script** for Tenant B Test — `backend/seed_tenant_b.py` populates categories, products (6 types including zero-price for scope ID testing), customers, promo codes, subscriptions, orders, quote requests, and terms
-
-### Files Modified
-- `backend/core/security.py`
-- `backend/routes/admin/quote_requests.py`
-- `backend/routes/article_categories.py`
-- `backend/routes/article_email_templates.py`
-- `backend/routes/article_templates.py`
-- `frontend/src/components/ui/alert-dialog.jsx` (explicit children prop)
-- `frontend/src/pages/Portal.tsx`
-- `frontend/src/pages/admin/SubscriptionsTab.tsx`
-- `frontend/src/pages/admin/OrdersTab.tsx`
-- `frontend/src/pages/admin/UsersTab.tsx`
-- `frontend/src/pages/admin/CustomersTab.tsx`
-- `frontend/src/pages/admin/ProductsTab.tsx`
-- `frontend/src/pages/admin/CategoriesTab.tsx`
-- `frontend/src/pages/admin/PromoCodesTab.tsx`
-- `frontend/src/pages/admin/TermsTab.tsx`
-- `frontend/src/pages/admin/QuoteRequestsTab.tsx`
-- `frontend/src/pages/admin/ArticleCategoriesTab.tsx`
-- `frontend/src/pages/admin/ArticleTemplatesTab.tsx`
-- `frontend/src/pages/admin/ArticleEmailTemplatesTab.tsx`
-- `backend/seed_tenant_b.py` (new file)
-
-## Session: Previous — Dropdown Fix Sprint
-
-### Fixed
-- Widespread dropdown failures caused by Emergent Visual Editor injecting `<span>` tags into native `<select>` elements
-- Created reusable `SearchableSelect` component at `frontend/src/components/ui/SearchableSelect.tsx`
-- Replaced all native `<select>` elements throughout the application with Shadcn `Select` or `SearchableSelect` components
+## Earlier Sessions
+- Zoho WorkDrive OAuth integration
+- Admin Documents management tab
+- Customer-facing Documents portal (/documents)
+- Partner mandatory address on signup
+- WorkDrive folder auto-creation per customer
