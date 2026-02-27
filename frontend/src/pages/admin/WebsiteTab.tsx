@@ -1264,6 +1264,24 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
             </div>
           </div>
         )}
+
+        {/* Store Hero Banner */}
+        {authSlide === "store_hero" && (
+          <div className="space-y-4">
+            <Field label="Label" hint='Small badge above title (e.g. "Welcome")' value={ws.hero_label} onChange={s("hero_label")} testId="ws-hero-label" />
+            <Field label="Title" value={ws.hero_title} onChange={s("hero_title")} multiline testId="ws-hero-title" />
+            <Field label="Subtitle" value={ws.hero_subtitle} onChange={s("hero_subtitle")} multiline testId="ws-hero-subtitle" />
+          </div>
+        )}
+
+        {/* Articles Hero Banner */}
+        {authSlide === "articles_hero" && (
+          <div className="space-y-4">
+            <Field label="Label" hint='Small badge above title (e.g. "Resources")' value={ws.articles_hero_label} onChange={s("articles_hero_label")} testId="ws-articles-hero-label" />
+            <Field label="Title" value={ws.articles_hero_title} onChange={s("articles_hero_title")} testId="ws-articles-hero-title" />
+            <Field label="Subtitle" value={ws.articles_hero_subtitle} onChange={s("articles_hero_subtitle")} multiline testId="ws-articles-hero-subtitle" />
+          </div>
+        )}
       </SlideOver>
 
       {/* ── Forms SlideOver ── */}
