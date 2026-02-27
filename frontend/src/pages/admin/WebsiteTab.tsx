@@ -977,6 +977,12 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
                 <AuthTile title="Documents Page" description="Page heading, subtitle, nav label, upload text" preview={ws.documents_page_title || undefined} onEdit={() => setAuthSlide("documents_page")} testId="auth-tile-documents" />
               </div>
 
+              <SectionDivider label="Hero Banners" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <AuthTile title="Store Hero Banner" description="Label, title, subtitle on main store page" preview={ws.hero_title || undefined} onEdit={() => setAuthSlide("store_hero")} testId="auth-tile-store-hero" />
+                <AuthTile title="Articles Hero Banner" description="Label, title, subtitle on resources page" preview={ws.articles_hero_title || undefined} onEdit={() => setAuthSlide("articles_hero")} testId="auth-tile-articles-hero" />
+              </div>
+
               <SectionDivider label="Checkout Flow" />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AuthTile title="Checkout Page Builder" description="Dynamic sections + cart page settings" onEdit={() => setAuthSlide("checkout_builder")} testId="auth-tile-checkout-builder" />
