@@ -540,6 +540,13 @@ export function ProductForm({
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [visSearch, setVisSearch] = useState("");
+  const [availableForms, setAvailableForms] = useState<Array<{ id: string; name: string }>>([]);
+
+  useEffect(() => {
+    if (form.pricing_type === "enquiry") {
+      api.get("/admin/forms").then(res => setAvailableForms(res.data.forms || [])).catch(() => {});
+    }
+  }, [form.pricing_type]);
   const [localVisMode, setLocalVisMode] = useState<"all" | "restricted" | "show_to_specific" | "conditional">(() => {
     if (form.visibility_conditions) return "conditional";
     if (form.visible_to_customers.length > 0) return "show_to_specific";
