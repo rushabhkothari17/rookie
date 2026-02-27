@@ -1274,7 +1274,7 @@ async def change_password(
     if err:
         raise HTTPException(status_code=422, detail=err)
 
-    new_hash = _hash_password(payload.new_password)
+    new_hash = pwd_context.hash(payload.new_password)
     await db.users.update_one(
         {"id": user["id"]},
         {"$set": {"password_hash": new_hash, "must_change_password": False}},
