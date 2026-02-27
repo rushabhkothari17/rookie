@@ -185,12 +185,21 @@ export default function Profile() {
               value={form.company_name}
               onChange={(e) => handleChange("company_name", e.target.value)}
               data-testid="profile-company-input"
-              required
+              required={companyRequired}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm text-slate-600">Email (verified)</label>
-            <Input value={user?.email || ""} readOnly data-testid="profile-email-input" />
+            <div className="flex items-center gap-1.5">
+              <label className="text-sm text-slate-600">Email address</label>
+              <Lock size={11} className="text-slate-400" />
+            </div>
+            <Input
+              value={user?.email || ""}
+              readOnly
+              className="bg-slate-50 cursor-not-allowed text-slate-500"
+              data-testid="profile-email-input"
+            />
+            <p className="text-xs text-slate-400">Email can only be changed by an admin from the admin panel.</p>
           </div>
           <div className="space-y-2">
             <label className="text-sm text-slate-600">Partner / Tenant Code</label>
