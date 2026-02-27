@@ -25,6 +25,7 @@ import { EmailTemplatesTab } from "./admin/EmailTemplatesTab";
 import { ReferencesTab } from "./admin/ReferencesTab";
 import { CustomDomainsTab } from "./admin/CustomDomainsTab";
 import { TaxesTab } from "./admin/TaxesTab";
+import { FormsManagementTab } from "./admin/FormsManagementTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
