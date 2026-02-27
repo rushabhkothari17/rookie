@@ -628,7 +628,7 @@ export function ProductForm({
 
             <div>
               <label className={labelCls}>Category</label>
-              <Select value={form.category} onValueChange={s("category")}>
+              <Select value={form.category || undefined} onValueChange={s("category")}>
                 <SelectTrigger data-testid="pf-category"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
                   {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
