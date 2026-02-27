@@ -33,6 +33,14 @@ INTEGRATIONS: Connect Services (incl. Google Drive + OneDrive COMING SOON), API,
 
 ### What's Implemented
 
+#### Product 0: Schema-Driven "Create Customer" Dialog (Feb 2026)
+- Backend `_SIGNUP_FORM_SCHEMA` fixed: now has `full_name`, `company_name`, `job_title`, `phone`, `address` (no standalone `country`, no `email`, no `password`)
+- Migration function `_migrate_signup_schema()` runs on every GET to convert old schemas (with locked `country`) to new format (with `address`)
+- Admin Create Customer dialog is fully schema-driven: address block visibility/required status controlled by `address` field in schema
+- FormSchemaBuilder in Auth & Pages > Sign Up now shows exactly 5 correct fields
+- Both public (`/api/website-settings`) and admin (`/api/admin/website-settings`) endpoints apply migration
+- Files: `backend/routes/admin/website.py`, `frontend/src/pages/admin/CustomersTab.tsx`
+
 #### Product 1: Mandatory Partner Address (Feb 2026)
 - Partner signup requires: Line 1, City, Postal, State/Province, Country
 - OrgAddressSection in Organization Info tab, appears directly below Store Name
