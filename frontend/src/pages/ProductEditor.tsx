@@ -19,6 +19,7 @@ export default function ProductEditor() {
   
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [customers, setCustomers] = useState<{ id: string; name: string; email: string }[]>([]);
   const [terms, setTerms] = useState<{ id: string; title: string }[]>([]);
