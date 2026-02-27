@@ -548,6 +548,13 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                     placeholder="Hint shown below the field" className="h-9 text-sm" />
                 </div>
 
+                {/* Tooltip — shown directly below helper text */}
+                <div>
+                  <label className="label-xs flex items-center gap-1"><Info size={10} /> Tooltip <span className="text-slate-400 font-normal normal-case tracking-normal">(shown on hover ⓘ)</span></label>
+                  <Input value={q.tooltip_text || ""} onChange={e => onChange({ ...q, tooltip_text: e.target.value })}
+                    placeholder="Info shown on hover" className="h-9 text-sm" />
+                </div>
+
                 {/* Number */}
                 {q.type === "number" && (
                   <>
