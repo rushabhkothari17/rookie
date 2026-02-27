@@ -128,8 +128,18 @@ export default function Signup() {
   const isFieldVisible = (key: string, defaultEnabled = true): boolean => {
     if (schema.length === 0) return defaultEnabled;
     const f = schema.find(f => f.key === key);
-    if (!f) return false;
+    if (!f) {
+      // Standard locked fields default to visible even when not in schema
+      return LOCKED_STANDARD_KEYS.includes(key) ? defaultEnabled : false;
+    }
     return f.enabled !== false;
+  };
+
+  const validatePhone = (phone: string) => {
+    if (!phone) return "";
+    const clean = phone.replace(/[\s\-().+]/g, "");
+    if (!/^\d{7,15}$/.test(clean)) return "Enter a valid phone number (7–15 digits)";
+    return "";
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
