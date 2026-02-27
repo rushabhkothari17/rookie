@@ -71,7 +71,6 @@ export function OrgInfoSection({ ws, branding, b, save, saving, forcedSection, u
           </div>
         </div>
       </div>
-      <BaseCurrencyWidget />
       {forcedSection && (
         <div className="border-t border-slate-100 pt-4 flex justify-end">
           <Button onClick={save} disabled={saving} data-testid="org-info-save-btn">
