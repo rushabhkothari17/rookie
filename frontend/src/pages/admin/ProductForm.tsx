@@ -30,14 +30,11 @@ export interface ProductVisRuleSet {
 
 export interface ProductFormData {
   name: string;
-  tagline: string;
-  card_title: string;
   card_tag: string;
   card_description: string;
   card_bullets: string[];
   description_long: string;
   bullets: string[];
-  tag: string;
   category: string;
   faqs: FAQ[];
   terms_id: string;
@@ -45,6 +42,7 @@ export interface ProductFormData {
   is_subscription: boolean;
   stripe_price_id: string;
   price_rounding: string;
+  show_price_breakdown: boolean;
   pricing_type: string;
   external_url: string;
   is_active: boolean;
