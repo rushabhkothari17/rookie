@@ -190,6 +190,9 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "documents_page_upload_label": "",
     "documents_page_upload_hint": "",
     "documents_page_empty_text": "",
+    "signup_bullet_1": "",
+    "signup_bullet_2": "",
+    "signup_bullet_3": "",
 }
 
 
