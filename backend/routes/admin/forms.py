@@ -18,12 +18,12 @@ router = APIRouter(prefix="/api", tags=["admin-forms"])
 
 class FormCreate(BaseModel):
     name: str
-    schema: str = "[]"
+    form_schema: str = "[]"
 
 
 class FormUpdate(BaseModel):
     name: Optional[str] = None
-    schema: Optional[str] = None
+    form_schema: Optional[str] = None
 
 
 @router.get("/admin/forms")
