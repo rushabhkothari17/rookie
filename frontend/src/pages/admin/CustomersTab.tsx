@@ -404,19 +404,81 @@ export function CustomersTab() {
 
       {/* Create Customer Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-            {[["Full Name", "full_name"], ["Email", "email"], ["Password", "password"], ["Company", "company_name"], ["Job Title", "job_title"], ["Phone", "phone"], ["Address Line 1", "line1"], ["City", "city"], ["Region", "region"], ["Postal", "postal"]].map(([label, key]) => (
-              <div key={key} className="space-y-1"><label className="text-xs text-slate-500">{label}</label><Input value={(newCustomer as any)[key]} onChange={(e) => setNewCustomer({ ...newCustomer, [key]: e.target.value })} /></div>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            {/* Always-required auth fields */}
+            {[["Full Name", "full_name", true], ["Email", "email", true], ["Password", "password", true]].map(([label, key, req]) => (
+              <div key={key as string} className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">
+                  {label as string} {req && <span className="text-red-500">*</span>}
+                </label>
+                <Input
+                  type={key === "password" ? "password" : "text"}
+                  value={(newCustomer as any)[key as string]}
+                  onChange={e => setNewCustomer({ ...newCustomer, [key as string]: e.target.value })}
+                  data-testid={`create-customer-${key}`}
+                />
+              </div>
             ))}
-            <SearchableSelect
-              value={newCustomer.country || undefined}
-              onValueChange={v => setNewCustomer({ ...newCustomer, country: v })}
-              options={[{value:"GB",label:"United Kingdom"},{value:"AU",label:"Australia"},{value:"NZ",label:"New Zealand"},{value:"CA",label:"Canada"},{value:"US",label:"United States"}]}
-              placeholder="Select country…"
-              searchPlaceholder="Search country..."
-            />
-            <Button onClick={handleCreateCustomer} className="w-full" data-testid="admin-create-customer-save-btn">Create</Button>
+
+            {/* Schema-driven optional fields */}
+            {(["company_name", "job_title", "phone"] as const).map(key => {
+              const f = signupSchema.find((s: any) => s.key === key);
+              if (f && f.enabled === false) return null;
+              const label = f?.label || (key === "company_name" ? "Company" : key === "job_title" ? "Job Title" : "Phone");
+              const required = f?.required ?? false;
+              return (
+                <div key={key} className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600">
+                    {label} {required && <span className="text-red-500">*</span>}
+                  </label>
+                  <Input
+                    value={newCustomer[key]}
+                    onChange={e => setNewCustomer({ ...newCustomer, [key]: e.target.value })}
+                    data-testid={`create-customer-${key}`}
+                  />
+                </div>
+              );
+            })}
+
+            {/* Address block — shown/required based on schema */}
+            {(() => {
+              const addrField = signupSchema.find((s: any) => s.key === "address");
+              if (addrField && addrField.enabled === false) return null;
+              const req = addrField?.required ?? false;
+              return (
+                <div className="space-y-2 border-t border-slate-100 pt-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Address {req && <span className="text-red-500">*</span>}
+                  </p>
+                  <Input placeholder={`Line 1${req ? " *" : ""}`} value={newCustomer.line1} onChange={e => setNewCustomer({ ...newCustomer, line1: e.target.value })} data-testid="create-customer-line1" />
+                  <Input placeholder="Line 2 (optional)" value={newCustomer.line2} onChange={e => setNewCustomer({ ...newCustomer, line2: e.target.value })} data-testid="create-customer-line2" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder={`City${req ? " *" : ""}`} value={newCustomer.city} onChange={e => setNewCustomer({ ...newCustomer, city: e.target.value })} data-testid="create-customer-city" />
+                    <Input placeholder={`Postal${req ? " *" : ""}`} value={newCustomer.postal} onChange={e => setNewCustomer({ ...newCustomer, postal: e.target.value })} data-testid="create-customer-postal" />
+                  </div>
+                  <SearchableSelect
+                    value={newCustomer.country || undefined}
+                    onValueChange={v => setNewCustomer({ ...newCustomer, country: v, region: "" })}
+                    options={[{value:"Canada",label:"Canada"},{value:"USA",label:"United States"},{value:"UK",label:"United Kingdom"},{value:"Australia",label:"Australia"},{value:"India",label:"India"},{value:"Germany",label:"Germany"},{value:"France",label:"France"},{value:"Singapore",label:"Singapore"},{value:"New Zealand",label:"New Zealand"}]}
+                    placeholder={`Country${req ? " *" : ""}…`}
+                    searchPlaceholder="Search country…"
+                    data-testid="create-customer-country"
+                  />
+                  {provinces.length > 0 ? (
+                    <Select value={newCustomer.region} onValueChange={v => setNewCustomer({ ...newCustomer, region: v })}>
+                      <SelectTrigger data-testid="create-customer-region-select"><SelectValue placeholder={`Province / State${req ? " *" : ""}…`} /></SelectTrigger>
+                      <SelectContent>{provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  ) : (
+                    <Input placeholder={`State / Province${req ? " *" : ""}`} value={newCustomer.region} onChange={e => setNewCustomer({ ...newCustomer, region: e.target.value })} data-testid="create-customer-region" />
+                  )}
+                </div>
+              );
+            })()}
+
+            <Button onClick={handleCreateCustomer} className="w-full" data-testid="admin-create-customer-save-btn">Create Customer</Button>
           </div>
         </DialogContent>
       </Dialog>
