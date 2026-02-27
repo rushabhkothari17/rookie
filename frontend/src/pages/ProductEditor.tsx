@@ -129,6 +129,7 @@ export default function ProductEditor() {
       custom_sections: p.custom_sections || [],
       display_layout: p.display_layout || "standard",
       currency: p.currency || "USD",
+      enquiry_form_id: p.enquiry_form_id || "",
     };
   };
 
