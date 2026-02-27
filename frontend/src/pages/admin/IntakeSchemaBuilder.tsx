@@ -783,36 +783,30 @@ export function IntakeSchemaBuilder({ schema, onChange }: { schema: IntakeSchema
 
   return (
     <div className="space-y-3" data-testid="intake-builder">
-      {/* Price caps */}
+      {/* Price cap */}
       <div className="rounded-lg border border-slate-200 bg-white">
         <button type="button" onClick={() => setShowCaps(v => !v)}
           className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-slate-50 rounded-lg transition-colors">
           <div className="flex items-center gap-2">
             <Layers size={13} className="text-slate-400" />
-            <span className="text-xs font-semibold text-slate-600">Price floor &amp; ceiling caps</span>
+            <span className="text-xs font-semibold text-slate-600">Price ceiling cap</span>
           </div>
           <div className="flex items-center gap-2">
-            {(schema.price_floor || schema.price_ceiling) && (
-              <span title="Caps configured"><AlertCircle size={12} className="text-[#1e40af]" /></span>
+            {schema.price_ceiling && (
+              <span title="Cap configured"><AlertCircle size={12} className="text-[#1e40af]" /></span>
             )}
             <ChevronRight size={12} className={`text-slate-400 transition-transform ${showCaps ? "rotate-90" : ""}`} />
           </div>
         </button>
         {showCaps && (
-          <div className="px-3 pb-3 border-t border-slate-100 grid grid-cols-2 gap-3 pt-3">
+          <div className="px-3 pb-3 border-t border-slate-100 pt-3">
             <div>
-              <label className="label-xs">Minimum price (£)</label>
-              <Input type="number" value={schema.price_floor ?? ""}
-                onChange={e => onChange({ ...schema, price_floor: e.target.value === "" ? null : parseFloat(e.target.value) })}
-                placeholder="No minimum" className="h-8 text-xs font-mono" />
-            </div>
-            <div>
-              <label className="label-xs">Maximum price (£)</label>
+              <label className="label-xs">Maximum price</label>
               <Input type="number" value={schema.price_ceiling ?? ""}
                 onChange={e => onChange({ ...schema, price_ceiling: e.target.value === "" ? null : parseFloat(e.target.value) })}
                 placeholder="No maximum" className="h-8 text-xs font-mono" />
             </div>
-            <p className="col-span-2 text-[10px] text-slate-400">Applied after all calculations.</p>
+            <p className="text-[10px] text-slate-400 mt-2">Applied after all calculations. Leave blank for no cap.</p>
           </div>
         )}
       </div>
