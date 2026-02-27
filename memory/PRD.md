@@ -20,15 +20,18 @@ Multi-tenant SaaS admin platform for partner organizations managing customer sub
 ```
 PLATFORM: Partner Orgs
 PEOPLE: Users, Roles, Customers
-COMMERCE: Products, Subscriptions, Orders, Enquiries, Taxes
-CONTENT: Resources, Documents, Email Templates, References
+COMMERCE: Products, Subscriptions, Orders, Enquiries
+CONTENT: Resources, Documents
 SETTINGS:
-  - Organization Info      (Store Name, Logo, Brand Colors, Base Currency, Address)
-  - Auth & Pages           (tile-based, includes Footer & Nav, Hero Banners, Signup CTA)
-  - Forms                  (Enquiry Form builder)
-  - System Config          (Operations + Feature Flags)
+  - Organization Info      (Store Name → Base Currency → Address → Logo → Brand Colors)
+  - Taxes                  (moved here from Commerce)
+  - Auth & Pages
+  - Forms                  (New full Forms Management module - create/edit/delete custom forms)
+  - Email Templates        (moved here from Content)
+  - References             (moved here from Content)
   - Custom Domains
-INTEGRATIONS: Connect Services (incl. Google Drive + OneDrive COMING SOON), API, Webhooks, Logs
+INTEGRATIONS: Connect Services (with color-coded missing integration alerts), API, Webhooks, Logs
+NOTE: System Config tab DELETED
 ```
 
 ### What's Implemented
