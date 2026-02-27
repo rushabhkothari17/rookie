@@ -33,13 +33,11 @@ _SCOPE_FORM_SCHEMA = json.dumps([
 ])
 
 _SIGNUP_FORM_SCHEMA = json.dumps([
-    {"id": "su_name", "key": "full_name", "label": "Full Name", "type": "text", "required": True, "placeholder": "Your full name", "locked": True, "enabled": True, "order": 0},
-    {"id": "su_email", "key": "email", "label": "Email", "type": "email", "required": True, "placeholder": "your@email.com", "locked": True, "enabled": True, "order": 1},
-    {"id": "su_password", "key": "password", "label": "Password", "type": "password", "required": True, "placeholder": "", "locked": True, "enabled": True, "order": 2},
-    {"id": "su_company", "key": "company_name", "label": "Company Name", "type": "text", "required": True, "placeholder": "Your company", "locked": False, "enabled": True, "order": 3},
-    {"id": "su_job", "key": "job_title", "label": "Job Title", "type": "text", "required": False, "placeholder": "Your role", "locked": False, "enabled": True, "order": 4},
-    {"id": "su_phone", "key": "phone", "label": "Phone", "type": "tel", "required": False, "placeholder": "+1 (555) 000-0000", "locked": False, "enabled": True, "order": 5},
-    {"id": "su_country", "key": "country", "label": "Country", "type": "select", "required": True, "options": ["Canada|Canada", "United States|USA", "Other|Other"], "locked": True, "enabled": True, "order": 6},
+    {"id": "su_name",    "key": "full_name",    "label": "Full Name",    "type": "text", "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 0},
+    {"id": "su_company", "key": "company_name", "label": "Company Name", "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 1},
+    {"id": "su_job",     "key": "job_title",    "label": "Job Title",    "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 2},
+    {"id": "su_phone",   "key": "phone",        "label": "Phone",        "type": "tel",  "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 3},
+    {"id": "su_address", "key": "address",      "label": "Address",      "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 4},
 ])
 
 DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
