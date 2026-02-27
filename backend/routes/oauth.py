@@ -876,6 +876,11 @@ async def deactivate_provider(
         raise HTTPException(status_code=400, detail="Only email providers can be deactivated")
     
     await db.app_settings.update_one(
+        {"key": f"active_email_provider_{tenant_id_of(admin)}"},
+        {"$set": {"value_json": None, "updated_at": now_iso()}}
+    )
+    # Also clear legacy global key (backward compat)
+    await db.app_settings.update_one(
         {"key": "active_email_provider"},
         {"$set": {"value_json": None, "updated_at": now_iso()}}
     )
