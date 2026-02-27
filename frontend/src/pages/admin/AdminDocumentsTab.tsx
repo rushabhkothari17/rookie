@@ -27,7 +27,7 @@ interface Document {
   updated_at: string;
 }
 
-interface Customer { id: string; name: string; }
+interface Customer { id: string; email: string; name: string; }
 interface Log { action: string; actor: string; created_at: string; details: Record<string, any>; }
 
 function formatSize(bytes: number) {
