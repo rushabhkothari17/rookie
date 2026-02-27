@@ -98,8 +98,8 @@ INTEGRATIONS = {
         "description": "Process card payments via Stripe",
         "icon": "credit-card",
         "fields": [
-            {"key": "api_key", "label": "Secret Key", "hint": "Starts with sk_live_ or sk_test_", "secret": True, "required": True},
-            {"key": "publishable_key", "label": "Publishable Key", "hint": "Starts with pk_live_ or pk_test_", "secret": False, "required": False},
+            {"key": "api_key",         "label": "Secret Key",        "hint": "Starts with sk_live_ or sk_test_",  "secret": True,  "required": True},
+            {"key": "publishable_key", "label": "Publishable Key",   "hint": "Starts with pk_live_ or pk_test_",  "secret": False, "required": True},
         ],
         "settings": [
             {"key": "label", "label": "Payment Method Label", "default": "Card Payment (Stripe)"},
