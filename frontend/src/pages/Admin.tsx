@@ -192,10 +192,7 @@ export default function Admin() {
             <WebsiteTab forcedSection="auth" />
           </TabsContent>
           <TabsContent value="forms-tab" className="space-y-4">
-            <WebsiteTab forcedSection="forms" />
-          </TabsContent>
-          <TabsContent value="system-config" className="space-y-4">
-            <WebsiteTab forcedSection="sysconfig" />
+            <FormsManagementTab />
           </TabsContent>
           <TabsContent value="domains" className="space-y-4">
             <CustomDomainsTab />
