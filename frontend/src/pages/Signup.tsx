@@ -45,6 +45,8 @@ export default function Signup() {
   const [partnerName, setPartnerName] = useState<string>("");
   const [partnerLogoUrl, setPartnerLogoUrl] = useState<string>("");
   const [partnerPrimaryColor, setPartnerPrimaryColor] = useState<string>("");
+  const [countries, setCountries] = useState(DEFAULT_COUNTRIES);
+  const [phoneError, setPhoneError] = useState("");
 
   const [partnerOrg, setPartnerOrg] = useState({
     name: "", admin_name: "", admin_email: "", admin_password: "", base_currency: "USD",
