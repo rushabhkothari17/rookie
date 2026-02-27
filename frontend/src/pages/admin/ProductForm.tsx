@@ -544,13 +544,14 @@ function ProductConditionBuilder({
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function ProductForm({
-  form, setForm, categories, customers, terms,
+  form, setForm, categories, customers, terms, onSave,
 }: {
   form: ProductFormData;
   setForm: (f: ProductFormData) => void;
   categories: any[];
   customers: any[];
   terms: any[];
+  onSave?: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [visSearch, setVisSearch] = useState("");
