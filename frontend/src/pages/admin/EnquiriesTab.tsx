@@ -97,6 +97,26 @@ export function EnquiriesTab() {
     }
   };
 
+  const handleDownloadPdf = async (enquiry: any) => {
+    try {
+      const API_URL = process.env.REACT_APP_BACKEND_URL || "";
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+      const resp = await fetch(`${API_URL}/api/admin/enquiries/${enquiry.id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) throw new Error("Failed to download");
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `enquiry-${enquiry.order_number || enquiry.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Failed to download PDF");
+    }
+  };
+
   const clearFilters = () => {
     setEmailFilter("");
     setStatusFilter("");
