@@ -243,7 +243,8 @@ class TestWebsiteSettingsSignupBullets:
             headers={"Authorization": f"Bearer {platform_admin_token}"}
         )
         assert r2.status_code == 200
-        data = r2.json()
+        raw = r2.json()
+        data = raw.get("settings", raw)
         assert data.get("signup_bullet_1") == test_bullet_1, (
             f"signup_bullet_1 not persisted. Expected '{test_bullet_1}', got '{data.get('signup_bullet_1')}'"
         )
