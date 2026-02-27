@@ -1202,12 +1202,12 @@ export function IntegrationsOverview() {
                   {selectedIntegration.settings.map(setting => (
                     <div key={setting.key}>
                       <label className="text-xs font-medium text-slate-700 mb-1.5 block">
-                        {setting.label}
+                        {setting.label} {setting.required && <span className="text-red-500">*</span>}
                       </label>
                       <Input
                         value={settings[setting.key] || ""}
                         onChange={e => setSettings(prev => ({ ...prev, [setting.key]: e.target.value }))}
-                        placeholder={setting.default || ""}
+                        placeholder={setting.hint || setting.default || ""}
                         data-testid={`dialog-setting-${setting.key}`}
                       />
                     </div>
