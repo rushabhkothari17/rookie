@@ -188,6 +188,80 @@ async def reactivate_admin_user(
     return {"message": "User reactivated successfully"}
 
 
+@router.get("/admin/roles")
+async def get_roles(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Get all roles - preset built-ins + custom roles from DB."""
+    tf = get_tenant_filter(admin)
+    preset = [
+        {"id": k, "key": k, "name": v["name"], "description": v["description"],
+         "access_level": v["access_level"], "modules": v["modules"], "is_preset": True}
+        for k, v in PRESET_ROLES.items()
+    ]
+    custom = await db.admin_roles.find({**tf}, {"_id": 0}).to_list(None)
+    return {
+        "roles": preset + custom,
+        "modules": [{"key": k, **v} for k, v in ADMIN_MODULES.items()],
+    }
+
+
+@router.post("/admin/roles")
+async def create_role(body: RoleCreate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Create a custom role stored in the database."""
+    if not await has_permission(admin, "users", "create"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions to manage roles")
+    tid = tenant_id_of(admin)
+    if body.access_level not in ACCESS_LEVELS:
+        raise HTTPException(status_code=400, detail=f"Invalid access_level. Choose: {list(ACCESS_LEVELS.keys())}")
+    invalid = [m for m in body.modules if m not in ADMIN_MODULES]
+    if invalid:
+        raise HTTPException(status_code=400, detail=f"Unknown modules: {invalid}")
+    role = {
+        "id": make_id(), "key": None, "name": body.name, "description": body.description,
+        "access_level": body.access_level, "modules": body.modules,
+        "is_preset": False, "tenant_id": tid,
+        "created_at": now_iso(), "created_by": admin.get("email"),
+    }
+    await db.admin_roles.insert_one(role)
+    role.pop("_id", None)
+    return role
+
+
+@router.put("/admin/roles/{role_id}")
+async def update_role(role_id: str, body: RoleUpdate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Update a custom role."""
+    if not await has_permission(admin, "users", "edit"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions to manage roles")
+    tf = get_tenant_filter(admin)
+    role = await db.admin_roles.find_one({**tf, "id": role_id})
+    if not role:
+        raise HTTPException(status_code=404, detail="Custom role not found")
+    update = {k: v for k, v in body.dict(exclude_none=True).items()}
+    if "access_level" in update and update["access_level"] not in ACCESS_LEVELS:
+        raise HTTPException(status_code=400, detail="Invalid access_level")
+    if "modules" in update:
+        invalid = [m for m in update["modules"] if m not in ADMIN_MODULES]
+        if invalid:
+            raise HTTPException(status_code=400, detail=f"Unknown modules: {invalid}")
+    update["updated_at"] = now_iso()
+    await db.admin_roles.update_one({"id": role_id}, {"$set": update})
+    role.update(update)
+    role.pop("_id", None)
+    return role
+
+
+@router.delete("/admin/roles/{role_id}")
+async def delete_role(role_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Delete a custom role (preset/built-in roles cannot be deleted)."""
+    if not await has_permission(admin, "users", "delete"):
+        raise HTTPException(status_code=403, detail="Insufficient permissions to manage roles")
+    tf = get_tenant_filter(admin)
+    role = await db.admin_roles.find_one({**tf, "id": role_id})
+    if not role:
+        raise HTTPException(status_code=404, detail="Custom role not found (built-in roles cannot be deleted)")
+    await db.admin_roles.delete_one({"id": role_id})
+    return {"message": "Role deleted"}
+
+
 @router.get("/admin/my-permissions")
 async def get_my_permissions(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Get current user's permissions."""
