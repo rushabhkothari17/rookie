@@ -323,10 +323,26 @@ async def exchange_code_for_tokens(
 
 
 async def validate_connection(tenant_id: str) -> bool:
-    """Test the WorkDrive connection by fetching current user info."""
+    """Test the WorkDrive connection using the standard Zoho OAuth userinfo endpoint."""
     try:
-        resp = await _call(tenant_id, "GET", "/currentuser")
-        return resp.status_code == 200
+        creds = await _get_credentials(tenant_id)
+        if not creds:
+            return False
+        dc = creds.get("datacenter", "US")
+        auth_url = DATACENTER_AUTH_URLS.get(dc, DATACENTER_AUTH_URLS["US"])
+        access_token = creds.get("access_token", "")
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.get(
+                f"{auth_url}/oauth/v2/userinfo",
+                headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+            )
+            if resp.status_code == 401:
+                access_token = await _refresh_access_token(tenant_id, creds)
+                resp = await client.get(
+                    f"{auth_url}/oauth/v2/userinfo",
+                    headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
+                )
+            return resp.status_code == 200
     except Exception as exc:
         logger.warning("WorkDrive validation failed: %s", exc)
         return False
