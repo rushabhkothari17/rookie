@@ -761,11 +761,18 @@ export function ProductForm({
               </div>
 
               <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <div className="flex items-center gap-2.5 mb-3">
-                  <h4 className="text-sm font-semibold text-slate-900">Intake questions</h4>
-                  <span className="text-[11px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
-                    {form.intake_schema_json?.questions?.length ?? 0} questions
-                  </span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <h4 className="text-sm font-semibold text-slate-900">Intake questions</h4>
+                    <span className="text-[11px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+                      {form.intake_schema_json?.questions?.length ?? 0} questions
+                    </span>
+                  </div>
+                  {onSave && (
+                    <Button type="button" size="sm" variant="outline" onClick={onSave} className="h-7 text-xs px-3">
+                      Save questions
+                    </Button>
+                  )}
                 </div>
                 <p className="text-xs text-slate-500 mb-4">
                   Questions shown to the customer before checkout. Number and dropdown questions can add to or multiply the total price.
