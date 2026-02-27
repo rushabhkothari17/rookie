@@ -1,0 +1,85 @@
+{
+  "summary": "Comprehensive testing of the 'address' field type in FormSchemaBuilder (iter138). All backend APIs pass (23/23). All frontend UI flows verified: address type badge in schema builder, sub-field config table with 6 checkboxes, toggle persistence, Create Customer country/province dropdowns, public signup form address rendering, form validation, and enquiry form address field type support.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/admin/customers/create",
+        "issue": "AdminCreateCustomerRequest model always requires line1, city, region, postal, country as mandatory fields. If admin disables a sub-field (e.g., disables 'city') in address_config via FormSchemaBuilder, Create Customer dialog won't show that field, but API will return 422. This is a model/config inconsistency. Address fields should be Optional when address sub-fields are disabled.",
+        "priority": "MEDIUM"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Backend: GET /api/website-settings returns signup_form_schema with address field type='address'",
+    "Backend: address field has address_config with all 6 sub-fields (line1, line2, city, state, postal, country)",
+    "Backend: Each sub-field has enabled/required boolean flags",
+    "Backend: Default address_config values correct (line1 required=true, line2 required=false, country required=true)",
+    "Backend: GET /api/admin/website-settings returns address with type='address' and address_config",
+    "Backend: Toggle address sub-field line2 enabled=False and save persists via API",
+    "Backend: GET /api/utils/countries returns 200 with countries list from tax tables (32 countries)",
+    "Backend: Countries list items have value+label format",
+    "Backend: GET /api/utils/countries?partner_code=automate-accounts works",
+    "Backend: GET /api/utils/provinces?country_code=CA returns 13 Canadian provinces",
+    "Backend: GET /api/utils/provinces?country_code=US returns US states",
+    "Backend: GET /api/utils/provinces?country_code=Canada (full name) returns provinces",
+    "Backend: GET /api/utils/provinces?country_code=UNKNOWN returns empty regions list (not 500)",
+    "Backend: GET /api/utils/provinces without param returns 422",
+    "Backend: Create customer with full Canada address succeeds (line1, line2, city=Toronto, region=ON, postal, country=Canada)",
+    "Backend: Create customer with US address (NY state) succeeds",
+    "Backend: Create customer without address fields returns 422 (model requires them)",
+    "Frontend: FormSchemaBuilder shows Address field with 'address' type badge",
+    "Frontend: Clicking gear on Address field shows sub-field config table (Line 1, Line 2, City, State/Province, Postal Code, Country)",
+    "Frontend: Both Enabled and Required checkboxes shown (6 each) for address sub-fields",
+    "Frontend: All 6 enabled checkboxes are checked by default",
+    "Frontend: Toggling Line 2 Enabled to False and saving Save Changes persists via API",
+    "Frontend: Create Customer dialog - Address section visible with Line 1 *, Line 2 (optional), City *, Postal *, Country *, State/Province",
+    "Frontend: Create Customer dialog - Country dropdown populated from /api/utils/countries (32 countries including AT, BE, BG, Australia, Canada, USA etc.)",
+    "Frontend: Create Customer dialog - Selecting Canada makes Province/State a Select dropdown with provinces (Alberta, BC, Manitoba etc.)",
+    "Frontend: Public signup form - all address sub-fields visible (line1, line2, city, state, postal, country)",
+    "Frontend: Public signup form - Country select shows Canada pre-selected from /api/utils/countries",
+    "Frontend: Public signup form - Province/State shows as Select dropdown (Canada pre-selected triggers province fetch)",
+    "Frontend: Public signup form - required fields show * indicator (STREET ADDRESS *, CITY *, POSTAL *, COUNTRY *)",
+    "Frontend: Public signup form - browser native validation fires for empty STREET ADDRESS * on submit",
+    "Frontend: Enquiry Form (Forms section) - tile opens FormSchemaBuilder slide-over",
+    "Frontend: Enquiry Form - can add Address Block type field to scope form",
+    "Frontend: Enquiry Form - Address Block type shows 6 sub-field config checkboxes"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_iter138_address_field_type.py",
+    "/app/test_reports/pytest/pytest_iter138_address_field.xml"
+  ],
+  "action_items": [
+    "MEDIUM PRIORITY: AdminCreateCustomerRequest model (models.py line 356-369) should make address fields Optional[str] when address sub-fields can be disabled via address_config. Currently if admin disables a sub-field in FormSchemaBuilder, the Create Customer dialog won't show it but API still requires it → 422 error.",
+    "NOTE: The /api/utils/countries endpoint uses country display names as values (e.g., 'Canada' not 'CA'). The /api/utils/provinces endpoint correctly handles both 'CA'/'Canada'/'USA'/'US'. This is consistent design but worth documenting for future integrations."
+  ],
+  "critical_code_review_comments": [
+    "models.py AdminCreateCustomerRequest (line 363-368): line1, city, region, postal, country are all required fields. This conflicts with address_config sub-field toggling - if admin disables 'city' in address_config, Create Customer dialog won't show city field but API will still 422. Fix: make these Optional[str] = None and do the required validation in the endpoint based on the active address_config.",
+    "utils.py get_countries (line 121-127): countries map to display names for values ({value: 'Canada', label: 'Canada'}). The provinces endpoint uses value as country_code lookup ('CA' or 'CANADA'). This works because the country_map in provinces endpoint handles full names. But if future country values differ from province lookup keys, it could break.",
+    "AddressFieldRenderer.tsx (line 51): When country changes and state is cleared, state is only cleared if the new provinces list doesn't include the old state. This is correct but could have edge cases if province values don't exactly match.",
+    "Signup.tsx (line 556): Province select uses form.region but the select trigger has data-testid='signup-region-select'. State management uses 'region' key consistently. Good.",
+    "The test_restore_default_schema_after_migration_test in test_iter137 sets address type='text' (not 'address'). The migration function correctly upgrades it to type='address' on next GET. This round-trip behavior is correct and tested."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter138_address_field_type.py"
+  ],
+  "success_rate": {
+    "backend": "100% (23/23 tests passed)",
+    "frontend": "100% (all critical flows verified)"
+  },
+  "test_credentials": {
+    "partner_code": "automate-accounts",
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!"
+  },
+  "seed_data_creation": "Created test customers: TEST_Iter138_Address_XXXXX (Canada/ON), TEST_Iter138_US_XXXXX (USA/NY), TEST_Iter138_NoAddr_XXXXX (failed 422 as expected)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Login flow: enter 'automate-accounts' as partner code on root page, then login with admin@automateaccounts.local / ChangeMe123!. Auth & Pages > Sign Up tab click requires mouse.click via bounding box. The address field type feature is fully working: type='address' in schema, address_config with 6 sub-fields (enabled+required toggles), country dropdown from /api/utils/countries, province dropdown from /api/utils/provinces. The AdminCreateCustomerRequest model REQUIRES address fields - if sub-fields are disabled in address_config, dialog won't show them but API will still 422. This mismatch is a known medium-priority issue to fix.",
+  "mocked_api_notes": "None - all APIs are real"
+}
