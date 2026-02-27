@@ -609,27 +609,50 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 )}
 
                 {/* Boolean */}
-                {q.type === "boolean" && (
+                {q.type === "boolean" && q.affects_price && (
                   <div className="space-y-3">
-                    <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
-                      <input type="checkbox" checked={q.affects_price || false}
-                        onChange={e => onChange({ ...q, affects_price: e.target.checked })}
-                        className="w-3.5 h-3.5 rounded accent-[#0f172a]" />
-                      Affects price
-                    </label>
-                    {q.affects_price && (
+                    <div>
+                      <label className="label-xs">Price mode</label>
+                      <div className="flex gap-3 mt-1">
+                        {(["add", "multiply"] as const).map(m => (
+                          <label key={m} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+                            <input type="radio" name={`bmode-${idx}`} value={m}
+                              checked={(q.price_mode || "add") === m}
+                              onChange={() => onChange({ ...q, price_mode: m })}
+                              className="accent-[#1e40af]" />
+                            {m === "add" ? "Add / subtract (±)" : "Multiply (×)"}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    {(q.price_mode || "add") === "add" ? (
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="label-xs">Price if Yes (£)</label>
+                          <label className="label-xs">Price if Yes</label>
                           <Input type="number" value={q.price_for_yes ?? 0}
                             onChange={e => onChange({ ...q, price_for_yes: parseFloat(e.target.value) || 0 })}
                             className="h-9 text-sm font-mono" />
                         </div>
                         <div>
-                          <label className="label-xs">Price if No (£)</label>
+                          <label className="label-xs">Price if No</label>
                           <Input type="number" value={q.price_for_no ?? 0}
                             onChange={e => onChange({ ...q, price_for_no: parseFloat(e.target.value) || 0 })}
                             className="h-9 text-sm font-mono" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="label-xs">Multiplier if Yes (×)</label>
+                          <Input type="number" value={q.price_for_yes ?? 1}
+                            onChange={e => onChange({ ...q, price_for_yes: parseFloat(e.target.value) || 1 })}
+                            className="h-9 text-sm font-mono" step="0.01" />
+                        </div>
+                        <div>
+                          <label className="label-xs">Multiplier if No (×)</label>
+                          <Input type="number" value={q.price_for_no ?? 1}
+                            onChange={e => onChange({ ...q, price_for_no: parseFloat(e.target.value) || 1 })}
+                            className="h-9 text-sm font-mono" step="0.01" />
                         </div>
                       </div>
                     )}
