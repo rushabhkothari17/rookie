@@ -15,11 +15,6 @@ import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, Ch
 const STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country", "address"];
 const LOCKED_STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country", "address"];
 
-const DEFAULT_COUNTRIES = [
-  { value: "Canada", label: "Canada" },
-  { value: "USA", label: "United States" },
-];
-
 function FieldWrapper({ label, icon: Icon, children, fullWidth = false, required = false }: {
   label: string; icon?: any; children: React.ReactNode; fullWidth?: boolean; required?: boolean;
 }) {
