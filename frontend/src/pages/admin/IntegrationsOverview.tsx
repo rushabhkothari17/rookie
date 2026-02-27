@@ -66,6 +66,8 @@ interface Setting {
   key: string;
   label: string;
   default?: string;
+  hint?: string;
+  required?: boolean;
 }
 
 interface Integration {
