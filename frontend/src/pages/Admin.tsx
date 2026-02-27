@@ -111,21 +111,20 @@ export default function Admin() {
             <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>
             <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>
             <TabsTrigger value="enquiries" data-testid="admin-tab-enquiries" className={TAB_CLASS}>Enquiries</TabsTrigger>
-            <TabsTrigger value="taxes" data-testid="admin-tab-taxes" className={TAB_CLASS}>Taxes</TabsTrigger>
 
             {/* Content */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
             <TabsTrigger value="resources" data-testid="admin-tab-resources" className={TAB_CLASS}>Resources</TabsTrigger>
             <TabsTrigger value="documents" data-testid="admin-tab-documents" className={TAB_CLASS}>Documents</TabsTrigger>
-            <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
-            <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
 
             {/* Website & Settings */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
             <TabsTrigger value="org-info" data-testid="admin-tab-org-info" className={TAB_CLASS}>Organization Info</TabsTrigger>
-            <TabsTrigger value="auth-pages" data-testid="admin-tab-auth-pages" className={TAB_CLASS}>Auth & Pages</TabsTrigger>
+            <TabsTrigger value="taxes" data-testid="admin-tab-taxes" className={TAB_CLASS}>Taxes</TabsTrigger>
+            <TabsTrigger value="auth-pages" data-testid="admin-tab-auth-pages" className={TAB_CLASS}>Auth &amp; Pages</TabsTrigger>
             <TabsTrigger value="forms-tab" data-testid="admin-tab-forms" className={TAB_CLASS}>Forms</TabsTrigger>
-            <TabsTrigger value="system-config" data-testid="admin-tab-system-config" className={TAB_CLASS}>System Config</TabsTrigger>
+            <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
+            <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
             <TabsTrigger value="domains" data-testid="admin-tab-domains" className={TAB_CLASS}>Custom Domains</TabsTrigger>
 
             {/* Integrations */}
