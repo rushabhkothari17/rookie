@@ -680,7 +680,7 @@ export function ProductForm({
             </div>
             <BulletsList
               bullets={form.card_bullets.length > 0 ? form.card_bullets : [""]}
-              onChange={v => s("card_bullets")(v.filter(Boolean))}
+              onChange={s("card_bullets")}
               placeholder="Card bullet point"
             />
           </div>
