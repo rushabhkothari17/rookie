@@ -310,7 +310,7 @@ async def save_provider_settings(
     tid = tenant_id_of(admin)
     
     # Update or create the settings field in oauth_connections
-    result = await db.oauth_connections.update_one(
+    await db.oauth_connections.update_one(
         {"tenant_id": tid, "provider": provider},
         {
             "$set": {
