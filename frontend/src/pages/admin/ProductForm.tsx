@@ -54,6 +54,7 @@ export interface ProductFormData {
   intake_schema_json: IntakeSchemaJson;
   custom_sections: CustomSection[];
   display_layout: string;
+  enquiry_form_id: string;
 }
 
 type TabKey = "general" | "storecard" | "pricing" | "visibility" | "content";
