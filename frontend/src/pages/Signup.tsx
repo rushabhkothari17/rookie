@@ -92,6 +92,10 @@ export default function Signup() {
       setPartnerLogoUrl(s.logo_url || "");
       setPartnerPrimaryColor(s.primary_color || "");
     }).catch(() => {});
+    // Load countries from tax tables
+    api.get(`/utils/countries?partner_code=${stored}`).then(r => {
+      if (r.data.countries?.length) setCountries(r.data.countries);
+    }).catch(() => {});
   }, [isPartnerMode, navigate]);
 
   // Fetch provinces/states when country changes
