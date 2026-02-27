@@ -19,9 +19,9 @@ ADMIN_PASSWORD = "ChangeMe123!"
 @pytest.fixture(scope="module")
 def admin_token():
     """Authenticate as admin and return token."""
-    res = requests.post(f"{BASE_URL}/api/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+    res = requests.post(f"{BASE_URL}/api/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
     if res.status_code == 200:
-        return res.json().get("access_token") or res.json().get("token")
+        return res.json().get("token") or res.json().get("access_token")
     pytest.skip(f"Admin login failed: {res.status_code} - {res.text}")
 
 
