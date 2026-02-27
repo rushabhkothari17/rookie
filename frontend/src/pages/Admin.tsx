@@ -61,7 +61,7 @@ export default function Admin() {
   const handleChecklistNavigate = (tab: string, section?: string) => {
     // Redirect old "website" tab references to the new split tabs
     if (tab === "website") {
-      setActiveTab(section === "auth" ? "auth-pages" : section === "forms" ? "forms-tab" : section === "sysconfig" ? "system-config" : "org-info");
+      setActiveTab(section === "auth" ? "auth-pages" : section === "forms" ? "forms-tab" : "org-info");
       return;
     }
     setActiveTab(tab);
