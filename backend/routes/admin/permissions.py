@@ -53,7 +53,7 @@ PRESET_ROLES = {
         "name": "Manager",
         "description": "Manage customers, orders, and subscriptions",
         "access_level": "full_access",
-        "modules": ["customers", "orders", "subscriptions", "products", "promo_codes", "bank_transactions"]
+        "modules": ["customers", "orders", "subscriptions", "products", "promo_codes"]
     },
     "support": {
         "name": "Support Agent",
@@ -71,7 +71,7 @@ PRESET_ROLES = {
         "name": "Accountant",
         "description": "Access to financial data and reports",
         "access_level": "read_only",
-        "modules": ["orders", "subscriptions", "bank_transactions", "reports"]
+        "modules": ["orders", "subscriptions", "reports"]
     },
     "content_editor": {
         "name": "Content Editor",
