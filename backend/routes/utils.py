@@ -66,20 +66,31 @@ async def get_provinces(country_code: str = Query(..., description="ISO country 
     return {"country_code": key, "regions": regions}
 
 
-# Country code → display name mapping (covers ISO 2-letter codes used in EU VAT tables)
+# Country code → display name mapping (covers ISO 2-letter codes)
 _ISO_TO_NAME = {
-    "AT": "Austria", "AU": "Australia", "BE": "Belgium", "BG": "Bulgaria",
-    "CA": "Canada", "CY": "Cyprus", "CZ": "Czech Republic", "DE": "Germany",
-    "DK": "Denmark", "EE": "Estonia", "ES": "Spain", "FI": "Finland",
-    "FR": "France", "GB": "United Kingdom", "GR": "Greece", "HR": "Croatia",
-    "HU": "Hungary", "IE": "Ireland", "IN": "India", "IT": "Italy",
-    "LT": "Lithuania", "LU": "Luxembourg", "LV": "Latvia", "MT": "Malta",
-    "NL": "Netherlands", "NZ": "New Zealand", "PL": "Poland", "PT": "Portugal",
-    "RO": "Romania", "SE": "Sweden", "SG": "Singapore", "SI": "Slovenia",
-    "SK": "Slovakia", "US": "United States", "ZA": "South Africa",
+    "AL":"Albania","DZ":"Algeria","AR":"Argentina","AM":"Armenia","AU":"Australia","AT":"Austria",
+    "AZ":"Azerbaijan","BH":"Bahrain","BD":"Bangladesh","BY":"Belarus","BE":"Belgium","BO":"Bolivia",
+    "BA":"Bosnia & Herzegovina","BR":"Brazil","BG":"Bulgaria","CA":"Canada","CL":"Chile","CN":"China",
+    "CO":"Colombia","HR":"Croatia","CY":"Cyprus","CZ":"Czech Republic","DK":"Denmark","EG":"Egypt",
+    "EE":"Estonia","ET":"Ethiopia","FI":"Finland","FR":"France","GE":"Georgia","DE":"Germany",
+    "GH":"Ghana","GR":"Greece","GT":"Guatemala","HN":"Honduras","HK":"Hong Kong","HU":"Hungary",
+    "IS":"Iceland","IN":"India","ID":"Indonesia","IE":"Ireland","IL":"Israel","IT":"Italy",
+    "JM":"Jamaica","JP":"Japan","JO":"Jordan","KZ":"Kazakhstan","KE":"Kenya","KW":"Kuwait",
+    "LV":"Latvia","LB":"Lebanon","LT":"Lithuania","LU":"Luxembourg","MK":"North Macedonia",
+    "MY":"Malaysia","MT":"Malta","MX":"Mexico","MD":"Moldova","MA":"Morocco","MZ":"Mozambique",
+    "NL":"Netherlands","NZ":"New Zealand","NG":"Nigeria","NO":"Norway","PK":"Pakistan",
+    "PA":"Panama","PY":"Paraguay","PE":"Peru","PH":"Philippines","PL":"Poland","PT":"Portugal",
+    "QA":"Qatar","RO":"Romania","RU":"Russia","SA":"Saudi Arabia","RS":"Serbia","SG":"Singapore",
+    "SK":"Slovakia","SI":"Slovenia","ZA":"South Africa","KR":"South Korea","ES":"Spain",
+    "LK":"Sri Lanka","SE":"Sweden","CH":"Switzerland","TW":"Taiwan","TZ":"Tanzania","TH":"Thailand",
+    "TN":"Tunisia","TR":"Turkey","UG":"Uganda","UA":"Ukraine","AE":"United Arab Emirates",
+    "GB":"United Kingdom","US":"United States","UY":"Uruguay","UZ":"Uzbekistan","VN":"Vietnam",
+    "ZW":"Zimbabwe",
     # Aliases stored as full names or alternate codes in some tenants' tax tables
-    "CANADA": "Canada", "USA": "United States", "UNITED STATES": "United States",
-    "UNITED KINGDOM": "United Kingdom", "AUSTRALIA": "Australia",
+    "CANADA":"Canada","USA":"United States","UNITED STATES":"United States",
+    "UNITED KINGDOM":"United Kingdom","AUSTRALIA":"Australia","GERMANY":"Germany",
+    "FRANCE":"France","NETHERLANDS":"Netherlands","SINGAPORE":"Singapore",
+    "NEW ZEALAND":"New Zealand","INDIA":"India","SOUTH AFRICA":"South Africa",
 }
 
 _FALLBACK_COUNTRIES = [
