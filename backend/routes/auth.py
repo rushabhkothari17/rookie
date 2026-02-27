@@ -250,7 +250,12 @@ async def partner_login(payload: PartnerLoginRequest, response: Response):
     result = await _authenticate(payload.email, payload.password, tenant["id"], partner_roles)
     _set_auth_cookie(response, result["token"], result.get("refresh_token"))
     # Don't expose refresh token in response body
-    return {"token": result["token"], "role": result["role"], "tenant_id": result["tenant_id"]}
+    return {
+        "token": result["token"],
+        "role": result["role"],
+        "tenant_id": result["tenant_id"],
+        "must_change_password": result.get("must_change_password", False),
+    }
 
 
 # ---------------------------------------------------------------------------
