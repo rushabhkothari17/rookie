@@ -664,13 +664,6 @@ class WebsiteSettingsUpdate(BaseModel):
     signup_bullet_1: Optional[str] = None
     signup_bullet_2: Optional[str] = None
     signup_bullet_3: Optional[str] = None
-    # Hero banners
-    hero_label: Optional[str] = None
-    hero_title: Optional[str] = None
-    hero_subtitle: Optional[str] = None
-    articles_hero_label: Optional[str] = None
-    articles_hero_title: Optional[str] = None
-    articles_hero_subtitle: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
