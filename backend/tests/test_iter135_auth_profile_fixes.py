@@ -212,7 +212,9 @@ class TestWebsiteSettingsSignupBullets:
             headers={"Authorization": f"Bearer {platform_admin_token}"}
         )
         assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
-        data = r.json()
+        raw = r.json()
+        # Response may be wrapped in {"settings": {...}} or be flat
+        data = raw.get("settings", raw)
         # Check that signup bullet fields are present (can be null/empty string)
         for field in ["signup_bullet_1", "signup_bullet_2", "signup_bullet_3"]:
             assert field in data, f"'{field}' missing from website settings response. Keys: {list(data.keys())}"
