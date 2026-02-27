@@ -6,7 +6,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import api from "@/lib/api";
-import { Download, Trash2, AlertTriangle } from "lucide-react";
+import { Download, Lock, Trash2, AlertTriangle } from "lucide-react";
+
+// Parse signup form schema to get field settings
+function parseProfileSchema(raw: string): Record<string, { required?: boolean; enabled?: boolean }> {
+  try {
+    const fields = JSON.parse(raw);
+    if (!Array.isArray(fields)) return {};
+    return Object.fromEntries(fields.map((f: any) => [f.key, { required: !!f.required, enabled: f.enabled !== false }]));
+  } catch { return {}; }
+}
+
+function validatePhone(phone: string) {
+  if (!phone) return "";
+  const clean = phone.replace(/[\s\-().+]/g, "");
+  if (!/^\d{7,15}$/.test(clean)) return "Enter a valid phone number (7–15 digits)";
+  return "";
+}
 
 export default function Profile() {
   const { user, customer, address, refresh } = useAuth();
