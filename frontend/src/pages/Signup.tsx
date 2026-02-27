@@ -522,51 +522,69 @@ export default function Signup() {
               )}
 
               {/* Section: Address */}
-              {isFieldVisible("address") && (
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-px flex-1 bg-slate-100" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5"><MapPin size={11} />Address</span>
-                  <div className="h-px flex-1 bg-slate-100" />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FieldWrapper label="Street address" fullWidth required={getFieldProp("address", "required") as boolean}>
-                    <Input value={form.line1} onChange={e => handleChange("line1", e.target.value)} data-testid="signup-line1-input" required={getFieldProp("address", "required") as boolean} />
-                  </FieldWrapper>
-                  <FieldWrapper label="Address line 2 (optional)" fullWidth>
-                    <Input value={form.line2} onChange={e => handleChange("line2", e.target.value)} data-testid="signup-line2-input" />
-                  </FieldWrapper>
-                  <FieldWrapper label="City" required={getFieldProp("address", "required") as boolean}>
-                    <Input value={form.city} onChange={e => handleChange("city", e.target.value)} data-testid="signup-city-input" required={getFieldProp("address", "required") as boolean} />
-                  </FieldWrapper>
-                  <FieldWrapper label="State / Province" required={getFieldProp("address", "required") as boolean}>
-                    {provinces.length > 0 ? (
-                      <Select value={form.region} onValueChange={v => handleChange("region", v)}>
-                        <SelectTrigger data-testid="signup-region-select"><SelectValue placeholder="Select province / state" /></SelectTrigger>
-                        <SelectContent>
-                          {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input value={form.region} onChange={e => handleChange("region", e.target.value)} data-testid="signup-region-input" required={getFieldProp("address", "required") as boolean} />
+              {isFieldVisible("address") && (() => {
+                const addrSchemaField = schema.find(f => f.key === "address");
+                const addrCfg = addrSchemaField ? getAddressConfig(addrSchemaField) : null;
+                const sf = (key: keyof NonNullable<typeof addrCfg>) =>
+                  addrCfg ? addrCfg[key] : { enabled: true, required: (getFieldProp("address", "required") as boolean) };
+                return (
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-px flex-1 bg-slate-100" />
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5"><MapPin size={11} />Address</span>
+                    <div className="h-px flex-1 bg-slate-100" />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {sf("line1").enabled && (
+                      <FieldWrapper label="Street address" fullWidth required={sf("line1").required}>
+                        <Input value={form.line1} onChange={e => handleChange("line1", e.target.value)} data-testid="signup-line1-input" required={sf("line1").required} />
+                      </FieldWrapper>
                     )}
-                  </FieldWrapper>
-                  <FieldWrapper label="Postal / ZIP" required={getFieldProp("address", "required") as boolean}>
-                    <Input value={form.postal} onChange={e => handleChange("postal", e.target.value)} data-testid="signup-postal-input" required={getFieldProp("address", "required") as boolean} />
-                  </FieldWrapper>
-                  <FieldWrapper label="Country" required={getFieldProp("address", "required") as boolean}>
-                    <Select value={form.country} onValueChange={v => handleChange("country", v)}>
-                      <SelectTrigger data-testid="signup-country-select"><SelectValue placeholder="Select country" /></SelectTrigger>
-                      <SelectContent>
-                        {countries.map(c => (
-                          <SelectItem key={c.value} value={c.value} data-testid={`signup-country-${c.value.toLowerCase()}`}>{c.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FieldWrapper>
+                    {sf("line2").enabled && (
+                      <FieldWrapper label={`Address line 2${sf("line2").required ? "" : " (optional)"}`} fullWidth required={sf("line2").required}>
+                        <Input value={form.line2} onChange={e => handleChange("line2", e.target.value)} data-testid="signup-line2-input" required={sf("line2").required} />
+                      </FieldWrapper>
+                    )}
+                    {sf("city").enabled && (
+                      <FieldWrapper label="City" required={sf("city").required}>
+                        <Input value={form.city} onChange={e => handleChange("city", e.target.value)} data-testid="signup-city-input" required={sf("city").required} />
+                      </FieldWrapper>
+                    )}
+                    {sf("state").enabled && (
+                      <FieldWrapper label="State / Province" required={sf("state").required}>
+                        {provinces.length > 0 ? (
+                          <Select value={form.region} onValueChange={v => handleChange("region", v)}>
+                            <SelectTrigger data-testid="signup-region-select"><SelectValue placeholder="Select province / state" /></SelectTrigger>
+                            <SelectContent>
+                              {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input value={form.region} onChange={e => handleChange("region", e.target.value)} data-testid="signup-region-input" required={sf("state").required} />
+                        )}
+                      </FieldWrapper>
+                    )}
+                    {sf("postal").enabled && (
+                      <FieldWrapper label="Postal / ZIP" required={sf("postal").required}>
+                        <Input value={form.postal} onChange={e => handleChange("postal", e.target.value)} data-testid="signup-postal-input" required={sf("postal").required} />
+                      </FieldWrapper>
+                    )}
+                    {sf("country").enabled && (
+                      <FieldWrapper label="Country" required={sf("country").required}>
+                        <Select value={form.country} onValueChange={v => handleChange("country", v)}>
+                          <SelectTrigger data-testid="signup-country-select"><SelectValue placeholder="Select country" /></SelectTrigger>
+                          <SelectContent>
+                            {countries.map(c => (
+                              <SelectItem key={c.value} value={c.value} data-testid={`signup-country-${c.value.toLowerCase()}`}>{c.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FieldWrapper>
+                    )}
+                  </div>
                 </div>
-              </div>
-              )}
+                );
+              })()}
 
               <Button
                 type="submit"
