@@ -80,13 +80,33 @@ NOTE: System Config tab DELETED
 - Customer-facing /documents page: upload/download (max 5MB), no delete
 - WorkDrive-enabled gate: Documents nav tab only shows if partner has WorkDrive connected
 
-#### Admin Panel Restructure + Dynamic Forms (Feb 2026)
-- "Website Content" tab DELETED
-- "Organization Info" (top-level) — Store Name, Address, Logo, Brand Colors, Base Currency
-- "Auth & Pages" (top-level, tile-grid) — Login, Signup, Verify Email, Portal, Profile, Admin Panel, 404, Documents Page, Hero Banners, Checkout Builder, Checkout Success, Checkout Messages, Footer & Nav
-- Signup page: bullets 1/2/3 + CTA field editable from Auth & Pages > Sign Up tile
-- "Forms" (top-level) — Enquiry Form schema builder
-- "System Config" (top-level) — Operations + Feature Flags
+#### Dynamic Enquiry Forms Module (Feb 2026)
+- New `FormsManagementTab.tsx` — full CRUD for custom enquiry forms (create, edit, delete)
+- Default Form tile (from `scope_form_schema`) shows field count + edit opens SlideOver with `FormSchemaBuilder`
+- Custom forms stored in `tenant_forms` MongoDB collection (per-tenant)
+- Backend routes: `GET/POST/PUT/DELETE /api/admin/forms` at `/app/backend/routes/admin/forms.py`
+- Products with "Enquiry" pricing type now have a form selector dropdown (Default Form + custom forms)
+- `enquiry_form_id` field on products; store API resolves `resolved_form_schema` from `tenant_forms`
+- ProductDetail.tsx uses `product.resolved_form_schema` over `ws.scope_form_schema` when set
+- **PDF Download**: `GET /api/admin/enquiries/{id}/pdf` using ReportLab (`enquiry_pdf_service.py`)
+- Enquiry detail dialog now has "Download PDF" button (token-authenticated fetch)
+- Audit logging for all form create/update/delete events
+
+#### Dashboard Integration Alerts (Feb 2026)
+- Fixed multi-tenant bug: `active_email_provider` in `app_settings` now uses tenant-scoped key (`active_email_provider_{tid}`)
+- Backward compat: falls back to legacy global key if tenant-scoped key not found
+- Color-coded alert banners added to Connect Services page:
+  - Email (Red) — no active provider
+  - Payments (Red) — no validated payment provider
+  - Cloud Storage (Orange) — no validated cloud storage
+  - Accounting System (Amber) — no validated accounting integration
+  - CRM (Amber) — no validated CRM
+
+#### Admin Panel UI Rearrangements (Feb 2026)
+- **Sidebar**: Taxes moved from Commerce → Settings (below Organization Info)
+- **Sidebar**: Email Templates + References moved from Content → Settings (below Forms)
+- **Sidebar**: System Config tab DELETED from everywhere
+- **Org Info**: Base Currency widget moved to directly below Store Name (above Address)
 
 #### WebsiteTab Refactor (Feb 2026)
 - WebsiteTab.tsx refactored from 1330 lines to ~150 lines
