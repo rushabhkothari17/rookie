@@ -342,6 +342,11 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
             merged["checkout_sections"] = DEFAULT_WEBSITE_SETTINGS["checkout_sections"]
     except Exception:
         pass
+    # Migrate: fix old signup schema format (standalone country → address block)
+    try:
+        merged["signup_form_schema"] = _migrate_signup_schema(merged.get("signup_form_schema", "[]"))
+    except Exception:
+        pass
     return {"settings": merged}
 
 
