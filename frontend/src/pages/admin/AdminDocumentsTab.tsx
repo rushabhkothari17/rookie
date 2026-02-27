@@ -77,11 +77,16 @@ export function AdminDocumentsTab() {
       const wd = (connRes.data.integrations || []).find((i: any) => i.id === "zoho_workdrive");
       setWorkdriveConnected(wd?.is_validated === true);
       // Load customer list for upload modal
-      const custRes = await api.get("/admin/customers");
-      const custs = (custRes.data.customers || []).map((c: any) => ({
-        id: c.id,
-        name: c.full_name || c.email || c.id,
-      }));
+      const custRes = await api.get("/admin/customers?per_page=500");
+      const userMap: Record<string, any> = {};
+      (custRes.data.users || []).forEach((u: any) => { userMap[u.id] = u; });
+      const custs = (custRes.data.customers || []).map((c: any) => {
+        const user = userMap[c.user_id] || {};
+        return {
+          id: c.id,
+          name: user.full_name || user.email || c.company_name || c.id,
+        };
+      });
       setCustomers(custs);
     } catch {
       toast.error("Failed to load documents");
