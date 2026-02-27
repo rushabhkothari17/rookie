@@ -190,16 +190,27 @@ def calculate_price(
             raw = inputs.get(key)
             if raw is None:
                 continue
-            # price_for_yes / price_for_no on the question, or options list
             yes_val = float(q.get("price_for_yes") or 0.0)
             no_val = float(q.get("price_for_no") or 0.0)
-            pv = yes_val if str(raw).lower() in ("yes", "true", "1") else no_val
-            if pv != 0:
-                subtotal += pv
-                line_items.append({
-                    "label": f"{q.get('label', key)}: {'Yes' if str(raw).lower() in ('yes','true','1') else 'No'}",
-                    "amount": round_cents(pv),
-                })
+            price_mode = q.get("price_mode", "add")
+            is_yes = str(raw).lower() in ("yes", "true", "1")
+            pv = yes_val if is_yes else no_val
+            label_str = f"{q.get('label', key)}: {'Yes' if is_yes else 'No'}"
+            if price_mode == "multiply":
+                if pv and pv != 1:
+                    new_sub = round_cents(subtotal * pv)
+                    line_items.append({
+                        "label": f"{label_str} (×{pv})",
+                        "amount": round_cents(new_sub - subtotal),
+                    })
+                    subtotal = new_sub
+            else:
+                if pv != 0:
+                    subtotal += pv
+                    line_items.append({
+                        "label": label_str,
+                        "amount": round_cents(pv),
+                    })
 
         # ── Dropdown / Multiselect — affects_price ────────────────────────
         elif q_type in ("dropdown", "multiselect") and q.get("affects_price"):
