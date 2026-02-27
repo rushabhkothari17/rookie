@@ -906,8 +906,15 @@ async def disconnect_provider(
     
     # If active email provider, deactivate first and clear legacy settings
     if config["category"] == "email":
-        active = await db.app_settings.find_one({"key": "active_email_provider"})
+        tid_local = tid
+        active = await db.app_settings.find_one({"key": f"active_email_provider_{tid_local}"})
+        if not active:
+            active = await db.app_settings.find_one({"key": "active_email_provider"})
         if active and active.get("value_json") == provider:
+            await db.app_settings.update_one(
+                {"key": f"active_email_provider_{tid_local}"},
+                {"$set": {"value_json": None}}
+            )
             await db.app_settings.update_one(
                 {"key": "active_email_provider"},
                 {"$set": {"value_json": None}}
