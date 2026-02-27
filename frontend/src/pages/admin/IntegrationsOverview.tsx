@@ -1144,7 +1144,10 @@ export function IntegrationsOverview() {
                     {selectedIntegration.fields.map(field => (
                       <div key={field.key}>
                         <label className="text-xs font-medium text-slate-700 mb-1.5 block">
-                          {field.label} {field.required && <span className="text-red-500">*</span>}
+                          {field.label}{" "}
+                          {(field.required && (field.key !== "auth_code" || selectedIntegration.status === "not_connected")) && (
+                            <span className="text-red-500">*</span>
+                          )}
                         </label>
                         <div className="relative">
                           <Input
