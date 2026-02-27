@@ -64,12 +64,8 @@ const formatPrice = (product: any): { label: string; prefix?: string } => {
 };
 
 export default function OfferingCard({ product }: { product: any }) {
-  const bullets = product.card_bullets?.length > 0
-    ? product.card_bullets
-    : product.bullets?.length > 0
-      ? product.bullets
-      : (product.bullets_included || []);
-  const description = product.card_description || product.short_description || product.tagline;
+  const description = product.card_description;
+  const bullets = product.card_bullets?.length > 0 ? product.card_bullets : [];
   const priceInfo = formatPrice(product);
   const isExternal = product.pricing_type === "external";
 

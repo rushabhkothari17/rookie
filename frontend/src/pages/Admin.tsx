@@ -56,7 +56,13 @@ export default function Admin() {
 
   // Tab navigation ref for programmatic switching (used by checklist widget)
   const tabsRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [activeTab, setActiveTab] = useState(() => {
+    try { return localStorage.getItem("admin_active_tab") || "customers"; } catch { return "customers"; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem("admin_active_tab", activeTab); } catch {}
+  }, [activeTab]);
 
   const handleChecklistNavigate = (tab: string, section?: string) => {
     // Redirect old "website" tab references to the new split tabs
