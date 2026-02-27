@@ -786,11 +786,59 @@ export function IntegrationsOverview() {
         </div>
 
         {!activeEmailProvider && (activeCategory === "all" || activeCategory === "email") && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3" data-testid="alert-no-email">
+            <AlertCircle size={18} className="text-red-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-red-800">No email provider active</p>
+              <p className="text-xs text-red-600">Emails will be stored but not sent.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Missing Payments alert */}
+        {(activeCategory === "all" || activeCategory === "payments") &&
+          !integrations.filter(i => i.category === "payments").some(i => i.is_validated) && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3" data-testid="alert-no-payments">
+            <AlertCircle size={18} className="text-red-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-red-800">No payment provider configured</p>
+              <p className="text-xs text-red-600">Customers cannot complete checkout until a payment provider is connected.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Missing Cloud Storage alert */}
+        {(activeCategory === "all" || activeCategory === "storage") &&
+          !integrations.filter(i => i.category === "storage").some(i => i.is_validated) && (
+          <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-xl flex items-center gap-3" data-testid="alert-no-storage">
+            <AlertCircle size={18} className="text-orange-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-orange-800">No cloud storage connected</p>
+              <p className="text-xs text-orange-600">Documents and files won't be synced to cloud storage.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Missing Accounting alert */}
+        {(activeCategory === "all" || activeCategory === "accounting") &&
+          !integrations.filter(i => i.category === "accounting").some(i => i.is_validated) && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3" data-testid="alert-no-accounting">
             <AlertCircle size={18} className="text-amber-600 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-amber-800">No email provider active</p>
-              <p className="text-xs text-amber-600">Emails will be stored but not sent.</p>
+              <p className="text-sm font-medium text-amber-800">No accounting system connected</p>
+              <p className="text-xs text-amber-600">Invoices and payments won't be synced to your accounting platform.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Missing CRM alert */}
+        {(activeCategory === "all" || activeCategory === "crm") &&
+          !integrations.filter(i => i.category === "crm").some(i => i.is_validated) && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3" data-testid="alert-no-crm">
+            <AlertCircle size={18} className="text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800">No CRM connected</p>
+              <p className="text-xs text-amber-600">Customer and contact data won't be synced to your CRM.</p>
             </div>
           </div>
         )}
