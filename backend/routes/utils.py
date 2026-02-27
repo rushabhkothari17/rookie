@@ -117,13 +117,21 @@ async def get_countries(partner_code: str = Query(None, description="Partner cod
     if not codes:
         return {"countries": _FALLBACK_COUNTRIES}
 
-    # Map ISO codes to display names, filtering out unknowns
+    # Normalise: map ISO codes to display names; pass-through already-readable names
+    seen_names: set = set()
     result = []
-    for code in sorted(set(codes)):
+    for raw_code in sorted(set(codes)):
+        code = raw_code.upper().strip()
+        # Direct ISO lookup
         name = _ISO_TO_NAME.get(code)
-        if name:
+        if not name:
+            # Check if the raw value is already a readable full name (e.g. "Australia")
+            title = raw_code.strip().title()
+            # Accept as-is if it looks like a real name (not a 2-3 char code)
+            name = title if len(raw_code.strip()) > 3 else raw_code.strip()
+        if name and name not in seen_names:
+            seen_names.add(name)
             result.append({"value": name, "label": name})
-        else:
-            result.append({"value": code, "label": code})
 
+    result.sort(key=lambda x: x["label"])
     return {"countries": result if result else _FALLBACK_COUNTRIES}
