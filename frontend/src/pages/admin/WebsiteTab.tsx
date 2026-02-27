@@ -935,22 +935,6 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
                   </div>
                 </div>
               </div>
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Store Hero Banner</h3>
-                <div className="space-y-3">
-                  <Field label="Label" value={ws.hero_label} onChange={s("hero_label")} testId="ws-hero-label" />
-                  <Field label="Title" value={ws.hero_title} onChange={s("hero_title")} multiline testId="ws-hero-title" />
-                  <Field label="Subtitle" value={ws.hero_subtitle} onChange={s("hero_subtitle")} multiline testId="ws-hero-subtitle" />
-                </div>
-              </div>
-              <div className="border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Articles Hero Banner</h3>
-                <div className="space-y-3">
-                  <Field label="Label" value={ws.articles_hero_label} onChange={s("articles_hero_label")} testId="ws-articles-hero-label" />
-                  <Field label="Title" value={ws.articles_hero_title} onChange={s("articles_hero_title")} testId="ws-articles-hero-title" />
-                  <Field label="Subtitle" value={ws.articles_hero_subtitle} onChange={s("articles_hero_subtitle")} multiline testId="ws-articles-hero-subtitle" />
-                </div>
-              </div>
               {/* Base Currency */}
               <BaseCurrencyWidget />
               {/* Save button when rendered as top-level tab */}
