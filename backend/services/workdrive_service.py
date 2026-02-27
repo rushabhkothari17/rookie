@@ -166,31 +166,60 @@ async def _call(tenant_id: str, method: str, path: str, **kwargs) -> httpx.Respo
 # ---------------------------------------------------------------------------
 
 async def create_folder(tenant_id: str, parent_folder_id: str, folder_name: str) -> Dict[str, Any]:
-    """Create a sub-folder inside parent_folder_id."""
-    resp = await _call(
-        tenant_id, "POST",
-        f"/files/{parent_folder_id}/folders",
-        json={"name": folder_name},
-    )
-    resp.raise_for_status()
+    """Create a sub-folder inside parent_folder_id using WorkDrive JSON:API format."""
+    creds = await _get_credentials(tenant_id)
+    if not creds:
+        raise RuntimeError("WorkDrive not configured")
+    dc = creds.get("datacenter", "US")
+    api_domain = DATACENTER_API_DOMAINS.get(dc, DATACENTER_API_DOMAINS["US"])
+    access_token = creds.get("access_token", "")
+    url = f"{api_domain}/workdrive/api/v1/files"
+    body = {
+        "data": {
+            "attributes": {
+                "name": folder_name,
+                "parent_id": parent_folder_id,
+                "type": "folder",
+            }
+        }
+    }
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        headers = {**_auth_headers(access_token), "Content-Type": "application/vnd.api+json"}
+        resp = await client.post(url, json=body, headers=headers)
+        if resp.status_code == 401:
+            access_token = await _refresh_access_token(tenant_id, creds)
+            headers = {**_auth_headers(access_token), "Content-Type": "application/vnd.api+json"}
+            resp = await client.post(url, json=body, headers=headers)
+        resp.raise_for_status()
+
     data = resp.json()
-    folder_id = (
-        data.get("data", {}).get("id")
-        or data.get("data", [{}])[0].get("id", "")
-        if isinstance(data.get("data"), list)
-        else data.get("data", {}).get("id", "")
-    )
+    file_data = data.get("data", {})
+    if isinstance(file_data, list):
+        file_data = file_data[0] if file_data else {}
+    folder_id = file_data.get("id", "")
     return {"folder_id": folder_id, "folder_name": folder_name}
 
 
 async def rename_folder(tenant_id: str, folder_id: str, new_name: str) -> None:
-    """Rename a folder in WorkDrive."""
-    resp = await _call(
-        tenant_id, "PUT",
-        f"/files/{folder_id}",
-        json={"name": new_name},
-    )
-    resp.raise_for_status()
+    """Rename a folder in WorkDrive using JSON:API PATCH format."""
+    creds = await _get_credentials(tenant_id)
+    if not creds:
+        raise RuntimeError("WorkDrive not configured")
+    dc = creds.get("datacenter", "US")
+    api_domain = DATACENTER_API_DOMAINS.get(dc, DATACENTER_API_DOMAINS["US"])
+    access_token = creds.get("access_token", "")
+    url = f"{api_domain}/workdrive/api/v1/files/{folder_id}"
+    body = {"data": {"attributes": {"name": new_name}}}
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        headers = {**_auth_headers(access_token), "Content-Type": "application/vnd.api+json"}
+        resp = await client.patch(url, json=body, headers=headers)
+        if resp.status_code == 401:
+            access_token = await _refresh_access_token(tenant_id, creds)
+            headers = {**_auth_headers(access_token), "Content-Type": "application/vnd.api+json"}
+            resp = await client.patch(url, json=body, headers=headers)
+        resp.raise_for_status()
 
 
 # ---------------------------------------------------------------------------
