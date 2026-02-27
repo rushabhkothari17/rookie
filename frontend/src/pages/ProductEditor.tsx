@@ -224,6 +224,7 @@ export default function ProductEditor() {
           categories={categories}
           customers={customers}
           terms={terms}
+          onSave={handleSave}
         />
       </div>
     </div>
