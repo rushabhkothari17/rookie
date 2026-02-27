@@ -311,6 +311,9 @@ def get_starting_price(product: Dict[str, Any]) -> Optional[float]:
                 min_add += round_cents(min_val * float(q["price_per_unit"]))
                 has_required_priced_question = True
         elif q_type in ("dropdown", "multiselect") and q.get("affects_price") and q.get("required"):
+            # Skip multiplier-mode questions — they don't add to the base starting price
+            if q.get("price_mode", "add") == "multiply":
+                continue
             prices = [float(o.get("price_value") or 0) for o in q.get("options", [])]
             if prices:
                 has_required_priced_question = True
