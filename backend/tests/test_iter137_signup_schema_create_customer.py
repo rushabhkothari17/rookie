@@ -183,8 +183,14 @@ class TestMigrateSignupSchema:
 
     def test_restore_default_schema_after_migration_test(self, admin_headers):
         """Restore the schema to default after migration test."""
-        from backend.routes.admin.website import _SIGNUP_FORM_SCHEMA
-        default_schema = _SIGNUP_FORM_SCHEMA
+        # Default 5-field schema with address
+        default_schema = json.dumps([
+            {"id": "su_name",    "key": "full_name",    "label": "Full Name",    "type": "text", "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 0},
+            {"id": "su_company", "key": "company_name", "label": "Company Name", "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 1},
+            {"id": "su_job",     "key": "job_title",    "label": "Job Title",    "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 2},
+            {"id": "su_phone",   "key": "phone",        "label": "Phone",        "type": "tel",  "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 3},
+            {"id": "su_address", "key": "address",      "label": "Address",      "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 4},
+        ])
         put_res = requests.put(
             f"{BASE_URL}/api/admin/website-settings",
             headers=admin_headers,
