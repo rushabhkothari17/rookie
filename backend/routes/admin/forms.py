@@ -78,8 +78,8 @@ async def update_form(
     update: Dict[str, Any] = {"updated_at": now_iso()}
     if payload.name is not None:
         update["name"] = payload.name.strip()
-    if payload.schema is not None:
-        update["schema"] = payload.schema
+    if payload.form_schema is not None:
+        update["schema"] = payload.form_schema
 
     await db.tenant_forms.update_one({"id": form_id}, {"$set": update})
     await create_audit_log(
