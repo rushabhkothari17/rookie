@@ -472,15 +472,11 @@ class CategoryUpdate(BaseModel):
 
 class AdminProductCreate(BaseModel):
     name: str
-    tagline: str = ""
-    card_title: Optional[str] = None
     card_tag: Optional[str] = None
     card_description: Optional[str] = None
     card_bullets: Optional[List[str]] = None
     description_long: str = ""
     bullets: List[str] = Field(default_factory=list)
-    bullets_included: Optional[List[str]] = None
-    tag: Optional[str] = None
     category: str = ""
     faqs: List[Dict[str, str]] = Field(default_factory=list)
     terms_id: Optional[str] = None
@@ -495,6 +491,7 @@ class AdminProductCreate(BaseModel):
     visibility_conditions: Optional[ProductVisRuleSet] = None
     intake_schema_json: Optional[IntakeSchemaJson] = None
     price_rounding: Optional[str] = None
+    show_price_breakdown: Optional[bool] = False
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
     currency: str = "USD"
