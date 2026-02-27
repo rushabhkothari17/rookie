@@ -86,6 +86,8 @@ export function TenantsTab() {
     } finally {
       setAddrSaving(false); }
   };
+
+  const load = async () => {
     try {
       const { data } = await api.get("/admin/tenants");
       setTenants(data.tenants || []);
