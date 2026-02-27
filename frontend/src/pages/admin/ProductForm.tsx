@@ -621,29 +621,18 @@ export function ProductForm({
         <div className={sectionCls}>
           <div className={cardCls}>
             <div>
-              <label className={labelCls}>Name *</label>
+              <label className={labelCls}>Product Name *</label>
               <Input value={form.name} onChange={e => s("name")(e.target.value)} placeholder="Product name" data-testid="pf-name" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Category</label>
-                <Select value={form.category} onValueChange={s("category")}>
-                  <SelectTrigger data-testid="pf-category"><SelectValue placeholder="Select category" /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className={labelCls}>Tag <span className="text-slate-400 normal-case font-normal tracking-normal text-xs">(e.g. Popular)</span></label>
-                <Input value={form.tag} onChange={e => s("tag")(e.target.value)} placeholder="Popular" data-testid="pf-tag" />
-              </div>
-            </div>
-
             <div>
-              <label className={labelCls}>Tagline</label>
-              <Input value={form.tagline} onChange={e => s("tagline")(e.target.value)} placeholder="One-line punch" data-testid="pf-tagline" />
+              <label className={labelCls}>Category</label>
+              <Select value={form.category} onValueChange={s("category")}>
+                <SelectTrigger data-testid="pf-category"><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -678,16 +667,11 @@ export function ProductForm({
       {/* ── Store Card ──────────────────────────────────────────────────────── */}
       {activeTab === "storecard" && (
         <div className={sectionCls}>
-          <p className="text-sm text-slate-500">Customise how this product appears on the store catalog cards. Leave blank to use the General values.</p>
+          <p className="text-sm text-slate-500">Customise how this product appears on the store catalog cards. The product name is always used as the card title.</p>
           <div className={cardCls}>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Card title</label>
-                <Input value={form.card_title} onChange={e => s("card_title")(e.target.value)} placeholder={form.name || "Uses Name"} data-testid="pf-card-title" />
-              </div>
-              <div>
-                <label className={labelCls}>Card tag</label>
-                <Input value={form.card_tag} onChange={e => s("card_tag")(e.target.value)} placeholder={form.tag || "Uses Tag"} data-testid="pf-card-tag" />
+            <div>
+              <label className={labelCls}>Card tag <span className="text-slate-400 normal-case font-normal tracking-normal text-xs">(badge, e.g. Popular)</span></label>
+              <Input value={form.card_tag} onChange={e => s("card_tag")(e.target.value)} placeholder="e.g. Popular" data-testid="pf-card-tag" />
               </div>
             </div>
             <div>
