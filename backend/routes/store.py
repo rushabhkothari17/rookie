@@ -211,6 +211,11 @@ async def get_product(
     if user:
         customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
         cid = customer["id"] if customer else None
+        # Attach address for visibility condition evaluation
+        if customer:
+            addr = await db.addresses.find_one({"customer_id": customer["id"]}, {"_id": 0})
+            if addr:
+                customer = {**customer, "address": addr}
         is_admin = user.get("is_admin", False)
         if not is_admin:
             whitelist = product.get("visible_to_customers", [])
