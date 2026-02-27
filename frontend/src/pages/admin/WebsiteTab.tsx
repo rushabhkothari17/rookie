@@ -24,7 +24,8 @@ type AuthSlide =
   | "checkout_builder" | "checkout_success" | "gocardless_callback"
   | "checkout_messages"
   | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social"
-  | "documents_page";
+  | "documents_page"
+  | "store_hero" | "articles_hero";
 
 interface WebsiteData {
   hero_label: string; hero_title: string; hero_subtitle: string;
