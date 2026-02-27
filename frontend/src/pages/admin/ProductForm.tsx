@@ -355,6 +355,7 @@ function ProductConditionBuilder({
 }) {
   const [showPreview, setShowPreview] = useState(false);
   const ruleSet = normaliseVisRuleSet(value);
+  const countries = useCountries();
 
   const setTopLogic = (tl: "AND" | "OR") => onChange({ ...ruleSet, top_logic: tl });
   const setGroupLogic = (gi: number, logic: "AND" | "OR") =>
