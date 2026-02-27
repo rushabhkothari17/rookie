@@ -39,7 +39,7 @@ const getStartingPrice = (product: any): number | null => {
       minAdd += (parseFloat(q.min) || 0) * parseFloat(q.price_per_unit);
     } else if ((q.type === "dropdown" || q.type === "multiselect") && q.affects_price && q.required) {
       // Only add to starting price for additive mode, not multiplier
-      if ((q.price_impact_mode || "add") !== "multiply") {
+      if ((q.price_mode || "add") !== "multiply") {
         const prices = (q.options || []).map((o: any) => parseFloat(o.price_value) || 0).filter((p: number) => p > 0);
         if (prices.length > 0) { hasPricedRequired = true; minAdd += Math.min(...prices); }
       }
