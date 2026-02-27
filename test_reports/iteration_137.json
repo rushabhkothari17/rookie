@@ -1,0 +1,70 @@
+{
+  "summary": "Comprehensive testing of the signup form schema fix (iter137): backend API returns correct 5-field schema (full_name, company_name, job_title, phone, address - no email/password/standalone-country), migration function converts old schema format, and the Create Customer dialog correctly mirrors the signup form configuration. All 17 backend tests passed. All frontend UI flows verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Backend: GET /api/website-settings returns 200 with settings.signup_form_schema",
+    "Backend: signup_form_schema has 'address' field (not standalone 'country')",
+    "Backend: signup_form_schema has no 'email' or 'password' fields",
+    "Backend: signup_form_schema has all 5 required fields: full_name, company_name, job_title, phone, address",
+    "Backend: signup_form_schema field count is exactly 5",
+    "Backend: GET /api/admin/website-settings returns 200 with correct migrated schema",
+    "Backend: Admin schema has 'address' field, no standalone 'country'",
+    "Backend: Admin schema has no email or password fields",
+    "Backend: full_name field has required=True in schema",
+    "Backend: address field has locked=True in schema",
+    "Backend: _migrate_signup_schema() converts old schema (with locked 'country') to new format (with 'address')",
+    "Backend: POST /api/admin/customers/create succeeds with basic fields",
+    "Backend: POST /api/admin/customers/create succeeds with optional fields (company_name, job_title, phone)",
+    "Frontend: Create Customer dialog opens with 'Create Customer' button",
+    "Frontend: Full Name * (required) field visible in Create Customer dialog",
+    "Frontend: Email * (required) field visible in Create Customer dialog",
+    "Frontend: Password * (required) field visible in Create Customer dialog",
+    "Frontend: Company Name (schema-driven optional) field visible by default",
+    "Frontend: Job Title (schema-driven optional) field visible by default",
+    "Frontend: Phone (schema-driven optional) field visible by default",
+    "Frontend: ADDRESS block shown by default (address.enabled=true in schema): Line1, Line2, City, Postal, Country, State/Province",
+    "Frontend: Required * indicators shown for Full Name, Email, Password fields",
+    "Frontend: Validation fires on empty submit - 'Required: Full Name, Email, Password' toast shown",
+    "Frontend: Dialog stays open when validation fails",
+    "Frontend: Auth & Pages > Sign Up Page tile found and opens slide-over",
+    "Frontend: FormSchemaBuilder shows exactly 5 fields: Full Name, Company Name, Job Title, Phone, Address",
+    "Frontend: No Email field in schema builder",
+    "Frontend: No Password field in schema builder",
+    "Frontend: No standalone Country field in schema builder",
+    "Frontend: End-to-end Create Customer via UI succeeds with 'Customer created' toast"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_iter137_signup_schema_create_customer.py",
+    "/app/test_reports/pytest/pytest_iter137_signup_schema.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "The signup_form_schema field count hardcoded assertion (test_signup_schema_field_count_correct) may need updating if more fields are added to the schema in the future.",
+    "FormSchemaBuilder initializes state from `value` prop but does not update when `value` changes externally (useState with initial value). This is a known React pattern limitation - if the parent updates ws.signup_form_schema, the component will not re-render with the new value unless the component is remounted. Low priority, no user-facing impact since the component is only used inside the SlideOver."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter137_signup_schema_create_customer.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "100% (all flows verified)"
+  },
+  "test_credentials": {
+    "partner_code": "automate-accounts",
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!"
+  },
+  "seed_data_creation": "Created test customers: TEST_Iter137_Customer_XXXX, TEST_Iter137_Full_XXXX, TEST UI Iter137 XXXX via backend and UI tests. These are prefixed with TEST_ for easy identification.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Login flow: enter 'automate-accounts' as partner code on root page, click Continue, then log in with admin@automateaccounts.local / ChangeMe123!. Auth & Pages tab requires mouse.click using bounding box (not force=True) because the tab is outside normal viewport when sidebar has many items. All signup form schema tests pass. The signup_form_schema now correctly has 5 fields: full_name, company_name, job_title, phone, address. The Create Customer dialog is fully schema-driven for optional fields and address block visibility. Migration function _migrate_signup_schema() correctly converts old schema format (with locked country field) to new format (with address field).",
+  "mocked_api_notes": "None"
+}
