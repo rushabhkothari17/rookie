@@ -223,24 +223,13 @@ async def admin_update_product(
         "name": payload.name,
         "is_active": payload.is_active,
     }
-    if payload.tagline is not None:
-        update_fields["tagline"] = payload.tagline
-    if payload.card_title is not None:
-        update_fields["card_title"] = payload.card_title
-    if payload.card_tag is not None:
-        update_fields["card_tag"] = payload.card_tag
-    if payload.card_description is not None:
-        update_fields["card_description"] = payload.card_description
-    if payload.card_bullets is not None:
-        update_fields["card_bullets"] = payload.card_bullets
-    if payload.description_long is not None:
-        update_fields["description_long"] = payload.description_long
-    if payload.bullets is not None:
-        update_fields["bullets"] = payload.bullets
-    if payload.bullets_included is not None:
-        update_fields["bullets_included"] = payload.bullets_included
-    if payload.tag is not None:
-        update_fields["tag"] = payload.tag
+    # Always update card/content fields so clearing them actually persists
+    update_fields["card_tag"] = payload.card_tag
+    update_fields["card_description"] = payload.card_description
+    update_fields["card_bullets"] = payload.card_bullets or []
+    update_fields["description_long"] = payload.description_long
+    update_fields["bullets"] = payload.bullets or []
+    update_fields["show_price_breakdown"] = bool(payload.show_price_breakdown)
     if payload.category is not None:
         update_fields["category"] = payload.category
     if payload.faqs is not None:
@@ -268,8 +257,8 @@ async def admin_update_product(
     # enquiry_form_id: None clears the form selection
     update_fields["enquiry_form_id"] = payload.enquiry_form_id if payload.enquiry_form_id else None
     update_fields["visibility_conditions"] = payload.visibility_conditions.model_dump() if payload.visibility_conditions else None
-    if payload.price_rounding is not None:
-        update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
+    # price_rounding: always update so "No rounding" actually clears the setting
+    update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
     if payload.intake_schema_json is not None:
         _validate_intake_schema(payload.intake_schema_json)
         schema_dict = payload.intake_schema_json.dict()
