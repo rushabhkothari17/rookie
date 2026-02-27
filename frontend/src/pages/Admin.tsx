@@ -59,6 +59,8 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState(() => {
     const urlTab = searchParams.get("tab");
     if (urlTab) return urlTab;
+    // If editing a resource via URL param, switch to resources tab
+    if (searchParams.get("editArticle") || searchParams.get("editResource")) return "resources";
     try { return localStorage.getItem("admin_active_tab") || "customers"; } catch { return "customers"; }
   });
 
