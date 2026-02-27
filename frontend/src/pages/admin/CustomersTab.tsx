@@ -15,6 +15,7 @@ import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Plus, Upload} from "lucide-react";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { getAddressConfig } from "@/components/FormSchemaBuilder";
 
 const PARTNER_MAP_OPTIONS = [
   { value: "", label: "Not set" },
