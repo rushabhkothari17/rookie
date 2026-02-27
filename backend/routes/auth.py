@@ -225,7 +225,7 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
         source="api",
         meta_json={"role": role, "tenant_id": user.get("tenant_id")},
     )
-    return {"token": token, "refresh_token": refresh_token, "role": role, "tenant_id": user.get("tenant_id")}
+    return {"token": token, "refresh_token": refresh_token, "role": role, "tenant_id": user.get("tenant_id"), "must_change_password": user.get("must_change_password", False)}
 
 
 # ---------------------------------------------------------------------------
