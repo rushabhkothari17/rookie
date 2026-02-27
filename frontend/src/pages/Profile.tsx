@@ -38,12 +38,18 @@ export default function Profile() {
   const [deleteReason, setDeleteReason] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
+  const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
   const [phoneError, setPhoneError] = useState("");
 
-  // Parse signup form schema for field settings
-  const schemaFields = parseProfileSchema(ws.signup_form_schema);
+  // Derive address config and field visibility from signup schema
+  const schema = parseSchema(ws.signup_form_schema);
+  const schemaFields = Object.fromEntries(schema.map((f: any) => [f.key, f]));
   const phoneRequired = schemaFields["phone"]?.required ?? true;
   const companyRequired = schemaFields["company_name"]?.required ?? false;
+  const addrSchemaField = schemaFields["address"];
+  const addrVisible = !addrSchemaField || addrSchemaField.enabled !== false;
+  const addrCfg = addrSchemaField ? getAddressConfig(addrSchemaField) : null;
+  const sf = (key: string) => addrCfg ? (addrCfg as any)[key] : { enabled: true, required: true };
 
   useEffect(() => {
     if (!user) return;
