@@ -761,12 +761,6 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                           isDuplicate ? "border-red-300 text-red-600 bg-red-50" : "border-slate-200 text-slate-500 bg-white"
                         }`}>{q.key || <span className="italic text-slate-300">auto-generated from label</span>}</div>
                       </div>
-                      {/* Tooltip */}
-                      <div>
-                        <label className="label-xs flex items-center gap-1"><Info size={10} /> Tooltip</label>
-                        <Input value={q.tooltip_text || ""} onChange={e => onChange({ ...q, tooltip_text: e.target.value })}
-                          placeholder="Info shown on hover (ⓘ icon)" className="h-9 text-sm" />
-                      </div>
                       {/* Step group */}
                       <div>
                         <label className="label-xs">Step group <span className="text-slate-400 font-normal normal-case">(wizard layout)</span></label>
