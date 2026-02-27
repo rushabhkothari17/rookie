@@ -22,6 +22,16 @@ function DynamicField({ field, value, onChange }: {
   field: FormField; value: string; onChange: (v: string) => void;
 }) {
   const common = { "data-testid": `dyn-field-${field.key}` };
+  if (field.type === "address") {
+    const addrValue: AddressValue = (() => { try { return JSON.parse(value || "{}"); } catch { return {}; } })();
+    return (
+      <AddressFieldRenderer
+        field={field}
+        value={addrValue}
+        onChange={v => onChange(JSON.stringify(v))}
+      />
+    );
+  }
   if (field.type === "textarea") {
     return <Textarea value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} rows={3} {...common} />;
   }
