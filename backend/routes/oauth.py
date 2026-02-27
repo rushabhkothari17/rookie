@@ -843,8 +843,8 @@ async def activate_provider(
         raise HTTPException(status_code=400, detail="Please validate the connection first")
     
     await db.app_settings.update_one(
-        {"key": "active_email_provider"},
-        {"$set": {"key": "active_email_provider", "value_json": provider, "updated_at": now_iso()}},
+        {"key": f"active_email_provider_{tid}"},
+        {"$set": {"key": f"active_email_provider_{tid}", "value_json": provider, "updated_at": now_iso()}},
         upsert=True
     )
     
