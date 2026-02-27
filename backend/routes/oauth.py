@@ -256,12 +256,12 @@ INTEGRATIONS = {
         "icon": "cloud",
         "is_zoho": True,
         "fields": [
-            {"key": "client_id",    "label": "Client ID",          "hint": "From Zoho API Console",                                                "secret": False, "required": True},
-            {"key": "client_secret","label": "Client Secret",      "hint": "From Zoho API Console",                                                "secret": True,  "required": True},
-            {"key": "auth_code",    "label": "Authorization Code", "hint": "One-time code from API Console → Generate Code tab (expires in 3 min)", "secret": False, "required": False},
+            {"key": "client_id",    "label": "Client ID",          "hint": "From Zoho API Console",                                                  "secret": False, "required": True},
+            {"key": "client_secret","label": "Client Secret",      "hint": "From Zoho API Console",                                                  "secret": True,  "required": True},
+            {"key": "auth_code",    "label": "Authorization Code", "hint": "One-time code from API Console → Generate Code tab (expires in 10 min)", "secret": False, "required": True},
         ],
         "settings": [
-            {"key": "parent_folder_url", "label": "Parent Folder URL", "default": "", "hint": "WorkDrive URL of the folder where client folders will be created"},
+            {"key": "parent_folder_url", "label": "Parent Folder URL", "default": "", "hint": "WorkDrive URL of the folder where client folders will be created", "required": True},
         ],
     },
     "google_drive": {
