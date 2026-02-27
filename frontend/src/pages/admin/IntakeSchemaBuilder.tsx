@@ -731,10 +731,14 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
 
                 {/* Flags row — mini toggles */}
                 <div className="flex items-center gap-6 flex-wrap">
-                  <MiniToggle label="Required" checked={q.required} onChange={v => onChange({ ...q, required: v })} />
-                  <MiniToggle label="Enabled" checked={q.enabled} onChange={v => onChange({ ...q, enabled: v })} />
-                  {(hasOptions(q.type) || q.type === "boolean") && (
-                    <MiniToggle label="Affects price" checked={q.affects_price || false} onChange={v => onChange({ ...q, affects_price: v })} />
+                  <MiniToggle label="Enabled" checked={q.enabled}
+                    onChange={v => onChange({ ...q, enabled: v, ...(v ? {} : { required: false, affects_price: false }) })} />
+                  {q.enabled && (
+                    <MiniToggle label="Required" checked={q.required} onChange={v => onChange({ ...q, required: v })} />
+                  )}
+                  {q.enabled && (hasOptions(q.type) || q.type === "boolean") && (
+                    <MiniToggle label="Affects price" checked={q.affects_price || false}
+                      onChange={v => onChange({ ...q, affects_price: v, required: v ? true : q.required })} />
                   )}
                 </div>
 
