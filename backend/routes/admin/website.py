@@ -193,6 +193,7 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "signup_bullet_1": "",
     "signup_bullet_2": "",
     "signup_bullet_3": "",
+    "signup_cta": "",
 }
 
 

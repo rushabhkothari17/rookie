@@ -664,6 +664,7 @@ class WebsiteSettingsUpdate(BaseModel):
     signup_bullet_1: Optional[str] = None
     signup_bullet_2: Optional[str] = None
     signup_bullet_3: Optional[str] = None
+    signup_cta: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
