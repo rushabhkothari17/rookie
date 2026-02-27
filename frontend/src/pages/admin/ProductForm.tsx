@@ -69,11 +69,12 @@ const TABS: { key: TabKey; label: string }[] = [
 // ── Empty form default ─────────────────────────────────────────────────────────
 
 export const EMPTY_FORM: ProductFormData = {
-  name: "", tagline: "",
-  card_title: "", card_tag: "", card_description: "", card_bullets: [],
-  description_long: "", bullets: [], tag: "", category: "",
+  name: "",
+  card_tag: "", card_description: "", card_bullets: [],
+  description_long: "", bullets: [], category: "",
   faqs: [], terms_id: "", base_price: 0, is_subscription: false,
-  stripe_price_id: "", price_rounding: "", pricing_type: "internal",
+  stripe_price_id: "", price_rounding: "", show_price_breakdown: false,
+  pricing_type: "internal",
   external_url: "", currency: "USD", is_active: true, visible_to_customers: [],
   restricted_to: [], visibility_conditions: null, intake_schema_json: EMPTY_INTAKE_SCHEMA, custom_sections: [],
   display_layout: "standard",
