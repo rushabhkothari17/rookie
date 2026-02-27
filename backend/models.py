@@ -231,15 +231,11 @@ class CustomSection(BaseModel):
 
 class AdminProductUpdate(BaseModel):
     name: str
-    tagline: Optional[str] = ""
-    card_title: Optional[str] = None
     card_tag: Optional[str] = None
     card_description: Optional[str] = None
     card_bullets: Optional[List[str]] = None
     description_long: str = ""
     bullets: Optional[List[str]] = None
-    bullets_included: Optional[List[str]] = None
-    tag: Optional[str] = None
     category: Optional[str] = None
     faqs: Optional[List[Any]] = None
     terms_id: Optional[str] = None
@@ -254,6 +250,7 @@ class AdminProductUpdate(BaseModel):
     visibility_conditions: Optional[ProductVisRuleSet] = None
     intake_schema_json: Optional[IntakeSchemaJson] = None
     price_rounding: Optional[str] = None
+    show_price_breakdown: Optional[bool] = False
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
     currency: Optional[str] = None
