@@ -175,6 +175,7 @@ export interface WebsiteSettings {
   signup_bullet_1: string;
   signup_bullet_2: string;
   signup_bullet_3: string;
+  signup_cta: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
@@ -332,6 +333,7 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   signup_bullet_1: "",
   signup_bullet_2: "",
   signup_bullet_3: "",
+  signup_cta: "",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);
