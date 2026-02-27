@@ -493,7 +493,8 @@ export default function ProductDetail() {
           <div className="space-y-4 py-4">
             {ws.scope_form_subtitle && <p className="text-sm text-slate-500">{ws.scope_form_subtitle}</p>}
             {(() => {
-              const schema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false);
+              const activeSchema = product?.resolved_form_schema || ws.scope_form_schema;
+              const schema = parseSchema(activeSchema).filter(f => f.enabled !== false);
               if (schema.length > 0) {
                 return schema.map(field => (
                   <div key={field.id} className="space-y-1">
