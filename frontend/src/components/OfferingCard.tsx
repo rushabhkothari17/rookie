@@ -4,7 +4,6 @@ import { displayCategory } from "@/lib/categories";
 
 const formatTag = (product: any) => {
   if (product.card_tag) return product.card_tag;
-  if (product.tag) return product.tag;
   if (product.is_subscription) return "Subscription";
   return "Project based";
 };
@@ -16,7 +15,15 @@ const fmtPrice = (amount: number, currency = "USD") =>
 const getStartingPrice = (product: any): number | null => {
   const base = parseFloat(product.base_price) || 0;
   const schema = product.intake_schema_json;
-  if (!schema) return base > 0 ? base : null;
+  if (!schema) {
+    let starting = base > 0 ? base : null;
+    if (starting !== null && product.price_rounding) {
+      const nearest: Record<string, number> = {"25": 25, "50": 50, "100": 100};
+      const n = nearest[String(product.price_rounding)];
+      if (n) starting = Math.ceil(starting / n) * n;
+    }
+    return starting;
+  }
 
   const questions = Array.isArray(schema.questions)
     ? schema.questions
@@ -31,12 +38,23 @@ const getStartingPrice = (product: any): number | null => {
       hasPricedRequired = true;
       minAdd += (parseFloat(q.min) || 0) * parseFloat(q.price_per_unit);
     } else if ((q.type === "dropdown" || q.type === "multiselect") && q.affects_price && q.required) {
-      const prices = (q.options || []).map((o: any) => parseFloat(o.price_value) || 0).filter((p: number) => p > 0);
-      if (prices.length > 0) { hasPricedRequired = true; minAdd += Math.min(...prices); }
+      // Only add to starting price for additive mode, not multiplier
+      if ((q.price_impact_mode || "add") !== "multiply") {
+        const prices = (q.options || []).map((o: any) => parseFloat(o.price_value) || 0).filter((p: number) => p > 0);
+        if (prices.length > 0) { hasPricedRequired = true; minAdd += Math.min(...prices); }
+      }
     }
   }
 
-  if (base > 0 || hasPricedRequired) return base + minAdd;
+  if (base > 0 || hasPricedRequired) {
+    let starting = base + minAdd;
+    if (product.price_rounding) {
+      const nearest: Record<string, number> = {"25": 25, "50": 50, "100": 100};
+      const n = nearest[String(product.price_rounding)];
+      if (n) starting = Math.ceil(starting / n) * n;
+    }
+    return starting;
+  }
   return null;
 };
 
