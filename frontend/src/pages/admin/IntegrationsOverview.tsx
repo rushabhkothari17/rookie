@@ -195,14 +195,14 @@ const ICON_MAP: Record<string, any> = {
 const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; url: string }[]; tips?: string[] }> = {
   zoho_workdrive: {
     steps: [
-      "Go to Zoho API Console and click 'Add Client' and then select 'Server-based Application'. If you have already created one, click on that.",
-      "Note your Client ID and Client Secret from the app details",
+      "Log in to Zoho API Console: api-console.zoho.com",
+      "Create a new 'Server-based Application' (or use an existing one)",
       "Set redirect URI to: https://www.zoho.com/workdrive",
       "Under 'Scopes', add: WorkDrive.files.CREATE, WorkDrive.files.READ, WorkDrive.files.UPDATE, WorkDrive.files.DELETE, WorkDrive.teamfolders.READ",
       "Copy your Client ID and Client Secret and paste them below",
       "Click 'Save Credentials' to generate your Authorization URL",
       "Open the Authorization URL in your browser and grant access",
-      "Copy the one-time Authorization Code (expires in 10 minutes) and paste in the Code field",
+      "Copy the one-time Authorization Code (expires in 3 minutes) and paste in the Code field",
       "Click 'Connect' — tokens are stored automatically (no manual refresh token needed)",
       "After validation, paste your WorkDrive parent folder URL where client folders will be created",
     ],
