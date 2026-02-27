@@ -1076,7 +1076,16 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
             <Field label="Form title" value={ws.signup_form_title} onChange={s("signup_form_title")} testId="ws-signup-title" />
             <Field label="Form subtitle" value={ws.signup_form_subtitle} onChange={s("signup_form_subtitle")} multiline testId="ws-signup-subtitle" />
             <div className="border-t border-slate-100 pt-3">
-              <FormSchemaBuilder title="Registration form fields" value={ws.signup_form_schema} onChange={s("signup_form_schema")} />
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Feature Bullets (shown on left side of signup page)</p>
+              <p className="text-xs text-slate-400 mb-3">Leave blank to use defaults.</p>
+              <div className="space-y-2">
+                <Field label="Bullet 1" value={ws.signup_bullet_1} onChange={s("signup_bullet_1")} placeholder="Access your orders and subscriptions" testId="ws-signup-bullet-1" />
+                <Field label="Bullet 2" value={ws.signup_bullet_2} onChange={s("signup_bullet_2")} placeholder="Download invoices and documents" testId="ws-signup-bullet-2" />
+                <Field label="Bullet 3" value={ws.signup_bullet_3} onChange={s("signup_bullet_3")} placeholder="Track project progress in real time" testId="ws-signup-bullet-3" />
+              </div>
+            </div>
+            <div className="border-t border-slate-100 pt-3">
+              <FormSchemaBuilder title="Registration form fields" value={ws.signup_form_schema || SIGNUP_DEFAULT_SCHEMA} onChange={s("signup_form_schema")} />
             </div>
           </div>
         )}
