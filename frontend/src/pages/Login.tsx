@@ -335,6 +335,10 @@ export default function Login() {
                 setLoginLoading(true);
                 try {
                   const result = await login(email, password, partnerInfo!.code);
+                  if (result?.must_change_password) {
+                    setShowForcePasswordChange(true);
+                    return;
+                  }
                   const isAdminRedirect = result?.is_admin && (!redirect || redirect === "/store" || redirect === "/");
                   navigate(isAdminRedirect ? "/admin" : (redirect || (result?.is_admin ? "/admin" : "/portal")));
                 } catch (err: any) {
