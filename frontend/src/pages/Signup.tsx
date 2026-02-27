@@ -449,7 +449,16 @@ export default function Signup() {
                 )}
                 {isFieldVisible("phone") && (
                   <FieldWrapper label={(getFieldProp("phone", "label") as string) || "Phone"} icon={Phone} required={getFieldProp("phone", "required") as boolean}>
-                    <Input value={form.phone} onChange={e => handleChange("phone", e.target.value)} data-testid="signup-phone-input" required={getFieldProp("phone", "required") as boolean} />
+                    <Input
+                      value={form.phone}
+                      onChange={e => { handleChange("phone", e.target.value); setPhoneError(validatePhone(e.target.value)); }}
+                      onBlur={e => setPhoneError(validatePhone(e.target.value))}
+                      data-testid="signup-phone-input"
+                      required={getFieldProp("phone", "required") as boolean}
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                    />
+                    {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
                   </FieldWrapper>
                 )}
               </div>
