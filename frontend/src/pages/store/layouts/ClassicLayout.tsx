@@ -53,21 +53,6 @@ export default function ClassicLayout({
       <div className="flex flex-col gap-6">
         <ProductHero product={product} />
 
-        {/* Product Tags */}
-        {product.tag && (
-          <div className="flex flex-wrap gap-2">
-            {product.tag.split(",").map((tag, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100"
-                data-testid={`product-tag-${i}`}
-              >
-                {tag.trim()}
-              </span>
-            ))}
-          </div>
-        )}
-
         {/* Intake Questions */}
         {visibleIntakeQuestions.length > 0 && (
           <SectionCard title="Tell us about your project" testId="product-intake-section">
