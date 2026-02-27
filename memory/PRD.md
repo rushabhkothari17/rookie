@@ -33,6 +33,17 @@ INTEGRATIONS: Connect Services (incl. Google Drive + OneDrive COMING SOON), API,
 
 ### What's Implemented
 
+#### Product 0b: Address Field Type in FormSchemaBuilder (Feb 2026)
+- New `address` field type in `FormSchemaBuilder` — works in ALL form builders (signup, enquiry/scope, custom)
+- Admin can individually toggle/require each sub-field: Line 1, Line 2, City, State/Province, Postal, Country
+- `address_config` property on `FormField` stores per-sub-field enabled/required settings
+- New `AddressFieldRenderer` component fetches countries from taxes module (`/api/utils/countries`) and provinces from `/api/utils/provinces` when country selected
+- `DynamicField` in `ProductDetail.tsx` now handles `type === "address"` for enquiry/scope forms
+- `Signup.tsx` and `CustomersTab.tsx` address blocks now use `address_config` for sub-field show/hide and required
+- Backend `_SIGNUP_FORM_SCHEMA` updated to type `"address"` with `_DEFAULT_ADDRESS_CONFIG`; migration upgrades existing schemas
+- `AdminCreateCustomerRequest` model made all address fields Optional to support disabled sub-fields
+- Files: `FormSchemaBuilder.tsx`, `AddressFieldRenderer.tsx`, `CustomersTab.tsx`, `Signup.tsx`, `ProductDetail.tsx`, `backend/models.py`, `backend/routes/admin/website.py`
+
 #### Product 0: Schema-Driven "Create Customer" Dialog (Feb 2026)
 - Backend `_SIGNUP_FORM_SCHEMA` fixed: now has `full_name`, `company_name`, `job_title`, `phone`, `address` (no standalone `country`, no `email`, no `password`)
 - Migration function `_migrate_signup_schema()` runs on every GET to convert old schemas (with locked `country`) to new format (with `address`)
