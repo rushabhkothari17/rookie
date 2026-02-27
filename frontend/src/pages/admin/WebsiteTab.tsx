@@ -82,6 +82,10 @@ interface WebsiteData {
   documents_page_title: string; documents_page_subtitle: string;
   documents_page_upload_label: string; documents_page_upload_hint: string;
   documents_page_empty_text: string;
+  // Signup page bullets
+  signup_bullet_1: string;
+  signup_bullet_2: string;
+  signup_bullet_3: string;
 }
 
 interface BrandingData {
@@ -145,6 +149,9 @@ const WEB_DEFAULTS: WebsiteData = {
   documents_page_title: "", documents_page_subtitle: "",
   documents_page_upload_label: "", documents_page_upload_hint: "",
   documents_page_empty_text: "",
+  signup_bullet_1: "",
+  signup_bullet_2: "",
+  signup_bullet_3: "",
 };
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
