@@ -97,7 +97,10 @@ export default function Admin() {
             {/* People */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">People</p>
             {isSuperAdmin && (
-              <TabsTrigger value="users" data-testid="admin-tab-users" className={TAB_CLASS}>Users</TabsTrigger>
+              <>
+                <TabsTrigger value="users" data-testid="admin-tab-users" className={TAB_CLASS}>Users</TabsTrigger>
+                <TabsTrigger value="roles" data-testid="admin-tab-roles" className={TAB_CLASS}>Roles</TabsTrigger>
+              </>
             )}
             <TabsTrigger value="customers" data-testid="admin-tab-customers" className={TAB_CLASS}>Customers</TabsTrigger>
 
