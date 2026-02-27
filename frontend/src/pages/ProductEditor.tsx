@@ -238,6 +238,105 @@ export default function ProductEditor() {
           onSave={handleSave}
         />
       </div>
+
+      {/* Store Card Preview Modal */}
+      {previewOpen && (
+        <StoreCardPreview form={form} onClose={() => setPreviewOpen(false)} />
+      )}
     </div>
+  );
+}
+
+/** Floating preview panel showing the store card as it will appear on the storefront */
+function StoreCardPreview({ form, onClose }: { form: ProductFormData; onClose: () => void }) {
+  const previewProduct = {
+    id: "preview",
+    name: form.name || "Untitled product",
+    card_tag: form.card_tag || null,
+    card_description: form.card_description || null,
+    card_bullets: (form.card_bullets || []).filter((b) => b.trim()),
+    category: form.category || "",
+    base_price: Number(form.base_price) || 0,
+    pricing_type: form.pricing_type || "internal",
+    is_subscription: form.is_subscription,
+    external_url: form.external_url || "",
+    intake_schema_json: form.intake_schema_json,
+    price_rounding: form.price_rounding || null,
+    currency: form.currency || "GBP",
+  };
+
+  const hasCardContent = form.card_description || (form.card_bullets || []).filter(b => b.trim()).length > 0;
+  const hasGeneralContent = (form.bullets || []).filter(b => b.trim()).length > 0 || form.description_long;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      data-testid="store-card-preview-modal"
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Panel */}
+      <div className="relative z-10 bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+          <div className="flex items-center gap-2.5">
+            <Store size={16} className="text-slate-500" />
+            <span className="font-semibold text-slate-800 text-sm">Store card preview</span>
+            <span className="text-[10px] text-slate-400 bg-slate-200 px-2 py-0.5 rounded-full uppercase tracking-wide">live preview</span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-700 transition-colors"
+            data-testid="store-card-preview-close"
+          >
+            <XIcon size={18} />
+          </button>
+        </div>
+
+        {/* Preview area */}
+        <div className="p-8 bg-slate-50">
+          {/* Simulated store grid context */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+            {/* The actual card */}
+            <div className="sm:col-span-1">
+              <OfferingCard product={previewProduct} />
+            </div>
+            {/* Ghost card to show grid context */}
+            <div className="hidden sm:block rounded-2xl border border-dashed border-slate-200 bg-white/60 h-[220px]" />
+          </div>
+        </div>
+
+        {/* Tips */}
+        <div className="px-6 py-4 border-t border-slate-100 bg-white">
+          <p className="text-[11px] text-slate-400 font-medium mb-2 uppercase tracking-wider">What's shown on the card</p>
+          <div className="flex flex-wrap gap-2">
+            <Chip active={!!form.name} label="Product name" />
+            <Chip active={!!form.card_tag} label="Card tag" />
+            <Chip active={!!form.card_description} label="Card description" />
+            <Chip active={(form.card_bullets || []).filter(b => b.trim()).length > 0} label="Bullets" />
+            <Chip active={(form.base_price ?? 0) > 0 || form.pricing_type === "enquiry"} label="Price / CTA" />
+          </div>
+          {!hasCardContent && (
+            <p className="mt-3 text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              The "Store card" tab is empty. Add a card description or bullets to make this card more compelling.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Chip({ active, label }: { active: boolean; label: string }) {
+  return (
+    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+      active
+        ? "bg-green-50 border-green-200 text-green-700"
+        : "bg-slate-50 border-slate-200 text-slate-400"
+    }`}>
+      {active ? "✓" : "○"} {label}
+    </span>
   );
 }
