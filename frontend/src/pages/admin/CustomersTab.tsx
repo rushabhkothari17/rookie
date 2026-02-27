@@ -68,6 +68,8 @@ export function CustomersTab() {
   const [editingPartnerMap, setEditingPartnerMap] = useState<{ customerId: string; value: string } | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
+  const [signupSchema, setSignupSchema] = useState<any[]>([]);
+  const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmToggleCustomer, setConfirmToggleCustomer] = useState<{id: string, active: boolean} | null>(null);
