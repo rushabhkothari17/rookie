@@ -66,20 +66,20 @@ async def get_provinces(country_code: str = Query(..., description="ISO country 
     return {"country_code": key, "regions": regions}
 
 
-# Country code → display name mapping
+# Country code → display name mapping (covers ISO 2-letter codes used in EU VAT tables)
 _ISO_TO_NAME = {
-    "CA": "Canada",
-    "US": "USA",
-    "GB": "United Kingdom",
-    "AU": "Australia",
-    "NZ": "New Zealand",
-    "IN": "India",
-    "DE": "Germany",
-    "FR": "France",
-    "NL": "Netherlands",
-    "SG": "Singapore",
-    "IE": "Ireland",
-    "ZA": "South Africa",
+    "AT": "Austria", "AU": "Australia", "BE": "Belgium", "BG": "Bulgaria",
+    "CA": "Canada", "CY": "Cyprus", "CZ": "Czech Republic", "DE": "Germany",
+    "DK": "Denmark", "EE": "Estonia", "ES": "Spain", "FI": "Finland",
+    "FR": "France", "GB": "United Kingdom", "GR": "Greece", "HR": "Croatia",
+    "HU": "Hungary", "IE": "Ireland", "IN": "India", "IT": "Italy",
+    "LT": "Lithuania", "LU": "Luxembourg", "LV": "Latvia", "MT": "Malta",
+    "NL": "Netherlands", "NZ": "New Zealand", "PL": "Poland", "PT": "Portugal",
+    "RO": "Romania", "SE": "Sweden", "SG": "Singapore", "SI": "Slovenia",
+    "SK": "Slovakia", "US": "United States", "ZA": "South Africa",
+    # Aliases stored as full names or alternate codes in some tenants' tax tables
+    "CANADA": "Canada", "USA": "United States", "UNITED STATES": "United States",
+    "UNITED KINGDOM": "United Kingdom", "AUSTRALIA": "Australia",
 }
 
 _FALLBACK_COUNTRIES = [
