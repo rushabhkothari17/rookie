@@ -333,7 +333,17 @@ export function EnquiriesTab() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" onClick={() => setViewEnquiry(null)}>Close</Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadPdf(viewEnquiry)}
+                    data-testid="enquiry-download-pdf"
+                  >
+                    <Download size={13} className="mr-1.5" /> Download PDF
+                  </Button>
+                  <Button variant="outline" onClick={() => setViewEnquiry(null)}>Close</Button>
+                </div>
               </div>
             </div>
           )}
