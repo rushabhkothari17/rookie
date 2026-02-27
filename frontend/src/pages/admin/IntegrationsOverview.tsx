@@ -1071,7 +1071,7 @@ export function IntegrationsOverview() {
                             <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 font-medium shrink-0 text-[10px]">
                               {i + 1}
                             </span>
-                            <span className="pt-0.5">{step}</span>
+                            <span className="pt-0.5 break-all">{step}</span>
                           </li>
                         ))}
                       </ol>
