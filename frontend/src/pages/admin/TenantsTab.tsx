@@ -49,29 +49,14 @@ export function TenantsTab() {
   // Address edit dialog
   const [showAddressEdit, setShowAddressEdit] = useState<string | null>(null);
   const [addrForm, setAddrForm] = useState<TenantAddress>({});
-  const [addrProvinces, setAddrProvinces] = useState<{value:string;label:string}[]>([]);
   const [addrSaving, setAddrSaving] = useState(false);
 
-  const ORG_COUNTRIES = [
-    {v:"Canada",l:"Canada"},{v:"USA",l:"United States"},{v:"UK",l:"United Kingdom"},
-    {v:"Australia",l:"Australia"},{v:"India",l:"India"},{v:"Germany",l:"Germany"},
-    {v:"France",l:"France"},{v:"Netherlands",l:"Netherlands"},{v:"Singapore",l:"Singapore"},
-    {v:"New Zealand",l:"New Zealand"},
-  ];
+  const countries = useCountries();
+  const addrProvinces = useProvinces(addrForm.country || "");
 
   const openAddressEdit = (tenant: Tenant) => {
     setAddrForm(tenant.address || {});
-    setAddrProvinces([]);
     setShowAddressEdit(tenant.id);
-    if (tenant.address?.country) fetchProvinces(tenant.address.country);
-  };
-
-  const fetchProvinces = (country: string) => {
-    if (country === "Canada" || country === "USA") {
-      api.get(`/utils/provinces?country_code=${country}`).then(r => setAddrProvinces(r.data.regions || [])).catch(() => setAddrProvinces([]));
-    } else {
-      setAddrProvinces([]);
-    }
   };
 
   const saveAddress = async () => {
