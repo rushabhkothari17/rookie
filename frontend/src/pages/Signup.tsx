@@ -393,6 +393,12 @@ export default function Signup() {
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-8">
+            {/* Back to sign in */}
+            <div className="mb-4">
+              <Link to="/login" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors" data-testid="signup-back-link">
+                <ChevronLeft size={13} /> Back to sign in
+              </Link>
+            </div>
             <div className="mb-6">
               <h2 className="text-xl font-bold text-slate-900">Create an account</h2>
               <p className="text-sm text-slate-500 mt-1">Already have access?{" "}
