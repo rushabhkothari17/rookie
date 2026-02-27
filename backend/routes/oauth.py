@@ -160,9 +160,9 @@ INTEGRATIONS = {
             {"key": "api_key", "label": "API Key", "hint": "From resend.com/api-keys", "secret": True, "required": True},
         ],
         "settings": [
-            {"key": "from_email", "label": "From Email", "default": "onboarding@resend.dev"},
-            {"key": "from_name", "label": "From Name", "default": ""},
-            {"key": "reply_to", "label": "Reply-To Email", "default": ""},
+            {"key": "from_email", "label": "From Email", "default": "onboarding@resend.dev", "required": True},
+            {"key": "from_name",  "label": "From Name",  "default": "",                      "required": True},
+            {"key": "reply_to",   "label": "Reply-To Email", "default": ""},
         ],
     },
     "zoho_mail": {
@@ -172,13 +172,13 @@ INTEGRATIONS = {
         "icon": "mail",
         "is_zoho": True,
         "fields": [
-            {"key": "client_id",    "label": "Client ID",           "hint": "From Zoho API Console",                                          "secret": False, "required": True},
-            {"key": "client_secret","label": "Client Secret",       "hint": "From Zoho API Console",                                          "secret": True,  "required": True},
-            {"key": "auth_code",    "label": "Authorization Code",  "hint": "One-time code from API Console → Generate Code tab (expires fast)","secret": False, "required": False},
+            {"key": "client_id",    "label": "Client ID",           "hint": "From Zoho API Console",                                           "secret": False, "required": True},
+            {"key": "client_secret","label": "Client Secret",       "hint": "From Zoho API Console",                                           "secret": True,  "required": True},
+            {"key": "auth_code",    "label": "Authorization Code",  "hint": "One-time code from API Console → Generate Code tab (expires fast)","secret": False, "required": True},
         ],
         "settings": [
-            {"key": "from_email", "label": "From Email", "default": ""},
-            {"key": "from_name",  "label": "From Name",  "default": ""},
+            {"key": "from_email", "label": "From Email", "default": "", "required": True},
+            {"key": "from_name",  "label": "From Name",  "default": "", "required": True},
         ],
     },
     
