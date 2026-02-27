@@ -16,7 +16,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://dynamic-forms-23.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://product-refactor.preview.emergentagent.com").rstrip("/")
 
 # Test credentials from review request
 TENANT_B_ADMIN = {
