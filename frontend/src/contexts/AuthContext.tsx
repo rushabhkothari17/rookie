@@ -20,8 +20,8 @@ type AuthContextType = {
   customer: any;
   address: any;
   loading: boolean;
-  /** login — returns { is_admin, role } for redirect */
-  login: (email: string, password: string, partner_code?: string, login_type?: string) => Promise<{ is_admin: boolean; role: string }>;
+  /** login — returns { is_admin, role, must_change_password } for redirect */
+  login: (email: string, password: string, partner_code?: string, login_type?: string) => Promise<{ is_admin: boolean; role: string; must_change_password: boolean }>;
   logout: () => void;
   register: (payload: any, partner_code?: string) => Promise<any>;
   verifyEmail: (email: string, code: string, partnerCode?: string) => Promise<void>;
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string,
     partner_code?: string,
     login_type?: string,
-  ): Promise<{ is_admin: boolean; role: string }> => {
+  ): Promise<{ is_admin: boolean; role: string; must_change_password: boolean }> => {
     const payload: Record<string, string> = { email, password, partner_code: partner_code || "" };
 
     let response;
@@ -90,6 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return {
       is_admin: response.data.role !== "customer",
       role: response.data.role,
+      must_change_password: !!(response.data.must_change_password),
     };
   };
 
