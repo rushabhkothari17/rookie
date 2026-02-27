@@ -103,7 +103,7 @@ export function FormsManagementTab() {
     if (!formName.trim()) { toast.error("Form name is required"); return; }
     setSavingForm(true);
     try {
-      await api.post("/admin/forms", { name: formName.trim(), schema: "[]" });
+      await api.post("/admin/forms", { name: formName.trim(), form_schema: "[]" });
       toast.success("Form created");
       setFormDialog({ open: false, form: null });
       loadForms();
