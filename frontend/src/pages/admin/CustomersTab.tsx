@@ -121,8 +121,9 @@ export function CustomersTab() {
 
   // Fetch provinces when country changes in create form
   useEffect(() => {
-    if (newCustomer.country === "Canada" || newCustomer.country === "USA") {
-      api.get(`/utils/provinces?country_code=${newCustomer.country}`)
+    const c = newCustomer.country;
+    if (c) {
+      api.get(`/utils/provinces?country_code=${encodeURIComponent(c)}`)
         .then(r => setProvinces(r.data.regions || []))
         .catch(() => setProvinces([]));
     } else { setProvinces([]); }
