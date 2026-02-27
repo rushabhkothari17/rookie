@@ -1,0 +1,66 @@
+{
+  "summary": "Comprehensive testing of 22 product management fixes in the admin platform. All critical features verified working via UI interaction and code review. TypeScript compiles clean (tsc --noEmit = 0 errors). All product form features, intake question behaviors, visibility conditions, and navigation flows confirmed working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iter140_admin_login.jpeg",
+    "/app/test_reports/iter140_catalog_tab.jpeg",
+    "/app/test_reports/iter140_new_product.jpeg",
+    "/app/test_reports/iter140_storecard.jpeg",
+    "/app/test_reports/iter140_pricing_tab.jpeg",
+    "/app/test_reports/iter140_intake_boolean.jpeg",
+    "/app/test_reports/iter140_affects_price.jpeg",
+    "/app/test_reports/iter140_two_questions.jpeg",
+    "/app/test_reports/iter140_reorder.jpeg",
+    "/app/test_reports/iter140_visibility_country.jpeg",
+    "/app/test_reports/iter140_enabled_off.jpeg"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ESLint warnings in ProductDetail.tsx (Lines 169, 376): missing useEffect/useMemo dependencies (react-hooks/exhaustive-deps). Non-critical but could cause subtle bugs with stale closures. Consider adding eslint-disable comments or adding missing deps.",
+    "The frontend.err.log contained old TypeScript errors (pre-fix) that are now resolved. tsc --noEmit passes clean.",
+    "liger-inc partner code returns 404 - the partner org may not exist in this preview environment, so store-facing OfferingCard tests for liger-inc products could not be tested via UI (code review confirms logic is correct)."
+  ],
+  "verified_features": {
+    "fix_1_bulletslist_compile": "PASS - BulletsList uses bullets.length correctly; bullets can be added/removed on General and Store Card tabs",
+    "fix_2_typescript_types": "PASS - Product interface in types.ts has card_description, card_tag, card_bullets, price_rounding, show_price_breakdown. tsc --noEmit returns 0",
+    "fix_3_tab_persistence": "PASS - Admin tab reads ?tab= URL param; ?tab=catalog activates Products tab; localStorage persistence also works",
+    "fix_4_category_placeholder": "PASS - Category Select shows 'Select category' placeholder when form.category is empty/undefined",
+    "fix_5_country_dropdown": "PASS - When field='country' in visibility condition builder, a Select with 'Select country...' placeholder shows instead of text input",
+    "fix_6_save_questions_btn": "PASS - 'Save questions' button visible in intake section (Pricing tab, internal checkout)",
+    "fix_7_tooltip_position": "PASS - Tooltip field appears directly below Helper text (Label -> Helper Text -> Tooltip order confirmed in UI)",
+    "fix_8_required_affects_conditional": "PASS - Required and Affects price toggles only visible when question Enabled=true; header shows 'disabled' badge when off",
+    "fix_9_auto_required_on_affects": "PASS - Toggling 'Affects price' ON automatically sets Required to checked=true",
+    "fix_10_no_price_floor": "PASS - Only 'Price ceiling cap' section shown; no price floor UI element",
+    "fix_11_boolean_no_checkbox_dup": "PASS - Boolean question shows single 'Affects price' MiniToggle in flags row (no duplicate checkbox)",
+    "fix_12_boolean_price_mode": "PASS - Boolean question with affects_price=true shows Add/subtract (±) and Multiply (×) radio options",
+    "fix_13_dropdown_no_default": "PASS - Code confirms: defaults[q.key] = '' for dropdown type (no auto-selection of first option). From ProductDetail.tsx line 165",
+    "fix_14_price_mode_fieldname": "PASS - OfferingCard.tsx uses q.price_mode (not price_impact_mode). getStartingPrice correctly skips multiply-mode questions",
+    "fix_15_reorder_stable_keys": "PASS - Question reordering works: moved Question A (Dropdown) below Question B (YesNo) via down arrow; stable keys confirmed (key={q.key || `q_${i}`})",
+    "fix_16_back_to_catalog": "PASS - 'Back to Products' button navigates to /admin?tab=catalog; catalog tab is active",
+    "fix_17_tab_url_param": "PASS - Admin.tsx reads searchParams.get('tab') on initial render; ?tab=catalog loads Products tab active",
+    "fix_18_store_card_bullets": "PASS - Store Card tab has BulletsList for card_bullets; add/remove works without 'items.length' error",
+    "fix_19_pricing_internal_default": "PASS - EMPTY_FORM has pricing_type: 'internal'; Internal Checkout card highlighted by default",
+    "fix_20_price_rounding_select": "PASS - Price rounding Select with 'No rounding', 'Round to nearest 25/50/100' options. Value none->'' conversion works",
+    "fix_21_show_breakdown_toggle": "PASS - Show price breakdown Select shows 'No — show total only' by default; toggles to 'Yes — show line-by-line breakdown'",
+    "fix_22_visibility_group_logic": "PASS - Conditional visibility builder loads with Country field as default; country field shows Select dropdown"
+  },
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (22/22 fixes verified)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123! (partner code: automate-accounts)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 22 fixes verified working. Platform admin partner code is 'automate-accounts'. Product editor at /admin/products/new. liger-inc partner code returns 404 in this preview env (tenant may not exist). ESLint warnings in ProductDetail.tsx (missing deps) are pre-existing, non-critical. Frontend compiles clean with no TypeScript errors. Key areas: ProductForm.tsx (BulletsList, pricing, visibility), IntakeSchemaBuilder.tsx (tooltip order, conditional toggles, price mode), Admin.tsx (URL tab param), ProductEditor.tsx (back button to catalog).",
+  "rca_of_issues": "The TypeScript errors in frontend.err.log were from a PRIOR compilation run before the types.ts fix was applied. The file was modified at 23:23, server started at 23:24, and initial webpack build showed old errors before hot-reload re-compiled. tsc --noEmit confirms current state is clean."
+}
