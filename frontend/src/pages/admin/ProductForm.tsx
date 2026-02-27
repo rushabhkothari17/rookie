@@ -667,19 +667,18 @@ export function ProductForm({
       {/* ── Store Card ──────────────────────────────────────────────────────── */}
       {activeTab === "storecard" && (
         <div className={sectionCls}>
-          <p className="text-sm text-slate-500">Customise how this product appears on the store catalog cards. The product name is always used as the card title.</p>
+          <p className="text-sm text-slate-500">Customise how this product appears on store catalog cards. The product name is always used as the card title.</p>
           <div className={cardCls}>
             <div>
               <label className={labelCls}>Card tag <span className="text-slate-400 normal-case font-normal tracking-normal text-xs">(badge, e.g. Popular)</span></label>
               <Input value={form.card_tag} onChange={e => s("card_tag")(e.target.value)} placeholder="e.g. Popular" data-testid="pf-card-tag" />
-              </div>
             </div>
             <div>
               <label className={labelCls}>Card description</label>
-              <Input value={form.card_description} onChange={e => s("card_description")(e.target.value)} placeholder="Uses tagline if blank" data-testid="pf-card-desc" />
+              <Input value={form.card_description} onChange={e => s("card_description")(e.target.value)} placeholder="Short description shown on the card" data-testid="pf-card-desc" />
             </div>
             <BulletsList
-              bullets={form.card_bullets.length > 0 ? form.card_bullets : [""]}
+              bullets={form.card_bullets}
               onChange={s("card_bullets")}
               placeholder="Card bullet point"
             />
