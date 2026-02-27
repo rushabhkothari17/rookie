@@ -40,6 +40,29 @@ _SIGNUP_FORM_SCHEMA = json.dumps([
     {"id": "su_address", "key": "address",      "label": "Address",      "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 4},
 ])
 
+def _migrate_signup_schema(schema_str: str) -> str:
+    """Migrate old signup schema format (with standalone country/email/password) to new format (with address block)."""
+    try:
+        fields = json.loads(schema_str) if schema_str else []
+        if not fields:
+            return schema_str
+        has_address = any(f.get("key") == "address" for f in fields)
+        has_old_country = any(f.get("key") == "country" and f.get("locked") for f in fields)
+        # Only migrate if old format detected (no address field, has locked country)
+        if not has_address and has_old_country:
+            # Remove locked country, email, password fields (they are always fixed in the form)
+            fields = [f for f in fields if f.get("key") not in ("country", "email", "password") or not f.get("locked")]
+            max_order = max((f.get("order", 0) for f in fields), default=0)
+            fields.append({"id": "su_address", "key": "address", "label": "Address", "type": "text",
+                           "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True,
+                           "order": max_order + 1})
+            fields.sort(key=lambda f: f.get("order", 0))
+            return json.dumps(fields)
+    except Exception:
+        pass
+    return schema_str
+
+
 DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     # Store Hero
     "hero_label": "STOREFRONT",
