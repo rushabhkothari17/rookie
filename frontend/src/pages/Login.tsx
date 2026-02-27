@@ -316,6 +316,14 @@ export default function Login() {
 
             {/* Heading */}
             <div className="anim-slide-up">
+              <button
+                type="button"
+                onClick={handleChangePartner}
+                className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors mb-2"
+                data-testid="signin-back-btn"
+              >
+                <ChevronLeft size={12} strokeWidth={2.5} /> Back to partner select
+              </button>
               <h1 className="text-[1.75rem] font-bold text-slate-900 tracking-tight">Sign in</h1>
               <p className="text-slate-400 text-sm mt-1">Welcome back. Enter your credentials to continue.</p>
             </div>
