@@ -356,8 +356,6 @@ async def list_integrations(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     connections = await db.oauth_connections.find({"tenant_id": tid}, {"_id": 0}).to_list(50)
     conn_map = {c["provider"]: c for c in connections}
     
-    tid = tenant_id_of(admin)
-    
     # Get active email provider — use tenant-scoped key; fall back to legacy global key
     active_setting = await db.app_settings.find_one({"key": f"active_email_provider_{tid}"}, {"_id": 0})
     if not active_setting:
