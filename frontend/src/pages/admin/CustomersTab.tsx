@@ -177,11 +177,13 @@ export function CustomersTab() {
     if (!newCustomer.password.trim()) errors.push("Password");
     const addrField = schemaField("address");
     const addrEnabled = !addrField || addrField.enabled !== false;
-    if (addrEnabled) {
-      if (addrField?.required && !newCustomer.line1.trim()) errors.push("Address Line 1");
-      if (addrField?.required && !newCustomer.city.trim()) errors.push("City");
-      if (addrField?.required && !newCustomer.postal.trim()) errors.push("Postal Code");
-      if (addrField?.required && !newCustomer.country) errors.push("Country");
+    if (addrEnabled && addrField) {
+      const addrCfg = getAddressConfig(addrField);
+      if (addrCfg.line1.required && !newCustomer.line1.trim()) errors.push("Address Line 1");
+      if (addrCfg.city.required && !newCustomer.city.trim()) errors.push("City");
+      if (addrCfg.postal.required && !newCustomer.postal.trim()) errors.push("Postal Code");
+      if (addrCfg.country.required && !newCustomer.country) errors.push("Country");
+      if (addrCfg.state.required && !newCustomer.region) errors.push("State / Province");
     }
     ["company_name", "job_title", "phone"].forEach(key => {
       const f = schemaField(key);
