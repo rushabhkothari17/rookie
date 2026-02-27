@@ -342,7 +342,7 @@ export function CustomersTab() {
                 <SearchableSelect
                   value={selectedCustomer.country || undefined}
                   onValueChange={v => setSelectedCustomer({ ...selectedCustomer, country: v })}
-                  options={[{value:"AU",label:"Australia"},{value:"CA",label:"Canada"},{value:"GB",label:"United Kingdom"},{value:"US",label:"United States"},{value:"NZ",label:"New Zealand"},{value:"IN",label:"India"},{value:"SG",label:"Singapore"},{value:"ZA",label:"South Africa"},{value:"OTHER",label:"Other"}]}
+                  options={countries.length ? countries : [{value:"Canada",label:"Canada"},{value:"USA",label:"United States"}]}
                   placeholder="Select country…"
                   searchPlaceholder="Search country..."
                   data-testid="admin-customer-country-select"
