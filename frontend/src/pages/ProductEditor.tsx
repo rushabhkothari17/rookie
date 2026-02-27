@@ -167,6 +167,7 @@ export default function ProductEditor() {
         display_layout: form.display_layout || "standard",
         currency: form.currency || "USD",
         visibility_conditions: form.visibility_conditions || null,
+        enquiry_form_id: form.enquiry_form_id || null,
       };
 
       if (isNew) {
