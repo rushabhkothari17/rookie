@@ -368,10 +368,10 @@ export default function Signup() {
 
           <div className="mt-10 space-y-4">
             {[
-              "Access your orders and subscriptions",
-              "Download invoices and documents",
-              "Track project progress in real time",
-            ].map((item, i) => (
+              ws.signup_bullet_1 || "Access your orders and subscriptions",
+              ws.signup_bullet_2 || "Download invoices and documents",
+              ws.signup_bullet_3 || "Track project progress in real time",
+            ].filter(Boolean).map((item, i) => (
               <div key={i} className="flex items-start gap-3">
                 <CheckCircle2 size={16} className="text-white/50 mt-0.5 shrink-0" />
                 <span className="text-white/70 text-sm">{item}</span>
