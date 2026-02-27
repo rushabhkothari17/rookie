@@ -19,16 +19,16 @@ Multi-tenant SaaS admin platform for partner organizations managing customer sub
 ### Admin Panel Sidebar Structure (CURRENT as of Feb 2026)
 ```
 PLATFORM: Partner Orgs
-PEOPLE: Users, Customers
+PEOPLE: Users, Roles, Customers
 COMMERCE: Products, Subscriptions, Orders, Enquiries, Taxes
 CONTENT: Resources, Documents, Email Templates, References
 SETTINGS:
-  - Organization Info      (renamed from "Branding & Hero")
-  - Auth & Pages           (standalone, includes Footer & Nav)
-  - Forms                  (standalone)
-  - System Config          (standalone, without Base Currency)
+  - Organization Info      (Store Name, Logo, Brand Colors, Base Currency, Address)
+  - Auth & Pages           (tile-based, includes Footer & Nav, Hero Banners, Signup CTA)
+  - Forms                  (Enquiry Form builder)
+  - System Config          (Operations + Feature Flags)
   - Custom Domains
-INTEGRATIONS: Connect Services, API, Webhooks, Logs
+INTEGRATIONS: Connect Services (incl. Google Drive + OneDrive COMING SOON), API, Webhooks, Logs
 ```
 
 ### What's Implemented
@@ -48,65 +48,96 @@ INTEGRATIONS: Connect Services, API, Webhooks, Logs
 - Customer-facing /documents page: upload/download (max 5MB), no delete
 - WorkDrive-enabled gate: Documents nav tab only shows if partner has WorkDrive connected
 
-#### Admin Panel Restructure (Feb 2026)
+#### Admin Panel Restructure + Dynamic Forms (Feb 2026)
 - "Website Content" tab DELETED
-- "Branding & Hero" renamed to "Organization Info" (top-level tab)
-  - Includes: Store Name, Address, Logo, Brand Colors, Hero Banners, Base Currency
-- "Auth & Pages" as top-level tab (includes Footer & Nav at bottom)
-  - New: "Documents Page" tile (customizes /documents page text)
-- "Forms" as top-level tab
-- "System Config" as top-level tab (Operations + FeatureFlags, no Base Currency)
+- "Organization Info" (top-level) — Store Name, Address, Logo, Brand Colors, Base Currency
+- "Auth & Pages" (top-level, tile-grid) — Login, Signup, Verify Email, Portal, Profile, Admin Panel, 404, Documents Page, Hero Banners, Checkout Builder, Checkout Success, Checkout Messages, Footer & Nav
+- Signup page: bullets 1/2/3 + CTA field editable from Auth & Pages > Sign Up tile
+- "Forms" (top-level) — Enquiry Form schema builder
+- "System Config" (top-level) — Operations + Feature Flags
 
-#### Documents Page Customization (Feb 2026)
-- Partner admins can customize via Auth & Pages > Documents Page tile:
-  - Nav tab label (in top navigation)
-  - Page title, subtitle
-  - Upload section label, hint text
-  - Empty state text
-- Fields stored in website_settings collection
-- TopNav uses ws.nav_documents_label || "Documents"
-- Documents.tsx uses ws.documents_page_* with fallback defaults
+#### WebsiteTab Refactor (Feb 2026)
+- WebsiteTab.tsx refactored from 1330 lines to ~150 lines
+- Child components:
+  - `websiteTabShared.tsx` — shared types, interfaces, atom components (Field, ColorInput, SectionDivider, AuthTile, FormTile, SettingRow, BaseCurrencyWidget, OrgAddressSection)
+  - `WebsiteOrgSection.tsx` — Org Info section (logo, colors, currency, address)
+  - `WebsiteAuthSection.tsx` — Auth & Pages tile grid + all slide-over content
+  - `WebsiteFormsSection.tsx` — Forms tile + form slide-over
+  - `WebsiteSysSection.tsx` — System Config section
+
+#### Dynamic Roles UI (Feb 2026)
+- New "Roles" tab in Admin > People (visible to super_admin / platform_admin)
+- Backend CRUD: GET/POST/PUT/DELETE /api/admin/roles
+- 6 built-in preset roles (Super Admin, Manager, Support, Viewer, Accountant, Content Editor)
+- Custom roles stored in `admin_roles` MongoDB collection
+- UI: card grid with Built-in badge (read-only view) vs custom (edit/delete)
+- Create/Edit dialog: name, description, access level select, module checkboxes
+
+#### Platform Admin Features (Feb 2026)
+- Platform admin can edit any partner's organization address from Partner Orgs view
+- TenantsTab.tsx has "Edit Address" button that opens a modal
+
+#### Authentication & User Flow (Feb 2026)
+- Forced password change for new non-customer users on first login
+- `must_change_password` flag on users collection
+- `ForcePasswordChangeModal` blocks app until password updated
+- PUT /api/auth/change-password endpoint
+- "Back" buttons on login, signup, partner signup pages
+- Customer email field read-only in My Profile
+- Password criteria tooltip on signup screen
+- Dynamic Country/State dropdowns from /api/utils/countries
+
+#### Forms & Validation (Feb 2026)
+- SignUp form: schema-driven from `signup_form_schema` in website_settings
+- Required field asterisks shown based on schema
+- Address block configurable as single unit (enable/disable, required)
+- My Profile respects signup form's mandatory field settings
+- Phone/email basic validation
 
 ## Key API Endpoints
 
+### Roles
+- `GET /api/admin/roles` — returns all roles (preset + custom from DB) + modules list
+- `POST /api/admin/roles` — create custom role
+- `PUT /api/admin/roles/{role_id}` — update custom role
+- `DELETE /api/admin/roles/{role_id}` — delete custom role
+
 ### Partner Address
 - `GET /api/admin/tenants/my` — get own tenant (includes address)
-- `PUT /api/admin/tenants/{id}/address` — update address
+- `PUT /api/admin/tenants/{id}/address` — update address (used by platform admin)
+
+### Auth
+- `PUT /api/auth/change-password` — for forced password change flow
+- `GET /api/utils/countries` — countries/states for dropdowns
 
 ### WorkDrive & Documents
-- `GET /api/oauth/workdrive/authorize` — OAuth start
-- `GET /api/oauth/workdrive/callback` — OAuth callback
-- `GET /api/documents` — admin: list all files
-- `GET /api/documents/customer` — customer: list their files
-- `POST /api/documents/upload-url` — presigned upload
-- `DELETE /api/documents/{file_id}` — delete
-- `POST /api/documents/{file_id}/notes` — add notes
-- `POST /api/documents/sync-folders` — backfill all customer folders
+- `GET /api/oauth/workdrive/authorize`, `GET /api/oauth/workdrive/callback`
+- `GET /api/documents`, `GET /api/documents/customer`
+- `POST /api/documents/upload-url`, `DELETE /api/documents/{file_id}`
+- `POST /api/documents/sync-folders` — backfill customer folders
 
 ### Website Settings
-- `GET /api/admin/website-settings` — includes all fields incl. documents_page_*
-- `PUT /api/admin/website-settings` — save settings
-- `GET /api/website-settings` — public settings (used by frontend context)
+- `GET /api/admin/website-settings` — includes all dynamic content fields
+- `PUT /api/admin/website-settings` — save
+- `GET /api/website-settings` — public
 
 ## Key DB Schema
 - `tenants`: `address: {line1, line2, city, region, postal, country}`
 - `oauth_connections`: WorkDrive tokens + `settings.parent_folder_url`
-- `website_settings`: includes `nav_documents_label`, `documents_page_title`, `documents_page_subtitle`, `documents_page_upload_label`, `documents_page_upload_hint`, `documents_page_empty_text`
+- `admin_roles`: custom roles (`id, name, description, access_level, modules[], is_preset:false, tenant_id`)
+- `users`: `must_change_password: bool`
+- `website_settings`: all configurable text including `signup_bullet_1/2/3`, `signup_cta`, `nav_documents_label`, `documents_page_*`, `signup_form_schema`
 
 ## Prioritized Backlog
 
-### P0 (Critical — must do next)
-- None currently
-
 ### P1 (High — next sprint)
-- Google Drive & OneDrive integration (currently "Coming Soon" in Connect Services)
-- Admin: allow editing partner organization address from admin panel (platform admin view)
+- Google Drive & OneDrive full integration (currently "Coming Soon" tiles in Connect Services)
+- Centralize all email settings into a single tab
 
 ### P2 (Medium)
 - Customer Portal: self-service subscription cancellation
 - Customer Portal: display renewal dates
 - Customer Portal: "Reorder" button
-- Centralize email settings into a single tab
 
 ### P3 (Backlog / Future)
 - Security audit / penetration testing
@@ -114,10 +145,10 @@ INTEGRATIONS: Connect Services, API, Webhooks, Logs
 - Mobile app version of customer portal
 
 ## Test Credentials
-- **Platform Admin**: `admin@automateaccounts.local` / `ChangeMe123!` (partner code: `automate-accounts`)
-- **Partner Admin (Liger Inc)**: `admin@ligerinc.local` / `ChangeMe123!`
-- **Customer (Liger Inc)**: `customer1@ligerinc.local` / `ChangeMe123!`
-- **Test Partner (from iter134)**: `TEST_valid_iter133@test.local` / `ChangeMe123!` (code: `test-org-iter133-valid`)
+- **Platform Admin**: `admin@automateaccounts.local` / `ChangeMe123!` (tenant: `automate-accounts`)
+- **Partner Admin (Bright Accounting)**: `admin@bright-accounting.local` (tenant: `bright-accounting`)
+- **Forced Password Change User**: `testuser@bright-accounting.local` / `ChangeMe123!` (tenant: `bright-accounting`)
+- **Test Partner (iter133)**: `TEST_valid_iter133@test.local` / `ChangeMe123!` (code: `test-org-iter133-valid`)
 
 ## 3rd Party Integrations
 - GoCardless (Payments)
@@ -126,18 +157,25 @@ INTEGRATIONS: Connect Services, API, Webhooks, Logs
 - Zoho WorkDrive (Cloud Storage)
 - exchangerate-api.com (FX rates)
 - jspdf & html2canvas (Frontend PDF Generation)
+- Google Drive (COMING SOON)
+- OneDrive (COMING SOON)
 
 ## Files of Reference
+- `backend/routes/admin/permissions.py` — roles CRUD endpoints + permission helpers
 - `backend/routes/admin/tenants.py` — address endpoints
-- `backend/routes/documents.py` — WorkDrive document endpoints
-- `backend/routes/integrations/workdrive_service.py` — WorkDrive service
-- `backend/routes/integrations/oauth.py` — OAuth flows
-- `backend/models/models.py` — all Pydantic models (incl. WebsiteSettingsUpdate)
+- `backend/models/models.py` — all Pydantic models (incl. WebsiteSettingsUpdate, RoleCreate/Update)
 - `backend/routes/admin/website.py` — DEFAULT_WEBSITE_SETTINGS
-- `frontend/src/pages/Admin.tsx` — admin sidebar + tabs
-- `frontend/src/pages/admin/WebsiteTab.tsx` — all settings tab content
-- `frontend/src/pages/admin/AdminDocumentsTab.tsx` — admin documents management
-- `frontend/src/pages/Documents.tsx` — customer-facing documents
+- `frontend/src/pages/Admin.tsx` — admin sidebar + tabs (incl. Roles tab)
+- `frontend/src/pages/admin/RolesTab.tsx` — Roles management UI
+- `frontend/src/pages/admin/WebsiteTab.tsx` — thin container (refactored)
+- `frontend/src/pages/admin/websiteTabShared.tsx` — shared types + atoms
+- `frontend/src/pages/admin/WebsiteOrgSection.tsx` — Org Info section
+- `frontend/src/pages/admin/WebsiteAuthSection.tsx` — Auth & Pages section
+- `frontend/src/pages/admin/WebsiteFormsSection.tsx` — Forms section
+- `frontend/src/pages/admin/WebsiteSysSection.tsx` — System Config section
+- `frontend/src/pages/auth/Login.tsx` — force password change modal
+- `frontend/src/pages/auth/Signup.tsx` — schema-driven, dynamic content
+- `frontend/src/pages/customer/Profile.tsx` — read-only email, dynamic required fields
+- `frontend/src/pages/platform/tabs/TenantsTab.tsx` — platform admin partner address editing
 - `frontend/src/contexts/WebsiteContext.tsx` — website settings context
 - `frontend/src/components/TopNav.tsx` — customer nav with Documents link
-- `frontend/src/pages/auth/PartnerSignup.tsx` — mandatory address signup
