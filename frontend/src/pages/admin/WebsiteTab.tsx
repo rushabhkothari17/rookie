@@ -590,6 +590,8 @@ function getAuthSlideDesc(key: AuthSlide | null): string {
     footer_contact: "Contact details shown in the footer.",
     footer_social: "Social media platform links.",
     documents_page: "Customize the Documents page heading, subtitle, nav label, and upload instructions.",
+    store_hero: "Hero banner label, title, and subtitle shown on the main store page.",
+    articles_hero: "Hero banner label, title, and subtitle shown on the resources/articles page.",
   };
   return key ? map[key] : "";
 }
