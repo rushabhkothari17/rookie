@@ -27,7 +27,7 @@ export function FormsSection({ ws, s, formSlide, setFormSlide, saveSection, slid
           description="Shown when a customer requests a quote or submits an enquiry"
           fieldCount={getFieldCount(ws.scope_form_schema)}
           onEdit={() => setFormSlide("scope")}
-          testId="form-tile-enquiry"
+          testId="ws-tile-enquiry"
         />
       </div>
       <p className="text-xs text-slate-400 mt-3">
