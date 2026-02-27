@@ -210,7 +210,7 @@ async def rename_folder(tenant_id: str, folder_id: str, new_name: str) -> None:
     api_domain = DATACENTER_API_DOMAINS.get(dc, DATACENTER_API_DOMAINS["US"])
     access_token = creds.get("access_token", "")
     url = f"{api_domain}/workdrive/api/v1/files/{folder_id}"
-    body = {"data": {"attributes": {"name": new_name}}}
+    body = {"data": {"attributes": {"name": new_name}, "type": "files"}}
 
     async with httpx.AsyncClient(timeout=30) as client:
         headers = {**_auth_headers(access_token), "Content-Type": "application/vnd.api+json"}
