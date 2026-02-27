@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import AppShell from "@/components/AppShell";
 import { displayCategory } from "@/lib/categories";
-import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
+import { parseSchema, getAddressConfig, type FormField } from "@/components/FormSchemaBuilder";
+import { AddressFieldRenderer, type AddressValue } from "@/components/AddressFieldRenderer";
 import { ProductLayout, evaluateVisibilityRule, getEnabledIntakeQuestions } from "@/pages/store/layouts";
 
 // ── Dynamic form field renderer ─────────────────────────────
