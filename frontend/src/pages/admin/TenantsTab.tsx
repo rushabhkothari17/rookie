@@ -340,6 +340,41 @@ export function TenantsTab() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Partner Address Dialog */}
+      <Dialog open={!!showAddressEdit} onOpenChange={open => !open && setShowAddressEdit(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><MapPin size={16} /> Edit Organization Address</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2" data-testid="tenant-address-form">
+            <Input placeholder="Line 1 *" value={addrForm.line1 || ""} onChange={e => setAddrForm(p => ({...p, line1: e.target.value}))} data-testid="tenant-addr-line1" />
+            <Input placeholder="Line 2 (optional)" value={addrForm.line2 || ""} onChange={e => setAddrForm(p => ({...p, line2: e.target.value}))} data-testid="tenant-addr-line2" />
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="City *" value={addrForm.city || ""} onChange={e => setAddrForm(p => ({...p, city: e.target.value}))} data-testid="tenant-addr-city" />
+              <Input placeholder="Postal Code *" value={addrForm.postal || ""} onChange={e => setAddrForm(p => ({...p, postal: e.target.value}))} data-testid="tenant-addr-postal" />
+            </div>
+            <Select value={addrForm.country || ""} onValueChange={v => { setAddrForm(p => ({...p, country: v, region: ""})); fetchProvinces(v); }}>
+              <SelectTrigger data-testid="tenant-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
+              <SelectContent>{ORG_COUNTRIES.map(c => <SelectItem key={c.v} value={c.v}>{c.l}</SelectItem>)}</SelectContent>
+            </Select>
+            {addrProvinces.length > 0 ? (
+              <Select value={addrForm.region || ""} onValueChange={v => setAddrForm(p => ({...p, region: v}))}>
+                <SelectTrigger data-testid="tenant-addr-region-select"><SelectValue placeholder="Province / State *" /></SelectTrigger>
+                <SelectContent>{addrProvinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+              </Select>
+            ) : (
+              <Input placeholder="State / Province *" value={addrForm.region || ""} onChange={e => setAddrForm(p => ({...p, region: e.target.value}))} data-testid="tenant-addr-region-input" />
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddressEdit(null)}>Cancel</Button>
+            <Button onClick={saveAddress} disabled={addrSaving} data-testid="tenant-addr-save-btn">
+              {addrSaving ? "Saving…" : "Save Address"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
