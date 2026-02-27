@@ -360,12 +360,12 @@ class AdminCreateCustomerRequest(BaseModel):
     email: str
     phone: Optional[str] = ""
     password: str
-    line1: str
+    line1: Optional[str] = ""
     line2: Optional[str] = ""
-    city: str
-    region: str
-    postal: str
-    country: str
+    city: Optional[str] = ""
+    region: Optional[str] = ""
+    postal: Optional[str] = ""
+    country: Optional[str] = ""
     mark_verified: bool = True
 
 
