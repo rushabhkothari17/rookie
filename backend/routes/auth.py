@@ -1256,3 +1256,32 @@ async def update_me(
             details={k: v for k, v in {**update_user, **update_cust}.items()},
         )
     return {"message": "Profile updated"}
+
+
+class ChangePasswordRequest(BaseModel):
+    new_password: str
+
+
+@router.post("/auth/change-password")
+async def change_password(
+    payload: ChangePasswordRequest,
+    user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Force-change password for authenticated user. Clears the must_change_password flag.
+    Used for first-time login password change flow.
+    """
+    err = _validate_password_complexity(payload.new_password)
+    if err:
+        raise HTTPException(status_code=422, detail=err)
+
+    new_hash = _hash_password(payload.new_password)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"password_hash": new_hash, "must_change_password": False}},
+    )
+    await create_audit_log(
+        entity_type="user", entity_id=user["id"],
+        action="password_changed", actor=user["email"],
+        details={"method": "force_change"},
+    )
+    return {"message": "Password updated successfully"}
