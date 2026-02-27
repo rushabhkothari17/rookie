@@ -1093,6 +1093,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
                 <Field label="Bullet 1" value={ws.signup_bullet_1} onChange={s("signup_bullet_1")} placeholder="Access your orders and subscriptions" testId="ws-signup-bullet-1" />
                 <Field label="Bullet 2" value={ws.signup_bullet_2} onChange={s("signup_bullet_2")} placeholder="Download invoices and documents" testId="ws-signup-bullet-2" />
                 <Field label="Bullet 3" value={ws.signup_bullet_3} onChange={s("signup_bullet_3")} placeholder="Track project progress in real time" testId="ws-signup-bullet-3" />
+                <Field label="CTA / Closing statement" hint='Bold callout line shown below bullets (e.g. "Get started in minutes")' value={ws.signup_cta} onChange={s("signup_cta")} placeholder="Get started in minutes" testId="ws-signup-cta" />
               </div>
             </div>
             <div className="border-t border-slate-100 pt-3">
