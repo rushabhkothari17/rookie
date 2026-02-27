@@ -36,7 +36,45 @@ NOTE: System Config tab DELETED
 
 ### What's Implemented
 
-#### Product 0c: Webapp Hardcoded Values Audit & Fix (Feb 2026)
+## What Was Implemented (Feb 2026 — Product Management Overhaul)
+
+### 22-Issue Product Creation/Editing Fix (Feb 27, 2026)
+All 22 user-reported bugs and enhancements fixed and verified 100% by testing agent:
+1. **Admin tab persistence** — URL `?tab=catalog` param + localStorage; Back button from product editor goes to catalog tab
+2. **Categories dropdown** — Fixed empty-string placeholder issue (`value={form.category || undefined}`)
+3. **Store card bullets** — Fixed `items.length` → `bullets.length` compile error
+4. **Clear store card & save** — Backend already correctly handles null/empty; confirmed working
+5. **Country dropdown in visibility** — Select populated from Taxes module countries when condition field = "country"
+6. **Default checkout type** — "Internal Checkout" pre-selected on new products
+7. **Price rounding display** — `price_mode` field name fixed in OfferingCard.tsx; multiplier-mode skips starting price calc
+8. **No Rounding save** — Confirmed correct (null ↔ "" conversion)
+9. **Show price breakdown** — Toggle works, default = No
+10. **Intake question save** — "Save questions" button added in intake section (triggers full product save)
+11. **Intake question reordering** — Stable React keys (`key={q.key || 'q_'+i}`) prevent state mixing
+12. **Required/Affects price conditional** — Only shown when question is Enabled
+13. **Auto-required on affects_price** — Enabling "Affects price" automatically sets Required = true
+14. **Tooltip moved below helper text** — Moved from Advanced Settings to main question body
+15. **Price floor removed** — Only "Price ceiling cap" shown in intake builder
+16. **Boolean affects_price duplication** — Removed standalone checkbox, kept MiniToggle in flags row
+17. **Boolean price mode (multiplier)** — Add ± and Multiply × radio options for Yes/No questions
+18. **Dropdown no default** — Fixed auto-selection of first option (`defaults[q.key] = ""`)
+19. **Multiplier not affecting base price** — OfferingCard and backend pricing skip multiply-mode questions for starting price calc
+20. **TypeScript types** — Added `card_description`, `card_tag`, `card_bullets`, `price_rounding`, `show_price_breakdown` to Product type
+
+#### Dynamic Enquiry Forms Module (Feb 2026)
+- `Form` and `FormSubmission` models in `backend/models/form.py`
+- CRUD API at `backend/routes/forms.py`
+- `FormsManagementTab.tsx`, `EnquiriesTab.tsx` with PDF download
+- Forms linked to products via `enquiry_form_id`
+
+#### Dashboard & UI Fixes (Feb 2026)
+- Fixed email provider detection bug (tenant scoping in oauth.py)
+- Color-coded integration alerts on dashboard
+- Admin sidebar rearranged (Taxes, Email Templates moved to Settings)
+- System Config tab removed
+- Base currency moved under Store Name
+
+
 - Created shared `useCountries()` and `useProvinces()` hooks at `frontend/src/hooks/useCountries.ts`
 - All country dropdowns across the entire app now pull from `/api/utils/countries` (taxes module): `SettingsTab.tsx`, `websiteTabShared.tsx` (OrgAddressSection), `TenantsTab.tsx`, `CustomersTab.tsx` (filter + edit form), `Signup.tsx` (partner signup + customer signup), `Profile.tsx`
 - Province/state dropdowns now work for ANY country (removed Canada/USA-only restriction) across all files
