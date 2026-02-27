@@ -306,6 +306,11 @@ async def get_website_settings_public(
             settings["checkout_sections"] = DEFAULT_WEBSITE_SETTINGS["checkout_sections"]
     except Exception:
         pass
+    # Migrate: fix old signup schema format (standalone country → address block)
+    try:
+        settings["signup_form_schema"] = _migrate_signup_schema(settings.get("signup_form_schema", "[]"))
+    except Exception:
+        pass
     return {"settings": settings}
 
 
