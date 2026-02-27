@@ -445,6 +445,78 @@ export default function Login() {
 
         </div>
       </div>
+
+      {/* Force Password Change Modal */}
+      {showForcePasswordChange && (
+        <ForcePasswordChangeModal
+          onSuccess={() => {
+            setShowForcePasswordChange(false);
+            navigate("/admin");
+          }}
+        />
+      )}
     </>
+  );
+}
+
+// ─── Force Password Change Modal ──────────────────────────────────────────────
+function ForcePasswordChangeModal({ onSuccess }: { onSuccess: () => void }) {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (newPassword !== confirm) { setError("Passwords do not match."); return; }
+    if (newPassword.length < 8) { setError("Password must be at least 8 characters."); return; }
+    setSaving(true);
+    try {
+      await api.post("/auth/change-password", { new_password: newPassword });
+      onSuccess();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to update password.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+        <h2 className="text-xl font-bold text-slate-900 mb-1">Set a new password</h2>
+        <p className="text-sm text-slate-500 mb-6">Your account requires a password change before you can continue.</p>
+        <form onSubmit={submit} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">New password</label>
+            <input
+              type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+              required autoFocus
+              className="w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-white"
+              data-testid="force-new-password"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">Min. 8 characters · uppercase · number · special character</p>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Confirm password</label>
+            <input
+              type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+              required
+              className="w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-white"
+              data-testid="force-confirm-password"
+            />
+          </div>
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button
+            type="submit" disabled={saving}
+            className="w-full h-11 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-50"
+            data-testid="force-password-submit"
+          >
+            {saving ? "Saving…" : "Update Password & Continue"}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
