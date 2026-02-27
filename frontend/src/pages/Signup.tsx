@@ -11,12 +11,12 @@ import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
 import api from "@/lib/api";
 import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, CheckCircle2, ChevronLeft, Copy, Check, DollarSign } from "lucide-react";
 
-const STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country"];
+const STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country", "address"];
+const LOCKED_STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country", "address"];
 
-const countries = [
+const DEFAULT_COUNTRIES = [
   { value: "Canada", label: "Canada" },
   { value: "USA", label: "United States" },
-  { value: "Other", label: "Other" },
 ];
 
 function FieldWrapper({ label, icon: Icon, children, fullWidth = false, required = false }: {
