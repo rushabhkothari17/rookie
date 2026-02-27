@@ -310,5 +310,12 @@ def get_starting_price(product: Dict[str, Any]) -> Optional[float]:
                 min_add += min(p for p in prices if p > 0) if any(p > 0 for p in prices) else 0
 
     if base > 0 or has_required_priced_question:
-        return round_cents(base + min_add)
+        starting = round_cents(base + min_add)
+        # Apply product-level price rounding
+        price_rounding = product.get("price_rounding")
+        if price_rounding and starting > 0:
+            nearest = {"25": 25, "50": 50, "100": 100}.get(str(price_rounding))
+            if nearest:
+                starting = round_nearest(starting, nearest)
+        return starting
     return None
