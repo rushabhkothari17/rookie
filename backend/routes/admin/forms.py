@@ -46,7 +46,7 @@ async def create_form(
         "id": form_id,
         "tenant_id": tid,
         "name": payload.name.strip(),
-        "schema": payload.schema or "[]",
+        "schema": payload.form_schema or "[]",
         "created_at": now_iso(),
         "updated_at": now_iso(),
     }
