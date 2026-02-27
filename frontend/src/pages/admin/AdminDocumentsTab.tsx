@@ -1,15 +1,16 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "@/components/ui/sonner";
 import api from "@/lib/api";
 import {
   FileText, Trash2, Download, Upload, StickyNote, Search,
-  RefreshCw, AlertTriangle, FolderSync, ChevronDown, ChevronRight,
-  Clock, Edit, FileSearch, X
+  RefreshCw, AlertTriangle, FolderSync, ChevronDown,
+  Clock, FileSearch, ChevronsUpDown, Check
 } from "lucide-react";
 
 interface Document {
