@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import api from "@/lib/api";
+import { parseSchema, getAddressConfig } from "@/components/FormSchemaBuilder";
 import { Download, Lock, Trash2, AlertTriangle } from "lucide-react";
 
 // Parse signup form schema to get field settings
