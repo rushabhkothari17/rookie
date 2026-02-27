@@ -79,18 +79,8 @@ export function AdminDocumentsTab() {
       setDocs(docsRes.data.documents || []);
       const wd = (connRes.data.integrations || []).find((i: any) => i.id === "zoho_workdrive");
       setWorkdriveConnected(wd?.is_validated === true);
-      // Load customer list for upload modal
-      const custRes = await api.get("/admin/customers?per_page=500");
-      const userMap: Record<string, any> = {};
-      (custRes.data.users || []).forEach((u: any) => { userMap[u.id] = u; });
-      const custs = (custRes.data.customers || []).map((c: any) => {
-        const user = userMap[c.user_id] || {};
-        return {
-          id: c.id,
-          name: user.full_name || user.email || c.company_name || c.id,
-        };
-      });
-      setCustomers(custs);
+      // Load first 15 customers for upload modal
+      fetchCustomers("");
     } catch {
       toast.error("Failed to load documents");
     } finally {
