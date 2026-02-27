@@ -344,7 +344,7 @@ export function TenantsTab() {
             </div>
             <Select value={addrForm.country || ""} onValueChange={v => { setAddrForm(p => ({...p, country: v, region: ""})); fetchProvinces(v); }}>
               <SelectTrigger data-testid="tenant-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
-              <SelectContent>{ORG_COUNTRIES.map(c => <SelectItem key={c.v} value={c.v}>{c.l}</SelectItem>)}</SelectContent>
+              <SelectContent>{countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
             </Select>
             {addrProvinces.length > 0 ? (
               <Select value={addrForm.region || ""} onValueChange={v => setAddrForm(p => ({...p, region: v}))}>
