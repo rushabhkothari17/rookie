@@ -286,10 +286,10 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
   },
   zoho_crm: {
     steps: [
-      "Go to Zoho API Console and click 'Self Client' → CREATE",
+      "Go to Zoho API Console and click 'Add Client' and then select 'Self Client'. If you have already created a self client, click on that.",
       "Note your Client ID and Client Secret from the app details",
-      "In the 'Generate Code' tab, enter scopes: ZohoCRM.modules.ALL,ZohoCRM.settings.ALL",
-      "Set Time Duration to 3 minutes, then click CREATE",
+      "In the 'Generate Code' tab, enter scopes: ZohoCRM.modules.ALL,ZohoCRM.settings.ALL (this has to be different for zoho mail, crm, books and workdrive)",
+      "Set Time Duration to 10 minutes, then click CREATE",
       "Copy the Authorization Code shown — paste it in the field below",
       "Click Save & Continue — we'll exchange it for a refresh token automatically",
     ],
