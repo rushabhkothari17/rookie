@@ -39,6 +39,8 @@ function formatSize(bytes: number) {
 export function AdminDocumentsTab() {
   const [docs, setDocs] = useState<Document[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [custLoading, setCustLoading] = useState(false);
+  const [custOpen, setCustOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [workdriveConnected, setWorkdriveConnected] = useState<boolean | null>(null);
   const [search, setSearch] = useState("");
