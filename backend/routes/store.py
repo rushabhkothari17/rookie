@@ -160,6 +160,11 @@ async def get_products(
     if user:
         customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
         customer_id = customer["id"] if customer else None
+        # Attach address for visibility condition evaluation (country, state_province, etc.)
+        if customer:
+            addr = await db.addresses.find_one({"customer_id": customer["id"]}, {"_id": 0})
+            if addr:
+                customer = {**customer, "address": addr}
         # Admins always see all active products
         is_admin = user.get("is_admin", False)
     else:
