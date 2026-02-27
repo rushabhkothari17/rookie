@@ -46,6 +46,12 @@ export default function Profile() {
   const [deleteReason, setDeleteReason] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
+  const [phoneError, setPhoneError] = useState("");
+
+  // Parse signup form schema for field settings
+  const schemaFields = parseProfileSchema(ws.signup_form_schema);
+  const phoneRequired = schemaFields["phone"]?.required ?? true;
+  const companyRequired = schemaFields["company_name"]?.required ?? false;
 
   useEffect(() => {
     if (!user) return;
