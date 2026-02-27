@@ -220,7 +220,7 @@ export function CustomersTab() {
           <Input placeholder="Search name / email / company" value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 text-xs w-52" data-testid="admin-customers-search" />
           <Select value={countryFilter || "all"} onValueChange={v => setCountryFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-customers-country-filter"><SelectValue placeholder="All Countries" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Countries</SelectItem><SelectItem value="GB">UK</SelectItem><SelectItem value="AU">Australia</SelectItem><SelectItem value="NZ">New Zealand</SelectItem><SelectItem value="CA">Canada</SelectItem><SelectItem value="USA">USA</SelectItem></SelectContent>
+            <SelectContent><SelectItem value="all">All Countries</SelectItem>{countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-customers-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
