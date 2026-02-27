@@ -96,6 +96,15 @@ def _eval_single_vis_cond(cond: dict, customer: dict) -> bool:
     operator = cond.get("operator", "equals")
     expected = str(cond.get("value", "") or "")
     actual = (customer or {}).get(field)
+    # Resolve nested address fields for country / state_province / city / postal_code
+    if actual is None:
+        addr = (customer or {}).get("address") or {}
+        if field == "country":
+            actual = addr.get("country")
+        elif field == "state_province":
+            actual = addr.get("state_province") or addr.get("region") or addr.get("province")
+        elif field in ("city", "postal_code"):
+            actual = addr.get(field)
     actual_str = str(actual or "").lower() if actual is not None else ""
     if operator == "equals":        return actual_str == expected.lower()
     if operator == "not_equals":    return actual_str != expected.lower()
