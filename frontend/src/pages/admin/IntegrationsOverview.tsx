@@ -267,10 +267,10 @@ const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; ur
   },
   zoho_mail: {
     steps: [
-      "Go to Zoho API Console and click 'Self Client' → CREATE",
+      "Go to Zoho API Console and click 'Add Client' and then select 'Self Client'. If you have already created a self client, click on that.",
       "Note your Client ID and Client Secret from the app details",
       "In the 'Generate Code' tab, enter scopes: ZohoMail.messages.CREATE,ZohoMail.accounts.READ",
-      "Set Time Duration to 3 minutes, then click CREATE",
+      "Set Time Duration to 10 minutes, then click CREATE",
       "Copy the Authorization Code shown — paste it in the field below",
       "Click Save & Continue — we'll exchange it for a refresh token automatically",
     ],
