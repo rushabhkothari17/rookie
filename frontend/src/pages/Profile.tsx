@@ -73,11 +73,18 @@ export default function Profile() {
     }
   }, [user, address, isAdmin]);
 
+  // Fetch countries from taxes module on mount
+  useEffect(() => {
+    api.get("/utils/countries")
+      .then(r => setCountries(r.data.countries || []))
+      .catch(() => setCountries([{ value: "Canada", label: "Canada" }, { value: "USA", label: "United States" }]));
+  }, []);
+
   // Fetch provinces/states when country changes
   useEffect(() => {
     const country = form.country;
-    if (country === "Canada" || country === "USA") {
-      api.get(`/utils/provinces?country_code=${country}`).then(r => {
+    if (country) {
+      api.get(`/utils/provinces?country_code=${encodeURIComponent(country)}`).then(r => {
         setProvinces(r.data.regions || []);
       }).catch(() => setProvinces([]));
     } else {
