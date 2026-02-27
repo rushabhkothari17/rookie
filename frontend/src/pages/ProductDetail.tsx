@@ -252,9 +252,19 @@ export default function ProductDetail() {
     const scopeSchema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false);
     const requiredFields = scopeSchema.filter(f => f.required);
     for (const field of requiredFields) {
-      if (!scopeFormData[field.key]) {
-        toast.error(`${field.label} is required`);
-        return;
+      if (field.type === "address") {
+        const addrCfg = getAddressConfig(field);
+        const addrVal: AddressValue = (() => { try { return JSON.parse(scopeFormData[field.key] || "{}"); } catch { return {}; } })();
+        if (addrCfg.line1.required && !addrVal.line1) { toast.error(`${field.label}: Address Line 1 is required`); return; }
+        if (addrCfg.city.required && !addrVal.city) { toast.error(`${field.label}: City is required`); return; }
+        if (addrCfg.country.required && !addrVal.country) { toast.error(`${field.label}: Country is required`); return; }
+        if (addrCfg.postal.required && !addrVal.postal) { toast.error(`${field.label}: Postal Code is required`); return; }
+        if (addrCfg.state.required && !addrVal.state) { toast.error(`${field.label}: State/Province is required`); return; }
+      } else {
+        if (!scopeFormData[field.key]) {
+          toast.error(`${field.label} is required`);
+          return;
+        }
       }
     }
     setSubmittingScope(true);
