@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite, applyPartnerBranding } from "@/contexts/WebsiteContext";
-import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
+import { parseSchema, getAddressConfig, type FormField } from "@/components/FormSchemaBuilder";
 import api from "@/lib/api";
 import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, CheckCircle2, ChevronLeft, Copy, Check, DollarSign } from "lucide-react";
 
