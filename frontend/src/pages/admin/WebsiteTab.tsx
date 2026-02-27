@@ -87,6 +87,7 @@ interface WebsiteData {
   signup_bullet_1: string;
   signup_bullet_2: string;
   signup_bullet_3: string;
+  signup_cta: string;
 }
 
 interface BrandingData {
@@ -153,6 +154,7 @@ const WEB_DEFAULTS: WebsiteData = {
   signup_bullet_1: "",
   signup_bullet_2: "",
   signup_bullet_3: "",
+  signup_cta: "",
 };
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
