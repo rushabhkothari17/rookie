@@ -323,10 +323,10 @@ async def exchange_code_for_tokens(
 
 
 async def validate_connection(tenant_id: str) -> bool:
-    """Test the WorkDrive connection by listing the root team folders."""
+    """Test the WorkDrive connection by listing team folders."""
     try:
-        resp = await _call(tenant_id, "GET", "/privatespace")
-        return resp.status_code in (200, 404)  # 404 = connected but no space = still valid
+        resp = await _call(tenant_id, "GET", "/teamfolders")
+        return resp.status_code in (200, 404)  # 404 = connected but no folders = still valid
     except Exception as exc:
         logger.warning("WorkDrive validation failed: %s", exc)
         return False
