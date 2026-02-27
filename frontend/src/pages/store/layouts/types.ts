@@ -47,6 +47,9 @@ export interface Product {
   tagline?: string;
   description_long?: string;
   bullets?: string[];
+  card_tag?: string;
+  card_description?: string;
+  card_bullets?: string[];
   tag?: string;
   category?: string;
   base_price?: number;
@@ -56,6 +59,7 @@ export interface Product {
   stripe_price_id?: string;
   terms_id?: string;
   display_layout?: string;
+  price_rounding?: string;
   intake_schema_json?: {
     version: number;
     questions: IntakeQuestion[];

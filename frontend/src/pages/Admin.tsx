@@ -57,6 +57,8 @@ export default function Admin() {
   // Tab navigation ref for programmatic switching (used by checklist widget)
   const tabsRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState(() => {
+    const urlTab = searchParams.get("tab");
+    if (urlTab) return urlTab;
     try { return localStorage.getItem("admin_active_tab") || "customers"; } catch { return "customers"; }
   });
 
