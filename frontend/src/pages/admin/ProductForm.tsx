@@ -9,6 +9,7 @@ import {
 import { IntakeSchemaBuilder, IntakeSchemaJson, EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { SectionsEditor, CustomSection, DEFAULT_SECTION } from "./SectionsEditor";
 import api from "@/lib/api";
+import { useCountries } from "@/hooks/useCountries";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -158,7 +159,7 @@ function BulletsList({ bullets, onChange, placeholder = "Feature or detail" }: {
             className="flex-1 h-9 text-sm"
             data-testid={`pf-bullet-${i}`}
           />
-          {items.length > 1 && (
+          {bullets.length > 1 && (
             <button type="button" onClick={() => remove(i)} className="text-slate-400 hover:text-red-500 shrink-0 transition-colors">
               <X size={14} />
             </button>
