@@ -454,38 +454,76 @@ export function CustomersTab() {
               );
             })}
 
-            {/* Address block — shown/required based on schema */}
+            {/* Address block — driven by address_config from schema */}
             {(() => {
               const addrField = signupSchema.find((s: any) => s.key === "address");
               if (addrField && addrField.enabled === false) return null;
-              const req = addrField?.required ?? false;
+              const cfg = addrField ? getAddressConfig(addrField) : null;
+              const sf = (key: string) => cfg ? (cfg as any)[key] : { enabled: true, required: false };
               return (
                 <div className="space-y-2 border-t border-slate-100 pt-3">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Address {req && <span className="text-red-500">*</span>}
-                  </p>
-                  <Input placeholder={`Line 1${req ? " *" : ""}`} value={newCustomer.line1} onChange={e => setNewCustomer({ ...newCustomer, line1: e.target.value })} data-testid="create-customer-line1" />
-                  <Input placeholder="Line 2 (optional)" value={newCustomer.line2} onChange={e => setNewCustomer({ ...newCustomer, line2: e.target.value })} data-testid="create-customer-line2" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input placeholder={`City${req ? " *" : ""}`} value={newCustomer.city} onChange={e => setNewCustomer({ ...newCustomer, city: e.target.value })} data-testid="create-customer-city" />
-                    <Input placeholder={`Postal${req ? " *" : ""}`} value={newCustomer.postal} onChange={e => setNewCustomer({ ...newCustomer, postal: e.target.value })} data-testid="create-customer-postal" />
-                  </div>
-                  <SearchableSelect
-                    value={newCustomer.country || undefined}
-                    onValueChange={v => setNewCustomer({ ...newCustomer, country: v, region: "" })}
-                    options={[{value:"Canada",label:"Canada"},{value:"USA",label:"United States"},{value:"UK",label:"United Kingdom"},{value:"Australia",label:"Australia"},{value:"India",label:"India"},{value:"Germany",label:"Germany"},{value:"France",label:"France"},{value:"Singapore",label:"Singapore"},{value:"New Zealand",label:"New Zealand"}]}
-                    placeholder={`Country${req ? " *" : ""}…`}
-                    searchPlaceholder="Search country…"
-                    data-testid="create-customer-country"
-                  />
-                  {provinces.length > 0 ? (
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Address</p>
+                  {sf("line1").enabled && (
+                    <Input
+                      placeholder={`Line 1${sf("line1").required ? " *" : ""}`}
+                      value={newCustomer.line1}
+                      onChange={e => setNewCustomer({ ...newCustomer, line1: e.target.value })}
+                      data-testid="create-customer-line1"
+                    />
+                  )}
+                  {sf("line2").enabled && (
+                    <Input
+                      placeholder={`Line 2${sf("line2").required ? " *" : " (optional)"}`}
+                      value={newCustomer.line2}
+                      onChange={e => setNewCustomer({ ...newCustomer, line2: e.target.value })}
+                      data-testid="create-customer-line2"
+                    />
+                  )}
+                  {(sf("city").enabled || sf("postal").enabled) && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {sf("city").enabled && (
+                        <Input
+                          placeholder={`City${sf("city").required ? " *" : ""}`}
+                          value={newCustomer.city}
+                          onChange={e => setNewCustomer({ ...newCustomer, city: e.target.value })}
+                          data-testid="create-customer-city"
+                        />
+                      )}
+                      {sf("postal").enabled && (
+                        <Input
+                          placeholder={`Postal${sf("postal").required ? " *" : ""}`}
+                          value={newCustomer.postal}
+                          onChange={e => setNewCustomer({ ...newCustomer, postal: e.target.value })}
+                          data-testid="create-customer-postal"
+                        />
+                      )}
+                    </div>
+                  )}
+                  {sf("country").enabled && (
+                    <SearchableSelect
+                      value={newCustomer.country || undefined}
+                      onValueChange={v => setNewCustomer({ ...newCustomer, country: v, region: "" })}
+                      options={countries.length ? countries : [{value:"Canada",label:"Canada"},{value:"USA",label:"United States"}]}
+                      placeholder={`Country${sf("country").required ? " *" : ""}…`}
+                      searchPlaceholder="Search country…"
+                      data-testid="create-customer-country"
+                    />
+                  )}
+                  {sf("state").enabled && (provinces.length > 0 ? (
                     <Select value={newCustomer.region} onValueChange={v => setNewCustomer({ ...newCustomer, region: v })}>
-                      <SelectTrigger data-testid="create-customer-region-select"><SelectValue placeholder={`Province / State${req ? " *" : ""}…`} /></SelectTrigger>
+                      <SelectTrigger data-testid="create-customer-region-select">
+                        <SelectValue placeholder={`Province / State${sf("state").required ? " *" : ""}…`} />
+                      </SelectTrigger>
                       <SelectContent>{provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
                     </Select>
                   ) : (
-                    <Input placeholder={`State / Province${req ? " *" : ""}`} value={newCustomer.region} onChange={e => setNewCustomer({ ...newCustomer, region: e.target.value })} data-testid="create-customer-region" />
-                  )}
+                    <Input
+                      placeholder={`State / Province${sf("state").required ? " *" : ""}`}
+                      value={newCustomer.region}
+                      onChange={e => setNewCustomer({ ...newCustomer, region: e.target.value })}
+                      data-testid="create-customer-region"
+                    />
+                  ))}
                 </div>
               );
             })()}
