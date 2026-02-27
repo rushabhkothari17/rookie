@@ -216,6 +216,15 @@ export function TenantsTab() {
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={() => openAddressEdit(tenant)}
+                  data-testid={`edit-address-${tenant.code}`}
+                >
+                  <MapPin className="h-3.5 w-3.5 mr-1" />
+                  Address
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => setShowCreateAdmin(tenant.id)}
                   data-testid={`add-admin-${tenant.code}`}
                 >
