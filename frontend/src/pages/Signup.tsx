@@ -478,7 +478,7 @@ export default function Signup() {
                   <FieldWrapper label="Password" icon={Lock} required>
                     <Input type="password" value={form.password} onChange={e => handleChange("password", e.target.value)} data-testid="signup-password-input" required />
                     <p className="text-[11px] text-slate-400 mt-1">
-                      Min. 8 characters · at least one uppercase letter · one number · one special character (!@#$%^&*)
+                      Min. 10 characters · at least one uppercase letter · one number · one special character (!@#$%^&*)
                     </p>
                   </FieldWrapper>
                 </div>

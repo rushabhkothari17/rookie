@@ -497,7 +497,7 @@ function ForcePasswordChangeModal({ onSuccess }: { onSuccess: () => void }) {
               className="w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-white"
               data-testid="force-new-password"
             />
-            <p className="text-[11px] text-slate-400 mt-1">Min. 8 characters · uppercase · number · special character</p>
+            <p className="text-[11px] text-slate-400 mt-1">Min. 10 characters · uppercase · number · special character</p>
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Confirm password</label>
