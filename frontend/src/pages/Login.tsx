@@ -82,7 +82,8 @@ export default function Login() {
 
   const [step, setStep] = useState<"gateway" | "auth">("gateway");
   const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
-  const [authKey, setAuthKey] = useState(0); // force re-mount for animation replay
+  const [authKey, setAuthKey] = useState(0);
+  const [showForcePasswordChange, setShowForcePasswordChange] = useState(false);
 
   const [codeInput, setCodeInput] = useState("");
   const [codeLoading, setCodeLoading] = useState(false);
