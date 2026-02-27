@@ -322,12 +322,57 @@ export function AdminDocumentsTab() {
           <div className="space-y-3">
             <div>
               <label className="text-xs text-slate-600 mb-1 block">Customer *</label>
-              <Select value={uploadCustomerId} onValueChange={setUploadCustomerId}>
-                <SelectTrigger data-testid="upload-customer-select"><SelectValue placeholder="Select customer…" /></SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Popover open={custOpen} onOpenChange={(v) => { setCustOpen(v); if (v) fetchCustomers(""); }}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                    data-testid="upload-customer-select"
+                  >
+                    {uploadCustomerId
+                      ? customers.find(c => c.id === uploadCustomerId)?.email || "Selected"
+                      : "Select customer…"}
+                    <ChevronsUpDown size={14} className="ml-2 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" style={{ width: "var(--radix-popover-trigger-width)" }}>
+                  <Command shouldFilter={false}>
+                    <CommandInput
+                      placeholder="Search by email or name…"
+                      onValueChange={(v) => fetchCustomers(v)}
+                      data-testid="customer-search-input"
+                    />
+                    <CommandList>
+                      {custLoading
+                        ? <div className="py-3 text-center text-xs text-slate-400">Searching…</div>
+                        : customers.length === 0
+                          ? <CommandEmpty>No customers found</CommandEmpty>
+                          : (
+                            <CommandGroup>
+                              {customers.map(c => (
+                                <CommandItem
+                                  key={c.id}
+                                  value={c.id}
+                                  onSelect={() => { setUploadCustomerId(c.id); setCustOpen(false); }}
+                                  data-testid={`customer-option-${c.id}`}
+                                >
+                                  <Check size={12} className={`mr-2 shrink-0 ${uploadCustomerId === c.id ? "opacity-100" : "opacity-0"}`} />
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-medium truncate">{c.email}</span>
+                                    {c.name && c.name !== c.email && (
+                                      <span className="text-[11px] text-slate-400 truncate">{c.name}</span>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          )
+                      }
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-xs text-slate-600 mb-1 block">File * (max 5 MB)</label>
