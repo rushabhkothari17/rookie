@@ -1,10 +1,47 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Lock, Trash2, ChevronUp, ChevronDown, Plus, Settings2, GripVertical } from "lucide-react";
 
+// ── Address sub-field config types ────────────────────────────────────────────
+export interface AddressSubField {
+  enabled: boolean;
+  required: boolean;
+}
+
+export interface AddressConfig {
+  line1: AddressSubField;
+  line2: AddressSubField;
+  city: AddressSubField;
+  state: AddressSubField;
+  postal: AddressSubField;
+  country: AddressSubField;
+}
+
+export const DEFAULT_ADDRESS_CONFIG: AddressConfig = {
+  line1:   { enabled: true, required: true  },
+  line2:   { enabled: true, required: false },
+  city:    { enabled: true, required: true  },
+  state:   { enabled: true, required: false },
+  postal:  { enabled: true, required: true  },
+  country: { enabled: true, required: true  },
+};
+
+export function getAddressConfig(field: FormField): AddressConfig {
+  if (!field.address_config) return DEFAULT_ADDRESS_CONFIG;
+  // Merge with defaults so any missing sub-field falls back gracefully
+  return {
+    line1:   { ...DEFAULT_ADDRESS_CONFIG.line1,   ...(field.address_config.line1   ?? {}) },
+    line2:   { ...DEFAULT_ADDRESS_CONFIG.line2,   ...(field.address_config.line2   ?? {}) },
+    city:    { ...DEFAULT_ADDRESS_CONFIG.city,    ...(field.address_config.city    ?? {}) },
+    state:   { ...DEFAULT_ADDRESS_CONFIG.state,   ...(field.address_config.state   ?? {}) },
+    postal:  { ...DEFAULT_ADDRESS_CONFIG.postal,  ...(field.address_config.postal  ?? {}) },
+    country: { ...DEFAULT_ADDRESS_CONFIG.country, ...(field.address_config.country ?? {}) },
+  };
+}
+
+// ── FormField interface ────────────────────────────────────────────────────────
 export interface FormField {
   id: string;
   key: string;
@@ -16,21 +53,32 @@ export interface FormField {
   locked: boolean;
   enabled: boolean;
   order: number;
+  address_config?: AddressConfig;
 }
 
-export type FieldType = "text" | "email" | "tel" | "number" | "date" | "textarea" | "select" | "checkbox" | "file" | "password";
+export type FieldType = "text" | "email" | "tel" | "number" | "date" | "textarea" | "select" | "checkbox" | "file" | "password" | "address";
 
 const FIELD_TYPES: { value: FieldType; label: string }[] = [
-  { value: "text", label: "Text" },
-  { value: "email", label: "Email" },
-  { value: "tel", label: "Phone" },
-  { value: "number", label: "Number" },
-  { value: "date", label: "Date" },
+  { value: "text",     label: "Text" },
+  { value: "email",    label: "Email" },
+  { value: "tel",      label: "Phone" },
+  { value: "number",   label: "Number" },
+  { value: "date",     label: "Date" },
   { value: "textarea", label: "Textarea" },
-  { value: "select", label: "Dropdown" },
+  { value: "select",   label: "Dropdown" },
   { value: "checkbox", label: "Checkbox" },
-  { value: "file", label: "File Upload" },
+  { value: "file",     label: "File Upload" },
   { value: "password", label: "Password" },
+  { value: "address",  label: "Address Block" },
+];
+
+const ADDRESS_SUB_LABELS: { key: keyof AddressConfig; label: string }[] = [
+  { key: "line1",   label: "Line 1" },
+  { key: "line2",   label: "Line 2" },
+  { key: "city",    label: "City" },
+  { key: "state",   label: "State / Province" },
+  { key: "postal",  label: "Postal Code" },
+  { key: "country", label: "Country" },
 ];
 
 function slugify(str: string): string {
@@ -105,7 +153,25 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
       if (patch.label !== undefined && !f.locked) {
         updated.key = slugify(patch.label) || f.key;
       }
+      // When switching to address type, add default config if not already set
+      if (patch.type === "address" && !updated.address_config) {
+        updated.address_config = { ...DEFAULT_ADDRESS_CONFIG };
+      }
       return updated;
+    }));
+  };
+
+  const updateAddressSubField = (id: string, subKey: keyof AddressConfig, patch: Partial<AddressSubField>) => {
+    commit(fields.map(f => {
+      if (f.id !== id) return f;
+      const cfg = getAddressConfig(f);
+      return {
+        ...f,
+        address_config: {
+          ...cfg,
+          [subKey]: { ...cfg[subKey], ...patch },
+        },
+      };
     }));
   };
 
@@ -163,6 +229,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
             {/* Inline edit panel */}
             {editingId === field.id && (
               <div className="border-t border-slate-100 bg-slate-50 p-3 grid grid-cols-2 gap-3">
+                {/* Label + Type */}
                 <div>
                   <label className="text-[11px] text-slate-500 font-medium">Label</label>
                   <Input value={field.label} onChange={e => updateField(field.id, { label: e.target.value })} className="mt-0.5 h-7 text-xs" />
@@ -176,31 +243,77 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <label className="text-[11px] text-slate-500 font-medium">Placeholder</label>
-                  <Input value={field.placeholder} onChange={e => updateField(field.id, { placeholder: e.target.value })} className="mt-0.5 h-7 text-xs" />
-                </div>
-                <div className="flex items-end gap-4 pb-1">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" checked={field.required} onChange={e => updateField(field.id, { required: e.target.checked })} className="w-3.5 h-3.5" />
-                    <span className="text-xs text-slate-600">Required</span>
-                  </label>
-                </div>
-                {field.type === "select" && (
+
+                {/* Address sub-field config (only for address type) */}
+                {field.type === "address" ? (
                   <div className="col-span-2">
-                    <label className="text-[11px] text-slate-500 font-medium">Options (one per line, format: Label|value)</label>
-                    <Textarea
-                      value={
-                        Array.isArray(field.options) 
-                          ? field.options.join("\n") 
-                          : (field.options || "")
-                      }
-                      onChange={e => updateField(field.id, { options: e.target.value.split("\n").filter(Boolean) })}
-                      rows={3}
-                      className="mt-0.5 text-xs font-mono"
-                      placeholder="Option One|opt_1&#10;Option Two|opt_2"
-                    />
+                    <label className="text-[11px] text-slate-500 font-medium block mb-2">Sub-field Configuration</label>
+                    <div className="rounded border border-slate-200 overflow-hidden">
+                      <div className="grid grid-cols-3 gap-0 bg-slate-100 px-3 py-1.5">
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Field</span>
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide text-center">Enabled</span>
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide text-center">Required</span>
+                      </div>
+                      {ADDRESS_SUB_LABELS.map(({ key: subKey, label: subLabel }) => {
+                        const cfg = getAddressConfig(field)[subKey];
+                        return (
+                          <div key={subKey} className="grid grid-cols-3 gap-0 px-3 py-2 border-t border-slate-100 items-center">
+                            <span className="text-xs text-slate-700">{subLabel}</span>
+                            <div className="flex justify-center">
+                              <input
+                                type="checkbox"
+                                checked={cfg.enabled}
+                                onChange={e => updateAddressSubField(field.id, subKey, { enabled: e.target.checked, required: e.target.checked ? cfg.required : false })}
+                                className="w-3.5 h-3.5 cursor-pointer"
+                                data-testid={`addr-subfield-enabled-${field.id}-${subKey}`}
+                              />
+                            </div>
+                            <div className="flex justify-center">
+                              <input
+                                type="checkbox"
+                                checked={cfg.required}
+                                disabled={!cfg.enabled}
+                                onChange={e => updateAddressSubField(field.id, subKey, { required: e.target.checked })}
+                                className="w-3.5 h-3.5 cursor-pointer disabled:opacity-30"
+                                data-testid={`addr-subfield-required-${field.id}-${subKey}`}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1.5">Country and State/Province options are loaded from your tax configuration.</p>
                   </div>
+                ) : (
+                  <>
+                    {/* Standard placeholder + required for non-address types */}
+                    <div>
+                      <label className="text-[11px] text-slate-500 font-medium">Placeholder</label>
+                      <Input value={field.placeholder} onChange={e => updateField(field.id, { placeholder: e.target.value })} className="mt-0.5 h-7 text-xs" />
+                    </div>
+                    <div className="flex items-end gap-4 pb-1">
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" checked={field.required} onChange={e => updateField(field.id, { required: e.target.checked })} className="w-3.5 h-3.5" />
+                        <span className="text-xs text-slate-600">Required</span>
+                      </label>
+                    </div>
+                    {field.type === "select" && (
+                      <div className="col-span-2">
+                        <label className="text-[11px] text-slate-500 font-medium">Options (one per line, format: Label|value)</label>
+                        <Textarea
+                          value={
+                            Array.isArray(field.options)
+                              ? field.options.join("\n")
+                              : (field.options || "")
+                          }
+                          onChange={e => updateField(field.id, { options: e.target.value.split("\n").filter(Boolean) })}
+                          rows={3}
+                          className="mt-0.5 text-xs font-mono"
+                          placeholder="Option One|opt_1&#10;Option Two|opt_2"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
