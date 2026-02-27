@@ -124,16 +124,7 @@ export default function ApplicationLayout({
               {product.card_description && (
                 <p className="text-lg text-slate-500 mb-4">{product.card_description}</p>
               )}
-              {/* Tags */}
-              {product.tag && (
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {product.tag.split(",").map((tag: string, i: number) => (
-                    <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100" data-testid={`product-tag-${i}`}>
-                      {tag.trim()}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {/* Tags removed - use card_tag on store card only */}
               
               {product.description_long && (
                 <div className="prose prose-sm max-w-none text-slate-600">
