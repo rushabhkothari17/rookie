@@ -660,6 +660,10 @@ class WebsiteSettingsUpdate(BaseModel):
     documents_page_upload_label: Optional[str] = None
     documents_page_upload_hint: Optional[str] = None
     documents_page_empty_text: Optional[str] = None
+    # Signup page bullets
+    signup_bullet_1: Optional[str] = None
+    signup_bullet_2: Optional[str] = None
+    signup_bullet_3: Optional[str] = None
 
 
 class QuoteRequest(BaseModel):
