@@ -139,13 +139,16 @@ function BillingTypeSelector({ value, onChange }: { value: boolean; onChange: (v
 function BulletsList({ bullets, onChange, placeholder = "Feature or detail" }: {
   bullets: string[]; onChange: (v: string[]) => void; placeholder?: string;
 }) {
-  const items = bullets.length > 0 ? bullets : [""];
-  const update = (i: number, v: string) => { const n = [...items]; n[i] = v; onChange(n.filter(Boolean)); };
-  const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
+  const update = (i: number, v: string) => { const n = [...bullets]; n[i] = v; onChange(n); };
+  const remove = (i: number) => onChange(bullets.filter((_, j) => j !== i));
+  const add = () => onChange([...bullets, ""]);
   return (
     <div className="space-y-2">
       <label className={labelCls}>Bullet points <span className="text-slate-400 normal-case font-normal tracking-normal">(what's included)</span></label>
-      {items.map((b, i) => (
+      {bullets.length === 0 && (
+        <p className="text-xs text-slate-400 italic">No bullet points yet.</p>
+      )}
+      {bullets.map((b, i) => (
         <div key={i} className="flex gap-2 items-center">
           <span className="text-slate-300 text-xs mt-0.5 shrink-0">–</span>
           <Input
