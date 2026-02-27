@@ -377,6 +377,11 @@ export default function Signup() {
                 <span className="text-white/70 text-sm">{item}</span>
               </div>
             ))}
+            {(ws.signup_cta || "Get started in minutes") && (
+              <div className="mt-6 pt-5 border-t border-white/10">
+                <p className="text-white font-semibold text-sm">{ws.signup_cta || "Get started in minutes"}</p>
+              </div>
+            )}
           </div>
         </div>
 
