@@ -288,7 +288,20 @@ export default function ProductDetail() {
     (pricing?.total === 0 || (!product?.base_price && !pricing?.total));
 
   const handleSubmitQuote = async () => {
-    if (!quoteFormData.name || !quoteFormData.email) {
+    // Validate required fields (if schema-driven)
+    const qSchema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false && f.required);
+    if (qSchema.length > 0) {
+      for (const field of qSchema) {
+        if (field.type === "address") {
+          const addrCfg = getAddressConfig(field);
+          const addrVal: AddressValue = (() => { try { return JSON.parse(quoteFormData[field.key] || "{}"); } catch { return {}; } })();
+          if (addrCfg.line1.required && !addrVal.line1) { toast.error(`${field.label}: Address Line 1 is required`); return; }
+          if (addrCfg.country.required && !addrVal.country) { toast.error(`${field.label}: Country is required`); return; }
+        } else if (!quoteFormData[field.key]) {
+          toast.error(`${field.label} is required`); return;
+        }
+      }
+    } else if (!quoteFormData.name || !quoteFormData.email) {
       toast.error("Name and email are required");
       return;
     }
