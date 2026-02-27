@@ -219,6 +219,15 @@ async def get_product(
         if vis_cond and (vis_cond.get("groups") or vis_cond.get("conditions")):
             if not _eval_product_conditions(vis_cond, {}):
                 raise HTTPException(status_code=404, detail="Product not found")
+
+    # Resolve custom enquiry form schema if product has one
+    enquiry_form_id = product.get("enquiry_form_id")
+    if enquiry_form_id:
+        form_doc = await db.tenant_forms.find_one({"id": enquiry_form_id}, {"_id": 0})
+        if form_doc:
+            product["resolved_form_schema"] = form_doc.get("schema", "[]")
+            product["resolved_form_name"] = form_doc.get("name", "")
+
     return {"product": product}
 
 
