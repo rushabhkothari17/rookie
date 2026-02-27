@@ -191,6 +191,15 @@ export default function ProductEditor() {
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
+              onClick={() => setPreviewOpen(true)}
+              className="gap-2"
+              data-testid="product-editor-preview"
+            >
+              <Eye size={16} />
+              Preview card
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => navigate("/admin?tab=catalog")}
               data-testid="product-editor-cancel"
             >
