@@ -799,7 +799,13 @@ async def update_settings(
     """Update provider settings (e.g., success page text, from email)."""
     if provider not in INTEGRATIONS:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
-    
+
+    # Validate required settings
+    config = INTEGRATIONS[provider]
+    for setting in config.get("settings", []):
+        if setting.get("required") and not payload.settings.get(setting["key"], "").strip():
+            raise HTTPException(status_code=400, detail=f"{setting['label']} is required")
+
     tid = tenant_id_of(admin)
     
     await db.oauth_connections.update_one(
