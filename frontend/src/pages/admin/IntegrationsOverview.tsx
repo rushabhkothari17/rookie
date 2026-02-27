@@ -195,16 +195,12 @@ const ICON_MAP: Record<string, any> = {
 const SETUP_GUIDES: Record<string, { steps: string[]; links: { label: string; url: string }[]; tips?: string[] }> = {
   zoho_workdrive: {
     steps: [
-      "Log in to Zoho API Console: api-console.zoho.com",
-      "Create a new 'Server-based Application' (or use an existing one)",
-      "Set redirect URI to: https://www.zoho.com/workdrive",
-      "Under 'Scopes', add: WorkDrive.files.CREATE, WorkDrive.files.READ, WorkDrive.files.UPDATE, WorkDrive.files.DELETE, WorkDrive.teamfolders.READ",
-      "Copy your Client ID and Client Secret and paste them below",
-      "Click 'Save Credentials' to generate your Authorization URL",
-      "Open the Authorization URL in your browser and grant access",
-      "Copy the one-time Authorization Code (expires in 3 minutes) and paste in the Code field",
-      "Click 'Connect' — tokens are stored automatically (no manual refresh token needed)",
-      "After validation, paste your WorkDrive parent folder URL where client folders will be created",
+      "Go to Zoho API Console and click 'Add Client' and then select 'Self Client'. If you have already created a self client, click on that.",
+      "Note your Client ID and Client Secret from the app details",
+      "In the 'Generate Code' tab, enter scopes: WorkDrive.files.CREATE, WorkDrive.files.READ, WorkDrive.files.UPDATE, WorkDrive.files.DELETE, WorkDrive.teamfolders.READ",
+      "Set Time Duration to 10 minutes, then click CREATE",
+      "Copy the Authorization Code shown — paste it in the field below",
+      "Click Save & Continue — we'll exchange it for a refresh token automatically",
     ],
     links: [
       { label: "Zoho API Console", url: "https://api-console.zoho.com" },
