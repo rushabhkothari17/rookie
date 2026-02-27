@@ -51,21 +51,44 @@ _SIGNUP_FORM_SCHEMA = json.dumps([
 ])
 
 def _migrate_signup_schema(schema_str: str) -> str:
-    """Migrate old signup schema format (with standalone country/email/password) to new format (with address block)."""
+    """Migrate old signup schema format to current format.
+    - Removes standalone country/email/password locked fields
+    - Adds address field with type 'address' and default address_config
+    - Upgrades existing 'address' field from type 'text' to type 'address'
+    """
     try:
         fields = json.loads(schema_str) if schema_str else []
         if not fields:
             return schema_str
         has_address = any(f.get("key") == "address" for f in fields)
         has_old_country = any(f.get("key") == "country" and f.get("locked") for f in fields)
-        # Only migrate if old format detected (no address field, has locked country)
-        if not has_address and has_old_country:
-            # Remove locked country, email, password fields (they are always fixed in the form)
+
+        # Step 1: remove old locked fields (email, password, standalone country)
+        if has_old_country:
             fields = [f for f in fields if f.get("key") not in ("country", "email", "password") or not f.get("locked")]
+
+        # Step 2: add address field if missing
+        if not has_address:
             max_order = max((f.get("order", 0) for f in fields), default=0)
-            fields.append({"id": "su_address", "key": "address", "label": "Address", "type": "text",
-                           "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True,
-                           "order": max_order + 1})
+            fields.append({
+                "id": "su_address", "key": "address", "label": "Address",
+                "type": "address", "required": False, "placeholder": "", "options": [],
+                "locked": True, "enabled": True, "order": max_order + 1,
+                "address_config": _DEFAULT_ADDRESS_CONFIG,
+            })
+
+        # Step 3: upgrade any address field from type 'text' to 'address' and inject address_config
+        changed = False
+        for f in fields:
+            if f.get("key") == "address":
+                if f.get("type") != "address":
+                    f["type"] = "address"
+                    changed = True
+                if not f.get("address_config"):
+                    f["address_config"] = _DEFAULT_ADDRESS_CONFIG
+                    changed = True
+
+        if has_old_country or not has_address or changed:
             fields.sort(key=lambda f: f.get("order", 0))
             return json.dumps(fields)
     except Exception:
