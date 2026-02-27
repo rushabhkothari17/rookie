@@ -249,7 +249,9 @@ export default function ProductDetail() {
   };
 
   const handleSubmitScopeForm = async () => {
-    const scopeSchema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false);
+    // Use product's custom form schema if available, else fall back to default
+    const activeSchema = product?.resolved_form_schema || ws.scope_form_schema;
+    const scopeSchema = parseSchema(activeSchema).filter(f => f.enabled !== false);
     const requiredFields = scopeSchema.filter(f => f.required);
     for (const field of requiredFields) {
       if (field.type === "address") {
