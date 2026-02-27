@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { IntakeSchemaBuilder, IntakeSchemaJson, EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { SectionsEditor, CustomSection, DEFAULT_SECTION } from "./SectionsEditor";
+import api from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
