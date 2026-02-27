@@ -476,8 +476,17 @@ function ProductConditionBuilder({
                 {!VIS_NO_VALUE.has(cond.operator) && (
                   <div>
                     <label className="text-[10px] text-slate-500 block mb-1">Value</label>
-                    <Input value={cond.value || ""} onChange={e => setCond(gi, ci, { value: e.target.value })}
-                      placeholder="e.g. United Kingdom, Ltd, active" className="h-8 text-xs" />
+                    {cond.field === "country" ? (
+                      <Select value={cond.value || undefined} onValueChange={v => setCond(gi, ci, { value: v })}>
+                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select country…" /></SelectTrigger>
+                        <SelectContent>
+                          {countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input value={cond.value || ""} onChange={e => setCond(gi, ci, { value: e.target.value })}
+                        placeholder="e.g. United Kingdom, Ltd, active" className="h-8 text-xs" />
+                    )}
                   </div>
                 )}
               </div>
