@@ -733,20 +733,24 @@ async def validate_connection(
                     result = {"success": False, "message": f"WorkDrive token refresh failed: {err}"}
                 else:
                     access_token = token_resp.json().get("access_token", "")
-                    api_domain = dc_config["api_domain"]
-                    wd_resp = await client.get(
-                        f"{api_domain}/workdrive/api/v1/currentuser",
+                    # Use the standard Zoho OAuth userinfo endpoint — reliable across all DC/scopes
+                    userinfo_resp = await client.get(
+                        f"{dc_config['accounts_url']}/oauth/v2/userinfo",
                         headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
                     )
-                    if wd_resp.status_code in (200, 404):
+                    if userinfo_resp.status_code == 200:
                         result = {"success": True, "message": "Zoho WorkDrive connected successfully"}
-                        # Store access token for immediate use
                         await db.oauth_connections.update_one(
                             {"tenant_id": tid, "provider": provider},
                             {"$set": {"credentials.access_token": access_token}}
                         )
                     else:
-                        result = {"success": False, "message": f"WorkDrive API returned {wd_resp.status_code}"}
+                        try:
+                            err_body = userinfo_resp.json()
+                            detail = err_body.get("message") or err_body.get("error") or f"HTTP {userinfo_resp.status_code}"
+                        except Exception:
+                            detail = f"HTTP {userinfo_resp.status_code}"
+                        result = {"success": False, "message": f"WorkDrive token validation failed: {detail}"}
 
             else:
                 result = {"success": False, "message": "Validation not implemented"}
