@@ -45,7 +45,47 @@ export function TenantsTab() {
   const [newAdmin, setNewAdmin] = useState({ email: "", full_name: "", password: "", role: "partner_super_admin" });
   const [creatingAdmin, setCreatingAdmin] = useState(false);
 
-  const load = async () => {
+  // Address edit dialog
+  const [showAddressEdit, setShowAddressEdit] = useState<string | null>(null);
+  const [addrForm, setAddrForm] = useState<TenantAddress>({});
+  const [addrProvinces, setAddrProvinces] = useState<{value:string;label:string}[]>([]);
+  const [addrSaving, setAddrSaving] = useState(false);
+
+  const ORG_COUNTRIES = [
+    {v:"Canada",l:"Canada"},{v:"USA",l:"United States"},{v:"UK",l:"United Kingdom"},
+    {v:"Australia",l:"Australia"},{v:"India",l:"India"},{v:"Germany",l:"Germany"},
+    {v:"France",l:"France"},{v:"Netherlands",l:"Netherlands"},{v:"Singapore",l:"Singapore"},
+    {v:"New Zealand",l:"New Zealand"},
+  ];
+
+  const openAddressEdit = (tenant: Tenant) => {
+    setAddrForm(tenant.address || {});
+    setAddrProvinces([]);
+    setShowAddressEdit(tenant.id);
+    if (tenant.address?.country) fetchProvinces(tenant.address.country);
+  };
+
+  const fetchProvinces = (country: string) => {
+    if (country === "Canada" || country === "USA") {
+      api.get(`/utils/provinces?country_code=${country}`).then(r => setAddrProvinces(r.data.regions || [])).catch(() => setAddrProvinces([]));
+    } else {
+      setAddrProvinces([]);
+    }
+  };
+
+  const saveAddress = async () => {
+    if (!showAddressEdit) return;
+    setAddrSaving(true);
+    try {
+      await api.put(`/admin/tenants/${showAddressEdit}/address`, { address: addrForm });
+      toast.success("Address saved");
+      setShowAddressEdit(null);
+      await load();
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to save address");
+    } finally {
+      setAddrSaving(false); }
+  };
     try {
       const { data } = await api.get("/admin/tenants");
       setTenants(data.tenants || []);
