@@ -64,3 +64,66 @@ async def get_provinces(country_code: str = Query(..., description="ISO country 
     key = country_code.upper().strip()
     regions = _COUNTRY_MAP.get(key, [])
     return {"country_code": key, "regions": regions}
+
+
+# Country code → display name mapping
+_ISO_TO_NAME = {
+    "CA": "Canada",
+    "US": "USA",
+    "GB": "United Kingdom",
+    "AU": "Australia",
+    "NZ": "New Zealand",
+    "IN": "India",
+    "DE": "Germany",
+    "FR": "France",
+    "NL": "Netherlands",
+    "SG": "Singapore",
+    "IE": "Ireland",
+    "ZA": "South Africa",
+}
+
+_FALLBACK_COUNTRIES = [
+    {"value": "Canada", "label": "Canada"},
+    {"value": "USA", "label": "United States"},
+]
+
+
+@router.get("/utils/countries")
+async def get_countries(partner_code: str = Query(None, description="Partner code to scope tax-table lookup")):
+    """Return list of countries present in the tax tables.
+    Falls back to default list if no tax data found or partner_code not provided.
+    """
+    codes: list = []
+    try:
+        query = {}
+        if partner_code:
+            from bson import ObjectId
+            tenant = await db.tenants.find_one({"code": partner_code.strip().lower()}, {"_id": 1})
+            if tenant:
+                query["tenant_id"] = str(tenant["_id"])
+        raw = await db.tax_tables.distinct("country_code", query)
+        codes = [c.upper() for c in raw if c]
+    except Exception:
+        pass
+
+    if not codes:
+        # Try global tax_tables (no tenant filter) as a fallback
+        try:
+            raw = await db.tax_tables.distinct("country_code", {})
+            codes = [c.upper() for c in raw if c]
+        except Exception:
+            pass
+
+    if not codes:
+        return {"countries": _FALLBACK_COUNTRIES}
+
+    # Map ISO codes to display names, filtering out unknowns
+    result = []
+    for code in sorted(set(codes)):
+        name = _ISO_TO_NAME.get(code)
+        if name:
+            result.append({"value": name, "label": name})
+        else:
+            result.append({"value": code, "label": code})
+
+    return {"countries": result if result else _FALLBACK_COUNTRIES}
