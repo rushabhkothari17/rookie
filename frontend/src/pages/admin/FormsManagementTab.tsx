@@ -119,7 +119,7 @@ export function FormsManagementTab() {
     if (!editName.trim()) { toast.error("Form name is required"); return; }
     setSavingEdit(true);
     try {
-      await api.put(`/admin/forms/${editSlide.form.id}`, { name: editName.trim(), schema: editSchema });
+      await api.put(`/admin/forms/${editSlide.form.id}`, { name: editName.trim(), form_schema: editSchema });
       toast.success("Form saved");
       setEditSlide({ open: false, form: null });
       loadForms();
