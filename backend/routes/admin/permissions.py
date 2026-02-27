@@ -103,6 +103,20 @@ class PermissionCheck(BaseModel):
     action: str  # view, create, edit, delete
 
 
+class RoleCreate(BaseModel):
+    name: str
+    description: str = ""
+    access_level: str = "read_only"
+    modules: List[str] = []
+
+
+class RoleUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    access_level: Optional[str] = None
+    modules: Optional[List[str]] = None
+
+
 @router.get("/admin/permissions/modules")
 async def get_available_modules(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Get list of available modules and access levels."""
