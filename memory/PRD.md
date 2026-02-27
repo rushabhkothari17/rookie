@@ -38,7 +38,11 @@ NOTE: System Config tab DELETED
 
 ## What Was Implemented (Feb 2026 — Product Management Overhaul)
 
-### 22-Issue Product Creation/Editing Fix (Feb 27, 2026)
+### Action Items Complete (Feb 27, 2026 — session 2)
+1. **Country visibility rules fixed** — backend `store.py` now loads address from separate `addresses` collection and attaches it before evaluating visibility conditions (both `get_products` and `get_product` endpoints)
+2. **Preview store card** — "Preview card" button added to product editor header; opens modal with live `OfferingCard` preview, content chips, and tip for empty store card
+
+
 All 22 user-reported bugs and enhancements fixed and verified 100% by testing agent:
 1. **Admin tab persistence** — URL `?tab=catalog` param + localStorage; Back button from product editor goes to catalog tab
 2. **Categories dropdown** — Fixed empty-string placeholder issue (`value={form.category || undefined}`)
