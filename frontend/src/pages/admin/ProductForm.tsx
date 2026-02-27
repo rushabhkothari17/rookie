@@ -788,10 +788,34 @@ export function ProductForm({
 
           {/* Enquiry */}
           {form.pricing_type === "enquiry" && (
-            <div className="border border-dashed border-slate-200 rounded-lg p-6 text-center bg-slate-50">
-              <MessageSquare size={24} className="text-slate-400 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700">Enquiry only — no online checkout</p>
-              <p className="text-xs text-slate-500 mt-1">Customers will submit an enquiry form. You'll be notified to follow up directly.</p>
+            <div className="border border-slate-200 rounded-lg p-5 space-y-4">
+              <div className="flex items-center gap-3 text-slate-700">
+                <MessageSquare size={20} className="text-slate-400 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold">Enquiry only — no online checkout</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Customers will submit an enquiry form. You'll be notified to follow up directly.</p>
+                </div>
+              </div>
+              <div className="border-t border-slate-100 pt-4">
+                <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">Enquiry Form</label>
+                <Select
+                  value={form.enquiry_form_id || "default"}
+                  onValueChange={v => s("enquiry_form_id")(v === "default" ? "" : v)}
+                >
+                  <SelectTrigger data-testid="pf-enquiry-form">
+                    <SelectValue placeholder="Default Form" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Default Form</SelectItem>
+                    {availableForms.map(f => (
+                      <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Choose a custom form or use the default enquiry form. Manage forms under Settings → Forms.
+                </p>
+              </div>
             </div>
           )}
 
