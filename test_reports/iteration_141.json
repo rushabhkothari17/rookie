@@ -1,0 +1,48 @@
+{
+  "summary": "Iteration 141: Tested 3 new changes - (1) Backend address loading fix in store.py for country-based product visibility, (2) Preview card button/modal in ProductEditor, (3) Visibility tab country dropdown. All backend API tests passed (11/11). All frontend UI tests passed with clear visual confirmation.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter141_preview_card_address_fix.py",
+    "/app/test_reports/pytest/pytest_iter141_preview_card.xml",
+    "/app/test_reports/iter141_editor_header.jpeg",
+    "/app/test_reports/iter141_modal_empty.jpeg",
+    "/app/test_reports/iter141_live_preview_name.jpeg",
+    "/app/test_reports/iter141_visibility_country.jpeg"
+  ],
+  "verified_features": {
+    "fix_1_address_loading_backend": "PASS - store.py get_products (lines 160-168) now queries db.addresses by customer_id and attaches addr to customer doc as 'address' key. get_product (lines 210-215) has same fix. _eval_single_vis_cond already handles nested address.country correctly.",
+    "fix_2_preview_card_button": "PASS - data-testid='product-editor-preview' button visible in header with Eye icon and 'Preview card' text. Confirmed in screenshot iter141_editor_header.jpeg",
+    "fix_3_preview_modal_opens": "PASS - Clicking 'Preview card' opens modal with data-testid='store-card-preview-modal'. Modal shows 'Store card preview' header + 'LIVE PREVIEW' badge + OfferingCard component + chips for Product name/Card tag/Card description/Bullets/Price CTA",
+    "fix_4_live_name_update": "PASS - When 'Test Service' typed in Product Name field, reopening modal shows 'Test Service' in the OfferingCard in real time. 'Product name' chip turns green (✓). Confirmed in screenshot iter141_live_preview_name.jpeg",
+    "fix_5_modal_close_x": "PASS - X button (data-testid='store-card-preview-close') closes modal",
+    "fix_6_modal_close_backdrop": "PASS - Clicking outside the card panel (backdrop) closes modal",
+    "fix_7_visibility_country_dropdown": "PASS - Visibility tab → Conditional radio → condition builder shows: Customer field='Country', Operator='equals', Value='Select country...' (shadcn select dropdown, not text input). Also shows '+ Add condition' and '+ Add group' buttons. Confirmed in screenshot iter141_visibility_country.jpeg"
+  },
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend fix in store.py is correct: db.addresses queried by customer_id, addr attached as customer['address']. The _eval_single_vis_cond function correctly reads nested address.country. No issues found.",
+    "ProductEditor.tsx StoreCardPreview component correctly derives previewProduct from form state and renders OfferingCard. The Chip components correctly show green (active) vs gray (inactive) based on form field values.",
+    "Minor: StoreCardPreview uses form.currency || 'GBP' as default currency (hardcoded GBP), while EMPTY_FORM likely defaults to USD. Cosmetic only - preview card uses GBP fallback."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter141_preview_card_address_fix.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 tests passed)",
+    "frontend": "100% (all 7 feature checks passed)"
+  },
+  "test_credentials": "admin@automateaccounts.local / ChangeMe123! (partner code: automate-accounts)",
+  "seed_data_creation": "Temporarily created and deleted TEST_Preview_Card_Product via admin API to verify visibility condition persistence",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 141 adds 3 features on top of 140's 22 fixes. All 3 verified: (1) db.addresses fix in store.py get_products/get_product, (2) Preview card button in ProductEditor header, (3) Country dropdown in visibility conditions builder. Admin platform at /admin/products/new. Partner code: automate-accounts. All features working without issues.",
+  "rca_of_issues": "N/A - No bugs found. All 3 new changes working correctly."
+}
