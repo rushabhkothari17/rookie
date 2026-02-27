@@ -32,12 +32,22 @@ _SCOPE_FORM_SCHEMA = json.dumps([
     {"id": "s_notes", "key": "additional_notes", "label": "Additional Notes", "type": "textarea", "required": False, "placeholder": "Anything else we should know?", "locked": False, "enabled": True, "order": 5},
 ])
 
+_DEFAULT_ADDRESS_CONFIG = {
+    "line1":   {"enabled": True, "required": True},
+    "line2":   {"enabled": True, "required": False},
+    "city":    {"enabled": True, "required": True},
+    "state":   {"enabled": True, "required": False},
+    "postal":  {"enabled": True, "required": True},
+    "country": {"enabled": True, "required": True},
+}
+
 _SIGNUP_FORM_SCHEMA = json.dumps([
-    {"id": "su_name",    "key": "full_name",    "label": "Full Name",    "type": "text", "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 0},
-    {"id": "su_company", "key": "company_name", "label": "Company Name", "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 1},
-    {"id": "su_job",     "key": "job_title",    "label": "Job Title",    "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 2},
-    {"id": "su_phone",   "key": "phone",        "label": "Phone",        "type": "tel",  "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 3},
-    {"id": "su_address", "key": "address",      "label": "Address",      "type": "text", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 4},
+    {"id": "su_name",    "key": "full_name",    "label": "Full Name",    "type": "text",    "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 0},
+    {"id": "su_company", "key": "company_name", "label": "Company Name", "type": "text",    "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 1},
+    {"id": "su_job",     "key": "job_title",    "label": "Job Title",    "type": "text",    "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 2},
+    {"id": "su_phone",   "key": "phone",        "label": "Phone",        "type": "tel",     "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 3},
+    {"id": "su_address", "key": "address",      "label": "Address",      "type": "address", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 4,
+     "address_config": _DEFAULT_ADDRESS_CONFIG},
 ])
 
 def _migrate_signup_schema(schema_str: str) -> str:
