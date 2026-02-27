@@ -825,7 +825,7 @@ export function IntakeSchemaBuilder({ schema, onChange }: { schema: IntakeSchema
       {/* Question list */}
       <div className="space-y-2">
         {questions.map((q, i) => (
-          <QuestionCard key={i} q={q} idx={i} total={questions.length} allKeys={allKeys}
+          <QuestionCard key={q.key || `q_${i}`} q={q} idx={i} total={questions.length} allKeys={allKeys}
             allQuestions={questions} onChange={nq => changeQ(i, nq)}
             onRemove={() => removeQ(i)} onMove={dir => moveQ(i, dir)} />
         ))}
