@@ -159,6 +159,7 @@ app.include_router(downloads_router)
 app.include_router(taxes_router)
 app.include_router(utils_router)
 app.include_router(documents_router)
+app.include_router(admin_forms_router)
 
 
 
