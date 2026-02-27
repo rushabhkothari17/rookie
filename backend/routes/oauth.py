@@ -729,7 +729,7 @@ async def validate_connection(
                     access_token = token_resp.json().get("access_token", "")
                     api_domain = dc_config["api_domain"]
                     wd_resp = await client.get(
-                        f"{api_domain}/workdrive/api/v1/privatespace",
+                        f"{api_domain}/workdrive/api/v1/teamfolders",
                         headers={"Authorization": f"Zoho-oauthtoken {access_token}"}
                     )
                     if wd_resp.status_code in (200, 404):
