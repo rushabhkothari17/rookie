@@ -78,14 +78,11 @@ export default function ProductEditor() {
 
     return {
       name: p.name || "",
-      tagline: p.tagline || "",
-      card_title: p.card_title || "",
       card_tag: p.card_tag || "",
       card_description: p.card_description || "",
       card_bullets: p.card_bullets || [],
       description_long: p.description_long || "",
       bullets,
-      tag: p.tag || "",
       category: p.category || "",
       faqs: Array.isArray(p.faqs)
         ? p.faqs.map((f: any) => (typeof f === "string" ? { question: f, answer: "" } : f))
