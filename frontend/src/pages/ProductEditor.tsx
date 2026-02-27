@@ -23,40 +23,15 @@ export default function ProductEditor() {
   const [terms, setTerms] = useState<{ id: string; title: string }[]>([]);
   
   const [form, setForm] = useState<ProductFormData>({
-    name: "",
-    tagline: "",
-    card_title: "",
-    card_tag: "",
-    card_description: "",
-    card_bullets: [],
-    description_long: "",
-    bullets: [],
-    tag: "",
-    category: "",
-    faqs: [],
-    terms_id: "",
-    base_price: 0,
-    is_subscription: false,
-    stripe_price_id: "",
-    price_rounding: "",
-    pricing_type: "internal",
-    external_url: "",
-    currency: "USD",
-    is_active: true,
-    visible_to_customers: [],
-    restricted_to: [],
-    visibility_conditions: null,
+    ...EMPTY_FORM,
     intake_schema_json: EMPTY_INTAKE_SCHEMA,
-    custom_sections: [],
-    display_layout: "standard",
-    enquiry_form_id: "",
   });
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const [catRes, custRes, termsRes] = await Promise.all([
-          api.get("/categories"),
+          api.get("/admin/categories"),
           api.get("/admin/customers?per_page=500"),
           api.get("/admin/terms"),
         ]);
