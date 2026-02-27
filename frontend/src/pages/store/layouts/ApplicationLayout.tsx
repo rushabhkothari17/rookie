@@ -121,8 +121,8 @@ export default function ApplicationLayout({
           <div className="space-y-6" data-testid="section-overview">
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
               <h1 className="text-2xl font-bold text-slate-900 mb-2">{product.name}</h1>
-              {product.tagline && (
-                <p className="text-lg text-slate-500 mb-4">{product.tagline}</p>
+              {product.card_description && (
+                <p className="text-lg text-slate-500 mb-4">{product.card_description}</p>
               )}
               {/* Tags */}
               {product.tag && (
