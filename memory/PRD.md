@@ -33,6 +33,16 @@ INTEGRATIONS: Connect Services (incl. Google Drive + OneDrive COMING SOON), API,
 
 ### What's Implemented
 
+#### Product 0c: Webapp Hardcoded Values Audit & Fix (Feb 2026)
+- Created shared `useCountries()` and `useProvinces()` hooks at `frontend/src/hooks/useCountries.ts`
+- All country dropdowns across the entire app now pull from `/api/utils/countries` (taxes module): `SettingsTab.tsx`, `websiteTabShared.tsx` (OrgAddressSection), `TenantsTab.tsx`, `CustomersTab.tsx` (filter + edit form), `Signup.tsx` (partner signup + customer signup), `Profile.tsx`
+- Province/state dropdowns now work for ANY country (removed Canada/USA-only restriction) across all files
+- Removed hardcoded default "Canada" from all initial states
+- Customer filter dropdown in `CustomersTab.tsx` now uses dynamic country list
+- `TaxesTab.tsx` COUNTRIES expanded from 16 to 80+ world countries for adding new tax rates
+- `utils.py` `_ISO_TO_NAME` expanded from 12 to 80+ countries for proper name resolution
+- `AddressFieldRenderer.tsx` fallback only used when API fails (not a source of truth)
+
 #### Product 0b: Address Field Type in FormSchemaBuilder (Feb 2026)
 - New `address` field type in `FormSchemaBuilder` — works in ALL form builders (signup, enquiry/scope, custom)
 - Admin can individually toggle/require each sub-field: Line 1, Line 2, City, State/Province, Postal, Country
