@@ -179,8 +179,8 @@ async def create_folder(tenant_id: str, parent_folder_id: str, folder_name: str)
             "attributes": {
                 "name": folder_name,
                 "parent_id": parent_folder_id,
-                "type": "folder",
-            }
+            },
+            "type": "files",
         }
     }
 
