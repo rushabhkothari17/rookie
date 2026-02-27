@@ -471,7 +471,7 @@ function ForcePasswordChangeModal({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setError("");
     if (newPassword !== confirm) { setError("Passwords do not match."); return; }
-    if (newPassword.length < 8) { setError("Password must be at least 8 characters."); return; }
+    if (newPassword.length < 10) { setError("Password must be at least 10 characters."); return; }
     setSaving(true);
     try {
       await api.post("/auth/change-password", { new_password: newPassword });
