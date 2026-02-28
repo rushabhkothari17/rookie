@@ -682,7 +682,6 @@ All export endpoints accept optional `?from_date=` and `?to_date=` query params.
 | `PUT`  | `/api/admin/tenants/{tenant_id}` | Update tenant |
 | `POST` | `/api/admin/tenants/{tenant_id}/activate` | Activate tenant |
 | `POST` | `/api/admin/tenants/{tenant_id}/deactivate` | Deactivate tenant |
-| `POST` | `/api/admin/tenants/{tenant_id}/create-admin` | Create an admin user for the tenant |
 | `GET`  | `/api/admin/tenants/{tenant_id}/users` | List tenant's users |
 | `GET`  | `/api/admin/tenants/{tenant_id}/customers` | List tenant's customers |
 
