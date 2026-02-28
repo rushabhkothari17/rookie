@@ -884,7 +884,7 @@ Payment provider callbacks — **no auth** (verified by signature).
 
 ---
 
-## 33. OAuth / CRM
+## 35. OAuth / CRM
 
 See Section 14 for OAuth endpoints. Additional endpoints:
 
@@ -897,7 +897,7 @@ See Section 14 for OAuth endpoints. Additional endpoints:
 
 ---
 
-## 34. Uploads & Downloads
+## 36. Uploads & Downloads
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
