@@ -566,6 +566,9 @@ export function LogsTab() {
                 {selectedLog?.success === false ? "FAILED" : "OK"}
               </span>
             </DialogTitle>
+            <DialogDescription>
+              {selectedLog?.occurred_at ? new Date(selectedLog.occurred_at).toLocaleString() : ""} · {selectedLog?.source || ""}
+            </DialogDescription>
           </DialogHeader>
           {selectedLog && (
             <div className="space-y-4 text-sm">
