@@ -868,7 +868,7 @@ export function ProductForm({
       {activeTab === "visibility" && (
         <div className={sectionCls}>
           <div className={cardCls}>
-            <label className={labelCls}>Customer visibility</label>
+            <label className={labelCls}>Customer visibility <FieldTip tip="Controls which customers can see and purchase this product in your store. 'Conditional' lets you target by customer fields (country, company type, etc.)." /></label>
             <div className="space-y-2.5 mt-1">
               {([
                 ["all",              "All customers",                           null],
