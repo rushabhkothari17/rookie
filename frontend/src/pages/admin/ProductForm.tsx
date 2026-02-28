@@ -847,20 +847,8 @@ export function ProductForm({
             </div>
           )}
 
-          {/* Shared: billing type + T&C */}
+          {/* Shared: T&C */}
           <div className={cardCls}>
-            {form.pricing_type !== "external" && form.pricing_type !== "enquiry" && (
-              <div className="space-y-3">
-                <label className={labelCls}>Billing type</label>
-                <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
-                {form.is_subscription && (
-                  <div>
-                    <label className={labelCls}>Stripe Price ID</label>
-                    <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
-                  </div>
-                )}
-              </div>
-            )}
             <div>
               <label className={labelCls}>Terms & Conditions</label>
               <Select value={form.terms_id || "default"} onValueChange={v => s("terms_id")(v === "default" ? "" : v)}>
