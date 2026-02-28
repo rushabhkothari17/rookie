@@ -296,6 +296,15 @@ async def create_article(
     if existing:
         slug = f"{slug}-{make_id()[:4]}"
 
+    # License: check resource limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "resources")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Resource limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     resource_id = make_id()
     now = now_iso()
     doc = {
