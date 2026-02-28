@@ -176,7 +176,16 @@ export function SubscriptionsTab() {
   };
 
   const handleCreateManual = async () => {
-    try { await api.post("/admin/subscriptions/manual", manualSub); toast.success("Subscription created"); setShowManualDialog(false); load(1); }
+    try {
+      const payload = {
+        ...manualSub,
+        term_months: manualSub.term_months ? parseInt(String(manualSub.term_months)) : null,
+      };
+      await api.post("/admin/subscriptions/manual", payload);
+      toast.success("Subscription created");
+      setShowManualDialog(false);
+      load(1);
+    }
     catch (e: any) { toast.error(e.response?.data?.detail || "Failed"); }
   };
 
