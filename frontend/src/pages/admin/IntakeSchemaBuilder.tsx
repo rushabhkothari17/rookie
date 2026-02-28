@@ -810,7 +810,7 @@ export function IntakeSchemaBuilder({ schema, onChange }: { schema: IntakeSchema
   const typeGroups = ["Choice", "Input", "Pricing", "Layout"];
 
   return (
-    <div className="space-y-3" data-testid="intake-builder">
+    <div className="space-y-4" data-testid="intake-builder">
       {/* Price cap */}
       <div className="rounded-lg border border-slate-200 bg-white">
         <button type="button" onClick={() => setShowCaps(v => !v)}
