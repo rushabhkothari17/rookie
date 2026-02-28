@@ -178,6 +178,8 @@ app.include_router(utils_router)
 app.include_router(documents_router)
 app.include_router(admin_forms_router)
 app.include_router(integration_requests_router)
+app.include_router(partner_plan_management_router)
+app.include_router(partner_submissions_router)
 
 
 
