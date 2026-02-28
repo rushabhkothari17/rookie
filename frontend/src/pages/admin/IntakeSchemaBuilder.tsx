@@ -770,7 +770,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                       </div>
                       {/* Step group */}
                       <div>
-                        <label className="label-xs">Step group <span className="text-slate-400 font-normal normal-case">(wizard layout)</span></label>
+                        <label className="label-xs">Step group <span className="text-slate-400 font-normal normal-case">(wizard layout)</span> <FieldTip tip="Groups questions into wizard steps. Questions in group 1 appear on page 1, group 2 on page 2, etc. Set to 0 to show on the first step." side="right" /></label>
                         <div className="flex items-center gap-3">
                           <Input type="number" value={q.step_group ?? 0}
                             onChange={e => onChange({ ...q, step_group: parseInt(e.target.value) || 0 })}
