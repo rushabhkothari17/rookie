@@ -653,14 +653,32 @@ async def auto_sync_to_zoho_books(
                     entity_key = endpoint.rstrip('s')  # contacts -> contact
                     zoho_id = resp_data.get(entity_key, {}).get("contact_id") or resp_data.get(entity_key, {}).get("invoice_id")
                     logger.info(f"Auto-sync Zoho Books success: {webapp_module} -> {books_module}, ID: {zoho_id}")
+                    await create_audit_log(
+                        entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                        action="zoho_books_sync_success", actor="system",
+                        details={"books_module": books_module, "operation": operation, "zoho_id": zoho_id},
+                        tenant_id=tenant_id,
+                    )
                     return {"success": True, "zoho_id": zoho_id}
                 else:
                     error_msg = resp_data.get("message", str(resp_data))
                     logger.warning(f"Auto-sync Zoho Books error: {error_msg}")
+                    await create_audit_log(
+                        entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                        action="zoho_books_sync_failed", actor="system",
+                        details={"books_module": books_module, "operation": operation, "error": error_msg},
+                        tenant_id=tenant_id,
+                    )
                     return {"success": False, "error": error_msg}
             else:
                 error_msg = resp.text[:200]
                 logger.error(f"Auto-sync Zoho Books HTTP error {resp.status_code}: {error_msg}")
+                await create_audit_log(
+                    entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                    action="zoho_books_sync_failed", actor="system",
+                    details={"books_module": books_module, "operation": operation, "error": error_msg},
+                    tenant_id=tenant_id,
+                )
                 return {"success": False, "error": f"HTTP {resp.status_code}: {error_msg}"}
                 
     except Exception as e:
