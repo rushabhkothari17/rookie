@@ -7,8 +7,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { RefreshCw, ShieldCheck } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { RefreshCw, ShieldCheck, Zap } from "lucide-react";
 
 type UsageEntry = {
   current: number;
@@ -22,6 +24,14 @@ type Snapshot = {
   period: string;
   license: Record<string, any>;
   usage: Record<string, UsageEntry>;
+};
+
+type Plan = {
+  id: string;
+  name: string;
+  is_active: boolean;
+  warning_threshold_pct: number;
+  [key: string]: any;
 };
 
 type Props = {
@@ -50,19 +60,29 @@ const LIMIT_FIELDS: { key: string; label: string; licenseKey: string }[] = [
 
 export function TenantLicenseModal({ tenantId, tenantName, onClose }: Props) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
+  // plan_id tracks the currently selected plan DB id
+  const [selectedPlanId, setSelectedPlanId] = useState<string>("__custom__");
 
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get(`/admin/tenants/${tenantId}/license`);
+      const [licenseRes, plansRes] = await Promise.all([
+        api.get(`/admin/tenants/${tenantId}/license`),
+        api.get("/admin/plans"),
+      ]);
+      const data = licenseRes.data;
+      const allPlans: Plan[] = (plansRes.data.plans || []).filter((p: Plan) => p.is_active);
+
       setSnapshot(data);
-      // Pre-fill form with existing limits (empty string = unlimited)
+      setPlans(allPlans);
+
+      // Pre-fill form
       const initial: Record<string, string> = {
-        plan: data.license?.plan || "starter",
         warning_threshold_pct: String(data.license?.warning_threshold_pct ?? 80),
       };
       LIMIT_FIELDS.forEach(({ licenseKey }) => {
@@ -70,6 +90,14 @@ export function TenantLicenseModal({ tenantId, tenantName, onClose }: Props) {
         initial[licenseKey] = val !== null && val !== undefined ? String(val) : "";
       });
       setForm(initial);
+
+      // Restore selected plan_id if one was previously saved
+      const savedPlanId = data.license?.plan_id;
+      if (savedPlanId && allPlans.find(p => p.id === savedPlanId)) {
+        setSelectedPlanId(savedPlanId);
+      } else {
+        setSelectedPlanId("__custom__");
+      }
     } catch {
       toast.error("Failed to load license data");
     } finally {
@@ -79,12 +107,31 @@ export function TenantLicenseModal({ tenantId, tenantName, onClose }: Props) {
 
   useEffect(() => { load(); }, [tenantId]);
 
+  // When a plan is selected from the dropdown, auto-fill limit fields with plan values
+  const handlePlanSelect = (planId: string) => {
+    setSelectedPlanId(planId);
+    if (planId === "__custom__") return;
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return;
+
+    const updates: Record<string, string> = {
+      warning_threshold_pct: String(plan.warning_threshold_pct ?? 80),
+    };
+    LIMIT_FIELDS.forEach(({ licenseKey }) => {
+      const val = plan[licenseKey];
+      updates[licenseKey] = val !== null && val !== undefined ? String(val) : "";
+    });
+    setForm(f => ({ ...f, ...updates }));
+    toast.success(`Limits loaded from "${plan.name}" — you can still adjust individually below.`);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const payload: Record<string, any> = {
-        plan: form.plan || "starter",
         warning_threshold_pct: parseInt(form.warning_threshold_pct) || 80,
+        // Pass plan_id so backend can store it; use null if custom
+        plan_id: selectedPlanId !== "__custom__" ? selectedPlanId : null,
       };
       LIMIT_FIELDS.forEach(({ licenseKey }) => {
         const v = form[licenseKey];
@@ -119,6 +166,8 @@ export function TenantLicenseModal({ tenantId, tenantName, onClose }: Props) {
     return "bg-emerald-500";
   };
 
+  const activePlan = plans.find(p => p.id === selectedPlanId);
+
   return (
     <Dialog open onOpenChange={() => onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -133,16 +182,34 @@ export function TenantLicenseModal({ tenantId, tenantName, onClose }: Props) {
           <div className="py-12 text-center text-sm text-slate-500">Loading…</div>
         ) : (
           <div className="space-y-6 mt-2">
-            {/* Plan & Threshold */}
+            {/* Plan Selector */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Plan Name</label>
-                <Input
-                  value={form.plan || ""}
-                  onChange={e => setForm(p => ({ ...p, plan: e.target.value }))}
-                  placeholder="starter"
-                  data-testid="license-plan-input"
-                />
+                <label className="text-xs font-medium text-slate-600">
+                  Plan
+                  {activePlan && (
+                    <span className="ml-2 text-[10px] font-mono text-slate-400">{activePlan.id}</span>
+                  )}
+                </label>
+                <Select value={selectedPlanId} onValueChange={handlePlanSelect}>
+                  <SelectTrigger data-testid="license-plan-select">
+                    <SelectValue placeholder="Select a plan or use custom limits…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__custom__">— Custom limits —</SelectItem>
+                    {plans.map(plan => (
+                      <SelectItem key={plan.id} value={plan.id}>
+                        {plan.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedPlanId !== "__custom__" && (
+                  <p className="text-[11px] text-blue-600 flex items-center gap-1">
+                    <Zap className="h-3 w-3" />
+                    Limits auto-filled from plan. You can still override individual fields below.
+                  </p>
+                )}
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600">Warning threshold (%)</label>
