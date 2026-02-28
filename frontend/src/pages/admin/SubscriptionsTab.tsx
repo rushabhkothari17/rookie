@@ -499,7 +499,7 @@ export function SubscriptionsTab() {
                 value={manualSub.product_id || undefined}
                 onValueChange={v => {
                   const p = products.find((p: any) => p.id === v);
-                  setManualSub({ ...manualSub, product_id: v, currency: p?.currency || "USD" });
+                  setManualSub({ ...manualSub, product_id: v, currency: p?.currency || "USD", term_months: p?.default_term_months ? String(p.default_term_months) : "" });
                 }}
                 options={products.map((p: any) => ({ value: p.id, label: p.name }))}
                 placeholder="Select product"
