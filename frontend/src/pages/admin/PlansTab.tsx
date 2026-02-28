@@ -192,6 +192,23 @@ function PlanFormModal({
             />
           </div>
 
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <input
+              id="plan-is-public"
+              type="checkbox"
+              className="h-4 w-4 rounded border-slate-300"
+              checked={form.is_public === "true"}
+              onChange={e => set("is_public", e.target.checked ? "true" : "false")}
+              data-testid="plan-is-public-checkbox"
+            />
+            <div>
+              <label htmlFor="plan-is-public" className="text-xs font-medium text-slate-700 cursor-pointer">
+                Visible to partners for self-service upgrade
+              </label>
+              <p className="text-xs text-slate-400">When enabled, partners can see and select this plan from their billing portal.</p>
+            </div>
+          </div>
+
           <p className="text-xs text-slate-400">Leave any limit blank for unlimited.</p>
 
           <div className="rounded-lg border border-slate-200 overflow-hidden">
