@@ -465,6 +465,7 @@ async def create_partner_subscription(
         "term_months": term_months_val,
         "auto_cancel_on_termination": payload.auto_cancel_on_termination,
         "contract_end_date": contract_end_date,
+        "reminder_days": payload.reminder_days,
         "cancelled_at": None,
         "internal_note": payload.internal_note or "",
         "created_by": admin.get("email", "admin"),
