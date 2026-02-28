@@ -84,7 +84,7 @@ type SubFormData = {
   partner_id: string; plan_id: string; description: string; amount: string;
   currency: string; billing_interval: string; status: string; payment_method: string;
   processor_id: string; start_date: string; next_billing_date: string; internal_note: string;
-  term_months: string; auto_cancel_on_termination: boolean;
+  term_months: string; auto_cancel_on_termination: boolean; reminder_days: string;
 };
 
 const emptyForm = (): SubFormData => ({
