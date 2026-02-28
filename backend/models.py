@@ -339,6 +339,7 @@ class ManualSubscriptionCreate(BaseModel):
     internal_note: Optional[str] = ""
     term_months: Optional[int] = None  # None/0 = cancel anytime; 1-999 = locked term
     auto_cancel_on_termination: bool = False
+    reminder_days: Optional[int] = None  # None = use org default; explicit value overrides
 
 
 class AdminCreateUserRequest(BaseModel):
