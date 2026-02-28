@@ -406,7 +406,7 @@ class EmailService:
                 if t.get("is_system") and t["trigger"] in existing_triggers:
                     await db.email_templates.update_one(
                         {"tenant_id": tenant_id, "trigger": t["trigger"]},
-                        {"$set": {"available_variables": t["available_variables"], "label": t["label"], "description": t["description"], "updated_at": now}},
+                        {"$set": {"available_variables": t["available_variables"], "label": t["label"], "description": t["description"], "category": t.get("category"), "updated_at": now}},
                     )
 
             # Prune deprecated system templates
