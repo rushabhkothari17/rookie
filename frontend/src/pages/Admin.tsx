@@ -33,6 +33,7 @@ import { PartnerOrdersTab } from "./admin/PartnerOrdersTab";
 import { PartnerSubscriptionsTab } from "./admin/PartnerSubscriptionsTab";
 import { MyOrdersTab } from "./admin/MyOrdersTab";
 import { MySubscriptionsTab } from "./admin/MySubscriptionsTab";
+import { FiltersTab } from "./admin/FiltersTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
