@@ -325,7 +325,7 @@ class TestCustomerSubscriptionTerm:
             pytest.skip("No products available")
         
         customer = customers[0]
-        product = products[0]
+        product = sub_products[0]
         
         start_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         renewal_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
