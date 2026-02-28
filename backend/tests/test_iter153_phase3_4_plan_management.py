@@ -36,13 +36,12 @@ PARTNER_CREDENTIALS = {
 
 @pytest.fixture(scope="module")
 def admin_session():
-    """Authenticated session for platform admin."""
+    """Authenticated session for platform admin (no partner_code)."""
     session = requests.Session()
-    # Login directly with email/password (no partner_code needed for platform admin)
+    # Platform admin logs in WITHOUT partner_code at /api/auth/login
     r = session.post(f"{BASE_URL}/api/auth/login", json={
         "email": PLATFORM_ADMIN["email"],
         "password": PLATFORM_ADMIN["password"],
-        "partner_code": PLATFORM_ADMIN["partner_code"],
     })
     assert r.status_code == 200, f"Admin login failed: {r.text}"
     token = r.json().get("token") or r.json().get("access_token")
