@@ -42,8 +42,11 @@ export function TenantsTab() {
   const [planFilter, setPlanFilter] = useState<string>("all");
   const [plans, setPlans] = useState<{ id: string; name: string }[]>([]);
 
+  const [auditTenant, setAuditTenant] = useState<{ id: string; name: string } | null>(null);
+
   // Create tenant dialog
-  const [showCreate, setShowCreate] = useState(false);  const [creating, setCreating] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
   const [newPartner, setNewPartner] = useState({
