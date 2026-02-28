@@ -7,7 +7,7 @@ Multi-tenant SaaS admin platform for partner organizations managing customer sub
 - **Backend**: FastAPI + MongoDB
 - **Frontend**: React + TypeScript + ShadCN UI
 - **Auth**: JWT-based with multi-role: platform_admin, partner_super_admin, partner_admin, customer
-- **Deployment**: Kubernetes (preview URL: https://audit-trail-fix-1.preview.emergentagent.com)
+- **Deployment**: Kubernetes (preview URL: https://license-admin-8.preview.emergentagent.com)
 
 ## User Personas
 1. **Platform Admin** (`admin@automateaccounts.local`) — manages all partner tenants
