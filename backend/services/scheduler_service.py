@@ -238,6 +238,16 @@ async def auto_cancel_subscriptions() -> None:
             )
             logger.info(f"[Scheduler] Auto-cancelled partner sub {psub.get('subscription_number')}")
 
+            # Reset partner to Free Trial plan
+            partner_id = psub.get("partner_id", "")
+            if partner_id:
+                free_trial = await db.plans.find_one({"is_default": True}, {"_id": 0})
+                if free_trial:
+                    limits = {k: v for k, v in free_trial.items() if k.startswith("max_")}
+                    await db.tenants.update_one({"id": partner_id}, {"$set": {
+                        "license": {"plan_id": free_trial["id"], "plan_name": free_trial["name"], "assigned_at": cancelled_at, **limits}
+                    }})
+
             # Send cancellation email to partner admin
             partner_admin = await db.users.find_one(
                 {"tenant_id": psub.get("partner_id"), "role": {"$in": ["partner_super_admin", "partner_admin"]}},
