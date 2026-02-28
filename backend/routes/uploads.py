@@ -54,6 +54,13 @@ async def upload_file(file: UploadFile = File(...), user: dict = Depends(get_cur
     # Create TTL index if it doesn't exist (MongoDB will auto-delete expired docs)
     db.file_uploads.create_index("expires_at", expireAfterSeconds=0)
 
+    await create_audit_log(
+        entity_type="file_upload", entity_id=upload_id, action="uploaded",
+        actor=user.get("email", user.get("id", "user")),
+        details={"filename": file.filename, "size": len(content), "content_type": file.content_type},
+        tenant_id=user.get("tenant_id"),
+    )
+
     return {
         "id": upload_id,
         "filename": file.filename,
