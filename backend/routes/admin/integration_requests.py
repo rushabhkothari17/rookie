@@ -68,6 +68,12 @@ async def submit_integration_request(
     }
     await db.integration_requests.insert_one(doc)
     doc.pop("_id", None)
+    await create_audit_log(
+        entity_type="integration_request", entity_id=doc["id"], action="submitted",
+        actor=admin.get("email", "partner_admin"),
+        details={"integration_name": payload.integration_name, "partner_code": doc["partner_code"]},
+        tenant_id=tid,
+    )
     return {"integration_request": doc}
 
 
