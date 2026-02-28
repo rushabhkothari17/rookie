@@ -408,6 +408,135 @@ async def create_renewal_orders() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Job 4: Cancel overdue partner subscriptions
+# ---------------------------------------------------------------------------
+
+async def cancel_overdue_partner_subscriptions() -> None:
+    """Daily job: cancel partner subscriptions whose payment is overdue.
+
+    Logic:
+    1. Find all partner orders with status="pending" and invoice_date older than today
+    2. If invoice is overdue by (grace_days - warning_days) → send warning email
+    3. If invoice is overdue by grace_days → cancel subscription, revert to Free Trial
+    Settings stored in platform_settings collection (id=platform_billing_settings).
+    """
+    logger.info("[Scheduler] Running overdue partner subscription job…")
+    from db.session import db
+    from services.email_service import EmailService
+    from core.tenant import DEFAULT_TENANT_ID
+    from core.helpers import now_iso
+
+    today = datetime.now(timezone.utc).date()
+
+    # Load settings
+    settings_doc = await db.platform_settings.find_one({"id": "platform_billing_settings"}, {"_id": 0}) or {}
+    grace_days: int = settings_doc.get("overdue_grace_days", 7)
+    warning_days: int = settings_doc.get("overdue_warning_days", 3)
+
+    free_trial = await db.plans.find_one({"is_default": True}, {"_id": 0})
+
+    # Pending partner orders
+    cursor = db.partner_orders.find({"status": "pending"}, {"_id": 0})
+    async for order in cursor:
+        try:
+            invoice_date_str = (order.get("invoice_date") or "")[:10]
+            if not invoice_date_str:
+                continue
+            try:
+                invoice_date = datetime.fromisoformat(invoice_date_str).date()
+            except Exception:
+                continue
+
+            overdue_by = (today - invoice_date).days
+            if overdue_by <= 0:
+                continue
+
+            partner_id = order.get("partner_id", "")
+            partner_admin = await db.users.find_one(
+                {"tenant_id": partner_id, "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+                {"_id": 0, "email": 1, "full_name": 1},
+            ) or {}
+            email = partner_admin.get("email")
+
+            # ── Warning email ─────────────────────────────────────────────
+            warn_at = grace_days - warning_days
+            if warn_at > 0 and overdue_by == warn_at:
+                already_warned = order.get("overdue_warning_sent")
+                if not already_warned and email:
+                    await EmailService.send(
+                        trigger="partner_overdue_warning",
+                        recipient=email,
+                        variables={
+                            "partner_name": order.get("partner_name", ""),
+                            "order_number": order.get("order_number", ""),
+                            "amount": f"{order.get('amount', 0):.2f}",
+                            "currency": order.get("currency", "GBP"),
+                            "invoice_date": invoice_date_str,
+                            "days_until_cancellation": str(warning_days),
+                            "grace_days": str(grace_days),
+                        },
+                        db=db,
+                        tenant_id=DEFAULT_TENANT_ID,
+                    )
+                    await db.partner_orders.update_one(
+                        {"id": order["id"]},
+                        {"$set": {"overdue_warning_sent": True, "overdue_warning_sent_at": now_iso()}},
+                    )
+                    logger.info(f"[Scheduler] Sent overdue warning to {email} for order {order.get('order_number')}")
+
+            # ── Cancel subscription ────────────────────────────────────────
+            elif overdue_by >= grace_days:
+                already_cancelled = order.get("overdue_cancelled")
+                if already_cancelled:
+                    continue
+
+                now = now_iso()
+                # Mark order as overdue-cancelled
+                await db.partner_orders.update_one(
+                    {"id": order["id"]},
+                    {"$set": {"overdue_cancelled": True, "overdue_cancelled_at": now}},
+                )
+
+                # Cancel the partner subscription
+                sub_id = order.get("subscription_id")
+                if sub_id:
+                    await db.partner_subscriptions.update_one(
+                        {"id": sub_id},
+                        {"$set": {"status": "cancelled", "cancelled_at": now, "cancel_reason": "overdue_payment", "updated_at": now}},
+                    )
+
+                # Revert partner to Free Trial
+                if partner_id and free_trial:
+                    limits = {k: v for k, v in free_trial.items() if k.startswith("max_")}
+                    await db.tenants.update_one({"id": partner_id}, {"$set": {
+                        "license": {"plan_id": free_trial["id"], "plan_name": free_trial["name"], "assigned_at": now, **limits}
+                    }})
+
+                # Cancel email
+                if email:
+                    await EmailService.send(
+                        trigger="partner_overdue_cancelled",
+                        recipient=email,
+                        variables={
+                            "partner_name": order.get("partner_name", ""),
+                            "order_number": order.get("order_number", ""),
+                            "amount": f"{order.get('amount', 0):.2f}",
+                            "currency": order.get("currency", "GBP"),
+                            "invoice_date": invoice_date_str,
+                            "cancelled_at": now[:10],
+                            "grace_days": str(grace_days),
+                        },
+                        db=db,
+                        tenant_id=DEFAULT_TENANT_ID,
+                    )
+                logger.info(f"[Scheduler] Cancelled partner subscription due to overdue payment — order {order.get('order_number')}, partner {partner_id}")
+        except Exception as exc:
+            logger.error(f"[Scheduler] Overdue job error for order {order.get('id')}: {exc}")
+
+    logger.info("[Scheduler] Overdue partner subscription job complete.")
+
+
+# ---------------------------------------------------------------------------
 # Scheduler lifecycle
 # ---------------------------------------------------------------------------
 
