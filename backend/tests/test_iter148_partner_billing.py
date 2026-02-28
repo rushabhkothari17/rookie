@@ -61,9 +61,11 @@ class TestAuth:
     """Verify platform admin authentication flow."""
 
     def test_validate_tenant_code(self, session):
-        r = session.post(f"{BASE_URL}/api/auth/validate-tenant-code", json={"code": "automate-accounts"})
-        assert r.status_code == 200, f"Tenant code validation failed: {r.text}"
-        print("PASS: tenant code validation")
+        r = session.get(f"{BASE_URL}/api/tenant-info?code=automate-accounts")
+        assert r.status_code == 200, f"Tenant code lookup failed: {r.text}"
+        data = r.json()
+        assert "tenant" in data or "code" in data or "name" in data
+        print("PASS: tenant code lookup via /api/tenant-info")
 
     def test_login_platform_admin(self, session):
         r = session.post(
