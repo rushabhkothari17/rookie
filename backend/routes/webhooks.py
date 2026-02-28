@@ -345,6 +345,98 @@ async def stripe_webhook(request: Request):
                     entity_type="partner_order", entity_id=partner_order_id,
                     action="paid_via_stripe", actor="stripe_webhook", details={},
                 )
+
+        elif event_meta.get("billing_type") == "partner":
+            # ------------------------------------------------------------------
+            # New-style partner billing: platform admin sets billing_type=partner
+            # + partner_id (and optionally plan_id, description) in Stripe metadata.
+            # This lets Stripe-native subscriptions/payments auto-create partner records.
+            # ------------------------------------------------------------------
+            partner_id = event_meta.get("partner_id")
+            if not partner_id:
+                pass  # Cannot route without partner_id
+            elif webhook_response.event_type == "checkout.session.completed":
+                stripe_payment_intent = event_obj.get("payment_intent")
+                stripe_sub_id = event_obj.get("subscription")
+                amount_total = event_obj.get("amount_total", 0) / 100  # Stripe amounts are in cents
+
+                tenant = await db.tenants.find_one({"id": partner_id}, {"_id": 0, "name": 1, "code": 1}) or {}
+                plan_id = event_meta.get("plan_id")
+                plan_name = event_meta.get("plan_name", "")
+                description = event_meta.get("description", "Stripe payment")
+                currency = event_obj.get("currency", "gbp").upper()
+
+                if stripe_sub_id:
+                    # Stripe subscription created — make a partner_subscription record
+                    count = await db.partner_subscriptions.count_documents({})
+                    sub_number = f"PS-{__import__('datetime').datetime.now().strftime('%Y')}-{(count + 1):04d}"
+                    new_sub_id = make_id()
+                    await db.partner_subscriptions.insert_one({
+                        "id": new_sub_id,
+                        "subscription_number": sub_number,
+                        "partner_id": partner_id,
+                        "partner_name": tenant.get("name", ""),
+                        "plan_id": plan_id,
+                        "plan_name": plan_name,
+                        "description": description,
+                        "amount": round(amount_total, 2),
+                        "currency": currency,
+                        "billing_interval": event_meta.get("billing_interval", "monthly"),
+                        "status": "active",
+                        "payment_method": "card",
+                        "stripe_subscription_id": stripe_sub_id,
+                        "start_date": now_iso()[:10],
+                        "next_billing_date": None,
+                        "cancelled_at": None,
+                        "internal_note": "Auto-created via Stripe webhook (billing_type=partner)",
+                        "created_by": "stripe_webhook",
+                        "payment_url": None,
+                        "created_at": now_iso(),
+                        "updated_at": now_iso(),
+                    })
+                    await create_audit_log(
+                        entity_type="partner_subscription", entity_id=new_sub_id,
+                        action="created_via_stripe_webhook", actor="stripe_webhook",
+                        details={"stripe_subscription_id": stripe_sub_id, "partner_id": partner_id},
+                    )
+                else:
+                    # One-time payment — make a partner_order record
+                    count = await db.partner_orders.count_documents({})
+                    order_number = f"PO-{__import__('datetime').datetime.now().strftime('%Y')}-{(count + 1):04d}"
+                    new_order_id = make_id()
+                    await db.partner_orders.insert_one({
+                        "id": new_order_id,
+                        "order_number": order_number,
+                        "partner_id": partner_id,
+                        "partner_name": tenant.get("name", ""),
+                        "plan_id": plan_id,
+                        "plan_name": plan_name,
+                        "description": description,
+                        "amount": round(amount_total, 2),
+                        "currency": currency,
+                        "status": "paid",
+                        "payment_method": "card",
+                        "processor_id": stripe_payment_intent,
+                        "invoice_date": now_iso()[:10],
+                        "paid_at": now_iso(),
+                        "internal_note": "Auto-created via Stripe webhook (billing_type=partner)",
+                        "created_by": "stripe_webhook",
+                        "created_at": now_iso(),
+                        "updated_at": now_iso(),
+                    })
+                    await create_audit_log(
+                        entity_type="partner_order", entity_id=new_order_id,
+                        action="created_via_stripe_webhook", actor="stripe_webhook",
+                        details={"stripe_payment_intent": stripe_payment_intent, "partner_id": partner_id},
+                    )
+
+            elif webhook_response.event_type == "customer.subscription.deleted":
+                stripe_sub_id = event_obj.get("id")
+                if stripe_sub_id:
+                    await db.partner_subscriptions.update_many(
+                        {"stripe_subscription_id": stripe_sub_id},
+                        {"$set": {"status": "cancelled", "cancelled_at": now_iso(), "updated_at": now_iso()}},
+                    )
     except Exception:
         pass  # Never let partner billing processing break the main webhook response
 
