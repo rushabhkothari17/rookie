@@ -225,8 +225,7 @@ async def create_manual_order(
         "created_by_admin": admin["id"],
     }
     await db.orders.insert_one(order_doc)
-
-    await db.order_items.insert_one({
+    await _inc_monthly(tid, "orders")
         "id": make_id(),
         "order_id": order_id,
         "product_id": payload.product_id,
