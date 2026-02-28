@@ -762,6 +762,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                       <div>
                         <label className={`text-[11px] font-semibold uppercase tracking-wider block mb-1.5 ${isDuplicate ? "text-red-500" : "text-slate-400"}`}>
                           Field key {isDuplicate && <span className="text-red-500">(duplicate!)</span>}
+                          <FieldTip tip="The internal identifier for this question. Referenced in formulas as {key_name} and in visibility rules. Auto-generated from the Label. Must be unique within this product." side="right" />
                         </label>
                         <div className={`h-9 flex items-center px-3 rounded-md border text-xs font-mono ${
                           isDuplicate ? "border-red-300 text-red-600 bg-red-50" : "border-slate-200 text-slate-500 bg-white"
