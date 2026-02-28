@@ -416,6 +416,7 @@ async def checkout_bank_transfer(
         entity_type="order", entity_id=order_id, action="created", actor="customer",
         details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer", "total": total, "currency": order_items[0]["product"].get("currency", "USD"), "base_currency": base_currency, "extra_fields": list((payload.extra_fields or {}).keys())},
     )
+    await _inc_monthly(tenant_id, "orders")
     if promo_code_data:
         await db.promo_codes.update_one({"id": promo_code_data["id"]}, {"$inc": {"usage_count": 1}})
 
