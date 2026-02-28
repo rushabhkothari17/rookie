@@ -262,6 +262,92 @@ async def stripe_webhook(request: Request):
             "created_at": now_iso(),
         })
 
+    # ------------------------------------------------------------------
+    # Partner Billing — handle Stripe events for partner subscriptions/orders
+    # ------------------------------------------------------------------
+    try:
+        raw_event = json.loads(body)
+        event_obj = raw_event.get("data", {}).get("object", {})
+        event_meta = event_obj.get("metadata", {})
+
+        if event_meta.get("type") == "partner_subscription":
+            partner_sub_id = event_meta.get("partner_subscription_id")
+            if partner_sub_id and webhook_response.event_type in (
+                "checkout.session.completed",
+                "invoice.paid",
+                "customer.subscription.updated",
+                "customer.subscription.deleted",
+            ):
+                psub = await db.partner_subscriptions.find_one({"id": partner_sub_id}, {"_id": 0})
+                if psub:
+                    if webhook_response.event_type == "checkout.session.completed":
+                        stripe_sub_id = event_obj.get("subscription")
+                        await db.partner_subscriptions.update_one(
+                            {"id": partner_sub_id},
+                            {"$set": {
+                                "status": "active",
+                                "stripe_subscription_id": stripe_sub_id,
+                                "updated_at": now_iso(),
+                            }},
+                        )
+                        await create_audit_log(
+                            entity_type="partner_subscription", entity_id=partner_sub_id,
+                            action="activated_via_stripe", actor="stripe_webhook",
+                            details={"stripe_subscription_id": stripe_sub_id},
+                        )
+                    elif webhook_response.event_type == "invoice.paid":
+                        stripe_sub_id = event_obj.get("subscription")
+                        billing_reason = event_obj.get("billing_reason", "")
+                        if billing_reason != "subscription_create":
+                            # Renewal — create a partner_order record
+                            renewal_id = make_id()
+                            count = await db.partner_orders.count_documents({})
+                            renewal_number = f"PO-{__import__('datetime').datetime.now().strftime('%Y')}-{(count + 1):04d}"
+                            await db.partner_orders.insert_one({
+                                "id": renewal_id,
+                                "order_number": renewal_number,
+                                "partner_id": psub["partner_id"],
+                                "partner_name": psub.get("partner_name", ""),
+                                "plan_id": psub.get("plan_id"),
+                                "plan_name": psub.get("plan_name"),
+                                "description": f"Subscription renewal — {psub.get('plan_name') or psub.get('description', '')}",
+                                "amount": psub.get("amount", 0),
+                                "currency": psub.get("currency", "GBP"),
+                                "status": "paid",
+                                "payment_method": "card",
+                                "processor_id": stripe_sub_id,
+                                "invoice_date": now_iso()[:10],
+                                "paid_at": now_iso(),
+                                "internal_note": "Auto-created from Stripe renewal",
+                                "created_by": "stripe_webhook",
+                                "created_at": now_iso(),
+                                "updated_at": now_iso(),
+                            })
+                            await create_audit_log(
+                                entity_type="partner_order", entity_id=renewal_id,
+                                action="created_renewal", actor="stripe_webhook",
+                                details={"subscription_id": partner_sub_id, "stripe_sub_id": stripe_sub_id},
+                            )
+                    elif webhook_response.event_type == "customer.subscription.deleted":
+                        await db.partner_subscriptions.update_one(
+                            {"id": partner_sub_id},
+                            {"$set": {"status": "cancelled", "cancelled_at": now_iso(), "updated_at": now_iso()}},
+                        )
+
+        elif event_meta.get("type") == "partner_order":
+            partner_order_id = event_meta.get("partner_order_id")
+            if partner_order_id and webhook_response.event_type == "checkout.session.completed":
+                await db.partner_orders.update_one(
+                    {"id": partner_order_id},
+                    {"$set": {"status": "paid", "paid_at": now_iso(), "updated_at": now_iso()}},
+                )
+                await create_audit_log(
+                    entity_type="partner_order", entity_id=partner_order_id,
+                    action="paid_via_stripe", actor="stripe_webhook", details={},
+                )
+    except Exception:
+        pass  # Never let partner billing processing break the main webhook response
+
     return {"status": "ok"}
 
 
