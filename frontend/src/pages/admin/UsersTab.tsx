@@ -38,6 +38,8 @@ export function UsersTab() {
   const [total, setTotal] = useState(0);
   const PER_PAGE = 20;
   const [searchFilter, setSearchFilter] = useState("");
+  const [partnerFilter, setPartnerFilter] = useState("all");
+  const [partners, setPartners] = useState<{ id: string; name: string }[]>([]);
 
   // Permission system data
   const [modules, setModules] = useState<ModuleInfo[]>([]);
@@ -63,13 +65,14 @@ export function UsersTab() {
     try {
       const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
       if (searchFilter) params.append("search", searchFilter);
+      if (partnerFilter && partnerFilter !== "all") params.append("partner_id", partnerFilter);
       const res = await api.get(`/admin/users?${params}`);
       setAdminUsers(res.data.users || []);
       setTotal(res.data.total || 0);
       setTotalPages(res.data.total_pages || 1);
       setPage(p);
     } catch { toast.error("Failed to load admin users"); }
-  }, [searchFilter]);
+  }, [searchFilter, partnerFilter]);
 
   const loadPermissionsData = async () => {
     try {
