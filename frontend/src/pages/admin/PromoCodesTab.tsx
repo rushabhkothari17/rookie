@@ -153,11 +153,15 @@ export function PromoCodesTab() {
         </div>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1"><label className="text-xs text-slate-500">Expiry Date</label><Input type="date" value={form.expiry_date} onChange={e => setF({ ...form, expiry_date: e.target.value })} /></div>
-        <div className="space-y-1"><label className="text-xs text-slate-500">Max Uses</label><Input type="number" value={form.max_uses} onChange={e => setF({ ...form, max_uses: e.target.value })} /></div>
+        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Expiry Date <FieldTip tip="The code stops working after this date at midnight UTC. Leave blank for no expiry." /></label><Input type="date" value={form.expiry_date} onChange={e => setF({ ...form, expiry_date: e.target.value })} /></div>
+        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Max Uses <FieldTip tip="Total number of redemptions allowed across all customers. Once reached, the code is automatically deactivated. Leave blank for unlimited uses." /></label><Input type="number" value={form.max_uses} onChange={e => setF({ ...form, max_uses: e.target.value })} /></div>
       </div>
       <div className="flex items-center gap-4">
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.one_time_code} onChange={e => setF({ ...form, one_time_code: e.target.checked })} />One-time per customer</label>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={form.one_time_code} onChange={e => setF({ ...form, one_time_code: e.target.checked })} />
+          One-time per customer
+          <FieldTip tip="When enabled, each customer can only use this code once, even if the Max Uses total hasn't been reached." />
+        </label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.enabled} onChange={e => setF({ ...form, enabled: e.target.checked })} />Enabled</label>
       </div>
       <div className="space-y-1">
