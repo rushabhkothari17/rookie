@@ -18,8 +18,9 @@ Multi-tenant SaaS admin platform for partner organizations managing customer sub
 
 ### Admin Panel Sidebar Structure (CURRENT as of Feb 2026)
 ```
-PLATFORM: Partner Orgs
+PLATFORM: Partner Orgs (Platform Admin only - with License/Notes/Logs/Add Admin per row)
 PEOPLE: Users, Roles, Customers
+ACCOUNT: Usage & Limits (Partner Admins only - shows usage vs plan limits)
 COMMERCE: Products, Subscriptions, Orders, Enquiries
 CONTENT: Resources, Documents
 SETTINGS:
