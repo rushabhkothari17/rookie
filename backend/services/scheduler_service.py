@@ -565,9 +565,15 @@ def start_scheduler() -> None:
         id="renewal_orders", replace_existing=True,
         misfire_grace_time=3600,
     )
+    scheduler.add_job(
+        cancel_overdue_partner_subscriptions,
+        trigger="cron", hour=9, minute=15,
+        id="overdue_partner_cancel", replace_existing=True,
+        misfire_grace_time=3600,
+    )
 
     scheduler.start()
-    logger.info("[Scheduler] APScheduler started — 3 jobs registered (renewal_reminders, auto_cancel_subs, renewal_orders).")
+    logger.info("[Scheduler] APScheduler started — 4 jobs registered (renewal_reminders, auto_cancel_subs, renewal_orders, overdue_partner_cancel).")
 
 
 def stop_scheduler() -> None:
