@@ -205,9 +205,20 @@ export function UsersTab() {
 
       {/* Filter */}
       <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center flex-wrap">
           <Input placeholder="Search email or name…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-52" data-testid="admin-users-search" />
-          <Button size="sm" variant="outline" onClick={() => setSearchFilter("")} className="h-8 text-xs">Clear</Button>
+          {isPlatformAdmin && (
+            <Select value={partnerFilter} onValueChange={setPartnerFilter} data-testid="admin-users-partner-filter">
+              <SelectTrigger className="h-8 text-xs w-48">
+                <SelectValue placeholder="All partner orgs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All partner orgs</SelectItem>
+                {partners.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
+          <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setPartnerFilter("all"); }} className="h-8 text-xs">Clear</Button>
         </div>
       </div>
 
