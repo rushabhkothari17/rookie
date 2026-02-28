@@ -751,7 +751,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                     {!advancedOpen && isDuplicate && <span className="text-[10px] text-red-500 ml-1">— duplicate key!</span>}
                   </button>
                   {advancedOpen && (
-                    <div className="mt-4 space-y-4 pl-4 border-l-2 border-slate-100">
+                    <div className="mt-5 space-y-5 pl-4 border-l-2 border-slate-100">
                       {/* Key */}
                       <div>
                         <label className={`text-[11px] font-semibold uppercase tracking-wider block mb-1.5 ${isDuplicate ? "text-red-500" : "text-slate-400"}`}>
