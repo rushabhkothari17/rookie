@@ -574,7 +574,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                     {(q.pricing_mode || "flat") === "flat" ? (
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="label-xs">Price per unit (£)</label>
+                          <label className="label-xs">Price per unit</label>
                           <Input type="number" value={q.price_per_unit ?? 0}
                             onChange={e => onChange({ ...q, price_per_unit: parseFloat(e.target.value) || 0 })}
                             className="h-9 text-sm font-mono" />
