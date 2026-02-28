@@ -312,12 +312,17 @@ class TestCustomerSubscriptionTerm:
         if not customers:
             pytest.skip("No customers available for platform tenant")
         
-        # Get a subscription product
-        r_prod = platform_session.get(f"{BASE_URL}/api/admin/products?is_subscription=true&limit=1")
+        # Get a subscription product (use products-all endpoint)
+        r_prod = platform_session.get(f"{BASE_URL}/api/admin/products-all?per_page=50")
         assert r_prod.status_code == 200
         products = r_prod.json().get("products", [])
-        if not products:
-            pytest.skip("No subscription products available")
+        # Filter subscription products
+        sub_products = [p for p in products if p.get("is_subscription") or p.get("billing_cycle")]
+        if not sub_products:
+            # Fall back to any product
+            sub_products = products
+        if not sub_products:
+            pytest.skip("No products available")
         
         customer = customers[0]
         product = products[0]
