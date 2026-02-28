@@ -79,6 +79,8 @@ async def create_plan(payload: PlanCreate, admin: Dict[str, Any] = Depends(requi
         "name": payload.name.strip(),
         "description": (payload.description or "").strip(),
         "is_active": True,
+        "is_public": payload.is_public,
+        "is_default": False,
         "warning_threshold_pct": payload.warning_threshold_pct,
         **{f: getattr(payload, f) for f in LIMIT_FIELDS},
         "created_at": now_iso(),
