@@ -288,6 +288,7 @@ async def checkout_bank_transfer(
             action="created", actor="customer",
             details={"status": "pending_direct_debit_setup", "payment_method": "bank_transfer", "currency": product.get("currency", "USD"), "base_currency": base_currency},
         )
+        await _inc_monthly(tenant_id, "subscriptions")
         await db.zoho_sync_logs.insert_one({
             "id": make_id(), "entity_type": "subscription_request", "entity_id": sub_id,
             "status": "Not Sent", "last_error": None, "attempts": 0, "created_at": now_iso(), "mocked": True,
