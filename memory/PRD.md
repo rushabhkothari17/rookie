@@ -18,7 +18,11 @@ Multi-tenant SaaS admin platform for partner organizations managing customer sub
 
 ### Admin Panel Sidebar Structure (CURRENT as of Feb 2026)
 ```
-PLATFORM: Partner Orgs (Platform Admin only - with License/Notes/Logs/Add Admin per row)
+PLATFORM (Platform Admin only):
+  - Partner Orgs        (manage tenants; License, Add Admin, Notes, Audit Logs, Address, plan filter)
+  - Plans               (CRUD for license plans; auto-propagation to tenants)
+  - Partner Subscriptions  (B2B recurring billing; Stripe hosted checkout; stats: MRR/ARR)
+  - Partner Orders         (B2B one-time fees; manual + Stripe checkout; revenue stats)
 PEOPLE: Users, Roles, Customers
 ACCOUNT: Usage & Limits (Partner Admins only - shows usage vs plan limits)
 COMMERCE: Products, Subscriptions, Orders, Enquiries
