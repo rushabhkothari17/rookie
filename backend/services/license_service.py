@@ -30,14 +30,14 @@ TOTAL_RESOURCE_COUNTERS: Dict[str, Tuple[str, Any]] = {
     }),
     "user_roles": ("admin_roles", lambda tid: {"tenant_id": tid}),
     "product_categories": ("categories", lambda tid: {"tenant_id": tid}),
-    "product_terms": ("terms", lambda tid: {"tenant_id": tid}),
-    "resources": ("articles", lambda tid: {"tenant_id": tid, "deleted_at": {"$exists": False}}),
-    "templates": ("article_templates", lambda tid: {"tenant_id": tid}),
+    "product_terms": ("terms_and_conditions", lambda tid: {"tenant_id": tid}),
+    "resources": ("resources", lambda tid: {"tenant_id": tid, "deleted_at": {"$exists": False}}),
+    "templates": ("resource_templates", lambda tid: {"tenant_id": tid}),
     "email_templates": ("resource_email_templates", lambda tid: {"tenant_id": tid}),
     "categories": ("resource_categories", lambda tid: {"tenant_id": tid}),
     "forms": ("tenant_forms", lambda tid: {"tenant_id": tid}),
     "references": ("website_references", lambda tid: {"tenant_id": tid}),
-    "enquiries": ("enquiries", lambda tid: {"tenant_id": tid, "deleted_at": {"$exists": False}}),
+    "enquiries": ("orders", lambda tid: {"tenant_id": tid, "type": "scope_request"}),
 }
 
 # Default license (no limits)
