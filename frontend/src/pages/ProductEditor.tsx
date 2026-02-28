@@ -143,6 +143,7 @@ export default function ProductEditor() {
         currency: form.currency || "USD",
         visibility_conditions: form.visibility_conditions || null,
         enquiry_form_id: form.enquiry_form_id || null,
+        default_term_months: form.default_term_months ? parseInt(form.default_term_months) : null,
       };
 
       if (isNew) {
