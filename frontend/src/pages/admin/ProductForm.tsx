@@ -693,6 +693,7 @@ export function ProductForm({
               bullets={form.card_bullets}
               onChange={s("card_bullets")}
               placeholder="Card bullet point"
+              label="Card highlights"
             />
           </div>
         </div>
