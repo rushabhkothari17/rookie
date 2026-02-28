@@ -505,6 +505,7 @@ class AdminProductCreate(BaseModel):
     currency: str = "USD"
     enquiry_form_id: Optional[str] = None
     default_term_months: Optional[int] = None
+    billing_type: Optional[str] = "prorata"  # "prorata" | "fixed"
 
 
 class AppSettingsUpdate(BaseModel):

@@ -165,6 +165,7 @@ async def admin_create_product(
         "currency": payload.currency or "USD",
         "enquiry_form_id": payload.enquiry_form_id or None,
         "default_term_months": payload.default_term_months if payload.default_term_months and payload.default_term_months > 0 else None,
+        "billing_type": payload.billing_type or "prorata",
         "created_at": now_iso(),
         "is_custom": True,
     }
