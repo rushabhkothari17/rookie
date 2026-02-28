@@ -260,6 +260,8 @@ async def admin_update_product(
     update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
     # default_term_months: 0 or None clears it
     update_fields["default_term_months"] = payload.default_term_months if payload.default_term_months and payload.default_term_months > 0 else None
+    if payload.billing_type is not None:
+        update_fields["billing_type"] = payload.billing_type
     if payload.intake_schema_json is not None:
         _validate_intake_schema(payload.intake_schema_json)
         schema_dict = payload.intake_schema_json.dict()

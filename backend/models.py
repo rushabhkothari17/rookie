@@ -257,9 +257,7 @@ class AdminProductUpdate(BaseModel):
     currency: Optional[str] = None
     enquiry_form_id: Optional[str] = None
     default_term_months: Optional[int] = None
-
-
-class AdminCustomerPaymentUpdate(BaseModel):
+    billing_type: Optional[str] = None  # "prorata" | "fixed"(BaseModel):
     allow_bank_transfer: bool
     allow_card_payment: bool
 
