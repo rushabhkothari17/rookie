@@ -117,6 +117,7 @@ export default function Admin() {
                 <TabsTrigger value="plans" data-testid="admin-tab-plans" className={TAB_CLASS}>Plans</TabsTrigger>
                 <TabsTrigger value="partner-subscriptions" data-testid="admin-tab-partner-subscriptions" className={TAB_CLASS}>Partner Subscriptions</TabsTrigger>
                 <TabsTrigger value="partner-orders" data-testid="admin-tab-partner-orders" className={TAB_CLASS}>Partner Orders</TabsTrigger>
+                <TabsTrigger value="partner-submissions" data-testid="admin-tab-partner-submissions" className={TAB_CLASS}>Partner Submissions</TabsTrigger>
               </>
             )}
 
