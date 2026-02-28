@@ -72,6 +72,8 @@ async def update_tenant(tenant_id: str, payload: TenantUpdate, admin: Dict[str, 
         if payload.status not in ("active", "inactive"):
             raise HTTPException(status_code=400, detail="status must be 'active' or 'inactive'")
         updates["status"] = payload.status
+    if payload.default_reminder_days is not None:
+        updates["default_reminder_days"] = payload.default_reminder_days if payload.default_reminder_days > 0 else None
 
     await db.tenants.update_one({"id": tenant_id}, {"$set": updates})
     updated = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
