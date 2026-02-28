@@ -1,80 +1,82 @@
 <analysis>**original_problem_statement:**
-The user initially requested a **Partner Licensing System**. This was successfully built. Subsequent requests involved adding **Plan Management**, a comprehensive **Partner Billing** system (orders and subscriptions), and various UI improvements.
+The user requested a major enhancement to the partner-facing side of the application, focusing on self-service plan management and billing automation.
 
-More recently, the user requested and the agent implemented:
-*   A bug fix for license limits not being enforced during manual order/subscription creation.
-*   Subscription term management (e.g., 12-month contracts) with enforced cancellation policies.
-*   Email notifications for new partner orders and subscriptions.
-*   A partner-facing portal for them to view their own orders and subscriptions.
-*   A scheduler for sending subscription renewal reminder emails.
-*   A feature for partner admins to configure product filters for their storefronts.
-*   An improvement to the login flow to pre-fill the partner code from a URL parameter.
-
-The latest set of requests, which are now the priority, are:
-1.  For subscriptions with manual payment methods, automatically create a new 'pending' order on the renewal date.
-2.  Make the renewal reminder period configurable, allowing a default to be set at the organization level and overridden at the individual subscription level.
-3.  Implement the scheduler job to automatically cancel subscriptions at the end of their contract term if  is enabled.
-4.  The user also asked for clarification on how renewal emails and webhook processing function.
+**PRODUCT REQUIREMENTS:**
+1.  **Partner Self-Service Plan Upgrades:** Partners should be able to see available public plans and upgrade their subscription themselves.
+2.  **Pro-rata Billing:** All partner billing should be aligned to the 1st of every month. New subscriptions and mid-month upgrades must be billed on a pro-rata basis.
+3.  **Downgrade Requests:** Downgrades should not be immediate. Instead, partners must submit a request, which an admin can approve. The change takes effect on the next renewal date. A new Partner Submissions module is needed to track these requests.
+4.  **Free Trial Logic:** A default Free Trial plan should be automatically created and assigned to all new partners. If a partner's paid subscription is canceled, they should be automatically downgraded to this Free Trial plan.
+5.  **Invoice Generation:** Partners need to be able to download PDF invoices for their orders. The invoice templates should be editable by the platform admin.
+6.  **Overdue Subscription Cancellation:** A scheduler job must automatically cancel a partner's subscription if their payment is overdue by a configurable number of days, with a warning email sent beforehand.
+7.  **Product-Level Billing Configuration:** Partner admins should have the choice, at the product level, between pro-rated billing or fixed monthly billing from the subscription start date.
+8.  **UI/UX Fixes:**
+    *   The Add User form should be consistent across the Users and Partner Orgs modules.
+    *   Platform admins need a way to filter the main user list by partner organization.
+    *   The non-functional Audit Log button on the Partner Orgs tab needs to be fixed.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a stable, multi-tenant SaaS platform with a comprehensive B2B partner management layer. Key features include:
-*   **Partner Licensing & Plans:** Admins can create plans and assign licenses to partners, with usage limits strictly enforced across the backend.
-*   **Partner Billing:** A complete system for managing partner orders and subscriptions, mirroring the existing customer billing architecture. This includes manual creation, Stripe/GoCardless integration, and a full UI for platform admins.
-*   **Partner Portal:** Partner admins have a dedicated view to monitor their license usage, and more recently, view their own subscription and order history.
-*   **Scheduled Jobs:**  is integrated and runs a daily job to send renewal reminder emails 30 days before a subscription expires.
-*   **Dynamic Storefronts:** Partner admins can configure product filters for their customer-facing stores.
-*   **All major features and bug fixes from this session have been successfully tested end-to-end** using the testing agent.
+The application is a multi-tenant SaaS platform with partner licensing, billing, and a partner portal. A scheduler () is integrated for automated tasks.
+
+The agent has already completed the foundational work (Phase 1 & 2A) for the new feature set:
+*   A  for pro-rata calculations has been created.
+*   A default Free Trial plan is now automatically created and assigned to new partners.
+*   Logic to revert canceled subscriptions back to the Free Trial plan is in place.
+*   Plans can be marked as  to control visibility in the partner portal, with a UI toggle for admins.
+*   The Audit Log button bug on the Partner Orgs tab has been fixed.
 
 **Last working item**:
-    - Last item agent was working: The agent clarified the user's questions regarding the existing renewal system and GoCardless integration. It was about to start implementing the next set of features based on the user's latest requests.
+    - Last item agent was working: The agent was about to begin implementing Phase 3 (Partner Self-Service Plan Management) and Phase 4 (Invoice System). The agent had just finished reviewing all necessary files and was preparing to create the new backend routes and services.
     - Status: NOT STARTED
     - Agent Testing Done: N
-    - Which testing method agent to use? both. The implementation will require creating new scheduler jobs and modifying several backend routes (, ), as well as adding new UI fields to the frontend (, ). A full E2E test will be necessary.
+    - Which testing method agent to use? both. This is a large feature involving multiple new backend routes (, , ) and new frontend tabs (, ). Full end-to-end testing is required.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
   None.
 
 **In progress Task List**:
-  None.
+  - **Task 1: Implement Partner Self-Service & Invoicing (Phases 3 & 4)**
+     - Where to resume: The agent was about to start coding Batch 1 of the implementation, which involves creating all the new backend files and routes in parallel:
+        - 
+        - 
+        - 
+        - 
+        - 
+     - What will be achieved with this? This will create the API infrastructure for partners to upgrade/downgrade plans, for admins to manage submissions, and for generating PDF invoices.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix? both
+     - Blocked on something: No.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks (P0):**
-    1.  **Implement Auto-Cancel Scheduler Job**: Create the daily scheduler job to find and cancel subscriptions where  is today and  is true.
-    2.  **Implement Auto-Order Creation**: Modify the scheduler to also find manual-payment subscriptions renewing today and automatically create a new order with a 'pending' status.
-    3.  **Implement Configurable Renewal Reminders**:
-        *   Add a  field to the  model and UI ().
-        *   Add a  override field to the  and  models and UI.
-        *   Update the scheduler to use these new fields instead of the hardcoded 30-day value.
-*   **Future Tasks:**
-    *   **(P1) Google Drive & OneDrive Integration**: Implement the Coming Soon cloud storage integrations.
+    *   **Phase 5: Overdue Cancellation:** Implement the daily scheduler job to cancel overdue partner subscriptions and the corresponding admin settings.
+    *   **Phase 2B: Product-Level Billing Choice:** Implement the UI for partner admins to choose between pro-rata and fixed-date billing for their products.
+    *   **Phase 6: User Form Parity:** Add a role selector to the partner admin creation form and a partner-org filter to the main Users tab.
+*   **Future Tasks (from PRD):**
+    *   **(P1) Google Drive & OneDrive Integration**.
     *   **(P2) Customer Portal Enhancements**: Implement self-service subscription cancellation, display renewal dates, and a Reorder button.
-    *   **(P2) Security Audit**: Conduct a formal penetration test.
-    *   **(P2) Centralize Email Settings**: Consolidate all email integration settings.
+    *   **(P2) Security Audit**.
+    *   **(P2) Centralize Email Settings**.
 
 **Completed work in this session**
-- **Feature: Partner Billing Frontend & Plan Filtering:**
-  - Completed the UI for platform admins to manage partner orders and subscriptions (, ).
-  - Added a dropdown to filter tenants by their assigned plan on .
-- **Bug Fix: License Limit Enforcement:**
-  - Fixed a critical bug where manual orders and subscriptions could be created without checking license limits, by adding enforcement logic to  and .
-- **Feature: Subscription Term Management:**
-  - Implemented end-to-end support for contract terms (, ) on both customer and partner subscriptions.
-  - This included model changes, backend logic to enforce term-end dates on cancellation, and UI updates for admins to manage these settings.
-- **Feature: Partner Portal & Email Notifications:**
-  - Created read-only views for partners to see their own order and subscription history (, ).
-  - Implemented automated emails for new partner orders and subscriptions.
-- **Feature: Renewal Reminders via Scheduler:**
-  - Integrated  to run a daily job that sends renewal reminder emails for all expiring subscriptions.
-- **Feature: Dynamic Storefront Filters:**
-  - Built a feature allowing partner admins to create and manage product filters for their customer-facing storefronts (, ).
-- **Feature: Misc Improvements:**
-  - Enhanced the Stripe webhook handler to reliably distinguish between partner and customer billing events.
-  - Improved the login page to accept a partner code from the URL, streamlining partner login.
-- **Testing:**
-  - All implemented features and bug fixes were successfully validated with the testing agent, which caught and fixed two separate bugs during the process.
+- **Feature: Partner Self-Service Foundation (Phase 1 & 2A)**:
+  - Created a  for pro-rata calculations.
+  - Implemented the Free Trial plan lifecycle: auto-creation via , auto-assignment on partner signup (), and auto-revert on subscription cancellation.
+  - Added an  flag to plans () and a UI toggle () to control which plans partners can upgrade to.
+- **Bug Fix: Partner Orgs Audit Logs**:
+  - Fixed the non-functional Audit Log button in  by correctly wiring up the state and component props.
+- **Feature: Test Reminder Button**:
+  - Added backend endpoints (, ) and frontend buttons (, ) for admins to send on-demand test renewal emails.
+- **Feature: Admin New Partner Form Parity**:
+  - Overhauled the New Partner Org dialog in  to match the public signup form, enabling consistent partner creation through the same  API endpoint.
+- **Feature: Scheduler & Configurable Reminders**:
+  - Implemented and successfully tested scheduler jobs for auto-cancellation, auto-order creation for manual renewals, and configurable renewal reminders.
+- **Data Management: Full DB Cleanup**:
+  - Wiped all transactional data from the database, resetting the application to a clean state with only system-essential data remaining.
+- **Documentation: Core Product Document**:
+  - Authored a comprehensive, non-technical  detailing the entire platform's functionality, user roles, modules, and workflows for stakeholder onboarding.
 
 **Earlier issues found/mentioned but not fixed**
    - None.
@@ -86,72 +88,72 @@ The application is a stable, multi-tenant SaaS platform with a comprehensive B2B
 
 
 **Key Technical Concepts**
-- **Scheduled Tasks (APScheduler)**: A background scheduler is integrated to run daily jobs, currently for sending renewal reminders. This will be extended for auto-cancellation and auto-order creation.
-- **Metadata-based Webhook Routing**: Stripe and GoCardless webhooks use metadata (e.g., ) to route events to the correct processing logic, ensuring separation between B2C and B2B transactions.
-- **Dynamic Storefront Configuration**: Partner admins can now dynamically configure UI elements (product filters) for their customer-facing storefronts via a dedicated admin UI.
-- **URL-based Context**: The login flow accepts contextual information () from the URL to streamline the user experience for partners.
-- **Enforced Contract Terms**: Subscriptions can have a fixed term, and the backend prevents cancellation until the contract end date is reached.
+- **Pro-rata Billing**: A new shared service () calculates partial charges for mid-month signups and upgrades to align all billing to the 1st of the month.
+- **Plan Lifecycle Management**: A Free Trial plan is now a core part of the partner lifecycle, seeded at startup and automatically assigned or reverted to upon signup/cancellation.
+- **Server-side PDF Generation**: The architecture plans to use the existing  and  libraries to create a new  for generating PDF invoices from HTML templates.
+- **Feature Flagging ()**: A simple boolean flag on the  model controls which plans are available for partner self-service upgrades.
 
 **key DB schema**
-- , : Modified to include  (int),  (datetime),  (bool),  (int).
-- : Modified to include  (int).
-- : To be modified to include  (int).
-- :  (new).
-- : Modified to include a  (str) field for UI grouping.
+- : Modified to include  (Boolean, default: ).
+-  (New Collection): 
+-  (New Collection): 
+-  (To Be Modified): 
 
 **changes in tech stack**
-  - **APScheduler**: Added as a backend dependency for running scheduled tasks.
+- None. The implementation will leverage existing libraries (, ).
 
 **All files of reference**
 *   **Key New Files**:
     *   
     *   
-    *   
-    *   
-    *   
-    *   
 *   **Key Modified Files**:
-    *    (Scheduler integration)
-    *    (Term logic, bug fix)
-    *    (Bug fix)
-    *    (Partner routing)
-    *    (Term UI)
-    *    (Filter display)
-    *    (URL param logic)
+    *    (Added plan seeder)
+    *    (Assigned free trial)
+    *    (Reset to free trial)
+    *    (Reset to free trial)
+    *    (Fixed audit log)
+    *    (Added  toggle)
+*   **Key Planned Files**: All files listed under the In progress Task List.
 
 **Areas that need refactoring**:
 - None.
 
 **key api endpoints**
-*   **Store Filters**: ,  
-*   **Partner Portal**: , 
+*   : New endpoint fetches all plans where  is true.
+*   **Planned Endpoints**:
+    *   
+    *   
+    *   , 
+    *   
+    *   CRUD for 
+    *   
 
 **Critical Info for New Agent**
-1.  **Your immediate task is to implement the three new features requested by the user**: (1) Auto-cancel scheduler job, (2) Auto-order creation for manual renewals, and (3) Configurable reminder days.
-2.  **Refer to the architecture plan** the previous agent created. The user has approved it.
-3.  The **auto-order creation logic** should only apply to manual payment methods (, ). Stripe and GoCardless subscriptions are auto-renewing and do not need this.
-4.  The implementation will involve modifying , adding fields to several models (, ), and updating multiple frontend components for the new settings. Plan to implement and test these changes together.
+1.  **Resume Implementation**: Your primary task is to continue the large feature implementation. Phase 1 & 2A are done and tested. You need to start **Phase 3 (Partner Self-Service)** and **Phase 4 (Invoicing)**.
+2.  **Follow the Plan**: The agent was about to create the backend routes and services for these phases in parallel. Start there.
+3.  **PDF Generation**: The plan is to use  and  for server-side PDF generation in a new . The libraries are already installed.
 
 **documents and test reports created in this job**
+  - 
   -  (Updated)
   - 
   - 
-  - 
+  -  (Passed 35/35 tests for Phase 1 & 2A)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Asks for renewal reminder emails, distinguishing partner billing in webhooks, URL-based partner codes, and configurable store filters. Asks for an architecture plan.
-2.  **Agent:** Provides a comprehensive architecture plan for all four features.
-3.  **User:** Approves the architecture plan.
-4.  **Agent:** Implements all four features in parallel batches (backend and frontend).
-5.  **Agent:** Runs the testing agent, which finds and auto-fixes a critical frontend bug.
-6.  **Agent:** Finishes the task and provides a summary.
-7.  **User:** Asks for a detailed explanation of all renewal-related functionalities.
-8.  **Agent:** Provides a full breakdown of how renewals, reminders, and contract terms work for both customers and partners. Asks if the user wants to implement the pending auto-cancel job.
-9.  **User:** Confirms webhook setup is needed by the admin. Requests auto-creation of 'pending' orders for manual renewals. Asks for renewal reminders to be configurable instead of a fixed 30 days. Asks if GoCardless is supported. Confirms to proceed with the Auto-Cancel implementation.
-10. **Agent:** Answers all questions, confirming GoCardless works like Stripe (auto-renews) and that the auto-order logic will only be for manual methods. Acknowledges the plan to implement all three new features.
+1.  **User:** Requests a massive feature set: self-service partner upgrades, pro-rata billing, downgrade requests, invoice downloads, and overdue cancellation. Also points out bugs/inconsistencies with user creation and audit logs. Asks for an architecture plan.
+2.  **Agent:** Provides a detailed, 6-phase architecture plan.
+3.  **User:** Approves the plan with clarifications: partner admins need a choice on pro-rata billing for their products, invoice download is a new feature,  flag for plans is a good idea, and both partner/platform admins should get overdue warnings.
+4.  **Agent:** Acknowledges clarifications, confirms no invoice generation exists yet, and states it will begin implementing Phase 1 and 2A.
+5.  **Agent:** Implements Phase 1 (Free Trial Logic) and Phase 2A (Pro-rata Service) and fixes the audit log bug.
+6.  **Agent:** Runs the testing agent, which passes all 35 tests.
+7.  **Agent:** Realizes the  toggle was missing from the UI and adds it to the Plans admin page.
+8.  **Agent:** Confirms the backend is running and finishes the task for Phase 1 & 2A, updating the PRD.
+9.  **User:** Phase 3 and 4 - Instructs the agent to proceed with the next phases.
+10. **Agent:** Confirms it will build Phase 3 (Self-Service) and 4 (Invoicing), reads all necessary files, and prepares to create the new backend routes.
 
 **Project Health Check:**
-- **Broken**: No. The application is stable and all recent features have been tested.
+- **Broken**: No. The application is stable and the last set of changes passed all automated tests.
 - **Mocked**: None.
 
 **3rd Party Integrations**
@@ -160,11 +162,12 @@ The application is a stable, multi-tenant SaaS platform with a comprehensive B2B
 *   Zoho Mail, Zoho WorkDrive, Zoho CRM, Zoho Books
 *   Resend (Email)
 *    (FX rates)
-*    &  (Frontend PDF Generation)
+*    &  (Frontend PDF Generation - not used for invoices)
 *    (Backend Scheduled Jobs)
+*    &  (Backend, planned for Invoice PDF Generation)
 
 **Testing status**
-  - Testing agent used after significant changes: YES
+  - Testing agent used after significant changes: YES (for Phase 1 & 2A, passed 35/35 tests)
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
   - Known regressions: None.
@@ -178,4 +181,4 @@ The application is a stable, multi-tenant SaaS platform with a comprehensive B2B
     - Password: 
 
 **What agent forgot to execute**
-Nothing. The agent has correctly identified the next set of tasks based on the user's latest request and is ready to begin implementation.</analysis>
+Nothing. The agent has followed the user-approved architecture plan systematically and is ready to proceed with the next logical step.</analysis>
