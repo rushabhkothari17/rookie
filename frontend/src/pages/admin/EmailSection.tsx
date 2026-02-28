@@ -220,6 +220,8 @@ function TemplateEditor({ template, onSave, onClose }: {
 // ─── EmailSection ─────────────────────────────────────────────────────────────
 
 export default function EmailSection() {
+  const { user: authUser } = useAuth();
+  const isPlatformAdmin = authUser?.role === "platform_admin";
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
