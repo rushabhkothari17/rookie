@@ -43,7 +43,17 @@ NOTE: System Config tab DELETED
 
 ## What Was Implemented (Feb 2026 — Product Management Overhaul)
 
-### Audit Trail Dashboard (Feb 2026)
+### Partner Billing System — Backend & Frontend (Feb 2026)
+- **Backend** (`backend/routes/admin/partner_billing.py`): Full CRUD for `partner_orders` + `partner_subscriptions` collections; stats endpoints (MRR, ARR, revenue by currency); Stripe hosted checkout for card subscriptions & one-time orders; audit trail on all actions; Stripe webhook handlers in `webhooks.py`.
+- **Frontend** (`PartnerOrdersTab.tsx`, `PartnerSubscriptionsTab.tsx`): Stats dashboards, filters (partner/plan/status/interval), create/edit modals, cancellation, Stripe checkout link generation/copy, audit log dialog.
+- **Bug fixed**: Audit log sort field `timestamp` → `created_at` in `partner_billing.py` (iter148).
+
+### Plan Management System (Feb 2026)
+- `backend/routes/admin/plans.py`: CRUD plans, auto-propagation to tenants, tenant counts per plan, audit logging.
+- `frontend/src/pages/admin/PlansTab.tsx`: Full plan management UI.
+- `TenantsTab.tsx`: "Filter by Plan" dropdown added to Partner Orgs tab.
+
+
 - **New backend endpoint**: `GET /api/admin/audit-logs/stats` — returns total/errors/today/by_actor_type/top_actions/top_entity_types for the selected period
 - **Rebuilt LogsTab.tsx** with full dashboard: 4 stats cards, Top Actions clickable chips, quick date range buttons (Today/7d/30d/90d/All), default last-30-days filter, expanded entity types, per-page selector (25/50/100), detail dialog with full metadata
 - All 24/24 tests pass (backend + frontend)
