@@ -207,6 +207,10 @@ async def set_customer_tax_exempt(
         {"id": customer_id},
         {"$set": {"tax_exempt": tax_exempt}},
     )
+    await create_audit_log(
+        entity_type="customer", entity_id=customer_id, action="tax_exempt_updated",
+        actor=admin.get("email", "admin"), details={"tax_exempt": tax_exempt}, tenant_id=tenant_id_of(admin),
+    )
     return {"message": "Customer tax-exempt status updated", "tax_exempt": tax_exempt}
 
 
