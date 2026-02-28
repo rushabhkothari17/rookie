@@ -501,6 +501,7 @@ class AdminProductCreate(BaseModel):
     display_layout: Optional[str] = "standard"
     currency: str = "USD"
     enquiry_form_id: Optional[str] = None
+    default_term_months: Optional[int] = None
 
 
 class AppSettingsUpdate(BaseModel):
