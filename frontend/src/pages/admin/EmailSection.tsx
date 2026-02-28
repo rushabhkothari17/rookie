@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { X, ChevronDown, ChevronUp, Mail, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
