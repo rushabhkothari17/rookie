@@ -19,10 +19,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## What's Been Implemented
 
+## What's Been Implemented
+
 ### Phase 1: Partner Licensing & Plans
 - Plan creation and assignment to partners
 - License usage tracking with strict enforcement on all manual create paths
 - Partner portal showing license usage
+- **Free Trial plan** auto-seeded on startup (all limits=10, `is_default=true`)
+- `is_public` flag on plans — controls visibility for partner self-service upgrade
+- `GET /api/partner/plans/public` endpoint — returns plans where `is_public=true`
+- Auto-assigned to new partner orgs at signup
+- Reset to Free Trial when a partner subscription is cancelled
 
 ### Phase 2: Partner Billing
 - Full CRUD for partner orders and subscriptions (admin UI + API)
