@@ -855,6 +855,23 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
     })
 
     await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="partner_registered", actor=admin_email, details={"name": name, "code": code, "admin_email": admin_email})
+
+    # Auto-assign the Free Trial plan to the new tenant
+    try:
+        free_trial = await db.plans.find_one({"is_default": True}, {"_id": 0})
+        if free_trial:
+            limits = {k: v for k, v in free_trial.items() if k.startswith("max_")}
+            await db.tenants.update_one({"id": tenant_id}, {"$set": {
+                "license": {
+                    "plan_id": free_trial["id"],
+                    "plan_name": free_trial["name"],
+                    "assigned_at": now,
+                    **limits,
+                }
+            }})
+    except Exception:
+        pass  # Non-blocking — tenant works without a plan
+
     return {
         "message": "Partner organization created successfully. You can now log in.",
         "tenant_name": name,
