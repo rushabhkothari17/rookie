@@ -109,6 +109,7 @@ from routes.article_templates import router as article_templates_router
 from routes.article_email_templates import router as article_email_templates_router
 from routes.admin.plans import router as plans_admin_router
 from routes.admin.partner_billing import router as partner_billing_router
+from routes.partner_billing_view import router as partner_billing_view_router
 from routes.admin.tenants import router as tenants_admin_router
 from routes.admin.payment_validate import router as payment_validate_router
 from routes.admin.imports import router as imports_admin_router
