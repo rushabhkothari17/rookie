@@ -711,6 +711,18 @@ export function ProductForm({
           {(form.pricing_type === "internal" || !form.pricing_type) && (
             <>
               <div className={cardCls}>
+                {/* Billing type + Stripe Price ID — shown first */}
+                <div className="space-y-3 pb-4 border-b border-slate-100 mb-4">
+                  <label className={labelCls}>Billing type</label>
+                  <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
+                  {form.is_subscription && (
+                    <div>
+                      <label className={labelCls}>Stripe Price ID</label>
+                      <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className={labelCls}>Base price</label>
