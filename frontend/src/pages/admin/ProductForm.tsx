@@ -667,7 +667,7 @@ export function ProductForm({
               <label className={labelCls}>Detail page description</label>
               <Textarea value={form.description_long} onChange={e => s("description_long")(e.target.value)} placeholder="Full description for the product page" rows={3} className="resize-none text-sm" data-testid="pf-long-desc" />
             </div>
-            <BulletsList bullets={form.bullets} onChange={s("bullets")} />
+            <BulletsList bullets={form.bullets} onChange={s("bullets")} label="Bullet points (what's included)" />
           </div>
 
           <div className={cardCls}>
