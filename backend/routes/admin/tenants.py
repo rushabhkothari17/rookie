@@ -314,6 +314,7 @@ async def delete_tenant_note(
     return {"message": "Note deleted"}
 
 
+@router.post("/admin/tenants/{tenant_id}/create-admin")
 async def create_partner_admin(
     tenant_id: str,
     payload: CreatePartnerAdminRequest,
