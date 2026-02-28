@@ -131,20 +131,22 @@ export function TenantsTab() {
     e.preventDefault();
     setCreating(true);
     try {
-      await api.post("/admin/tenants", {
-        name: newTenant.name,
-        code: newTenant.code.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
-        status: "active",
-      });
-      toast.success("Partner organization created");
-      setShowCreate(false);
-      setNewTenant({ name: "", code: "" });
+      const res = await api.post("/auth/register-partner", newPartner);
+      setGeneratedCode(res.data.partner_code || "");
       load();
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to create tenant");
+      toast.error(err.response?.data?.detail || "Failed to create partner organization");
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleCloseCreate = () => {
+    setShowCreate(false);
+    setGeneratedCode("");
+    setCodeCopied(false);
+    setCreateCountry("");
+    setNewPartner({ name: "", admin_name: "", admin_email: "", admin_password: "", base_currency: "GBP", address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" } });
   };
 
   const toggleStatus = async (tenant: Tenant) => {
