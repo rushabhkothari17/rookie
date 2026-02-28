@@ -599,3 +599,42 @@ async def admin_cancel_subscription(
         ))
 
     return {"message": "Subscription cancellation scheduled", "cancelled_at": cancelled_at}
+
+
+@router.post("/admin/subscriptions/{subscription_id}/send-reminder")
+async def send_subscription_reminder(
+    subscription_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Immediately send a renewal reminder email for the given subscription (admin test action)."""
+    tf = tenant_filter(admin)
+    subscription = await db.subscriptions.find_one({**tf, "id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    renewal_str = (subscription.get("renewal_date") or "")[:10]
+    if not renewal_str:
+        raise HTTPException(status_code=400, detail="Subscription has no renewal date set")
+
+    customer = await db.customers.find_one({**tf, "id": subscription.get("customer_id", "")}, {"_id": 0}) or {}
+    user = await db.users.find_one({"id": customer.get("user_id", "")}, {"_id": 0}) or {}
+    email = user.get("email") or customer.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="No email address found for this subscription's customer")
+
+    from services.email_service import EmailService
+    await EmailService.send(
+        trigger="subscription_renewal_reminder",
+        recipient=email,
+        variables={
+            "customer_name": customer.get("full_name") or user.get("full_name") or email,
+            "subscription_number": subscription.get("subscription_number", ""),
+            "plan_name": subscription.get("plan_name", ""),
+            "amount": f"{subscription.get('amount', 0):.2f}",
+            "currency": subscription.get("currency", ""),
+            "renewal_date": renewal_str,
+        },
+        db=db,
+        tenant_id=tenant_id_of(admin),
+    )
+    return {"message": f"Renewal reminder sent to {email}"}
