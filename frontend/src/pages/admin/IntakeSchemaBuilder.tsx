@@ -454,7 +454,7 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
 
           {ruleSet.groups.length < MAX_GROUPS && (
             <button type="button" onClick={addGroup}
-              className="flex items-center gap-1.5 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium transition-colors border border-dashed border-indigo-200 rounded-md px-2.5 py-1.5 w-full justify-center hover:bg-indigo-50/50">
+              className="flex items-center gap-1.5 text-[11px] text-indigo-500 hover:text-indigo-700 font-medium transition-colors border border-dashed border-indigo-200 rounded-md px-2.5 py-2 w-full justify-center hover:bg-indigo-50/50 mt-1">
               <Plus size={11} /> Add group
             </button>
           )}
