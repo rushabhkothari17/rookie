@@ -185,7 +185,7 @@ class TestTaxOverrideRuleAudit:
             f"{BASE_URL}/api/admin/taxes/overrides",
             json={
                 "name": f"TEST_Audit_Override_{uuid.uuid4().hex[:8]}",
-                "conditions": {"country": "US"},
+                "conditions": [{"country": "US"}],
                 "tax_rate": 8.5,
                 "tax_name": "US Sales Tax",
                 "priority": 10,
