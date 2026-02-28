@@ -430,6 +430,10 @@ async def create_invoice_template(
     }
     await db.partner_invoice_templates.insert_one(tmpl)
     tmpl.pop("_id", None)
+    await create_audit_log(
+        entity_type="invoice_template", entity_id=tmpl["id"], action="created",
+        actor=admin.get("email", "admin"), details={"name": payload["name"]}, tenant_id=tid,
+    )
     return {"template": tmpl}
 
 
