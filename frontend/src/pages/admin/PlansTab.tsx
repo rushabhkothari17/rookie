@@ -486,7 +486,7 @@ export function PlansTab() {
                   {/* Expandable limits row */}
                   {expanded === plan.id && (
                     <tr className="border-t border-slate-100 bg-slate-50">
-                      <td colSpan={5} className="px-4 py-3">
+                      <td colSpan={6} className="px-4 py-3">
                         <div className="grid grid-cols-3 gap-x-6 gap-y-1 text-xs">
                           {LIMIT_FIELDS.map(({ key, label }) => {
                             const val = plan[key as keyof Plan];
