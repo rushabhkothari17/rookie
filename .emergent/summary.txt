@@ -1,94 +1,80 @@
 <analysis>**original_problem_statement:**
-The user's initial requests were focused on building a comprehensive **Partner Licensing System** available only to the platform admin. This was successfully implemented.
+The user initially requested a **Partner Licensing System**. This was successfully built. Subsequent requests involved adding **Plan Management**, a comprehensive **Partner Billing** system (orders and subscriptions), and various UI improvements.
 
-The most recent requests build upon this system:
-1.  **Plan Management**: A new Plans tab for the platform admin to create, edit, and manage license plans. Updating a plan should automatically propagate changes to all tenants assigned to it.
-2.  **Partner Billing**: Create Partner Subscriptions and Partner Orders tabs, exclusive to the platform admin, to manage the billing of partners for their SaaS plan usage. This should mirror the existing architecture for customer orders/subscriptions and include manual creation and automated Stripe recurring billing.
-3.  **UI Enhancements**:
-    *   Add a dropdown filter to the Partner Orgs tab to filter tenants by their assigned plan.
-    *   Create two new plans: Pro and Pro Plus with specified limits.
+More recently, the user requested and the agent implemented:
+*   A bug fix for license limits not being enforced during manual order/subscription creation.
+*   Subscription term management (e.g., 12-month contracts) with enforced cancellation policies.
+*   Email notifications for new partner orders and subscriptions.
+*   A partner-facing portal for them to view their own orders and subscriptions.
+*   A scheduler for sending subscription renewal reminder emails.
+*   A feature for partner admins to configure product filters for their storefronts.
+*   An improvement to the login flow to pre-fill the partner code from a URL parameter.
 
-**PRODUCT REQUIREMENTS for Partner Billing:**
-1.  **Platform Admin Only**: The entire feature set is exclusive to the platform administrator.
-2.  **Mirrored Architecture**: Follow the same architecture, UI, and functionality as the existing customer-facing  and . This includes stats dashboards, filtering, audit logs, and status management.
-3.  **Payment Methods**:
-    *   Support manual/offline order creation by the admin.
-    *   Support automated recurring billing via Stripe for subscriptions.
-    *   Leverage payment methods already configured by the platform admin.
-4.  **Hosted Checkout**: Partners should be able to pay online via a hosted checkout link for new subscriptions.
-5.  **Audit Trail**: All billing actions (creation, updates, cancellations) must be logged in the audit trail.
+The latest set of requests, which are now the priority, are:
+1.  For subscriptions with manual payment methods, automatically create a new 'pending' order on the renewal date.
+2.  Make the renewal reminder period configurable, allowing a default to be set at the organization level and overridden at the individual subscription level.
+3.  Implement the scheduler job to automatically cancel subscriptions at the end of their contract term if  is enabled.
+4.  The user also asked for clarification on how renewal emails and webhook processing function.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is stable. The agent has fully implemented the **Partner Licensing System**, including backend enforcement across 13+ API endpoints and a complete UI for both platform admins (to manage licenses) and partners (to view usage).
-
-Building on that, a full **Plan Management** system has been implemented. Platform admins can now create, read, update, and delete license plans. Updating a plan automatically propagates the new limits to all associated partner tenants.
-
-The agent has started the **Partner Billing** feature by creating the backend infrastructure, including new database models (, ), API endpoints (), and Stripe webhook handlers.
+The application is a stable, multi-tenant SaaS platform with a comprehensive B2B partner management layer. Key features include:
+*   **Partner Licensing & Plans:** Admins can create plans and assign licenses to partners, with usage limits strictly enforced across the backend.
+*   **Partner Billing:** A complete system for managing partner orders and subscriptions, mirroring the existing customer billing architecture. This includes manual creation, Stripe/GoCardless integration, and a full UI for platform admins.
+*   **Partner Portal:** Partner admins have a dedicated view to monitor their license usage, and more recently, view their own subscription and order history.
+*   **Scheduled Jobs:**  is integrated and runs a daily job to send renewal reminder emails 30 days before a subscription expires.
+*   **Dynamic Storefronts:** Partner admins can configure product filters for their customer-facing stores.
+*   **All major features and bug fixes from this session have been successfully tested end-to-end** using the testing agent.
 
 **Last working item**:
-    - Last item agent was working: The agent was implementing the **Partner Orders & Subscriptions** feature. The backend (API routes, database models, Stripe webhook handlers) has been fully implemented and is running. The agent was about to start building the corresponding frontend components.
-    - Status: IN PROGRESS
-    - Agent Testing Done: N (Backend was linted and confirmed running, but full feature is not testable without frontend)
-    - Which testing method agent to use? both. Once the frontend is complete, a full e2e test will be required.
-        1. Use the **backend testing agent** to re-verify all  endpoints.
-        2. Use the **frontend testing agent** to test the new  and , including creating manual orders and initiating a Stripe checkout session.
+    - Last item agent was working: The agent clarified the user's questions regarding the existing renewal system and GoCardless integration. It was about to start implementing the next set of features based on the user's latest requests.
+    - Status: NOT STARTED
+    - Agent Testing Done: N
+    - Which testing method agent to use? both. The implementation will require creating new scheduler jobs and modifying several backend routes (, ), as well as adding new UI fields to the frontend (, ). A full E2E test will be necessary.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
   None.
 
 **In progress Task List**:
-  Task 1:  (P0) Complete Frontend for Partner Billing & Plan Filtering.
-
- Task Detail:
-  - Task 1: 
-     - Where to resume: The backend is ready. The next steps are all on the frontend. The agent was in the middle of a parallel tool call to create ,  and update . This call needs to be completed and verified.
-        1.  Create .
-        2.  Create .
-        3.  Update  to add the Filter by Plan dropdown.
-        4.  Update  to include the two new tabs in the sidebar for platform admins.
-     - What will be achieved with this? This will complete the Partner Billing feature, providing the platform admin with a comprehensive interface to manage B2B revenue.
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? both
-     - Blocked on something: No.
+  None.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   **(P1) Google Drive & OneDrive Integration**: Implement the Coming Soon cloud storage integrations.
+*   **Upcoming Tasks (P0):**
+    1.  **Implement Auto-Cancel Scheduler Job**: Create the daily scheduler job to find and cancel subscriptions where  is today and  is true.
+    2.  **Implement Auto-Order Creation**: Modify the scheduler to also find manual-payment subscriptions renewing today and automatically create a new order with a 'pending' status.
+    3.  **Implement Configurable Renewal Reminders**:
+        *   Add a  field to the  model and UI ().
+        *   Add a  override field to the  and  models and UI.
+        *   Update the scheduler to use these new fields instead of the hardcoded 30-day value.
 *   **Future Tasks:**
+    *   **(P1) Google Drive & OneDrive Integration**: Implement the Coming Soon cloud storage integrations.
     *   **(P2) Customer Portal Enhancements**: Implement self-service subscription cancellation, display renewal dates, and a Reorder button.
     *   **(P2) Security Audit**: Conduct a formal penetration test.
     *   **(P2) Centralize Email Settings**: Consolidate all email integration settings.
-    *   **(P3) Add Scheduler for Periodic Tasks**: Implement a scheduler like APScheduler for subscription renewal reminders or overdue payment nudges.
 
 **Completed work in this session**
-- **Feature: Partner Licensing System (End-to-End)**
-  - Created  for all enforcement logic.
-  - Created  and  DB collections.
-  - Added license enforcement checks to over 13 write-action API endpoints (e.g., , , ).
-  - Created platform-admin UI (, ) to manage licenses.
-  - Created partner-facing UI (, ) to display usage.
-- **Feature: Plan Management System**
-  - Created  with full CRUD, tenant counts, and audit logging.
-  - Implemented auto-propagation of plan updates to all assigned tenants.
-  - Created  for plan management.
-  - Rewrote  to use a searchable dropdown for plan assignment, which auto-fills limits.
-- **Feature: Partner Billing System (Backend)**
-  - Created  with endpoints for partner orders and subscriptions, mirroring the customer-facing architecture.
-  - Created  and  DB collections.
-  - Added new Stripe webhook handlers in  for partner billing events (, ).
-- **Data Seeding & UI:**
-  - Created Starter, Pro, and Pro Plus plans via API call.
-  - Added backend support for filtering tenants by plan ID.
-- **Bug Fixes & Refactoring:**
-  - Fixed a bug where  endpoint was missing a decorator.
-  - Fixed a bug in license endpoints where a 404 was incorrectly raised for tenants without a pre-existing license document.
-  - Refactored  to group secondary action buttons into a dropdown menu to prevent UI overflow.
+- **Feature: Partner Billing Frontend & Plan Filtering:**
+  - Completed the UI for platform admins to manage partner orders and subscriptions (, ).
+  - Added a dropdown to filter tenants by their assigned plan on .
+- **Bug Fix: License Limit Enforcement:**
+  - Fixed a critical bug where manual orders and subscriptions could be created without checking license limits, by adding enforcement logic to  and .
+- **Feature: Subscription Term Management:**
+  - Implemented end-to-end support for contract terms (, ) on both customer and partner subscriptions.
+  - This included model changes, backend logic to enforce term-end dates on cancellation, and UI updates for admins to manage these settings.
+- **Feature: Partner Portal & Email Notifications:**
+  - Created read-only views for partners to see their own order and subscription history (, ).
+  - Implemented automated emails for new partner orders and subscriptions.
+- **Feature: Renewal Reminders via Scheduler:**
+  - Integrated  to run a daily job that sends renewal reminder emails for all expiring subscriptions.
+- **Feature: Dynamic Storefront Filters:**
+  - Built a feature allowing partner admins to create and manage product filters for their customer-facing storefronts (, ).
+- **Feature: Misc Improvements:**
+  - Enhanced the Stripe webhook handler to reliably distinguish between partner and customer billing events.
+  - Improved the login page to accept a partner code from the URL, streamlining partner login.
 - **Testing:**
-  - Successfully used the testing agent to validate the entire Partner Licensing System (Backend & Frontend).
-  - Successfully used the testing agent to validate the Plan Management System (Backend & Frontend).
+  - All implemented features and bug fixes were successfully validated with the testing agent, which caught and fixed two separate bugs during the process.
 
 **Earlier issues found/mentioned but not fixed**
    - None.
@@ -100,103 +86,88 @@ The agent has started the **Partner Billing** feature by creating the backend in
 
 
 **Key Technical Concepts**
-- **Centralized Enforcement Service**: The  contains all logic for checking and incrementing usage, ensuring consistent enforcement.
-- **Lazy Reset for Usage Tracking**: Monthly usage counters reset on the first read access of a new month (EST timezone).
-- **Plan-based License Propagation**: Updating a Plan in the  collection triggers a  call to push the new limits to all tenants with a matching .
-- **Mirrored B2B Billing Architecture**: The new partner billing feature (models, APIs, UI) is a direct copy of the existing, stable customer billing architecture, accelerating development and ensuring consistency.
+- **Scheduled Tasks (APScheduler)**: A background scheduler is integrated to run daily jobs, currently for sending renewal reminders. This will be extended for auto-cancellation and auto-order creation.
+- **Metadata-based Webhook Routing**: Stripe and GoCardless webhooks use metadata (e.g., ) to route events to the correct processing logic, ensuring separation between B2C and B2B transactions.
+- **Dynamic Storefront Configuration**: Partner admins can now dynamically configure UI elements (product filters) for their customer-facing storefronts via a dedicated admin UI.
+- **URL-based Context**: The login flow accepts contextual information () from the URL to streamline the user experience for partners.
+- **Enforced Contract Terms**: Subscriptions can have a fixed term, and the backend prevents cancellation until the contract end date is reached.
 
 **key DB schema**
-- :
-  - :  (modified)
-- :  (new)
-- :  (new)
-- :  (new)
-- :  (new)
-- :  (new)
+- , : Modified to include  (int),  (datetime),  (bool),  (int).
+- : Modified to include  (int).
+- : To be modified to include  (int).
+- :  (new).
+- : Modified to include a  (str) field for UI grouping.
 
 **changes in tech stack**
-  - None.
+  - **APScheduler**: Added as a backend dependency for running scheduled tasks.
 
 **All files of reference**
-*   **New Backend Files**:
-    *   
-    *   
-    *   
-*   **New Frontend Files**:
-    *   
-    *   
-    *   
-    *   
-*   **Heavily Modified Files**:
+*   **Key New Files**:
     *   
     *   
     *   
     *   
     *   
     *   
-    *   Numerous other backend route files for license enforcement.
+*   **Key Modified Files**:
+    *    (Scheduler integration)
+    *    (Term logic, bug fix)
+    *    (Bug fix)
+    *    (Partner routing)
+    *    (Term UI)
+    *    (Filter display)
+    *    (URL param logic)
 
 **Areas that need refactoring**:
-- None identified.
+- None.
 
 **key api endpoints**
-*   **Partner Licensing**:
-    *   
-    *   
-    *    &  & 
-    *   
-*   **Plan Management**:
-    *    &  &  & 
-*   **Partner Billing (New)**:
-    *    &  &  & 
-    *    &  &  & 
-    *   
-    *   
-    *   
+*   **Store Filters**: ,  
+*   **Partner Portal**: , 
 
 **Critical Info for New Agent**
-1.  **Your immediate task is to complete the frontend for the Partner Billing feature.** The backend is already built, tested, and running.
-2.  **Follow the plan in the In progress Task List**: Create the two new tab components (, ) and add the plan filter to .
-3.  **Mirror the existing UI**: Use  and  as the direct templates for the new partner billing tabs to ensure consistency.
-4.  **Test thoroughly**: Once the UI is complete, use the testing agent to perform a full end-to-end test of the entire Partner Billing feature, from creating a subscription via Stripe checkout to viewing it in the admin panel.
+1.  **Your immediate task is to implement the three new features requested by the user**: (1) Auto-cancel scheduler job, (2) Auto-order creation for manual renewals, and (3) Configurable reminder days.
+2.  **Refer to the architecture plan** the previous agent created. The user has approved it.
+3.  The **auto-order creation logic** should only apply to manual payment methods (, ). Stripe and GoCardless subscriptions are auto-renewing and do not need this.
+4.  The implementation will involve modifying , adding fields to several models (, ), and updating multiple frontend components for the new settings. Plan to implement and test these changes together.
 
 **documents and test reports created in this job**
   -  (Updated)
-  -  (Partner Licensing System Test)
-  -  (Plan Management System Test)
+  - 
+  - 
+  - 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requests an option to add and modify Plans, making the  field a dropdown. Asks for logs at the plan level.
-2.  **Agent:** Presents a plan for implementing Plan Management and asks clarifying questions about deletion logic.
-3.  **User:** Confirms plan deletion should be blocked if tenants are assigned and clarifies logging requirements.
-4.  **Agent:** Implements the full Plan Management feature.
-5.  **Agent:** Finishes the task and suggests an enhancement for centralized billing.
-6.  **User:** Asks for filters by plan, creation of two new plans (Pro, Pro Plus), and new Partner Subscriptions and Partner Orders tabs. Requests an architecture plan.
-7.  **Agent:** Presents a detailed architecture for the requested features.
-8.  **User:** Specifies that partners should be able to pay via a hosted checkout (Stripe) and that the platform admin can also create orders manually. Approves the architecture and tells the agent to proceed.
-9.  **Agent:** Begins implementation, starting with creating the new plans and building the entire backend for the partner billing system.
-10. **(Current State):** The agent has finished the backend work for partner billing and is about to create the frontend components.
+1.  **User:** Asks for renewal reminder emails, distinguishing partner billing in webhooks, URL-based partner codes, and configurable store filters. Asks for an architecture plan.
+2.  **Agent:** Provides a comprehensive architecture plan for all four features.
+3.  **User:** Approves the architecture plan.
+4.  **Agent:** Implements all four features in parallel batches (backend and frontend).
+5.  **Agent:** Runs the testing agent, which finds and auto-fixes a critical frontend bug.
+6.  **Agent:** Finishes the task and provides a summary.
+7.  **User:** Asks for a detailed explanation of all renewal-related functionalities.
+8.  **Agent:** Provides a full breakdown of how renewals, reminders, and contract terms work for both customers and partners. Asks if the user wants to implement the pending auto-cancel job.
+9.  **User:** Confirms webhook setup is needed by the admin. Requests auto-creation of 'pending' orders for manual renewals. Asks for renewal reminders to be configurable instead of a fixed 30 days. Asks if GoCardless is supported. Confirms to proceed with the Auto-Cancel implementation.
+10. **Agent:** Answers all questions, confirming GoCardless works like Stripe (auto-renews) and that the auto-order logic will only be for manual methods. Acknowledges the plan to implement all three new features.
 
 **Project Health Check:**
-- **Broken**: No. The application is stable.
+- **Broken**: No. The application is stable and all recent features have been tested.
 - **Mocked**: None.
 
 **3rd Party Integrations**
 *   GoCardless (Payments)
 *   Stripe (Payments)
-*   Zoho Mail (Email)
-*   Zoho WorkDrive (Cloud Storage)
-*   Zoho CRM (CRM)
-*   Zoho Books (Accounting)
+*   Zoho Mail, Zoho WorkDrive, Zoho CRM, Zoho Books
 *   Resend (Email)
 *    (FX rates)
 *    &  (Frontend PDF Generation)
+*    (Backend Scheduled Jobs)
 
 **Testing status**
-  - Testing agent used after significant changes: YES. Two successful, comprehensive test runs were completed.
+  - Testing agent used after significant changes: YES
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: None.
-  - Known regressions: None identified by the testing agent.
+  - Test files created: []
+  - Known regressions: None.
 
 **Credentials to test flow:**
 - **Platform Admin:**
@@ -207,4 +178,4 @@ The agent has started the **Partner Billing** feature by creating the backend in
     - Password: 
 
 **What agent forgot to execute**
-The agent has not forgotten anything. It is in the middle of implementing a large, multi-step feature and has correctly prioritized building the backend infrastructure first. The immediate next step is to build the frontend UI that consumes this new backend.</analysis>
+Nothing. The agent has correctly identified the next set of tasks based on the user's latest request and is ready to begin implementation.</analysis>
