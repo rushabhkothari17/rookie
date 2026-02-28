@@ -727,10 +727,10 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 )}
 
                 {/* Divider */}
-                <div className="border-t border-slate-100" />
+                <div className="border-t border-slate-100 pt-1" />
 
                 {/* Flags row — mini toggles */}
-                <div className="flex items-center gap-6 flex-wrap">
+                <div className="flex items-center gap-6 flex-wrap py-1">
                   <MiniToggle label="Enabled" checked={q.enabled}
                     onChange={v => onChange({ ...q, enabled: v, ...(v ? {} : { required: false, affects_price: false }) })} />
                   {q.enabled && (
