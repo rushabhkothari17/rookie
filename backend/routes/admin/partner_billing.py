@@ -629,8 +629,7 @@ async def get_partner_billing_overview(
     admin_user: Dict[str, Any] = Depends(__import__("core.tenant", fromlist=["get_tenant_admin"]).get_tenant_admin),
 ):
     """Partner admin views their own active subscriptions and recent orders."""
-    from core.tenant import tenant_id_of
-    tid = tenant_id_of(admin_user)
+    from core.tenant import tenant_id_of    tid = tenant_id_of(admin_user)
     subscriptions = await db.partner_subscriptions.find(
         {"partner_id": tid, "deleted_at": {"$exists": False}}, {"_id": 0}
     ).sort("created_at", -1).to_list(20)
