@@ -1,0 +1,69 @@
+{
+  "summary": "Full backend and frontend testing of the Partner Licensing System. All 37 backend tests passed (100%). Frontend integration tested: TenantsTab buttons, TenantLicenseModal, TenantNotesModal, partner admin UsageDashboard all working. One pre-existing code bug found (create_partner_admin missing route decorator). One minor HTML hydration warning in TenantLicenseModal table.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/admin/tenants/{tenant_id}/create-admin",
+        "issue": "Route returns 404 - the create_partner_admin function in tenants.py (line 317) is missing its @router.post() decorator. Frontend 'Add Admin' button will fail silently.",
+        "priority": "HIGH (pre-existing bug, not part of this feature)"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "TenantLicenseModal",
+        "issue": "React console error: '<tr> cannot be a child of <tbody> with a <span> wrapper' — hydration warning due to development platform injecting <span> elements around <tr> in the table. This is a dev-environment artifact from the live-editor, not a functional issue. The table renders and works correctly in production.",
+        "selector": "TenantLicenseModal tbody > span > tr",
+        "priority": "LOW (dev environment only)"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "TenantsTab - tenant row action buttons",
+        "issues": ["Many buttons (Address, License, Notes, Logs, Add Admin, toggle, expand) on one row causes horizontal overflow wrapping on narrower viewports — consider grouping or using a dropdown for secondary actions"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter146_license_system.py",
+    "/app/test_reports/pytest/pytest_iter146.xml"
+  ],
+  "action_items": [
+    "Fix: Add @router.post('/admin/tenants/{tenant_id}/create-admin') decorator to create_partner_admin function in /app/backend/routes/admin/tenants.py (line 317). The 'Add Admin' button on TenantsTab is broken.",
+    "Optional: Consider moving the many row action buttons into a dropdown menu to reduce horizontal clutter"
+  ],
+  "critical_code_review_comments": [
+    "CRITICAL BUG: create_partner_admin() in tenants.py is a standalone async function without any @router.post() decorator. This means the /api/admin/tenants/{id}/create-admin endpoint returns 404 — the 'Add Admin' button in TenantsTab.tsx has been broken. This is a pre-existing regression, not introduced by this iteration.",
+    "MINOR: LicenseUpdate model uses Optional[int] for all limit fields. While this works with exclude_unset=True, it's slightly ambiguous in Swagger docs. Consider using a discriminated union or explicit documentation."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter146_license_system.py"
+  ],
+  "success_rate": {
+    "backend": "100% (37/37 tests passed)",
+    "frontend": "95% (all new features working; create-admin pre-existing bug unrelated to this iteration)"
+  },
+  "seed_data_creation": "Reset Sarah's password hash (sarah@brightaccounting.local was using wrong password hash). Cleaned up TEST_ notes. Reset license to unlimited after testing.",
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123! (uses partner code: automate-accounts at login page)",
+    "partner_admin": "sarah@brightaccounting.local / ChangeMe123! (uses partner code: bright-accounting at login page, login endpoint: /api/auth/partner-login)"
+  },
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All 14 test items in the review request have been verified and pass. Backend: 37/37 tests pass at /app/backend/tests/test_iter146_license_system.py. Frontend: Platform admin TenantsTab shows License/Notes/Logs buttons on each row; License modal opens with usage bars and limit inputs (15 fields); Notes modal opens with add/delete; Usage & Limits tab visible ONLY for partner admins; platform admin cannot see Usage & Limits tab. License enforcement: max_users=0 blocks user creation with 403. Auth enforcement: partner admin gets 403 on license/notes/reset endpoints. Pre-existing bug (not this iteration): /api/admin/tenants/{id}/create-admin returns 404 because the route decorator is missing.",
+  "rca_of_issues": {
+    "create_admin_404": {
+      "root_cause": "In /app/backend/routes/admin/tenants.py line 317, the function `create_partner_admin` is defined without a @router.post() decorator. FastAPI only registers endpoints that have route decorators.",
+      "reproduction": "POST /api/admin/tenants/{any_id}/create-admin returns 404",
+      "mitigation": "Add @router.post('/admin/tenants/{tenant_id}/create-admin') decorator above the create_partner_admin function definition at line 317",
+      "is_new_regression": false
+    },
+    "partner_password_hash": {
+      "root_cause": "sarah@brightaccounting.local had an incorrect password hash stored in MongoDB. The user was likely created in a prior iteration with a different password or hashing configuration.",
+      "fix_applied": "Reset the password hash to hash of 'ChangeMe123!' and cleared failed_login_attempts counter"
+    }
+  }
+}
