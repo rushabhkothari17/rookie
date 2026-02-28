@@ -57,6 +57,16 @@ async def create_article_category(
     existing = await db.resource_categories.find_one({**tf, "name": payload.name.strip()}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Category with this name already exists")
+
+    # License: check resource categories limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "categories")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Resource category limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     now = now_iso()
     doc = {
         "id": make_id(),
