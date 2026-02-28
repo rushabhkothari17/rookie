@@ -700,7 +700,7 @@ function InvoiceSettingsPanel() {
         </div>
         <div className="flex items-center gap-3">
           <input type="checkbox" id="show-terms" checked={!!settings.show_terms} onChange={e => setSettings({ ...settings, show_terms: e.target.checked })} className="h-4 w-4 accent-slate-900" />
-          <Label htmlFor="show-terms" className="text-sm cursor-pointer">Include Terms & Conditions on invoice</Label>
+          <Label htmlFor="show-terms" className="text-sm cursor-pointer">Include Terms & Conditions on invoice <FieldTip tip="Appends your Terms & Conditions text at the bottom of every generated invoice PDF." /></Label>
         </div>
         <Button data-testid="invoice-settings-save-btn" onClick={save} disabled={saving}>
           {saving ? "Saving..." : "Save Invoice Settings"}
