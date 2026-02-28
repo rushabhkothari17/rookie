@@ -244,6 +244,11 @@ export default function Admin() {
               <TenantsTab />
             </TabsContent>
           )}
+          {showPartnerOrgs && (
+            <TabsContent value="plans" className="space-y-4">
+              <PlansTab />
+            </TabsContent>
+          )}
           {!isPlatformAdmin && (
             <TabsContent value="usage" className="space-y-4">
               <UsageDashboard />
