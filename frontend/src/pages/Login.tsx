@@ -96,8 +96,14 @@ export default function Login() {
   const [loginError, setLoginError] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("aa_partner_code");
-    if (stored) validateAndProceed(stored, true);
+    // Priority: ?tenant= URL param > localStorage stored code
+    const urlTenant = searchParams.get("tenant") || searchParams.get("partner") || searchParams.get("code");
+    if (urlTenant) {
+      validateAndProceed(urlTenant, false);
+    } else {
+      const stored = localStorage.getItem("aa_partner_code");
+      if (stored) validateAndProceed(stored, true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
