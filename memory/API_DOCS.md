@@ -348,6 +348,8 @@ Operators: `equals`, `not_equals`, `greater_than`, `less_than`, `contains`, `not
 | `GET`  | `/api/admin/orders/{order_id}/refunds` | List refunds for an order |
 | `GET`  | `/api/admin/orders/{order_id}/refund-providers` | Available refund providers for the order |
 | `POST` | `/api/admin/orders/{order_id}/auto-charge` | Trigger an auto-charge attempt |
+| `GET`  | `/api/orders/{order_id}/invoice` | Get invoice data for an order (customer-facing) |
+| `POST` | `/api/orders/{order_id}/send-invoice` | Email invoice to the customer |
 
 ### Order Object (key fields)
 ```json
