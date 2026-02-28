@@ -712,7 +712,7 @@ export function ProductForm({
             <>
               <div className={cardCls}>
                 {/* Billing type + Stripe Price ID — shown first */}
-                <div className="space-y-3 pb-4 border-b border-slate-100 mb-4">
+                <div className="space-y-3 pb-5 border-b border-slate-100 mb-6">
                   <label className={labelCls}>Billing type</label>
                   <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
                   {form.is_subscription && (
