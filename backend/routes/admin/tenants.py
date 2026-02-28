@@ -1,9 +1,10 @@
 """Admin: Tenant (Partner Organization) management — platform super admin only."""
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from core.helpers import make_id, now_iso
 from core.security import pwd_context
@@ -11,6 +12,7 @@ from core.tenant import require_platform_admin, DEFAULT_TENANT_ID, get_tenant_ad
 from db.session import db
 from models import TenantCreate, TenantUpdate, CreatePartnerAdminRequest
 from services.audit_service import create_audit_log
+from services.license_service import get_full_usage_snapshot, DEFAULT_LICENSE
 
 router = APIRouter(prefix="/api", tags=["admin-tenants"])
 
