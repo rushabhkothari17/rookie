@@ -286,7 +286,7 @@ function ReminderNotificationSection() {
     setSaving(true);
     try {
       const days = reminderDays !== "" ? parseInt(reminderDays) : null;
-      await api.put("/admin/tenants/my", { default_reminder_days: days ?? -1 });
+      await api.put("/admin/tenant-settings", { default_reminder_days: days ?? -1 });
       toast.success("Notification settings saved");
     } catch (e: any) {
       toast.error(e.response?.data?.detail || "Failed to save");
