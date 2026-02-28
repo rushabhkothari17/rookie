@@ -764,6 +764,48 @@ async def create_partner_stripe_checkout(
     raise HTTPException(status_code=400, detail="Provide partner_subscription_id or partner_order_id")
 
 
+@router.post("/admin/partner-subscriptions/{subscription_id}/send-reminder")
+async def send_partner_subscription_reminder(
+    subscription_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Immediately send a renewal reminder email for a partner subscription (admin test action)."""
+    sub = await db.partner_subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not sub:
+        raise HTTPException(status_code=404, detail="Partner subscription not found")
+
+    renewal_str = (sub.get("next_billing_date") or "")[:10]
+    if not renewal_str:
+        raise HTTPException(status_code=400, detail="Subscription has no billing date set")
+
+    from core.tenant import DEFAULT_TENANT_ID
+    partner_admin = await db.users.find_one(
+        {"tenant_id": sub.get("partner_id"), "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+        {"_id": 0, "email": 1, "full_name": 1},
+    ) or {}
+    email = partner_admin.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="No admin email found for this partner")
+
+    from services.email_service import EmailService
+    await EmailService.send(
+        trigger="partner_subscription_renewal_reminder",
+        recipient=email,
+        variables={
+            "partner_name": sub.get("partner_name", ""),
+            "subscription_number": sub.get("subscription_number", ""),
+            "plan_name": sub.get("plan_name", "—"),
+            "amount": f"{sub.get('amount', 0):.2f}",
+            "currency": sub.get("currency", ""),
+            "renewal_date": renewal_str,
+            "billing_interval": sub.get("billing_interval", ""),
+        },
+        db=db,
+        tenant_id=DEFAULT_TENANT_ID,
+    )
+    return {"message": f"Renewal reminder sent to {email}"}
+
+
 # ---------------------------------------------------------------------------
 # Partner self-service billing view (partner admin)
 # ---------------------------------------------------------------------------
