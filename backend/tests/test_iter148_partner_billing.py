@@ -29,18 +29,13 @@ def session():
 @pytest.fixture(scope="module")
 def platform_admin_session(session):
     """Authenticate as platform admin and return session with cookie."""
-    # Step 1: Validate tenant code
-    r1 = session.post(f"{BASE_URL}/api/auth/validate-tenant-code", json={"code": PLATFORM_ADMIN_CREDS["tenant_code"]})
-    if r1.status_code != 200:
-        pytest.skip(f"Tenant code validation failed: {r1.text}")
-
-    # Step 2: Login with email/password
-    r2 = session.post(
+    # Platform admin login: email + password (no partner_code needed for platform admin)
+    r = session.post(
         f"{BASE_URL}/api/auth/login",
         json={"email": PLATFORM_ADMIN_CREDS["email"], "password": PLATFORM_ADMIN_CREDS["password"]},
     )
-    if r2.status_code != 200:
-        pytest.skip(f"Login failed: {r2.text}")
+    if r.status_code != 200:
+        pytest.skip(f"Login failed: {r.text}")
 
     return session
 
