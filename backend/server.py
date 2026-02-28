@@ -535,6 +535,13 @@ async def startup_tasks():
         import logging
         logging.getLogger(__name__).warning(f"Scheduler failed to start: {e}")
 
+    # Seed Free Trial plan (idempotent — only creates once)
+    try:
+        await _seed_free_trial_plan()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Free Trial plan seed failed: {e}")
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
