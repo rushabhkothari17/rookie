@@ -146,6 +146,7 @@ export default function Admin() {
             {/* Commerce */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
             <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
+            <TabsTrigger value="filters" data-testid="admin-tab-filters" className={TAB_CLASS}>Filters</TabsTrigger>
             <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>
             <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>
             <TabsTrigger value="enquiries" data-testid="admin-tab-enquiries" className={TAB_CLASS}>Enquiries</TabsTrigger>
