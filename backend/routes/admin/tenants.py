@@ -186,12 +186,8 @@ async def update_tenant_license(
     admin: Dict[str, Any] = Depends(require_platform_admin),
 ):
     """Set/update license limits for a tenant."""
-    import logging
-    logging.warning(f"LICENSE UPDATE CALLED: tenant_id={tenant_id!r}")
-    print(f"LICENSE UPDATE CALLED: tenant_id={tenant_id!r}", flush=True)
-    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "license": 1})
-    print(f"LICENSE UPDATE: tenant={tenant!r}", flush=True)
-    if not tenant:
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "id": 1, "license": 1})
+    if tenant is None:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
     existing_license = tenant.get("license") or {}
