@@ -41,6 +41,16 @@ async def create_form(
 ):
     """Create a new custom form."""
     tid = tenant_id_of(admin)
+
+    # License: check forms limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "forms")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Form limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     form_id = make_id()
     form = {
         "id": form_id,
