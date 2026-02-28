@@ -133,6 +133,8 @@ function SubFormModal({
         start_date: form.start_date || null,
         next_billing_date: form.next_billing_date || null,
         internal_note: form.internal_note || "",
+        term_months: form.term_months ? parseInt(form.term_months) : null,
+        auto_cancel_on_termination: form.auto_cancel_on_termination,
       };
       if (isEdit) {
         await api.put(`/admin/partner-subscriptions/${sub.id}`, payload);
