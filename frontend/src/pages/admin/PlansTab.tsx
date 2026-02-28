@@ -81,6 +81,8 @@ const defaultForm = (): FormState => ({
   description: "",
   warning_threshold_pct: "80",
   is_public: "false",
+  monthly_price: "",
+  currency: "GBP",
   ...Object.fromEntries(LIMIT_FIELDS.map(f => [f.key, ""])),
 });
 
