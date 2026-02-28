@@ -719,10 +719,16 @@ export function ProductForm({
                   <label className={labelCls}>Billing type <FieldTip tip="One-time: customer pays once at checkout. Subscription: recurring charge at a set interval — requires a Stripe Price ID." /></label>
                   <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
                   {form.is_subscription && (
+                    <>
                     <div>
                       <label className={labelCls}>Stripe Price ID <FieldTip tip="Found in Stripe Dashboard → Products → your product → Price ID. Format: price_… Required for subscription billing so Stripe knows what to charge on renewal." /></label>
                       <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
                     </div>
+                    <div>
+                      <label className={labelCls}>Default Contract Term (months) <FieldTip tip="Pre-fills the contract term when creating a manual subscription from this product. 0 or empty = cancel anytime. E.g. 12 = 12-month lock-in." /></label>
+                      <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={form.default_term_months} onChange={e => s("default_term_months")(e.target.value)} data-testid="pf-default-term-months" />
+                    </div>
+                    </>
                   )}
                 </div>
 
