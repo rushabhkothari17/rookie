@@ -28,7 +28,7 @@ def session():
 
 @pytest.fixture(scope="module")
 def platform_admin_session(session):
-    """Authenticate as platform admin and return session with cookie."""
+    """Authenticate as platform admin and return session with Bearer token."""
     # Platform admin login: email + password (no partner_code needed for platform admin)
     r = session.post(
         f"{BASE_URL}/api/auth/login",
@@ -36,7 +36,14 @@ def platform_admin_session(session):
     )
     if r.status_code != 200:
         pytest.skip(f"Login failed: {r.text}")
-
+    
+    data = r.json()
+    token = data.get("token") or data.get("access_token")
+    if not token:
+        pytest.skip(f"No token in login response: {data}")
+    
+    # Set Bearer token for all subsequent requests
+    session.headers.update({"Authorization": f"Bearer {token}"})
     return session
 
 
