@@ -144,6 +144,173 @@ async def get_my_tenant(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     return {"tenant": tenant}
 
 
+# ---------------------------------------------------------------------------
+# License Management Endpoints (platform admin only)
+# ---------------------------------------------------------------------------
+
+class LicenseUpdate(BaseModel):
+    plan: Optional[str] = None
+    warning_threshold_pct: Optional[int] = None
+    effective_from: Optional[str] = None
+    max_users: Optional[int] = None
+    max_storage_mb: Optional[int] = None
+    max_user_roles: Optional[int] = None
+    max_product_categories: Optional[int] = None
+    max_product_terms: Optional[int] = None
+    max_enquiries: Optional[int] = None
+    max_resources: Optional[int] = None
+    max_templates: Optional[int] = None
+    max_email_templates: Optional[int] = None
+    max_categories: Optional[int] = None
+    max_forms: Optional[int] = None
+    max_references: Optional[int] = None
+    max_orders_per_month: Optional[int] = None
+    max_customers_per_month: Optional[int] = None
+    max_subscriptions_per_month: Optional[int] = None
+
+
+@router.get("/admin/tenants/{tenant_id}/license")
+async def get_tenant_license(tenant_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+    """Get license config + current usage snapshot for a tenant."""
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "id": 1, "name": 1})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    snapshot = await get_full_usage_snapshot(tenant_id)
+    return snapshot
+
+
+@router.put("/admin/tenants/{tenant_id}/license")
+async def update_tenant_license(
+    tenant_id: str,
+    payload: LicenseUpdate,
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    """Set/update license limits for a tenant."""
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "license": 1})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    existing_license = tenant.get("license") or {}
+    updates = {k: v for k, v in payload.dict().items() if v is not None}
+    new_license = {**DEFAULT_LICENSE, **existing_license, **updates}
+
+    await db.tenants.update_one(
+        {"id": tenant_id},
+        {"$set": {"license": new_license, "updated_at": now_iso()}},
+    )
+    await create_audit_log(
+        entity_type="tenant_license",
+        entity_id=tenant_id,
+        action="updated",
+        actor=admin.get("email", "admin"),
+        details={"changes": updates},
+    )
+    return {"license": new_license}
+
+
+@router.post("/admin/tenants/{tenant_id}/usage/reset")
+async def reset_tenant_usage(tenant_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+    """Manually reset the monthly usage counters for a tenant."""
+    from services.license_service import _current_est_period
+    period = _current_est_period()
+    await db.license_usage.update_one(
+        {"tenant_id": tenant_id},
+        {
+            "$set": {
+                "period": period,
+                "orders_count": 0,
+                "customers_count": 0,
+                "subscriptions_count": 0,
+                "updated_at": now_iso(),
+            }
+        },
+        upsert=True,
+    )
+    await create_audit_log(
+        entity_type="tenant_license",
+        entity_id=tenant_id,
+        action="usage_reset",
+        actor=admin.get("email", "admin"),
+        details={"period": period},
+    )
+    return {"message": "Monthly usage counters reset", "period": period}
+
+
+# ---------------------------------------------------------------------------
+# Partner Usage — self-view endpoint (partner admins)
+# ---------------------------------------------------------------------------
+
+@router.get("/admin/usage")
+async def get_my_usage(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Partner admin: view their own usage vs license limits."""
+    tid = tenant_id_of(admin)
+    snapshot = await get_full_usage_snapshot(tid)
+    return snapshot
+
+
+# ---------------------------------------------------------------------------
+# Tenant Notes Endpoints (platform admin only)
+# ---------------------------------------------------------------------------
+
+class NoteCreate(BaseModel):
+    text: str
+
+
+@router.get("/admin/tenants/{tenant_id}/notes")
+async def list_tenant_notes(tenant_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+    notes = await db.tenant_notes.find(
+        {"tenant_id": tenant_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(200)
+    return {"notes": notes}
+
+
+@router.post("/admin/tenants/{tenant_id}/notes")
+async def add_tenant_note(
+    tenant_id: str,
+    payload: NoteCreate,
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "id": 1})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    note_id = make_id()
+    note_doc = {
+        "id": note_id,
+        "tenant_id": tenant_id,
+        "text": payload.text.strip(),
+        "created_by": admin.get("email", "admin"),
+        "created_at": now_iso(),
+    }
+    await db.tenant_notes.insert_one({**note_doc})
+    await create_audit_log(
+        entity_type="tenant_note",
+        entity_id=tenant_id,
+        action="note_added",
+        actor=admin.get("email", "admin"),
+        details={"note_id": note_id},
+    )
+    return {"note": note_doc}
+
+
+@router.delete("/admin/tenants/{tenant_id}/notes/{note_id}")
+async def delete_tenant_note(
+    tenant_id: str,
+    note_id: str,
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    result = await db.tenant_notes.delete_one({"id": note_id, "tenant_id": tenant_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Note not found")
+    await create_audit_log(
+        entity_type="tenant_note",
+        entity_id=tenant_id,
+        action="note_deleted",
+        actor=admin.get("email", "admin"),
+        details={"note_id": note_id},
+    )
+    return {"message": "Note deleted"}
+
 
 async def create_partner_admin(
     tenant_id: str,
