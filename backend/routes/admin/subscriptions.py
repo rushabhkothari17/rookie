@@ -482,6 +482,15 @@ async def update_subscription(
         update_fields["auto_cancel_on_termination"] = payload.auto_cancel_on_termination
         changes["auto_cancel_on_termination"] = {"old": subscription.get("auto_cancel_on_termination"), "new": payload.auto_cancel_on_termination}
 
+    if payload.reminder_days is not None:
+        new_reminder = None if payload.reminder_days <= 0 else payload.reminder_days
+        update_fields["reminder_days"] = new_reminder
+        changes["reminder_days"] = {"old": subscription.get("reminder_days"), "new": new_reminder}
+
+    # Reset reminder tracking when renewal_date changes
+    if "renewal_date" in update_fields:
+        update_fields["reminder_sent_for_renewal_date"] = None
+
     if update_fields:
         update_fields["updated_at"] = now_iso()
         await db.subscriptions.update_one({"id": subscription_id}, {"$set": update_fields})
