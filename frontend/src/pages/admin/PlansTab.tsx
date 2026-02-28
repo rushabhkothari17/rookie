@@ -421,6 +421,10 @@ export function PlansTab() {
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-800">{plan.name}</div>
                       {plan.description && <div className="text-xs text-slate-400 mt-0.5">{plan.description}</div>}
+                      {plan.is_public && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-[10px] mt-1">Public</Badge>}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-700">
+                      {plan.monthly_price != null ? `${plan.currency || "GBP"} ${plan.monthly_price.toFixed(2)}/mo` : <span className="text-slate-400">—</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-slate-600">{plan.tenant_count ?? 0}</span>
