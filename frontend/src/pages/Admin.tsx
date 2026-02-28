@@ -105,6 +105,7 @@ export default function Admin() {
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Platform</p>
                 <TabsTrigger value="tenants" data-testid="admin-tab-tenants" className={TAB_CLASS}>Partner Orgs</TabsTrigger>
+                <TabsTrigger value="plans" data-testid="admin-tab-plans" className={TAB_CLASS}>Plans</TabsTrigger>
               </>
             )}
 
