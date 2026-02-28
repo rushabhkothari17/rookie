@@ -281,6 +281,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
           <div>
             <label className="text-xs font-semibold text-slate-600 mb-2 block">
               Event Subscriptions * <span className="font-normal text-slate-400">({subscriptions.length} selected)</span>
+              <FieldTip tip="Choose which events trigger a POST to your endpoint URL. Subscribe only to the events your server needs — every delivery counts against your quota." side="right" />
             </label>
             <EventBuilder catalog={catalog} subscriptions={subscriptions} onChange={setSubscriptions} />
           </div>
