@@ -249,6 +249,96 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{reset_code}}"],
         "is_system": True,
     },
+    # ── Partner Billing (Platform Admin only) ───────────────────────────────
+    {
+        "trigger": "partner_subscription_created",
+        "label": "New Partner Subscription",
+        "description": "Sent to the partner admin when a new subscription is created for their organisation. Includes their partner code.",
+        "category": "partner_billing",
+        "subject": "Your {{store_name}} subscription is now active — {{subscription_number}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">Subscription Confirmed</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 24px">Reference: <strong>{{subscription_number}}</strong></p>
+  <p style="color:#475569;">Hi {{partner_name}},</p>
+  <p style="color:#475569;">Your subscription to <strong>{{plan_name}}</strong> has been created. Here are your details:</p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin:20px 0">
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:160px">Subscription</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{subscription_number}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Plan</td><td style="padding:6px 0;color:#1e293b">{{plan_name}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Amount</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{currency}} {{amount}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Billing</td><td style="padding:6px 0;color:#1e293b">{{billing_interval}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Start Date</td><td style="padding:6px 0;color:#1e293b">{{start_date}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Next Billing</td><td style="padding:6px 0;color:#1e293b">{{next_billing_date}}</td></tr>
+    </table>
+  </div>
+  <div style="background:#eff6ff;border-left:4px solid #3b82f6;border-radius:0 6px 6px 0;padding:16px;margin:20px 0">
+    <p style="color:#1e40af;font-weight:700;margin:0 0 4px;font-size:13px">Your Partner Login Code</p>
+    <p style="color:#1e40af;font-size:22px;font-weight:800;letter-spacing:2px;margin:0">{{partner_code}}</p>
+    <p style="color:#3b82f6;font-size:12px;margin:4px 0 0">Use this code when logging in to the platform.</p>
+  </div>
+  <p style="color:#475569;font-size:13px;">If you have any questions about your subscription, please reply to this email and we will be happy to help.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{partner_name}}", "{{partner_code}}", "{{subscription_number}}", "{{plan_name}}", "{{amount}}", "{{currency}}", "{{billing_interval}}", "{{start_date}}", "{{next_billing_date}}"],
+        "is_system": True,
+    },
+    {
+        "trigger": "partner_order_created",
+        "label": "New Partner Order",
+        "description": "Sent to the partner admin when a new one-time order is raised for their organisation. Not triggered on subscription renewals.",
+        "category": "partner_billing",
+        "subject": "Invoice {{order_number}} from {{store_name}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">Order / Invoice</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 24px">Reference: <strong>{{order_number}}</strong></p>
+  <p style="color:#475569;">Hi {{partner_name}},</p>
+  <p style="color:#475569;">A new order has been raised for your account. Please find the details below:</p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin:20px 0">
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:160px">Order Number</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{order_number}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Description</td><td style="padding:6px 0;color:#1e293b">{{description}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Amount Due</td><td style="padding:6px 0;color:#1e293b;font-weight:700;font-size:16px">{{currency}} {{amount}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Invoice Date</td><td style="padding:6px 0;color:#1e293b">{{invoice_date}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Due Date</td><td style="padding:6px 0;color:#1e293b">{{due_date}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Payment Method</td><td style="padding:6px 0;color:#1e293b">{{payment_method}}</td></tr>
+    </table>
+  </div>
+  {{payment_link_section}}
+  <p style="color:#475569;font-size:13px;">If you have any questions about this order, please reply to this email and we will be happy to help.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{partner_name}}", "{{order_number}}", "{{description}}", "{{amount}}", "{{currency}}", "{{invoice_date}}", "{{due_date}}", "{{payment_method}}", "{{payment_link_section}}"],
+        "is_system": True,
+    },
+    {
+        "trigger": "subscription_terminated",
+        "label": "Subscription Terminated",
+        "description": "Sent to the partner/customer when a subscription is cancelled (either manually or auto-cancelled on term end).",
+        "category": "partner_billing",
+        "subject": "Subscription {{subscription_number}} has been cancelled",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">Subscription Cancelled</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 24px">Reference: <strong>{{subscription_number}}</strong></p>
+  <p style="color:#475569;">Hi {{recipient_name}},</p>
+  <p style="color:#475569;">Your subscription to <strong>{{plan_name}}</strong> has been cancelled as of <strong>{{cancelled_at}}</strong>.</p>
+  <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:0 6px 6px 0;padding:12px 16px;margin:20px 0">
+    <p style="color:#7c2d12;font-size:13px;margin:0">Reason: {{cancel_reason}}</p>
+  </div>
+  <p style="color:#475569;font-size:13px;">If you believe this is a mistake or have any questions, please reply to this email.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{recipient_name}}", "{{subscription_number}}", "{{plan_name}}", "{{cancelled_at}}", "{{cancel_reason}}"],
+        "is_system": True,
+    },
 ]
 
 
