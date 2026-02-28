@@ -149,6 +149,23 @@ async def checkout_bank_transfer(
     if checkout_type not in ["one_time", "subscription"]:
         raise HTTPException(status_code=400, detail="Invalid checkout type")
 
+    # License enforcement: check monthly order/subscription limits
+    from services.license_service import check_limit as _check_limit, increment_monthly as _inc_monthly
+    if checkout_type == "subscription":
+        _sub_check = await _check_limit(tenant_id, "subscriptions")
+        if not _sub_check["allowed"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"This organization has reached its monthly subscription limit ({_sub_check['current']}/{_sub_check['limit']}). Please contact support."
+            )
+    else:
+        _ord_check = await _check_limit(tenant_id, "orders")
+        if not _ord_check["allowed"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"This organization has reached its monthly order limit ({_ord_check['current']}/{_ord_check['limit']}). Please contact support."
+            )
+
     promo_code_data = None  # initialised early — subscription branch also references it in notes_json
 
     if checkout_type == "subscription":
