@@ -18,7 +18,84 @@ from services.webhook_service import dispatch_event
 from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 from gocardless_helper import create_payment
 
+from services.checkout_service import get_fx_rate, get_tenant_base_currency
+
 router = APIRouter(prefix="/api", tags=["admin-orders"])
+
+
+@router.get("/admin/orders/stats")
+async def admin_orders_stats(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """KPI dashboard stats for the Orders tab."""
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    base_currency = await get_tenant_base_currency(tid)
+
+    now = datetime.now(timezone.utc)
+    this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d")
+    last_month_start = (now.replace(day=1) - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
+    base_flt = {**tf, "deleted_at": {"$exists": False}}
+
+    async def _total():
+        return await db.orders.count_documents(base_flt)
+
+    async def _this_month():
+        return await db.orders.count_documents({**base_flt, "created_at": {"$gte": this_month_start}})
+
+    async def _last_month():
+        return await db.orders.count_documents({**base_flt, "created_at": {"$gte": last_month_start, "$lt": this_month_start}})
+
+    async def _by_status():
+        pipeline = [{"$match": base_flt}, {"$group": {"_id": "$status", "count": {"$sum": 1}}}, {"$sort": {"count": -1}}]
+        results = await db.orders.aggregate(pipeline).to_list(20)
+        return {(r["_id"] or "unknown"): r["count"] for r in results}
+
+    async def _by_payment_method():
+        pipeline = [{"$match": base_flt}, {"$group": {"_id": "$payment_method", "count": {"$sum": 1}}}, {"$sort": {"count": -1}}]
+        results = await db.orders.aggregate(pipeline).to_list(20)
+        return {(r["_id"] or "unknown"): r["count"] for r in results}
+
+    async def _revenue_by_currency():
+        pipeline = [
+            {"$match": {**base_flt, "status": {"$in": ["paid", "completed"]}}},
+            {"$group": {"_id": "$currency", "total": {"$sum": "$total"}}},
+        ]
+        return await db.orders.aggregate(pipeline).to_list(20)
+
+    async def _this_month_revenue_by_currency():
+        pipeline = [
+            {"$match": {**base_flt, "status": {"$in": ["paid", "completed"]}, "created_at": {"$gte": this_month_start}}},
+            {"$group": {"_id": "$currency", "total": {"$sum": "$total"}}},
+        ]
+        return await db.orders.aggregate(pipeline).to_list(20)
+
+    total, this_month, last_month, by_status, by_method, rev_by_cur, this_month_rev = await asyncio.gather(
+        _total(), _this_month(), _last_month(), _by_status(), _by_payment_method(),
+        _revenue_by_currency(), _this_month_revenue_by_currency(),
+    )
+
+    # Convert all currencies to base
+    async def _to_base(rows):
+        result = 0.0
+        for row in rows:
+            cur = (row.get("_id") or "USD").upper()
+            rate = await get_fx_rate(cur, base_currency)
+            result += round((row.get("total") or 0) * rate, 2)
+        return round(result, 2)
+
+    revenue_base, this_month_revenue_base = await asyncio.gather(
+        _to_base(rev_by_cur), _to_base(this_month_rev),
+    )
+
+    return {
+        "total": total,
+        "this_month": this_month,
+        "last_month": last_month,
+        "base_currency": base_currency,
+        "revenue_base": revenue_base,
+        "this_month_revenue_base": this_month_revenue_base,
+        "by_status": by_status,
+        "by_payment_method": by_method,
+    }
 
 
 @router.get("/admin/orders")
