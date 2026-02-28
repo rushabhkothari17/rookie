@@ -1122,9 +1122,116 @@ export function IntegrationsOverview() {
             );
           })}
         </div>
-      </div>
+        {/* Request Integration Form — partner admins only */}
+        {!isPlatformAdmin && (
+          <div className="mt-8 border border-dashed border-slate-200 rounded-xl overflow-hidden bg-white" data-testid="integration-request-section">
+            <button
+              type="button"
+              onClick={() => reqSubmitted ? setReqSubmitted(false) : (reqOpen ? setReqOpen(false) : openRequestForm())}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors text-left"
+              data-testid="ir-toggle-btn"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <Plus size={16} className="text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">Request an integration</p>
+                  <p className="text-xs text-slate-500">Can't find what you need? Let us know.</p>
+                </div>
+              </div>
+              <ChevronDown size={16} className={`text-slate-400 transition-transform ${reqOpen ? "rotate-180" : ""}`} />
+            </button>
 
-      {/* Slide-in Panel */}
+            {reqOpen && !reqSubmitted && (
+              <div className="border-t border-slate-100 px-5 py-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-semibold text-slate-600 block mb-1.5">Integration name <span className="text-red-500">*</span></label>
+                    <Input
+                      value={reqForm.integration_name}
+                      onChange={e => setReqForm(f => ({ ...f, integration_name: e.target.value }))}
+                      placeholder="e.g. QuickBooks, HubSpot, Xero…"
+                      className="h-9 text-sm"
+                      data-testid="ir-name-input"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-semibold text-slate-600 block mb-1.5">What do you need it for?</label>
+                    <Textarea
+                      value={reqForm.description}
+                      onChange={e => setReqForm(f => ({ ...f, description: e.target.value }))}
+                      placeholder="Briefly describe what you'd like to integrate and how you'd use it…"
+                      className="text-sm resize-none min-h-[80px]"
+                      data-testid="ir-description-input"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1.5">Your email <span className="text-red-500">*</span></label>
+                    <Input
+                      type="email"
+                      value={reqForm.contact_email}
+                      onChange={e => setReqForm(f => ({ ...f, contact_email: e.target.value }))}
+                      placeholder="you@company.com"
+                      className="h-9 text-sm"
+                      data-testid="ir-email-input"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1.5">Phone number</label>
+                    <div className="flex gap-2">
+                      <Select value={reqForm.phone_country_code} onValueChange={v => setReqForm(f => ({ ...f, phone_country_code: v }))}>
+                        <SelectTrigger className="h-9 w-28 text-xs shrink-0" data-testid="ir-phone-code">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PHONE_CODES.map(pc => (
+                            <SelectItem key={pc.code} value={pc.code} className="text-xs">{pc.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="tel"
+                        value={reqForm.contact_phone}
+                        onChange={e => setReqForm(f => ({ ...f, contact_phone: e.target.value }))}
+                        placeholder="Phone number"
+                        className="h-9 text-sm flex-1"
+                        data-testid="ir-phone-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-3 pt-1">
+                  <Button variant="ghost" size="sm" onClick={() => setReqOpen(false)}>Cancel</Button>
+                  <Button
+                    size="sm"
+                    onClick={submitRequest}
+                    disabled={reqSubmitting}
+                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                    data-testid="ir-submit-btn"
+                  >
+                    {reqSubmitting ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                    Submit request
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {reqSubmitted && (
+              <div className="border-t border-slate-100 px-5 py-6 text-center">
+                <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 size={20} className="text-green-600" />
+                </div>
+                <p className="text-sm font-semibold text-slate-800 mb-1">Request submitted!</p>
+                <p className="text-xs text-slate-500 mb-4">We'll review your request and get back to you.</p>
+                <Button size="sm" variant="outline" onClick={() => { setReqSubmitted(false); setReqOpen(true); }}>
+                  Submit another
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       {panelMode && selectedIntegration && (
         <>
           {/* Backdrop */}
