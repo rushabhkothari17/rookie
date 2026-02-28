@@ -221,6 +221,9 @@ export default function Admin() {
           <TabsContent value="catalog" className="space-y-4">
             <ProductsTab />
           </TabsContent>
+          <TabsContent value="filters" className="space-y-4">
+            <FiltersTab />
+          </TabsContent>
           <TabsContent value="email-templates" className="space-y-4">
             <EmailTemplatesTab />
           </TabsContent>
