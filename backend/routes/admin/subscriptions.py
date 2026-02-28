@@ -522,6 +522,23 @@ async def admin_cancel_subscription(
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
 
+    # Check contract term — block early cancellation
+    term_months = subscription.get("term_months")
+    contract_end = subscription.get("contract_end_date")
+    if term_months and term_months > 0 and contract_end:
+        try:
+            end_dt = datetime.fromisoformat(contract_end.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) < end_dt:
+                end_fmt = end_dt.strftime("%d %b %Y")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot cancel: contract term runs until {end_fmt}. To override, update term_months to 0 first.",
+                )
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
     old_status = subscription.get("status")
     cancelled_at = now_iso()
 
@@ -553,4 +570,22 @@ async def admin_cancel_subscription(
         "customer_name": customer.get("full_name", ""),
         "cancelled_at": cancelled_at,
     }, tenant_id_of(admin))
+
+    # Send subscription_terminated email
+    if customer.get("email"):
+        from services.email_service import EmailService
+        asyncio.create_task(EmailService.send(
+            trigger="subscription_terminated",
+            recipient=customer["email"],
+            variables={
+                "recipient_name": customer.get("full_name", customer.get("email", "")),
+                "subscription_number": subscription.get("subscription_number", ""),
+                "plan_name": subscription.get("plan_name", ""),
+                "cancelled_at": cancelled_at[:10],
+                "cancel_reason": "Subscription cancelled by administrator",
+            },
+            db=db,
+            tenant_id=tenant_id_of(admin),
+        ))
+
     return {"message": "Subscription cancellation scheduled", "cancelled_at": cancelled_at}
