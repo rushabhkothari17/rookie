@@ -536,7 +536,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
               <>
                 {/* Label */}
                 <div>
-                  <label className="label-xs">Label *</label>
+                  <label className="label-xs">Label * <FieldTip tip="The question text shown to the customer. Changing the label auto-updates the Key field." side="right" /></label>
                   <Input value={q.label}
                     onChange={e => onChange({ ...q, label: e.target.value, key: labelToKey(e.target.value) })}
                     placeholder="Question label" className="h-9 text-sm" />
