@@ -162,6 +162,16 @@ async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depen
     name = (payload.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="name is required")
+
+    # License: check templates limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "templates")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Template limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     now = now_iso()
     doc = {
         "id": make_id(),
