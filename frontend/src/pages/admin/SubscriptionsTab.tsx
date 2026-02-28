@@ -438,7 +438,10 @@ export function SubscriptionsTab() {
                 </div>
                 <Input type="number" min={1} max={365} placeholder="blank = no reminders" value={selectedSub.reminder_days ?? ""} onChange={e => setSelectedSub({ ...selectedSub, reminder_days: e.target.value })} data-testid="edit-sub-reminder-days" />
               </div>
-              <Button onClick={handleEdit} className="w-full" data-testid="admin-sub-edit-save">Save Changes</Button>
+              <div className="flex gap-2">
+                <Button onClick={handleEdit} className="flex-1" data-testid="admin-sub-edit-save">Save Changes</Button>
+                <TestReminderButton subId={selectedSub.id} endpoint="subscriptions" />
+              </div>
             </div>
           )}
         </DialogContent>
