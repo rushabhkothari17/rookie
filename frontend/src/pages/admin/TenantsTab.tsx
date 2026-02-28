@@ -185,7 +185,18 @@ export function TenantsTab() {
           <h2 className="text-lg font-semibold text-slate-900">Partner Organizations</h2>
           <p className="text-sm text-slate-500">{tenants.length} organization{tenants.length !== 1 ? "s" : ""}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {plans.length > 0 && (
+            <Select value={planFilter} onValueChange={v => setPlanFilter(v)}>
+              <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="tenants-plan-filter">
+                <SelectValue placeholder="All Plans" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Plans</SelectItem>
+                {plans.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
           <Button size="sm" variant="outline" onClick={load} data-testid="refresh-tenants-btn">
             <RefreshCw className="h-4 w-4" />
           </Button>
