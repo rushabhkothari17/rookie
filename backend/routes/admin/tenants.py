@@ -271,7 +271,7 @@ async def add_tenant_note(
     admin: Dict[str, Any] = Depends(require_platform_admin),
 ):
     tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "id": 1})
-    if not tenant:
+    if tenant is None:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
     note_id = make_id()
