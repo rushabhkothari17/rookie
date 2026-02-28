@@ -688,7 +688,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 {/* Formula */}
                 {q.type === "formula" && (
                   <div>
-                    <label className="label-xs flex items-center gap-1"><Zap size={10} /> Formula expression</label>
+                    <label className="label-xs flex items-center gap-1"><Zap size={10} /> Formula expression <FieldTip tip="Write a maths expression using other question keys in curly braces. E.g. {employees} * {monthly_rate} * 0.8. The result is added to (or used as) the price." side="right" /></label>
                     <Input value={q.formula_expression || ""}
                       onChange={e => onChange({ ...q, formula_expression: e.target.value })}
                       placeholder="employees * monthly_rate * 0.8" className="h-9 text-sm font-mono" />
