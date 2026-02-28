@@ -397,24 +397,14 @@ class TestLicenseEnforcement:
         if r_set.status_code not in (200, 204):
             pytest.skip(f"Could not set license limit: {r_set.text}")
         
-        # Get customer and product for bright-accounting
-        r_cust = partner_session.get(f"{BASE_URL}/api/admin/customers?limit=1")
-        r_prod = partner_session.get(f"{BASE_URL}/api/admin/products-all?per_page=1")
-        
-        if r_cust.status_code != 200 or not r_cust.json().get("customers"):
-            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_orders_per_month": None})
-            pytest.skip("No customers for bright-accounting")
-        if r_prod.status_code != 200 or not r_prod.json().get("products"):
-            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_orders_per_month": None})
-            pytest.skip("No products for bright-accounting")
-        
-        customer = r_cust.json()["customers"][0]
-        product = r_prod.json()["products"][0]
+        # Use known bright-accounting customer email and product
+        BRIGHT_CUSTOMER_EMAIL = "mark@markchen.local"
+        BRIGHT_PRODUCT_ID = "1b524bcb-0665-492d-9b82-da390fb08c4b"  # Sample Service
         
         payload = {
-            "customer_email": customer.get("email", ""),
-            "product_id": product["id"],
-            "amount": 10.0,
+            "customer_email": BRIGHT_CUSTOMER_EMAIL,
+            "product_id": BRIGHT_PRODUCT_ID,
+            "subtotal": 10.0,
             "currency": "USD",
             "status": "unpaid",
         }
@@ -424,7 +414,7 @@ class TestLicenseEnforcement:
         platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_orders_per_month": None})
         
         assert r_order.status_code == 403, (
-            f"Expected 403 when max_orders_per_month=0, got {r_order.status_code}. "
+            f"Expected 403 when max_orders_per_month=0, got {r_order.status_code}: {r_order.text}. "
             "License enforcement for manual orders may not be fixed."
         )
         print(f"✓ Order creation blocked with 403 when limit=0")
@@ -439,22 +429,12 @@ class TestLicenseEnforcement:
         if r_set.status_code not in (200, 204):
             pytest.skip(f"Could not set license limit: {r_set.text}")
         
-        r_cust = partner_session.get(f"{BASE_URL}/api/admin/customers?limit=1")
-        r_prod = partner_session.get(f"{BASE_URL}/api/admin/products-all?per_page=1")
-        
-        if r_cust.status_code != 200 or not r_cust.json().get("customers"):
-            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_subscriptions_per_month": None})
-            pytest.skip("No customers for bright-accounting")
-        if r_prod.status_code != 200 or not r_prod.json().get("products"):
-            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_subscriptions_per_month": None})
-            pytest.skip("No subscription products for bright-accounting")
-        
-        customer = r_cust.json()["customers"][0]
-        product = r_prod.json()["products"][0]
+        BRIGHT_CUSTOMER_EMAIL = "mark@markchen.local"
+        BRIGHT_PRODUCT_ID = "1b524bcb-0665-492d-9b82-da390fb08c4b"  # Sample Service
         
         payload = {
-            "customer_email": customer.get("email", ""),
-            "product_id": product["id"],
+            "customer_email": BRIGHT_CUSTOMER_EMAIL,
+            "product_id": BRIGHT_PRODUCT_ID,
             "amount": 30.0,
             "currency": "USD",
             "status": "active",
@@ -466,7 +446,7 @@ class TestLicenseEnforcement:
         platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_subscriptions_per_month": None})
         
         assert r_sub.status_code == 403, (
-            f"Expected 403 when max_subscriptions_per_month=0, got {r_sub.status_code}. "
+            f"Expected 403 when max_subscriptions_per_month=0, got {r_sub.status_code}: {r_sub.text}. "
             "License enforcement for manual subscriptions may not be fixed."
         )
         print(f"✓ Subscription creation blocked with 403 when limit=0")
