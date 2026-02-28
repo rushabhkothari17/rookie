@@ -10,6 +10,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
+import { OrdersStats } from "./shared/DashboardStats";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
