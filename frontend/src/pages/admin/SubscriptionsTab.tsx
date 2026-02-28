@@ -412,6 +412,17 @@ export function SubscriptionsTab() {
                 <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Add Note</label>
                 <Textarea placeholder="Add a note…" value={selectedSub.new_note || ""} onChange={e => setSelectedSub({ ...selectedSub, new_note: e.target.value })} rows={2} />
               </div>
+              {/* Term fields */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Contract Term (months)</label>
+                  <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={selectedSub.term_months ?? ""} onChange={e => setSelectedSub({ ...selectedSub, term_months: e.target.value })} data-testid="edit-sub-term-months" />
+                </div>
+                <div className="flex items-center gap-2 pt-5">
+                  <input type="checkbox" id="edit_auto_cancel" checked={!!selectedSub.auto_cancel_on_termination} onChange={e => setSelectedSub({ ...selectedSub, auto_cancel_on_termination: e.target.checked })} />
+                  <label htmlFor="edit_auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
+                </div>
+              </div>
               <Button onClick={handleEdit} className="w-full" data-testid="admin-sub-edit-save">Save Changes</Button>
             </div>
           )}
