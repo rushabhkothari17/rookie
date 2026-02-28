@@ -107,6 +107,11 @@ async def update_request_status(
     if not result:
         raise HTTPException(status_code=404, detail="Request not found")
     result.pop("_id", None)
+    await create_audit_log(
+        entity_type="integration_request", entity_id=request_id, action="status_updated",
+        actor=user.get("email", "platform_admin"),
+        details={"new_status": payload.status},
+    )
     return {"integration_request": result}
 
 
@@ -133,4 +138,9 @@ async def add_note(
     if not result:
         raise HTTPException(status_code=404, detail="Request not found")
     result.pop("_id", None)
+    await create_audit_log(
+        entity_type="integration_request", entity_id=request_id, action="note_added",
+        actor=user.get("email", "platform_admin"),
+        details={"note_text": payload.text[:100]},
+    )
     return {"integration_request": result}
