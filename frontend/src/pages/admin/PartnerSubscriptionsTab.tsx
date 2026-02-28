@@ -42,6 +42,9 @@ type PartnerSubscription = {
   cancelled_at?: string;
   internal_note?: string;
   payment_url?: string;
+  term_months?: number;
+  auto_cancel_on_termination?: boolean;
+  contract_end_date?: string;
   created_at: string;
 };
 
