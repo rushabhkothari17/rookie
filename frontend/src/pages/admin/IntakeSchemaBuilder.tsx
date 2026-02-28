@@ -827,14 +827,14 @@ export function IntakeSchemaBuilder({ schema, onChange }: { schema: IntakeSchema
           </div>
         </button>
         {showCaps && (
-          <div className="px-3 pb-3 border-t border-slate-100 pt-3">
+          <div className="px-4 pb-4 border-t border-slate-100 pt-4 space-y-3">
             <div>
               <label className="label-xs">Maximum price</label>
               <Input type="number" value={schema.price_ceiling ?? ""}
                 onChange={e => onChange({ ...schema, price_ceiling: e.target.value === "" ? null : parseFloat(e.target.value) })}
                 placeholder="No maximum" className="h-8 text-xs font-mono" />
             </div>
-            <p className="text-[10px] text-slate-400 mt-2">Applied after all calculations. Leave blank for no cap.</p>
+            <p className="text-[10px] text-slate-400">Applied after all calculations. Leave blank for no cap.</p>
           </div>
         )}
       </div>
