@@ -18,8 +18,14 @@ router = APIRouter(prefix="/api", tags=["admin-tenants"])
 
 
 @router.get("/admin/tenants")
-async def list_tenants(admin: Dict[str, Any] = Depends(require_platform_admin)):
-    tenants = await db.tenants.find({}, {"_id": 0}).to_list(500)
+async def list_tenants(
+    plan_id: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    query: Dict[str, Any] = {}
+    if plan_id:
+        query["license.plan_id"] = plan_id
+    tenants = await db.tenants.find(query, {"_id": 0}).to_list(500)
     return {"tenants": tenants}
 
 
