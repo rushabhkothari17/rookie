@@ -260,6 +260,12 @@ async def delete_document(
         logger.warning("WorkDrive delete failed (removing from DB anyway): %s", exc)
 
     await db.workdrive_documents.delete_one({"id": doc_id})
+    await create_audit_log(
+        entity_type="document", entity_id=doc_id, action="deleted",
+        actor=admin.get("email", "admin"),
+        details={"file_name": doc.get("file_name", "")},
+        tenant_id=tid,
+    )
     return {"message": "Document deleted"}
 
 
