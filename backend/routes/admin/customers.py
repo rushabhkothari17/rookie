@@ -58,8 +58,10 @@ async def admin_customers_stats(admin: Dict[str, Any] = Depends(get_tenant_admin
         if not mode_counts:
             gc = await db.customers.count_documents({**base_flt, "allow_bank_transfer": True})
             stripe = await db.customers.count_documents({**base_flt, "allow_card_payment": True})
-            if gc: mode_counts["gocardless"] = gc
-            if stripe: mode_counts["stripe"] = stripe
+            if gc:
+                mode_counts["gocardless"] = gc
+            if stripe:
+                mode_counts["stripe"] = stripe
         return mode_counts
 
     total, new_this_month, active, by_mode = await asyncio.gather(
