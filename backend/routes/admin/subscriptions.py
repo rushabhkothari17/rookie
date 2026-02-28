@@ -299,6 +299,7 @@ async def create_manual_subscription(
         "notes": [],
         "term_months": payload.term_months if payload.term_months and payload.term_months > 0 else None,
         "auto_cancel_on_termination": payload.auto_cancel_on_termination,
+        "reminder_days": payload.reminder_days,  # None = use org default
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
         "is_manual": True,
