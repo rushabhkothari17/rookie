@@ -114,6 +114,7 @@ function SubFormModal({
       internal_note: sub.internal_note || "",
       term_months: sub.term_months != null ? String(sub.term_months) : "",
       auto_cancel_on_termination: sub.auto_cancel_on_termination || false,
+      reminder_days: (sub as any).reminder_days != null ? String((sub as any).reminder_days) : "",
     } : emptyForm()
   );
   const [saving, setSaving] = useState(false);
