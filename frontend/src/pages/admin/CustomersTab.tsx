@@ -15,6 +15,7 @@ import { CustomersStats } from "./shared/DashboardStats";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Plus, Upload} from "lucide-react";
+import { FieldTip } from "./shared/FieldTip";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { getAddressConfig } from "@/components/FormSchemaBuilder";
 
