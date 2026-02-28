@@ -530,6 +530,23 @@ async def create_checkout_session(
             if item["pricing"].get("is_enquiry") or item["product"].get("pricing_type") in ["external", "enquiry"]:
                 raise HTTPException(status_code=400, detail="Checkout not supported for this item")
 
+    # License enforcement: check monthly order/subscription limits (Stripe)
+    from services.license_service import check_limit as _stripe_check_limit, increment_monthly as _stripe_inc_monthly
+    if checkout_type == "subscription":
+        _sub_check_s = await _stripe_check_limit(tenant_id, "subscriptions")
+        if not _sub_check_s["allowed"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"This organization has reached its monthly subscription limit ({_sub_check_s['current']}/{_sub_check_s['limit']}). Please contact support."
+            )
+    else:
+        _ord_check_s = await _stripe_check_limit(tenant_id, "orders")
+        if not _ord_check_s["allowed"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"This organization has reached its monthly order limit ({_ord_check_s['current']}/{_ord_check_s['limit']}). Please contact support."
+            )
+
     subtotal = sum(i["pricing"]["subtotal"] for i in order_items)
     promo_code_data = None
     discount_amount = 0.0
