@@ -407,6 +407,7 @@ export function PlansTab() {
             <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
               <tr>
                 <th className="text-left px-4 py-3">Plan</th>
+                <th className="text-left px-4 py-3">Price</th>
                 <th className="text-left px-4 py-3">Orgs</th>
                 <th className="text-left px-4 py-3">Status</th>
                 <th className="text-left px-4 py-3">Created</th>
