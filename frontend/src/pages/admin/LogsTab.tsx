@@ -11,7 +11,7 @@ import { RefreshCw, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, A
 const SOURCES = ["admin_ui", "customer_ui", "api", "webhook", "cron", "system"];
 const ENTITY_TYPES = [
   "Order", "Subscription", "Customer", "Product", "Article", "Setting",
-  "Payment", "User", "OverrideCode", "PromoCode", "BankTransaction",
+  "Payment", "User", "OverrideCode", "PromoCode",
   "QuoteRequest", "Category", "Terms",
 ];
 const ACTOR_TYPES = [
