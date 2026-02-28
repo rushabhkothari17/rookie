@@ -710,12 +710,12 @@ All export endpoints accept optional `?from_date=` and `?to_date=` query params.
 
 ## 22. Admin — Audit Logs
 
-Prefix from `server.py`: `/api/logs` (registered via `audit_logs_router`).
+Prefix from `server.py`: `/api/admin/audit-logs` (registered via `audit_logs_router`).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET`  | `/api/logs` | List all audit log entries. Filter: `?entity_type=`, `?entity_id=`, `?action=`, `?page=` |
-| `GET`  | `/api/logs/{log_id}` | Get single audit log entry |
+| `GET`  | `/api/admin/audit-logs` | List all audit log entries. Filter: `?entity_type=`, `?entity_id=`, `?action=`, `?page=` |
+| `GET`  | `/api/admin/audit-logs/{log_id}` | Get single audit log entry |
 
 ---
 
