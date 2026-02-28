@@ -156,8 +156,8 @@ class TenantSelfUpdate(BaseModel):
     default_reminder_days: Optional[int] = None  # -1 to clear
 
 
-@router.put("/admin/tenants/my")
-async def update_my_tenant(
+@router.put("/admin/tenant-settings")
+async def update_my_tenant_settings(
     payload: TenantSelfUpdate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
