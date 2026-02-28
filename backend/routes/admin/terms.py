@@ -117,6 +117,16 @@ async def admin_list_terms(
 async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
+
+    # License: check product terms limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "product_terms")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Terms limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     if payload.is_default:
         await db.terms_and_conditions.update_many({**tf, "is_default": True}, {"$set": {"is_default": False}})
     terms_id = make_id()
