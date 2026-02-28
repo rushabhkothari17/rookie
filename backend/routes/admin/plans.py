@@ -31,6 +31,8 @@ class PlanCreate(BaseModel):
     description: Optional[str] = None
     warning_threshold_pct: int = 80
     is_public: bool = False  # visible to partners for self-service upgrade
+    monthly_price: Optional[float] = None
+    currency: Optional[str] = None
     max_users: Optional[int] = None
     max_storage_mb: Optional[int] = None
     max_user_roles: Optional[int] = None
