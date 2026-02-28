@@ -413,6 +413,9 @@ export function SettingsTab() {
       {/* Organization Address (partner admins only) */}
       <OrgAddressSection />
 
+      {/* Subscription Notification Settings */}
+      <ReminderNotificationSection />
+
       {/* System Configuration (DB-backed, categorized) */}
       <div className="border-t border-slate-200 pt-6">
         <SystemConfigSection />
