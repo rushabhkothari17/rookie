@@ -53,6 +53,14 @@ async def get_fx_rate(from_currency: str, to_currency: str) -> float:
     return 1.0
 
 
+async def get_tenant_base_currency(tenant_id: str) -> str:
+    """Return the tenant's configured base currency, defaulting to USD."""
+    if not tenant_id:
+        return "USD"
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "base_currency": 1})
+    return tenant.get("base_currency", "USD") if tenant else "USD"
+
+
 def resolve_terms_tags(content: str, user: Dict[str, Any], address: Dict[str, Any], product_name: str) -> str:
     """Resolve dynamic tags in T&C content."""
     resolved = content
