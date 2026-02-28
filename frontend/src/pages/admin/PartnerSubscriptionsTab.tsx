@@ -246,6 +246,17 @@ function SubFormModal({
             <label className="text-xs font-medium text-slate-600">Internal Note</label>
             <Textarea rows={2} value={form.internal_note} onChange={e => set("internal_note", e.target.value)} />
           </div>
+          {/* Contract term */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Contract Term (months)</label>
+              <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={form.term_months} onChange={e => set("term_months", e.target.value)} data-testid="partner-sub-term-months" />
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <input type="checkbox" id="ps_auto_cancel" checked={form.auto_cancel_on_termination} onChange={e => setForm(f => ({ ...f, auto_cancel_on_termination: e.target.checked }))} />
+              <label htmlFor="ps_auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
+            </div>
+          </div>
 
           {/* Stripe checkout link (edit mode, card payment, monthly/annual only) */}
           {isEdit && form.payment_method === "card" && form.billing_interval !== "quarterly" && (
