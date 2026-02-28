@@ -393,6 +393,7 @@ class TestBillingService:
     """Unit tests for /app/backend/services/billing_service.py"""
 
     def test_billing_service_module_exists(self):
+        sys.path.insert(0, "/app/backend")
         import importlib
         spec = importlib.util.find_spec("services.billing_service")
         assert spec is not None, "billing_service module not found"
