@@ -14,8 +14,28 @@ import { SubscriptionsStats } from "./shared/DashboardStats";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Download, ExternalLink, Upload} from "lucide-react";
+import { Bell, Download, ExternalLink, Upload} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+/** Small reusable button that sends a test renewal reminder for a subscription. */
+function TestReminderButton({ subId, endpoint }: { subId: string; endpoint: "subscriptions" | "partner-subscriptions" }) {
+  const [sending, setSending] = useState(false);
+  const handle = async () => {
+    setSending(true);
+    try {
+      const res = await api.post(`/admin/${endpoint}/${subId}/send-reminder`);
+      toast.success(res.data.message || "Reminder sent!");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to send reminder");
+    } finally { setSending(false); }
+  };
+  return (
+    <Button variant="outline" size="sm" onClick={handle} disabled={sending} title="Send test renewal reminder email now" data-testid="send-test-reminder-btn">
+      <Bell className="h-4 w-4 mr-1.5" />
+      {sending ? "Sending…" : "Test Reminder"}
+    </Button>
+  );
+}
 
 const getProcessorLink = (id: string | undefined): string | null => {
   if (!id) return null;
