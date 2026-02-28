@@ -4,6 +4,7 @@ Jobs registered (all run daily at 09:00 UTC):
 1. send_renewal_reminders  — configurable reminder_days per subscription / tenant
 2. auto_cancel_subscriptions — cancel subs at contract term end
 3. create_renewal_orders   — create pending orders for manual-payment subs on billing day
+4. cancel_overdue_partner_subscriptions — cancel partner subs with overdue payments
 """
 from __future__ import annotations
 
