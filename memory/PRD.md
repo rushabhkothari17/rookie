@@ -43,7 +43,17 @@ NOTE: System Config tab DELETED
 
 ## What Was Implemented (Feb 2026 — Product Management Overhaul)
 
-### Partner Billing System — Backend & Frontend (Feb 2026)
+## CHANGELOG
+
+### Partner Billing Emails + Subscription Terms + My Billing View (Feb 2026)
+- **Email Templates (3 new)**: `partner_subscription_created` (includes partner code highlighted), `partner_order_created`, `subscription_terminated`. All visible under Email Templates tab with "Partner Billing Templates" section (platform admin only). Seeded via EmailService.ensure_seeded with category="partner_billing".
+- **Subscription Term field**: `term_months`, `auto_cancel_on_termination`, `contract_end_date` added to customer subscriptions (ManualSubscriptionCreate, SubscriptionUpdate) and partner subscriptions. Cancel blocked if contract term active (400 error). `subscription_terminated` email sent on cancel.
+- **Product default_term_months**: Products now have `default_term_months` field (editable in Product editor > Pricing tab). Pre-fills term when creating manual subscription.
+- **Partner Admin "My Billing" tabs**: Partner admins see "My Subscriptions" and "My Orders" under "My Billing" sidebar section. Read-only. Cancel allowed only after term expires. Uses `/partner/my-subscriptions` and `/partner/my-orders` endpoints.
+- **License Enforcement Fixed (CRITICAL)**: `/admin/orders/manual` and `/admin/subscriptions/manual` were missing `check_limit` and `increment_monthly` calls. Now properly return 403 when monthly limit reached.
+- **Emails fired on**: (1) partner subscription creation (manual), (2) partner order creation, (3) any subscription cancellation.
+- **NOT triggered**: subscription renewals (Stripe-driven recurring billing).
+- **Test coverage**: iteration_148.json (Partner Billing UI), iteration_149.json (License enforcement), iteration_150.json (All new features - 22/22 backend, 95% frontend).
 - **Backend** (`backend/routes/admin/partner_billing.py`): Full CRUD for `partner_orders` + `partner_subscriptions` collections; stats endpoints (MRR, ARR, revenue by currency); Stripe hosted checkout for card subscriptions & one-time orders; audit trail on all actions; Stripe webhook handlers in `webhooks.py`.
 - **Frontend** (`PartnerOrdersTab.tsx`, `PartnerSubscriptionsTab.tsx`): Stats dashboards, filters (partner/plan/status/interval), create/edit modals, cancellation, Stripe checkout link generation/copy, audit log dialog.
 - **Bug fixed**: Audit log sort field `timestamp` → `created_at` in `partner_billing.py` (iter148).
