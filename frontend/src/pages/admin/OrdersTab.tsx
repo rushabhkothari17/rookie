@@ -257,6 +257,9 @@ export function OrdersTab() {
         }
       />
 
+      {/* Stats Dashboard */}
+      <OrdersStats />
+
       {/* Filters */}
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap gap-2 items-end">
