@@ -671,7 +671,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                               <input type="radio" name={`pmode-${idx}`} value={m}
                                 checked={q.price_mode === m} onChange={() => onChange({ ...q, price_mode: m })}
                                 className="accent-[#1e40af]" />
-                              {m === "add" ? "Add / subtract (±£)" : "Multiply (×)"}
+                              {m === "add" ? "Add / subtract (±)" : "Multiply (×)"}
                             </label>
                           ))}
                         </div>
