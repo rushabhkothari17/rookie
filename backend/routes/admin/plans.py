@@ -146,11 +146,10 @@ async def update_plan(
 
     result = await db.tenants.update_many(
         {"license.plan_id": plan_id},
-        {"$set": {f"license.{k}": v for k, v in tenant_limit_updates.items()},
-         "$set": {
-             **{f"license.{k}": v for k, v in tenant_limit_updates.items()},
-             "updated_at": now_iso(),
-         }},
+        {"$set": {
+            **{f"license.{k}": v for k, v in tenant_limit_updates.items()},
+            "updated_at": now_iso(),
+        }},
     )
     affected = result.modified_count
 
