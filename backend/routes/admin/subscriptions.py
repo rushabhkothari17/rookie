@@ -459,6 +459,28 @@ async def update_subscription(
         update_fields["processor_id"] = payload.processor_id
         changes["processor_id"] = {"old": subscription.get("processor_id"), "new": payload.processor_id}
 
+    if payload.term_months is not None:
+        new_term = None if payload.term_months <= 0 else payload.term_months
+        update_fields["term_months"] = new_term
+        changes["term_months"] = {"old": subscription.get("term_months"), "new": new_term}
+        # Recalculate contract_end_date when term_months changes
+        if new_term:
+            start = subscription.get("start_date") or subscription.get("created_at", now_iso())
+            try:
+                start_dt = datetime.fromisoformat(start.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+            except Exception:
+                start_dt = datetime.now(timezone.utc)
+            new_contract_end = (start_dt + timedelta(days=30 * new_term)).isoformat()
+            update_fields["contract_end_date"] = new_contract_end
+            changes["contract_end_date"] = {"old": subscription.get("contract_end_date"), "new": new_contract_end}
+        else:
+            update_fields["contract_end_date"] = None
+            changes["contract_end_date"] = {"old": subscription.get("contract_end_date"), "new": None}
+
+    if payload.auto_cancel_on_termination is not None:
+        update_fields["auto_cancel_on_termination"] = payload.auto_cancel_on_termination
+        changes["auto_cancel_on_termination"] = {"old": subscription.get("auto_cancel_on_termination"), "new": payload.auto_cancel_on_termination}
+
     if update_fields:
         update_fields["updated_at"] = now_iso()
         await db.subscriptions.update_one({"id": subscription_id}, {"$set": update_fields})
