@@ -335,6 +335,8 @@ class ManualSubscriptionCreate(BaseModel):
     start_date: Optional[str] = None
     status: str = "active"
     internal_note: Optional[str] = ""
+    term_months: Optional[int] = None  # None/0 = cancel anytime; 1-999 = locked term
+    auto_cancel_on_termination: bool = False
 
 
 class AdminCreateUserRequest(BaseModel):
