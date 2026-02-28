@@ -13,6 +13,7 @@ import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Shield, ShieldCheck, Eye } from "lucide-react";
+import { FieldTip } from "./shared/FieldTip";
 
 interface ModuleInfo {
   key: string;
