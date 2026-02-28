@@ -32,7 +32,6 @@ async def admin_subscriptions_stats(admin: Dict[str, Any] = Depends(get_tenant_a
 
     now = datetime.now(timezone.utc)
     this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d")
-    last_month_start = (now.replace(day=1) - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
     base_flt = {**tf}
 
     async def _total():
