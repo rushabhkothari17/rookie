@@ -48,7 +48,8 @@ type AuditLog = {
   entity_id: string;
   action: string;
   actor: string;
-  timestamp: string;
+  timestamp?: string;
+  created_at?: string;
   details?: Record<string, any>;
 };
 
