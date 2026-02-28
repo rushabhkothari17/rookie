@@ -82,6 +82,7 @@ export const EMPTY_FORM: ProductFormData = {
   restricted_to: [], visibility_conditions: null, intake_schema_json: EMPTY_INTAKE_SCHEMA, custom_sections: [],
   display_layout: "standard",
   enquiry_form_id: "",
+  default_term_months: "",
 };
 
 // ── Style tokens (light theme — matches admin panel) ───────────────────────────
