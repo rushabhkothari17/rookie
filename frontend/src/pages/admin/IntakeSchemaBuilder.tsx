@@ -349,6 +349,7 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Eye size={12} className="text-slate-400 shrink-0" />
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide shrink-0">Visibility rule</span>
+          <FieldTip tip="Show or hide this question based on answers to previous questions. AND = all conditions must match. OR = any condition is enough. Leave off to always show this question." />
           {isOn && !isExpanded && (
             <span className="text-[10px] text-blue-500 italic truncate">— {getVisibilitySummary(rule)}</span>
           )}
