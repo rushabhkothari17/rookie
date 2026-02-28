@@ -38,6 +38,8 @@ export function TenantsTab() {
   const [loading, setLoading] = useState(true);
   const [expandedTenant, setExpandedTenant] = useState<string | null>(null);
   const [tenantUsers, setTenantUsers] = useState<Record<string, TenantUser[]>>({});
+  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [plans, setPlans] = useState<{ id: string; name: string }[]>([]);
 
   // Create tenant dialog
   const [showCreate, setShowCreate] = useState(false);
