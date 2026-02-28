@@ -81,12 +81,14 @@ type SubFormData = {
   partner_id: string; plan_id: string; description: string; amount: string;
   currency: string; billing_interval: string; status: string; payment_method: string;
   processor_id: string; start_date: string; next_billing_date: string; internal_note: string;
+  term_months: string; auto_cancel_on_termination: boolean;
 };
 
 const emptyForm = (): SubFormData => ({
   partner_id: "", plan_id: "", description: "", amount: "",
   currency: "GBP", billing_interval: "monthly", status: "pending",
   payment_method: "manual", processor_id: "", start_date: "", next_billing_date: "", internal_note: "",
+  term_months: "", auto_cancel_on_termination: false,
 });
 
 function SubFormModal({
