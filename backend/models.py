@@ -381,6 +381,8 @@ class SubscriptionUpdate(BaseModel):
     payment_method: Optional[str] = None
     processor_id: Optional[str] = None
     new_note: Optional[str] = None
+    term_months: Optional[int] = None  # -1 sentinel to clear term
+    auto_cancel_on_termination: Optional[bool] = None
 
 
 class CustomerUpdate(BaseModel):
