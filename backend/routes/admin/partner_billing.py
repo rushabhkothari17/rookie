@@ -254,7 +254,7 @@ async def get_partner_order(order_id: str, admin: Dict[str, Any] = Depends(requi
     order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0})
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
-    logs = await db.audit_logs.find({"entity_type": "partner_order", "entity_id": order_id}, {"_id": 0}).sort("timestamp", -1).limit(20).to_list(20)
+    logs = await db.audit_logs.find({"entity_type": "partner_order", "entity_id": order_id}, {"_id": 0}).sort("created_at", -1).limit(20).to_list(20)
     return {"order": order, "logs": logs}
 
 
