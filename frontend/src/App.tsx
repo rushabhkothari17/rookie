@@ -65,9 +65,12 @@ const ProtectedRoute = ({
   return <>{children}</>;
 };
 
+import { LimitBanner } from "@/layout/LimitBanner";
+
 const BaseLayout = () => (
   <div className="min-h-screen aa-bg" data-testid="base-layout">
     <TopNav />
+    <LimitBanner />
     <main className="aa-container py-10" data-testid="base-layout-main">
       <Outlet />
     </main>
