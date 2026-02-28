@@ -349,6 +349,9 @@ async def admin_create_customer(
         details={"email": payload.email, "full_name": payload.full_name, "verified": payload.mark_verified},
     )
 
+    # Increment monthly customer usage counter
+    await _inc_monthly(tid, "customers")
+
     # Auto-sync to Zoho CRM (fire and forget - don't block response)
     asyncio.create_task(auto_sync_to_zoho_crm(tid, "customers", customer_doc, "create"))
     asyncio.create_task(auto_sync_to_zoho_books(tid, "customers", customer_doc, "create"))
