@@ -776,7 +776,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 </div>
 
                 {/* Visibility rule */}
-                <div className="border-t border-slate-100 pt-4">
+                <div className="border-t border-slate-100 pt-5">
                   <VisibilityRuleEditor rule={q.visibility_rule as any} onChange={r => onChange({ ...q, visibility_rule: r })} otherQuestions={otherQ} />
                 </div>
               </>
