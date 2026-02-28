@@ -285,6 +285,11 @@ export default function Admin() {
               <PartnerOrdersTab />
             </TabsContent>
           )}
+          {showPartnerOrgs && (
+            <TabsContent value="partner-submissions" className="space-y-4">
+              <PartnerSubmissionsTab />
+            </TabsContent>
+          )}
           {!isPlatformAdmin && (
             <TabsContent value="usage" className="space-y-4">
               <UsageDashboard />
