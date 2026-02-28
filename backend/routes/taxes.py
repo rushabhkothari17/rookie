@@ -466,6 +466,10 @@ async def delete_invoice_template(
     result = await db.partner_invoice_templates.delete_one({"id": tmpl_id, "tenant_id": tid})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Template not found")
+    await create_audit_log(
+        entity_type="invoice_template", entity_id=tmpl_id, action="deleted",
+        actor=admin.get("email", "admin"), details={}, tenant_id=tid,
+    )
     return {"message": "Template deleted"}
 
 
