@@ -262,6 +262,19 @@ function SubFormModal({
               <label htmlFor="ps_auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
             </div>
           </div>
+          {/* Renewal reminder */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5">
+              <label className="text-xs font-medium text-slate-600">Renewal Reminder (days before)</label>
+              <span className="group relative cursor-help">
+                <span className="text-slate-400 text-xs border border-slate-300 rounded-full w-4 h-4 inline-flex items-center justify-center">?</span>
+                <span className="absolute left-5 top-0 z-10 hidden group-hover:block w-64 rounded bg-slate-800 text-white text-xs px-2.5 py-2 shadow-lg">
+                  Number of days before renewal to send a reminder email. Leave blank to disable renewal notifications for this subscription.
+                </span>
+              </span>
+            </div>
+            <Input type="number" min={1} max={365} placeholder="blank = no reminders" value={form.reminder_days} onChange={e => set("reminder_days", e.target.value)} data-testid="partner-sub-reminder-days" />
+          </div>
 
           {/* Stripe checkout link (edit mode, card payment, monthly/annual only) */}
           {isEdit && form.payment_method === "card" && form.billing_interval !== "quarterly" && (
