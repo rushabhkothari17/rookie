@@ -62,6 +62,15 @@ async def create_reference(payload: Dict[str, Any], admin: Dict[str, Any] = Depe
     if existing:
         raise HTTPException(status_code=400, detail=f"A reference with key '{key}' already exists")
 
+    # License: check references limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "references")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Reference limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     doc = {
         "id": make_id(),
         "tenant_id": tid,
