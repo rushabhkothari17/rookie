@@ -75,7 +75,6 @@ export interface WebsiteData {
   profile_label: string; profile_title: string; profile_subtitle: string;
   cart_title: string; cart_clear_btn_text: string;
   admin_page_badge: string; admin_page_title: string; admin_page_subtitle: string;
-  bank_transaction_sources: string; bank_transaction_types: string; bank_transaction_statuses: string;
   nav_documents_label: string;
   documents_page_title: string; documents_page_subtitle: string;
   documents_page_upload_label: string; documents_page_upload_hint: string;
@@ -142,7 +141,6 @@ export const WEB_DEFAULTS: WebsiteData = {
   profile_label: "", profile_title: "", profile_subtitle: "",
   cart_title: "", cart_clear_btn_text: "",
   admin_page_badge: "", admin_page_title: "", admin_page_subtitle: "",
-  bank_transaction_sources: "", bank_transaction_types: "", bank_transaction_statuses: "",
   nav_documents_label: "",
   documents_page_title: "", documents_page_subtitle: "",
   documents_page_upload_label: "", documents_page_upload_hint: "",
