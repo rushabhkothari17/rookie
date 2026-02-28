@@ -527,9 +527,17 @@ async def startup_tasks():
     except Exception:
         pass
 
-
+    # Start APScheduler background jobs
+    try:
+        from services.scheduler_service import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Scheduler failed to start: {e}")
 
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    from services.scheduler_service import stop_scheduler
+    stop_scheduler()
     client.close()
