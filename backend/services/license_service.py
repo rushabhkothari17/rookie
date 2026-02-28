@@ -192,7 +192,16 @@ async def increment_monthly(tenant_id: str, resource: str, by: int = 1) -> None:
         return
     period = _current_est_period()
     field = f"{resource}_count"
-    # Upsert the usage record and increment
+    # Build $setOnInsert WITHOUT the field being incremented to avoid MongoDB
+    # WriteError code 40 (ConflictingUpdateOperators) — $inc and $setOnInsert
+    # cannot reference the same path in a single update operation.
+    # $inc on a new (upsert-created) document treats missing field as 0, so
+    # the incremented field is correctly initialised to `by` by $inc alone.
+    other_init_fields = {
+        f"{r}_count": 0
+        for r in MONTHLY_RESOURCES
+        if f"{r}_count" != field
+    }
     await db.license_usage.update_one(
         {"tenant_id": tenant_id},
         {
@@ -201,9 +210,7 @@ async def increment_monthly(tenant_id: str, resource: str, by: int = 1) -> None:
                 "id": make_id(),
                 "tenant_id": tenant_id,
                 "period": period,
-                "orders_count": 0 if resource != "orders" else by,
-                "customers_count": 0 if resource != "customers" else by,
-                "subscriptions_count": 0 if resource != "subscriptions" else by,
+                **other_init_fields,
                 "created_at": now_iso(),
             },
             "$set": {"updated_at": now_iso()},
