@@ -51,6 +51,7 @@ export default function Admin() {
   }, []);
 
   const showPartnerOrgs = isPlatformAdmin && !viewingAsTenant;
+  const isPartnerAdmin = (authUser?.role === "partner_admin" || authUser?.role === "partner_super_admin") && !isPlatformAdmin;
   // Show checklist for tenant admins OR platform admin viewing as a tenant
   const showChecklist = !isPlatformAdmin || viewingAsTenant;
 
