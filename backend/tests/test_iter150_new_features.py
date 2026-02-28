@@ -413,11 +413,13 @@ class TestLicenseEnforcement:
         
         # Get customer and product for bright-accounting
         r_cust = partner_session.get(f"{BASE_URL}/api/admin/customers?limit=1")
-        r_prod = partner_session.get(f"{BASE_URL}/api/admin/products?limit=1")
+        r_prod = partner_session.get(f"{BASE_URL}/api/admin/products-all?per_page=1")
         
         if r_cust.status_code != 200 or not r_cust.json().get("customers"):
+            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_orders_per_month": None})
             pytest.skip("No customers for bright-accounting")
         if r_prod.status_code != 200 or not r_prod.json().get("products"):
+            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_orders_per_month": None})
             pytest.skip("No products for bright-accounting")
         
         customer = r_cust.json()["customers"][0]
@@ -452,11 +454,13 @@ class TestLicenseEnforcement:
             pytest.skip(f"Could not set license limit: {r_set.text}")
         
         r_cust = partner_session.get(f"{BASE_URL}/api/admin/customers?limit=1")
-        r_prod = partner_session.get(f"{BASE_URL}/api/admin/products?is_subscription=true&limit=1")
+        r_prod = partner_session.get(f"{BASE_URL}/api/admin/products-all?per_page=1")
         
         if r_cust.status_code != 200 or not r_cust.json().get("customers"):
+            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_subscriptions_per_month": None})
             pytest.skip("No customers for bright-accounting")
         if r_prod.status_code != 200 or not r_prod.json().get("products"):
+            platform_session.put(f"{BASE_URL}/api/admin/tenants/{bright_tenant_id}/license", json={"max_subscriptions_per_month": None})
             pytest.skip("No subscription products for bright-accounting")
         
         customer = r_cust.json()["customers"][0]
