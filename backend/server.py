@@ -127,6 +127,8 @@ from routes.utils import router as utils_router
 from routes.documents import router as documents_router
 from routes.admin.forms import router as admin_forms_router
 from routes.admin.integration_requests import router as integration_requests_router
+from routes.partner.plan_management import router as partner_plan_management_router
+from routes.admin.partner_submissions import router as partner_submissions_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
