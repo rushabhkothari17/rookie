@@ -382,7 +382,7 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
               )}
 
               {/* Group card */}
-              <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2">
+              <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">
                     {ruleSet.groups.length > 1 ? `Group ${gi + 1}` : "Conditions"}
