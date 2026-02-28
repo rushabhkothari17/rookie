@@ -250,6 +250,36 @@ async def create_partner_order(
         actor=admin.get("email", "admin"),
         details={"order_number": order_number, "partner": tenant.get("name"), "amount": payload.amount, "currency": payload.currency},
     )
+
+    # Send partner_order_created email to partner's primary admin
+    partner_admin = await db.users.find_one(
+        {"tenant_id": payload.partner_id, "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+        {"_id": 0, "email": 1, "full_name": 1},
+    )
+    if partner_admin and partner_admin.get("email"):
+        payment_link_html = ""
+        if doc.get("payment_url"):
+            payment_link_html = f'<div style="margin:16px 0"><a href="{doc["payment_url"]}" style="display:inline-block;background:#1e293b;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600">Pay Now</a></div>'
+        from services.email_service import EmailService
+        import asyncio as _asyncio
+        _asyncio.create_task(EmailService.send(
+            trigger="partner_order_created",
+            recipient=partner_admin["email"],
+            variables={
+                "partner_name": tenant.get("name", ""),
+                "order_number": order_number,
+                "description": payload.description.strip(),
+                "amount": f"{payload.amount:.2f}",
+                "currency": payload.currency.upper(),
+                "invoice_date": payload.invoice_date or now_iso()[:10],
+                "due_date": payload.due_date or "—",
+                "payment_method": payload.payment_method.replace("_", " ").title(),
+                "payment_link_section": payment_link_html,
+            },
+            db=db,
+            tenant_id=DEFAULT_TENANT_ID,
+        ))
+
     return {"order": doc}
 
 
