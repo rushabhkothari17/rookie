@@ -78,6 +78,7 @@ const defaultForm = (): FormState => ({
   name: "",
   description: "",
   warning_threshold_pct: "80",
+  is_public: "false",
   ...Object.fromEntries(LIMIT_FIELDS.map(f => [f.key, ""])),
 });
 
@@ -86,6 +87,7 @@ function planToForm(plan: Plan): FormState {
     name: plan.name,
     description: plan.description || "",
     warning_threshold_pct: String(plan.warning_threshold_pct ?? 80),
+    is_public: plan.is_public ? "true" : "false",
     ...Object.fromEntries(
       LIMIT_FIELDS.map(f => [f.key, plan[f.key as keyof Plan] !== null && plan[f.key as keyof Plan] !== undefined ? String(plan[f.key as keyof Plan]) : ""])
     ),
@@ -97,6 +99,7 @@ function formToPayload(form: FormState) {
     name: form.name.trim(),
     description: form.description.trim(),
     warning_threshold_pct: parseInt(form.warning_threshold_pct) || 80,
+    is_public: form.is_public === "true",
   };
   LIMIT_FIELDS.forEach(({ key }) => {
     payload[key] = form[key] !== "" ? parseInt(form[key]) : null;
