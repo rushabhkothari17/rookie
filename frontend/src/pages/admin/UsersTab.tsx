@@ -82,7 +82,16 @@ export function UsersTab() {
     } catch { /* ignore */ }
   };
 
-  useEffect(() => { load(1); loadPermissionsData(); }, [searchFilter]);
+  // Load partner tenants for filter (platform admin only)
+  const loadPartners = useCallback(async () => {
+    if (!isPlatformAdmin) return;
+    try {
+      const res = await api.get("/admin/tenants?per_page=100");
+      setPartners((res.data.tenants || []).filter((t: any) => t.id !== "automate-accounts").map((t: any) => ({ id: t.id, name: t.name })));
+    } catch { /* ignore */ }
+  }, [isPlatformAdmin]);
+
+  useEffect(() => { load(1); loadPermissionsData(); loadPartners(); }, [searchFilter, partnerFilter]);
 
   const handleCreate = async () => {
     try {
