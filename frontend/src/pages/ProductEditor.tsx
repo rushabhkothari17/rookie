@@ -106,6 +106,7 @@ export default function ProductEditor() {
       display_layout: p.display_layout || "standard",
       currency: p.currency || "USD",
       enquiry_form_id: p.enquiry_form_id || "",
+      default_term_months: p.default_term_months ? String(p.default_term_months) : "",
     };
   };
 
