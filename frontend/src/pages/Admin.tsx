@@ -213,6 +213,11 @@ export default function Admin() {
           <TabsContent value="integrations" className="space-y-4">
             <IntegrationsOverview />
           </TabsContent>
+          {isPlatformAdmin && (
+            <TabsContent value="integration-requests" className="space-y-4">
+              <IntegrationRequestsTab />
+            </TabsContent>
+          )}
           <TabsContent value="api" className="space-y-4">
             <ApiTab />
           </TabsContent>
