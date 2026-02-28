@@ -778,7 +778,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 25. Content — Article Categories
+## 27. Content — Article Categories
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -791,7 +791,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 26. Content — Article Templates
+## 28. Content — Article Templates
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
