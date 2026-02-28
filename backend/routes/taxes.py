@@ -134,6 +134,10 @@ async def create_tax_override(
     }
     await db.tax_override_rules.insert_one(rule)
     rule.pop("_id", None)
+    await create_audit_log(
+        entity_type="tax_override_rule", entity_id=rule_id, action="created",
+        actor=admin.get("email", "admin"), details={"name": payload.name, "tax_rate": float(payload.tax_rate)}, tenant_id=tid,
+    )
     return {"rule": rule}
 
 
