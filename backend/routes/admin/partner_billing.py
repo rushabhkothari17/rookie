@@ -546,6 +546,13 @@ async def update_partner_subscription(
             updates["contract_end_date"] = (start_dt + timedelta(days=30 * new_term)).strftime("%Y-%m-%d")
         else:
             updates["contract_end_date"] = None
+    # Handle reminder_days: -1 or 0 sentinel clears (disables) reminders
+    if "reminder_days" in payload.dict(exclude_unset=True):
+        raw_rd = payload.reminder_days
+        updates["reminder_days"] = None if (raw_rd is None or raw_rd <= 0) else raw_rd
+    # Reset reminder tracking if next_billing_date changes
+    if "next_billing_date" in updates:
+        updates["reminder_sent_for_renewal_date"] = None
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
     updates["updated_at"] = now_iso()
