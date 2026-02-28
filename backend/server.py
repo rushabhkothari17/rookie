@@ -323,6 +323,49 @@ def _validate_startup_secrets():
             logging.warning("⚠️  ADMIN_PASSWORD is a known default — MUST be changed before production.")
 
 
+async def _seed_free_trial_plan() -> None:
+    """Idempotent: ensure a 'Free Trial' plan exists and is marked is_default=True."""
+    FREE_TRIAL_LIMITS = {
+        "max_users": 10,
+        "max_storage_mb": 10,
+        "max_user_roles": 10,
+        "max_product_categories": 10,
+        "max_product_terms": 10,
+        "max_enquiries": 10,
+        "max_resources": 10,
+        "max_templates": 10,
+        "max_email_templates": 10,
+        "max_categories": 10,
+        "max_forms": 10,
+        "max_references": 10,
+        "max_orders_per_month": 10,
+        "max_customers_per_month": 10,
+        "max_subscriptions_per_month": 10,
+    }
+    existing = await db.plans.find_one({"is_default": True})
+    if existing:
+        # Ensure limits are up-to-date
+        await db.plans.update_one({"_id": existing["_id"]}, {"$set": {**FREE_TRIAL_LIMITS, "is_public": False}})
+        return
+    existing_by_name = await db.plans.find_one({"name": "Free Trial"})
+    if existing_by_name:
+        await db.plans.update_one({"_id": existing_by_name["_id"]}, {"$set": {**FREE_TRIAL_LIMITS, "is_default": True, "is_public": False}})
+        return
+    await db.plans.insert_one({
+        "id": make_id(),
+        "name": "Free Trial",
+        "description": "Default plan for new partner organisations. All modules limited to 10 items.",
+        "is_active": True,
+        "is_public": False,
+        "is_default": True,
+        "warning_threshold_pct": 80,
+        **FREE_TRIAL_LIMITS,
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+    })
+    logging.getLogger(__name__).info("[Seed] Free Trial plan created.")
+
+
 @app.on_event("startup")
 
 async def startup_tasks():
