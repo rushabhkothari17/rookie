@@ -195,6 +195,27 @@ async def update_tenant_license(
     # Use exclude_unset=True so explicitly-set-null fields clear limits,
     # while missing fields don't overwrite existing values.
     updates = payload.dict(exclude_unset=True)
+
+    # If a plan_id is provided, fetch that plan and use its limits as the base
+    if "plan_id" in updates and updates["plan_id"]:
+        plan_doc = await db.plans.find_one({"id": updates["plan_id"]}, {"_id": 0})
+        if plan_doc is None:
+            raise HTTPException(status_code=404, detail="Plan not found")
+        plan_limits = {
+            f: plan_doc.get(f)
+            for f in [
+                "max_users", "max_storage_mb", "max_user_roles",
+                "max_product_categories", "max_product_terms", "max_enquiries",
+                "max_resources", "max_templates", "max_email_templates",
+                "max_categories", "max_forms", "max_references",
+                "max_orders_per_month", "max_customers_per_month", "max_subscriptions_per_month",
+            ]
+        }
+        plan_limits["warning_threshold_pct"] = plan_doc.get("warning_threshold_pct", 80)
+        plan_limits["plan"] = plan_doc.get("name")
+        # Merge: plan limits as base, then any explicit per-tenant overrides in updates
+        updates = {**plan_limits, **updates}
+
     new_license = {**DEFAULT_LICENSE, **existing_license, **updates}
 
     await db.tenants.update_one(
