@@ -47,7 +47,11 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 - Partner admins can configure product filters for their customer-facing stores (FiltersTab)
 - Login page accepts `partnerCode` URL parameter for streamlined partner login
 
-### Phase 6: Partner Self-Service Plan Management (Phase 3 — Feb 2026)
+### Phase 7: Overdue Cancellation, Product Billing Type & User Filter (Feb 2026)
+- **Phase 5 — Overdue Cancellation**: Scheduler Job 4 (`cancel_overdue_partner_subscriptions`, daily 09:15 UTC) detects overdue partner orders, sends warning email at configurable days, auto-cancels subscription + reverts to Free Trial past grace period. New `GET/PUT /api/admin/platform-billing-settings` endpoint + new admin "Billing Settings" tab in Platform section.
+- **Phase 2B — Product Billing Type**: Added `billing_type: "prorata" | "fixed"` field to products. Visible in Product Form > Pricing > "Subscription billing method" dropdown (shown only when `is_subscription=true`). Pro-rata aligns first invoice to 1st of month; Fixed always charges full monthly price from start date.
+- **Phase 6 — User Form Parity**: Platform admins can filter the Users tab by partner organisation via a new dropdown. Backend `/api/admin/users` now accepts optional `partner_id` query parameter.
+- **FieldTip Bug Fix**: Converted tooltips from CSS hover (`group-hover`) to click-to-toggle React state. Fixes all-tooltips-visible-at-once bug caused by parent `group` class conflict.
 - `GET /api/partner/my-plan` — returns current plan, subscription, and available public plans
 - `POST /api/partner/upgrade-plan` — instant self-service upgrade with pro-rata billing (creates order + updates subscription)
 - `POST /api/partner/submissions` — submit a downgrade or support request (effective next 1st of month)
