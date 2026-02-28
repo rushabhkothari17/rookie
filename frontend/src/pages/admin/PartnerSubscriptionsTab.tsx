@@ -320,8 +320,8 @@ function SubFormModal({
         </div>
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          {isEdit && editSub && (
-            <TestReminderButton subId={editSub.id} endpoint="partner-subscriptions" />
+          {isEdit && sub && (
+            <TestReminderButton subId={sub.id} />
           )}
           <Button onClick={handleSave} disabled={saving} data-testid="save-partner-sub-btn">
             {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Subscription"}
