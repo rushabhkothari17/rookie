@@ -38,7 +38,17 @@ NOTE: System Config tab DELETED
 
 ## What Was Implemented (Feb 2026 — Product Management Overhaul)
 
-### Action Items Complete (Feb 27, 2026 — session 2)
+### Integration Requests Feature (Feb 28, 2026)
+- Backend: `backend/routes/admin/integration_requests.py` — POST submit (partner only), GET list (platform admin only), PUT status update, POST note add
+- Frontend partner view: "Request an integration" collapsible form at bottom of Connect Services (IntegrationsOverview.tsx) — pre-fills email/phone, country code dropdown, integration name + description
+- Frontend platform admin view: `IntegrationRequestsTab.tsx` — full management table with status dropdown, inline notes panel, partner info columns
+- Status options: Pending, Not Started, Working, Future, Rejected, Completed
+
+### Pricing & Store Card Verifications (Feb 28, 2026)
+- Boolean × multiplier pricing: 1000 × 1.5 = 1500 confirmed end-to-end via pricing/calc API
+- Clear store card & save: card_tag/card_description/card_bullets all correctly clear to null/[] and persist through reload
+
+
 1. **Country visibility rules fixed** — backend `store.py` now loads address from separate `addresses` collection and attaches it before evaluating visibility conditions (both `get_products` and `get_product` endpoints)
 2. **Preview store card** — "Preview card" button added to product editor header; opens modal with live `OfferingCard` preview, content chips, and tip for empty store card
 
