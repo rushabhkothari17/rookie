@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight, Plus, Trash2, RefreshCw, Send, Eye, Copy, RotateCcw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { FieldTip } from "./shared/FieldTip";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
