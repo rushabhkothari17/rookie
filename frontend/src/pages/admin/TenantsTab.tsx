@@ -281,13 +281,7 @@ export function TenantsTab() {
                       <StickyNote className="h-3.5 w-3.5 mr-2" /> Notes
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => {
-                        const url = new URL(window.location.href);
-                        url.searchParams.set("tab", "sync");
-                        url.searchParams.set("tenant_id", tenant.id);
-                        window.history.pushState({}, "", url.toString());
-                        window.dispatchEvent(new Event("popstate"));
-                      }}
+                      onClick={() => setAuditTenant({ id: tenant.id, name: tenant.name })}
                       data-testid={`logs-btn-${tenant.code}`}
                     >
                       <ScrollText className="h-3.5 w-3.5 mr-2" /> Audit Logs
