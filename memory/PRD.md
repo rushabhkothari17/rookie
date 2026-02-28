@@ -45,7 +45,16 @@ NOTE: System Config tab DELETED
 
 ## CHANGELOG
 
-### Partner Billing Emails + Subscription Terms + My Billing View (Feb 2026)
+### Renewal Reminder Emails + URL Login + Filters + Stripe Webhooks (Feb 2026)
+- **APScheduler**: Daily 09:00 UTC job scans `subscriptions` (renewal_date = today+30) and `partner_subscriptions` (next_billing_date = today+30), sends reminder emails, marks `reminder_sent_30d=true`.
+- **2 new email templates**: `subscription_renewal_reminder` (customer) + `partner_subscription_renewal_reminder` (partner, category=partner_billing).
+- **Stripe webhook partner routing**: `billing_type=partner` metadata in Stripe checkout sessions auto-routes events to partner_subscriptions or partner_orders collections.
+- **?tenant= URL param**: Login page reads `?tenant=` (or `?partner=`/`?code=`) and skips the gateway step if present.
+- **Customer Filters (Admin)**: New `Filters` tab in Commerce section. Partners configure category/tag/price_range/custom filters. Stored in `store_filters` collection. Full CRUD + reorder. Public endpoint: `GET /api/store/filters`.
+- **Storefront Filters**: Store.tsx sidebar shows configured filters below category nav with live count and toggle. `matchesFilter()` handles all 4 filter types.
+- **Test**: iteration_151.json (28/28 backend, 100% frontend).
+
+
 - **Email Templates (3 new)**: `partner_subscription_created` (includes partner code highlighted), `partner_order_created`, `subscription_terminated`. All visible under Email Templates tab with "Partner Billing Templates" section (platform admin only). Seeded via EmailService.ensure_seeded with category="partner_billing".
 - **Subscription Term field**: `term_months`, `auto_cancel_on_termination`, `contract_end_date` added to customer subscriptions (ManualSubscriptionCreate, SubscriptionUpdate) and partner subscriptions. Cancel blocked if contract term active (400 error). `subscription_terminated` email sent on cancel.
 - **Product default_term_months**: Products now have `default_term_months` field (editable in Product editor > Pricing tab). Pre-fills term when creating manual subscription.
