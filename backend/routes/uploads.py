@@ -12,6 +12,8 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import Response
 
 from routes.auth import get_current_user
+from db.session import db as async_db
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api/uploads", tags=["uploads"])
 
