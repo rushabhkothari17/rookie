@@ -242,6 +242,10 @@ async def update_invoice_settings(
     merged = {**existing_inv, **payload}
     ts["invoice_settings"] = merged
     await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": ts}})
+    await create_audit_log(
+        entity_type="invoice_settings", entity_id=tid, action="updated",
+        actor=admin.get("email", "admin"), details={"updated_fields": list(payload.keys())}, tenant_id=tid,
+    )
     return {"message": "Invoice settings updated", "invoice_settings": merged}
 
 
