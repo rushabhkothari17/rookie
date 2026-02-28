@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="18" failures="0" skipped="0" tests="18" time="0.593" timestamp="2026-02-28T15:45:39.824316+00:00" hostname="agent-env-54136419-0d5b-43a0-bc20-058802a57f37"><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingEmailTemplates" name="test_email_templates_includes_partner_billing" time="0.243"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingEmailTemplates" name="test_partner_subscription_created_template_structure" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingEmailTemplates" name="test_partner_order_created_template_structure" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingEmailTemplates" name="test_subscription_terminated_template_structure" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingView" name="test_my_subscriptions_returns_200" time="0.113"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:60: in partner_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingView" name="test_my_orders_returns_200" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:60: in partner_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingView" name="test_platform_admin_blocked_from_my_subscriptions" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingView" name="test_platform_admin_blocked_from_my_orders" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerSubscriptionTerm" name="test_create_partner_subscription_with_term_months" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerSubscriptionTerm" name="test_cancel_partner_subscription_with_active_term_returns_400" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerSubscriptionTerm" name="test_cleanup_created_partner_subscription" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestCustomerSubscriptionTerm" name="test_create_manual_subscription_with_term_months" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestCustomerSubscriptionTerm" name="test_cancel_subscription_with_active_term_returns_400" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestLicenseEnforcement" name="test_license_enforcement_orders_manual_at_limit" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestLicenseEnforcement" name="test_license_enforcement_subscriptions_manual_at_limit" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestProductDefaultTermMonths" name="test_get_product_has_default_term_months_field" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestProductDefaultTermMonths" name="test_create_product_with_default_term_months" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter150_new_features.TestPartnerBillingEmails" name="test_partner_order_creation_triggers_email" time="0.000"><error message="failed on setup with &quot;AssertionError: Set tenant failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 in (200, 204)&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter150_new_features.py:49: in platform_session
+    assert r.status_code in (200, 204), f"Set tenant failed: {r.text}"
+E   AssertionError: Set tenant failed: {"detail":"Not Found"}
+E   assert 404 in (200, 204)
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase></testsuite></testsuites>
