@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
 import { Trash2, Plus, Search, Edit2, Check, X } from "lucide-react";
 import api from "@/lib/api";
+import { FieldTip } from "./shared/FieldTip";
 
 const COUNTRIES = [
   { code: "AL", name: "Albania" }, { code: "DZ", name: "Algeria" }, { code: "AR", name: "Argentina" },
