@@ -43,8 +43,8 @@ def platform_admin_token():
 
 @pytest.fixture(scope="module")
 def partner_admin_token():
-    """Login as partner admin and return token."""
-    resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+    """Login as partner admin and return token (uses partner-login endpoint)."""
+    resp = requests.post(f"{BASE_URL}/api/auth/partner-login", json={
         "email": PARTNER_ADMIN_EMAIL,
         "password": PARTNER_ADMIN_PASSWORD,
         "partner_code": PARTNER_CODE,
