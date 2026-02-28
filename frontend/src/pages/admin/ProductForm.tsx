@@ -851,7 +851,7 @@ export function ProductForm({
           {/* Shared: T&C */}
           <div className={cardCls}>
             <div>
-              <label className={labelCls}>Terms & Conditions</label>
+              <label className={labelCls}>Terms & Conditions <FieldTip tip="The T&C document the customer must agree to before completing checkout for this product. Manage documents under Settings → Terms & Conditions." /></label>
               <Select value={form.terms_id || "default"} onValueChange={v => s("terms_id")(v === "default" ? "" : v)}>
                 <SelectTrigger data-testid="pf-terms"><SelectValue placeholder="Default T&C" /></SelectTrigger>
                 <SelectContent>
