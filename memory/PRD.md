@@ -38,6 +38,11 @@ NOTE: System Config tab DELETED
 
 ## What Was Implemented (Feb 2026 — Product Management Overhaul)
 
+### Audit Trail Dashboard (Feb 2026)
+- **New backend endpoint**: `GET /api/admin/audit-logs/stats` — returns total/errors/today/by_actor_type/top_actions/top_entity_types for the selected period
+- **Rebuilt LogsTab.tsx** with full dashboard: 4 stats cards, Top Actions clickable chips, quick date range buttons (Today/7d/30d/90d/All), default last-30-days filter, expanded entity types, per-page selector (25/50/100), detail dialog with full metadata
+- All 24/24 tests pass (backend + frontend)
+
 ### 100% Audit Trail Coverage (Feb 2026)
 - **taxes.py** — All 10 write endpoints now log to `audit_logs` + `audit_trail`
 - **documents.py** — Upload, update, delete document endpoints now log to `audit_logs` + `audit_trail`
