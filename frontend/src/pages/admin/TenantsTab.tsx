@@ -50,6 +50,10 @@ export function TenantsTab() {
 
   // Address edit dialog
   const [showAddressEdit, setShowAddressEdit] = useState<string | null>(null);
+
+  // License & Notes modals
+  const [showLicense, setShowLicense] = useState<{ id: string; name: string } | null>(null);
+  const [showNotes, setShowNotes] = useState<{ id: string; name: string } | null>(null);
   const [addrForm, setAddrForm] = useState<TenantAddress>({});
   const [addrSaving, setAddrSaving] = useState(false);
 
