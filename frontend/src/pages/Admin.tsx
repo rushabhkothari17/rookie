@@ -29,6 +29,8 @@ import { FormsManagementTab } from "./admin/FormsManagementTab";
 import { IntegrationRequestsTab } from "./admin/tabs/IntegrationRequestsTab";
 import { UsageDashboard } from "./admin/UsageDashboard";
 import { PlansTab } from "./admin/PlansTab";
+import { PartnerOrdersTab } from "./admin/PartnerOrdersTab";
+import { PartnerSubscriptionsTab } from "./admin/PartnerSubscriptionsTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
