@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { IntakeSchemaBuilder, IntakeSchemaJson, EMPTY_INTAKE_SCHEMA } from "./IntakeSchemaBuilder";
 import { SectionsEditor, CustomSection, DEFAULT_SECTION } from "./SectionsEditor";
+import { FieldTip } from "./shared/FieldTip";
 import api from "@/lib/api";
 import { useCountries } from "@/hooks/useCountries";
 
