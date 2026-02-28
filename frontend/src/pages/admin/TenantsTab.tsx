@@ -207,21 +207,13 @@ export function TenantsTab() {
                 </div>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">code: {tenant.code}</p>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openAddressEdit(tenant)}
-                  data-testid={`edit-address-${tenant.code}`}
-                >
-                  <MapPin className="h-3.5 w-3.5 mr-1" />
-                  Address
-                </Button>
+              <div className="flex items-center gap-1.5">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setShowLicense({ id: tenant.id, name: tenant.name })}
                   data-testid={`license-btn-${tenant.code}`}
+                  className="text-xs"
                 >
                   <ShieldCheck className="h-3.5 w-3.5 mr-1" />
                   License
@@ -229,36 +221,47 @@ export function TenantsTab() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setShowNotes({ id: tenant.id, name: tenant.name })}
-                  data-testid={`notes-btn-${tenant.code}`}
-                >
-                  <StickyNote className="h-3.5 w-3.5 mr-1" />
-                  Notes
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set("tab", "sync");
-                    url.searchParams.set("tenant_id", tenant.id);
-                    window.history.pushState({}, "", url.toString());
-                    window.dispatchEvent(new Event("popstate"));
-                  }}
-                  data-testid={`logs-btn-${tenant.code}`}
-                >
-                  <ScrollText className="h-3.5 w-3.5 mr-1" />
-                  Logs
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
                   onClick={() => setShowCreateAdmin(tenant.id)}
                   data-testid={`add-admin-${tenant.code}`}
+                  className="text-xs"
                 >
                   <Users className="h-3.5 w-3.5 mr-1" />
                   Add Admin
                 </Button>
+                {/* More actions dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="ghost" data-testid={`more-actions-${tenant.code}`}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem
+                      onClick={() => openAddressEdit(tenant)}
+                      data-testid={`edit-address-${tenant.code}`}
+                    >
+                      <MapPin className="h-3.5 w-3.5 mr-2" /> Address
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setShowNotes({ id: tenant.id, name: tenant.name })}
+                      data-testid={`notes-btn-${tenant.code}`}
+                    >
+                      <StickyNote className="h-3.5 w-3.5 mr-2" /> Notes
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("tab", "sync");
+                        url.searchParams.set("tenant_id", tenant.id);
+                        window.history.pushState({}, "", url.toString());
+                        window.dispatchEvent(new Event("popstate"));
+                      }}
+                      data-testid={`logs-btn-${tenant.code}`}
+                    >
+                      <ScrollText className="h-3.5 w-3.5 mr-2" /> Audit Logs
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   size="sm"
                   variant={tenant.status === "active" ? "outline" : "default"}
