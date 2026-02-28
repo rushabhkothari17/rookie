@@ -450,6 +450,10 @@ async def update_invoice_template(
     update = {k: v for k, v in payload.items() if k in {"name", "html_body", "is_active"}}
     update["updated_at"] = now_iso()
     await db.partner_invoice_templates.update_one({"id": tmpl_id, "tenant_id": tid}, {"$set": update})
+    await create_audit_log(
+        entity_type="invoice_template", entity_id=tmpl_id, action="updated",
+        actor=admin.get("email", "admin"), details={"updated_fields": list(update.keys())}, tenant_id=tid,
+    )
     return {"message": "Template updated"}
 
 
