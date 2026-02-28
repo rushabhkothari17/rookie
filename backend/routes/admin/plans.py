@@ -231,5 +231,5 @@ async def get_plan_logs(
     logs = await db.audit_logs.find(
         {"entity_type": "plan", "entity_id": plan_id},
         {"_id": 0},
-    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    ).sort("created_at", -1).limit(limit).to_list(limit)
     return {"logs": logs}
