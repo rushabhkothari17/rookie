@@ -386,6 +386,7 @@ class SubscriptionUpdate(BaseModel):
     new_note: Optional[str] = None
     term_months: Optional[int] = None  # -1 sentinel to clear term
     auto_cancel_on_termination: Optional[bool] = None
+    reminder_days: Optional[int] = None  # -1 sentinel to clear (set to null)
 
 
 class CustomerUpdate(BaseModel):
