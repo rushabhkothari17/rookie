@@ -259,6 +259,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
           <div>
             <label className="text-xs font-semibold text-slate-600 mb-1 block">
               {isEdit ? "New Secret (leave blank to keep current)" : "Signing Secret (auto-generated if blank)"}
+              <FieldTip tip="A secret string used to sign every webhook payload. Your server should verify the X-Webhook-Signature header matches to confirm the request is genuine and not tampered with." side="right" />
             </label>
             <div className="flex gap-2">
               <Input
