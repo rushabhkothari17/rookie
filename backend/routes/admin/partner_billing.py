@@ -534,6 +534,24 @@ async def cancel_partner_subscription(sub_id: str, admin: Dict[str, Any] = Depen
     if sub.get("status") == "cancelled":
         raise HTTPException(status_code=400, detail="Subscription is already cancelled")
 
+    # Check contract term — block early cancellation
+    term_months = sub.get("term_months")
+    contract_end = sub.get("contract_end_date")
+    if term_months and term_months > 0 and contract_end:
+        try:
+            from datetime import timedelta as _td
+            end_dt = datetime.fromisoformat(contract_end.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) < end_dt:
+                end_fmt = end_dt.strftime("%d %b %Y")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot cancel: contract term runs until {end_fmt}. To override, update term_months to 0 first.",
+                )
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
     # If Stripe subscription, cancel it there too
     if sub.get("stripe_subscription_id"):
         try:
@@ -548,14 +566,38 @@ async def cancel_partner_subscription(sub_id: str, admin: Dict[str, Any] = Depen
         except Exception:
             pass  # Don't fail if Stripe cancel fails
 
+    cancelled_at = now_iso()
     await db.partner_subscriptions.update_one(
         {"id": sub_id},
-        {"$set": {"status": "cancelled", "cancelled_at": now_iso(), "updated_at": now_iso()}},
+        {"$set": {"status": "cancelled", "cancelled_at": cancelled_at, "updated_at": cancelled_at}},
     )
     await create_audit_log(
         entity_type="partner_subscription", entity_id=sub_id, action="cancelled",
-        actor=admin.get("email", "admin"), details={},
+        actor=admin.get("email", "admin"), details={"cancelled_at": cancelled_at},
     )
+
+    # Send subscription_terminated email to partner admin
+    partner_admin = await db.users.find_one(
+        {"tenant_id": sub.get("partner_id"), "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+        {"_id": 0, "email": 1, "full_name": 1},
+    )
+    if partner_admin and partner_admin.get("email"):
+        from services.email_service import EmailService
+        import asyncio as _asyncio
+        _asyncio.create_task(EmailService.send(
+            trigger="subscription_terminated",
+            recipient=partner_admin["email"],
+            variables={
+                "recipient_name": sub.get("partner_name", ""),
+                "subscription_number": sub.get("subscription_number", ""),
+                "plan_name": sub.get("plan_name", "—"),
+                "cancelled_at": cancelled_at[:10],
+                "cancel_reason": "Subscription cancelled by platform administrator",
+            },
+            db=db,
+            tenant_id=DEFAULT_TENANT_ID,
+        ))
+
     sub = await db.partner_subscriptions.find_one({"id": sub_id}, {"_id": 0})
     return {"subscription": sub}
 
