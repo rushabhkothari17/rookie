@@ -1,0 +1,92 @@
+{
+  "summary": "License limit enforcement testing for multi-tenant SaaS. Confirmed 2 CRITICAL backend bugs: /admin/orders/manual and /admin/subscriptions/manual do NOT call check_limit or increment_monthly — orders/subscriptions are created even when at monthly limit. Fixed 1 MongoDB bug in increment_monthly (WriteError code 40). Frontend LimitBanner, Usage & Limits page, and platform admin license modal all working correctly.",
+
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/admin/orders/manual",
+        "issue": "CONFIRMED BUG: Missing check_limit + increment_monthly calls. Returns 200 (order created) when orders_count=1 and max_orders_per_month=1. Should return 403. File: backend/routes/admin/orders.py, create_manual_order() function.",
+        "priority": "CRITICAL",
+        "fix_guidance": "Add before order creation: check = await check_limit(tenant_id, 'orders'); if not check['allowed']: raise HTTPException(403, ...). Add after order creation: await increment_monthly(tenant_id, 'orders'). Reference: checkout.py lines 153-167."
+      },
+      {
+        "endpoint": "POST /api/admin/subscriptions/manual",
+        "issue": "CONFIRMED BUG: Missing check_limit + increment_monthly calls. Returns 200 (subscription created) when subscriptions_count=1 and max_subscriptions_per_month=1. Should return 403. File: backend/routes/admin/subscriptions.py, create_manual_subscription() function.",
+        "priority": "CRITICAL",
+        "fix_guidance": "Same pattern as above: add check_limit before creation and increment_monthly after. Reference: checkout.py lines 153-167."
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "license_service.increment_monthly()",
+        "issue": "FIXED: MongoDB WriteError code 40 (ConflictingUpdateOperators) — $inc and $setOnInsert both referenced the same counter field path. Fix applied: removed incremented field from $setOnInsert block. File: backend/services/license_service.py"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Create Manual Order when at limit",
+        "issue": "The Create Manual Order modal opens and submits without showing a 403 error because the backend does not enforce the limit. The LimitBanner warns but the modal is not proactively blocked. This is a consequence of the backend bug above.",
+        "affected_selectors": ["button:has-text('Create Manual Order')"]
+      }
+    ],
+    "design_issues": []
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_iter149_license_limits.py",
+    "/app/test_reports/pytest/pytest_iter149.xml"
+  ],
+
+  "action_items": [
+    "E1 MUST FIX: Add check_limit('orders') BEFORE order creation in routes/admin/orders.py create_manual_order() — return 403 when blocked",
+    "E1 MUST FIX: Add increment_monthly('orders') AFTER order creation in routes/admin/orders.py create_manual_order()",
+    "E1 MUST FIX: Add check_limit('subscriptions') BEFORE subscription creation in routes/admin/subscriptions.py create_manual_subscription() — return 403 when blocked",
+    "E1 MUST FIX: Add increment_monthly('subscriptions') AFTER subscription creation in routes/admin/subscriptions.py create_manual_subscription()",
+    "Reference pattern in checkout.py lines 153-167 and 282-284",
+    "increment_monthly MongoDB bug already fixed by T1 in license_service.py"
+  ],
+
+  "critical_code_review_comments": [
+    "CRITICAL: routes/admin/orders.py create_manual_order() — no check_limit or increment_monthly call. checkout.py has the correct pattern at lines 153-167.",
+    "CRITICAL: routes/admin/subscriptions.py create_manual_subscription() — same missing calls.",
+    "FIXED: license_service.py increment_monthly() — had MongoDB ConflictingUpdateOperators error (code 40) because the same counter field path appeared in both $inc and $setOnInsert. Fixed by excluding the incremented field from $setOnInsert.",
+    "NOTE: Usage & Limits page also shows Admin Users: 4/3 Blocked for bright-accounting. This may be pre-existing or from test user creation. E1 should verify if this is expected."
+  ],
+
+  "updated_files": [
+    "/app/backend/services/license_service.py (fixed increment_monthly MongoDB path conflict)",
+    "/app/backend/tests/test_iter149_license_limits.py (new test file)"
+  ],
+
+  "success_rate": {
+    "backend": "90% (18 passed, 2 failed as expected KNOWN BUGS, 1 skipped - GoCardless not enabled)",
+    "frontend": "100% (LimitBanner, Usage & Limits page, platform admin license modal all working)"
+  },
+
+  "seed_data_creation": "Set license limits for bright-accounting (max_orders=1, max_subs=1) and orders_count=1 in license_usage collection. These were cleaned up by test teardown (limits reset to null, counters reset to 0).",
+
+  "retest_needed": true,
+
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Two critical backend bugs confirmed: (1) /admin/orders/manual and (2) /admin/subscriptions/manual both MISSING check_limit + increment_monthly calls. Frontend LimitBanner, Usage & Limits page, and platform admin license modal confirmed working. The increment_monthly MongoDB bug was fixed by T1 in license_service.py. After E1 fixes the two backend bugs, run test_iter149_license_limits.py again and the two currently-failing tests should PASS (returning 403).",
+
+  "rca_of_issues": {
+    "bug_1_and_2": {
+      "description": "check_limit + increment_monthly not called in manual order/subscription creation",
+      "root_cause": "The checkout.py bank-transfer endpoint has the correct pattern (lines 153-167 and 282-284). But routes/admin/orders.py create_manual_order() and routes/admin/subscriptions.py create_manual_subscription() were implemented without adding the same license enforcement pattern.",
+      "reproduction": "1. Set max_orders_per_month=1 via PUT /api/admin/tenants/{id}/license. 2. Set orders_count=1 in license_usage (MongoDB). 3. POST /api/admin/orders/manual as partner admin → returns 200 instead of 403.",
+      "mitigation": "Add check_limit before creation and increment_monthly after creation in both endpoints. See checkout.py for reference."
+    },
+    "bug_3_fixed": {
+      "description": "increment_monthly MongoDB WriteError code 40",
+      "root_cause": "increment_monthly used $inc {customers_count: 1} AND $setOnInsert {customers_count: 1} in the same update_one operation. MongoDB rejects this as ConflictingUpdateOperators (code 40) regardless of whether document exists or is being inserted.",
+      "fix_applied": "Removed the incremented field from $setOnInsert block. $inc handles initial value correctly on upsert (treats missing field as 0).",
+      "file": "backend/services/license_service.py, increment_monthly() function"
+    }
+  }
+}
