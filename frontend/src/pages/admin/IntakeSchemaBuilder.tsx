@@ -195,7 +195,7 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
       {tiers.length > 0 && (
         <>
           <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            <span>From</span><span>To (∞=blank)</span><span>£/unit</span><span />
+            <span>From</span><span>To (∞=blank)</span><span>Price/unit</span><span />
           </div>
           {tiers.map((tier, i) => (
             <div key={i} className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 items-center">
