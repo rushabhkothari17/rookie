@@ -761,7 +761,7 @@ export function ProductForm({
                     </Select>
                   </div>
                   <div>
-                    <label className={labelCls}>Show price breakdown</label>
+                    <label className={labelCls}>Show price breakdown <FieldTip tip="When enabled, customers see a line-by-line breakdown of how their total was calculated (e.g. Base £100 + 2 users × £25). Useful for complex intake-driven pricing." /></label>
                     <Select value={form.show_price_breakdown ? "yes" : "no"} onValueChange={v => s("show_price_breakdown")(v === "yes")}>
                       <SelectTrigger data-testid="pf-show-breakdown"><SelectValue /></SelectTrigger>
                       <SelectContent>
