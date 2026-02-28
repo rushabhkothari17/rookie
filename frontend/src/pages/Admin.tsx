@@ -279,6 +279,16 @@ export default function Admin() {
               <UsageDashboard />
             </TabsContent>
           )}
+          {isPartnerAdmin && (
+            <TabsContent value="my-subscriptions" className="space-y-4">
+              <MySubscriptionsTab />
+            </TabsContent>
+          )}
+          {isPartnerAdmin && (
+            <TabsContent value="my-orders" className="space-y-4">
+              <MyOrdersTab />
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </div>
