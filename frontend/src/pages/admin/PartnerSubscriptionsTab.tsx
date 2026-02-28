@@ -17,7 +17,27 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
-import { Plus, Pencil, Trash2, ExternalLink, ScrollText, RefreshCw, Copy, XCircle } from "lucide-react";
+import { Bell, Plus, Pencil, Trash2, ExternalLink, ScrollText, RefreshCw, Copy, XCircle } from "lucide-react";
+
+/** Small reusable button that sends a test renewal reminder for a partner subscription. */
+function TestReminderButton({ subId }: { subId: string }) {
+  const [sending, setSending] = useState(false);
+  const handle = async () => {
+    setSending(true);
+    try {
+      const res = await api.post(`/admin/partner-subscriptions/${subId}/send-reminder`);
+      toast.success(res.data.message || "Reminder sent!");
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to send reminder");
+    } finally { setSending(false); }
+  };
+  return (
+    <Button variant="outline" size="sm" onClick={handle} disabled={sending} title="Send test renewal reminder email now" data-testid="send-partner-test-reminder-btn">
+      <Bell className="h-4 w-4 mr-1.5" />
+      {sending ? "Sending…" : "Test Reminder"}
+    </Button>
+  );
+}
 
 type Tenant = { id: string; name: string };
 type Plan = { id: string; name: string; is_active: boolean };
