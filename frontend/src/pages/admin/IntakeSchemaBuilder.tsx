@@ -566,7 +566,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                             <input type="radio" name={`pm-${idx}`} value={m}
                               checked={(q.pricing_mode || "flat") === m}
                               onChange={() => onChange({ ...q, pricing_mode: m })} className="accent-[#1e40af]" />
-                            {m === "flat" ? "Flat rate (£/unit)" : "Tiered pricing"}
+                            {m === "flat" ? "Flat rate (per unit)" : "Tiered pricing"}
                           </label>
                         ))}
                       </div>
