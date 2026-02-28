@@ -544,7 +544,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
 
                 {/* Helper text */}
                 <div>
-                  <label className="label-xs">Helper text</label>
+                  <label className="label-xs">Helper text <FieldTip tip="Shown as a hint below the input field. Use to guide the customer on what to enter." side="right" /></label>
                   <Input value={q.helper_text} onChange={e => onChange({ ...q, helper_text: e.target.value })}
                     placeholder="Hint shown below the field" className="h-9 text-sm" />
                 </div>
