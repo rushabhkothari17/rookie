@@ -401,6 +401,18 @@ async def create_partner_subscription(
 
     sub_id = make_id()
     sub_number = await _gen_sub_number()
+    term_months_val = payload.term_months if payload.term_months and payload.term_months > 0 else None
+    start_str = payload.start_date or now_iso()[:10]
+    # Calculate contract_end_date from term_months
+    contract_end_date: Optional[str] = None
+    if term_months_val:
+        from datetime import timedelta
+        try:
+            start_dt = datetime.fromisoformat(start_str)
+        except Exception:
+            start_dt = datetime.now(timezone.utc)
+        contract_end_date = (start_dt + timedelta(days=30 * term_months_val)).strftime("%Y-%m-%d")
+
     doc: Dict[str, Any] = {
         "id": sub_id,
         "subscription_number": sub_number,
@@ -416,8 +428,11 @@ async def create_partner_subscription(
         "payment_method": payload.payment_method,
         "processor_id": payload.processor_id,
         "stripe_subscription_id": None,
-        "start_date": payload.start_date or now_iso()[:10],
+        "start_date": start_str,
         "next_billing_date": payload.next_billing_date,
+        "term_months": term_months_val,
+        "auto_cancel_on_termination": payload.auto_cancel_on_termination,
+        "contract_end_date": contract_end_date,
         "cancelled_at": None,
         "internal_note": payload.internal_note or "",
         "created_by": admin.get("email", "admin"),
@@ -429,8 +444,37 @@ async def create_partner_subscription(
     await create_audit_log(
         entity_type="partner_subscription", entity_id=sub_id, action="created",
         actor=admin.get("email", "admin"),
-        details={"sub_number": sub_number, "partner": tenant.get("name"), "amount": payload.amount, "interval": payload.billing_interval},
+        details={"sub_number": sub_number, "partner": tenant.get("name"), "amount": payload.amount, "interval": payload.billing_interval, "term_months": term_months_val},
     )
+
+    # Send partner_subscription_created email to partner's primary admin
+    partner_admin = await db.users.find_one(
+        {"tenant_id": payload.partner_id, "role": {"$in": ["partner_super_admin", "partner_admin"]}},
+        {"_id": 0, "email": 1, "full_name": 1},
+    )
+    if partner_admin and partner_admin.get("email"):
+        partner_tenant = await db.tenants.find_one({"id": payload.partner_id}, {"_id": 0, "code": 1})
+        partner_code = partner_tenant.get("code", "") if partner_tenant else ""
+        from services.email_service import EmailService
+        import asyncio as _asyncio
+        _asyncio.create_task(EmailService.send(
+            trigger="partner_subscription_created",
+            recipient=partner_admin["email"],
+            variables={
+                "partner_name": tenant.get("name", ""),
+                "partner_code": partner_code,
+                "subscription_number": sub_number,
+                "plan_name": plan_name or "—",
+                "amount": f"{payload.amount:.2f}",
+                "currency": payload.currency.upper(),
+                "billing_interval": payload.billing_interval,
+                "start_date": start_str,
+                "next_billing_date": payload.next_billing_date or "—",
+            },
+            db=db,
+            tenant_id=DEFAULT_TENANT_ID,
+        ))
+
     return {"subscription": doc}
 
 
