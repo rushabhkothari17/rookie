@@ -5,6 +5,7 @@ import logging
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from db.session import db
+from services.audit_service import create_audit_log
 
 logger = logging.getLogger(__name__)
 
