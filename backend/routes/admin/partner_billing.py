@@ -435,7 +435,7 @@ async def get_partner_subscription(sub_id: str, admin: Dict[str, Any] = Depends(
     sub = await db.partner_subscriptions.find_one({"id": sub_id}, {"_id": 0})
     if sub is None:
         raise HTTPException(status_code=404, detail="Subscription not found")
-    logs = await db.audit_logs.find({"entity_type": "partner_subscription", "entity_id": sub_id}, {"_id": 0}).sort("timestamp", -1).limit(20).to_list(20)
+    logs = await db.audit_logs.find({"entity_type": "partner_subscription", "entity_id": sub_id}, {"_id": 0}).sort("created_at", -1).limit(20).to_list(20)
     return {"subscription": sub, "logs": logs}
 
 
