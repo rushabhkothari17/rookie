@@ -194,6 +194,15 @@ async def create_manual_order(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    # License enforcement: check monthly order limit
+    from services.license_service import check_limit as _check_limit, increment_monthly as _inc_monthly
+    _ord_check = await _check_limit(tid, "orders")
+    if not _ord_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"This organization has reached its monthly order limit ({_ord_check['current']}/{_ord_check['limit']}). Please contact support.",
+        )
+
     order_id = make_id()
     order_number = f"AA-{order_id.split('-')[0].upper()}"
     total = round_cents(payload.subtotal - payload.discount + payload.fee)
