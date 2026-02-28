@@ -335,7 +335,7 @@ async def get_document_logs(
     """Return audit log entries for a document."""
     tid = tenant_id_of(admin)
     logs = await db.audit_logs.find(
-        {"entity_type": "document", "entity_id": doc_id},
+        {"entity_type": "document", "entity_id": doc_id, "tenant_id": tid},
         {"_id": 0},
     ).sort("created_at", -1).to_list(100)
     return {"logs": logs}
