@@ -277,6 +277,16 @@ All 22 user-reported bugs and enhancements fixed and verified 100% by testing ag
 - Google Drive (COMING SOON)
 - OneDrive (COMING SOON)
 
+## Plans Management (Feb 2026)
+### Backend:
+- `backend/routes/admin/plans.py` — Full CRUD: GET/POST /admin/plans, GET/PUT/DELETE/PATCH /{plan_id}, GET /{plan_id}/logs
+- Auto-propagation: `PUT /admin/plans/{plan_id}` updates all tenants with matching plan_id
+- Delete blocked if tenants assigned; PATCH /status to toggle active/inactive
+- Audit logged on all create/update/delete/activate/deactivate
+### Frontend:
+- `frontend/src/pages/admin/PlansTab.tsx` — Table with create/edit/logs/toggle/delete; expandable row shows all limits + read-only plan ID
+- `frontend/src/pages/admin/TenantLicenseModal.tsx` — Plan field now a Select dropdown (active plans only); selecting plan auto-fills limit fields
+
 ## Partner Licensing System (Feb 2026)
 ### Backend:
 - `backend/services/license_service.py` — Core service: check_limit, increment_monthly, get_full_usage_snapshot, lazy EST-based monthly reset
