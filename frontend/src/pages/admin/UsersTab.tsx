@@ -269,7 +269,9 @@ export function UsersTab() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-slate-500">Role Template</label>
+              <label className="text-xs text-slate-500 flex items-center gap-1">
+                Role Template <FieldTip tip="Pre-configured permission sets. Selecting one auto-fills the Access Level and Modules below. Choose 'Custom' to configure permissions manually." />
+              </label>
               <Select value={newUser.preset_role || "custom"} onValueChange={applyPresetRole}>
                 <SelectTrigger data-testid="admin-new-user-preset">
                   <SelectValue placeholder="Select a preset role" />
