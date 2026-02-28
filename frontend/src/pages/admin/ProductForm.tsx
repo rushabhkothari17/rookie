@@ -749,7 +749,7 @@ export function ProductForm({
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <div>
-                    <label className={labelCls}>Price rounding</label>
+                    <label className={labelCls}>Price rounding <FieldTip tip="Rounds the final calculated price up to the nearest value. Useful for clean pricing (e.g. £125 → £150 on 'nearest 50')." /></label>
                     <Select value={form.price_rounding || "none"} onValueChange={v => s("price_rounding")(v === "none" ? "" : v)}>
                       <SelectTrigger data-testid="pf-price-rounding"><SelectValue placeholder="No rounding" /></SelectTrigger>
                       <SelectContent>
