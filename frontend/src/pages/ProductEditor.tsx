@@ -107,6 +107,7 @@ export default function ProductEditor() {
       currency: p.currency || "USD",
       enquiry_form_id: p.enquiry_form_id || "",
       default_term_months: p.default_term_months ? String(p.default_term_months) : "",
+      billing_type: p.billing_type || "prorata",
     };
   };
 
@@ -144,6 +145,7 @@ export default function ProductEditor() {
         visibility_conditions: form.visibility_conditions || null,
         enquiry_form_id: form.enquiry_form_id || null,
         default_term_months: form.default_term_months ? parseInt(form.default_term_months) : null,
+        billing_type: form.billing_type || "prorata",
       };
 
       if (isNew) {
