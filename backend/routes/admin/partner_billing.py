@@ -493,11 +493,26 @@ async def update_partner_subscription(
     payload: PartnerSubscriptionUpdate,
     admin: Dict[str, Any] = Depends(require_platform_admin),
 ):
-    sub = await db.partner_subscriptions.find_one({"id": sub_id}, {"_id": 0, "id": 1})
+    sub = await db.partner_subscriptions.find_one({"id": sub_id}, {"_id": 0, "id": 1, "start_date": 1, "term_months": 1})
     if sub is None:
         raise HTTPException(status_code=404, detail="Subscription not found")
 
     updates = {k: v for k, v in payload.dict(exclude_unset=True).items() if v is not None}
+    # Handle term_months: -1 or 0 sentinel clears the term
+    if "term_months" in payload.dict(exclude_unset=True):
+        raw_term = payload.term_months
+        new_term = None if (raw_term is None or raw_term <= 0) else raw_term
+        updates["term_months"] = new_term
+        if new_term:
+            from datetime import timedelta
+            start_str = (payload.dict(exclude_unset=True).get("start_date") or sub.get("start_date") or now_iso()[:10])
+            try:
+                start_dt = datetime.fromisoformat(start_str)
+            except Exception:
+                start_dt = datetime.now(timezone.utc)
+            updates["contract_end_date"] = (start_dt + timedelta(days=30 * new_term)).strftime("%Y-%m-%d")
+        else:
+            updates["contract_end_date"] = None
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
     updates["updated_at"] = now_iso()
