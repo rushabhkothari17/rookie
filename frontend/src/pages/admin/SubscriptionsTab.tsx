@@ -183,6 +183,7 @@ export function SubscriptionsTab() {
       const payload = {
         ...manualSub,
         term_months: manualSub.term_months ? parseInt(String(manualSub.term_months)) : null,
+        reminder_days: manualSub.reminder_days !== "" ? parseInt(String(manualSub.reminder_days)) : null,
       };
       await api.post("/admin/subscriptions/manual", payload);
       toast.success("Subscription created");
