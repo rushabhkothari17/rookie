@@ -42,6 +42,10 @@ async def update_tax_settings(
     existing = ((tenant or {}).get("tax_settings") or {})
     merged = {**existing, **update}
     await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": merged}})
+    await create_audit_log(
+        entity_type="tax_settings", entity_id=tid, action="updated",
+        actor=admin.get("email", "admin"), details={"updated_fields": list(update.keys())}, tenant_id=tid,
+    )
     return {"message": "Tax settings updated", "tax_settings": merged}
 
 
