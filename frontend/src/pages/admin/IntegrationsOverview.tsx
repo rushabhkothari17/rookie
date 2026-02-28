@@ -1610,7 +1610,10 @@ export function IntegrationsOverview() {
                       {mappingForm.webapp_module && mappingForm.crm_module && (
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <label className="text-xs font-medium text-slate-600">Field Mappings</label>
+                            <label className="text-xs font-medium text-slate-600">
+                              Field Mappings
+                              <FieldTip tip="Map each field from this platform (left) to the corresponding field in your integration (right). Unmapped fields won't be synced." side="right" />
+                            </label>
                             <button
                               type="button"
                               onClick={applyDefaultFieldMaps}
