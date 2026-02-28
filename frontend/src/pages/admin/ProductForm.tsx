@@ -730,6 +730,16 @@ export function ProductForm({
                       <label className={labelCls}>Default Contract Term (months) <FieldTip tip="Pre-fills the contract term when creating a manual subscription from this product. 0 or empty = cancel anytime. E.g. 12 = 12-month lock-in." /></label>
                       <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={form.default_term_months} onChange={e => s("default_term_months")(e.target.value)} data-testid="pf-default-term-months" />
                     </div>
+                    <div>
+                      <label className={labelCls}>Subscription billing method <FieldTip tip="Pro-rata: first invoice is adjusted so billing aligns to the 1st of the month (partial charge). Fixed: always charge the full monthly price from the subscription start date regardless of when in the month." /></label>
+                      <Select value={form.billing_type || "prorata"} onValueChange={v => s("billing_type")(v)}>
+                        <SelectTrigger data-testid="pf-billing-type"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="prorata">Pro-rata — align to 1st of month</SelectItem>
+                          <SelectItem value="fixed">Fixed — charge from subscription start date</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     </>
                   )}
                 </div>
