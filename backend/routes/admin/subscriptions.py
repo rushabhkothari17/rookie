@@ -262,6 +262,16 @@ async def create_manual_subscription(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    # License enforcement: check monthly subscription limit
+    from services.license_service import check_limit as _check_limit, increment_monthly as _inc_monthly
+    _tid = tenant_id_of(admin)
+    _sub_check = await _check_limit(_tid, "subscriptions")
+    if not _sub_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"This organization has reached its monthly subscription limit ({_sub_check['current']}/{_sub_check['limit']}). Please contact support.",
+        )
+
     sub_id = make_id()
     sub_number = f"SUB-{sub_id.split('-')[0].upper()}"
 
