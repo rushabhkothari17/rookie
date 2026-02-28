@@ -446,7 +446,7 @@ export function PlansTab() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
