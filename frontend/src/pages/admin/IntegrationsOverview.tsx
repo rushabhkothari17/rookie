@@ -52,6 +52,7 @@ import {
   ArrowRightLeft,
   ChevronDown,
   ChevronsUpDown,
+  Send,
 } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
