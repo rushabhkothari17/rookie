@@ -516,39 +516,32 @@ class TestProductDefaultTermMonths:
         print(f"✓ Created product {product_id} with default_term_months=12")
 
     def test_get_product_has_default_term_months(self, platform_session):
-        """Fetching the created product should return default_term_months=12."""
+        """Fetching the created product from list should return default_term_months=12."""
         product_id = TestProductDefaultTermMonths._created_product_id
         if not product_id:
             pytest.skip("Previous test did not create a product")
         
-        r = platform_session.get(f"{BASE_URL}/api/admin/products/{product_id}")
-        if r.status_code == 404:
-            # Try listing
-            r2 = platform_session.get(f"{BASE_URL}/api/admin/products?limit=100")
-            if r2.status_code == 200:
-                products = r2.json().get("products", [])
-                product = next((p for p in products if p.get("id") == product_id), None)
-                if product:
-                    assert product.get("default_term_months") == 12, (
-                        f"Expected default_term_months=12, got {product.get('default_term_months')}"
-                    )
-                    print(f"✓ Product found in list with default_term_months=12")
-                    return
-        
+        # List products and find the created one (no GET by ID endpoint)
+        r = platform_session.get(f"{BASE_URL}/api/admin/products-all?per_page=100")
         assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
-        product = r.json().get("product", r.json())
+        products = r.json().get("products", [])
+        product = next((p for p in products if p.get("id") == product_id), None)
+        
+        assert product is not None, f"Created product {product_id} not found in list"
         assert product.get("default_term_months") == 12, (
             f"Expected default_term_months=12, got {product.get('default_term_months')}"
         )
         print(f"✓ Product has default_term_months=12")
 
     def test_cleanup_test_product(self, platform_session):
-        """Clean up the test product."""
+        """Clean up the test product by deactivating it."""
         product_id = TestProductDefaultTermMonths._created_product_id
         if not product_id:
             pytest.skip("No product to clean up")
-        r = platform_session.delete(f"{BASE_URL}/api/admin/products/{product_id}")
-        assert r.status_code in (200, 204, 404), f"Unexpected delete response: {r.status_code}"
+        # Deactivate product (no DELETE endpoint, use PUT to deactivate)
+        r = platform_session.put(f"{BASE_URL}/api/admin/products/{product_id}", json={"is_active": False})
+        assert r.status_code in (200, 204, 404), f"Unexpected response: {r.status_code}: {r.text}"
+        print(f"✓ Cleaned up test product {product_id}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
