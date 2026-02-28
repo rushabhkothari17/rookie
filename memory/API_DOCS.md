@@ -731,7 +731,34 @@ Prefix from `server.py`: `/api/admin/audit-logs` (registered via `audit_logs_rou
 
 ---
 
-## 24. Content — Articles
+## 24. Admin — Documents
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/documents/upload` | Bearer | Upload a document file (multipart/form-data) |
+| `GET`  | `/api/documents` | Bearer | List documents visible to the current customer |
+| `GET`  | `/api/documents/{doc_id}/download` | Bearer | Download a document |
+| `PUT`  | `/api/admin/documents/{doc_id}` | Admin | Update document metadata |
+| `DELETE` | `/api/admin/documents/{doc_id}` | Admin | Delete a document |
+| `GET`  | `/api/admin/documents/{doc_id}/logs` | Admin | Audit log for a document |
+| `POST` | `/api/admin/workdrive/sync-folders` | Admin | Trigger Zoho WorkDrive folder sync |
+
+---
+
+## 25. Admin — Integration Requests
+
+Partner admins submit integration requests. Platform admins manage them.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/integration-requests` | Partner Admin | Submit a new integration request |
+| `GET`  | `/api/integration-requests` | Platform Admin | List all submitted requests |
+| `PUT`  | `/api/integration-requests/{id}/status` | Platform Admin | Update request status (`Pending`, `Not Started`, `Working`, `Future`, `Rejected`, `Completed`) |
+| `POST` | `/api/integration-requests/{id}/notes` | Platform Admin | Add an internal note to a request |
+
+---
+
+## 26. Content — Articles
 
 > Articles are tenant-scoped documents (proposals, reports, etc.). Supports `{ref:key}` variable substitution in public content.
 
