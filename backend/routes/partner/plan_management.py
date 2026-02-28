@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, tenant_id_of, DEFAULT_TENANT_ID
 from db.session import db
-from routes.admin.audit import create_audit_log
+from services.audit_service import create_audit_log
 
 router = APIRouter(tags=["partner-plans"])
 
