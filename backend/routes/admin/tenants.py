@@ -173,7 +173,7 @@ class LicenseUpdate(BaseModel):
 async def get_tenant_license(tenant_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
     """Get license config + current usage snapshot for a tenant."""
     tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "id": 1, "name": 1})
-    if not tenant:
+    if tenant is None:
         raise HTTPException(status_code=404, detail="Tenant not found")
     snapshot = await get_full_usage_snapshot(tenant_id)
     return snapshot
