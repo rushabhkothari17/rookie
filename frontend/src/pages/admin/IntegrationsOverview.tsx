@@ -55,6 +55,7 @@ import {
   Send,
 } from "lucide-react";
 import api from "@/lib/api";
+import { FieldTip } from "./shared/FieldTip";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PHONE_CODES = [
