@@ -551,7 +551,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
 
                 {/* Tooltip — shown directly below helper text */}
                 <div>
-                  <label className="label-xs flex items-center gap-1"><Info size={10} /> Tooltip <span className="text-slate-400 font-normal normal-case tracking-normal">(shown on hover ⓘ)</span></label>
+                  <label className="label-xs flex items-center gap-1"><Info size={10} /> Tooltip <span className="text-slate-400 font-normal normal-case tracking-normal">(shown on hover ⓘ)</span> <FieldTip tip="Adds a ⓘ icon next to the question. When the customer hovers it, this text appears. Good for legal disclaimers or technical clarifications." side="right" /></label>
                   <Input value={q.tooltip_text || ""} onChange={e => onChange({ ...q, tooltip_text: e.target.value })}
                     placeholder="Info shown on hover" className="h-9 text-sm" />
                 </div>
