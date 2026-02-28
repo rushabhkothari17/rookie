@@ -721,6 +721,9 @@ async def create_checkout_session(
         "user_id": user["id"], "order_id": order_id,
         "created_at": now_iso(), "updated_at": now_iso(),
     })
+    # Increment monthly usage for Stripe subscription
+    if checkout_type == "subscription":
+        await _stripe_inc_monthly(tenant_id, "subscriptions")
     return {"url": session_response.url, "session_id": session_response.session_id, "order_id": order_id}
 
 
