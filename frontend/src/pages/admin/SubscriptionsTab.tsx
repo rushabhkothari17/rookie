@@ -162,6 +162,7 @@ export function SubscriptionsTab() {
         new_note: selectedSub.new_note || undefined,
         term_months: selectedSub.term_months !== undefined ? (Number(selectedSub.term_months) || -1) : undefined,
         auto_cancel_on_termination: selectedSub.auto_cancel_on_termination,
+        reminder_days: selectedSub.reminder_days !== undefined && selectedSub.reminder_days !== "" ? (Number(selectedSub.reminder_days) || -1) : -1,
       });
       toast.success("Subscription updated"); setShowEditDialog(false); load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
