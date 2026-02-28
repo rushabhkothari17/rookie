@@ -238,13 +238,14 @@ const DEFAULT_COND = (): VisibilityConditionRow => ({ depends_on: "", operator: 
 const DEFAULT_GROUP = (): VisibilityGroup => ({ logic: "AND", conditions: [DEFAULT_COND()] });
 
 // ── Mini toggle ────────────────────────────────────────────────────────────────
-const MiniToggle = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) => (
+const MiniToggle = ({ label, checked, onChange, tip }: { label: string; checked: boolean; onChange: (v: boolean) => void; tip?: string }) => (
   <label className="flex items-center gap-2 cursor-pointer select-none group">
     <span className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-[#0f172a]" : "bg-slate-200 group-hover:bg-slate-300"}`}>
       <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="sr-only" />
       <span className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-3.5" : "translate-x-0.5"}`} />
     </span>
     <span className="text-xs text-slate-600">{label}</span>
+    {tip && <FieldTip tip={tip} />}
   </label>
 );
 
