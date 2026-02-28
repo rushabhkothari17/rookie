@@ -417,11 +417,51 @@ function FieldCombobox({ fields, value, onChange, placeholder = "Select field...
 }
 
 export function IntegrationsOverview() {
+  const { user } = useAuth();
+  const isPlatformAdmin = user?.role === "platform_admin";
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [dataCenters, setDataCenters] = useState<DataCenter[]>([]);
   const [activeEmailProvider, setActiveEmailProvider] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
+
+  // Integration request form
+  const [reqOpen, setReqOpen] = useState(false);
+  const [reqForm, setReqForm] = useState({
+    integration_name: "",
+    description: "",
+    contact_email: "",
+    contact_phone: "",
+    phone_country_code: "+1",
+  });
+  const [reqSubmitting, setReqSubmitting] = useState(false);
+  const [reqSubmitted, setReqSubmitted] = useState(false);
+
+  // Pre-fill email/phone from user profile on open
+  const openRequestForm = () => {
+    setReqForm(f => ({
+      ...f,
+      contact_email: f.contact_email || user?.email || "",
+      contact_phone: f.contact_phone || user?.phone || "",
+    }));
+    setReqOpen(true);
+  };
+
+  const submitRequest = async () => {
+    if (!reqForm.integration_name.trim()) { toast.error("Please enter the integration name"); return; }
+    if (!reqForm.contact_email.trim()) { toast.error("Please provide your email"); return; }
+    setReqSubmitting(true);
+    try {
+      await api.post("/integration-requests", reqForm);
+      setReqSubmitted(true);
+      setReqForm({ integration_name: "", description: "", contact_email: user?.email || "", contact_phone: user?.phone || "", phone_country_code: "+1" });
+      toast.success("Integration request submitted!");
+    } catch {
+      toast.error("Failed to submit request");
+    } finally {
+      setReqSubmitting(false);
+    }
+  };
   
   // Slide panel states
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
