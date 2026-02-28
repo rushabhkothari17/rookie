@@ -835,7 +835,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 29. Content — Resource Categories
+## 31. Content — Resource Categories
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -848,7 +848,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 30. Content — Resource Templates
+## 32. Content — Resource Templates
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
