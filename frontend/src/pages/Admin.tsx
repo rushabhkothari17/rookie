@@ -117,6 +117,14 @@ export default function Admin() {
             )}
             <TabsTrigger value="customers" data-testid="admin-tab-customers" className={TAB_CLASS}>Customers</TabsTrigger>
 
+            {/* Usage — only for partner admins (not platform admin) */}
+            {!isPlatformAdmin && (
+              <>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Account</p>
+                <TabsTrigger value="usage" data-testid="admin-tab-usage" className={TAB_CLASS}>Usage &amp; Limits</TabsTrigger>
+              </>
+            )}
+
             {/* Commerce */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
             <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
