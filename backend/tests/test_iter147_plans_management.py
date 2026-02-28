@@ -21,17 +21,18 @@ def auth_token():
     resp = requests.post(
         f"{BASE_URL}/api/auth/login",
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
-        cookies={},
     )
     assert resp.status_code == 200, f"Login failed: {resp.text}"
-    # httpOnly cookie-based auth: return the session cookie jar
-    return resp.cookies
+    data = resp.json()
+    token = data.get("access_token") or data.get("token")
+    assert token, f"No token in login response: {data}"
+    return token
 
 
 @pytest.fixture(scope="module")
 def admin_session(auth_token):
     s = requests.Session()
-    s.cookies.update(auth_token)
+    s.headers.update({"Authorization": f"Bearer {auth_token}"})
     return s
 
 
