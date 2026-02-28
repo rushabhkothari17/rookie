@@ -107,7 +107,7 @@ from routes.articles import router as articles_router  # kept for old API client
 from routes.article_categories import router as article_categories_router
 from routes.article_templates import router as article_templates_router
 from routes.article_email_templates import router as article_email_templates_router
-from routes.admin.tenants import router as tenants_admin_router
+from routes.admin.plans import router as plans_admin_router
 from routes.admin.payment_validate import router as payment_validate_router
 from routes.admin.imports import router as imports_admin_router
 from routes.admin.api_keys import router as api_keys_admin_router
