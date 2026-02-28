@@ -907,7 +907,7 @@ See Section 14 for OAuth endpoints. Additional endpoints:
 
 ---
 
-## 35. GDPR — Customer Self-Service
+## 37. GDPR — Customer Self-Service
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
