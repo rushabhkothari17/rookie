@@ -860,7 +860,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 31. Content — Resource Email Templates
+## 33. Content — Resource Email Templates
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -872,7 +872,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 32. Webhooks (Inbound)
+## 34. Webhooks (Inbound)
 
 Payment provider callbacks — **no auth** (verified by signature).
 
