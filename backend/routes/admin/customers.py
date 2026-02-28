@@ -284,6 +284,15 @@ async def admin_create_customer(
     hashed = pwd_context.hash(payload.password)
     currency = currency_for_country(payload.country)
 
+    # License: check monthly customer limit
+    from services.license_service import check_limit as _check_limit, increment_monthly as _inc_monthly
+    _limit_check = await _check_limit(tid, "customers")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Monthly customer limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     user_doc = {
         "id": user_id,
         "email": payload.email.lower(),
