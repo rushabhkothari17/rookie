@@ -165,6 +165,10 @@ async def update_tax_override(
             "updated_at": now_iso(),
         }},
     )
+    await create_audit_log(
+        entity_type="tax_override_rule", entity_id=rule_id, action="updated",
+        actor=admin.get("email", "admin"), details={"name": payload.name, "tax_rate": float(payload.tax_rate)}, tenant_id=tid,
+    )
     return {"message": "Override rule updated"}
 
 
