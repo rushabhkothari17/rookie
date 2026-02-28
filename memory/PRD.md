@@ -122,7 +122,12 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Prioritized Backlog
 
-### P1 — Next Sprint
+### P0 — Next Sprint
+- **Phase 5 (Overdue Cancellation)**: Daily scheduler job to auto-cancel partner subscriptions overdue by a configurable number of days, warning email beforehand, admin-configurable threshold
+- **Phase 2B (Product-Level Billing Choice)**: Partner admin can choose pro-rata vs fixed-date billing per product
+- **Phase 6 (User Form Parity)**: Role selector in partner admin creation form; filter main Users tab by partner org
+
+### P1 — Next Sprint  
 - Google Drive & OneDrive cloud storage integration (currently "Coming Soon")
 
 ### P2 — Future
