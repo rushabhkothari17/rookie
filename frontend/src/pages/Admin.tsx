@@ -37,6 +37,7 @@ import { FiltersTab } from "./admin/FiltersTab";
 import { PlanBillingTab } from "./admin/PlanBillingTab";
 import { MySubmissionsTab } from "./admin/MySubmissionsTab";
 import { PartnerSubmissionsTab } from "./admin/PartnerSubmissionsTab";
+import { BillingSettingsTab } from "./admin/BillingSettingsTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
@@ -118,6 +119,7 @@ export default function Admin() {
                 <TabsTrigger value="partner-subscriptions" data-testid="admin-tab-partner-subscriptions" className={TAB_CLASS}>Partner Subscriptions</TabsTrigger>
                 <TabsTrigger value="partner-orders" data-testid="admin-tab-partner-orders" className={TAB_CLASS}>Partner Orders</TabsTrigger>
                 <TabsTrigger value="partner-submissions" data-testid="admin-tab-partner-submissions" className={TAB_CLASS}>Partner Submissions</TabsTrigger>
+                <TabsTrigger value="billing-settings" data-testid="admin-tab-billing-settings" className={TAB_CLASS}>Billing Settings</TabsTrigger>
               </>
             )}
 
