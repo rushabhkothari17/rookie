@@ -362,7 +362,7 @@ export function PlansTab() {
             </thead>
             <tbody>
               {plans.map(plan => (
-                <>
+                <React.Fragment key={plan.id}>
                   <tr key={plan.id} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="font-medium text-slate-800">{plan.name}</div>
