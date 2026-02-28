@@ -24,7 +24,10 @@ MONTHLY_RESOURCES = {"orders", "customers", "subscriptions"}
 # Resources counted live from DB  →  (collection, filter_builder)
 # filter_builder receives tenant_id and returns a MongoDB filter dict
 TOTAL_RESOURCE_COUNTERS: Dict[str, Tuple[str, Any]] = {
-    "users": ("users", lambda tid: {"tenant_id": tid, "is_admin": True}),
+    "users": ("users", lambda tid: {
+        "tenant_id": tid,
+        "role": {"$in": ["partner_super_admin", "partner_admin", "partner_staff", "custom"]},
+    }),
     "user_roles": ("admin_roles", lambda tid: {"tenant_id": tid}),
     "product_categories": ("categories", lambda tid: {"tenant_id": tid}),
     "product_terms": ("terms", lambda tid: {"tenant_id": tid}),
