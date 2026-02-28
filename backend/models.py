@@ -255,6 +255,7 @@ class AdminProductUpdate(BaseModel):
     display_layout: Optional[str] = "standard"
     currency: Optional[str] = None
     enquiry_form_id: Optional[str] = None
+    default_term_months: Optional[int] = None
 
 
 class AdminCustomerPaymentUpdate(BaseModel):
