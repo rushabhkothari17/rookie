@@ -524,7 +524,6 @@ async def create_partner_stripe_checkout(
 
     host_url = str(request.base_url).rstrip("/")
     # Use app URL from env if available (handles reverse proxy)
-    from core.config import APP_URL
     if APP_URL:
         host_url = APP_URL
 
