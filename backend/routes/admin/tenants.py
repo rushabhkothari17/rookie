@@ -152,6 +152,39 @@ async def get_my_tenant(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     return {"tenant": tenant}
 
 
+class TenantSelfUpdate(BaseModel):
+    default_reminder_days: Optional[int] = None  # -1 to clear
+
+
+@router.put("/admin/tenants/my")
+async def update_my_tenant(
+    payload: TenantSelfUpdate,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Allow any admin to update their own tenant's self-service settings (e.g. default_reminder_days)."""
+    tid = tenant_id_of(admin)
+    tenant = await db.tenants.find_one({"id": tid})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    updates: Dict[str, Any] = {"updated_at": now_iso()}
+    if "default_reminder_days" in payload.dict(exclude_unset=True):
+        val = payload.default_reminder_days
+        # -1 sentinel or 0 means "clear" (disable reminders)
+        updates["default_reminder_days"] = val if (val is not None and val > 0) else None
+
+    await db.tenants.update_one({"id": tid}, {"$set": updates})
+    await create_audit_log(
+        entity_type="tenant",
+        entity_id=tid,
+        action="self_updated",
+        actor=admin.get("email", "admin"),
+        details={"fields": list(updates.keys())},
+    )
+    updated = await db.tenants.find_one({"id": tid}, {"_id": 0})
+    return {"tenant": updated}
+
+
 # ---------------------------------------------------------------------------
 # License Management Endpoints (platform admin only)
 # ---------------------------------------------------------------------------
