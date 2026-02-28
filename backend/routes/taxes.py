@@ -181,6 +181,10 @@ async def delete_tax_override(
     result = await db.tax_override_rules.delete_one({"id": rule_id, "tenant_id": tid})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Override rule not found")
+    await create_audit_log(
+        entity_type="tax_override_rule", entity_id=rule_id, action="deleted",
+        actor=admin.get("email", "admin"), details={}, tenant_id=tid,
+    )
     return {"message": "Override rule deleted"}
 
 
