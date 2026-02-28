@@ -10,6 +10,7 @@ from core.tenant import get_tenant_admin, tenant_id_of
 from core.security import get_current_user
 from db.session import db
 from models import TaxSettingsUpdate, TaxOverrideRuleCreate
+from services.audit_service import create_audit_log
 from services.tax_tables import get_seed_tax_table
 
 router = APIRouter(prefix="/api", tags=["taxes"])
