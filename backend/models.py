@@ -55,6 +55,7 @@ class TenantCreate(BaseModel):
 class TenantUpdate(BaseModel):
     name: Optional[str] = None
     status: Optional[str] = None
+    default_reminder_days: Optional[int] = None  # None = use hardcoded default; 0/blank = disable
 
 
 class CreatePartnerAdminRequest(BaseModel):
