@@ -142,8 +142,10 @@ export default function Admin() {
             {isPartnerAdmin && (
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">My Billing</p>
+                <TabsTrigger value="plan-billing" data-testid="admin-tab-plan-billing" className={TAB_CLASS}>Plan &amp; Billing</TabsTrigger>
                 <TabsTrigger value="my-subscriptions" data-testid="admin-tab-my-subscriptions" className={TAB_CLASS}>My Subscriptions</TabsTrigger>
                 <TabsTrigger value="my-orders" data-testid="admin-tab-my-orders" className={TAB_CLASS}>My Orders</TabsTrigger>
+                <TabsTrigger value="my-submissions" data-testid="admin-tab-my-submissions" className={TAB_CLASS}>My Submissions</TabsTrigger>
               </>
             )}
 
