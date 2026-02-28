@@ -661,7 +661,7 @@ function InvoiceSettingsPanel() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs">Invoice Prefix</Label>
+            <Label className="text-xs">Invoice Prefix <FieldTip tip="A short code prepended to every invoice number, e.g. INV → INV-0001. Helps identify invoices from your firm in your customers' accounts." /></Label>
             <Input data-testid="invoice-prefix-input" placeholder="INV" value={settings.prefix || ""} onChange={e => setSettings({ ...settings, prefix: e.target.value })} className="w-28" maxLength={10} />
             <p className="text-xs text-slate-400">e.g. INV → INV-AA-0001234</p>
           </div>
