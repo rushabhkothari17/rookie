@@ -1,0 +1,53 @@
+{
+  "summary": "Phase 1+2A Partner Billing System testing. All 35 backend tests pass (100%). All core features working correctly: Free Trial plan seed, is_public flag, public plans endpoint, auto-assign on signup, reset to Free Trial on cancel, audit logs, and billing service functions. Fixed a minor UI bug in AuditLogDialog (Invalid Date display).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "AuditLogDialog",
+        "issue": "Dates showed 'Invalid Date' because component used log.created_at but audit_trail collection stores occurred_at",
+        "selector": "AuditLogDialog.tsx line 73",
+        "priority": "LOW",
+        "status": "FIXED — updated to use log.occurred_at || log.created_at"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "feature_test_results": {
+    "free_trial_plan_seed": "PASS — GET /api/admin/plans returns Free Trial with is_default=true, is_public=false, all limits=10",
+    "is_public_flag_on_create": "PASS — POST /api/admin/plans with is_public:true saves and returns is_public=true",
+    "public_plans_endpoint": "PASS — GET /api/partner/plans/public works, returns empty array (Free Trial is not public), no auth needed",
+    "auto_assign_free_trial_signup": "PASS — POST /api/auth/register-partner creates tenant with license.plan_id=Free Trial plan ID and plan_name='Free Trial'",
+    "reset_to_free_trial_on_cancel": "PASS — PATCH /api/admin/partner-subscriptions/{id}/cancel resets tenant license to Free Trial with max_users=10",
+    "partner_orgs_audit_logs": "PASS — GET /api/admin/audit-logs?entity_type=tenant&entity_id={id} returns audit logs, AuditLogDialog opens in-place (not navigating to wrong tab)",
+    "billing_service_functions": "PASS — calculate_prorata, calculate_upgrade_prorata, next_first_of_month all exist and compute correct values"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter152_phase1_billing.py",
+    "/app/test_reports/pytest/pytest_iter152_phase1.xml"
+  ],
+  "action_items": [
+    "MINOR: PlansTab.tsx form does not expose is_public toggle — admin cannot set a plan as public via the UI. They must use the API directly. Consider adding a 'Visible to partners for self-service upgrade' checkbox to the New Plan / Edit Plan form.",
+    "INFO: AuditLogDialog date display bug was fixed in this iteration (occurred_at fallback added)"
+  ],
+  "critical_code_review_comments": [
+    "PlansTab.tsx Plan type and form helpers do not include is_public field (lines 19-43, 76-101). Backend supports it but UI form doesn't expose it — admin has no way to set is_public=true via the admin panel UI.",
+    "cancel_partner_subscription uses `await _reset_partner_to_free_trial(sub.get(\"partner_id\", \"\") if sub else \"\")` — note: the `sub` variable is re-fetched from DB just before this call, so this is correct."
+  ],
+  "updated_files": [
+    "/app/frontend/src/components/AuditLogDialog.tsx",
+    "/app/backend/tests/test_iter152_phase1_billing.py"
+  ],
+  "success_rate": {
+    "backend": "100% (35/35)",
+    "frontend": "95% (AuditLogDialog date bug fixed, is_public toggle missing in Plans form)"
+  },
+  "seed_data_creation": "Created 2 TEST_ partner orgs during test run (TEST_Auto Assign Org and TEST_Cancel Org), both on Free Trial plan",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All Phase 1+2A backend features verified: Free Trial auto-seed, is_public flag via API, public plans endpoint, auto-assign on partner signup, reset to Free Trial on cancel, audit logs endpoint. AuditLogDialog date display was fixed (occurred_at). Main outstanding UI gap: PlansTab.tsx form missing is_public toggle. 2 test orgs in DB: test-auto-assign-org-* and test-cancel-org-*."
+}
