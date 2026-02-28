@@ -542,6 +542,18 @@ export function SubscriptionsTab() {
                 <input type="checkbox" id="auto_cancel" checked={manualSub.auto_cancel_on_termination} onChange={e => setManualSub({ ...manualSub, auto_cancel_on_termination: e.target.checked })} />
                 <label htmlFor="auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
               </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <label className="text-xs text-slate-500">Renewal Reminder (days before)</label>
+                  <span className="group relative cursor-help">
+                    <span className="text-slate-400 text-xs border border-slate-300 rounded-full w-4 h-4 inline-flex items-center justify-center">?</span>
+                    <span className="absolute left-5 top-0 z-10 hidden group-hover:block w-64 rounded bg-slate-800 text-white text-xs px-2.5 py-2 shadow-lg">
+                      Number of days before renewal to send a reminder email. Leave blank to disable renewal notifications for this subscription.
+                    </span>
+                  </span>
+                </div>
+                <Input type="number" min={1} max={365} placeholder="blank = no reminders" value={manualSub.reminder_days as string} onChange={e => setManualSub({ ...manualSub, reminder_days: e.target.value })} data-testid="manual-sub-reminder-days" />
+              </div>
             </div>
             <Button onClick={handleCreateManual} className="w-full">Create Subscription</Button>
           </div>
