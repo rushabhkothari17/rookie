@@ -56,6 +56,7 @@ export interface ProductFormData {
   custom_sections: CustomSection[];
   display_layout: string;
   enquiry_form_id: string;
+  default_term_months: string;
 }
 
 type TabKey = "general" | "storecard" | "pricing" | "visibility" | "content";
