@@ -1,5 +1,13 @@
 # Changelog
 
+## Feb 2026 — 100% Audit Trail Coverage
+- **taxes.py**: Added `create_audit_log` to all 10 write endpoints (tax settings, tax table, override rules, customer tax-exempt, invoice settings, invoice templates)
+- **documents.py**: Added `create_audit_log` to upload, update, delete document endpoints; scoped audit log query to tenant_id
+- **admin/integration_requests.py**: Added `create_audit_log` to submit, status_update, and note_add endpoints
+- **uploads.py**: Added `create_audit_log` to file upload endpoint (temp files for intake questions)
+- **zoho_service.py**: Bridged Zoho CRM & Books auto-sync outcomes to audit trail — success/failure of actual sync calls now appear in `audit_trail` with `actor=system`
+- All 20 backend tests pass (test_iter143_audit_trail_coverage.py)
+
 ## Feb 26, 2026 — Admin Panel Settings Restructure
 - Renamed "Branding & Hero" → "Organization Info" as top-level SETTINGS tab
 - "Auth & Pages", "Forms", "System Config" as separate top-level SETTINGS tabs
