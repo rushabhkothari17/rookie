@@ -718,7 +718,7 @@ export function ProductForm({
                   <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
                   {form.is_subscription && (
                     <div>
-                      <label className={labelCls}>Stripe Price ID</label>
+                      <label className={labelCls}>Stripe Price ID <FieldTip tip="Found in Stripe Dashboard → Products → your product → Price ID. Format: price_… Required for subscription billing so Stripe knows what to charge on renewal." /></label>
                       <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
                     </div>
                   )}
