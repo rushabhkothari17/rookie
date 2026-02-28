@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, StickyNote, ScrollText } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCountries, useProvinces } from "@/hooks/useCountries";
+import { TenantLicenseModal } from "./TenantLicenseModal";
+import { TenantNotesModal } from "./TenantNotesModal";
 
 type TenantAddress = {
   line1?: string; line2?: string; city?: string; region?: string; postal?: string; country?: string;
