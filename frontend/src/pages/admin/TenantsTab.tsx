@@ -402,6 +402,24 @@ export function TenantsTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* License Modal */}
+      {showLicense && (
+        <TenantLicenseModal
+          tenantId={showLicense.id}
+          tenantName={showLicense.name}
+          onClose={() => setShowLicense(null)}
+        />
+      )}
+
+      {/* Notes Modal */}
+      {showNotes && (
+        <TenantNotesModal
+          tenantId={showNotes.id}
+          tenantName={showNotes.name}
+          onClose={() => setShowNotes(null)}
+        />
+      )}
     </div>
   );
 }
