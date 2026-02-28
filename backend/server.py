@@ -129,6 +129,7 @@ from routes.admin.forms import router as admin_forms_router
 from routes.admin.integration_requests import router as integration_requests_router
 from routes.partner.plan_management import router as partner_plan_management_router
 from routes.admin.partner_submissions import router as partner_submissions_router
+from routes.admin.platform_billing_settings import router as platform_billing_settings_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
@@ -180,6 +181,7 @@ app.include_router(admin_forms_router)
 app.include_router(integration_requests_router)
 app.include_router(partner_plan_management_router)
 app.include_router(partner_submissions_router)
+app.include_router(platform_billing_settings_router)
 
 
 
