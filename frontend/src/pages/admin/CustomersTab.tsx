@@ -11,6 +11,7 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
+import { CustomersStats } from "./shared/DashboardStats";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Plus, Upload} from "lucide-react";
