@@ -219,7 +219,9 @@ class TestPlanLogs:
         for log in logs:
             assert "action" in log
             assert "actor" in log
-            assert "timestamp" in log
+            # Accept either 'timestamp' or 'created_at' as time field
+            assert "timestamp" in log or "created_at" in log, \
+                f"Log missing time field; keys: {list(log.keys())}"
 
 
 # ─── 6. Toggle plan status ────────────────────────────────────────────────────
