@@ -498,15 +498,33 @@ async def auto_sync_to_zoho_crm(
                     if code in ("SUCCESS", "RECORD_ADDED"):
                         zoho_id = resp_data[0].get("details", {}).get("id")
                         logger.info(f"Auto-sync success: {webapp_module} -> {crm_module}, Zoho ID: {zoho_id}")
+                        await create_audit_log(
+                            entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                            action="zoho_crm_sync_success", actor="system",
+                            details={"zoho_module": crm_module, "operation": operation, "zoho_id": zoho_id},
+                            tenant_id=tenant_id,
+                        )
                         return {"success": True, "zoho_id": zoho_id}
                     else:
                         error_msg = resp_data[0].get("message", str(resp_data[0]))
                         logger.warning(f"Auto-sync Zoho error: {error_msg}")
+                        await create_audit_log(
+                            entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                            action="zoho_crm_sync_failed", actor="system",
+                            details={"zoho_module": crm_module, "operation": operation, "error": error_msg},
+                            tenant_id=tenant_id,
+                        )
                         return {"success": False, "error": error_msg}
                 return {"success": True}
             else:
                 error_msg = resp.text[:200]
                 logger.error(f"Auto-sync HTTP error {resp.status_code}: {error_msg}")
+                await create_audit_log(
+                    entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                    action="zoho_crm_sync_failed", actor="system",
+                    details={"zoho_module": crm_module, "operation": operation, "error": error_msg},
+                    tenant_id=tenant_id,
+                )
                 return {"success": False, "error": f"HTTP {resp.status_code}: {error_msg}"}
                 
     except Exception as e:
