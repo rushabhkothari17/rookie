@@ -38,6 +38,13 @@ NOTE: System Config tab DELETED
 
 ## What Was Implemented (Feb 2026 — Product Management Overhaul)
 
+### 100% Audit Trail Coverage (Feb 2026)
+- **taxes.py** — All 10 write endpoints now log to `audit_logs` + `audit_trail`
+- **documents.py** — Upload, update, delete document endpoints now log to `audit_logs` + `audit_trail`
+- **admin/integration_requests.py** — Submit, status update, note add now log to `audit_logs` + `audit_trail`
+- **uploads.py** — File upload endpoint now logs to `audit_logs` + `audit_trail`
+- **zoho_service.py** — `auto_sync_to_zoho_crm` and `auto_sync_to_zoho_books` now write sync success/failure events to `audit_trail` with `actor="system"` and entity linking
+
 ### Integration Requests Feature (Feb 28, 2026)
 - Backend: `backend/routes/admin/integration_requests.py` — POST submit (partner only), GET list (platform admin only), PUT status update, POST note add
 - Frontend partner view: "Request an integration" collapsible form at bottom of Connect Services (IntegrationsOverview.tsx) — pre-fills email/phone, country code dropdown, integration name + description
