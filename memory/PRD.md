@@ -277,6 +277,19 @@ All 22 user-reported bugs and enhancements fixed and verified 100% by testing ag
 - Google Drive (COMING SOON)
 - OneDrive (COMING SOON)
 
+## Partner Licensing System (Feb 2026)
+### Backend:
+- `backend/services/license_service.py` — Core service: check_limit, increment_monthly, get_full_usage_snapshot, lazy EST-based monthly reset
+- `backend/routes/admin/tenants.py` — New endpoints: GET/PUT /{tid}/license, POST /{tid}/usage/reset, GET/POST/DELETE /{tid}/notes, GET /usage (partner self-view)
+### Frontend:
+- `frontend/src/pages/admin/TenantLicenseModal.tsx` — License editor + live usage progress bars per resource
+- `frontend/src/pages/admin/TenantNotesModal.tsx` — Internal notes CRUD
+- `frontend/src/pages/admin/UsageDashboard.tsx` — Partner admin: view own usage vs limits
+- `frontend/src/layout/LimitBanner.tsx` — Top warning banner when approaching/hitting limits
+- `frontend/src/pages/admin/TenantsTab.tsx` — Updated: License, Add Admin, + MoreActions (Address, Notes, Logs) per tenant row
+### Enforcement (13 endpoints):
+- users.py, customers.py (monthly), checkout.py (orders+subs monthly), resources.py, resource_templates.py, resource_categories.py, catalog.py, forms.py, terms.py, references.py
+
 ## Files of Reference
 - `backend/routes/admin/permissions.py` — roles CRUD endpoints + permission helpers
 - `backend/routes/admin/tenants.py` — address endpoints
