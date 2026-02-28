@@ -57,6 +57,7 @@ export interface ProductFormData {
   display_layout: string;
   enquiry_form_id: string;
   default_term_months: string;
+  billing_type: string;
 }
 
 type TabKey = "general" | "storecard" | "pricing" | "visibility" | "content";
@@ -83,6 +84,7 @@ export const EMPTY_FORM: ProductFormData = {
   display_layout: "standard",
   enquiry_form_id: "",
   default_term_months: "",
+  billing_type: "prorata",
 };
 
 // ── Style tokens (light theme — matches admin panel) ───────────────────────────
