@@ -206,7 +206,7 @@ export function TenantsTab() {
                 </div>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">code: {tenant.code}</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
@@ -215,6 +215,39 @@ export function TenantsTab() {
                 >
                   <MapPin className="h-3.5 w-3.5 mr-1" />
                   Address
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowLicense({ id: tenant.id, name: tenant.name })}
+                  data-testid={`license-btn-${tenant.code}`}
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 mr-1" />
+                  License
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowNotes({ id: tenant.id, name: tenant.name })}
+                  data-testid={`notes-btn-${tenant.code}`}
+                >
+                  <StickyNote className="h-3.5 w-3.5 mr-1" />
+                  Notes
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("tab", "sync");
+                    url.searchParams.set("tenant_id", tenant.id);
+                    window.history.pushState({}, "", url.toString());
+                    window.dispatchEvent(new Event("popstate"));
+                  }}
+                  data-testid={`logs-btn-${tenant.code}`}
+                >
+                  <ScrollText className="h-3.5 w-3.5 mr-1" />
+                  Logs
                 </Button>
                 <Button
                   size="sm"
