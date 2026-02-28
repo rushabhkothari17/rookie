@@ -426,7 +426,7 @@ function OverrideRulesPanel() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Priority</Label>
+              <Label className="text-xs">Priority <FieldTip tip="Rules are tested highest priority number first. The first rule whose conditions match the customer/order wins. Set a higher number to make a rule take precedence over others." /></Label>
               <Input
                 type="number"
                 placeholder="0"
