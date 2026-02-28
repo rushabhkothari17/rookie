@@ -190,6 +190,7 @@ async def update_tenant_license(
     logging.warning(f"LICENSE UPDATE CALLED: tenant_id={tenant_id!r}")
     print(f"LICENSE UPDATE CALLED: tenant_id={tenant_id!r}", flush=True)
     tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0, "license": 1})
+    print(f"LICENSE UPDATE: tenant={tenant!r}", flush=True)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
