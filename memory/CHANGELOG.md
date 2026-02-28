@@ -1,6 +1,12 @@
 # Changelog
 
-## Feb 2026 — 100% Audit Trail Coverage
+## Feb 2026 — Partner Tooltips (FieldTip)
+- Created `shared/FieldTip.tsx` — pure CSS/Tailwind `?` icon tooltip component, reusable across all admin pages
+- Added tooltips to 8 files: `ProductForm.tsx` (9 tips), `IntakeSchemaBuilder.tsx` (11 tips), `TaxesTab.tsx` (3 tips), `WebhooksTab.tsx` (2 tips), `PromoCodesTab.tsx` (3 tips), `CustomersTab.tsx` (1 tip), `UsersTab.tsx` (2 tips), `IntegrationsOverview.tsx` (2 tips)
+- MiniToggle in IntakeSchemaBuilder updated to accept optional `tip` prop
+- 100% frontend tests pass (iteration_145)
+
+
 - **taxes.py**: Added `create_audit_log` to all 10 write endpoints (tax settings, tax table, override rules, customer tax-exempt, invoice settings, invoice templates)
 - **documents.py**: Added `create_audit_log` to upload, update, delete document endpoints; scoped audit log query to tenant_id
 - **admin/integration_requests.py**: Added `create_audit_log` to submit, status_update, and note_add endpoints
