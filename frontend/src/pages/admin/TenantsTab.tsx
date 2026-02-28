@@ -44,7 +44,15 @@ export function TenantsTab() {
   // Create tenant dialog
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [newTenant, setNewTenant] = useState({ name: "", code: "" });
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [newPartner, setNewPartner] = useState({
+    name: "", admin_name: "", admin_email: "", admin_password: "",
+    base_currency: "GBP",
+    address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" },
+  });
+  const [createCountry, setCreateCountry] = useState("");
+  const createProvinces = useProvinces(createCountry);
 
   // Create partner admin dialog
   const [showCreateAdmin, setShowCreateAdmin] = useState<string | null>(null);
