@@ -250,7 +250,7 @@ export function CustomersTab() {
             <TableRow className="bg-slate-50">
               <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>State/Province</TableHead>
               <TableHead>Country</TableHead><TableHead>Status</TableHead>
-              <TableHead>Payment Methods</TableHead><TableHead>Partner Map</TableHead>
+              <TableHead>Payment Methods</TableHead><TableHead>Partner Map <FieldTip tip="Associates this customer with a pricing tier or partner track. Products restricted to a partner map are only visible to customers in that map." side="left" /></TableHead>
               {isPlatformAdmin && <TableHead>Partner</TableHead>}
               <TableHead>Actions</TableHead>
             </TableRow>
