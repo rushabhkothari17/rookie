@@ -47,7 +47,16 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 - Partner admins can configure product filters for their customer-facing stores (FiltersTab)
 - Login page accepts `partnerCode` URL parameter for streamlined partner login
 
-### Phase 5: Scheduler & Automated Jobs (LATEST — Feb 2026)
+### Phase 6: Partner Self-Service Plan Management (Phase 3 — Feb 2026)
+- `GET /api/partner/my-plan` — returns current plan, subscription, and available public plans
+- `POST /api/partner/upgrade-plan` — instant self-service upgrade with pro-rata billing (creates order + updates subscription)
+- `POST /api/partner/submissions` — submit a downgrade or support request (effective next 1st of month)
+- `GET /api/partner/submissions` — partner views their own submissions
+- `GET /api/admin/partner-submissions` — platform admin views all partner submissions (with status filter, search)
+- `PUT /api/admin/partner-submissions/{id}` — approve/reject submission; approval immediately applies plan change to tenant
+- **New Frontend Tabs**: `PlanBillingTab` (partner), `MySubmissionsTab` (partner), `PartnerSubmissionsTab` (platform admin)
+- Plans now support `monthly_price` and `currency` fields for pricing display + pro-rata calculation
+- Plans table in Admin shows Price column and `Public` badge for self-service eligible plans
 - **APScheduler** integrated (3 daily jobs at 09:00–09:10 UTC):
   1. **send_renewal_reminders** — configurable `reminder_days` per subscription/tenant
   2. **auto_cancel_subscriptions** — auto-cancels when `contract_end_date <= today` and `auto_cancel_on_termination=true`
