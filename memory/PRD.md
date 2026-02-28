@@ -82,7 +82,8 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 ## Key API Endpoints
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/admin/tenants/my` | Get current admin's tenant |
+| POST | `/api/admin/subscriptions/{id}/send-reminder` | Immediately send test renewal reminder |
+| POST | `/api/admin/partner-subscriptions/{id}/send-reminder` | Immediately send test renewal reminder |
 | PUT | `/api/admin/tenant-settings` | Update org-level default_reminder_days |
 | POST | `/api/admin/subscriptions/manual` | Create customer sub (includes reminder_days) |
 | PUT | `/api/admin/subscriptions/{id}` | Update customer sub (includes reminder_days) |
