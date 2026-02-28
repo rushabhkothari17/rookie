@@ -623,6 +623,9 @@ async def create_checkout_session(
         entity_type="order", entity_id=order_id, action="created", actor="system",
         details={"checkout_type": checkout_type, "payment_method": "card", "total": total, "currency": order_items[0]["product"].get("currency", "USD"), "base_currency": base_currency, "extra_fields": list((payload.extra_fields or {}).keys())},
     )
+    # Increment monthly order counter (Stripe)
+    if checkout_type == "one_time":
+        await _stripe_inc_monthly(tenant_id, "orders")
 
     for item in order_items:
         product = item["product"]
