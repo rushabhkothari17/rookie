@@ -757,27 +757,4 @@ All emails are sent via the configured provider (Resend or Zoho Mail). Each temp
 
 ---
 
-## 10. Roadmap
-
-### P1 — Next Sprint
-- **Google Drive & OneDrive Integration**: Allow admins and customers to link cloud storage accounts for document management directly within the platform (currently shown as "Coming Soon" in the integrations section).
-
-### P2 — Near Future
-- **Customer Self-Service Portal Enhancements**:
-  - Customers can cancel their own subscriptions from their portal.
-  - Renewal dates clearly displayed on the My Subscriptions page.
-  - "Reorder" button to quickly repeat a previous purchase.
-- **Centralised Email Settings**: Consolidate all email provider configuration (Resend, Zoho Mail) into a single, dedicated settings screen rather than scattered across different sections.
-- **Scheduler Health Endpoint**: A `/api/health` endpoint that shows the status, last run time, and next scheduled run for each background job.
-
-### P3 — Backlog
-- **GoCardless Mandate Management UI**: A screen for admins to view, search, and manage GoCardless mandates directly within the admin panel (currently requires accessing the GoCardless dashboard separately).
-- **Bulk Subscription Import (CSV)**: Allow admins to import a batch of subscriptions via CSV upload, rather than creating them one by one.
-- **Analytics Dashboard (Partner Billing Revenue)**: A visual dashboard showing partner billing metrics: monthly recurring revenue from partners, plan distribution, top partners by revenue.
-- **Security Audit**: Formal penetration testing and security review before scaling.
-- **Multi-Language Support**: Localise the storefront for partners operating in non-English markets.
-- **Customer Portal: GDPR Self-Service**: Allow customers to submit their own data access or erasure requests directly from their portal, rather than requiring admin mediation.
-
----
-
 *This document reflects the platform as of February 2026. It is intended as a living document and should be updated as features are released.*
