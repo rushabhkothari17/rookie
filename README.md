@@ -116,14 +116,14 @@ JWT_SECRET=<secret>
 ADMIN_EMAIL=admin@automateaccounts.local
 ADMIN_PASSWORD=ChangeMe123!
 CORS_ORIGINS=*
-FRONTEND_URL=https://license-admin-8.preview.emergentagent.com
+FRONTEND_URL=https://subscription-hub-113.preview.emergentagent.com
 STRIPE_API_KEY=sk_test_...
 GOCARDLESS_ACCESS_TOKEN=...
 ```
 
 ### `/app/frontend/.env`
 ```env
-REACT_APP_BACKEND_URL=https://license-admin-8.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://subscription-hub-113.preview.emergentagent.com
 WDS_SOCKET_PORT=443
 ```
 
