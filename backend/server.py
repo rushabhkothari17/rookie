@@ -119,6 +119,7 @@ from routes.taxes import router as taxes_router
 from routes.utils import router as utils_router
 from routes.documents import router as documents_router
 from routes.admin.forms import router as admin_forms_router
+from routes.admin.integration_requests import router as integration_requests_router
 
 app.include_router(auth_router)
 app.include_router(store_router)
@@ -160,6 +161,7 @@ app.include_router(taxes_router)
 app.include_router(utils_router)
 app.include_router(documents_router)
 app.include_router(admin_forms_router)
+app.include_router(integration_requests_router)
 
 
 
