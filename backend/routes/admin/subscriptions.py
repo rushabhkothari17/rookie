@@ -307,6 +307,7 @@ async def create_manual_subscription(
         ).isoformat(),
     }
     await db.subscriptions.insert_one(sub_doc)
+    await _inc_monthly(_tid, "subscriptions")
 
     await create_audit_log(
         entity_type="subscription",
