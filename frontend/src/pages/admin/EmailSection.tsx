@@ -340,6 +340,47 @@ export default function EmailSection() {
         </div>
       </div>
 
+      {/* Partner Billing Templates — Platform Admin Only */}
+      {isPlatformAdmin && templates.filter(t => t.category === "partner_billing").length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-slate-700 mb-1">Partner Billing Templates</h3>
+          <p className="text-xs text-slate-400 mb-3">Emails sent to partner organisations for billing events. Visible only to platform admins.</p>
+          <div className="space-y-2">
+            {templates.filter(t => t.category === "partner_billing").map(tmpl => (
+              <div key={tmpl.id} className={`rounded-xl border p-4 transition-colors ${tmpl.is_enabled ? "border-blue-200 bg-blue-50/30" : "border-slate-100 bg-slate-50"}`}>
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-2 rounded-lg bg-blue-100">
+                    <Mail size={14} className="text-blue-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-medium text-sm ${tmpl.is_enabled ? "text-slate-800" : "text-slate-400"}`}>{tmpl.label}</span>
+                      <span className="text-[10px] font-mono text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">{tmpl.trigger}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">{tmpl.description}</p>
+                    {tmpl.is_enabled && (
+                      <p className="text-[11px] text-slate-500 mt-1 font-mono">Subject: {tmpl.subject}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => setEditingTemplate(tmpl)}
+                      className="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded transition-colors"
+                      data-testid={`edit-template-${tmpl.trigger}`}>
+                      Edit
+                    </button>
+                    <button role="switch" aria-checked={tmpl.is_enabled} onClick={() => toggleTemplate(tmpl)}
+                      data-testid={`toggle-template-${tmpl.trigger}`}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full border-2 border-transparent transition-colors ${tmpl.is_enabled ? "bg-emerald-500" : "bg-slate-200"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${tmpl.is_enabled ? "translate-x-4" : "translate-x-0"}`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Email Logs */}
       <div className="mt-6 border border-slate-200 rounded-xl overflow-hidden">
         <button onClick={() => setShowLogs(!showLogs)} className="w-full flex items-center justify-between px-5 py-3.5 bg-slate-50 hover:bg-slate-100 transition-colors">
