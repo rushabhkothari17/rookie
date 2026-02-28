@@ -137,15 +137,15 @@ function BillingTypeSelector({ value, onChange }: { value: boolean; onChange: (v
   );
 }
 
-function BulletsList({ bullets, onChange, placeholder = "Feature or detail" }: {
-  bullets: string[]; onChange: (v: string[]) => void; placeholder?: string;
+function BulletsList({ bullets, onChange, placeholder = "Feature or detail", label = "Bullet points" }: {
+  bullets: string[]; onChange: (v: string[]) => void; placeholder?: string; label?: string;
 }) {
   const update = (i: number, v: string) => { const n = [...bullets]; n[i] = v; onChange(n); };
   const remove = (i: number) => onChange(bullets.filter((_, j) => j !== i));
   const add = () => onChange([...bullets, ""]);
   return (
     <div className="space-y-2">
-      <label className={labelCls}>Bullet points <span className="text-slate-400 normal-case font-normal tracking-normal">(what's included)</span></label>
+      <label className={labelCls}>{label}</label>
       {bullets.length === 0 && (
         <p className="text-xs text-slate-400 italic">No bullet points yet.</p>
       )}
