@@ -522,6 +522,16 @@ export function TenantsTab() {
           onClose={() => setShowNotes(null)}
         />
       )}
+
+      {/* Audit Logs dialog for a Partner Org */}
+      {auditTenant && (
+        <AuditLogDialog
+          open={!!auditTenant}
+          onOpenChange={open => { if (!open) setAuditTenant(null); }}
+          title={`Audit Logs — ${auditTenant.name}`}
+          logsUrl={`/admin/audit-logs?entity_type=tenant&entity_id=${auditTenant.id}`}
+        />
+      )}
     </div>
   );
 }
