@@ -173,6 +173,12 @@ async def upload_document(
     }
     await db.workdrive_documents.insert_one(doc)
     doc.pop("_id", None)
+    await create_audit_log(
+        entity_type="document", entity_id=doc_id, action="uploaded",
+        actor=current_user.get("email", uploaded_by_label),
+        details={"file_name": file.filename, "file_size": len(content), "uploaded_by": uploaded_by_label},
+        tenant_id=tid,
+    )
     return {"document": doc}
 
 
