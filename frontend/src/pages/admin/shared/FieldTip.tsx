@@ -26,7 +26,7 @@ export function FieldTip({ tip, side = "top" }: Props) {
           side={side}
           className="max-w-[280px] text-[11px] leading-relaxed bg-slate-900 text-white border-0 shadow-lg px-3 py-2"
         >
-          {tip}
+          <p>{tip}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
