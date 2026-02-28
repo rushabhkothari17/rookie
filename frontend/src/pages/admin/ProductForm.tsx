@@ -726,7 +726,7 @@ export function ProductForm({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={labelCls}>Base price</label>
+                    <label className={labelCls}>Base price <FieldTip tip="The starting price before any intake question modifiers. Set to 0 if the final price is determined entirely by intake questions." /></label>
                     <Input
                       type="number"
                       value={form.base_price || ""}
