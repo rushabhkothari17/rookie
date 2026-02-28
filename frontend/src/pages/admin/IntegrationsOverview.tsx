@@ -1569,6 +1569,7 @@ export function IntegrationsOverview() {
                       <div>
                         <label className="text-xs font-medium text-slate-600 mb-1.5 block">
                           Web App Entity <span className="text-red-500">*</span>
+                          <FieldTip tip="The record type from this platform to sync. Customers push contact data, Orders push transaction data, Subscriptions push recurring billing records." side="right" />
                         </label>
                         <Select
                           value={mappingForm.webapp_module}
