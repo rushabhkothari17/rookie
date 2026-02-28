@@ -803,7 +803,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 27. Content — Article Email Templates
+## 29. Content — Article Email Templates
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -815,7 +815,7 @@ Partner admins submit integration requests. Platform admins manage them.
 
 ---
 
-## 28. Content — Resources
+## 30. Content — Resources
 
 > Same structure as Articles. Resources are typically files/documents for customers to download.
 
