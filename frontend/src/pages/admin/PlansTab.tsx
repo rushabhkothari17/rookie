@@ -262,7 +262,7 @@ function PlanLogsDrawer({ plan, onClose }: { plan: Plan; onClose: () => void }) 
               <div key={log.id || log.timestamp} className="border border-slate-100 rounded-lg p-3">
                 <div className="flex items-center justify-between gap-2">
                   <Badge variant="outline" className="text-[10px]">{log.action}</Badge>
-                  <span className="text-xs text-slate-400">{fmt(log.timestamp)}</span>
+                  <span className="text-xs text-slate-400">{fmt(log.created_at || log.timestamp)}</span>
                 </div>
                 <p className="text-xs text-slate-600 mt-1">by <strong>{log.actor}</strong></p>
                 {log.details && Object.keys(log.details).length > 0 && (
