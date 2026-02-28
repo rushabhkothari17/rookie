@@ -160,6 +160,8 @@ export function SubscriptionsTab() {
         status: selectedSub.status, payment_method: selectedSub.payment_method,
         processor_id: selectedSub.processor_id !== undefined ? selectedSub.processor_id : undefined,
         new_note: selectedSub.new_note || undefined,
+        term_months: selectedSub.term_months !== undefined ? (Number(selectedSub.term_months) || -1) : undefined,
+        auto_cancel_on_termination: selectedSub.auto_cancel_on_termination,
       });
       toast.success("Subscription updated"); setShowEditDialog(false); load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
