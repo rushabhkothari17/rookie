@@ -106,6 +106,8 @@ function formToPayload(form: FormState) {
     description: form.description.trim(),
     warning_threshold_pct: parseInt(form.warning_threshold_pct) || 80,
     is_public: form.is_public === "true",
+    monthly_price: form.monthly_price !== "" ? parseFloat(form.monthly_price) : null,
+    currency: form.currency || "GBP",
   };
   LIMIT_FIELDS.forEach(({ key }) => {
     payload[key] = form[key] !== "" ? parseInt(form[key]) : null;
