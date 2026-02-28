@@ -305,34 +305,27 @@ class TestCustomerSubscriptionTerm:
 
     def test_create_manual_subscription_with_term_months_6(self, platform_session):
         """POST /api/admin/subscriptions/manual with term_months=6 should set contract_end_date."""
-        # Get a customer
-        r_cust = platform_session.get(f"{BASE_URL}/api/admin/customers?limit=1")
-        assert r_cust.status_code == 200
-        customers = r_cust.json().get("customers", [])
-        if not customers:
-            pytest.skip("No customers available for platform tenant")
+        # Use existing known customer and product in platform tenant
+        # Find a subscription in the platform tenant to get valid customer+product
+        r_subs = platform_session.get(f"{BASE_URL}/api/admin/subscriptions?limit=1")
+        assert r_subs.status_code == 200
+        existing_subs = r_subs.json().get("subscriptions", [])
         
-        # Get a subscription product (use products-all endpoint)
-        r_prod = platform_session.get(f"{BASE_URL}/api/admin/products-all?per_page=50")
-        assert r_prod.status_code == 200
-        products = r_prod.json().get("products", [])
-        # Filter subscription products
-        sub_products = [p for p in products if p.get("is_subscription") or p.get("billing_cycle")]
-        if not sub_products:
-            # Fall back to any product
-            sub_products = products
-        if not sub_products:
-            pytest.skip("No products available")
+        if existing_subs:
+            customer_email = existing_subs[0].get("customer_email", "")
+            product_id = existing_subs[0].get("product_id", "")
+        else:
+            pytest.skip("No existing subscriptions to get valid customer+product")
         
-        customer = customers[0]
-        product = sub_products[0]
+        if not customer_email or not product_id:
+            pytest.skip("Could not get customer_email or product_id from existing subscription")
         
         start_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         renewal_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
         
         payload = {
-            "customer_email": customer.get("email", ""),
-            "product_id": product["id"],
+            "customer_email": customer_email,
+            "product_id": product_id,
             "amount": 50.0,
             "currency": "USD",
             "status": "active",
@@ -350,17 +343,10 @@ class TestCustomerSubscriptionTerm:
         assert sub_id is not None, f"No subscription_id in response: {data}"
         
         # Fetch subscriptions to get full document
-        r_list = platform_session.get(f"{BASE_URL}/api/admin/subscriptions?limit=50")
+        r_list = platform_session.get(f"{BASE_URL}/api/admin/subscriptions?limit=100")
         assert r_list.status_code == 200
         subs = r_list.json().get("subscriptions", [])
         created_sub = next((s for s in subs if s.get("id") == sub_id), None)
-        
-        if created_sub is None:
-            # The subscription was created but not in first page, check with search
-            r_list2 = platform_session.get(f"{BASE_URL}/api/admin/subscriptions?limit=100")
-            if r_list2.status_code == 200:
-                subs2 = r_list2.json().get("subscriptions", [])
-                created_sub = next((s for s in subs2 if s.get("id") == sub_id), None)
         
         assert created_sub is not None, f"Created subscription {sub_id} not found in list"
         
