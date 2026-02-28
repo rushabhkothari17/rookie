@@ -80,7 +80,7 @@ h3,
 }
 
 .label-xs {
-  @apply text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5;
+  @apply text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-2;
 }
 
 .aa-no-scrollbar {
