@@ -22,6 +22,8 @@ type Plan = {
   description?: string;
   is_active: boolean;
   is_public: boolean;
+  monthly_price?: number | null;
+  currency?: string;
   warning_threshold_pct: number;
   tenant_count?: number;
   max_users: number | null;
