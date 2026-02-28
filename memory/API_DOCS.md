@@ -643,25 +643,29 @@ All export endpoints accept optional `?from_date=` and `?to_date=` query params.
 
 ---
 
-## 18. Admin — Bank Transactions
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET`  | `/api/admin/bank-transactions` | List bank transfer transactions |
-| `POST` | `/api/admin/bank-transactions` | Log a manual bank receipt |
-| `PUT`  | `/api/admin/bank-transactions/{txn_id}` | Update a transaction record |
-| `DELETE` | `/api/admin/bank-transactions/{txn_id}` | Delete a transaction |
-| `GET`  | `/api/admin/bank-transactions/{txn_id}/logs` | Audit log |
-
----
-
-## 19. Admin — API Keys
+## 18. Admin — API Keys
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET`  | `/api/admin/api-keys` | List API keys for the tenant |
 | `POST` | `/api/admin/api-keys` | Create a new API key. Returns the raw key once |
 | `DELETE` | `/api/admin/api-keys/{key_id}` | Revoke an API key |
+
+---
+
+## 19. Admin — Taxes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET`  | `/api/admin/taxes` | List all tax rates for the tenant |
+| `POST` | `/api/admin/taxes` | Create a tax rate |
+| `PUT`  | `/api/admin/taxes/{tax_id}` | Update a tax rate |
+| `DELETE` | `/api/admin/taxes/{tax_id}` | Delete a tax rate |
+| `GET`  | `/api/admin/taxes/countries` | List countries that have tax rates configured |
+| `GET`  | `/api/admin/taxes/settings` | Get tax settings (tax-inclusive pricing, etc.) |
+| `PUT`  | `/api/admin/taxes/settings` | Update tax settings |
+| `POST` | `/api/checkout/calculate-tax` | Calculate tax for an order preview |
+| `PATCH` | `/api/admin/customers/{customer_id}/tax-exempt` | Mark/unmark a customer as tax exempt |
 
 ---
 
