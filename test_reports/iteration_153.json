@@ -1,0 +1,83 @@
+{
+  "summary": "Phase 3 & 4: Partner Self-Service Plan Management and Partner Submissions Admin Review. All 27 backend tests pass (100%). All frontend flows tested end-to-end and working correctly: admin login, Plans tab with monthly_price/Public badge, partner login, Plan & Billing tab, upgrade plan (with pro-rata toast), downgrade request dialog, My Submissions tab, admin Partner Submissions tab with approve/reject flows, and plan change propagation verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/plans",
+        "issue": "Free Trial plan (seeded before schema update) is missing monthly_price and currency fields in DB. Returns plan without these fields. UI handles this gracefully with '—' fallback. E1 may want to backfill with: {monthly_price: 0, currency: 'GBP'} for consistency.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Partner Submissions Tab",
+        "issues": [
+          "Status filter Select component's data-testid='submissions-status-filter' is on the Select wrapper, not the trigger button — Playwright's is_visible check returns false even though the filter IS visually present. Minor testability issue only, not a functional bug."
+        ]
+      }
+    ]
+  },
+  "feature_test_results": {
+    "platform_admin_login": "PASS — Login via 'automate-accounts' gateway code → email/password → admin panel",
+    "partner_submissions_tab_in_platform_section": "PASS — Tab visible in PLATFORM section of admin sidebar with correct testid",
+    "partner_submissions_renders": "PASS — Table renders with search, status filter (defaulting to Pending), Approve/Reject buttons per pending row",
+    "plans_tab_monthly_price_column": "PASS — Plans table has Price column showing GBP 79.99/mo (Professional), GBP 29.99/mo (Starter), — (Free Trial)",
+    "plans_tab_public_badge": "PASS — Blue 'Public' badge shown for Professional and Starter plans",
+    "plans_tab_edit_modal_monthly_price_currency": "PASS — Edit Plan modal has Monthly Price input (plan-monthly-price-input), Currency input (plan-currency-input), and 'Visible to partners' checkbox (plan-is-public-checkbox)",
+    "partner_login_flow": "PASS — Enter 'test-partner-co' partner code → branded 'Test Partner Co' login → email/password → admin panel",
+    "partner_plan_billing_tab": "PASS — Shows current plan card (Starter GBP 29.99, active), Available Upgrades (Professional GBP 79.99 +GBP 50/mo), MY BILLING section in sidebar",
+    "partner_upgrade_plan": "PASS — Click 'Upgrade Now' → plan changes from Starter to Professional, pro-rata toast 'Pro-rata charge: GBP 1.79 (PO-2026-0006)' shown, REQUEST A DOWNGRADE section appears",
+    "partner_downgrade_request": "PASS — Click 'Request Downgrade' → dialog opens with plan selector and reason textarea → submit → success toast 'Downgrade request submitted. Your platform admin will review it.'",
+    "partner_my_submissions_tab": "PASS — Shows all submitted requests with status badges (Pending Review amber, Approved green, Rejected red), admin notes visible on resolved items, effective dates shown",
+    "admin_receives_submissions": "PASS — Partner Submissions tab shows all pending submissions from test partner with Partner, Type, From→To, Effective, Submitted, Status, Actions columns",
+    "admin_approves_with_note": "PASS — Click Approve → dialog opens with partner details + 'Approving will immediately apply plan change' warning → fill note → click Approve → 'Submission approved' toast → plan immediately changed",
+    "partner_plan_reflects_approved_downgrade": "PASS — After admin approval, partner's Plan & Billing shows Starter (GBP 29.99) — downgrade was applied immediately",
+    "admin_rejects_submission": "PASS — Click Reject → dialog opens → click Reject → 'Submission rejected' toast → submission removed from pending list",
+    "filter_by_status": "PASS — Status dropdown filters to pending/approved/rejected correctly",
+    "api_partner_my_plan": "PASS — Returns current_plan, license, subscription, available_plans with is_public validation",
+    "api_partner_upgrade_plan": "PASS — Creates pro-rata order, updates subscription, assigns plan to tenant license",
+    "api_partner_submissions_create": "PASS — Creates submission with pending status, effective_date = next 1st of month",
+    "api_partner_submissions_list": "PASS — Returns partner's own submissions only",
+    "api_admin_partner_submissions_list": "PASS — Platform admin sees all; partner admin sees own only (authorization working)",
+    "api_admin_partner_submissions_approve": "PASS — Approves, applies plan change to tenant and subscription",
+    "api_admin_partner_submissions_reject": "PASS — Rejects, status set to rejected",
+    "api_invalid_action_400": "PASS — Returns 400 for invalid action",
+    "api_already_resolved_400": "PASS — Returns 400 for re-resolving already resolved submission",
+    "api_partner_cannot_approve": "PASS — Returns 403 for partner trying to approve/reject"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter153_phase3_4_plan_management.py",
+    "/app/test_reports/pytest/pytest_iter153_phase3_4.xml"
+  ],
+  "action_items": [
+    "OPTIONAL: Backfill Free Trial plan with monthly_price=0, currency='GBP' for schema consistency. Currently shows '—' in Plans table which is acceptable but could be confusing.",
+    "INFO: All Phase 3 & 4 features are working correctly. No critical issues found."
+  ],
+  "critical_code_review_comments": [
+    "MINOR: Free Trial plan in DB is missing monthly_price/currency fields (legacy seed data). GET /api/admin/plans returns it without these fields. New plans created via the API/UI do include them correctly.",
+    "NOTE: PartnerSubmissionsTab - status filter Select component has data-testid on the wrapper, but the actual trigger button's is_visible check may return false in Playwright. This is a testability concern only — functionally the filter works correctly.",
+    "GOOD: Admin approve dialog correctly shows warning 'Approving will immediately apply the plan change to [partner]' — good UX affordance.",
+    "GOOD: Pro-rata toast message includes specific order number (e.g. PO-2026-0006) — good for partner traceability.",
+    "GOOD: Authorization is correct: partner admin gets 403 on PUT /admin/partner-submissions/{id}; admin GET /admin/partner-submissions returns only partner's own submissions for non-platform admins."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter153_phase3_4_plan_management.py"
+  ],
+  "success_rate": {
+    "backend": "100% (27/27 tests pass)",
+    "frontend": "100% (all Phase 3 & 4 features verified end-to-end)"
+  },
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123! (enter 'automate-accounts' at gateway)",
+    "test_partner": "testpartner@example.com / TestPass123! (enter 'test-partner-co' at gateway)"
+  },
+  "seed_data_creation": "Multiple TEST_* submissions created during testing runs. Test partner plan was upgraded to Professional then downgraded back to Starter. Current state: test-partner-co is on Starter plan.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Phase 3 & 4 fully verified. Backend 27/27 tests pass. All frontend flows work: admin login, Plans tab (monthly_price column, Public badge, edit modal), partner login (test-partner-co), Plan & Billing tab (current plan card, upgrade, downgrade request), My Submissions (status badges, admin notes), admin Partner Submissions (approve/reject with notes, status filter, plan change propagation). Free Trial plan is missing monthly_price/currency in DB (legacy seed, minor). Test partner is currently on Starter plan. Multiple test submissions in DB (TEST_* prefixed) from automated testing runs."
+}
