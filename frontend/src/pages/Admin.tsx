@@ -296,6 +296,11 @@ export default function Admin() {
             </TabsContent>
           )}
           {isPartnerAdmin && (
+            <TabsContent value="plan-billing" className="space-y-4">
+              <PlanBillingTab />
+            </TabsContent>
+          )}
+          {isPartnerAdmin && (
             <TabsContent value="my-subscriptions" className="space-y-4">
               <MySubscriptionsTab />
             </TabsContent>
@@ -303,6 +308,11 @@ export default function Admin() {
           {isPartnerAdmin && (
             <TabsContent value="my-orders" className="space-y-4">
               <MyOrdersTab />
+            </TabsContent>
+          )}
+          {isPartnerAdmin && (
+            <TabsContent value="my-submissions" className="space-y-4">
+              <MySubmissionsTab />
             </TabsContent>
           )}
         </div>
