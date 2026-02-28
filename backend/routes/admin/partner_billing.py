@@ -639,7 +639,33 @@ async def cancel_partner_subscription(sub_id: str, admin: Dict[str, Any] = Depen
         ))
 
     sub = await db.partner_subscriptions.find_one({"id": sub_id}, {"_id": 0})
+
+    # Reset partner to Free Trial plan after cancellation
+    await _reset_partner_to_free_trial(sub.get("partner_id", "") if sub else "")
+
     return {"subscription": sub}
+
+
+async def _reset_partner_to_free_trial(partner_id: str) -> None:
+    """Reset a partner tenant's plan to the Free Trial plan (idempotent, non-blocking)."""
+    if not partner_id:
+        return
+    try:
+        free_trial = await db.plans.find_one({"is_default": True}, {"_id": 0})
+        if not free_trial:
+            return
+        limits = {k: v for k, v in free_trial.items() if k.startswith("max_")}
+        await db.tenants.update_one({"id": partner_id}, {"$set": {
+            "license": {
+                "plan_id": free_trial["id"],
+                "plan_name": free_trial["name"],
+                "assigned_at": now_iso(),
+                **limits,
+            }
+        }})
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning(f"[Plans] Failed to reset plan for {partner_id}: {exc}")
 
 
 # ---------------------------------------------------------------------------
