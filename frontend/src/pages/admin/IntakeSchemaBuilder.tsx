@@ -826,6 +826,7 @@ export function IntakeSchemaBuilder({ schema, onChange }: { schema: IntakeSchema
           <div className="flex items-center gap-2">
             <Layers size={13} className="text-slate-400" />
             <span className="text-xs font-semibold text-slate-600">Price ceiling cap</span>
+            <FieldTip tip="Sets a hard maximum on the calculated price regardless of what the intake questions produce. Useful to cap variable pricing at a reasonable maximum." />
           </div>
           <div className="flex items-center gap-2">
             {schema.price_ceiling && (
