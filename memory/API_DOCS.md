@@ -628,7 +628,6 @@ Outbound webhooks (push events to external URLs).
 | `GET`  | `/api/admin/export/categories` | Export categories as CSV |
 | `GET`  | `/api/admin/export/terms` | Export terms documents as CSV |
 | `GET`  | `/api/admin/export/promo-codes` | Export promo codes as CSV |
-| `GET`  | `/api/admin/export/bank-transactions` | Export bank transactions as CSV |
 | `GET`  | `/api/admin/export/article-categories` | Export article categories as CSV |
 | `GET`  | `/api/admin/export/article-templates` | Export article templates as CSV |
 
