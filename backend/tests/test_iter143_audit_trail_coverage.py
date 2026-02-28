@@ -393,15 +393,24 @@ class TestIntegrationRequestAudit:
 class TestFileUploadAudit:
     """POST /api/uploads creates audit log."""
 
+    def _upload_request(self, session: requests.Session, filename: str, content: bytes):
+        """Helper: perform multipart upload, bypassing application/json content-type."""
+        # Build a fresh session with only auth headers (no Content-Type: application/json)
+        upload_session = requests.Session()
+        auth_header = session.headers.get("Authorization")
+        if auth_header:
+            upload_session.headers["Authorization"] = auth_header
+        # Also carry cookies
+        upload_session.cookies.update(session.cookies)
+        return upload_session.post(
+            f"{BASE_URL}/api/uploads",
+            files={"file": (filename, content, "text/plain")},
+        )
+
     def test_file_upload_creates_audit_log(self, platform_admin):
         t_before = time.time()
         test_content = b"Test file content for audit trail testing"
-        resp = platform_admin.post(
-            f"{BASE_URL}/api/uploads",
-            files={"file": ("test_audit.txt", test_content, "text/plain")},
-            # Remove Content-Type header so requests sets multipart/form-data automatically
-            headers={k: v for k, v in platform_admin.headers.items() if k.lower() != "content-type"},
-        )
+        resp = self._upload_request(platform_admin, "test_audit.txt", test_content)
         assert resp.status_code == 200, f"Expected 200 got {resp.status_code}: {resp.text}"
         upload = resp.json()
         upload_id = upload.get("id")
@@ -415,12 +424,8 @@ class TestFileUploadAudit:
 
     def test_file_upload_creates_audit_trail_entry(self, platform_admin):
         t_before = time.time()
-        resp = platform_admin.post(
-            f"{BASE_URL}/api/uploads",
-            files={"file": ("audit_trail_test.txt", b"Audit trail test data", "text/plain")},
-            headers={k: v for k, v in platform_admin.headers.items() if k.lower() != "content-type"},
-        )
-        assert resp.status_code == 200
+        resp = self._upload_request(platform_admin, "audit_trail_test.txt", b"Audit trail test data")
+        assert resp.status_code == 200, f"Expected 200 got {resp.status_code}: {resp.text}"
         log = _check_audit_trail("FileUpload", "UPLOADED", t_before)
         assert log["entity_type"] == "FileUpload"
         print(f"PASS: audit_trail entry for file_upload: {log.get('action')}")
