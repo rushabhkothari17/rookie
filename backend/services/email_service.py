@@ -339,6 +339,63 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "available_variables": ["{{store_name}}", "{{recipient_name}}", "{{subscription_number}}", "{{plan_name}}", "{{cancelled_at}}", "{{cancel_reason}}"],
         "is_system": True,
     },
+    # ── Renewal Reminders ────────────────────────────────────────────────────
+    {
+        "trigger": "subscription_renewal_reminder",
+        "label": "Subscription Renewal Reminder",
+        "description": "Sent to customers 30 days before their subscription renewal date.",
+        "subject": "Your {{store_name}} subscription renews on {{renewal_date}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">Upcoming Renewal Reminder</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 24px">Reference: <strong>{{subscription_number}}</strong></p>
+  <p style="color:#475569;">Hi {{customer_name}},</p>
+  <p style="color:#475569;">This is a reminder that your subscription to <strong>{{plan_name}}</strong> will automatically renew on <strong>{{renewal_date}}</strong>.</p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin:20px 0">
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:160px">Subscription</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{subscription_number}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Plan</td><td style="padding:6px 0;color:#1e293b">{{plan_name}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Renewal Amount</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{currency}} {{amount}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Renewal Date</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{renewal_date}}</td></tr>
+    </table>
+  </div>
+  <p style="color:#475569;font-size:13px;">No action is needed — your subscription will renew automatically. If you have any questions, please reply to this email.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{customer_name}}", "{{subscription_number}}", "{{plan_name}}", "{{amount}}", "{{currency}}", "{{renewal_date}}"],
+        "is_system": True,
+    },
+    {
+        "trigger": "partner_subscription_renewal_reminder",
+        "label": "Partner Subscription Renewal Reminder",
+        "description": "Sent to partner admins 30 days before their subscription renewal date.",
+        "category": "partner_billing",
+        "subject": "Your {{store_name}} platform subscription renews on {{renewal_date}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 4px">Upcoming Platform Renewal Reminder</h2>
+  <p style="color:#64748b;font-size:13px;margin:0 0 24px">Reference: <strong>{{subscription_number}}</strong></p>
+  <p style="color:#475569;">Hi {{partner_name}},</p>
+  <p style="color:#475569;">This is a reminder that your platform subscription to <strong>{{plan_name}}</strong> will renew on <strong>{{renewal_date}}</strong>.</p>
+  <div style="background:#f8fafc;border-radius:6px;padding:16px;margin:20px 0">
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:160px">Subscription</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{subscription_number}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Plan</td><td style="padding:6px 0;color:#1e293b">{{plan_name}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Renewal Amount</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{currency}} {{amount}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Renewal Date</td><td style="padding:6px 0;color:#1e293b;font-weight:600">{{renewal_date}}</td></tr>
+      <tr><td style="padding:6px 0;color:#64748b;font-size:13px">Billing Interval</td><td style="padding:6px 0;color:#1e293b">{{billing_interval}}</td></tr>
+    </table>
+  </div>
+  <p style="color:#475569;font-size:13px;">No action is needed — your subscription will renew automatically. If you have any questions, please reply to this email.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{partner_name}}", "{{subscription_number}}", "{{plan_name}}", "{{amount}}", "{{currency}}", "{{renewal_date}}", "{{billing_interval}}"],
+        "is_system": True,
+    },
 ]
 
 
