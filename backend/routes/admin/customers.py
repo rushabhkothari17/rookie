@@ -22,6 +22,57 @@ from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 router = APIRouter(prefix="/api", tags=["admin-customers"])
 
 
+@router.get("/admin/customers/stats")
+async def admin_customers_stats(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """KPI dashboard stats for the Customers tab."""
+    tf = get_tenant_filter(admin)
+    now = datetime.now(timezone.utc)
+    this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d")
+    base_flt = {**tf}
+
+    async def _total():
+        return await db.customers.count_documents(base_flt)
+
+    async def _new_this_month():
+        return await db.customers.count_documents({**base_flt, "created_at": {"$gte": this_month_start}})
+
+    async def _active():
+        # Count customers whose user account is active
+        user_ids = await db.customers.distinct("user_id", base_flt)
+        return await db.users.count_documents({"id": {"$in": user_ids}, "is_active": True})
+
+    async def _by_payment_mode():
+        """Dynamic grouping on allowed_payment_modes array.
+        Automatically includes any future payment mode without code changes."""
+        pipeline = [
+            {"$match": base_flt},
+            {"$unwind": {"path": "$allowed_payment_modes", "preserveNullAndEmptyArrays": False}},
+            {"$group": {"_id": "$allowed_payment_modes", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+        ]
+        results = await db.customers.aggregate(pipeline).to_list(20)
+        mode_counts = {r["_id"]: r["count"] for r in results}
+
+        # Fallback: for legacy records without allowed_payment_modes array
+        if not mode_counts:
+            gc = await db.customers.count_documents({**base_flt, "allow_bank_transfer": True})
+            stripe = await db.customers.count_documents({**base_flt, "allow_card_payment": True})
+            if gc: mode_counts["gocardless"] = gc
+            if stripe: mode_counts["stripe"] = stripe
+        return mode_counts
+
+    total, new_this_month, active, by_mode = await asyncio.gather(
+        _total(), _new_this_month(), _active(), _by_payment_mode(),
+    )
+
+    return {
+        "total": total,
+        "active": active,
+        "new_this_month": new_this_month,
+        "by_payment_mode": by_mode,
+    }
+
+
 @router.get("/admin/customers")
 async def admin_customers(
     page: int = 1,
