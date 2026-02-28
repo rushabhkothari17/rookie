@@ -257,6 +257,8 @@ async def admin_update_product(
     update_fields["visibility_conditions"] = payload.visibility_conditions.model_dump() if payload.visibility_conditions else None
     # price_rounding: always update so "No rounding" actually clears the setting
     update_fields["price_rounding"] = payload.price_rounding if payload.price_rounding else None
+    # default_term_months: 0 or None clears it
+    update_fields["default_term_months"] = payload.default_term_months if payload.default_term_months and payload.default_term_months > 0 else None
     if payload.intake_schema_json is not None:
         _validate_intake_schema(payload.intake_schema_json)
         schema_dict = payload.intake_schema_json.dict()
