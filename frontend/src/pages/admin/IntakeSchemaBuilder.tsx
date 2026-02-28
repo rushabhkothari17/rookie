@@ -367,8 +367,8 @@ function VisibilityRuleEditor({ rule, onChange, otherQuestions }: {
       </div>
 
       {isOn && isExpanded && (
-        <div className="space-y-2">
-          <p className="text-[11px] text-blue-600 font-medium">Show this question only when:</p>
+        <div className="space-y-4 mt-1">
+          <p className="text-[11px] text-blue-600 font-medium pb-1">Show this question only when:</p>
 
           {ruleSet.groups.map((group, gi) => (
             <div key={gi}>
