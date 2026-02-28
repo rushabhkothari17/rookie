@@ -92,6 +92,8 @@ function planToForm(plan: Plan): FormState {
     description: plan.description || "",
     warning_threshold_pct: String(plan.warning_threshold_pct ?? 80),
     is_public: plan.is_public ? "true" : "false",
+    monthly_price: plan.monthly_price != null ? String(plan.monthly_price) : "",
+    currency: plan.currency || "GBP",
     ...Object.fromEntries(
       LIMIT_FIELDS.map(f => [f.key, plan[f.key as keyof Plan] !== null && plan[f.key as keyof Plan] !== undefined ? String(plan[f.key as keyof Plan]) : ""])
     ),
