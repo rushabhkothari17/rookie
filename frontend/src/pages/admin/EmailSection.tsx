@@ -21,6 +21,7 @@ interface EmailTemplate {
   is_enabled: boolean;
   available_variables: string[];
   is_system: boolean;
+  category?: string;
 }
 
 interface EmailLog {
