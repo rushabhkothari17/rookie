@@ -286,7 +286,7 @@ export function UsersTab() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-slate-500">Access Level</label>
+              <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: can create, edit, and delete. Read Only: can view data but cannot make changes." /></label>
               <Select value={newUser.access_level} onValueChange={v => setNewUser({ ...newUser, access_level: v, preset_role: "" })}>
                 <SelectTrigger data-testid="admin-new-user-access">
                   <SelectValue />
@@ -333,7 +333,7 @@ export function UsersTab() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-slate-500">Access Level</label>
+              <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: can create, edit, and delete. Read Only: can view data but cannot make changes." /></label>
               <Select value={editForm.access_level} onValueChange={v => setEditForm({ ...editForm, access_level: v })}>
                 <SelectTrigger data-testid="admin-edit-user-access">
                   <SelectValue />
