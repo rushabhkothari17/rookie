@@ -133,6 +133,14 @@ export default function Admin() {
                 <TabsTrigger value="usage" data-testid="admin-tab-usage" className={TAB_CLASS}>Usage &amp; Limits</TabsTrigger>
               </>
             )}
+            {/* My Billing — only for partner admins */}
+            {isPartnerAdmin && (
+              <>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">My Billing</p>
+                <TabsTrigger value="my-subscriptions" data-testid="admin-tab-my-subscriptions" className={TAB_CLASS}>My Subscriptions</TabsTrigger>
+                <TabsTrigger value="my-orders" data-testid="admin-tab-my-orders" className={TAB_CLASS}>My Orders</TabsTrigger>
+              </>
+            )}
 
             {/* Commerce */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
