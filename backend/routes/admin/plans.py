@@ -84,6 +84,8 @@ async def create_plan(payload: PlanCreate, admin: Dict[str, Any] = Depends(requi
         "is_public": payload.is_public,
         "is_default": False,
         "warning_threshold_pct": payload.warning_threshold_pct,
+        "monthly_price": payload.monthly_price,
+        "currency": payload.currency or "GBP",
         **{f: getattr(payload, f) for f in LIMIT_FIELDS},
         "created_at": now_iso(),
         "updated_at": now_iso(),
