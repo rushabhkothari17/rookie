@@ -297,13 +297,15 @@ async def create_manual_subscription(
         "canceled_at": None,
         "internal_note": payload.internal_note or "",
         "notes": [],
+        "term_months": payload.term_months if payload.term_months and payload.term_months > 0 else None,
+        "auto_cancel_on_termination": payload.auto_cancel_on_termination,
         "created_at": now_iso(),
         "created_by_admin": admin["id"],
         "is_manual": True,
         "contract_end_date": (
             datetime.fromisoformat(
                 (payload.start_date or now_iso()).replace("Z", "+00:00")
-            ).replace(tzinfo=timezone.utc) + timedelta(days=365)
+            ).replace(tzinfo=timezone.utc) + timedelta(days=30 * (payload.term_months or 12))
         ).isoformat(),
     }
     await db.subscriptions.insert_one(sub_doc)
