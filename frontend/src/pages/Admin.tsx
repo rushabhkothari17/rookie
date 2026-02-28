@@ -242,6 +242,11 @@ export default function Admin() {
               <TenantsTab />
             </TabsContent>
           )}
+          {!isPlatformAdmin && (
+            <TabsContent value="usage" className="space-y-4">
+              <UsageDashboard />
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </div>
