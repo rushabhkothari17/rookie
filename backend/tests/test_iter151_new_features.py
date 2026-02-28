@@ -14,10 +14,10 @@ BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 # ── Auth helpers ─────────────────────────────────────────────────────────────
 
 def get_platform_admin_token():
+    # Platform admin login does NOT use partner_code
     resp = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": "admin@automateaccounts.local",
-        "password": "ChangeMe123!",
-        "partner_code": "automate-accounts"
+        "password": "ChangeMe123!"
     })
     if resp.status_code == 200:
         return resp.json().get("token")
