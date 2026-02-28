@@ -18,7 +18,79 @@ from services.audit_service import create_audit_log
 from services.webhook_service import dispatch_event
 from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 
+from services.checkout_service import get_fx_rate, get_tenant_base_currency
+
 router = APIRouter(prefix="/api", tags=["admin-subscriptions"])
+
+
+@router.get("/admin/subscriptions/stats")
+async def admin_subscriptions_stats(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """KPI dashboard stats for the Subscriptions tab."""
+    tf = get_tenant_filter(admin)
+    tid = tenant_id_of(admin)
+    base_currency = await get_tenant_base_currency(tid)
+
+    now = datetime.now(timezone.utc)
+    this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d")
+    last_month_start = (now.replace(day=1) - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
+    base_flt = {**tf}
+
+    async def _total():
+        return await db.subscriptions.count_documents(base_flt)
+
+    async def _by_status():
+        pipeline = [{"$match": base_flt}, {"$group": {"_id": "$status", "count": {"$sum": 1}}}, {"$sort": {"count": -1}}]
+        results = await db.subscriptions.aggregate(pipeline).to_list(20)
+        return {(r["_id"] or "unknown"): r["count"] for r in results}
+
+    async def _by_payment_method():
+        pipeline = [{"$match": base_flt}, {"$group": {"_id": "$payment_method", "count": {"$sum": 1}}}, {"$sort": {"count": -1}}]
+        results = await db.subscriptions.aggregate(pipeline).to_list(20)
+        return {(r["_id"] or "unknown"): r["count"] for r in results}
+
+    async def _mrr_by_currency():
+        """Sum monthly amounts for active subscriptions, grouped by currency."""
+        pipeline = [
+            {"$match": {**base_flt, "status": "active"}},
+            {"$group": {"_id": "$currency", "total": {"$sum": "$amount"}}},
+        ]
+        return await db.subscriptions.aggregate(pipeline).to_list(20)
+
+    async def _new_this_month():
+        return await db.subscriptions.count_documents({**base_flt, "created_at": {"$gte": this_month_start}})
+
+    async def _churned_this_month():
+        return await db.subscriptions.count_documents({
+            **base_flt,
+            "status": {"$in": ["cancelled", "canceled"]},
+            "updated_at": {"$gte": this_month_start},
+        })
+
+    async def _active_count():
+        return await db.subscriptions.count_documents({**base_flt, "status": "active"})
+
+    total, by_status, by_method, mrr_by_cur, new_this_month, churned_this_month, active_count = await asyncio.gather(
+        _total(), _by_status(), _by_payment_method(), _mrr_by_currency(),
+        _new_this_month(), _churned_this_month(), _active_count(),
+    )
+
+    mrr_base = 0.0
+    for row in mrr_by_cur:
+        cur = (row.get("_id") or "USD").upper()
+        rate = await get_fx_rate(cur, base_currency)
+        mrr_base += round((row.get("total") or 0) * rate, 2)
+    mrr_base = round(mrr_base, 2)
+
+    return {
+        "total": total,
+        "active": active_count,
+        "new_this_month": new_this_month,
+        "churned_this_month": churned_this_month,
+        "base_currency": base_currency,
+        "mrr_base": mrr_base,
+        "by_status": by_status,
+        "by_payment_method": by_method,
+    }
 
 
 @router.get("/admin/filter-options")
