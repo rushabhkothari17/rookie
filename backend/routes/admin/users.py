@@ -89,6 +89,15 @@ async def admin_create_admin_user(
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # License: check user limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "users")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"User limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     # Handle preset roles for permissions
     access_level = payload.access_level or "full_access"
     modules = payload.modules or []
