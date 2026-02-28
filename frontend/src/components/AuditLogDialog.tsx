@@ -70,7 +70,7 @@ export function AuditLogDialog({
             <div key={log.id || i} className="border border-slate-200 rounded p-3">
               <div className="flex justify-between items-start mb-1">
                 <span className="text-sm font-semibold text-slate-900">{log.action}</span>
-                <span className="text-xs text-slate-500">{new Date(log.created_at).toLocaleString()}</span>
+                <span className="text-xs text-slate-500">{new Date(log.occurred_at || log.created_at).toLocaleString()}</span>
               </div>
               {(log.actor || log.user) && (
                 <div className="text-xs text-slate-600">Actor: {log.actor || log.user}</div>
