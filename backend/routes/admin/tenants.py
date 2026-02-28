@@ -150,6 +150,7 @@ async def get_my_tenant(admin: Dict[str, Any] = Depends(get_tenant_admin)):
 
 class LicenseUpdate(BaseModel):
     plan: Optional[str] = None
+    plan_id: Optional[str] = None  # DB id of the plan being assigned
     warning_threshold_pct: Optional[int] = None
     effective_from: Optional[str] = None
     max_users: Optional[int] = None
