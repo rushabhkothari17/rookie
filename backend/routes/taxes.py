@@ -96,6 +96,10 @@ async def update_tax_table_entry(
         {"$set": update},
         upsert=True,
     )
+    await create_audit_log(
+        entity_type="tax_table", entity_id=f"{country_code.upper()}/{state_code.upper()}", action="updated",
+        actor=admin.get("email", "admin"), details={"rate": float(rate)}, tenant_id=tenant_id_of(admin),
+    )
     return {"message": "Tax table entry updated"}
 
 
