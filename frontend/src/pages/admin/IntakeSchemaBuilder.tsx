@@ -838,7 +838,7 @@ export function IntakeSchemaBuilder({ schema, onChange }: { schema: IntakeSchema
         {showCaps && (
           <div className="px-4 pb-4 border-t border-slate-100 pt-4 space-y-3">
             <div>
-              <label className="label-xs">Maximum price</label>
+              <label className="label-xs">Maximum price <FieldTip tip="Applied after all intake question modifiers. If the calculated total exceeds this value it will be capped here." side="right" /></label>
               <Input type="number" value={schema.price_ceiling ?? ""}
                 onChange={e => onChange({ ...schema, price_ceiling: e.target.value === "" ? null : parseFloat(e.target.value) })}
                 placeholder="No maximum" className="h-8 text-xs font-mono" />
