@@ -84,14 +84,20 @@ export function TenantsTab() {
 
   const load = async () => {
     try {
-      const { data } = await api.get("/admin/tenants");
+      const params = new URLSearchParams();
+      if (planFilter && planFilter !== "all") params.set("plan_id", planFilter);
+      const { data } = await api.get(`/admin/tenants?${params}`);
       setTenants(data.tenants || []);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [planFilter]);
+
+  useEffect(() => {
+    api.get("/admin/plans").then(r => setPlans(r.data.plans || [])).catch(() => {});
+  }, []);
 
   const loadUsers = async (tenantId: string) => {
     try {
