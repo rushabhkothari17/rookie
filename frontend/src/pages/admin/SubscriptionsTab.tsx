@@ -497,6 +497,14 @@ export function SubscriptionsTab() {
                 </Select>
               </div>
               <div className="space-y-1"><label className="text-xs text-slate-500">Renewal Date</label><Input type="date" value={manualSub.renewal_date} onChange={e => setManualSub({ ...manualSub, renewal_date: e.target.value })} /></div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Contract Term (months)</label>
+                <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={manualSub.term_months as string} onChange={e => setManualSub({ ...manualSub, term_months: e.target.value })} data-testid="manual-sub-term-months" />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="auto_cancel" checked={manualSub.auto_cancel_on_termination} onChange={e => setManualSub({ ...manualSub, auto_cancel_on_termination: e.target.checked })} />
+                <label htmlFor="auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
+              </div>
             </div>
             <Button onClick={handleCreateManual} className="w-full">Create Subscription</Button>
           </div>
