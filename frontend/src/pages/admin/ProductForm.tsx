@@ -958,7 +958,7 @@ export function ProductForm({
         <div className={sectionCls}>
           <div className={cardCls}>
             <div className="flex items-center justify-between mb-1">
-              <label className={`${labelCls} mb-0`}>Custom sections</label>
+              <label className={`${labelCls} mb-0`}>Custom sections <FieldTip tip="Additional content blocks shown on the product detail page (e.g. 'What's included', 'How it works'). Each section has a heading and rich text body." /></label>
               <span className="text-xs text-slate-400">Up to 10</span>
             </div>
             <SectionsEditor sections={form.custom_sections} onChange={s("custom_sections")} />
