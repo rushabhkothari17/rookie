@@ -333,6 +333,16 @@ async def admin_create_category(
     existing = await db.categories.find_one({**tf, "name": payload.name})
     if existing:
         raise HTTPException(status_code=409, detail="Category already exists")
+
+    # License: check product category limit
+    from services.license_service import check_limit as _check_limit
+    _limit_check = await _check_limit(tid, "product_categories")
+    if not _limit_check["allowed"]:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Product category limit reached ({_limit_check['current']}/{_limit_check['limit']}). Please contact your platform administrator to upgrade your plan."
+        )
+
     cat = {
         "id": make_id(),
         "tenant_id": tid,
