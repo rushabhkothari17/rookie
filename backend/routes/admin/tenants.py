@@ -191,7 +191,9 @@ async def update_tenant_license(
         raise HTTPException(status_code=404, detail="Tenant not found")
 
     existing_license = tenant.get("license") or {}
-    updates = {k: v for k, v in payload.dict().items() if v is not None}
+    # Use exclude_unset=True so explicitly-set-null fields clear limits,
+    # while missing fields don't overwrite existing values.
+    updates = payload.dict(exclude_unset=True)
     new_license = {**DEFAULT_LICENSE, **existing_license, **updates}
 
     await db.tenants.update_one(
