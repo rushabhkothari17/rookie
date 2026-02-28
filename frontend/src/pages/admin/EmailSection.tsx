@@ -306,7 +306,7 @@ export default function EmailSection() {
         <h3 className="text-sm font-semibold text-slate-700 mb-1">Email Templates</h3>
         <p className="text-xs text-slate-400 mb-3">Configure the email sent for each event. Toggle on/off to enable or disable each email.</p>
         <div className="space-y-2">
-          {templates.map(tmpl => (
+          {templates.filter(t => !t.category).map(tmpl => (
             <div key={tmpl.id} className={`rounded-xl border p-4 transition-colors ${tmpl.is_enabled ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50"}`}>
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 p-2 rounded-lg bg-slate-100">
