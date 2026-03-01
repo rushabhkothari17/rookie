@@ -565,21 +565,37 @@ async def upgrade_plan_ongoing(
     immediately once Stripe payment is confirmed.
     """
     tid = tenant_id_of(admin)
-    new_plan = await db.plans.find_one({"id": payload.plan_id, "is_active": True, "is_public": True}, {"_id": 0})
+    new_plan = await db.plans.find_one({"id": payload.plan_id, "is_active": True}, {"_id": 0})
     if not new_plan:
         raise HTTPException(404, "Plan not found or not available")
 
-    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "license": 1, "name": 1})
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0})
+    base_currency = (tenant or {}).get("base_currency", "USD")
     license_info = (tenant or {}).get("license") or {}
     current_plan_id = license_info.get("plan_id")
     current_plan = await db.plans.find_one({"id": current_plan_id}, {"_id": 0}) if current_plan_id else None
-    old_monthly = (current_plan or {}).get("monthly_price", 0) or 0
-    new_monthly = new_plan.get("monthly_price", 0) or 0
+
+    # Convert both plan prices to base currency for accurate diff calculation
+    from services.checkout_service import get_fx_rate
+    old_monthly_raw = (current_plan or {}).get("monthly_price", 0) or 0
+    old_currency = ((current_plan or {}).get("currency") or "USD").upper()
+    new_monthly_raw = new_plan.get("monthly_price", 0) or 0
+    new_currency = (new_plan.get("currency") or "USD").upper()
+
+    if old_monthly_raw and old_currency != base_currency:
+        old_monthly = round(old_monthly_raw * await get_fx_rate(old_currency, base_currency), 2)
+    else:
+        old_monthly = old_monthly_raw
+
+    if new_monthly_raw and new_currency != base_currency:
+        new_monthly = round(new_monthly_raw * await get_fx_rate(new_currency, base_currency), 2)
+    else:
+        new_monthly = new_monthly_raw
 
     from services.billing_service import calculate_upgrade_flat
     flat_diff = calculate_upgrade_flat(old_monthly, new_monthly)
 
-    currency = "GBP"
+    currency = base_currency
     existing_sub = await db.partner_subscriptions.find_one(
         {"partner_id": tid, "status": {"$in": ["active", "unpaid"]}}, {"_id": 0}
     )
