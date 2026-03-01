@@ -9,13 +9,11 @@ Supports:
 """
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel
+from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
-from core.helpers import make_id, now_iso
-from core.security import pwd_context
-from core.tenant import get_tenant_admin, tenant_id_of, get_tenant_filter
+from core.helpers import now_iso
+from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
 from db.session import db
 from services.audit_service import create_audit_log
 
