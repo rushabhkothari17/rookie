@@ -529,11 +529,8 @@ async def admin_cancel_subscription(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
+    await _check(admin, "delete")
     subscription = await db.subscriptions.find_one({**tf, "id": subscription_id}, {"_id": 0})
-    if not subscription:
-        raise HTTPException(status_code=404, detail="Subscription not found")
-
-    # Check contract term — block early cancellation
     term_months = subscription.get("term_months")
     contract_end = subscription.get("contract_end_date")
     if term_months and term_months > 0 and contract_end:
