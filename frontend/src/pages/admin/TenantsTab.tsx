@@ -168,6 +168,10 @@ export function TenantsTab() {
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to create partner organization");
     } finally {
+      setCreating(false);
+    }
+  };
+
   const applyPresetRole = (roleKey: string) => {
     if (roleKey === "custom") {
       setNewAdmin(prev => ({ ...prev, preset_role: "" }));
@@ -192,9 +196,6 @@ export function TenantsTab() {
         ? prev.modules.filter(m => m !== key)
         : [...prev.modules, key]
     }));
-  };
-      setCreating(false);
-    }
   };
 
   const handleCloseCreate = () => {
