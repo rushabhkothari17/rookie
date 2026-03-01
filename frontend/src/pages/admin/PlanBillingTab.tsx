@@ -745,12 +745,23 @@ export function PlanBillingTab() {
         <UsageDashboard />
       </div>
 
+      {/* Upgrade Plans Modal */}
+      {showUpgradeModal && (
+        <UpgradePlansModal
+          plans={upgrades}
+          currentPriceInBase={currentPriceInBase}
+          baseCurrency={baseCurrency}
+          onSelect={plan => setOngoingDialog(plan)}
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
+
       {/* Ongoing Upgrade Dialog */}
       {ongoingDialog && (
         <OngoingUpgradeDialog
           plan={ongoingDialog}
-          currentPrice={currentPrice}
-          currency={currency}
+          currentPriceInBase={currentPriceInBase}
+          baseCurrency={baseCurrency}
           onClose={() => setOngoingDialog(null)}
           onSuccess={handleOngoingUpgradeSuccess}
         />
@@ -760,7 +771,7 @@ export function PlanBillingTab() {
       {showOneTimeModal && (
         <OneTimeUpgradeModal
           rates={rates}
-          currency={currency}
+          currency={baseCurrency}
           nextBillingDate={sub?.next_billing_date}
           onClose={() => setShowOneTimeModal(false)}
           onSuccess={handleOneTimeUpgradeSuccess}
