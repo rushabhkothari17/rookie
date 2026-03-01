@@ -127,17 +127,14 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 ## Prioritized Backlog
 
 ### P0 — Next Sprint
-- **Google Drive & OneDrive** cloud storage integration
+- **Google Drive & OneDrive** cloud storage integration (currently "Coming Soon")
+- **Customer Portal Self-Service**: subscription cancellation, renewal date display, "Reorder" button
 
-### P1 — Next Sprint
-- Google Drive & OneDrive cloud storage integration (currently "Coming Soon")
-- Customer portal self-service: subscription cancellation, renewal date display, "Reorder" button
-
-### P2 — Future
+### P1 — Future
 - Security audit / penetration test
 - Centralize all email integration settings in one UI section
 
-### P3 — Backlog
+### P2 — Backlog
 - GoCardless mandate management UI
 - Bulk subscription import via CSV
 - Analytics dashboard for partner billing revenue
