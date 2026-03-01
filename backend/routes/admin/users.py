@@ -57,6 +57,16 @@ async def admin_list_users(
     skip = (page - 1) * per_page
     users = await db.users.find(query, {"_id": 0, "password_hash": 0}).skip(skip).limit(per_page).to_list(per_page)
     users = await enrich_partner_codes(users, is_platform_admin(admin))
+
+    # Attach tenant_name for display in the users table
+    tenant_ids = list({u.get("tenant_id") for u in users if u.get("tenant_id")})
+    tenant_map: Dict[str, str] = {}
+    if tenant_ids:
+        tenants = await db.tenants.find({"id": {"$in": tenant_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(None)
+        tenant_map = {t["id"]: t["name"] for t in tenants}
+    for u in users:
+        u["tenant_name"] = tenant_map.get(u.get("tenant_id", ""), None)
+
     return {
         "users": users,
         "page": page,
