@@ -150,6 +150,7 @@ function SubFormModal({
   onSaved: () => void;
 }) {
   const isEdit = !!sub;
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [form, setForm] = useState<SubFormData>(
     sub ? {
       partner_id: sub.partner_id, plan_id: sub.plan_id || "", description: sub.description || "",
