@@ -64,6 +64,9 @@ class CreatePartnerAdminRequest(BaseModel):
     full_name: str
     password: str
     role: str = "partner_super_admin"
+    access_level: Optional[str] = "full_access"
+    modules: Optional[List[str]] = None
+    preset_role: Optional[str] = None
 
 
 class VerifyEmailRequest(BaseModel):
