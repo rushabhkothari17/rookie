@@ -541,6 +541,7 @@ async def admin_cancel_subscription(
     subscription = await db.subscriptions.find_one({**tf, "id": subscription_id}, {"_id": 0})
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
+    term_months = subscription.get("term_months")
     contract_end = subscription.get("contract_end_date")
     if term_months and term_months > 0 and contract_end:
         try:
