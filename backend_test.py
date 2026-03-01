@@ -260,7 +260,7 @@ class PartnerAdminTester:
             print(f"❌ Partner Super Admin creation error: {e}")
             return False
     
-    async def verify_via_admin_users_api(self) -> bool:
+    async def verify_user_permissions(self) -> bool:
         """Additional verification via GET /api/admin/users endpoint."""
         print(f"\n📊 Additional Verification: Testing GET /api/admin/users endpoint...")
         
