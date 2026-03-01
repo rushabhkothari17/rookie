@@ -77,7 +77,7 @@ export function TenantsTab() {
   const [showCreateAdmin, setShowCreateAdmin] = useState<string | null>(null);
   const [newAdmin, setNewAdmin] = useState({ 
     email: "", full_name: "", password: "", role: "partner_super_admin",
-    preset_role: "", access_level: "full_access", modules: [] as string[]
+    preset_role: "", access_level: "read_only", modules: [] as string[]
   });
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [modules, setModules] = useState<ModuleInfo[]>([]);
