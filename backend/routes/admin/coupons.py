@@ -99,6 +99,69 @@ async def delete_coupon(coupon_id: str, admin: Dict[str, Any] = Depends(require_
     return {"message": "Deleted"}
 
 
+# ── Admin Usage Report ───────────────────────────────────────────────────────
+
+@router.get("/admin/coupon-report")
+async def get_coupon_report(
+    coupon_code: Optional[str] = None,
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    """Return a full report of every coupon redemption across all partners."""
+    query: Dict[str, Any] = {"coupon_id": {"$nin": [None, ""]}}
+    if coupon_code:
+        # Filter by coupon code — look up the coupon id first
+        c = await db.coupons.find_one({"code": coupon_code.upper().strip()}, {"_id": 0, "id": 1})
+        if c:
+            query["coupon_id"] = c["id"]
+        else:
+            return {"rows": [], "summary": {"total_redemptions": 0, "total_discount_given": 0.0, "total_revenue_from_couponed_orders": 0.0, "coupons_used": 0}}
+
+    orders = await db.partner_orders.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+    # Build coupon lookup map
+    coupon_ids = list({o["coupon_id"] for o in orders if o.get("coupon_id")})
+    coupons_docs = await db.coupons.find({"id": {"$in": coupon_ids}}, {"_id": 0}).to_list(200)
+    coupon_map = {c["id"]: c for c in coupons_docs}
+
+    rows = []
+    for order in orders:
+        coupon = coupon_map.get(order.get("coupon_id"), {})
+        base_amount = float(order.get("base_amount") or order.get("amount") or 0)
+        final_amount = float(order.get("amount") or 0)
+        discount_amount = float(order.get("discount_amount") or max(0.0, base_amount - final_amount))
+        rows.append({
+            "order_id": order.get("id", ""),
+            "order_number": order.get("order_number", ""),
+            "coupon_id": order.get("coupon_id", ""),
+            "coupon_code": coupon.get("code") or order.get("coupon_code", ""),
+            "discount_type": coupon.get("discount_type", ""),
+            "discount_value": coupon.get("discount_value", 0),
+            "partner_id": order.get("partner_id", ""),
+            "partner_name": order.get("partner_name", ""),
+            "upgrade_type": order.get("order_type", ""),
+            "base_amount": round(base_amount, 2),
+            "discount_amount": round(discount_amount, 2),
+            "final_amount": round(final_amount, 2),
+            "currency": order.get("currency", "GBP"),
+            "status": order.get("status", ""),
+            "used_at": order.get("created_at", ""),
+        })
+
+    unique_coupons = len({r["coupon_code"] for r in rows if r["coupon_code"]})
+    total_discount = sum(r["discount_amount"] for r in rows)
+    total_revenue = sum(r["final_amount"] for r in rows if r["status"] == "paid")
+
+    return {
+        "rows": rows,
+        "summary": {
+            "total_redemptions": len(rows),
+            "total_discount_given": round(total_discount, 2),
+            "total_revenue_from_couponed_orders": round(total_revenue, 2),
+            "coupons_used": unique_coupons,
+        },
+    }
+
+
 # ── Partner-facing validation ───────────────────────────────────────────────
 
 @router.post("/partner/coupons/validate")
