@@ -612,6 +612,8 @@ export function UsersTab() {
           logsUrl={logsUrl}
         />
       )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
