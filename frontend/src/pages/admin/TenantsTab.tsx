@@ -198,30 +198,11 @@ export function TenantsTab() {
     }
   };
 
-  const applyPresetRole = (roleKey: string) => {
-    if (roleKey === "custom") {
-      setNewAdmin(prev => ({ ...prev, preset_role: "" }));
-      return;
+  const applyPresetToAdmin = (roleKey: string) => {
+    const preset = presetRoles.find((r: any) => r.key === roleKey);
+    if (preset?.module_permissions) {
+      setNewAdminPerms(preset.module_permissions);
     }
-    const preset = presetRoles.find(r => r.key === roleKey);
-    if (preset) {
-      setNewAdmin(prev => ({
-        ...prev,
-        preset_role: roleKey,
-        access_level: preset.access_level,
-        modules: preset.modules
-      }));
-    }
-  };
-
-  const toggleModule = (key: string) => {
-    setNewAdmin(prev => ({
-      ...prev,
-      preset_role: "",
-      modules: prev.modules.includes(key) 
-        ? prev.modules.filter(m => m !== key)
-        : [...prev.modules, key]
-    }));
   };
 
   const handleCloseCreate = () => {
