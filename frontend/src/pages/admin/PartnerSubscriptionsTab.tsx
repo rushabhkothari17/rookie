@@ -295,7 +295,7 @@ function SubFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Billing Interval</label>
-              <Select value={form.billing_interval} onValueChange={v => { setNbtManual(false); set("billing_interval", v); }}>
+              <Select value={form.billing_interval} onValueChange={v => { set("billing_interval", v); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{BILLING_INTERVALS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
               </Select>
