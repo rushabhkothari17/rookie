@@ -168,6 +168,31 @@ export function TenantsTab() {
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to create partner organization");
     } finally {
+  const applyPresetRole = (roleKey: string) => {
+    if (roleKey === "custom") {
+      setNewAdmin(prev => ({ ...prev, preset_role: "" }));
+      return;
+    }
+    const preset = presetRoles.find(r => r.key === roleKey);
+    if (preset) {
+      setNewAdmin(prev => ({
+        ...prev,
+        preset_role: roleKey,
+        access_level: preset.access_level,
+        modules: preset.modules
+      }));
+    }
+  };
+
+  const toggleModule = (key: string) => {
+    setNewAdmin(prev => ({
+      ...prev,
+      preset_role: "",
+      modules: prev.modules.includes(key) 
+        ? prev.modules.filter(m => m !== key)
+        : [...prev.modules, key]
+    }));
+  };
       setCreating(false);
     }
   };
