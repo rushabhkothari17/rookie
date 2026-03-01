@@ -150,70 +150,16 @@ async def get_my_permissions(admin: Dict[str, Any] = Depends(get_tenant_admin)):
 
 @router.get("/admin/roles")
 async def get_roles(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    tf = get_tenant_filter(admin)
+    """Return built-in preset roles only."""
     preset = [
         {"id": k, "key": k, "name": v["name"], "description": v["description"],
          "module_permissions": v["module_permissions"], "is_preset": True}
         for k, v in PRESET_ROLES.items()
     ]
-    custom = await db.admin_roles.find({**tf}, {"_id": 0}).to_list(None)
     return {
-        "roles": preset + custom,
+        "roles": preset,
         "modules": [{"key": k, **v} for k, v in ADMIN_MODULES.items()],
     }
-
-
-@router.post("/admin/roles")
-async def create_role(body: RoleCreate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    if not await has_permission(admin, "users", "create"):
-        raise HTTPException(403, "Insufficient permissions to manage roles")
-    tid = tenant_id_of(admin)
-    invalid = [m for m in body.module_permissions if m not in ADMIN_MODULES]
-    if invalid:
-        raise HTTPException(400, f"Unknown modules: {invalid}")
-    for v in body.module_permissions.values():
-        if v not in ("read", "write"):
-            raise HTTPException(400, "Module permission must be 'read' or 'write'")
-    role = {
-        "id": make_id(), "key": None, "name": body.name, "description": body.description,
-        "module_permissions": body.module_permissions, "is_preset": False,
-        "tenant_id": tid, "created_at": now_iso(), "created_by": admin.get("email"),
-    }
-    await db.admin_roles.insert_one(role)
-    role.pop("_id", None)
-    return role
-
-
-@router.put("/admin/roles/{role_id}")
-async def update_role(role_id: str, body: RoleUpdate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    if not await has_permission(admin, "users", "edit"):
-        raise HTTPException(403, "Insufficient permissions to manage roles")
-    tf = get_tenant_filter(admin)
-    role = await db.admin_roles.find_one({**tf, "id": role_id})
-    if not role:
-        raise HTTPException(404, "Custom role not found")
-    update = {k: v for k, v in body.dict(exclude_none=True).items()}
-    if "module_permissions" in update:
-        invalid = [m for m in update["module_permissions"] if m not in ADMIN_MODULES]
-        if invalid:
-            raise HTTPException(400, f"Unknown modules: {invalid}")
-    update["updated_at"] = now_iso()
-    await db.admin_roles.update_one({"id": role_id}, {"$set": update})
-    role.update(update)
-    role.pop("_id", None)
-    return role
-
-
-@router.delete("/admin/roles/{role_id}")
-async def delete_role(role_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    if not await has_permission(admin, "users", "delete"):
-        raise HTTPException(403, "Insufficient permissions to manage roles")
-    tf = get_tenant_filter(admin)
-    role = await db.admin_roles.find_one({**tf, "id": role_id})
-    if not role:
-        raise HTTPException(404, "Custom role not found (built-in roles cannot be deleted)")
-    await db.admin_roles.delete_one({"id": role_id})
-    return {"message": "Role deleted"}
 
 
 @router.delete("/admin/users/{user_id}")
