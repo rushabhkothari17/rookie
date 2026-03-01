@@ -248,7 +248,7 @@ export function TenantsTab() {
       await api.post(`/admin/tenants/${showCreateAdmin}/create-admin`, payload);
       toast.success("Admin user created");
       setShowCreateAdmin(null);
-      setNewAdmin({ email: "", full_name: "", password: "", role: "partner_super_admin", preset_role: "", access_level: "full_access", modules: [] });
+      setNewAdmin({ email: "", full_name: "", password: "", role: "partner_super_admin", preset_role: "", access_level: "read_only", modules: [] });
       loadUsers(showCreateAdmin);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to create admin");
