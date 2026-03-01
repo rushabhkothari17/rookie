@@ -91,7 +91,7 @@ type Coupon = {
   created_at: string;
 };
 
-const ISO_CURRENCIES_LOCAL = ISO_CURRENCIES; // now imported from constants
+// ISO_CURRENCIES imported from @/lib/constants
 const LIMIT_FIELDS = [
   { key: "max_users", label: "Users (total)" },
   { key: "max_storage_mb", label: "Storage (MB)" },
