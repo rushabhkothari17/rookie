@@ -129,6 +129,7 @@ class PartnerAdminTester:
         print(f"\n👤 Step 3: Creating Partner Admin with read-only permissions...")
         
         admin_data = {
+            "tenant_id": self.created_tenant_id,  # Required by model
             "email": "partner.admin@testorg.local",
             "full_name": "Test Partner Admin",
             "password": "SecurePass123!",
