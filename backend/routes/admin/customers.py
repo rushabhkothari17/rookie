@@ -94,7 +94,7 @@ async def admin_customers(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
-    
+    await _check(admin, "view")
     # Build base customer query
     query: Dict[str, Any] = {**tf}
     if payment_mode == "gocardless":
