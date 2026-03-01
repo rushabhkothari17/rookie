@@ -45,7 +45,7 @@ async def list_rates(admin: Dict[str, Any] = Depends(require_platform_admin)):
 
 
 @router.post("/admin/one-time-plans")
-async def create_rate(body: OTPRateCreate, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def create_rate(body: OTPRateCreate, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     if body.module_key not in ONE_TIME_MODULES:
         raise HTTPException(400, f"Unknown module_key: {body.module_key}")
     existing = await db.one_time_plan_rates.find_one({"module_key": body.module_key})
@@ -66,7 +66,7 @@ async def create_rate(body: OTPRateCreate, admin: Dict[str, Any] = Depends(requi
 
 
 @router.put("/admin/one-time-plans/{rate_id}")
-async def update_rate(rate_id: str, body: OTPRateUpdate, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def update_rate(rate_id: str, body: OTPRateUpdate, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     rate = await db.one_time_plan_rates.find_one({"id": rate_id}, {"_id": 0})
     if not rate:
         raise HTTPException(404, "Rate not found")
@@ -79,7 +79,7 @@ async def update_rate(rate_id: str, body: OTPRateUpdate, admin: Dict[str, Any] =
 
 
 @router.delete("/admin/one-time-plans/{rate_id}")
-async def delete_rate(rate_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def delete_rate(rate_id: str, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     rate = await db.one_time_plan_rates.find_one({"id": rate_id}, {"_id": 0, "id": 1})
     if not rate:
         raise HTTPException(404, "Rate not found")
