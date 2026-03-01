@@ -850,3 +850,34 @@ async def get_partner_billing_overview(
         {"partner_id": tid, "deleted_at": {"$exists": False}}, {"_id": 0}
     ).sort("created_at", -1).limit(10).to_list(10)
     return {"subscriptions": subscriptions, "orders": orders}
+
+
+# ---------------------------------------------------------------------------
+# Invoice Download (admin side — can download for any partner order)
+# ---------------------------------------------------------------------------
+
+@router.get("/admin/partner-orders/{order_id}/download-invoice")
+async def admin_download_partner_invoice(
+    order_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Platform admin downloads a PDF invoice for any partner order."""
+    order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    partner_id = order.get("partner_id", "")
+    partner_org = await db.tenants.find_one({"id": partner_id}, {"_id": 0}) or {}
+    platform_ts = await db.tenants.find_one({"id": DEFAULT_TENANT_ID}, {"_id": 0}) or {}
+    invoice_settings = platform_ts.get("invoice_settings") or {}
+
+    from services.invoice_service import generate_partner_invoice_pdf
+    platform_name = invoice_settings.get("company_name") or platform_ts.get("name") or "Automate Accounts"
+    pdf_bytes = generate_partner_invoice_pdf(order, partner_org, invoice_settings, platform_name)
+
+    filename = f"invoice-{order.get('order_number', order_id)}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
