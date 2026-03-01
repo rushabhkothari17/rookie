@@ -414,6 +414,8 @@ async def update_customer(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    changes: Dict[str, Any] = {}
+
     user_updates: Dict[str, Any] = {}
     if customer_data.full_name is not None:
         user_updates["full_name"] = customer_data.full_name
