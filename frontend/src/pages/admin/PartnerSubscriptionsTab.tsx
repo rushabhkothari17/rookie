@@ -105,14 +105,37 @@ type SubFormData = {
   currency: string; billing_interval: string; status: string; payment_method: string;
   processor_id: string; start_date: string; next_billing_date: string; internal_note: string;
   term_months: string; auto_cancel_on_termination: boolean; reminder_days: string;
+  contract_end_date: string;
 };
 
 const emptyForm = (): SubFormData => ({
   partner_id: "", plan_id: "", description: "", amount: "",
   currency: "GBP", billing_interval: "monthly", status: "pending",
   payment_method: "manual", processor_id: "", start_date: "", next_billing_date: "", internal_note: "",
-  term_months: "", auto_cancel_on_termination: false, reminder_days: "",
+  term_months: "", auto_cancel_on_termination: false, reminder_days: "", contract_end_date: "",
 });
+
+const ISO_CURRENCIES = ["GBP","USD","EUR","AUD","CAD","CHF","SGD","NZD","HKD","JPY","INR","AED","ZAR","MYR","NOK","SEK","DKK"];
+
+/** Add N months to a date string, always returning the 1st of the resulting month */
+function addMonthsFirstOfMonth(dateStr: string, months: number): string {
+  const d = new Date(dateStr + "T00:00:00Z");
+  let m = d.getUTCMonth() + months;
+  let y = d.getUTCFullYear() + Math.floor(m / 12);
+  m = m % 12;
+  return `${y}-${String(m + 1).padStart(2, "0")}-01`;
+}
+
+/** Add N months to a date string, preserving the day (for expiry) */
+function addMonthsPreserveDay(dateStr: string, months: number): string {
+  const d = new Date(dateStr + "T00:00:00Z");
+  const y = d.getUTCFullYear() + Math.floor((d.getUTCMonth() + months) / 12);
+  const m = (d.getUTCMonth() + months) % 12;
+  const day = Math.min(d.getUTCDate(), new Date(y, m + 1, 0).getDate());
+  return `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+const INTERVAL_MONTHS: Record<string, number> = { monthly: 1, quarterly: 3, annual: 12 };
 
 function SubFormModal({
   sub, tenants, plans, onClose, onSaved,
