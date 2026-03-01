@@ -16,8 +16,8 @@ type AuthUser = {
 };
 
 export type AdminPermissions = {
-  modules: string[];
-  access_level: "full_access" | "read_only";
+  module_permissions: Record<string, "read" | "write">;
+  modules: string[]; // kept for backwards compat
   is_super_admin: boolean;
   role: string;
 };
