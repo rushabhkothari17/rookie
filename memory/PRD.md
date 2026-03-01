@@ -65,7 +65,11 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
   - Admin CRUD: `GET/POST/PUT/DELETE /api/admin/one-time-plans`
   - Partner read: `GET /api/partner/one-time-rates`
   - Configurable price-per-unit for 10 module types
-- **Admin Plans Tab** redesigned with 3 inner sections: License Plans | One-Time Rates | Coupons
+- **Coupon Usage Report** tab (4th inner section in Plans tab):
+  - Summary cards: Total Redemptions, Unique Coupons, Total Discount Given, Revenue (Couponed Orders)
+  - Full table: Date | Partner | Coupon | Upgrade Type | Original | Discount | Paid | Status
+  - Totals row, filter-by-code input, Refresh button
+  - Backend: `GET /api/admin/coupon-report` with optional `?coupon_code=` filter
 - **Partner Plan & Billing Tab** updated with:
   - "Upgrade to [Plan]" button → OngoingUpgradeDialog (flat diff + coupon)
   - "Buy Extra Limits" button → OneTimeUpgradeModal (per-module qty + coupon)
