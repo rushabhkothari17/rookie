@@ -422,6 +422,17 @@ async def list_my_submissions(admin: Dict[str, Any] = Depends(get_tenant_admin))
     return {"submissions": items}
 
 
+# ---------------------------------------------------------------------------
+# GET /partner/one-time-rates  (read-only rate catalogue for partners)
+# ---------------------------------------------------------------------------
+
+@router.get("/partner/one-time-rates")
+async def get_one_time_rates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Return active one-time upgrade rates so the partner UI can display pricing."""
+    rates = await db.one_time_plan_rates.find({"is_active": True}, {"_id": 0}).sort("module_key", 1).to_list(50)
+    return {"rates": rates}
+
+
 
 # ---------------------------------------------------------------------------
 # Helper: apply coupon discount and mark usage
