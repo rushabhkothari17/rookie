@@ -687,7 +687,7 @@ export function PlanBillingTab() {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-3xl font-bold text-slate-900" data-testid="current-plan-price">
-                  {currency} {currentPrice.toFixed(2)}
+                  {baseCurrency} {currentPriceInBase.toFixed(2)}
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">per month</p>
                 {sub?.next_billing_date && (
@@ -705,93 +705,38 @@ export function PlanBillingTab() {
         )}
       </div>
 
-      {/* Ongoing Plan Upgrades */}
-      {upgrades.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-2">
-            <ArrowUp size={14} className="text-emerald-500" /> Upgrade Plan
-          </h2>
-          <p className="text-xs text-slate-400 mb-3">Charges the flat monthly difference now. New rate applies from your next billing cycle.</p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {upgrades.map(plan => {
-              const diff = Math.max(0, (plan.monthly_price ?? 0) - currentPrice);
-              return (
-                <div key={plan.id} className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5 flex flex-col gap-3" data-testid={`upgrade-plan-card-${plan.id}`}>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-semibold text-slate-900">{plan.name}</p>
-                      {plan.description && <p className="text-xs text-slate-500 mt-0.5">{plan.description}</p>}
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-slate-900 text-lg">{plan.currency || currency} {(plan.monthly_price ?? 0).toFixed(2)}</p>
-                      <p className="text-xs text-emerald-600">+{plan.currency || currency} {diff.toFixed(2)}/mo</p>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="w-full mt-auto bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => setOngoingDialog(plan)}
-                    data-testid={`ongoing-upgrade-btn-${plan.id}`}
-                  >
-                    <ArrowUp size={13} className="mr-1.5" />Upgrade to {plan.name}
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* One-Time Limit Upgrades */}
-      {rates.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-2">
-            <Zap size={14} className="text-amber-500" /> Extra Limits (One-Time)
-          </h2>
-          <p className="text-xs text-slate-400 mb-3">Buy additional per-module capacity for this billing cycle only. Resets at your next renewal.</p>
-          <div className="rounded-2xl border border-amber-100 bg-amber-50/30 p-5 flex items-center justify-between gap-4">
-            <div className="flex flex-wrap gap-2">
-              {rates.map(r => (
-                <span key={r.module_key} className="px-2.5 py-1 rounded-full bg-white border border-amber-200 text-xs text-amber-800">
-                  {r.label}: {r.currency} {r.price_per_record.toFixed(2)}/unit
-                </span>
-              ))}
-            </div>
+      {/* Action Buttons */}
+      {(upgrades.length > 0 || rates.length > 0 || downgrades.length > 0) && (
+        <div className="flex flex-wrap gap-3" data-testid="plan-action-buttons">
+          {upgrades.length > 0 && (
+            <Button
+              onClick={() => setShowUpgradeModal(true)}
+              className="bg-emerald-600 hover:bg-emerald-700"
+              data-testid="open-upgrade-plan-btn"
+            >
+              <ArrowUp size={14} className="mr-1.5" />Upgrade Plan
+            </Button>
+          )}
+          {rates.length > 0 && (
             <Button
               variant="outline"
               onClick={() => setShowOneTimeModal(true)}
+              className="border-amber-300 text-amber-700 hover:bg-amber-50"
               data-testid="open-one-time-modal-btn"
-              className="shrink-0 border-amber-300 text-amber-700 hover:bg-amber-50"
             >
               <Zap size={14} className="mr-1.5" />Buy Extra Limits
             </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Downgrade */}
-      {downgrades.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <ArrowDown size={14} className="text-slate-400" /> Request a Downgrade
-          </h2>
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-            <p className="text-sm text-slate-500 mb-4">Downgrade requests are reviewed by your platform administrator and take effect on the next renewal date.</p>
+          )}
+          {downgrades.length > 0 && (
             <Button
-              variant="outline" size="sm"
+              variant="outline"
               onClick={() => setShowDowngradeDialog(true)}
+              className="text-slate-500 border-slate-200"
               data-testid="request-downgrade-btn"
             >
               <ArrowDown size={13} className="mr-1.5" />Request Downgrade
             </Button>
-          </div>
-        </div>
-      )}
-
-      {available.length === 0 && !loading && (
-        <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center" data-testid="no-available-plans">
-          <Star size={24} className="text-slate-300 mx-auto mb-2" />
-          <p className="text-sm text-slate-500">You are on the best available plan.</p>
+          )}
         </div>
       )}
 
