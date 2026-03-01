@@ -297,6 +297,7 @@ function OrderFormModal({
 }
 
 export function PartnerOrdersTab() {
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [orders, setOrders] = useState<PartnerOrder[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
