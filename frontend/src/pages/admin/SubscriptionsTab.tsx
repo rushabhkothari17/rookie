@@ -576,7 +576,7 @@ export function SubscriptionsTab() {
                 value={manualSub.product_id || undefined}
                 onValueChange={v => {
                   const p = products.find((p: any) => p.id === v);
-                  setManualSub({ ...manualSub, product_id: v, currency: p?.currency || "USD", term_months: p?.default_term_months ? String(p.default_term_months) : "" });
+                  setManualSub({ ...manualSub, product_id: v, currency: p?.currency || "GBP", term_months: p?.default_term_months ? String(p.default_term_months) : "", billing_interval: p?.billing_interval || manualSub.billing_interval, renewal_date: computeNextBillingDate(manualSub.start_date, p?.billing_interval || manualSub.billing_interval) });
                 }}
                 options={products.map((p: any) => ({ value: p.id, label: p.name }))}
                 placeholder="Select product"
