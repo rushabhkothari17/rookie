@@ -370,6 +370,21 @@ export function UsersTab() {
 
   return (
     <div data-testid="users-tab">
+      <Tabs defaultValue="list">
+        <TabsList className="mb-4">
+          <TabsTrigger value="list" data-testid="users-subtab-list">
+            <Users size={13} className="mr-1.5" />Users
+          </TabsTrigger>
+          <TabsTrigger value="presets" data-testid="users-subtab-presets">
+            <Zap size={13} className="mr-1.5" />Quick Presets
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="presets">
+          <PresetsSubTab modules={modules} />
+        </TabsContent>
+
+        <TabsContent value="list">
       <AdminPageHeader
         title="Admin Users"
         subtitle={`${total} admin user${total !== 1 ? "s" : ""}`}
