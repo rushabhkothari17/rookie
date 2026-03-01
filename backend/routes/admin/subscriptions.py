@@ -434,7 +434,7 @@ async def update_subscription(
 
     update_fields: Dict[str, Any] = {}
     changes: Dict[str, Any] = {}
-        update_fields["renewal_date"] = payload.renewal_date
+    if payload.renewal_date is not None:
         changes["renewal_date"] = {"old": subscription.get("renewal_date"), "new": payload.renewal_date}
     if payload.start_date is not None:
         update_fields["start_date"] = payload.start_date
