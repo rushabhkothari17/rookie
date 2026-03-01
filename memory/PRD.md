@@ -144,7 +144,14 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Completed (Recent)
 
-### Sidebar & Billing UX Improvements (Mar 2026)
+### Stripe-Gated Plan Upgrades (Mar 2026)
+- Partner plan upgrades now require Stripe payment before plan activation
+- `POST /api/partner/upgrade-plan` creates a Stripe Checkout Session when pro-rata > £0; returns `checkout_url`
+- Frontend redirects to Stripe Checkout; plan is only activated on `checkout.session.completed` webhook
+- `GET /api/partner/upgrade-plan-status?session_id=xxx` polls/confirms payment; falls back to Stripe API if webhook is delayed
+- Webhook handler extended with `partner_upgrade` case: marks order paid, activates subscription, assigns plan to tenant license
+- If pro-rata == £0 (same period, no charge) the plan is applied immediately without payment
+- Stripe fallback: if Stripe session creation fails, falls back to offline billing so upgrades are never blocked
 - **MY BILLING** section moved ABOVE People in partner admin sidebar; "Account" section label removed
 - **Usage & Limits** content embedded directly into Plan & Billing tab (no longer a separate sidebar item)
 - **My Orders** now shows **Subscription #** column linking each order to its parent subscription
