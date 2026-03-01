@@ -108,6 +108,8 @@ from routes.article_categories import router as article_categories_router
 from routes.article_templates import router as article_templates_router
 from routes.article_email_templates import router as article_email_templates_router
 from routes.admin.plans import router as plans_admin_router
+from routes.admin.one_time_plans import router as one_time_plans_router
+from routes.admin.coupons import router as coupons_router
 from routes.admin.partner_billing import router as partner_billing_router
 from routes.partner_billing_view import router as partner_billing_view_router
 from routes.admin.store_filters import router as store_filters_router
