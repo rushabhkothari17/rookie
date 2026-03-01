@@ -44,10 +44,16 @@ const TAB_CLASS =
   "data-[state=inactive]:text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors data-[state=active]:shadow-none data-[state=active]:text-white";
 
 export default function Admin() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, permissions } = useAuth();
   const ws = useWebsite();
   const isSuperAdmin = authUser?.role === "super_admin" || authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin" || authUser?.role === "partner_super_admin";
   const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
+
+  // Permissions helper: super admins see all, others only see assigned modules
+  const hasModule = (module: string): boolean => {
+    if (isSuperAdmin) return true;
+    return permissions?.modules?.includes(module) ?? false;
+  };
 
   // Reactively track whether platform admin is viewing as another tenant
   const [viewingAsTenant, setViewingAsTenant] = useState(() => !!getViewAsTenantId());
