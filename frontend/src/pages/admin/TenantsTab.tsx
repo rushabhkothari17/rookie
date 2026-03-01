@@ -54,8 +54,7 @@ interface PresetRole {
   key: string;
   name: string;
   description: string;
-  access_level: string;
-  modules: string[];
+  module_permissions: Record<string, "read" | "write">;
 }
 
 const FALLBACK_TYPES = ["Reseller", "Direct", "Wholesale", "Agency", "Affiliate", "Other"];
