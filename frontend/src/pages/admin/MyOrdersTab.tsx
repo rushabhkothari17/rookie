@@ -112,6 +112,7 @@ export function MyOrdersTab() {
           <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
             <tr>
               <th className="text-left px-4 py-3">Order #</th>
+              <th className="text-left px-4 py-3">Subscription #</th>
               <th className="text-left px-4 py-3">Description</th>
               <th className="text-left px-4 py-3">Plan</th>
               <th className="text-left px-4 py-3">Amount</th>
