@@ -284,13 +284,18 @@ function SubFormModal({
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Currency</label>
-              <Input value={form.currency} onChange={e => set("currency", e.target.value.toUpperCase())} maxLength={3} />
+              <Select value={form.currency} onValueChange={v => set("currency", v)}>
+                <SelectTrigger data-testid="sub-currency-select"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ISO_CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Billing Interval</label>
-              <Select value={form.billing_interval} onValueChange={v => set("billing_interval", v)}>
+              <Select value={form.billing_interval} onValueChange={v => { setNbtManual(false); set("billing_interval", v); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{BILLING_INTERVALS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
               </Select>
@@ -304,11 +309,16 @@ function SubFormModal({
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Start Date</label>
-              <Input type="date" value={form.start_date} onChange={e => set("start_date", e.target.value)} />
+              <Input type="date" value={form.start_date} onChange={e => { setNbtManual(false); setExpManual(false); set("start_date", e.target.value); }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Next Billing Date</label>
-              <Input type="date" value={form.next_billing_date} onChange={e => set("next_billing_date", e.target.value)} />
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                Next Billing Date
+                {!nbtManual && form.next_billing_date && (
+                  <span className="text-[10px] bg-blue-100 text-blue-600 rounded px-1">auto</span>
+                )}
+              </label>
+              <Input type="date" value={form.next_billing_date} onChange={e => { setNbtManual(true); set("next_billing_date", e.target.value); }} />
             </div>
           </div>
           <div className="space-y-1">
