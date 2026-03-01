@@ -127,7 +127,7 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 ## Prioritized Backlog
 
 ### P0 — Next Sprint
-- **Invoice Download**: Partner can download PDF invoices for their orders (invoice_templates already exist in TaxesTab)
+- **Google Drive & OneDrive** cloud storage integration
 
 ### P1 — Next Sprint
 - Google Drive & OneDrive cloud storage integration (currently "Coming Soon")
