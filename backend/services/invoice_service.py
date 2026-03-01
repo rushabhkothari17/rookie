@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import io
-from datetime import datetime
+import urllib.request
 from typing import Any, Dict, Optional
 
 from reportlab.lib import colors
@@ -10,9 +10,29 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    HRFlowable, Image,
 )
 from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
+
+
+def _fetch_logo(url: str, max_w: float = 40 * mm, max_h: float = 14 * mm):
+    """Fetch an image from a URL and return a reportlab Image or None."""
+    try:
+        with urllib.request.urlopen(url, timeout=4) as resp:
+            data = resp.read()
+        img = Image(io.BytesIO(data))
+        # Scale proportionally
+        ratio = img.imageWidth / img.imageHeight
+        if img.imageWidth > max_w:
+            img.drawWidth = max_w
+            img.drawHeight = max_w / ratio
+        if img.drawHeight > max_h:
+            img.drawHeight = max_h
+            img.drawWidth = max_h * ratio
+        return img
+    except Exception:
+        return None
 
 
 def _safe_str(v: Any, fallback: str = "—") -> str:
