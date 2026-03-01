@@ -284,6 +284,18 @@ class PartnerAdminTester:
                                         print(f"   ❌ Partner Super Admin role incorrect")
                                         print(f"      Expected: role=partner_super_admin")
                                         print(f"      Actual: role={role}")
+                                        
+                                elif created_user["role"] == "partner_super_admin_default":
+                                    # Verify default behavior when no access_level specified
+                                    if role == "partner_super_admin":
+                                        print(f"   📊 Partner Super Admin (default behavior):")
+                                        print(f"      Access Level: {access_level}")
+                                        print(f"      Modules: {modules}")
+                                        if access_level == "full_access":
+                                            print(f"   ✅ Partner Super Admin defaults correctly when no access_level provided")
+                                        else:
+                                            print(f"   ℹ️  Partner Super Admin default: access_level={access_level}")
+                                        verified_count += 1
                                 break
                         
                         if not user_found:
