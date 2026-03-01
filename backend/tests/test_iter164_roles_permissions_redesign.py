@@ -231,8 +231,8 @@ class TestPlatformAdminCreation:
         print(f"✓ Platform admin created: {data}")
 
     def test_created_platform_admin_in_list(self, platform_headers):
-        """Verify newly created platform admin appears in users list"""
-        r = requests.get(f"{BASE_URL}/api/admin/users", headers=platform_headers)
+        """Verify newly created platform admin appears in users list (use search)"""
+        r = requests.get(f"{BASE_URL}/api/admin/users", headers=platform_headers, params={"search": self.TEST_EMAIL})
         assert r.status_code == 200
         users = r.json().get("users", [])
         emails = [u["email"] for u in users]
@@ -244,7 +244,7 @@ class TestPlatformAdminCreation:
 
     def test_platform_admin_has_module_permissions(self, platform_headers):
         """Verify created platform admin has module_permissions set"""
-        r = requests.get(f"{BASE_URL}/api/admin/users", headers=platform_headers)
+        r = requests.get(f"{BASE_URL}/api/admin/users", headers=platform_headers, params={"search": self.TEST_EMAIL})
         assert r.status_code == 200
         users = r.json().get("users", [])
         user = next((u for u in users if u["email"] == self.TEST_EMAIL), None)
