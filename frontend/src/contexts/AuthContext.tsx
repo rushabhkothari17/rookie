@@ -15,11 +15,19 @@ type AuthUser = {
   must_change_password?: boolean;
 };
 
+export type AdminPermissions = {
+  modules: string[];
+  access_level: "full_access" | "read_only";
+  is_super_admin: boolean;
+  role: string;
+};
+
 type AuthContextType = {
   user: AuthUser | null;
   customer: any;
   address: any;
   loading: boolean;
+  permissions: AdminPermissions | null;
   /** login — returns { is_admin, role, must_change_password } for redirect */
   login: (email: string, password: string, partner_code?: string, login_type?: string) => Promise<{ is_admin: boolean; role: string; must_change_password: boolean }>;
   logout: () => void;
@@ -35,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [customer, setCustomer] = useState<any>(null);
   const [address, setAddress] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [permissions, setPermissions] = useState<AdminPermissions | null>(null);
 
   const refresh = async () => {
     try {
@@ -42,11 +51,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(response.data.user);
       setCustomer(response.data.customer);
       setAddress(response.data.address);
+      // Load permissions for admin users
+      if (response.data.user?.is_admin) {
+        try {
+          const permsRes = await api.get("/admin/my-permissions");
+          setPermissions(permsRes.data);
+        } catch {
+          setPermissions(null);
+        }
+      } else {
+        setPermissions(null);
+      }
     } catch (error: any) {
       if (error.response?.status === 401) {
         setUser(null);
         setCustomer(null);
         setAddress(null);
+        setPermissions(null);
       }
     } finally {
       setLoading(false);
