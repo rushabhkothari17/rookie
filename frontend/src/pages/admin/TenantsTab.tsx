@@ -500,40 +500,42 @@ export function TenantsTab() {
 
       {/* Create Admin Dialog */}
       <Dialog open={!!showCreateAdmin} onOpenChange={() => setShowCreateAdmin(null)}>
-        <DialogContent data-testid="create-admin-dialog">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="create-admin-dialog">
           <DialogHeader>
             <DialogTitle>Add Admin User</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleCreateAdmin} className="space-y-4 mt-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Full Name</label>
-              <Input placeholder="Jane Smith" value={newAdmin.full_name} onChange={e => setNewAdmin(p => ({ ...p, full_name: e.target.value }))} required data-testid="new-admin-name" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input type="email" placeholder="admin@example.com" value={newAdmin.email} onChange={e => setNewAdmin(p => ({ ...p, email: e.target.value }))} required data-testid="new-admin-email" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Password</label>
-              <Input type="password" placeholder="••••••••" value={newAdmin.password} onChange={e => setNewAdmin(p => ({ ...p, password: e.target.value }))} required data-testid="new-admin-password" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Role</label>
-              <Select value={newAdmin.role} onValueChange={v => setNewAdmin(p => ({ ...p, role: v }))}>
-                <SelectTrigger className="w-full bg-white" data-testid="new-admin-role"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="partner_super_admin">Partner Super Admin (Full Access)</SelectItem>
-                  <SelectItem value="partner_admin">Partner Admin</SelectItem>
-                  <SelectItem value="partner_staff">Partner Staff</SelectItem>
-                </SelectContent>
-              </Select>
+          <form onSubmit={handleCreateAdmin} className="space-y-3 mt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Full Name *</label>
+                <Input value={newAdmin.full_name} onChange={e => setNewAdmin(p => ({ ...p, full_name: e.target.value }))} required data-testid="new-admin-name" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Email *</label>
+                <Input type="email" value={newAdmin.email} onChange={e => setNewAdmin(p => ({ ...p, email: e.target.value }))} required data-testid="new-admin-email" />
+              </div>
+              <div className="space-y-1 col-span-2">
+                <label className="text-xs text-slate-500">Password *</label>
+                <Input type="password" value={newAdmin.password} onChange={e => setNewAdmin(p => ({ ...p, password: e.target.value }))} required data-testid="new-admin-password" />
+              </div>
+              <div className="space-y-1 col-span-2">
+                <label className="text-xs text-slate-500">Role</label>
+                <Select value={newAdmin.role} onValueChange={v => setNewAdmin(p => ({ ...p, role: v }))}>
+                  <SelectTrigger className="w-full bg-white" data-testid="new-admin-role"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="partner_super_admin">Partner Super Admin (Full Access)</SelectItem>
+                    <SelectItem value="partner_admin">Partner Admin</SelectItem>
+                    <SelectItem value="partner_staff">Partner Staff</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {newAdmin.role !== "partner_super_admin" && (
               <div className="space-y-3 pt-2 border-t border-slate-100">
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 flex items-center gap-1">
-                    Role Template <FieldTip tip="Pre-configured permission sets. Selecting one auto-fills permissions." />
+                    Role Template <FieldTip tip="Pre-configured permission sets. Selecting one auto-fills the Access Level and Modules below. Choose 'Custom' to configure permissions manually." />
                   </label>
                   <Select value={newAdmin.preset_role || "custom"} onValueChange={applyPresetRole}>
                     <SelectTrigger data-testid="new-admin-preset">
@@ -549,7 +551,7 @@ export function TenantsTab() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: create/edit/delete. Read Only: view only." /></label>
+                  <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: can create, edit, and delete. Read Only: can view data but cannot make changes." /></label>
                   <Select value={newAdmin.access_level} onValueChange={v => setNewAdmin(prev => ({ ...prev, access_level: v, preset_role: "" }))}>
                     <SelectTrigger data-testid="new-admin-access">
                       <SelectValue />
@@ -582,12 +584,9 @@ export function TenantsTab() {
               </div>
             )}
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateAdmin(null)}>Cancel</Button>
-              <Button type="submit" disabled={creatingAdmin} data-testid="confirm-create-admin">
-                {creatingAdmin ? "Creating…" : "Create Admin"}
-              </Button>
-            </DialogFooter>
+            <Button type="submit" disabled={creatingAdmin} className="w-full" data-testid="confirm-create-admin">
+              {creatingAdmin ? "Creating…" : "Add Admin User"}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
