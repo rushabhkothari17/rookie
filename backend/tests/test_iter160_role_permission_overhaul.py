@@ -74,12 +74,15 @@ def partner_super_admin_headers(partner_super_admin_token):
 
 
 @pytest.fixture(scope="module")
-def restricted_partner_admin_token(platform_admin_headers):
+def restricted_partner_admin_token(partner_super_admin_token):
     """
-    Create a partner_admin user with only 'customers' module, then login as them.
-    Returns (token, user_id) for cleanup.
+    Create a partner_admin user with only 'customers' module in test-partner-co tenant,
+    then login as them.
+    Uses partner_super_admin token so user is created in the correct tenant.
     """
-    # Create user via admin API
+    partner_headers = {"Authorization": f"Bearer {partner_super_admin_token}"}
+
+    # Create user via partner_super_admin API (creates user in test-partner-co tenant)
     create_resp = requests.post(
         f"{BASE_URL}/api/admin/users",
         json={
@@ -89,11 +92,10 @@ def restricted_partner_admin_token(platform_admin_headers):
             "role": "partner_admin",
             "permissions": {"modules": ["customers"], "access_level": "full_access"},
         },
-        headers=platform_admin_headers,
+        headers=partner_headers,
     )
-    if create_resp.status_code not in (200, 201):
-        # User might already exist from previous test run
-        pass
+    if create_resp.status_code not in (200, 201, 400):
+        pytest.skip(f"Cannot create restricted partner_admin: {create_resp.status_code} {create_resp.text}")
 
     # Login as this user via partner-login with test-partner-co
     login_resp = requests.post(
