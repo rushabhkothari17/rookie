@@ -44,6 +44,15 @@ interface PlanData {
   available_plans: Plan[];
   base_currency: string;
   current_price_in_base: number;
+  pending_upgrade_order?: {
+    id: string;
+    plan_id: string;
+    plan_name: string;
+    amount: number;
+    currency: string;
+    stripe_session_id?: string;
+    order_number: string;
+  } | null;
 }
 
 interface CouponResult {
