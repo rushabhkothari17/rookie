@@ -221,7 +221,37 @@ export function TenantsTab() {
     setGeneratedCode("");
     setCodeCopied(false);
     setCreateCountry("");
-    setNewPartner({ name: "", admin_name: "", admin_email: "", admin_password: "", base_currency: "GBP", address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" } });
+    setNewPartner({ name: "", admin_name: "", admin_email: "", admin_password: "", base_currency: "GBP", partner_type: "", industry: "", tags: "", address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" } });
+  };
+
+  const openEditDetails = (tenant: Tenant) => {
+    setShowEditDetails(tenant);
+    setEditDetailsForm({
+      name: tenant.name,
+      partner_type: tenant.partner_type || "",
+      industry: tenant.industry || "",
+      tags: (tenant.tags || []).join(", "),
+    });
+  };
+
+  const handleSaveDetails = async () => {
+    if (!showEditDetails) return;
+    setSavingDetails(true);
+    try {
+      await api.put(`/admin/tenants/${showEditDetails.id}`, {
+        name: editDetailsForm.name || undefined,
+        partner_type: editDetailsForm.partner_type || undefined,
+        industry: editDetailsForm.industry || undefined,
+        tags: editDetailsForm.tags ? editDetailsForm.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+      });
+      toast.success("Organization details updated");
+      setShowEditDetails(null);
+      load();
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to save");
+    } finally {
+      setSavingDetails(false);
+    }
   };
 
   const toggleStatus = async (tenant: Tenant) => {
