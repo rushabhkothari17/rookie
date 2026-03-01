@@ -837,3 +837,55 @@ async def get_setup_checklist(admin: Dict[str, Any] = Depends(get_tenant_admin))
     }
     completed = sum(checklist.values())
     return {"checklist": checklist, "completed": completed, "total": len(checklist)}
+
+
+class TransferSuperAdminPayload(BaseModel):
+    new_user_id: str
+
+
+@router.post("/admin/tenants/{tenant_id}/transfer-super-admin")
+async def transfer_partner_super_admin(
+    tenant_id: str,
+    payload: TransferSuperAdminPayload,
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    """Promote a partner org user to partner_super_admin, demoting the current one."""
+    # Verify tenant exists
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(404, "Tenant not found")
+
+    # Verify target user belongs to this tenant
+    new_user = await db.users.find_one({"id": payload.new_user_id, "tenant_id": tenant_id, "is_admin": True, "is_active": True}, {"_id": 0})
+    if not new_user:
+        raise HTTPException(404, "Active admin user not found in this tenant")
+
+    if new_user.get("role") == "partner_super_admin":
+        raise HTTPException(400, "User is already the partner super admin")
+
+    # Find and demote the current super admin (if any)
+    current_super = await db.users.find_one({"tenant_id": tenant_id, "role": "partner_super_admin"}, {"_id": 0})
+    if current_super:
+        await db.users.update_one({"id": current_super["id"]}, {"$set": {"role": "partner_admin", "updated_at": now_iso()}})
+
+    # Promote new user — super admin has no module restrictions
+    await db.users.update_one(
+        {"id": payload.new_user_id},
+        {"$set": {"role": "partner_super_admin", "module_permissions": {}, "updated_at": now_iso()}},
+    )
+
+    await create_audit_log(
+        entity_type="tenant",
+        entity_id=tenant_id,
+        action="partner_super_admin_transferred",
+        actor=admin.get("email", "admin"),
+        details={
+            "from_user": current_super.get("email") if current_super else None,
+            "to_user": new_user.get("email"),
+            "tenant_name": tenant.get("name"),
+        },
+    )
+    return {
+        "message": f"Partner super admin transferred to {new_user.get('email')}",
+        "new_super_admin": new_user.get("email"),
+    }
