@@ -899,8 +899,203 @@ function CouponFormDialog({ coupon, onClose, onSaved }: { coupon: Coupon | null;
   );
 }
 
+// ─── Coupon Usage Report ──────────────────────────────────────────────────────
+type UsageRow = {
+  order_id: string;
+  order_number: string;
+  coupon_code: string;
+  discount_type: string;
+  discount_value: number;
+  partner_name: string;
+  upgrade_type: string;
+  base_amount: number;
+  discount_amount: number;
+  final_amount: number;
+  currency: string;
+  status: string;
+  used_at: string;
+};
+
+type ReportSummary = {
+  total_redemptions: number;
+  total_discount_given: number;
+  total_revenue_from_couponed_orders: number;
+  coupons_used: number;
+};
+
+function CouponUsageSection() {
+  const [rows, setRows] = useState<UsageRow[]>([]);
+  const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filterCode, setFilterCode] = useState("");
+  const [applied, setApplied] = useState("");
+
+  const load = async (code = "") => {
+    setLoading(true);
+    try {
+      const params = code ? `?coupon_code=${encodeURIComponent(code)}` : "";
+      const { data } = await api.get(`/admin/coupon-report${params}`);
+      setRows(data.rows || []);
+      setSummary(data.summary || null);
+    } catch { toast.error("Failed to load usage report"); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleFilter = () => { setApplied(filterCode); load(filterCode); };
+  const handleClear = () => { setFilterCode(""); setApplied(""); load(""); };
+
+  const fmt = (iso: string) => {
+    try { return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }); }
+    catch { return iso; }
+  };
+
+  const upgradeTypeLabel = (t: string) => ({ ongoing_upgrade: "Ongoing Plan", one_time_upgrade: "One-Time Limits" }[t] || t);
+  const discountLabel = (row: UsageRow) =>
+    row.discount_type === "percentage" ? `${row.discount_value}%` : row.discount_value ? `${row.currency} ${row.discount_value.toFixed(2)} off` : "";
+
+  return (
+    <div className="space-y-6" data-testid="coupon-usage-section">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Coupon Usage Report</h2>
+          <p className="text-sm text-slate-500">Every coupon redemption across all partner organisations, with discount breakdown.</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Input
+            placeholder="Filter by code…"
+            value={filterCode}
+            onChange={e => setFilterCode(e.target.value.toUpperCase())}
+            onKeyDown={e => e.key === "Enter" && handleFilter()}
+            className="h-8 w-36 text-sm font-mono"
+            data-testid="report-filter-code"
+          />
+          <Button size="sm" onClick={handleFilter} data-testid="report-filter-btn" variant="outline">Filter</Button>
+          {applied && <Button size="sm" onClick={handleClear} variant="ghost" className="text-slate-400">Clear</Button>}
+          <Button size="sm" variant="outline" onClick={() => load(applied)} data-testid="report-refresh-btn">
+            <Receipt size={13} className="mr-1" />Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* Summary cards */}
+      {summary && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-center" data-testid="summary-redemptions">
+            <p className="text-2xl font-bold text-slate-900">{summary.total_redemptions}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Total Redemptions</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-center" data-testid="summary-coupons-used">
+            <p className="text-2xl font-bold text-slate-900">{summary.coupons_used}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Unique Coupons Used</p>
+          </div>
+          <div className="rounded-xl border border-red-100 bg-red-50 p-4 text-center" data-testid="summary-discount-given">
+            <p className="text-2xl font-bold text-red-700">
+              -{summary.total_discount_given > 0 ? summary.total_discount_given.toFixed(2) : "0.00"}
+            </p>
+            <p className="text-xs text-red-500 mt-0.5">Total Discount Given</p>
+          </div>
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-center" data-testid="summary-revenue">
+            <p className="text-2xl font-bold text-emerald-700">
+              {summary.total_revenue_from_couponed_orders > 0 ? summary.total_revenue_from_couponed_orders.toFixed(2) : "0.00"}
+            </p>
+            <p className="text-xs text-emerald-600 mt-0.5">Revenue (Couponed Orders)</p>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="p-8 text-center text-sm text-slate-400">Loading report…</div>
+      ) : rows.length === 0 ? (
+        <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center" data-testid="no-usage-rows">
+          <BarChart2 size={28} className="text-slate-300 mx-auto mb-2" />
+          <p className="text-sm text-slate-400">No coupon redemptions found{applied ? ` for code "${applied}"` : ""}.</p>
+          <p className="text-xs text-slate-400 mt-1">Usage will appear here once partners apply coupons during checkout.</p>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 overflow-hidden" data-testid="usage-report-table">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+              <tr>
+                <th className="text-left px-4 py-3">Date</th>
+                <th className="text-left px-4 py-3">Partner</th>
+                <th className="text-left px-4 py-3">Coupon</th>
+                <th className="text-left px-4 py-3">Upgrade Type</th>
+                <th className="text-right px-4 py-3">Original</th>
+                <th className="text-right px-4 py-3">Discount</th>
+                <th className="text-right px-4 py-3">Paid</th>
+                <th className="text-left px-4 py-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, i) => (
+                <tr key={row.order_id || i} className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{fmt(row.used_at)}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-slate-800">{row.partner_name || "—"}</p>
+                    {row.order_number && <p className="text-[10px] font-mono text-slate-400">{row.order_number}</p>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="font-mono font-semibold text-slate-800">{row.coupon_code || "—"}</span>
+                    {row.discount_type && (
+                      <p className="text-[10px] text-slate-400 mt-0.5">{discountLabel(row)}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                      row.upgrade_type === "ongoing_upgrade"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-amber-100 text-amber-700"
+                    }`}>
+                      {upgradeTypeLabel(row.upgrade_type)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-slate-600">
+                    {row.base_amount > 0 ? `${row.currency} ${row.base_amount.toFixed(2)}` : <span className="text-slate-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {row.discount_amount > 0
+                      ? <span className="text-red-600 font-medium">-{row.currency} {row.discount_amount.toFixed(2)}</span>
+                      : <span className="text-slate-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-right font-semibold text-slate-900">
+                    {row.currency} {row.final_amount.toFixed(2)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                      row.status === "paid" ? "bg-emerald-100 text-emerald-700"
+                      : row.status === "pending_payment" ? "bg-amber-100 text-amber-700"
+                      : "bg-slate-100 text-slate-500"
+                    }`}>{row.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot className="bg-slate-50 border-t border-slate-200">
+              <tr>
+                <td colSpan={4} className="px-4 py-2 text-xs font-medium text-slate-500 text-right">Totals</td>
+                <td className="px-4 py-2 text-right text-xs font-semibold text-slate-700">
+                  {rows[0]?.currency} {rows.reduce((s, r) => s + r.base_amount, 0).toFixed(2)}
+                </td>
+                <td className="px-4 py-2 text-right text-xs font-semibold text-red-600">
+                  -{rows[0]?.currency} {rows.reduce((s, r) => s + r.discount_amount, 0).toFixed(2)}
+                </td>
+                <td className="px-4 py-2 text-right text-xs font-semibold text-emerald-700">
+                  {rows[0]?.currency} {rows.reduce((s, r) => s + r.final_amount, 0).toFixed(2)}
+                </td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main PlansTab ────────────────────────────────────────────────────────────
-type TabSection = "plans" | "rates" | "coupons";
+type TabSection = "plans" | "rates" | "coupons" | "usage";
 
 export function PlansTab() {
   const [section, setSection] = useState<TabSection>("plans");
