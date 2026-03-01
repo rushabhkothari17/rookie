@@ -176,18 +176,27 @@ function PlanFormModal({ plan, onClose, onSaved }: { plan: Plan | null; onClose:
   const isEdit = !!plan;
   const isDefault = plan?.is_default;
   const [form, setForm] = useState<FormState>(plan ? planToForm(plan) : defaultForm());
+  const [rules, setRules] = useState<VisibilityRule[]>(plan?.visibility_rules || []);
   const [saving, setSaving] = useState(false);
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
+  const currencyList = supportedCurrencies.length ? supportedCurrencies : ISO_CURRENCIES;
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
+
+  const addRule = () => setRules(r => [...r, { field: "partner_code", operator: "equals", value: "" }]);
+  const removeRule = (i: number) => setRules(r => r.filter((_, idx) => idx !== i));
+  const updateRule = (i: number, key: keyof VisibilityRule, val: string) =>
+    setRules(r => r.map((rule, idx) => idx === i ? { ...rule, [key]: val } : rule));
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Plan name is required"); return; }
     setSaving(true);
     try {
+      const payload = { ...formToPayload(form), visibility_rules: rules };
       if (isEdit) {
-        const { data } = await api.put(`/admin/plans/${plan.id}`, formToPayload(form));
+        const { data } = await api.put(`/admin/plans/${plan.id}`, payload);
         toast.success(`Plan updated — ${data.tenants_propagated} org(s) updated`);
       } else {
-        await api.post("/admin/plans", formToPayload(form));
+        await api.post("/admin/plans", payload);
         toast.success("Plan created");
       }
       onSaved();
