@@ -295,7 +295,7 @@ export function UsersTab() {
     <div data-testid="users-tab">
       <AdminPageHeader
         title="Admin Users"
-        description={`${total} admin user${total !== 1 ? "s" : ""}`}
+        subtitle={`${total} admin user${total !== 1 ? "s" : ""}`}
         actions={
           isSuperAdmin ? (
             <Button size="sm" onClick={() => setShowCreateDialog(true)} data-testid="create-user-btn">
