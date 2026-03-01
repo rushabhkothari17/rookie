@@ -414,6 +414,60 @@ function OneTimeUpgradeModal({
   );
 }
 
+// ─── Upgrade Plans Modal ─────────────────────────────────────────────────────
+function UpgradePlansModal({
+  plans,
+  currentPriceInBase,
+  baseCurrency,
+  onSelect,
+  onClose,
+}: {
+  plans: Plan[];
+  currentPriceInBase: number;
+  baseCurrency: string;
+  onSelect: (plan: Plan) => void;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto" data-testid="upgrade-plans-modal">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ArrowUp size={16} className="text-emerald-500" />
+            Choose an Upgrade Plan
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          {plans.map(plan => {
+            const displayPrice = plan.display_price ?? plan.monthly_price ?? 0;
+            const currency = plan.display_currency || baseCurrency;
+            const diff = Math.max(0, displayPrice - currentPriceInBase);
+            return (
+              <div key={plan.id} className="rounded-xl border border-slate-200 p-4 flex items-center justify-between gap-4 hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors" data-testid={`upgrade-option-${plan.id}`}>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-900">{plan.name}</p>
+                  {plan.description && <p className="text-xs text-slate-500 mt-0.5">{plan.description}</p>}
+                  <p className="text-xs text-slate-400 mt-1">
+                    {currency} {displayPrice.toFixed(2)}/mo &nbsp;·&nbsp; Due now: {currency} {diff.toFixed(2)}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 shrink-0"
+                  onClick={() => { onClose(); onSelect(plan); }}
+                  data-testid={`select-upgrade-${plan.id}`}
+                >
+                  <ArrowUp size={13} className="mr-1.5" />Select
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export function PlanBillingTab() {
   const [data, setData] = useState<PlanData | null>(null);
@@ -422,6 +476,7 @@ export function PlanBillingTab() {
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
   const [ongoingDialog, setOngoingDialog] = useState<Plan | null>(null);
   const [showOneTimeModal, setShowOneTimeModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [selectedDowngradePlan, setSelectedDowngradePlan] = useState("");
   const [downgradeMessage, setDowngradeMessage] = useState("");
