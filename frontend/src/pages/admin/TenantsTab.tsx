@@ -313,10 +313,48 @@ export function TenantsTab() {
     }
   };
 
-  if (loading) return <div className="p-4 text-slate-500 text-sm">Loading tenants…</div>;
-
   return (
-    <div className="space-y-4" data-testid="tenants-tab">
+    <div data-testid="tenants-tab">
+      <Tabs defaultValue="partners">
+        <TabsList className="mb-4">
+          <TabsTrigger value="partners" data-testid="tenants-sub-tab-partners">
+            <Building2 size={14} className="mr-1.5" />Partner List
+          </TabsTrigger>
+          <TabsTrigger value="partner-types" data-testid="tenants-sub-tab-partner-types">
+            <Tag size={14} className="mr-1.5" />Partner Types
+          </TabsTrigger>
+          <TabsTrigger value="industries" data-testid="tenants-sub-tab-industries">
+            <Briefcase size={14} className="mr-1.5" />Industries
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── Partner Types management ── */}
+        <TabsContent value="partner-types">
+          <GenericListManager
+            adminSlug="admin/platform/partner-types"
+            cacheSlug="partner-types"
+            label="Partner Types"
+            description="Manage the list of partner types used in partner org profiles and plan visibility rules."
+            inputPlaceholder="e.g. Reseller"
+            testId="partner-types-manager"
+          />
+        </TabsContent>
+
+        {/* ── Industries management ── */}
+        <TabsContent value="industries">
+          <GenericListManager
+            adminSlug="admin/platform/industries"
+            cacheSlug="industries"
+            label="Industries"
+            description="Manage the list of industries used in partner org profiles and plan visibility rules."
+            inputPlaceholder="e.g. Technology"
+            testId="industries-manager"
+          />
+        </TabsContent>
+
+        {/* ── Partner list ── */}
+        <TabsContent value="partners">
+        <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Partner Organizations</h2>
@@ -344,6 +382,7 @@ export function TenantsTab() {
         </div>
       </div>
 
+      {loading && <div className="p-4 text-slate-500 text-sm">Loading tenants…</div>}
       <div className="space-y-3">
         {tenants.map(tenant => (
           <div key={tenant.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden" data-testid={`tenant-card-${tenant.code}`}>
