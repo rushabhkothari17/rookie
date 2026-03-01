@@ -28,35 +28,104 @@ router = APIRouter(prefix="/api", tags=["partner-plans"])
 # GET /partner/my-plan
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Visibility rule evaluation helpers
+# ---------------------------------------------------------------------------
+
+def _tenant_matches_rule(tenant: dict, rule: dict) -> bool:
+    field = rule.get("field", "")
+    operator = rule.get("operator", "equals")
+    value = str(rule.get("value", ""))
+
+    if field == "partner_code":
+        tenant_val = tenant.get("code", "")
+    elif field == "country":
+        tenant_val = (tenant.get("address") or {}).get("country", "")
+    elif field == "tags":
+        tenant_val = tenant.get("tags") or []
+    else:
+        tenant_val = tenant.get(field, "") or ""
+
+    if operator == "equals":
+        if isinstance(tenant_val, list):
+            return value.lower() in [str(v).lower() for v in tenant_val]
+        return str(tenant_val).lower() == value.lower()
+    elif operator == "not_equals":
+        if isinstance(tenant_val, list):
+            return value.lower() not in [str(v).lower() for v in tenant_val]
+        return str(tenant_val).lower() != value.lower()
+    elif operator == "in":
+        allowed = [v.strip().lower() for v in value.split(",")]
+        if isinstance(tenant_val, list):
+            return any(str(v).lower() in allowed for v in tenant_val)
+        return str(tenant_val).lower() in allowed
+    elif operator == "contains":
+        if isinstance(tenant_val, list):
+            return any(value.lower() in str(v).lower() for v in tenant_val)
+        return value.lower() in str(tenant_val).lower()
+    return False
+
+
+def _tenant_matches_any_rule(tenant: dict, rules: list) -> bool:
+    if not rules:
+        return False
+    return any(_tenant_matches_rule(tenant, r) for r in rules)
+
+
 @router.get("/partner/my-plan")
 async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Return current plan info, active subscription, and available public plans for upgrade."""
+    """Return current plan info, active subscription, and available plans (visibility-filtered, FX-converted)."""
     tid = tenant_id_of(admin)
-    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "license": 1, "name": 1})
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0})
     license_info = (tenant or {}).get("license") or {}
+    base_currency = (tenant or {}).get("base_currency", "USD")
 
     current_plan_id = license_info.get("plan_id")
     current_plan = None
     if current_plan_id:
         current_plan = await db.plans.find_one({"id": current_plan_id}, {"_id": 0})
 
-    # Active partner subscription for this partner
     subscription = await db.partner_subscriptions.find_one(
         {"partner_id": tid, "status": {"$in": ["active", "pending"]}},
         {"_id": 0},
     )
 
-    # Available public plans (exclude current, show all active+public)
-    available_plans = await db.plans.find(
-        {"is_active": True, "is_public": True, "id": {"$ne": current_plan_id}},
+    all_active_plans = await db.plans.find(
+        {"is_active": True, "id": {"$ne": current_plan_id}},
         {"_id": 0},
-    ).sort("max_users", 1).to_list(50)
+    ).sort("monthly_price", 1).to_list(100)
+
+    from services.checkout_service import get_fx_rate
+
+    visible_plans = []
+    for plan in all_active_plans:
+        is_visible = plan.get("is_public", False)
+        if not is_visible:
+            rules = plan.get("visibility_rules") or []
+            is_visible = _tenant_matches_any_rule(tenant or {}, rules)
+        if not is_visible:
+            continue
+
+        plan_currency = (plan.get("currency") or "USD").upper()
+        plan_price = plan.get("monthly_price") or 0
+        if plan_price and plan_currency != base_currency:
+            rate = await get_fx_rate(plan_currency, base_currency)
+            display_price = round(plan_price * rate, 2)
+        else:
+            display_price = plan_price
+
+        visible_plans.append({
+            **plan,
+            "display_price": display_price,
+            "display_currency": base_currency,
+        })
 
     return {
         "current_plan": current_plan,
         "license": license_info,
         "subscription": subscription,
-        "available_plans": available_plans,
+        "available_plans": visible_plans,
+        "base_currency": base_currency,
     }
 
 
