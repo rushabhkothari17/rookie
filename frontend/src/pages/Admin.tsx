@@ -142,46 +142,60 @@ export default function Admin() {
 
             {/* People */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">People</p>
-            {isSuperAdmin && (
+            {(isSuperAdmin || hasModule("users")) && (
               <>
                 <TabsTrigger value="users" data-testid="admin-tab-users" className={TAB_CLASS}>Users</TabsTrigger>
                 <TabsTrigger value="roles" data-testid="admin-tab-roles" className={TAB_CLASS}>Roles</TabsTrigger>
               </>
             )}
-            <TabsTrigger value="customers" data-testid="admin-tab-customers" className={TAB_CLASS}>Customers</TabsTrigger>
+            {hasModule("customers") && <TabsTrigger value="customers" data-testid="admin-tab-customers" className={TAB_CLASS}>Customers</TabsTrigger>}
 
             {/* Commerce */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
-            <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>
-            <TabsTrigger value="filters" data-testid="admin-tab-filters" className={TAB_CLASS}>Filters</TabsTrigger>
-            <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>
-            <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>
-            <TabsTrigger value="enquiries" data-testid="admin-tab-enquiries" className={TAB_CLASS}>Enquiries</TabsTrigger>
+            {(hasModule("orders") || hasModule("subscriptions") || hasModule("products")) && (
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
+            )}
+            {hasModule("products") && <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>}
+            {hasModule("products") && <TabsTrigger value="filters" data-testid="admin-tab-filters" className={TAB_CLASS}>Filters</TabsTrigger>}
+            {hasModule("subscriptions") && <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>}
+            {hasModule("orders") && <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>}
+            {hasModule("customers") && <TabsTrigger value="enquiries" data-testid="admin-tab-enquiries" className={TAB_CLASS}>Enquiries</TabsTrigger>}
 
             {/* Content */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
-            <TabsTrigger value="resources" data-testid="admin-tab-resources" className={TAB_CLASS}>Resources</TabsTrigger>
-            <TabsTrigger value="documents" data-testid="admin-tab-documents" className={TAB_CLASS}>Documents</TabsTrigger>
+            {hasModule("content") && (
+              <>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
+                <TabsTrigger value="resources" data-testid="admin-tab-resources" className={TAB_CLASS}>Resources</TabsTrigger>
+                <TabsTrigger value="documents" data-testid="admin-tab-documents" className={TAB_CLASS}>Documents</TabsTrigger>
+              </>
+            )}
 
             {/* Website & Settings */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
-            <TabsTrigger value="org-info" data-testid="admin-tab-org-info" className={TAB_CLASS}>Organization Info</TabsTrigger>
-            <TabsTrigger value="taxes" data-testid="admin-tab-taxes" className={TAB_CLASS}>Taxes</TabsTrigger>
-            <TabsTrigger value="auth-pages" data-testid="admin-tab-auth-pages" className={TAB_CLASS}>Auth &amp; Pages</TabsTrigger>
-            <TabsTrigger value="forms-tab" data-testid="admin-tab-forms" className={TAB_CLASS}>Forms</TabsTrigger>
-            <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
-            <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
-            <TabsTrigger value="domains" data-testid="admin-tab-domains" className={TAB_CLASS}>Custom Domains</TabsTrigger>
+            {hasModule("settings") && (
+              <>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
+                <TabsTrigger value="org-info" data-testid="admin-tab-org-info" className={TAB_CLASS}>Organization Info</TabsTrigger>
+                <TabsTrigger value="taxes" data-testid="admin-tab-taxes" className={TAB_CLASS}>Taxes</TabsTrigger>
+                <TabsTrigger value="auth-pages" data-testid="admin-tab-auth-pages" className={TAB_CLASS}>Auth &amp; Pages</TabsTrigger>
+                <TabsTrigger value="forms-tab" data-testid="admin-tab-forms" className={TAB_CLASS}>Forms</TabsTrigger>
+                <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
+                <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
+                <TabsTrigger value="domains" data-testid="admin-tab-domains" className={TAB_CLASS}>Custom Domains</TabsTrigger>
+              </>
+            )}
 
             {/* Integrations */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Integrations</p>
-            <TabsTrigger value="integrations" data-testid="admin-tab-integrations" className={TAB_CLASS}>Connect Services</TabsTrigger>
-            {isPlatformAdmin && (
+            {hasModule("integrations") && (
+              <>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Integrations</p>
+                <TabsTrigger value="integrations" data-testid="admin-tab-integrations" className={TAB_CLASS}>Connect Services</TabsTrigger>
+              </>
+            )}
+            {hasModule("integrations") && isPlatformAdmin && (
               <TabsTrigger value="integration-requests" data-testid="admin-tab-integration-requests" className={TAB_CLASS}>Integration Requests</TabsTrigger>
             )}
-            <TabsTrigger value="api" data-testid="admin-tab-api" className={TAB_CLASS}>API</TabsTrigger>
-            <TabsTrigger value="webhooks" data-testid="admin-tab-webhooks" className={TAB_CLASS}>Webhooks</TabsTrigger>
-            <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>
+            {hasModule("integrations") && <TabsTrigger value="api" data-testid="admin-tab-api" className={TAB_CLASS}>API</TabsTrigger>}
+            {hasModule("webhooks") && <TabsTrigger value="webhooks" data-testid="admin-tab-webhooks" className={TAB_CLASS}>Webhooks</TabsTrigger>}
+            {hasModule("logs") && <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>}
 
           </TabsList>
         </div>
