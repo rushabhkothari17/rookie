@@ -423,12 +423,8 @@ async def update_subscription(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
+    await _check(admin, "edit")
     subscription = await db.subscriptions.find_one({**tf, "id": subscription_id}, {"_id": 0})
-    if not subscription:
-        raise HTTPException(status_code=404, detail="Subscription not found")
-
-    update_fields: Dict[str, Any] = {}
-    changes: Dict[str, Any] = {}
 
     if payload.renewal_date is not None:
         update_fields["renewal_date"] = payload.renewal_date
