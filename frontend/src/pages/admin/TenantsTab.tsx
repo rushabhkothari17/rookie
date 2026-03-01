@@ -174,7 +174,13 @@ export function TenantsTab() {
     e.preventDefault();
     setCreating(true);
     try {
-      const res = await api.post("/auth/register-partner", newPartner);
+      const payload = {
+        ...newPartner,
+        partner_type: newPartner.partner_type || undefined,
+        industry: newPartner.industry || undefined,
+        tags: newPartner.tags ? newPartner.tags.split(",").map(t => t.trim()).filter(Boolean) : undefined,
+      };
+      const res = await api.post("/auth/register-partner", payload);
       setGeneratedCode(res.data.partner_code || "");
       load();
     } catch (err: any) {
