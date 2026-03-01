@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="21" failures="0" skipped="4" tests="26" time="0.642" timestamp="2026-03-01T00:27:28.871566+00:00" hostname="agent-env-61b12965-d4e8-405c-84f7-e5301c1afdf3"><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestGetInvoiceSettings" name="test_get_invoice_settings_returns_200" time="0.193"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestGetInvoiceSettings" name="test_get_invoice_settings_has_invoice_settings_key" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestGetInvoiceSettings" name="test_get_invoice_settings_has_bank_details" time="0.001"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestGetInvoiceSettings" name="test_get_invoice_settings_has_vat_number_field" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestGetInvoiceSettings" name="test_get_invoice_settings_has_logo_url" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestGetInvoiceSettings" name="test_get_invoice_settings_unauthenticated_returns_401" time="0.114" /><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPutInvoiceSettings" name="test_put_invoice_settings_returns_200" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPutInvoiceSettings" name="test_put_invoice_settings_response_has_message" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPutInvoiceSettings" name="test_put_invoice_settings_persists_vat_number" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPutInvoiceSettings" name="test_put_invoice_settings_persists_bank_details" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPutInvoiceSettings" name="test_put_invoice_settings_persists_company_details" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPutInvoiceSettings" name="test_put_invoice_settings_persists_payment_terms" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_returns_200" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_content_type" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_is_valid_pdf_magic" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_minimum_size" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_contains_bank_details" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_contains_vat_number" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_contains_payment_terms" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_contains_sort_code" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_contains_iban" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestAdminInvoicePDF" name="test_admin_pdf_contains_bic" time="0.000"><error message="failed on setup with &quot;AssertionError: Admin login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter156_invoice_settings_bank_vat.py:24: in admin_token
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
+E   AssertionError: Admin login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPartnerInvoicePDF" name="test_partner_pdf_returns_200" time="0.121"><skipped type="pytest.skip" message="Partner login failed: {&quot;detail&quot;:&quot;Not Found&quot;}">/app/backend/tests/test_iter156_invoice_settings_bank_vat.py:345: Partner login failed: {"detail":"Not Found"}</skipped></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPartnerInvoicePDF" name="test_partner_pdf_is_valid" time="0.000"><skipped type="pytest.skip" message="Partner login failed: {&quot;detail&quot;:&quot;Not Found&quot;}">/app/backend/tests/test_iter156_invoice_settings_bank_vat.py:352: Partner login failed: {"detail":"Not Found"}</skipped></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPartnerInvoicePDF" name="test_partner_pdf_contains_bank_details" time="0.000"><skipped type="pytest.skip" message="Partner login failed: {&quot;detail&quot;:&quot;Not Found&quot;}">/app/backend/tests/test_iter156_invoice_settings_bank_vat.py:360: Partner login failed: {"detail":"Not Found"}</skipped></testcase><testcase classname="backend.tests.test_iter156_invoice_settings_bank_vat.TestPartnerInvoicePDF" name="test_partner_pdf_contains_vat_number" time="0.000"><skipped type="pytest.skip" message="Partner login failed: {&quot;detail&quot;:&quot;Not Found&quot;}">/app/backend/tests/test_iter156_invoice_settings_bank_vat.py:378: Partner login failed: {"detail":"Not Found"}</skipped></testcase></testsuite></testsuites>
