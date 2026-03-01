@@ -8,12 +8,13 @@ import os
 import uuid
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
-PLATFORM_CODE = "automate-accounts"
+# Platform admin uses /api/auth/login (no partner_code)
 PLATFORM_EMAIL = "admin@automateaccounts.local"
 PLATFORM_PASS = "ChangeMe123!"
-PARTNER_CODE = "liger-inc"
-PARTNER_EMAIL = "admin@ligerinc.local"
-PARTNER_PASS = "ChangeMe123!"
+# Partner admin uses /api/auth/partner-login with partner_code
+PARTNER_CODE = "test-partner-co"
+PARTNER_EMAIL = "testpartner@example.com"
+PARTNER_PASS = "TestPass123!"
 
 TEST_PREFIX = "TEST_PROD_157"
 
