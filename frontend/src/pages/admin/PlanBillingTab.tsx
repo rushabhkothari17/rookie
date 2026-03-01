@@ -605,10 +605,10 @@ export function PlanBillingTab() {
   const available = data?.available_plans || [];
   const sub = data?.subscription;
   const license = data?.license || {};
-  const currentPrice = current?.monthly_price ?? 0;
-  const currency = sub?.currency || current?.currency || "GBP";
-  const upgrades = available.filter(p => (p.monthly_price ?? 0) > currentPrice);
-  const downgrades = available.filter(p => (p.monthly_price ?? 0) < currentPrice);
+  const baseCurrency = data?.base_currency || sub?.currency || current?.currency || "GBP";
+  const currentPriceInBase = data?.current_price_in_base ?? (current?.monthly_price ?? 0);
+  const upgrades = available.filter(p => (p.display_price ?? p.monthly_price ?? 0) > currentPriceInBase);
+  const downgrades = available.filter(p => (p.display_price ?? p.monthly_price ?? 0) < currentPriceInBase);
   const boosts: Record<string, number> = license.one_time_boosts || {};
   const boostsExpire: string | null = license.one_time_boosts_expire_at || null;
 
