@@ -16,6 +16,7 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Bell, Download, ExternalLink, Upload} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { ISO_CURRENCIES } from "@/lib/constants";
 
 /** Small reusable button that sends a test renewal reminder for a subscription. */
 function TestReminderButton({ subId, endpoint }: { subId: string; endpoint: "subscriptions" | "partner-subscriptions" }) {
