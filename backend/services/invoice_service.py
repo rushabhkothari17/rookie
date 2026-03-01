@@ -225,6 +225,31 @@ def generate_partner_invoice_pdf(
 
     # ── Payment terms + footer ─────────────────────────────────────────────────
     story.append(HRFlowable(width=W, thickness=0.5, color=BORDER, spaceAfter=8))
+
+    # Bank details block
+    bd_fields = [
+        ("Bank", bank_details.get("bank_name")),
+        ("Account Name", bank_details.get("account_name")),
+        ("Account Number", bank_details.get("account_number")),
+        ("Sort Code", bank_details.get("sort_code")),
+        ("IBAN", bank_details.get("iban")),
+        ("BIC / SWIFT", bank_details.get("bic")),
+    ]
+    bd_rows = [(label, val) for label, val in bd_fields if val]
+    if bd_rows:
+        story.append(Paragraph("<b>Bank Details</b>", ParagraphStyle("bd_hdr", parent=small, fontName="Helvetica-Bold", textColor=colors.HexColor("#0f172a"))))
+        story.append(Spacer(1, 3))
+        bd_table_data = [[Paragraph(f"<b>{lbl}:</b>", small), Paragraph(val, small)] for lbl, val in bd_rows]
+        bd_tbl = Table(bd_table_data, colWidths=[W * 0.25, W * 0.75])
+        bd_tbl.setStyle(TableStyle([
+            ("TOPPADDING", (0, 0), (-1, -1), 2),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ]))
+        story.append(bd_tbl)
+        story.append(Spacer(1, 8))
+        story.append(HRFlowable(width=W, thickness=0.5, color=BORDER, spaceAfter=8))
+
     if payment_terms:
         story.append(Paragraph(f"<b>Payment Terms:</b> {payment_terms}", small))
         story.append(Spacer(1, 4))
