@@ -260,7 +260,35 @@ class PartnerAdminTester:
             print(f"❌ Partner Super Admin creation error: {e}")
             return False
     
-    async def verify_user_permissions(self) -> bool:
+    async def verify_via_admin_users_api(self) -> bool:
+        """Additional verification via GET /api/admin/users endpoint."""
+        print(f"\n📊 Additional Verification: Testing GET /api/admin/users endpoint...")
+        
+        try:
+            async with self.session.get(f"{self.base_url}/admin/users") as resp:
+                if resp.status == 200:
+                    result = await resp.json()
+                    users = result.get("users", [])
+                    
+                    # Filter to our test users
+                    test_users = [u for u in users if str(self.timestamp) in u.get("email", "")]
+                    print(f"   Found {len(test_users)} test users in admin/users endpoint")
+                    
+                    for user in test_users[:3]:  # Limit output
+                        email = user.get("email")
+                        role = user.get("role") 
+                        access_level = user.get("access_level")
+                        modules = user.get("permissions", {}).get("modules", [])
+                        print(f"   📋 {email}: role={role}, access_level={access_level}, modules={modules}")
+                    
+                    return True
+                else:
+                    error_text = await resp.text()
+                    print(f"❌ Failed to get admin users: {resp.status} - {error_text}")
+                    return False
+        except Exception as e:
+            print(f"❌ Error testing admin users API: {e}")
+            return False
         """Step 4 & 6: Verify users have correct permissions via GET /api/admin/users."""
         print(f"\n🔍 Step 4 & 6: Verifying user permissions in database...")
         
