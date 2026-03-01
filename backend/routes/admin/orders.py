@@ -126,8 +126,7 @@ async def admin_orders(
 ):
     skip = (page - 1) * per_page
     tf = get_tenant_filter(admin)
-    query: Dict[str, Any] = {**tf}
-    if not include_deleted:
+    await _check(admin, "view")
         query["deleted_at"] = {"$exists": False}
     if order_number_filter:
         query["order_number"] = {"$regex": _re.escape(order_number_filter), "$options": "i"}
