@@ -66,6 +66,8 @@ async def update_app_settings(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tid = tenant_id_of(admin)
+    if not await _has_perm(admin, "settings", "edit"):
+        raise HTTPException(403, "No edit access to settings module")
     update = {k: v for k, v in payload.dict().items() if v is not None}
     for key in ["stripe_secret_key", "gocardless_token", "resend_api_key"]:
         if key in update and update[key].startswith("••"):
