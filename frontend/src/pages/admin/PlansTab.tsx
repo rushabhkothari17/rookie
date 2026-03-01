@@ -612,9 +612,9 @@ function RateFormDialog({ modules, rate, onClose, onSaved }: { modules: OTPModul
               <Input value={currency} onChange={e => setCurrency(e.target.value.toUpperCase())} placeholder="GBP" data-testid="rate-currency-input" />
             </div>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-            <label className="text-xs font-medium text-slate-700">Active</label>
-            <Switch checked={isActive} onCheckedChange={setIsActive} data-testid="rate-active-switch" />
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <input id="rate-active" type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={isActive} onChange={e => setIsActive(e.target.checked)} data-testid="rate-active-switch" />
+            <label htmlFor="rate-active" className="text-xs font-medium text-slate-700 cursor-pointer">Active</label>
           </div>
         </div>
         <DialogFooter>
@@ -883,9 +883,9 @@ function CouponFormDialog({ coupon, onClose, onSaved }: { coupon: Coupon | null;
             </div>
           )}
 
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-            <label className="text-xs font-medium text-slate-700">Active</label>
-            <Switch checked={isActive} onCheckedChange={setIsActive} data-testid="coupon-active-switch" />
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <input id="coupon-active" type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={isActive} onChange={e => setIsActive(e.target.checked)} data-testid="coupon-active-switch" />
+            <label htmlFor="coupon-active" className="text-xs font-medium text-slate-700 cursor-pointer">Active</label>
           </div>
         </div>
         <DialogFooter>
