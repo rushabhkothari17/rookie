@@ -167,7 +167,7 @@ class PartnerAdminTester:
         
         super_admin_data = {
             "tenant_id": self.created_tenant_id,  # Required by model
-            "email": "partner.superadmin@testorg.local", 
+            "email": f"partner.superadmin.{self.timestamp}@testorg.local", 
             "full_name": "Test Partner Super Admin",
             "password": "SecurePass123!",
             "role": "partner_super_admin",
