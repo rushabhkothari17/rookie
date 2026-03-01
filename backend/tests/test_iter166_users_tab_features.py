@@ -21,30 +21,28 @@ PARTNER_ADMIN_LIGER_PASS = "ChangeMe123!"
 
 
 @pytest.fixture(scope="module")
-def session():
-    s = requests.Session()
-    s.headers.update({"Content-Type": "application/json"})
-    return s
-
-
-@pytest.fixture(scope="module")
-def platform_super_admin_token(session):
-    """Login as platform super admin."""
-    r = session.post(f"{BASE_URL}/api/auth/admin-login", json={
-        "partner_code": PARTNER_CODE,
+def platform_super_admin_token():
+    """Login as platform super admin - no partner_code, direct login."""
+    r = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": PLATFORM_SUPER_ADMIN_EMAIL,
         "password": PLATFORM_SUPER_ADMIN_PASS,
     })
-    assert r.status_code == 200, f"Login failed: {r.text}"
-    return r.cookies.get("admin_access_token") or r.json().get("access_token")
+    assert r.status_code == 200, f"Login failed: {r.status_code} - {r.text}"
+    data = r.json()
+    return data.get("token") or data.get("access_token")
 
 
 @pytest.fixture(scope="module")
-def auth_session(session, platform_super_admin_token):
-    """Session with platform super admin auth cookie."""
-    if platform_super_admin_token:
-        session.cookies.set("admin_access_token", platform_super_admin_token)
-    return session
+def auth_session(platform_super_admin_token):
+    """Session with platform super admin auth via Bearer token."""
+    if not platform_super_admin_token:
+        pytest.skip("Could not obtain platform super admin token")
+    s = requests.Session()
+    s.headers.update({
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {platform_super_admin_token}",
+    })
+    return s
 
 
 class TestGetAdminUsers:
