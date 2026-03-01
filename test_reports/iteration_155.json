@@ -1,0 +1,87 @@
+{
+  "summary": "Tested Partner PDF Invoice Download feature. Backend: 23/23 tests passed. Found and fixed a critical frontend bug: both MyOrdersTab.tsx and PartnerOrdersTab.tsx used wrong localStorage key ('token') to read auth token for invoice download fetch call — should be 'aa_token'. Fixed both files. After fix, admin and partner download buttons work without error toast.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "MyOrdersTab / PartnerOrdersTab",
+        "issues": [
+          "React hydration warning: span cannot be a child of tbody/tr — Radix Tabs wraps TabsContent in a span inside table structure. Non-functional but generates console noise."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter155_invoice_download.py",
+    "/app/test_reports/pytest/pytest_iter155_invoice_download.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FIXED: MyOrdersTab.tsx line 46 and PartnerOrdersTab.tsx line 64 — both used localStorage.getItem('token') but app stores auth token under key 'aa_token'. Changed to localStorage.getItem('aa_token').",
+    "Minor: React hydration warning for span inside tbody — Radix Tabs component wraps content in a dynamic span that ends up inside table HTML. Not functional but worth investigating if SEO/SSR matters."
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/admin/MyOrdersTab.tsx",
+    "/app/frontend/src/pages/admin/PartnerOrdersTab.tsx",
+    "/app/backend/tests/test_iter155_invoice_download.py"
+  ],
+  "success_rate": {
+    "backend": "100% (23/23 tests passed)",
+    "frontend": "100% (all flows passing after fix)"
+  },
+  "seed_data_creation": "No new seed data created. Used existing order PO-2026-0006 (id: 28987c23-5ae4-447e-a199-710456191278)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Invoice download feature is working. Auth flow for partner: go to '/', enter code 'test-partner-co', Continue, then testpartner@example.com / TestPass123!. Auth flow for platform admin: go to '/', enter code 'automate-accounts', Continue, then admin@automateaccounts.local / ChangeMe123!. The app stores auth token in localStorage as 'aa_token' (not 'token'). Both MyOrdersTab and PartnerOrdersTab were fixed to use 'aa_token'.",
+  "rca_of_the_issue": {
+    "bug": "Invoice download 401 Unauthorized on button click",
+    "root_cause": "MyOrdersTab.tsx (line 46) and PartnerOrdersTab.tsx (line 64) used localStorage.getItem('token') to retrieve the auth token for the fetch call. However, the app's AuthContext and api.ts store the JWT under the key 'aa_token' (not 'token'). This meant the fetch was sent with an empty Authorization header, resulting in 401 from the backend.",
+    "fix": "Changed localStorage.getItem('token') || sessionStorage.getItem('token') || '' to localStorage.getItem('aa_token') || '' in both files.",
+    "verification": "After fix: admin clicking download invoice shows no error toast and the known order (PO-2026-0006) download completes successfully. Partner clicking download also works."
+  },
+  "test_results": {
+    "backend": {
+      "GET /api/admin/partner-orders/{id}/download-invoice returns 200": "PASS",
+      "Content-Type is application/pdf": "PASS",
+      "PDF starts with %PDF magic bytes": "PASS",
+      "PDF size > 1000 bytes": "PASS",
+      "Content-Disposition has attachment + .pdf": "PASS",
+      "Returns 404 for non-existent order": "PASS",
+      "Unauthenticated returns 401/403": "PASS",
+      "GET /api/partner/my-orders/{id}/download-invoice returns 200": "PASS",
+      "Partner endpoint Content-Type is application/pdf": "PASS",
+      "Partner PDF valid (%PDF header + size)": "PASS",
+      "Partner non-existent order returns 404": "PASS",
+      "Platform admin blocked (403) on partner endpoint": "PASS",
+      "Partner unauthenticated returns 401/403": "PASS",
+      "GET /api/partner/my-orders/{id}/invoice-html returns 200": "PASS",
+      "invoice-html contains 'order' field": "PASS",
+      "invoice-html contains 'partner' field": "PASS",
+      "invoice-html contains 'invoice_settings' field": "PASS",
+      "invoice-html contains 'template' field": "PASS",
+      "invoice-html order.id matches requested id": "PASS",
+      "invoice-html order.order_number == PO-2026-0006": "PASS",
+      "Platform admin blocked on invoice-html endpoint": "PASS",
+      "invoice-html returns 404 for non-existent order": "PASS",
+      "Cross-partner access returns 404": "PASS"
+    },
+    "frontend": {
+      "Partner login via test-partner-co code": "PASS",
+      "My Orders tab navigation": "PASS",
+      "Invoice column header present": "PASS",
+      "5 download buttons found in My Orders table": "PASS",
+      "Known order PO-2026-0006 download button present (data-testid)": "PASS",
+      "Partner download click - no error toast (after fix)": "PASS",
+      "Admin login via automate-accounts code": "PASS",
+      "Partner Orders tab navigation": "PASS",
+      "6 download buttons found in Partner Orders table": "PASS",
+      "Known order download button in admin view": "PASS",
+      "Admin download click - no error toast (after fix)": "PASS"
+    }
+  }
+}
