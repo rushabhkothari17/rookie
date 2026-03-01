@@ -334,6 +334,10 @@ class PartnerAdminTester:
             if not await self.create_partner_super_admin():
                 return False
             
+            # Additional Test: Create Partner Super Admin without access_level
+            if not await self.create_partner_super_admin_without_access_level():
+                return False
+            
             # Step 4 & 6: Verify all permissions
             if not await self.verify_user_permissions():
                 return False
