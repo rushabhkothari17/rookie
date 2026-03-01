@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, tenant_id_of, DEFAULT_TENANT_ID
@@ -145,3 +146,72 @@ async def cancel_my_subscription(
         ))
 
     return {"message": "Subscription cancelled", "cancelled_at": cancelled_at}
+
+
+# ---------------------------------------------------------------------------
+# Invoice Download
+# ---------------------------------------------------------------------------
+
+async def _load_invoice_data(order_id: str, partner_id: str):
+    """Load and return order + partner org + invoice settings for PDF generation."""
+    order = await db.partner_orders.find_one({"id": order_id, "partner_id": partner_id}, {"_id": 0})
+    if not order:
+        return None, None, None
+
+    partner_org = await db.tenants.find_one({"id": partner_id}, {"_id": 0}) or {}
+    # Load platform admin's invoice settings for the From details
+    platform_ts = await db.tenants.find_one({"id": DEFAULT_TENANT_ID}, {"_id": 0}) or {}
+    invoice_settings = platform_ts.get("invoice_settings") or {}
+    return order, partner_org, invoice_settings
+
+
+@router.get("/partner/my-orders/{order_id}/download-invoice")
+async def download_partner_invoice(
+    order_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Partner downloads a PDF invoice for one of their own orders."""
+    _require_non_platform(admin)
+    tid = tenant_id_of(admin)
+
+    order, partner_org, invoice_settings = await _load_invoice_data(order_id, tid)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    from services.invoice_service import generate_partner_invoice_pdf
+    platform_name = invoice_settings.get("company_name") or "Automate Accounts"
+    pdf_bytes = generate_partner_invoice_pdf(order, partner_org, invoice_settings, platform_name)
+
+    filename = f"invoice-{order.get('order_number', order_id)}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/partner/my-orders/{order_id}/invoice-html")
+async def view_partner_invoice_html(
+    order_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """Return invoice HTML data (order + active template) for browser print."""
+    _require_non_platform(admin)
+    tid = tenant_id_of(admin)
+
+    order, partner_org, invoice_settings = await _load_invoice_data(order_id, tid)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Try to find an active custom HTML template for this tenant (platform tenant)
+    template = await db.partner_invoice_templates.find_one(
+        {"tenant_id": DEFAULT_TENANT_ID, "is_active": {"$ne": False}},
+        {"_id": 0},
+        sort=[("created_at", -1)],
+    )
+    return {
+        "order": order,
+        "partner": partner_org,
+        "invoice_settings": invoice_settings,
+        "template": template,
+    }
