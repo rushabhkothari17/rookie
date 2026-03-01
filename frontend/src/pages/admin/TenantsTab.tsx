@@ -532,7 +532,7 @@ export function TenantsTab() {
                   <Select value={newPartner.partner_type} onValueChange={v => setNewPartner(p => ({ ...p, partner_type: v }))}>
                     <SelectTrigger data-testid="new-partner-type"><SelectValue placeholder="Select type…" /></SelectTrigger>
                     <SelectContent>
-                      {["Reseller","Direct","Wholesale","Agency","Affiliate","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      {partnerTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -541,7 +541,7 @@ export function TenantsTab() {
                   <Select value={newPartner.industry} onValueChange={v => setNewPartner(p => ({ ...p, industry: v }))}>
                     <SelectTrigger data-testid="new-partner-industry"><SelectValue placeholder="Select industry…" /></SelectTrigger>
                     <SelectContent>
-                      {["Technology","Finance","Healthcare","Retail","Education","Real Estate","Manufacturing","Professional Services","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      {industries.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
