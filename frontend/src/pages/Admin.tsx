@@ -220,11 +220,6 @@ export default function Admin() {
               <UsersTab />
             </TabsContent>
           )}
-          {(isSuperAdmin || hasModule("users")) && (
-            <TabsContent value="roles" className="space-y-4">
-              <RolesTab />
-            </TabsContent>
-          )}
           <TabsContent value="customers" className="space-y-4">
             <CustomersTab />
           </TabsContent>
