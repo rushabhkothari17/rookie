@@ -14,11 +14,12 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 DEFAULT_TENANT_ID = "automate-accounts"
-PLATFORM_ROLE = "platform_admin"
+PLATFORM_ROLES = {"platform_admin", "platform_super_admin"}
+PLATFORM_ROLE = "platform_super_admin"  # canonical super-admin role
 
 
 def is_platform_admin(user: Dict[str, Any]) -> bool:
-    return user.get("role") == PLATFORM_ROLE
+    return user.get("role") in PLATFORM_ROLES
 
 
 def get_tenant_filter(user: Dict[str, Any], view_as: Optional[str] = None) -> Dict[str, Any]:

@@ -104,7 +104,11 @@ def calculate_upgrade_prorata(
     }
 
 
-def advance_billing_date(current_date: "date | datetime | str", billing_interval: str = "monthly") -> str:
+def calculate_upgrade_flat(old_monthly: float, new_monthly: float) -> float:
+    """Flat monthly-difference charge for ongoing plan upgrades.
+    Returns the positive difference, or 0 if the new plan is cheaper/same.
+    """
+    return round(max(0.0, new_monthly - old_monthly), 2)current_date: "date | datetime | str", billing_interval: str = "monthly") -> str:
     """
     Advance a billing date by one billing interval, always landing on the 1st of the target month.
 
