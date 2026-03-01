@@ -120,13 +120,38 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             "display_currency": base_currency,
         })
 
-    # Check if there is a pending (unconfirmed) upgrade order so the UI can offer "Resume Checkout"
-    pending_upgrade = await db.partner_orders.find_one(
+    # Check if there is a valid pending (unconfirmed) upgrade order so the UI can offer "Resume Checkout"
+    # Stripe checkout sessions expire after 24 hours — auto-cancel stale orders
+    pending_upgrade_raw = await db.partner_orders.find_one(
         {"partner_id": tid, "status": "pending_payment", "order_type": "ongoing_upgrade"},
-        {"_id": 0, "id": 1, "plan_id": 1, "plan_name": 1, "amount": 1, "currency": 1,
-         "stripe_session_id": 1, "order_number": 1},
+        {"_id": 0},
         sort=[("created_at", -1)],
     )
+    pending_upgrade = None
+    if pending_upgrade_raw:
+        from datetime import timezone
+        created_at_str = pending_upgrade_raw.get("created_at", "")
+        try:
+            from datetime import datetime
+            created_dt = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+            age_hours = (datetime.now(timezone.utc) - created_dt).total_seconds() / 3600
+        except Exception:
+            age_hours = 0
+
+        if age_hours > 23:
+            # Session has expired — mark order as cancelled so it doesn't linger
+            await db.partner_orders.update_one(
+                {"id": pending_upgrade_raw["id"]},
+                {"$set": {"status": "cancelled", "updated_at": now_iso(),
+                           "notes": "Stripe checkout session expired"}},
+            )
+        else:
+            pending_upgrade = {
+                k: pending_upgrade_raw[k]
+                for k in ("id", "plan_id", "plan_name", "amount", "currency",
+                          "stripe_session_id", "order_number")
+                if k in pending_upgrade_raw
+            }
 
     return {
         "current_plan": current_plan,
