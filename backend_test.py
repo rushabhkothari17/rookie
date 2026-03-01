@@ -45,6 +45,7 @@ class PartnerAdminTester:
             async with self.session.post(f"{self.base_url}/auth/login", json=login_data) as resp:
                 if resp.status == 200:
                     result = await resp.json()
+                    print(f"Login response: {result}")  # Debug output
                     self.admin_token = result.get("access_token")
                     if self.admin_token:
                         # Update session headers with auth token
@@ -53,6 +54,7 @@ class PartnerAdminTester:
                         return True
                     else:
                         print("❌ No access token received")
+                        print(f"Full response: {result}")
                         return False
                 else:
                     error_text = await resp.text()
