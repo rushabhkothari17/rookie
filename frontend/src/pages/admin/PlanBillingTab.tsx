@@ -46,6 +46,13 @@ function LimitBadge({ label, value }: { label: string; value?: number }) {
   );
 }
 
+type PaymentStatus =
+  | { type: "loading"; sessionId: string }
+  | { type: "success"; planName: string }
+  | { type: "cancelled" }
+  | { type: "timeout" }
+  | { type: "error" };
+
 export function PlanBillingTab() {
   const [data, setData] = useState<PlanData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +61,8 @@ export function PlanBillingTab() {
   const [selectedDowngradePlan, setSelectedDowngradePlan] = useState("");
   const [downgradeMessage, setDowngradeMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,7 +76,44 @@ export function PlanBillingTab() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const pollUpgradeStatus = useCallback((sessionId: string) => {
+    let attempts = 0;
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        const r = await api.get(`/partner/upgrade-plan-status?session_id=${sessionId}`);
+        if (r.data.status === "paid") {
+          clearInterval(pollRef.current!);
+          setPaymentStatus({ type: "success", planName: r.data.plan_name });
+          load();
+        } else if (attempts >= 12) {
+          clearInterval(pollRef.current!);
+          setPaymentStatus({ type: "timeout" });
+        }
+      } catch {
+        if (attempts >= 12) {
+          clearInterval(pollRef.current!);
+          setPaymentStatus({ type: "error" });
+        }
+      }
+    }, 2500);
+  }, [load]);
+
+  useEffect(() => {
+    load();
+    const params = new URLSearchParams(window.location.search);
+    const upgradeStatus = params.get("upgrade_status");
+    const sessionId = params.get("session_id");
+    if (upgradeStatus === "success" && sessionId) {
+      setPaymentStatus({ type: "loading", sessionId });
+      window.history.replaceState({}, "", "/admin?tab=plan-billing");
+      pollUpgradeStatus(sessionId);
+    } else if (upgradeStatus === "cancelled") {
+      setPaymentStatus({ type: "cancelled" });
+      window.history.replaceState({}, "", "/admin?tab=plan-billing");
+    }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [load, pollUpgradeStatus]);
 
   const handleUpgrade = async (planId: string) => {
     setUpgrading(planId);
