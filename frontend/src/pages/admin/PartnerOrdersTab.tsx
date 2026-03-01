@@ -15,7 +15,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Copy, ExternalLink, RefreshCw, Plus, Pencil, Trash2, Download } from "lucide-react";
 import { ISO_CURRENCIES } from "@/lib/constants";
