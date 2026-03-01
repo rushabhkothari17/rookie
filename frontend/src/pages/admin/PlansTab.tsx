@@ -91,7 +91,7 @@ type Coupon = {
   created_at: string;
 };
 
-const ISO_CURRENCIES = ["GBP","USD","EUR","AUD","CAD","CHF","SGD","NZD","HKD","JPY","INR","AED","ZAR","MYR","NOK","SEK","DKK"];
+const ISO_CURRENCIES_LOCAL = ISO_CURRENCIES; // now imported from constants
 const LIMIT_FIELDS = [
   { key: "max_users", label: "Users (total)" },
   { key: "max_storage_mb", label: "Storage (MB)" },
