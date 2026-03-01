@@ -403,7 +403,7 @@ export function UsersTab() {
         </Table>
       </div>
 
-      <AdminPagination page={page} totalPages={totalPages} onPageChange={p => load(p)} />
+      <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={p => load(p)} />
 
       {/* ── Create Dialog ─────────────────────────────────────────────────── */}
       <Dialog open={showCreateDialog} onOpenChange={open => { setShowCreateDialog(open); if (!open) { setNewUser({ email: "", full_name: "", password: "", role: "" }); setNewUserPerms({}); } }}>
