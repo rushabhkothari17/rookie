@@ -127,6 +127,9 @@ export default function Admin() {
                 <TabsTrigger value="partner-orders" data-testid="admin-tab-partner-orders" className={TAB_CLASS}>Partner Orders</TabsTrigger>
                 <TabsTrigger value="partner-submissions" data-testid="admin-tab-partner-submissions" className={TAB_CLASS}>Partner Submissions</TabsTrigger>
                 <TabsTrigger value="billing-settings" data-testid="admin-tab-billing-settings" className={TAB_CLASS}>Billing Settings</TabsTrigger>
+                {authUser?.role === "platform_super_admin" && (
+                  <TabsTrigger value="currencies" data-testid="admin-tab-currencies" className={TAB_CLASS}>Supported Currencies</TabsTrigger>
+                )}
               </>
             )}
 
