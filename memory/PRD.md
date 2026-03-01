@@ -144,7 +144,10 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Completed (Recent)
 
-### Add User Form Parity (Mar 2026)
+### Sidebar & Billing UX Improvements (Mar 2026)
+- **MY BILLING** section moved ABOVE People in partner admin sidebar; "Account" section label removed
+- **Usage & Limits** content embedded directly into Plan & Billing tab (no longer a separate sidebar item)
+- **My Orders** now shows **Subscription #** column linking each order to its parent subscription
 - Fixed duplicate import + broken type definitions + misplaced functions in `TenantsTab.tsx` (build error)
 - **Partner Orgs → Add Admin form** now matches **Users → Create Admin User form**:
   - 2-column grid layout (Full Name | Email, Password full-width)
