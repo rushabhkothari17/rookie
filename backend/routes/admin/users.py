@@ -89,10 +89,11 @@ async def admin_create_admin_user(
 
     tid = tenant_id_of(admin)
     caller_role = admin.get("role", "")
+    PARTNER_ROLES = ("partner_super_admin", "partner_admin", "partner_staff")
 
     # Determine which roles the caller can create
     if caller_role == "platform_super_admin":
-        valid_roles = ("platform_admin", "partner_admin", "partner_staff")
+        valid_roles = ("platform_admin", "partner_super_admin", "partner_admin", "partner_staff")
     elif caller_role == "partner_super_admin":
         valid_roles = ("partner_admin", "partner_staff")
     else:
@@ -105,12 +106,36 @@ async def admin_create_admin_user(
     if payload.role == "platform_super_admin":
         raise HTTPException(400, "Platform super admin cannot be created manually")
 
+    # Determine target tenant
+    if payload.role in PARTNER_ROLES:
+        if is_platform_admin(admin):
+            # Platform admin must specify which partner org
+            if not payload.target_tenant_id:
+                raise HTTPException(400, "target_tenant_id is required when creating a partner org user")
+            tenant_doc = await db.tenants.find_one({"id": payload.target_tenant_id}, {"_id": 0})
+            if not tenant_doc:
+                raise HTTPException(404, "Partner org not found")
+            tid = payload.target_tenant_id
+        # partner_super_admin creates users in their own org (tid stays)
+
+    # Enforce one partner_super_admin per org
+    if payload.role == "partner_super_admin":
+        existing_super = await db.users.find_one(
+            {"tenant_id": tid, "role": "partner_super_admin", "is_active": True},
+            {"_id": 0, "email": 1}
+        )
+        if existing_super:
+            raise HTTPException(
+                400,
+                f"This org already has a partner super admin ({existing_super['email']}). "
+                "Add the user as Partner Admin and use 'Transfer Super Admin' in Partner Orgs to promote them."
+            )
+
     pw_err = _pw_ok(payload.password)
     if pw_err:
         raise HTTPException(400, pw_err)
 
-    tf = get_tenant_filter(admin)
-    existing = await db.users.find_one({**tf, "email": payload.email.lower()}, {"_id": 0})
+    existing = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
     if existing:
         raise HTTPException(400, "Email already registered")
 
