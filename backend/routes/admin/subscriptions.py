@@ -136,7 +136,7 @@ async def admin_subscriptions(
     tf = get_tenant_filter(admin)
     await _check(admin, "view")
     query: Dict[str, Any] = {**tf}
-        query["status"] = status
+    if status:
     if payment:
         query["payment_method"] = payment
     if sub_number:
