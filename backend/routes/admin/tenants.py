@@ -403,6 +403,17 @@ async def create_partner_admin(
     if payload.role not in valid_roles:
         raise HTTPException(status_code=400, detail=f"Role must be one of: {valid_roles}")
 
+    # Handle permissions (modules & access level)
+    access_level = payload.access_level or "full_access"
+    modules = payload.modules or []
+
+    if payload.preset_role:
+        from routes.admin.permissions import PRESET_ROLES
+        if payload.preset_role in PRESET_ROLES:
+            preset = PRESET_ROLES[payload.preset_role]
+            access_level = preset["access_level"]
+            modules = preset["modules"]
+
     user_id = make_id()
     hashed = pwd_context.hash(payload.password)
     user_doc = {
@@ -416,6 +427,8 @@ async def create_partner_admin(
         "is_verified": True,  # Platform admin creates verified users
         "is_admin": True,
         "role": payload.role,
+        "access_level": access_level,
+        "permissions": {"modules": modules},
         "tenant_id": tenant_id,
         "is_active": True,
         "created_at": now_iso(),
