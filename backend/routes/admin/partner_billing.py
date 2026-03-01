@@ -539,16 +539,21 @@ async def update_partner_subscription(
         raw_term = payload.term_months
         new_term = None if (raw_term is None or raw_term <= 0) else raw_term
         updates["term_months"] = new_term
-        if new_term:
-            from datetime import timedelta
-            start_str = (payload.dict(exclude_unset=True).get("start_date") or sub.get("start_date") or now_iso()[:10])
-            try:
-                start_dt = datetime.fromisoformat(start_str)
-            except Exception:
-                start_dt = datetime.now(timezone.utc)
-            updates["contract_end_date"] = (start_dt + timedelta(days=30 * new_term)).strftime("%Y-%m-%d")
-        else:
-            updates["contract_end_date"] = None
+        # Only auto-calculate contract_end_date if not explicitly provided
+        if "contract_end_date" not in payload.dict(exclude_unset=True):
+            if new_term:
+                from datetime import timedelta
+                start_str = (payload.dict(exclude_unset=True).get("start_date") or sub.get("start_date") or now_iso()[:10])
+                try:
+                    start_dt = datetime.fromisoformat(start_str)
+                except Exception:
+                    start_dt = datetime.now(timezone.utc)
+                updates["contract_end_date"] = (start_dt + timedelta(days=30 * new_term)).strftime("%Y-%m-%d")
+            else:
+                updates["contract_end_date"] = None
+    # Allow direct contract_end_date override from frontend
+    if "contract_end_date" in payload.dict(exclude_unset=True):
+        updates["contract_end_date"] = payload.contract_end_date or None
     # Handle reminder_days: -1 or 0 sentinel clears (disables) reminders
     if "reminder_days" in payload.dict(exclude_unset=True):
         raw_rd = payload.reminder_days
