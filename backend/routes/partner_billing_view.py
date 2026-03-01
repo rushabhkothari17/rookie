@@ -161,7 +161,7 @@ async def _load_invoice_data(order_id: str, partner_id: str):
     partner_org = await db.tenants.find_one({"id": partner_id}, {"_id": 0}) or {}
     # Load platform admin's invoice settings for the From details
     platform_ts = await db.tenants.find_one({"id": DEFAULT_TENANT_ID}, {"_id": 0}) or {}
-    invoice_settings = platform_ts.get("invoice_settings") or {}
+    invoice_settings = (platform_ts.get("tax_settings") or {}).get("invoice_settings") or {}
     return order, partner_org, invoice_settings
 
 
