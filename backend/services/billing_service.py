@@ -119,7 +119,10 @@ def advance_billing_date(current_date: "date | datetime | str", billing_interval
     new_year = ref.year + (new_month - 1) // 12
     new_month = (new_month - 1) % 12 + 1
     return date(new_year, new_month, 1).isoformat()
-    from_date: date | datetime | str | None,
+
+
+def calculate_next_billing_date(
+    from_date: "date | datetime | str | None",
     billing_mode: str = "prorated",
 ) -> str:
     """
