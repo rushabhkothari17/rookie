@@ -1,0 +1,76 @@
+{
+  "summary": "Comprehensive testing of Role & Permission System Overhaul. 28/28 backend tests pass. Frontend sidebar verified for both platform_super_admin and partner_super_admin. One critical bug found: platform_super_admin blocked by require_super_admin on 2 user management endpoints.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "PATCH /api/admin/users/{user_id}/active and GET /api/admin/users/{user_id}/logs",
+        "issue": "platform_super_admin gets 403 'Super admin access required'. Root cause: require_super_admin in backend/core/security.py has super_admin_roles = {\"super_admin\", \"partner_super_admin\", \"platform_admin\"} — missing 'platform_super_admin'. Fix: add 'platform_super_admin' to this set.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter160_role_permission_overhaul.py",
+    "/app/test_reports/pytest/pytest_iter160.xml"
+  ],
+  "action_items": [
+    "Fix require_super_admin in backend/core/security.py: add 'platform_super_admin' to super_admin_roles set so platform_super_admin can activate/deactivate users and view user logs",
+    "Review PUT /admin/users/{user_id} logic that resets role to 'custom' when modules are updated — may be unintended for users with explicit roles like partner_admin"
+  ],
+  "critical_code_review_comments": [
+    "CRITICAL BUG: require_super_admin in core/security.py missing 'platform_super_admin' from super_admin_roles. Line 117: super_admin_roles = {\"super_admin\", \"partner_super_admin\", \"platform_admin\"} — platform_super_admin is excluded. Fix: add 'platform_super_admin' to the set.",
+    "PUT /admin/users/{user_id} with 'modules' payload unconditionally resets role to 'custom' (users.py line 195). This means after updating modules, the user's original role (e.g., partner_admin) is lost. Should preserve the original role unless explicitly changed.",
+    "Users.py line 62: valid_roles for POST /admin/users doesn't include 'custom' but the PUT endpoint can set role='custom'. Inconsistency.",
+    "AdminCreateUserRequest in models.py uses flat 'modules: Optional[List[str]]' but some callers may assume nested 'permissions.modules' structure — potential API documentation gap."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter160_role_permission_overhaul.py"
+  ],
+  "success_rate": {
+    "backend": "100% (28/28 tests passed)",
+    "frontend": "100% (all sidebar items verified, permissions flow verified)"
+  },
+  "test_credentials": {
+    "platform_super_admin": "admin@automateaccounts.local / ChangeMe123! (partner_code: automate-accounts)",
+    "partner_super_admin": "testpartner@example.com / TestPass123! (partner_code: test-partner-co, role: partner_super_admin)",
+    "restricted_partner_admin": "TEST_restricted_admin@example.com / TestPass123! (partner_code: test-partner-co, role: partner_admin, modules: [customers])"
+  },
+  "seed_data_creation": "Updated TEST_restricted_admin@example.com to have role=partner_admin and permissions.modules=['customers'] in test-partner-co tenant. Created TEST_PERM_COUPON (5% off) during testing (409 if already exists from prev test).",
+  "features_verified": {
+    "my_permissions_endpoint": "PASS - Returns {modules, access_level, is_super_admin, role} for platform_super_admin",
+    "my_permissions_values": "PASS - is_super_admin=True, access_level=full_access, role=platform_super_admin, all 12 modules",
+    "delete_plan_platform_super_admin": "PASS - Returns 200/409 (not 403)",
+    "create_coupon_platform_super_admin": "PASS - Returns 200/409",
+    "create_one_time_rate_platform_super_admin": "PASS - Returns 200/409",
+    "update_billing_settings_platform_super_admin": "PASS - Returns 200 with updated values",
+    "billing_settings_blocked_for_partner": "PASS - partner_super_admin gets 403",
+    "coupon_create_blocked_for_partner": "PASS - partner_super_admin gets 403",
+    "one_time_rate_blocked_for_partner": "PASS - partner_super_admin gets 403",
+    "plans_list_blocked_for_partner": "PASS - partner_super_admin gets 403 on GET /admin/plans",
+    "partner_admin_customers_allowed": "PASS - partner_admin with 'customers' module gets 200",
+    "partner_admin_orders_blocked": "PASS - partner_admin without 'orders' module gets 403",
+    "partner_admin_subscriptions_blocked": "PASS - partner_admin without 'subscriptions' module gets 403",
+    "partner_super_admin_all_modules": "PASS - partner_super_admin accesses orders and customers",
+    "frontend_platform_super_admin_sidebar": "PASS - All 28 sidebar items present: Platform(6) + People(3) + Commerce(5) + Content(2) + Settings(7) + Integrations(5)",
+    "frontend_partner_super_admin_sidebar": "PASS - 25 items, My Billing(4) visible, Platform section hidden",
+    "permissions_loaded_on_login": "PASS - AuthContext.tsx loads /admin/my-permissions after login and stores in permissions state"
+  },
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All Role & Permission System tests pass. Key bug: require_super_admin in core/security.py missing 'platform_super_admin' causing 403 on PATCH /admin/users/{id}/active and GET /admin/users/{id}/logs. Test user TEST_restricted_admin@example.com / TestPass123! / test-partner-co exists with role=partner_admin and modules=['customers']. To reset: run test_iter160 which handles the update flow automatically. Backend test file: /app/backend/tests/test_iter160_role_permission_overhaul.py (28 tests).",
+  "rca_of_issue": {
+    "bug": "platform_super_admin blocked on user activate/deactivate and user logs endpoints",
+    "root_cause": "core/security.py require_super_admin() has hard-coded set: super_admin_roles = {\"super_admin\", \"partner_super_admin\", \"platform_admin\"}. The 'platform_super_admin' role was added later but not included here. get_tenant_super_admin (core/tenant.py line 166) depends on require_super_admin, which blocks platform_super_admin.",
+    "affected_endpoints": [
+      "PATCH /api/admin/users/{user_id}/active",
+      "GET /api/admin/users/{user_id}/logs"
+    ],
+    "fix": "In backend/core/security.py, change line 117 to: super_admin_roles = {\"super_admin\", \"partner_super_admin\", \"platform_admin\", \"platform_super_admin\"}"
+  }
+}
