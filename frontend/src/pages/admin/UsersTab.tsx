@@ -120,6 +120,82 @@ function roleBadgeColor(role: string) {
   return "bg-slate-100 text-slate-600 border-slate-200";
 }
 
+// ── Presets Sub-tab ─────────────────────────────────────────────────────────
+
+function PresetsSubTab({ modules }: { modules: ModuleInfo[] }) {
+  const [presets, setPresets] = useState<PresetRole[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get("/admin/permissions/modules")
+      .then(r => setPresets(r.data.preset_roles || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="text-sm text-slate-400 py-8">Loading presets…</div>;
+
+  return (
+    <div className="space-y-4" data-testid="presets-subtab">
+      <div>
+        <h2 className="text-base font-semibold text-slate-900">Quick Presets</h2>
+        <p className="text-sm text-slate-500 mt-0.5">
+          Built-in permission templates. Apply these when creating or editing a user via the "Quick Preset" dropdown.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {presets.map(preset => {
+          const entries = Object.entries(preset.module_permissions || {});
+          const writeCount = entries.filter(([, v]) => v === "write").length;
+          const readCount = entries.filter(([, v]) => v === "read").length;
+          return (
+            <div
+              key={preset.key}
+              className="rounded-xl border border-slate-200 bg-white p-5 space-y-3"
+              data-testid={`preset-card-${preset.key}`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-slate-100">
+                  <Zap size={14} className="text-slate-500" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900">{preset.name}</h4>
+                  <span className="text-[10px] text-slate-400">Built-in preset</span>
+                </div>
+              </div>
+              {preset.description && <p className="text-xs text-slate-500">{preset.description}</p>}
+              <div className="flex flex-wrap gap-1.5">
+                {entries.map(([key, val]) => {
+                  const mod = modules.find(m => m.key === key);
+                  return (
+                    <span
+                      key={key}
+                      className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border font-medium ${
+                        val === "write"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
+                      }`}
+                    >
+                      {val === "write" ? <ShieldCheck size={9} /> : <Eye size={9} />}
+                      {mod?.name || key}
+                    </span>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-slate-400 pt-1 border-t border-slate-100">
+                {writeCount} read &amp; write · {readCount} read only
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      {presets.length === 0 && (
+        <p className="text-sm text-slate-400 italic">No presets available.</p>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function UsersTab() {
