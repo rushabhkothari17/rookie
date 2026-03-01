@@ -145,7 +145,8 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 - ✅ **FX Currency Fix in Plan Billing** — COMPLETE (Mar 2026)
 - ✅ **Plan & Billing 2-Button Layout** — COMPLETE (Mar 2026)
 - ✅ **Partner Type & Industry Management** — COMPLETE (Feb 2026): TenantsTab now has 3 sub-tabs (Partner List, Partner Types, Industries); `GenericListManager` reusable CRUD component; `usePlatformList` hook; all dropdowns pull from API not hardcoded
-- ✅ **User Form Parity** — COMPLETE (Feb 2026): Edit User dialog now has same Role Template (preset_role) selector as Create User dialog
+- ✅ **Base Currency Default USD** — COMPLETE (Feb 2026): New partner org creation defaults to USD; BaseCurrencyWidget uses useSupportedCurrencies
+- ✅ **Roles Tab Removed / Presets merged into Users** — COMPLETE (Feb 2026): Roles top-level tab deleted; Quick Presets sub-tab added inside Users tab showing 5 built-in preset cards; admin_roles CRUD removed from backend
 - ✅ **Tags Management Sub-tab** — COMPLETE (Feb 2026): 4th sub-tab in Partner Orgs for managing the tags taxonomy (used in plan visibility rules)
 - ✅ **Roles & Permissions System Overhaul** — COMPLETE (Feb 2026):
   - Platform Super Admin (1, immutable — cannot edit/deactivate/self-demote); Partner Super Admin (1 per org, transferable)
