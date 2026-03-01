@@ -119,6 +119,7 @@ export function UsersTab() {
     setEditForm({ 
       full_name: u.full_name || "", 
       email: u.email || "", 
+      preset_role: u.preset_role || "",
       access_level: u.access_level || "full_access",
       modules: u.permissions?.modules || []
     }); 
@@ -128,11 +129,13 @@ export function UsersTab() {
   const handleEdit = async () => {
     if (!editUser) return;
     try {
-      await api.put(`/admin/users/${editUser.id}`, {
+      const payload: any = {
         full_name: editForm.full_name,
         access_level: editForm.access_level,
         modules: editForm.modules
-      });
+      };
+      if (editForm.preset_role) payload.preset_role = editForm.preset_role;
+      await api.put(`/admin/users/${editUser.id}`, payload);
       toast.success("User updated");
       setShowEditDialog(false);
       setEditUser(null);
