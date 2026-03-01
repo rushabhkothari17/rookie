@@ -113,6 +113,25 @@ const LIMIT_FIELDS = [
 
 type FormState = Record<string, string>;
 
+type VisibilityRule = { field: string; operator: string; value: string };
+
+const RULE_FIELDS = [
+  { value: "partner_code", label: "Partner Code" },
+  { value: "country", label: "Country" },
+  { value: "base_currency", label: "Base Currency" },
+  { value: "partner_type", label: "Partner Type" },
+  { value: "industry", label: "Industry" },
+  { value: "tags", label: "Tags" },
+  { value: "name", label: "Org Name" },
+];
+
+const RULE_OPERATORS = [
+  { value: "equals", label: "equals" },
+  { value: "not_equals", label: "not equals" },
+  { value: "in", label: "is one of (comma-separated)" },
+  { value: "contains", label: "contains" },
+];
+
 const defaultForm = (): FormState => ({
   name: "",
   description: "",
