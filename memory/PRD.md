@@ -133,8 +133,23 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 ### P1 — Future
 - Security audit / penetration test
 - Centralize all email integration settings in one UI section
+- **SAAS_PROCESS_GUIDE.md**: Review and confirm completeness with user
 
 ### P2 — Backlog
 - GoCardless mandate management UI
 - Bulk subscription import via CSV
 - Analytics dashboard for partner billing revenue
+
+---
+
+## Completed (Recent)
+
+### Add User Form Parity (Mar 2026)
+- Fixed duplicate import + broken type definitions + misplaced functions in `TenantsTab.tsx` (build error)
+- **Partner Orgs → Add Admin form** now matches **Users → Create Admin User form**:
+  - 2-column grid layout (Full Name | Email, Password full-width)
+  - `*` required labels matching Users Tab style
+  - FieldTip tooltip text matches exactly
+  - Default `access_level` changed from `full_access` → `read_only` for parity
+  - Full-width `w-full` submit button replacing DialogFooter Cancel+Submit pattern
+  - Role Template / Access Level / Module Access conditional section unchanged (needed for partner-specific role logic)
