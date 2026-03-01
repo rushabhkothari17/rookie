@@ -127,6 +127,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setCustomer(null);
     setAddress(null);
+    setPermissions(null);
   };
 
   const register = async (payload: any, partner_code?: string) => {
