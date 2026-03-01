@@ -420,6 +420,22 @@ async def create_renewal_orders() -> None:
 
     logger.info("[Scheduler] Auto renewal-order job complete.")
 
+    # ── Mark subscriptions as unpaid: any pending partner order past its billing date ──
+    try:
+        async for stale_order in db.partner_orders.find(
+            {"status": "pending", "invoice_date": {"$lt": today_str}, "subscription_id": {"$exists": True, "$ne": None}},
+            {"_id": 0, "id": 1, "subscription_id": 1},
+        ):
+            sub_id = stale_order.get("subscription_id")
+            if sub_id:
+                await db.partner_subscriptions.update_one(
+                    {"id": sub_id, "status": "active"},
+                    {"$set": {"status": "unpaid", "updated_at": now_iso()}},
+                )
+                logger.info(f"[Scheduler] Marked subscription {sub_id} as unpaid")
+    except Exception as exc:
+        logger.error(f"[Scheduler] Failed to mark unpaid subscriptions: {exc}")
+
 
 # ---------------------------------------------------------------------------
 # Job 4: Cancel overdue partner subscriptions
