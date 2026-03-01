@@ -809,7 +809,7 @@ function InvoiceSettingsPanel() {
           />
         </div>
         <Button data-testid="logo-vat-save-btn" onClick={save} disabled={saving} size="sm">
-          {saving ? "Saving..." : "Save Logo &amp; VAT"}
+          {saving ? "Saving..." : "Save Logo & VAT"}
         </Button>
       </div>
 
