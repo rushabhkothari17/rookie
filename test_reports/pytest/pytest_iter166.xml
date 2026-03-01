@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="19" failures="0" skipped="0" tests="19" time="0.406" timestamp="2026-03-01T23:20:48.165896+00:00" hostname="agent-env-68b4c516-b971-41af-94e7-8d051805f622"><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetAdminUsers" name="test_get_users_returns_200" time="0.218"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetAdminUsers" name="test_get_users_has_tenant_name_field" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetAdminUsers" name="test_get_users_partner_users_have_tenant_name" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetAdminUsers" name="test_get_users_has_pagination_fields" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetAdminUsers" name="test_only_one_platform_super_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetAdminUsers" name="test_no_password_hash_in_response" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetPermissionsModules" name="test_modules_endpoint_returns_200" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetPermissionsModules" name="test_modules_has_partner_module_keys" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetPermissionsModules" name="test_modules_has_all_module_keys" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetPermissionsModules" name="test_modules_platform_admin_sees_all_modules" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetPermissionsModules" name="test_modules_has_preset_roles" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestGetPermissionsModules" name="test_partner_modules_not_include_platform_modules" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestCreateUser" name="test_create_partner_role_without_tenant_id_fails" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestCreateUser" name="test_cannot_create_platform_super_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestCreateUser" name="test_partner_admin_role_is_valid_to_create" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestCreateUser" name="test_create_partner_admin_with_invalid_tenant_returns_404" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestCreateUser" name="test_cannot_create_duplicate_partner_super_admin" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestEditUser" name="test_edit_platform_super_admin_is_blocked" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_iter166_users_tab_features.TestEditUser" name="test_edit_user_role_change_supported" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;detail&quot;:&quot;Not Found&quot;}&#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">backend/tests/test_iter166_users_tab_features.py:38: in platform_super_admin_token
+    assert r.status_code == 200, f"Login failed: {r.text}"
+E   AssertionError: Login failed: {"detail":"Not Found"}
+E   assert 404 == 200
+E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase></testsuite></testsuites>
