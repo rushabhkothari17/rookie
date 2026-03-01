@@ -145,7 +145,15 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 - ✅ **FX Currency Fix in Plan Billing** — COMPLETE (Mar 2026)
 - ✅ **Plan & Billing 2-Button Layout** — COMPLETE (Mar 2026)
 - ✅ **Partner Type & Industry Management** — COMPLETE (Feb 2026): TenantsTab now has 3 sub-tabs (Partner List, Partner Types, Industries); `GenericListManager` reusable CRUD component; `usePlatformList` hook; all dropdowns pull from API not hardcoded
-- ✅ **User Form Parity** — COMPLETE (Feb 2026): Edit User dialog now has same Role Template (preset_role) selector as Create User dialog: "Upgrade Plan" opens UpgradePlansModal with FX prices; "Buy Extra Limits" opens one-time modal
+- ✅ **User Form Parity** — COMPLETE (Feb 2026): Edit User dialog now has same Role Template (preset_role) selector as Create User dialog
+- ✅ **Tags Management Sub-tab** — COMPLETE (Feb 2026): 4th sub-tab in Partner Orgs for managing the tags taxonomy (used in plan visibility rules)
+- ✅ **Roles & Permissions System Overhaul** — COMPLETE (Feb 2026):
+  - Platform Super Admin (1, immutable — cannot edit/deactivate/self-demote); Partner Super Admin (1 per org, transferable)
+  - Platform Admin role creatable from Users tab (only by platform_super_admin)
+  - Per-module read/write permissions replace global access_level (19 modules: 7 platform-only, 12 partner/shared)
+  - Module list scoped to context (platform admins see all, partner super admin sees partner modules only)
+  - Partner super admin transfer via "Make Super Admin" button in partner org user list
+  - New platform_admin defaults to all modules with read access: "Upgrade Plan" opens UpgradePlansModal with FX prices; "Buy Extra Limits" opens one-time modal
   - Shared `ISO_CURRENCIES` constant in `frontend/src/lib/constants.ts`, imported across 4 admin files
   - SearchableSelect (combobox with search) for Partner and Plan fields in `PartnerOrdersTab` and `PartnerSubscriptionsTab` form modals
   - Currency field in `PartnerOrders` create/edit form changed from text input to Select dropdown
