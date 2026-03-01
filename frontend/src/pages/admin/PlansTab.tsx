@@ -16,8 +16,9 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Power, PowerOff, ScrollText, ChevronDown, ChevronUp, Tag, Zap, Lock } from "lucide-react";
+import { Plus, Pencil, Trash2, Power, PowerOff, ScrollText, ChevronDown, ChevronUp, Tag, Zap, Lock, DollarSign, Gift, LayoutList } from "lucide-react";
 
+// ─── Plan types ───────────────────────────────────────────────────────────────
 type Plan = {
   id: string;
   name: string;
@@ -28,6 +29,7 @@ type Plan = {
   currency?: string;
   warning_threshold_pct: number;
   tenant_count?: number;
+  is_default?: boolean;
   max_users: number | null;
   max_storage_mb: number | null;
   max_user_roles: number | null;
@@ -58,6 +60,38 @@ type AuditLog = {
   details?: Record<string, any>;
 };
 
+// ─── One-Time Rate types ──────────────────────────────────────────────────────
+type OTPRate = {
+  id: string;
+  module_key: string;
+  label: string;
+  price_per_record: number;
+  currency: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+type OTPModule = { key: string; label: string; description: string };
+
+// ─── Coupon types ─────────────────────────────────────────────────────────────
+type Coupon = {
+  id: string;
+  code: string;
+  internal_note?: string;
+  discount_type: "percentage" | "fixed_amount";
+  discount_value: number;
+  expiry_date?: string | null;
+  is_single_use: boolean;
+  applies_to: "ongoing" | "one_time" | "both";
+  applicable_plan_ids?: string[] | null;
+  is_one_time_per_org: boolean;
+  is_active: boolean;
+  usage_count: number;
+  created_at: string;
+};
+
+// ─── Plan limit fields ────────────────────────────────────────────────────────
 const LIMIT_FIELDS = [
   { key: "max_users", label: "Users (total)" },
   { key: "max_storage_mb", label: "Storage (MB)" },
@@ -117,19 +151,12 @@ function formToPayload(form: FormState) {
   return payload;
 }
 
-function PlanFormModal({
-  plan,
-  onClose,
-  onSaved,
-}: {
-  plan: Plan | null;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
+// ─── Plan form modal ──────────────────────────────────────────────────────────
+function PlanFormModal({ plan, onClose, onSaved }: { plan: Plan | null; onClose: () => void; onSaved: () => void }) {
   const isEdit = !!plan;
+  const isDefault = plan?.is_default;
   const [form, setForm] = useState<FormState>(plan ? planToForm(plan) : defaultForm());
   const [saving, setSaving] = useState(false);
-
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
   const handleSave = async () => {
@@ -155,100 +182,62 @@ function PlanFormModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? `Edit Plan — ${plan.name}` : "New Plan"}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {isDefault && <Lock size={14} className="text-amber-500" />}
+            {isEdit ? `Edit Plan — ${plan.name}` : "New Plan"}
+          </DialogTitle>
         </DialogHeader>
-
         <div className="space-y-4 mt-2">
-          {/* Read-only DB ID (edit mode only) */}
           {isEdit && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-500">Plan ID (read-only)</label>
-              <div className="bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs font-mono text-slate-500 select-all" data-testid="plan-db-id">
-                {plan.id}
-              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs font-mono text-slate-500 select-all" data-testid="plan-db-id">{plan.id}</div>
             </div>
           )}
-
+          {isDefault && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 flex items-center gap-2">
+              <Lock size={12} />
+              This is the default Free Plan. Some restrictions apply — it cannot be deleted or deactivated.
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Plan Name *</label>
-              <Input
-                value={form.name}
-                onChange={e => set("name", e.target.value)}
-                placeholder="e.g. Starter, Growth, Enterprise"
-                data-testid="plan-name-input"
-              />
+              <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Starter, Growth" data-testid="plan-name-input" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Warning threshold (%)</label>
-              <Input
-                type="number" min={1} max={100}
-                value={form.warning_threshold_pct}
-                onChange={e => set("warning_threshold_pct", e.target.value)}
-                placeholder="80"
-                data-testid="plan-threshold-input"
-              />
+              <Input type="number" min={1} max={100} value={form.warning_threshold_pct} onChange={e => set("warning_threshold_pct", e.target.value)} placeholder="80" data-testid="plan-threshold-input" />
             </div>
           </div>
-
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-600">Description</label>
-            <Textarea
-              rows={2}
-              value={form.description}
-              onChange={e => set("description", e.target.value)}
-              placeholder="Short description of this plan…"
-              data-testid="plan-description-input"
-            />
+            <Textarea rows={2} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Short description…" data-testid="plan-description-input" />
           </div>
-
           <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-            <input
-              id="plan-is-public"
-              type="checkbox"
-              className="h-4 w-4 rounded border-slate-300"
-              checked={form.is_public === "true"}
-              onChange={e => set("is_public", e.target.checked ? "true" : "false")}
-              data-testid="plan-is-public-checkbox"
-            />
+            <input id="plan-is-public" type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={form.is_public === "true"} onChange={e => set("is_public", e.target.checked ? "true" : "false")} data-testid="plan-is-public-checkbox" />
             <div>
-              <label htmlFor="plan-is-public" className="text-xs font-medium text-slate-700 cursor-pointer">
-                Visible to partners for self-service upgrade
-              </label>
-              <p className="text-xs text-slate-400">When enabled, partners can see and select this plan from their billing portal.</p>
+              <label htmlFor="plan-is-public" className="text-xs font-medium text-slate-700 cursor-pointer">Visible to partners for self-service upgrade</label>
+              <p className="text-xs text-slate-400">Partners can see and select this plan from their billing portal.</p>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Monthly Price</label>
-              <Input
-                type="number" min={0} step="0.01"
-                value={form.monthly_price}
-                onChange={e => set("monthly_price", e.target.value)}
-                placeholder="0.00"
-                data-testid="plan-monthly-price-input"
-              />
+              <Input type="number" min={0} step="0.01" value={form.monthly_price} onChange={e => set("monthly_price", e.target.value)} placeholder="0.00" data-testid="plan-monthly-price-input" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Currency</label>
-              <Input
-                value={form.currency}
-                onChange={e => set("currency", e.target.value)}
-                placeholder="GBP"
-                data-testid="plan-currency-input"
-              />
+              <Input value={form.currency} onChange={e => set("currency", e.target.value)} placeholder="GBP" data-testid="plan-currency-input" />
             </div>
           </div>
-
           <p className="text-xs text-slate-400">Leave any limit blank for unlimited.</p>
-
           <div className="rounded-lg border border-slate-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
                 <tr>
                   <th className="text-left px-3 py-2">Resource</th>
-                  <th className="text-left px-3 py-2 w-36">Limit (blank = unlimited)</th>
+                  <th className="text-left px-3 py-2 w-36">Limit</th>
                 </tr>
               </thead>
               <tbody>
@@ -256,14 +245,7 @@ function PlanFormModal({
                   <tr key={key} className="border-t border-slate-100">
                     <td className="px-3 py-2 text-slate-700">{label}</td>
                     <td className="px-3 py-2">
-                      <Input
-                        type="number" min={0}
-                        className="h-7 text-xs w-28"
-                        value={form[key] ?? ""}
-                        onChange={e => set(key, e.target.value)}
-                        placeholder="∞"
-                        data-testid={`plan-limit-${key}`}
-                      />
+                      <Input type="number" min={0} className="h-7 text-xs w-28" value={form[key] ?? ""} onChange={e => set(key, e.target.value)} placeholder="∞" data-testid={`plan-limit-${key}`} />
                     </td>
                   </tr>
                 ))}
@@ -271,7 +253,6 @@ function PlanFormModal({
             </table>
           </div>
         </div>
-
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving} data-testid="save-plan-btn">
@@ -286,55 +267,42 @@ function PlanFormModal({
 function PlanLogsDrawer({ plan, onClose }: { plan: Plan; onClose: () => void }) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     api.get(`/admin/plans/${plan.id}/logs`)
       .then(({ data }) => setLogs(data.logs || []))
       .catch(() => toast.error("Failed to load logs"))
       .finally(() => setLoading(false));
   }, [plan.id]);
-
-  const fmt = (iso: string) => {
-    try { return new Date(iso).toLocaleString(); } catch { return iso; }
-  };
-
+  const fmt = (iso: string) => { try { return new Date(iso).toLocaleString(); } catch { return iso; } };
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ScrollText className="h-4 w-4" />
-            Logs — {plan.name}
-          </DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><ScrollText className="h-4 w-4" />Logs — {plan.name}</DialogTitle>
         </DialogHeader>
-        {loading ? (
-          <p className="py-6 text-center text-sm text-slate-400">Loading…</p>
-        ) : logs.length === 0 ? (
-          <p className="py-6 text-center text-sm text-slate-400">No logs yet.</p>
-        ) : (
+        {loading ? <p className="py-6 text-center text-sm text-slate-400">Loading…</p> :
+          logs.length === 0 ? <p className="py-6 text-center text-sm text-slate-400">No logs yet.</p> :
           <div className="space-y-2 mt-2">
             {logs.map(log => (
               <div key={log.id || log.timestamp} className="border border-slate-100 rounded-lg p-3">
                 <div className="flex items-center justify-between gap-2">
                   <Badge variant="outline" className="text-[10px]">{log.action}</Badge>
-                  <span className="text-xs text-slate-400">{fmt(log.created_at || log.timestamp)}</span>
+                  <span className="text-xs text-slate-400">{fmt(log.created_at || log.timestamp || "")}</span>
                 </div>
                 <p className="text-xs text-slate-600 mt-1">by <strong>{log.actor}</strong></p>
                 {log.details && Object.keys(log.details).length > 0 && (
-                  <pre className="text-[10px] text-slate-500 mt-1 bg-slate-50 p-1.5 rounded overflow-x-auto">
-                    {JSON.stringify(log.details, null, 2)}
-                  </pre>
+                  <pre className="text-[10px] text-slate-500 mt-1 bg-slate-50 p-1.5 rounded overflow-x-auto">{JSON.stringify(log.details, null, 2)}</pre>
                 )}
               </div>
             ))}
-          </div>
-        )}
+          </div>}
       </DialogContent>
     </Dialog>
   );
 }
 
-export function PlansTab() {
+// ─── Plans Section ────────────────────────────────────────────────────────────
+function PlansSection() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -346,57 +314,36 @@ export function PlansTab() {
 
   const load = async () => {
     setLoading(true);
-    try {
-      const { data } = await api.get("/admin/plans");
-      setPlans(data.plans || []);
-    } catch {
-      toast.error("Failed to load plans");
-    } finally {
-      setLoading(false);
-    }
+    try { const { data } = await api.get("/admin/plans"); setPlans(data.plans || []); }
+    catch { toast.error("Failed to load plans"); }
+    finally { setLoading(false); }
   };
-
   useEffect(() => { load(); }, []);
 
-  const handleToggleStatus = async (plan: Plan) => {
-    try {
-      const { data } = await api.patch(`/admin/plans/${plan.id}/status`);
-      toast.success(data.is_active ? "Plan activated" : "Plan deactivated");
-      load();
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || "Failed to update status");
-    }
+  const handleToggle = async (plan: Plan) => {
+    if (plan.is_default) { toast.error("The default Free Plan cannot be deactivated"); return; }
+    try { const { data } = await api.patch(`/admin/plans/${plan.id}/status`); toast.success(data.is_active ? "Plan activated" : "Plan deactivated"); load(); }
+    catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update status"); }
   };
 
   const handleDelete = async () => {
     if (!deletePlan) return;
     setDeleteError("");
-    try {
-      await api.delete(`/admin/plans/${deletePlan.id}`);
-      toast.success("Plan deleted");
-      setDeletePlan(null);
-      load();
-    } catch (e: any) {
-      setDeleteError(e.response?.data?.detail || "Failed to delete plan");
-    }
+    try { await api.delete(`/admin/plans/${deletePlan.id}`); toast.success("Plan deleted"); setDeletePlan(null); load(); }
+    catch (e: any) { setDeleteError(e.response?.data?.detail || "Failed to delete plan"); }
   };
 
-  const fmt = (iso: string) => {
-    try { return new Date(iso).toLocaleDateString(); } catch { return iso; }
-  };
+  const fmt = (iso: string) => { try { return new Date(iso).toLocaleDateString(); } catch { return iso; } };
 
   if (loading) return <div className="p-4 text-slate-500 text-sm">Loading plans…</div>;
-
   return (
-    <div className="space-y-4" data-testid="plans-tab">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">License Plans</h2>
           <p className="text-sm text-slate-500">Define reusable resource limit templates for partner organisations.</p>
         </div>
-        <Button onClick={() => setShowCreate(true)} data-testid="create-plan-btn">
-          <Plus className="h-4 w-4 mr-1" /> New Plan
-        </Button>
+        <Button onClick={() => setShowCreate(true)} data-testid="create-plan-btn"><Plus className="h-4 w-4 mr-1" />New Plan</Button>
       </div>
 
       {plans.length === 0 ? (
@@ -421,71 +368,39 @@ export function PlansTab() {
                 <React.Fragment key={plan.id}>
                   <tr className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-slate-800">{plan.name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-slate-800">{plan.name}</span>
+                        {plan.is_default && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-medium flex items-center gap-0.5"><Lock size={9} />Default</span>}
+                      </div>
                       {plan.description && <div className="text-xs text-slate-400 mt-0.5">{plan.description}</div>}
                       {plan.is_public && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-[10px] mt-1">Public</Badge>}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-700">
                       {plan.monthly_price != null ? `${plan.currency || "GBP"} ${plan.monthly_price.toFixed(2)}/mo` : <span className="text-slate-400">—</span>}
                     </td>
+                    <td className="px-4 py-3 text-slate-600">{plan.tenant_count ?? 0}</td>
                     <td className="px-4 py-3">
-                      <span className="text-slate-600">{plan.tenant_count ?? 0}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {plan.is_active ? (
-                        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px]">Active</Badge>
-                      ) : (
-                        <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 text-[11px]">Inactive</Badge>
-                      )}
+                      {plan.is_active
+                        ? <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px]">Active</Badge>
+                        : <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 text-[11px]">Inactive</Badge>}
                     </td>
                     <td className="px-4 py-3 text-slate-500 text-xs">{fmt(plan.created_at)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <Button
-                          size="sm" variant="ghost"
-                          onClick={() => setExpanded(expanded === plan.id ? null : plan.id)}
-                          data-testid={`expand-plan-${plan.id}`}
-                          title="View limits"
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => setExpanded(expanded === plan.id ? null : plan.id)} data-testid={`expand-plan-${plan.id}`} title="View limits">
                           {expanded === plan.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </Button>
-                        <Button
-                          size="sm" variant="ghost"
-                          onClick={() => setLogsPlan(plan)}
-                          data-testid={`logs-plan-${plan.id}`}
-                          title="Audit logs"
-                        >
-                          <ScrollText className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm" variant="ghost"
-                          onClick={() => setEditPlan(plan)}
-                          data-testid={`edit-plan-${plan.id}`}
-                          title="Edit plan"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm" variant="ghost"
-                          onClick={() => handleToggleStatus(plan)}
-                          data-testid={`toggle-plan-${plan.id}`}
-                          title={plan.is_active ? "Deactivate" : "Activate"}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => setLogsPlan(plan)} data-testid={`logs-plan-${plan.id}`} title="Audit logs"><ScrollText className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditPlan(plan)} data-testid={`edit-plan-${plan.id}`} title="Edit"><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleToggle(plan)} data-testid={`toggle-plan-${plan.id}`} title={plan.is_active ? "Deactivate" : "Activate"} disabled={plan.is_default}>
                           {plan.is_active ? <PowerOff className="h-4 w-4 text-slate-400" /> : <Power className="h-4 w-4 text-emerald-500" />}
                         </Button>
-                        <Button
-                          size="sm" variant="ghost"
-                          onClick={() => { setDeleteError(""); setDeletePlan(plan); }}
-                          data-testid={`delete-plan-${plan.id}`}
-                          title="Delete plan"
-                          className="text-red-400 hover:text-red-600"
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => { setDeleteError(""); setDeletePlan(plan); }} data-testid={`delete-plan-${plan.id}`} title="Delete" className="text-red-400 hover:text-red-600" disabled={plan.is_default}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </td>
                   </tr>
-                  {/* Expandable limits row */}
                   {expanded === plan.id && (
                     <tr className="border-t border-slate-100 bg-slate-50">
                       <td colSpan={6} className="px-4 py-3">
@@ -495,9 +410,7 @@ export function PlansTab() {
                             return (
                               <div key={key} className="flex justify-between">
                                 <span className="text-slate-500">{label}</span>
-                                <span className="font-medium text-slate-700">
-                                  {val !== null && val !== undefined ? String(val) : "∞"}
-                                </span>
+                                <span className="font-medium text-slate-700">{val !== null && val !== undefined ? String(val) : "∞"}</span>
                               </div>
                             );
                           })}
@@ -513,22 +426,9 @@ export function PlansTab() {
         </div>
       )}
 
-      {/* Create Modal */}
-      {showCreate && (
-        <PlanFormModal plan={null} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />
-      )}
-
-      {/* Edit Modal */}
-      {editPlan && (
-        <PlanFormModal plan={editPlan} onClose={() => setEditPlan(null)} onSaved={() => { setEditPlan(null); load(); }} />
-      )}
-
-      {/* Logs Modal */}
-      {logsPlan && (
-        <PlanLogsDrawer plan={logsPlan} onClose={() => setLogsPlan(null)} />
-      )}
-
-      {/* Delete Confirmation */}
+      {showCreate && <PlanFormModal plan={null} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
+      {editPlan && <PlanFormModal plan={editPlan} onClose={() => setEditPlan(null)} onSaved={() => { setEditPlan(null); load(); }} />}
+      {logsPlan && <PlanLogsDrawer plan={logsPlan} onClose={() => setLogsPlan(null)} />}
       {deletePlan && (
         <AlertDialog open onOpenChange={() => setDeletePlan(null)}>
           <AlertDialogContent>
@@ -536,29 +436,505 @@ export function PlansTab() {
               <AlertDialogTitle>Delete "{deletePlan.name}"?</AlertDialogTitle>
               <AlertDialogDescription>
                 This will permanently delete the plan. It cannot be undone.
-                {(deletePlan.tenant_count ?? 0) > 0 && (
-                  <span className="text-red-600 block mt-1">
-                    This plan has {deletePlan.tenant_count} org(s) assigned. Deletion will be blocked.
-                  </span>
-                )}
+                {(deletePlan.tenant_count ?? 0) > 0 && <span className="text-red-600 block mt-1">This plan has {deletePlan.tenant_count} org(s) assigned. Deletion will be blocked.</span>}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            {deleteError && (
-              <p className="text-sm text-red-600 px-1">{deleteError}</p>
-            )}
+            {deleteError && <p className="text-sm text-red-600 px-1">{deleteError}</p>}
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-red-600 hover:bg-red-700"
-                onClick={handleDelete}
-                data-testid="confirm-delete-plan-btn"
-              >
-                Delete
-              </AlertDialogAction>
+              <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleDelete} data-testid="confirm-delete-plan-btn">Delete</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       )}
+    </div>
+  );
+}
+
+// ─── One-Time Rates Section ───────────────────────────────────────────────────
+function OneTimeRatesSection() {
+  const [rates, setRates] = useState<OTPRate[]>([]);
+  const [modules, setModules] = useState<OTPModule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editRate, setEditRate] = useState<OTPRate | null>(null);
+  const [deleteRate, setDeleteRate] = useState<OTPRate | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get("/admin/one-time-plans");
+      setRates(data.rates || []);
+      setModules(data.modules || []);
+    } catch { toast.error("Failed to load rate table"); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const usedKeys = new Set(rates.map(r => r.module_key));
+  const availableModules = modules.filter(m => !usedKeys.has(m.key));
+
+  const handleDelete = async () => {
+    if (!deleteRate) return;
+    try { await api.delete(`/admin/one-time-plans/${deleteRate.id}`); toast.success("Rate deleted"); setDeleteRate(null); load(); }
+    catch (e: any) { toast.error(e.response?.data?.detail || "Delete failed"); }
+  };
+
+  if (loading) return <div className="p-4 text-slate-500 text-sm">Loading rate table…</div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">One-Time Limit Rate Table</h2>
+          <p className="text-sm text-slate-500">Set the price per unit for each module. Partners buy extra capacity for the current billing cycle only.</p>
+        </div>
+        {availableModules.length > 0 && (
+          <Button onClick={() => setShowCreate(true)} data-testid="create-rate-btn">
+            <Plus className="h-4 w-4 mr-1" />Add Rate
+          </Button>
+        )}
+      </div>
+
+      {rates.length === 0 ? (
+        <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center text-slate-400 text-sm">
+          No rates configured. Add a rate to allow partners to buy extra limits.
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 overflow-hidden">
+          <table className="w-full text-sm" data-testid="rates-table">
+            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+              <tr>
+                <th className="text-left px-4 py-3">Module</th>
+                <th className="text-left px-4 py-3">Price / Unit</th>
+                <th className="text-left px-4 py-3">Currency</th>
+                <th className="text-left px-4 py-3">Status</th>
+                <th className="text-right px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rates.map(r => (
+                <tr key={r.id} className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-slate-800">{r.label}</p>
+                    <p className="text-xs font-mono text-slate-400">{r.module_key}</p>
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-slate-900">{r.price_per_record.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-slate-600">{r.currency}</td>
+                  <td className="px-4 py-3">
+                    {r.is_active
+                      ? <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px]">Active</Badge>
+                      : <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 text-[11px]">Inactive</Badge>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => setEditRate(r)} data-testid={`edit-rate-${r.id}`} title="Edit"><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setDeleteRate(r)} data-testid={`delete-rate-${r.id}`} title="Delete" className="text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showCreate && <RateFormDialog modules={availableModules} rate={null} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
+      {editRate && <RateFormDialog modules={modules} rate={editRate} onClose={() => setEditRate(null)} onSaved={() => { setEditRate(null); load(); }} />}
+      {deleteRate && (
+        <AlertDialog open onOpenChange={() => setDeleteRate(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete rate for "{deleteRate.label}"?</AlertDialogTitle>
+              <AlertDialogDescription>Partners will no longer be able to purchase extra {deleteRate.label.toLowerCase()}.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleDelete} data-testid="confirm-delete-rate-btn">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </div>
+  );
+}
+
+function RateFormDialog({ modules, rate, onClose, onSaved }: { modules: OTPModule[]; rate: OTPRate | null; onClose: () => void; onSaved: () => void }) {
+  const isEdit = !!rate;
+  const [moduleKey, setModuleKey] = useState(rate?.module_key || "");
+  const [price, setPrice] = useState(rate ? String(rate.price_per_record) : "");
+  const [currency, setCurrency] = useState(rate?.currency || "GBP");
+  const [isActive, setIsActive] = useState(rate?.is_active ?? true);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!moduleKey) { toast.error("Please select a module"); return; }
+    if (!price || isNaN(parseFloat(price))) { toast.error("Please enter a valid price"); return; }
+    setSaving(true);
+    try {
+      if (isEdit) {
+        await api.put(`/admin/one-time-plans/${rate.id}`, { price_per_record: parseFloat(price), currency, is_active: isActive });
+        toast.success("Rate updated");
+      } else {
+        await api.post("/admin/one-time-plans", { module_key: moduleKey, price_per_record: parseFloat(price), currency, is_active: isActive });
+        toast.success("Rate created");
+      }
+      onSaved();
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-sm" data-testid="rate-form-dialog">
+        <DialogHeader><DialogTitle>{isEdit ? `Edit Rate — ${rate.label}` : "Add Rate"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 py-1">
+          {!isEdit && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Module *</label>
+              <Select value={moduleKey} onValueChange={setModuleKey} data-testid="rate-module-select">
+                <SelectTrigger><SelectValue placeholder="Select a module…" /></SelectTrigger>
+                <SelectContent>
+                  {modules.map(m => <SelectItem key={m.key} value={m.key}>{m.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Price per Unit *</label>
+              <Input type="number" min={0} step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="1.00" data-testid="rate-price-input" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Currency</label>
+              <Input value={currency} onChange={e => setCurrency(e.target.value.toUpperCase())} placeholder="GBP" data-testid="rate-currency-input" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <label className="text-xs font-medium text-slate-700">Active</label>
+            <Switch checked={isActive} onCheckedChange={setIsActive} data-testid="rate-active-switch" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} data-testid="save-rate-btn">
+            {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Rate"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Coupons Section ──────────────────────────────────────────────────────────
+function CouponsSection() {
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editCoupon, setEditCoupon] = useState<Coupon | null>(null);
+  const [deleteCoupon, setDeleteCoupon] = useState<Coupon | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try { const { data } = await api.get("/admin/coupons"); setCoupons(data.coupons || []); }
+    catch { toast.error("Failed to load coupons"); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const handleDelete = async () => {
+    if (!deleteCoupon) return;
+    try { await api.delete(`/admin/coupons/${deleteCoupon.id}`); toast.success("Coupon deleted"); setDeleteCoupon(null); load(); }
+    catch (e: any) { toast.error(e.response?.data?.detail || "Delete failed"); }
+  };
+
+  const appliesToLabel = (v: string) => ({ ongoing: "Ongoing only", one_time: "One-time only", both: "Both" }[v] || v);
+  const fmt = (iso: string) => { try { return new Date(iso).toLocaleDateString(); } catch { return iso; } };
+
+  if (loading) return <div className="p-4 text-slate-500 text-sm">Loading coupons…</div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Coupons</h2>
+          <p className="text-sm text-slate-500">Manage discount codes partners can apply before upgrading their plan.</p>
+        </div>
+        <Button onClick={() => setShowCreate(true)} data-testid="create-coupon-btn">
+          <Plus className="h-4 w-4 mr-1" />New Coupon
+        </Button>
+      </div>
+
+      {coupons.length === 0 ? (
+        <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center text-slate-400 text-sm">
+          No coupons yet. Create your first coupon to offer discounts on plan upgrades.
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 overflow-hidden">
+          <table className="w-full text-sm" data-testid="coupons-table">
+            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+              <tr>
+                <th className="text-left px-4 py-3">Code</th>
+                <th className="text-left px-4 py-3">Discount</th>
+                <th className="text-left px-4 py-3">Applies To</th>
+                <th className="text-left px-4 py-3">Expiry</th>
+                <th className="text-left px-4 py-3">Flags</th>
+                <th className="text-left px-4 py-3">Uses</th>
+                <th className="text-left px-4 py-3">Status</th>
+                <th className="text-right px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coupons.map(c => (
+                <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-3">
+                    <span className="font-mono font-semibold text-slate-800 text-sm">{c.code}</span>
+                    {c.internal_note && <p className="text-xs text-slate-400 mt-0.5">{c.internal_note}</p>}
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-slate-900">
+                    {c.discount_type === "percentage" ? `${c.discount_value}%` : `${c.discount_value.toFixed(2)} off`}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 text-xs">{appliesToLabel(c.applies_to)}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500">
+                    {c.expiry_date ? fmt(c.expiry_date) : <span className="text-slate-300">No expiry</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {c.is_single_use && <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">Single-use</span>}
+                      {c.is_one_time_per_org && <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">Per-org</span>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{c.usage_count}</td>
+                  <td className="px-4 py-3">
+                    {c.is_active
+                      ? <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px]">Active</Badge>
+                      : <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 text-[11px]">Inactive</Badge>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => setEditCoupon(c)} data-testid={`edit-coupon-${c.id}`} title="Edit"><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setDeleteCoupon(c)} data-testid={`delete-coupon-${c.id}`} title="Delete" className="text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showCreate && <CouponFormDialog coupon={null} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
+      {editCoupon && <CouponFormDialog coupon={editCoupon} onClose={() => setEditCoupon(null)} onSaved={() => { setEditCoupon(null); load(); }} />}
+      {deleteCoupon && (
+        <AlertDialog open onOpenChange={() => setDeleteCoupon(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete coupon "{deleteCoupon.code}"?</AlertDialogTitle>
+              <AlertDialogDescription>This coupon will be permanently deleted and can no longer be used.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={handleDelete} data-testid="confirm-delete-coupon-btn">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </div>
+  );
+}
+
+function CouponFormDialog({ coupon, onClose, onSaved }: { coupon: Coupon | null; onClose: () => void; onSaved: () => void }) {
+  const isEdit = !!coupon;
+  const [plans, setPlans] = useState<{ id: string; name: string }[]>([]);
+  const [code, setCode] = useState(coupon?.code || "");
+  const [note, setNote] = useState(coupon?.internal_note || "");
+  const [discountType, setDiscountType] = useState<string>(coupon?.discount_type || "percentage");
+  const [discountValue, setDiscountValue] = useState(coupon ? String(coupon.discount_value) : "");
+  const [expiryDate, setExpiryDate] = useState(coupon?.expiry_date || "");
+  const [isSingleUse, setIsSingleUse] = useState(coupon?.is_single_use ?? false);
+  const [appliesTo, setAppliesTo] = useState(coupon?.applies_to || "both");
+  const [isOneTimePerOrg, setIsOneTimePerOrg] = useState(coupon?.is_one_time_per_org ?? true);
+  const [isActive, setIsActive] = useState(coupon?.is_active ?? true);
+  const [restrictPlans, setRestrictPlans] = useState(!!(coupon?.applicable_plan_ids?.length));
+  const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>(coupon?.applicable_plan_ids || []);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api.get("/admin/plans").then(({ data }) => setPlans((data.plans || []).map((p: any) => ({ id: p.id, name: p.name })))).catch(() => {});
+  }, []);
+
+  const togglePlan = (id: string) => setSelectedPlanIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+  const handleSave = async () => {
+    if (!code.trim()) { toast.error("Coupon code is required"); return; }
+    if (!discountValue || isNaN(parseFloat(discountValue))) { toast.error("Enter a valid discount value"); return; }
+    const payload: any = {
+      code: code.toUpperCase().trim(),
+      internal_note: note,
+      discount_type: discountType,
+      discount_value: parseFloat(discountValue),
+      expiry_date: expiryDate || null,
+      is_single_use: isSingleUse,
+      applies_to: appliesTo,
+      is_one_time_per_org: isOneTimePerOrg,
+      is_active: isActive,
+      applicable_plan_ids: restrictPlans && selectedPlanIds.length > 0 ? selectedPlanIds : null,
+    };
+    setSaving(true);
+    try {
+      if (isEdit) {
+        await api.put(`/admin/coupons/${coupon.id}`, payload);
+        toast.success("Coupon updated");
+      } else {
+        await api.post("/admin/coupons", payload);
+        toast.success("Coupon created");
+      }
+      onSaved();
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="coupon-form-dialog">
+        <DialogHeader><DialogTitle>{isEdit ? `Edit Coupon — ${coupon.code}` : "New Coupon"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 py-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Coupon Code *</label>
+              <Input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="SAVE20" className="font-mono" data-testid="coupon-code-field" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Internal Note</label>
+              <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Optional note…" data-testid="coupon-note-field" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Discount Type *</label>
+              <Select value={discountType} onValueChange={setDiscountType} data-testid="coupon-discount-type">
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentage">Percentage (%)</SelectItem>
+                  <SelectItem value="fixed_amount">Fixed Amount</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">
+                {discountType === "percentage" ? "Discount %" : "Discount Amount"} *
+              </label>
+              <Input type="number" min={0} step={discountType === "percentage" ? "1" : "0.01"} value={discountValue} onChange={e => setDiscountValue(e.target.value)} placeholder={discountType === "percentage" ? "20" : "10.00"} data-testid="coupon-discount-value" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Applies To</label>
+              <Select value={appliesTo} onValueChange={setAppliesTo} data-testid="coupon-applies-to">
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="both">Both upgrade types</SelectItem>
+                  <SelectItem value="ongoing">Ongoing plan only</SelectItem>
+                  <SelectItem value="one_time">One-time limits only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Expiry Date</label>
+              <Input type="date" value={expiryDate || ""} onChange={e => setExpiryDate(e.target.value)} data-testid="coupon-expiry-date" />
+            </div>
+          </div>
+
+          <div className="space-y-2 rounded-lg border border-slate-200 p-3">
+            <p className="text-xs font-medium text-slate-600 mb-1">Usage Restrictions</p>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={isSingleUse} onChange={e => setIsSingleUse(e.target.checked)} data-testid="coupon-single-use" />
+              <span className="text-xs text-slate-700">Single use (global — expires after first redemption)</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={isOneTimePerOrg} onChange={e => setIsOneTimePerOrg(e.target.checked)} data-testid="coupon-per-org" />
+              <span className="text-xs text-slate-700">One use per partner organisation</span>
+            </label>
+          </div>
+
+          {appliesTo !== "one_time" && plans.length > 0 && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={restrictPlans} onChange={e => { setRestrictPlans(e.target.checked); if (!e.target.checked) setSelectedPlanIds([]); }} data-testid="coupon-restrict-plans" />
+                <span className="text-xs font-medium text-slate-700">Restrict to specific plans</span>
+              </label>
+              {restrictPlans && (
+                <div className="ml-5 space-y-1 max-h-40 overflow-y-auto">
+                  {plans.map(p => (
+                    <label key={p.id} className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" className="h-3.5 w-3.5 rounded border-slate-300" checked={selectedPlanIds.includes(p.id)} onChange={() => togglePlan(p.id)} data-testid={`coupon-plan-${p.id}`} />
+                      <span className="text-xs text-slate-700">{p.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <label className="text-xs font-medium text-slate-700">Active</label>
+            <Switch checked={isActive} onCheckedChange={setIsActive} data-testid="coupon-active-switch" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} data-testid="save-coupon-btn">
+            {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Coupon"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Main PlansTab ────────────────────────────────────────────────────────────
+type TabSection = "plans" | "rates" | "coupons";
+
+export function PlansTab() {
+  const [section, setSection] = useState<TabSection>("plans");
+
+  const tabs: { key: TabSection; label: string; icon: React.ReactNode }[] = [
+    { key: "plans", label: "License Plans", icon: <LayoutList size={14} /> },
+    { key: "rates", label: "One-Time Rates", icon: <Zap size={14} /> },
+    { key: "coupons", label: "Coupons", icon: <Gift size={14} /> },
+  ];
+
+  return (
+    <div className="space-y-6" data-testid="plans-tab">
+      {/* Inner section navigation */}
+      <div className="flex gap-1 border-b border-slate-200">
+        {tabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setSection(t.key)}
+            data-testid={`plans-section-${t.key}`}
+            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
+              section === t.key
+                ? "border-slate-900 text-slate-900 bg-white"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            {t.icon}{t.label}
+          </button>
+        ))}
+      </div>
+
+      {section === "plans" && <PlansSection />}
+      {section === "rates" && <OneTimeRatesSection />}
+      {section === "coupons" && <CouponsSection />}
     </div>
   );
 }
