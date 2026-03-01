@@ -218,3 +218,63 @@ async def view_partner_invoice_html(
         "invoice_settings": invoice_settings,
         "template": template,
     }
+
+
+
+# ---------------------------------------------------------------------------
+# Stripe Customer Portal
+# ---------------------------------------------------------------------------
+
+@router.post("/partner/billing-portal")
+async def create_billing_portal_session(
+    request: Request,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    """
+    Creates a Stripe Customer Portal session so the partner can manage their
+    payment method, view invoices, and cancel subscriptions via Stripe's UI.
+    Returns a portal URL to redirect the partner to.
+    """
+    _require_non_platform(admin)
+    tid = tenant_id_of(admin)
+
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "name": 1, "stripe_customer_id": 1})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    partner_name = tenant.get("name", "")
+    stripe_customer_id = tenant.get("stripe_customer_id")
+
+    try:
+        stripe_sdk.api_key = STRIPE_API_KEY
+
+        # Create or retrieve the Stripe Customer for this partner
+        if not stripe_customer_id:
+            email = admin.get("email", "")
+            customer = stripe_sdk.Customer.create(
+                name=partner_name,
+                email=email,
+                metadata={"tenant_id": tid, "partner_name": partner_name},
+            )
+            stripe_customer_id = customer.id
+            await db.tenants.update_one(
+                {"id": tid},
+                {"$set": {"stripe_customer_id": stripe_customer_id, "updated_at": now_iso()}},
+            )
+
+        host = str(request.base_url).rstrip("/")
+        portal_session = stripe_sdk.billing_portal.Session.create(
+            customer=stripe_customer_id,
+            return_url=f"{host}/admin?tab=my-subscriptions",
+        )
+
+        await create_audit_log(
+            entity_type="tenant", entity_id=tid,
+            action="billing_portal_accessed", actor=admin.get("email", "system"),
+            details={"session_id": portal_session.id},
+        )
+
+        return {"portal_url": portal_session.url}
+
+    except stripe_sdk.error.StripeError as exc:
+        raise HTTPException(status_code=502, detail=f"Stripe error: {exc.user_message or str(exc)}")
