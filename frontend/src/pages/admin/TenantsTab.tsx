@@ -326,6 +326,9 @@ export function TenantsTab() {
           <TabsTrigger value="industries" data-testid="tenants-sub-tab-industries">
             <Briefcase size={14} className="mr-1.5" />Industries
           </TabsTrigger>
+          <TabsTrigger value="tags" data-testid="tenants-sub-tab-tags">
+            <ScrollText size={14} className="mr-1.5" />Tags
+          </TabsTrigger>
         </TabsList>
 
         {/* ── Partner Types management ── */}
