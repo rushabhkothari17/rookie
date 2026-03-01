@@ -379,7 +379,7 @@ async def upgrade_plan(
             )
             await db.partner_orders.update_one(
                 {"id": order_id},
-                {"$set": {"stripe_session_id": session.id}},
+                {"$set": {"stripe_session_id": session.id, "checkout_url": session.url}},
             )
             await create_audit_log(
                 entity_type="tenant", entity_id=tid,
@@ -724,7 +724,7 @@ async def upgrade_plan_ongoing(
                     "coupon_id": coupon_id or "",
                 },
             )
-            await db.partner_orders.update_one({"id": order_id}, {"$set": {"stripe_session_id": session.id}})
+            await db.partner_orders.update_one({"id": order_id}, {"$set": {"stripe_session_id": session.id, "checkout_url": session.url}})
             if coupon_id:
                 await _record_coupon_usage(coupon_id, tid)
             return {"checkout_url": session.url, "session_id": session.id, "amount": final_amount, "currency": currency}
@@ -861,8 +861,8 @@ async def one_time_upgrade(
                     "coupon_id": coupon_id or "",
                 },
             )
-            await db.partner_orders.update_one({"id": order_id}, {"$set": {"stripe_session_id": session.id}})
-            await db.one_time_upgrades.update_one({"id": upgrade_id}, {"$set": {"stripe_session_id": session.id}})
+            await db.partner_orders.update_one({"id": order_id}, {"$set": {"stripe_session_id": session.id, "checkout_url": session.url}})
+            await db.one_time_upgrades.update_one({"id": upgrade_id}, {"$set": {"stripe_session_id": session.id, "checkout_url": session.url}})
             if coupon_id:
                 await _record_coupon_usage(coupon_id, tid)
             return {"checkout_url": session.url, "session_id": session.id,
