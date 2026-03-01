@@ -138,6 +138,12 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ### P0 — Next Sprint
 - ✅ **Role & Permission System Overhaul** — COMPLETE (Mar 2026)
+- ✅ **UI/UX Enhancements Batch** — COMPLETE (Mar 2026)
+  - Shared `ISO_CURRENCIES` constant in `frontend/src/lib/constants.ts`, imported across 4 admin files
+  - SearchableSelect (combobox with search) for Partner and Plan fields in `PartnerOrdersTab` and `PartnerSubscriptionsTab` form modals
+  - Currency field in `PartnerOrders` create/edit form changed from text input to Select dropdown
+  - "Pending" status badge readability fixed in both `PartnerOrdersTab` and `PartnerSubscriptionsTab`
+  - Real-time Next Billing Date + Expiry Date computation already in place in subscription forms
 
 ### P1 — Future
 - **Google Drive & OneDrive** cloud storage integration (currently "Coming Soon")
