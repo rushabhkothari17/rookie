@@ -827,5 +827,8 @@ export function TenantsTab() {
         />
       )}
     </div>
+    </TabsContent>
+    </Tabs>
+  </div>
   );
 }
