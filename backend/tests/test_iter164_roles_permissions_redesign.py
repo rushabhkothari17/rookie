@@ -14,15 +14,14 @@ BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 
 
 def get_platform_admin_token():
-    """Get auth token for platform super admin."""
-    # First login with partner code
+    """Get auth token for platform super admin (no partner_code - direct login)."""
     r = requests.post(f"{BASE_URL}/api/auth/login", json={
-        "partner_code": "automate-accounts",
         "email": "admin@automateaccounts.local",
         "password": "ChangeMe123!"
     })
     if r.status_code == 200:
-        return r.json().get("token") or r.cookies.get("token")
+        data = r.json()
+        return data.get("token") or data.get("access_token") or r.cookies.get("token")
     return None
 
 
