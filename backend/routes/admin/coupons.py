@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from core.helpers import make_id, now_iso
-from core.tenant import require_platform_admin, get_tenant_admin, tenant_id_of
+from core.tenant import require_platform_admin, require_platform_super_admin, get_tenant_admin, tenant_id_of
 from db.session import db
 from services.audit_service import create_audit_log
 

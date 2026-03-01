@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from core.helpers import make_id, now_iso
-from core.tenant import require_platform_admin
+from core.tenant import require_platform_admin, require_platform_super_admin
 from db.session import db
 from services.audit_service import create_audit_log
 
