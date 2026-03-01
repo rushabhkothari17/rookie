@@ -122,9 +122,9 @@ export function MyOrdersTab() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="text-center py-8 text-slate-400">Loading…</td></tr>
+              <tr><td colSpan={8} className="text-center py-8 text-slate-400">Loading…</td></tr>
             ) : orders.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-8 text-slate-400">No orders found.</td></tr>
+              <tr><td colSpan={8} className="text-center py-8 text-slate-400">No orders found.</td></tr>
             ) : orders.map(o => (
               <tr key={o.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3 font-mono text-xs text-slate-600">{o.order_number}</td>
@@ -136,6 +136,17 @@ export function MyOrdersTab() {
                 </td>
                 <td className="px-4 py-3 text-slate-500 text-xs">{o.due_date ? new Date(o.due_date).toLocaleDateString() : "—"}</td>
                 <td className="px-4 py-3 text-slate-500 text-xs">{o.paid_at ? new Date(o.paid_at).toLocaleDateString() : "—"}</td>
+                <td className="px-4 py-3 text-right">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Download Invoice PDF"
+                    onClick={() => handleDownloadInvoice(o.id, o.order_number)}
+                    data-testid={`download-invoice-${o.id}`}
+                  >
+                    <Download className="h-4 w-4 text-slate-500" />
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
