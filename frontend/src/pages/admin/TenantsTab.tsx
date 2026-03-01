@@ -34,6 +34,19 @@ type TenantUser = {
   email: string;
   full_name: string;
   role: string;
+interface ModuleInfo {
+  key: string;
+  name: string;
+  description: string;
+}
+
+interface PresetRole {
+  key: string;
+  name: string;
+  description: string;
+  access_level: string;
+  modules: string[];
+}
   is_active: boolean;
 };
 
