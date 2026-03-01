@@ -56,6 +56,7 @@ interface PresetRole {
 }
 
 export function TenantsTab() {
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedTenant, setExpandedTenant] = useState<string | null>(null);
@@ -73,10 +74,16 @@ export function TenantsTab() {
   const [newPartner, setNewPartner] = useState({
     name: "", admin_name: "", admin_email: "", admin_password: "",
     base_currency: "GBP",
+    partner_type: "", industry: "", tags: "",
     address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" },
   });
   const [createCountry, setCreateCountry] = useState("");
   const createProvinces = useProvinces(createCountry);
+
+  // Edit org details dialog
+  const [showEditDetails, setShowEditDetails] = useState<Tenant | null>(null);
+  const [editDetailsForm, setEditDetailsForm] = useState({ name: "", partner_type: "", industry: "", tags: "" });
+  const [savingDetails, setSavingDetails] = useState(false);
 
   // Create partner admin dialog
   const [showCreateAdmin, setShowCreateAdmin] = useState<string | null>(null);
