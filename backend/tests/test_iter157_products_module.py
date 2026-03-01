@@ -67,19 +67,19 @@ class TestAuth:
 
     def test_platform_admin_login(self):
         res = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "partner_code": PLATFORM_CODE, "email": PLATFORM_EMAIL, "password": PLATFORM_PASS,
+            "email": PLATFORM_EMAIL, "password": PLATFORM_PASS,
         })
         assert res.status_code == 200, f"Login failed: {res.text}"
         data = res.json()
-        assert "access_token" in data or "token" in data
+        assert "token" in data or "access_token" in data
 
     def test_partner_admin_login(self):
-        res = requests.post(f"{BASE_URL}/api/auth/login", json={
+        res = requests.post(f"{BASE_URL}/api/auth/partner-login", json={
             "partner_code": PARTNER_CODE, "email": PARTNER_EMAIL, "password": PARTNER_PASS,
         })
         assert res.status_code == 200, f"Login failed: {res.text}"
         data = res.json()
-        assert "access_token" in data or "token" in data
+        assert "token" in data or "access_token" in data
 
     def test_unauthenticated_products_returns_401(self):
         res = requests.get(f"{BASE_URL}/api/admin/products-all")
