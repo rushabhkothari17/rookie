@@ -15,10 +15,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/alert-alert-dialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-
-const ISO_CURRENCIES = ["GBP","USD","EUR","AUD","CAD","CHF","SGD","NZD","HKD","JPY","INR","AED","ZAR","MYR","NOK","SEK","DKK"];
+import { Copy, ExternalLink, RefreshCw, Plus, Pencil, Trash2, Download } from "lucide-react";
+import { ISO_CURRENCIES } from "@/lib/constants";
 
 type Tenant = { id: string; name: string };
 type Plan = { id: string; name: string; is_active: boolean };
