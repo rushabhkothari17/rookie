@@ -1,82 +1,82 @@
 <analysis>**original_problem_statement:**
-The user has requested a major overhaul of the billing and plan management system, introducing a multi-faceted set of new features.
+The user initially requested a major overhaul of the billing and plan management system. After that was completed, they requested several new features and improvements:
 
 **PRODUCT REQUIREMENTS:**
 
-*   **Billing Logic:**
-    *   **Pro-rata Calculation:** Retain the existing formula for new subscriptions.
-    *   **Unpaid Subscriptions:** If a renewal order remains  for more than a day, the associated subscription's status must be changed to . When the order is later marked , the subscription should automatically revert to .
-    *   **Free Plan:** The default Free Plan should be protected from being edited or deleted by platform admins.
-    *   **Status Cleanup:** The  subscription status should be removed from the system. Subscriptions in a  state should be treated as if they are on the Free Plan.
+*   **Billing Logic & New Upgrade Flows (Completed):**
+    *   Implemented complex billing logic (pro-rata, unpaid status handling, etc.).
+    *   Created two new upgrade flows for partners: Upgrade - Ongoing Plan and Upgrade - One-time Limits.
+    *   Added admin modules for managing One Time Plans and Coupons.
 
-*   **New Upgrade Flows:**
-    *   **Two Upgrade Buttons:** The partner's billing page should have two distinct upgrade options:
-        1.  **Upgrade - Ongoing Plan**: For upgrading the recurring subscription (e.g., from Starter to Professional). The partner pays the flat difference in price for the current billing period upfront. The recurring charge is updated from the next billing cycle.
-        2.  **Upgrade - One-time Limits**: For purchasing temporary add-ons to the current plan's limits (e.g., +50 customers for this month only). These boosts reset at the next renewal.
-    *   **One Time Plans Module:** A new admin module for platform admins to define a rate table (price per unit) for the one-time limit upgrades (e.g.,  per extra customer).
+*   **Coupon Usage Report (Completed):**
+    *   Add a new Coupon Usage Report page for admins, showing which partners used which coupons, when, and the financial impact.
+    *   Include summary statistics and a detailed data table with filtering.
 
-*   **Coupons:**
-    *   Implement a full coupon management system for platform and super admins.
-    *   Coupons can be a percentage or flat amount, with an expiry date.
-    *   They can be configured for one-time use, apply to specific plans, and be restricted to one use per partner organization.
-    *   The coupon code should be applied in-app *before* the Stripe checkout is initiated.
+*   **Role & Permission System (Completed):**
+    *   Enforce a distinction between  (full access) and  (restricted access) at the API level.
+    *   Enforce module-level read/write permissions for partner-level users, blocking access at both the UI (sidebar) and API level.
 
-*   **Role Management (DEFERRED):**
-    *   A complex role system was requested, including  and  roles with specific restrictions, along with granular module-level read/write permissions. This was deemed a separate, large-scale task and has been deferred.
+*   **UI/UX Enhancements (In Progress):**
+    *   **Currency Consistency:** The same list of currencies should appear in the dropdowns for creating/editing plans, one-time rates, partner subscriptions, and partner orders.
+    *   **Real-time Form Updates:** In the manual subscription creation form, the Next Billing Date and Expiry Date should update instantly as the user changes the start date, billing interval, or contract term.
+    *   **Searchable Dropdowns:** The Plan and Partner selection dropdowns in the partner subscriptions and orders tabs should be searchable.
+    *   **Status Badge Fix:** The Pending status badge in the partner orders tab is difficult to read and needs a style adjustment.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has performed a massive, parallel implementation of the backend logic required for the new billing features. This includes creating new database models for  and , adding new API endpoints for the two upgrade flows, and modifying the scheduler service to handle unpaid subscriptions and reset one-time boosts. The backend code has been written and organized into new and existing files. However, **none of the corresponding frontend changes have been made.** The application is currently in a broken, half-implemented state.
+The agent has successfully implemented the vast majority of the user's requests, including the complex billing system frontend, a new coupon usage report, and a comprehensive role-based permission system for both platform and partner admins.
+
+The agent was in the middle of implementing a final batch of UI/UX improvements across several admin panel pages. It started editing multiple frontend files in parallel (, , ) but did not complete the changes. The application is currently in a broken state due to this partial implementation.
 
 **Last working item**:
-    - Last item agent was working: Implementing the extensive list of billing and plan management features. The agent finished writing all the required backend code, including new models, routes, services, and scheduler jobs. The last action was verifying that the new backend code compiles without errors.
+    - Last item agent was working: Implementing a batch of UI/UX enhancements across the admin panel as requested by the user. This involves centralizing a currency list, adding real-time date calculations to a form, making dropdowns searchable, and fixing a UI badge style.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? both
+    - Which testing method agent to use? frontend testing agent
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - **Issue 1: Mis-aligned Frontend and Backend (Priority: P0)**
-    - The backend has been significantly changed to support new upgrade flows, coupons, and billing logic, but the frontend is completely unaware of these changes. The UI does not have the new buttons, modals, or form fields.
-    - Attempted fixes: None. The backend implementation was just completed.
-    - Next debug checklist: The next agent MUST implement the corresponding frontend changes in  and .
-    - Why fix this issue and what will be achieved with the fix? The application is currently broken. Fixing this will complete the feature implementation and make the new billing flows functional.
-    - Status: IN PROGRESS
-    - Is recurring issue? N
-    - Should Test frontend/backend/both after fix? both
-    - Blocked on other issue: None.
+  - **Issue 1: Complete and Test UI/UX Enhancements (Priority: P0)**
+     - **Description:** The agent began implementing several UI/UX improvements but was interrupted, leaving the frontend in a partially-implemented and likely broken state. The changes need to be completed and verified.
+     - **Attempted fixes:** The agent started modifying , , and , but the work is incomplete.
+     - **Next debug checklist:**
+         1.  Create a shared currency constant (e.g., in ) and import it into , , , and  to ensure consistency.
+         2.  In , complete the implementation of the  hook to automatically calculate  and  when form dependencies change.
+         3.  In  and , replace the standard  components for Partner and Plan with searchable  components.
+         4.  In , adjust the CSS for the Pending status  to ensure text is legible (e.g., change text color or background).
+         5.  Thoroughly test all affected forms and tables in the admin panel.
+     - **Why fix this issue and what will be achieved with the fix?** This will fulfill the user's latest request, improve the usability of the admin panel, and restore the application to a working state.
+     - **Status:** IN PROGRESS
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** frontend
 
 **In progress Task List**:
-  - **Task 1: Complete the Billing & Plan Management Feature Implementation (Priority: P0)**
-     - Where to resume: The backend code is written. The next agent must now implement all the frontend changes. Key files to modify are  (for the two new upgrade buttons and modals) and  (for the One Time Plans rate table and Coupons CRUD sections).
-     - What will be achieved with this? This will complete the user's complex request, introducing flexible new revenue models (one-time upgrades) and marketing tools (coupons).
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? both
-     - Blocked on something: None.
+  - None, as the only in-progress work is captured in the P0 issue above.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks (P1):**
-    *   **Role & Permission System Overhaul:** Implement the deferred role management features, including  and , and granular module-level read/write permissions.
 *   **Future Tasks (from PRD):**
-    *   **(P2) UI/UX Fix - Add User Form Parity:** This task was in progress but was superseded by the large billing feature request. It needs to be re-evaluated after the current work is complete.
-    *   **(P2) Google Drive & OneDrive Integration**.
-    *   **(P2) Customer Portal Enhancements**: Implement self-service subscription cancellation, display renewal dates, and a Reorder button.
-    - **(P2) Centralize Email Settings**.
+    *   **(P2) UI/UX Fix - Add User Form Parity.**
+    *   **(P2) Google Drive & OneDrive Integration.**
+    *   **(P2) Customer Portal Enhancements:** Implement self-service subscription cancellation, display renewal dates, and a Reorder button.
+    *   **(P2) Centralize Email Settings.**
 
 **Completed work in this session**
-- **Backend Implementation (Code Written, Not Tested):**
-  - Created new backend models: , .
-  - Created new API routes: , .
-  - Heavily modified  to handle unpaid subscriptions and reset one-time boosts on renewal.
-  - Modified  and  to add new endpoints and logic for ongoing and one-time upgrades.
-  - Updated  to protect the default plan.
-  - Updated  to propagate paid order status to the subscription.
-  - Added a startup migration in  to set the  flag on the Free Plan.
+- **Billing System Frontend Implementation:**
+  - Built the partner-facing UI for Ongoing Plan and One-time Limit upgrades ().
+  - Built the admin-facing UI for managing Coupons and One-Time Rate tables ().
+- **Coupon Usage Report Feature:**
+  - Added a backend endpoint () and updated order logic to store discount data.
+  - Created a new Coupon Usage tab in the admin panel with summary stats and a detailed report table.
+- **Role & Permission System Overhaul:**
+  - Implemented API-level restrictions to differentiate  from .
+  - Enforced module-level permissions for partner users at both the API (route protection) and UI (dynamic sidebar) levels.
+- **Bug Fixes:**
+  - Corrected several logic errors in partner-facing API endpoints that were introduced during refactoring.
+  - Fixed multiple incorrect role checks in the frontend that were preventing access to certain admin tabs.
 
 **Earlier issues found/mentioned but not fixed**
-   - The complex role and permissions overhaul was explicitly deferred to a future session.
-   - Add User Form Parity was partially completed but then paused.
+   - None.
 
 **Known issue recurrence from previous fork**
   - None.
@@ -85,76 +85,69 @@ The agent has performed a massive, parallel implementation of the backend logic 
 
 
 **Key Technical Concepts**
-- **Dual Upgrade Paths**: Differentiating between recurring Ongoing Plan upgrades and temporary One-time Limit upgrades, each with its own pricing logic and Stripe Checkout flow.
-- **Dynamic Rate Tables**: A new  collection allows admins to set prices for consumable resources, forming the basis for the one-time upgrade feature.
-- **In-App Coupon Application**: Applying discounts before creating the Stripe Checkout session, allowing for complex validation logic within the application.
-- **Scheduler-Driven Status Management**: Using a background scheduler () to automatically change subscription statuses based on payment states (e.g., to ) and to reset temporary boosts.
+- **Role-Based Access Control (RBAC):** Implemented both on the backend (API endpoint decorators) and frontend (dynamic component rendering based on permissions fetched via Context API).
+- **Real-time Form Calculation:** Using React's  hook to listen for changes in multiple form inputs and trigger recalculations for dependent fields.
+- **Component Composition:** Using Shadcn UI components like , , and . The pending task involves replacing  with a searchable .
+- **Shared State Management:** Using React's Context API () to provide user authentication status and permissions to all components in the tree.
 
 **key DB schema**
-- **one_time_plans**: 
-- **coupons**: 
-- **plans**: added 
-- **subscriptions**: added  (e.g., )
+  - **orders**: Added ,  to facilitate coupon reporting.
+  - **users**:  and  fields are now actively used for permission enforcement.
 
 **changes in tech stack**
-- None.
+  - None.
 
 **All files of reference**
-*   **New Backend Files**:
+*   **Files to be finished/fixed:**
     *   
     *   
     *   
     *   
-*   **Modified Backend Files**:
-    *    (added new routers, startup migration)
-    *    (added  helper)
-    *    (new job for unpaid subscriptions, reset boosts)
-    *    (new upgrade endpoints)
-    *    (new webhook handler for one-time upgrades)
-    *    (protect default plan)
-    *    (activate subscription on paid order)
-*   **Key Frontend Files to be Modified**:
-    *    (to add coupon and one-time plan management)
-    *    (to add the two new upgrade buttons and modals)
+*   **Key files modified in this session:**
+    *   
+    *   
+    *   
+    *   
+    *   
+    *   
+    *    (all files in this directory)
 
 **Areas that need refactoring**:
-- None explicitly identified, but the large influx of code will require thorough testing and potential cleanup.
+- A hardcoded  array was being added to multiple files. This should be extracted into a single shared constant (e.g., in  or a similar location) and imported where needed to avoid duplication and ensure consistency.
 
 **key api endpoints**
-*   **New Endpoints:**
-    *   , , , 
-    *   , , , 
-    *   
-    *   
-    *   
-*   **Modified Endpoints:**
-    *    (now triggers subscription activation)
-    *    (now blocks deletion of default plan)
+*   **New:** 
+*   **Modified:**
+    *   : Now returns the user's  in the payload.
+    *   , , , etc.: Restricted to .
+    *   All partner-facing endpoints under : Now have API-level permission checks based on the user's assigned modules.
 
 **Critical Info for New Agent**
-1.  **You are in the middle of a major implementation.** The previous agent has written all the backend code for a complex set of billing features but has **not started the frontend implementation.** The application is currently in a non-functional state.
-2.  **Your immediate and only priority is to build the frontend UI** to match the new backend capabilities. Do not get sidetracked.
-3.  **Key Frontend Files:** Focus your efforts on  (for the new partner-facing upgrade flows) and  (for the new admin-facing coupon and rate table management).
-4.  **Test Thoroughly:** Once the frontend is implemented, you must conduct comprehensive end-to-end testing of all new flows: creating coupons, setting one-time rates, and executing both types of plan upgrades with and without coupons.
-5.  **Deferred Task:** The complex role and permission overhaul has been explicitly postponed. Do not attempt to implement it until the current billing feature is fully complete and verified by the user.
+1.  **You are resuming an unfinished task.** The previous agent was implementing a batch of UI/UX improvements and left the frontend code in a partially complete, non-functional state.
+2.  **Your immediate priority (P0) is to finish this implementation.** Refer to the  for a detailed checklist of what needs to be done across the four affected frontend files.
+3.  **The task is purely frontend.** All required backend logic is already in place.
+4.  **Refactor the currency list.** While implementing the currency consistency, create a single, shared  constant and import it, rather than duplicating the array in each file.
+5.  Once the code is complete, perform thorough testing on the admin panel, focusing on the forms and tables for Plans, Subscriptions, and Orders to ensure all new functionalities work as expected.
 
 **documents and test reports created in this job**
-- None.
+  - 
+  - 
+  - 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Confirmed payment logic for ongoing plan upgrades: pay the difference now, new rate from next cycle.
-2.  **User:** Clarified one-time limit upgrades are additive, paid per unit, and reset on renewal. They stack on top of higher plan limits.
-3.  **User:** Specified that coupons should be applied in-app before checkout and are per-partner-organization.
-4.  **User:** Requested all features to be implemented in one go.
-5.  **Agent:** Asked clarifying questions about the new upgrade flows and coupons.
-6.  **User:** Requested two types of upgrade buttons (Ongoing plan vs One-time limits), a One Time Plans rate table module, and a full coupon system.
-7.  **Agent:** Responded to a long list of questions about billing automation, clarifying existing logic and identifying gaps to be fixed.
-8.  **User:** Asked a series of detailed questions about billing automation (pro-rata, next billing date, renewal reminders, cancellation behavior) and requested several enhancements.
-9.  **Agent:** Confirmed successful implementation of Stripe Checkout for plan upgrades.
-10. **User:** yes, since stripe is connected to automate-accounts, can you not use that? - confirming to proceed with Stripe integration for upgrades.
+1.  **User:** Requested a series of UI/UX improvements across multiple admin pages (currency consistency, real-time date calculations, searchable dropdowns, and a status badge fix). This is the current task.
+2.  **Agent:** Confirmed the hardcoded nature of the currency dropdown list.
+3.  **User:** Asked where the currency dropdown options come from in the subscription form.
+4.  **Agent:** Explained the logic for how a subscription's currency is determined.
+5.  **User:** Asked a clarifying question about subscription currency.
+6.  **Agent:** Finished the permissions task.
+7.  **Agent:** Implemented the permissions feature.
+8.  **User:** Confirmed the requirements for the permissions overhaul.
+9.  **Agent:** Asked clarifying questions to define the scope of the permissions task.
+10. **Agent:** Finished the Coupon Usage Report feature.
 
 **Project Health Check:**
-- **Broken**: YES. The backend has been heavily modified, but the frontend has not been updated. The application is not in a runnable or testable state.
+- **Broken**: YES. The frontend is in a non-compilable state due to a partially completed implementation across multiple files.
 - **Mocked**: None.
 
 **3rd Party Integrations**
@@ -168,18 +161,18 @@ The agent has performed a massive, parallel implementation of the backend logic 
 *    &  (Backend, for Invoice PDF Generation)
 
 **Testing status**
-  - Testing agent used after significant changes: NO
+  - Testing agent used after significant changes: YES (twice in this session)
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: None.
-  - Known regressions: The entire application is in a broken state due to the partial implementation.
+  - Known regressions: The entire admin panel UI is likely broken or malfunctioning due to the incomplete edits.
 
 **Credentials to test flow:**
-- **Platform Admin:**
+- **Platform Super Admin:**
     - Email: 
     - Password: 
-- **Partner 1 (Liger Inc):**
+- **Partner Admin (Liger Inc):**
     - Email: 
     - Password: 
 
 **What agent forgot to execute**
-- The agent was mid-execution of a very large plan. It did not forget anything, but the task is only 50% complete. The entire frontend implementation for the new billing features is pending. The complex role management feature was intentionally deferred.</analysis>
+The agent did not forget but was interrupted mid-task. It needs to complete the implementation of the UI/UX features requested by the user in message #371. The changes in , , and  are incomplete, and the changes for  have not been started.</analysis>
