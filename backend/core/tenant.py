@@ -64,6 +64,19 @@ async def require_platform_admin(
     return user
 
 
+async def require_platform_super_admin(
+    user: Dict[str, Any] = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """FastAPI dependency: only platform_super_admin may proceed.
+    Regular platform_admin is explicitly blocked — use for destructive/sensitive actions."""
+    if user.get("role") != "platform_super_admin":
+        raise HTTPException(
+            status_code=403,
+            detail="This action requires platform super admin access. Contact your platform owner.",
+        )
+    return user
+
+
 async def resolve_tenant(partner_code: str) -> Dict[str, Any]:
     """Look up a tenant by code/slug. Raises 400 if not found, 403 if inactive."""
     tenant = await db.tenants.find_one({"code": partner_code.lower()}, {"_id": 0})
