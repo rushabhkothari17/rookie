@@ -124,12 +124,13 @@ export function MyOrdersTab() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="text-center py-8 text-slate-400">Loading…</td></tr>
+              <tr><td colSpan={9} className="text-center py-8 text-slate-400">Loading…</td></tr>
             ) : orders.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-8 text-slate-400">No orders found.</td></tr>
+              <tr><td colSpan={9} className="text-center py-8 text-slate-400">No orders found.</td></tr>
             ) : orders.map(o => (
               <tr key={o.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3 font-mono text-xs text-slate-600">{o.order_number}</td>
+                <td className="px-4 py-3 font-mono text-xs text-slate-500">{o.subscription_number || "—"}</td>
                 <td className="px-4 py-3">{o.description}</td>
                 <td className="px-4 py-3 text-slate-500 text-xs">{o.plan_name || "—"}</td>
                 <td className="px-4 py-3 font-semibold">{fmtAmt(o.amount, o.currency)}</td>
