@@ -167,6 +167,8 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
                                   "stripe_session_id", "order_number")
                         if k in pending_upgrade_raw
                     }
+                    # Use the real URL from Stripe (may differ from stored)
+                    pending_upgrade["checkout_url"] = session.url
             except Exception:
                 # If Stripe is unreachable, fall back to showing the banner
                 pending_upgrade = {
