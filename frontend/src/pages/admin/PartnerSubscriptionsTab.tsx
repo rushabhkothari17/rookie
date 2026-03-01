@@ -117,7 +117,7 @@ const emptyForm = (): SubFormData => ({
   term_months: "", auto_cancel_on_termination: false, reminder_days: "", contract_end_date: "",
 });
 
-const ISO_CURRENCIES = ["GBP","USD","EUR","AUD","CAD","CHF","SGD","NZD","HKD","JPY","INR","AED","ZAR","MYR","NOK","SEK","DKK"];
+const ISO_CURRENCIES_UNUSED = undefined; // removed - using shared constant
 
 /** Add N months to a date string, always returning the 1st of the resulting month */
 function addMonthsFirstOfMonth(dateStr: string, months: number): string {
