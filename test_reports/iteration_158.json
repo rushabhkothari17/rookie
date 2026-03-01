@@ -1,0 +1,105 @@
+{
+  "summary": "Comprehensive testing of Partner Subscriptions new features: auto-calc Next Billing Date/Expiry Date, ISO currency dropdown, Expiry Date column in table, Stripe Customer Portal button. All 18 backend tests PASS. Frontend mostly PASS with 1 bug found in NBD manual preservation logic.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "PartnerSubscriptionsTab - SubFormModal",
+        "issue": "When user manually edits Next Billing Date (causing 'auto' badge to disappear), then changes Billing Interval → the manually-entered NBD is OVERWRITTEN by auto-calc. The requirement states 'manual value preserved when interval changes'. Root cause: line 298 calls `setNbtManual(false)` in the Billing Interval onChange handler before setting the new value, causing the useEffect to recalculate and overwrite.",
+        "selector": "PartnerSubscriptionsTab.tsx line 298: onValueChange={v => { setNbtManual(false); set(\"billing_interval\", v); }}",
+        "priority": "MEDIUM",
+        "fix": "Remove `setNbtManual(false)` from the billing interval Select's onValueChange. Only reset nbtManual on start_date change (which already correctly resets both flags). The billing interval change should NOT reset the manual flag."
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "verified_features": {
+    "expiry_date_column_in_table": "PASS - 'EXPIRY' column visible in partner subscriptions table",
+    "new_subscription_button": "PASS - create-partner-sub-btn present and opens modal",
+    "currency_iso_dropdown": "PASS - sub-currency-select shows GBP, USD, EUR, AUD, CAD, CHF, SGD, NZD, HKD, JPY, INR, AED, ZAR, MYR, NOK, SEK, DKK",
+    "nbd_auto_monthly": "PASS - Start date 2026-04-01 + monthly → NBD 2026-05-01 with 'auto' badge",
+    "nbd_auto_quarterly": "PASS - Start date 2026-04-01 + quarterly → NBD 2026-07-01 with 'auto' badge",
+    "nbd_auto_annual": "PASS - Start date 2026-04-01 + annual → NBD 2027-04-01 with 'auto' badge",
+    "nbd_manual_badge_disappears": "PASS - Manually editing NBD field causes 'auto' badge to disappear",
+    "nbd_manual_preserved_on_interval_change": "FAIL - BUG: Manually-entered NBD is overwritten when billing interval changes",
+    "expiry_auto_term_months_12": "PASS - Term months=12 + start_date=2026-04-01 → Expiry Date auto-set to 2027-04-01 with 'auto' badge",
+    "expiry_auto_badge_disappears_on_manual": "PASS - Manually editing Expiry Date removes the 'auto' badge",
+    "term_months_input": "PASS - partner-sub-term-months input present",
+    "expiry_date_input": "PASS - partner-sub-expiry-date input present",
+    "auto_cancel_checkbox": "PASS - partner-sub-auto-cancel checkbox present",
+    "my_subscriptions_tab": "PASS - Partner admin My Subscriptions tab loads correctly",
+    "manage_payment_method_button": "PASS - open-billing-portal-btn present with CreditCard icon and 'Manage Payment Method' text",
+    "billing_portal_redirect": "PASS - Clicking button calls /api/partner/billing-portal and redirects to Stripe Customer Portal (https://billing.stripe.com/p/session/...)",
+    "billing_portal_stripe_working": "PASS - Stripe Customer Portal is actually configured and working in test environment (not mocked)"
+  },
+
+  "backend_verified": {
+    "advance_billing_date_monthly": "PASS - 2026-05-01 + monthly = 2026-06-01",
+    "advance_billing_date_quarterly": "PASS - 2026-04-01 + quarterly = 2026-07-01",
+    "advance_billing_date_annual": "PASS - 2026-04-01 + annual = 2027-04-01",
+    "advance_billing_date_year_boundary": "PASS - 2026-12-01 + monthly = 2027-01-01",
+    "advance_billing_date_always_1st": "PASS - always returns 1st of month",
+    "partner_billing_portal_no_auth_403": "PASS",
+    "platform_admin_billing_portal_403": "PASS - platform admin correctly blocked",
+    "partner_billing_portal_redirect": "PASS - returns portal_url",
+    "unknown_session_404": "PASS - /api/partner/upgrade-plan-status?session_id=unknown returns 404",
+    "partner_my_subscriptions_list": "PASS",
+    "platform_admin_my_subs_403": "PASS",
+    "create_sub_with_expiry": "PASS - contract_end_date stored correctly",
+    "currency_iso_stored": "PASS - GBP, USD, EUR all stored correctly"
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_iter158_partner_billing_new_features.py",
+    "/app/test_reports/pytest/pytest_iter158.xml"
+  ],
+
+  "action_items": [
+    "BUG FIX REQUIRED: Remove `setNbtManual(false)` from Billing Interval Select's onValueChange in PartnerSubscriptionsTab.tsx line 298. Change `onValueChange={v => { setNbtManual(false); set(\"billing_interval\", v); }}` to `onValueChange={v => { set(\"billing_interval\", v); }}`. This preserves manual NBD when user changes interval."
+  ],
+
+  "critical_code_review_comments": [
+    "PartnerSubscriptionsTab.tsx line 298: `setNbtManual(false)` is called when billing interval changes, which resets the auto-calc mode and causes the useEffect to overwrite any manually-entered NBD value. The requirement says 'manual value preserved when interval changes'. Fix: don't call setNbtManual(false) on interval change."
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_iter158_partner_billing_new_features.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "92% (11/12 flows verified - NBD manual preservation fails)"
+  },
+
+  "test_credentials": {
+    "platform_admin": "partner_code=automate-accounts, email=admin@automateaccounts.local, password=ChangeMe123!",
+    "partner_admin": "partner_code=test-partner-co, email=testpartner@example.com, password=TestPass123!"
+  },
+
+  "seed_data_creation": "Created during backend tests: TEST_ITER158 subscriptions with expiry dates (3 subs: 1 with 12-month term, 2 with USD/EUR currencies for 'Apex Holding' partner).",
+
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+
+  "context_for_next_testing_agent": "Partner Subscriptions new features tested. 18 backend tests all PASS. Frontend mostly PASS. 1 bug found: manual NBD overwritten when billing interval changes. Location: PartnerSubscriptionsTab.tsx line 298. Fix is removing setNbtManual(false) from billing interval onChange. Stripe Customer Portal is fully configured in test environment and works (redirects to https://billing.stripe.com/). Scheduler advance_billing_date is correct. All other auto-calc features (monthly/quarterly/annual NBD, Expiry Date from term_months) work correctly.",
+
+  "rca_of_issue": {
+    "bug": "Manual NBD value overwritten when billing interval changes",
+    "root_cause": "Line 298 of PartnerSubscriptionsTab.tsx calls setNbtManual(false) when billing interval changes. This resets the 'isManual' flag to false, causing the useEffect (which depends on [form.start_date, form.billing_interval]) to re-execute and recalculate the NBD, overwriting the manually-entered value.",
+    "reproduction_steps": [
+      "1. Open New Subscription modal",
+      "2. Set Start Date to 2026-04-01 (NBD auto-sets to 2026-05-01)",
+      "3. Manually edit Next Billing Date to 2027-06-01 (auto badge disappears)",
+      "4. Change Billing Interval from monthly to quarterly",
+      "5. Observe: NBD is recalculated to 2026-07-01 instead of staying at 2027-06-01"
+    ],
+    "mitigation": "Remove `setNbtManual(false)` from the Billing Interval Select's onValueChange handler. The nbtManual flag should only be reset when start_date changes (already done on line 312) - not when billing interval changes."
+  }
+}
