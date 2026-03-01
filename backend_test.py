@@ -46,7 +46,7 @@ class PartnerAdminTester:
                 if resp.status == 200:
                     result = await resp.json()
                     print(f"Login response: {result}")  # Debug output
-                    self.admin_token = result.get("access_token")
+                    self.admin_token = result.get("token")  # Fix: use "token" not "access_token"
                     if self.admin_token:
                         # Update session headers with auth token
                         self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
