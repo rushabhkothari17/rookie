@@ -359,9 +359,11 @@ class AdminCreateUserRequest(BaseModel):
     job_title: Optional[str] = ""
     phone: Optional[str] = ""
     password: str
-    role: str = "admin"
-    # Permission fields
-    access_level: Optional[str] = "full_access"
+    role: str = "partner_admin"
+    # New per-module permissions format
+    module_permissions: Optional[Dict[str, str]] = None  # {module_key: "read"|"write"}
+    # Legacy fields (kept for backwards compatibility)
+    access_level: Optional[str] = "read_only"
     modules: Optional[List[str]] = None
     preset_role: Optional[str] = None
 
