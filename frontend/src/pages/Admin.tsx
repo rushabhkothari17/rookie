@@ -47,13 +47,23 @@ const TAB_CLASS =
 export default function Admin() {
   const { user: authUser, permissions } = useAuth();
   const ws = useWebsite();
-  const isSuperAdmin = authUser?.role === "super_admin" || authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin" || authUser?.role === "partner_super_admin";
+  const isSuperAdmin = authUser?.role === "platform_super_admin" || authUser?.role === "partner_super_admin" || authUser?.role === "super_admin";
   const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
+  const isPlatformSuperAdmin = authUser?.role === "platform_super_admin";
 
-  // Permissions helper: super admins see all, others only see assigned modules
+  // Permissions helpers
   const hasModule = (module: string): boolean => {
     if (isSuperAdmin) return true;
+    const mp = permissions?.module_permissions;
+    if (mp && Object.keys(mp).length > 0) return !!mp[module];
     return permissions?.modules?.includes(module) ?? false;
+  };
+
+  const hasWrite = (module: string): boolean => {
+    if (isSuperAdmin) return true;
+    const mp = permissions?.module_permissions;
+    if (mp) return mp[module] === "write";
+    return false;
   };
 
   // Reactively track whether platform admin is viewing as another tenant
