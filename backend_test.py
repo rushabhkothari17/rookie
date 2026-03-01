@@ -194,6 +194,8 @@ class PartnerAdminTester:
         except Exception as e:
             print(f"❌ Partner Super Admin creation error: {e}")
             return False
+    
+    async def create_partner_super_admin_default(self) -> bool:
         """Test: Create Partner Super Admin without access_level to see default behavior."""
         print(f"\n🔍 Additional Test: Creating Partner Super Admin without access_level...")
         
