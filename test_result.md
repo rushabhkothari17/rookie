@@ -246,6 +246,18 @@ backend:
         agent: "testing"
         comment: "✅ ALL CRITICAL BUG FIXES VERIFIED - 1) Stripe subscription checkout now uses mode='subscription' correctly (tested with prod_bookkeeping). Session creation successful with no 'payment mode but recurring price' error. 2) GoCardless errors return proper string messages, not raw Pydantic objects. 3) All error responses have string 'detail' field. 4) Error messages are human-readable. Comprehensive testing completed with 4/4 validations passed."
 
+  - task: "Partner Orgs - Add User Form Parity"
+    implemented: true
+    working: "NA"
+    file: "backend/routes/admin/tenants.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented granular permissions (access_level, modules, preset_role) for Partner Admin creation in backend."
+
 frontend:
   - task: "Cart Error Handling - No React Crash"
     implemented: true
