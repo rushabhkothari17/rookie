@@ -19,8 +19,6 @@ from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["admin-permissions"])
 
-# ── Module Definitions ────────────────────────────────────────────────────────
-
 PLATFORM_MODULES: Dict[str, Dict] = {
     "partner_orgs":            {"name": "Partner Orgs",            "description": "Manage partner organisations"},
     "plans":                   {"name": "Plans",                   "description": "Manage partner plans and billing tiers"},
