@@ -16,7 +16,7 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, ExternalLink, ScrollText, RefreshCw, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, ScrollText, RefreshCw, Copy, Download } from "lucide-react";
 
 type Tenant = { id: string; name: string };
 type Plan = { id: string; name: string; is_active: boolean };
