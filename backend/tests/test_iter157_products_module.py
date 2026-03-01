@@ -23,28 +23,27 @@ TEST_PREFIX = "TEST_PROD_157"
 
 @pytest.fixture(scope="module")
 def platform_token():
-    """Get platform admin token"""
+    """Get platform admin token via /api/auth/login (no partner_code)"""
     res = requests.post(f"{BASE_URL}/api/auth/login", json={
-        "partner_code": PLATFORM_CODE,
         "email": PLATFORM_EMAIL,
         "password": PLATFORM_PASS,
     })
     if res.status_code != 200:
         pytest.skip(f"Platform admin login failed: {res.status_code} {res.text}")
-    return res.json().get("access_token") or res.json().get("token")
+    return res.json().get("token") or res.json().get("access_token")
 
 
 @pytest.fixture(scope="module")
 def partner_token():
-    """Get partner admin token"""
-    res = requests.post(f"{BASE_URL}/api/auth/login", json={
+    """Get partner admin token via /api/auth/partner-login"""
+    res = requests.post(f"{BASE_URL}/api/auth/partner-login", json={
         "partner_code": PARTNER_CODE,
         "email": PARTNER_EMAIL,
         "password": PARTNER_PASS,
     })
     if res.status_code != 200:
         pytest.skip(f"Partner admin login failed: {res.status_code} {res.text}")
-    return res.json().get("access_token") or res.json().get("token")
+    return res.json().get("token") or res.json().get("access_token")
 
 
 @pytest.fixture(scope="module")
