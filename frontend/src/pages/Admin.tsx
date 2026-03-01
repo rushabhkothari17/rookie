@@ -38,6 +38,7 @@ import { PlanBillingTab } from "./admin/PlanBillingTab";
 import { MySubmissionsTab } from "./admin/MySubmissionsTab";
 import { PartnerSubmissionsTab } from "./admin/PartnerSubmissionsTab";
 import { BillingSettingsTab } from "./admin/BillingSettingsTab";
+import { CurrenciesTab } from "./admin/CurrenciesTab";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
