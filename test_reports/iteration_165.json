@@ -1,0 +1,54 @@
+{
+  "summary": "Focused regression + new feature test for 3 changes: (1) Roles tab removed from sidebar, (2) Users tab now has Users + Quick Presets sub-tabs, (3) Base Currency defaults to USD in New Partner Org dialog. All 8 test scenarios verified via Playwright.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "New Partner Org dialog - Base Currency select",
+        "issues": [
+          "data-testid is 'new-partner-currency' (line 567 of TenantsTab.tsx) but review request spec says it should be 'new-partner-base-currency'. Functionality is correct (defaults to USD), just testid naming mismatch. Minor."
+        ]
+      },
+      {
+        "screen": "Quick Presets - Support Agent card",
+        "issues": [
+          "Preset card for Support Agent has data-testid='preset-card-support' (key='support'), not 'preset-card-support_agent'. Minor naming note for future test reference."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional: Rename data-testid on base currency SelectTrigger in TenantsTab.tsx from 'new-partner-currency' to 'new-partner-base-currency' to match spec (line 567)"
+  ],
+  "critical_code_review_comments": [
+    "Admin.tsx correctly has no RolesTab import and no roles tab trigger - Roles tab cleanly removed.",
+    "UsersTab.tsx PresetsSubTab correctly renders preset cards from /admin/permissions/modules endpoint.",
+    "TenantsTab.tsx line 83: base_currency default is 'USD' as required.",
+    "Minor testid mismatch: new-partner-base-currency (spec) vs new-partner-currency (actual in code line 567)."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only test)",
+    "frontend": "100% (8/8 features verified)"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "iteration_165: All 3 fixes verified: (1) No Roles tab in sidebar - PASS, (2) Users tab has Users + Quick Presets sub-tabs with correct data-testids - PASS, (3) New Partner Org base_currency defaults to USD - PASS (functional), (4) Liger Inc org info shows USD - PASS. Minor: data-testid on currency select is 'new-partner-currency' not 'new-partner-base-currency'. Support Agent preset key is 'support' not 'support_agent'.",
+  "test_features_verified": {
+    "roles_tab_removed": "PASS: No admin-tab-roles in sidebar, confirmed via DOM query",
+    "users_subtab_list": "PASS: data-testid=users-subtab-list present in Users tab",
+    "users_subtab_presets": "PASS: data-testid=users-subtab-presets present in Users tab",
+    "presets_subtab_container": "PASS: data-testid=presets-subtab present when Quick Presets clicked",
+    "preset_cards_all_5": "PASS: preset-card-manager, preset-card-support, preset-card-viewer, preset-card-accountant, preset-card-content_editor all present",
+    "add_user_quick_preset": "PASS: data-testid=new-user-preset in Create User dialog",
+    "new_partner_base_currency_usd": "PASS: Base Currency defaults to 'USD' (shown in dialog), testid is 'new-partner-currency'",
+    "liger_inc_org_base_currency": "PASS: data-testid=base-currency-select shows 'USD' in Liger Inc Organization Info"
+  }
+}
