@@ -158,13 +158,37 @@ function SubFormModal({
       term_months: sub.term_months != null ? String(sub.term_months) : "",
       auto_cancel_on_termination: sub.auto_cancel_on_termination || false,
       reminder_days: (sub as any).reminder_days != null ? String((sub as any).reminder_days) : "",
+      contract_end_date: sub.contract_end_date ? sub.contract_end_date.slice(0, 10) : "",
     } : emptyForm()
   );
   const [saving, setSaving] = useState(false);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState(sub?.payment_url || "");
+  // track if user manually edited these fields
+  const [nbtManual, setNbtManual] = useState(isEdit && !!sub?.next_billing_date);
+  const [expManual, setExpManual] = useState(isEdit && !!sub?.contract_end_date);
 
   const set = (k: keyof SubFormData, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  // Auto-calculate Next Billing Date when start_date or billing_interval changes
+  useEffect(() => {
+    if (nbtManual) return;
+    if (!form.start_date) return;
+    const months = INTERVAL_MONTHS[form.billing_interval] || 1;
+    setForm(f => ({ ...f, next_billing_date: addMonthsFirstOfMonth(form.start_date, months) }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.start_date, form.billing_interval]);
+
+  // Auto-calculate Expiry Date when start_date or term_months changes
+  useEffect(() => {
+    if (expManual) return;
+    if (!form.start_date || !form.term_months || parseInt(form.term_months) <= 0) {
+      if (!form.term_months) setForm(f => ({ ...f, contract_end_date: "" }));
+      return;
+    }
+    setForm(f => ({ ...f, contract_end_date: addMonthsPreserveDay(form.start_date, parseInt(form.term_months)) }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.start_date, form.term_months]);
 
   const handleSave = async () => {
     if (!form.partner_id || !form.amount) {
