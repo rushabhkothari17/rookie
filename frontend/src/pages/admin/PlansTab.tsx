@@ -15,7 +15,7 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Power, PowerOff, ScrollText, ChevronDown, ChevronUp, Tag, Zap, Lock, DollarSign, Gift, LayoutList } from "lucide-react";
+import { Plus, Pencil, Trash2, Power, PowerOff, ScrollText, ChevronDown, ChevronUp, Tag, Zap, Lock, DollarSign, Gift, LayoutList, BarChart2, TrendingDown, ArrowUpRight, Receipt } from "lucide-react";
 
 // ─── Plan types ───────────────────────────────────────────────────────────────
 type Plan = {
