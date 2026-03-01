@@ -81,13 +81,14 @@ def restricted_partner_admin_token(partner_super_admin_token):
     Uses partner_super_admin token so user is created in the correct tenant.
     """
     partner_headers = {"Authorization": f"Bearer {partner_super_admin_token}"}
+    test_email = "TEST_restricted_admin@example.com"
 
     # Create user via partner_super_admin API (creates user in test-partner-co tenant)
-    # NOTE: modules and access_level are top-level fields, NOT nested under permissions
+    # NOTE: modules and access_level are top-level fields in AdminCreateUserRequest
     create_resp = requests.post(
         f"{BASE_URL}/api/admin/users",
         json={
-            "email": "TEST_restricted_admin@example.com",
+            "email": test_email,
             "password": "TestPass123!",
             "full_name": "TEST Restricted Admin",
             "role": "partner_admin",
@@ -96,14 +97,47 @@ def restricted_partner_admin_token(partner_super_admin_token):
         },
         headers=partner_headers,
     )
-    if create_resp.status_code not in (200, 201, 400):
+
+    # If user already exists (400), find and update their modules
+    if create_resp.status_code == 400 and "already registered" in create_resp.text:
+        # List users and find by email
+        list_resp = requests.get(
+            f"{BASE_URL}/api/admin/users?search={test_email}",
+            headers=partner_headers,
+        )
+        if list_resp.status_code == 200:
+            users = list_resp.json().get("users", [])
+            existing_user = next((u for u in users if u.get("email") == test_email), None)
+            if existing_user:
+                user_id = existing_user["id"]
+                # Update the user's permissions.modules to ["customers"] with partner_admin role
+                update_resp = requests.put(
+                    f"{BASE_URL}/api/admin/users/{user_id}",
+                    json={"role": "partner_admin", "access_level": "full_access"},
+                    headers=partner_headers,
+                )
+                # Directly update modules via MongoDB (use permissions module route)
+                # Since PUT /admin/users resets role to "custom" when modules are passed,
+                # we need to update modules and then reset role
+                update_mod_resp = requests.put(
+                    f"{BASE_URL}/api/admin/users/{user_id}",
+                    json={"modules": ["customers"]},
+                    headers=partner_headers,
+                )
+                # Reset role back to partner_admin after module update
+                requests.put(
+                    f"{BASE_URL}/api/admin/users/{user_id}",
+                    json={"role": "partner_admin"},
+                    headers=partner_headers,
+                )
+    elif create_resp.status_code not in (200, 201):
         pytest.skip(f"Cannot create restricted partner_admin: {create_resp.status_code} {create_resp.text}")
 
     # Login as this user via partner-login with test-partner-co
     login_resp = requests.post(
         f"{BASE_URL}/api/auth/partner-login",
         json={
-            "email": "TEST_restricted_admin@example.com",
+            "email": test_email,
             "password": "TestPass123!",
             "partner_code": PARTNER_SUPER_ADMIN_CODE,
         },
