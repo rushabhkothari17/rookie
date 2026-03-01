@@ -145,3 +145,4 @@ def _make_list_routes(slug: str, doc_key: str, defaults: list):
 
 _make_list_routes("partner-types", "partner_types", DEFAULT_PARTNER_TYPES)
 _make_list_routes("industries", "industries", DEFAULT_INDUSTRIES)
+_make_list_routes("tags", "tags", [])
