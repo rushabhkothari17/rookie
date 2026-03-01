@@ -219,12 +219,12 @@ export default function Admin() {
           {showChecklist && (
             <SetupChecklistWidget onNavigate={handleChecklistNavigate} />
           )}
-          {isSuperAdmin && (
+          {(isSuperAdmin || hasModule("users")) && (
             <TabsContent value="users" className="space-y-4">
               <UsersTab />
             </TabsContent>
           )}
-          {isSuperAdmin && (
+          {(isSuperAdmin || hasModule("users")) && (
             <TabsContent value="roles" className="space-y-4">
               <RolesTab />
             </TabsContent>
