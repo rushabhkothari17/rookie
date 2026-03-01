@@ -1,84 +1,82 @@
 <analysis>**original_problem_statement:**
-The user initially requested a major enhancement for a partner-facing self-service portal, including plan upgrades, pro-rata billing, downgrade requests, and invoice generation. Throughout the session, the user also requested:
-1.  **Invoice Customization:** Add the company logo, VAT registration number, and bank details to the PDF invoice footer.
-2.  **UI Bug Fix:** Tooltips in the new product form were showing on hover over a parent container instead of on click of the question mark icon.
-3.  **Git Push Failure Resolution:** The user was unable to save their work to GitHub, encountering two consecutive errors:
-    *   A large binary file () was present in the git history.
-    *   A Stripe API key was present in  files committed to the git history, triggering GitHub's Secret Scanning protection.
+The user has requested a major overhaul of the billing and plan management system, introducing a multi-faceted set of new features.
 
 **PRODUCT REQUIREMENTS:**
-This list includes all original and subsequent user requests.
-*   **Partner Self-Service Plan Upgrades** (DONE)
-*   **Pro-rata Billing** (DONE)
-*   **Downgrade Requests & Admin Approval** (DONE)
-*   **Free Trial Logic** (DONE in previous session)
-*   **Invoice Generation & Download** (DONE)
-*   **Overdue Subscription Cancellation** (DONE)
-*   **Product-Level Billing Configuration** (DONE)
-*   **UI/UX Fixes:**
-    *   Tooltip hover-bug (DONE)
-    *   Platform admins need a way to filter the main user list by partner organization. (DONE)
-    *   Non-functional Audit Log button on the Partner Orgs tab. (DONE in previous session)
-    *   Add User form should be consistent across Users and Partner Orgs modules. (PENDING)
-*   **Invoice Customization:** Add logo, VAT, and bank details to invoices. (DONE)
-*   **DevOps:** Resolve all Git push failures to enable saving work to GitHub. (IN PROGRESS)
+
+*   **Billing Logic:**
+    *   **Pro-rata Calculation:** Retain the existing formula for new subscriptions.
+    *   **Unpaid Subscriptions:** If a renewal order remains  for more than a day, the associated subscription's status must be changed to . When the order is later marked , the subscription should automatically revert to .
+    *   **Free Plan:** The default Free Plan should be protected from being edited or deleted by platform admins.
+    *   **Status Cleanup:** The  subscription status should be removed from the system. Subscriptions in a  state should be treated as if they are on the Free Plan.
+
+*   **New Upgrade Flows:**
+    *   **Two Upgrade Buttons:** The partner's billing page should have two distinct upgrade options:
+        1.  **Upgrade - Ongoing Plan**: For upgrading the recurring subscription (e.g., from Starter to Professional). The partner pays the flat difference in price for the current billing period upfront. The recurring charge is updated from the next billing cycle.
+        2.  **Upgrade - One-time Limits**: For purchasing temporary add-ons to the current plan's limits (e.g., +50 customers for this month only). These boosts reset at the next renewal.
+    *   **One Time Plans Module:** A new admin module for platform admins to define a rate table (price per unit) for the one-time limit upgrades (e.g.,  per extra customer).
+
+*   **Coupons:**
+    *   Implement a full coupon management system for platform and super admins.
+    *   Coupons can be a percentage or flat amount, with an expiry date.
+    *   They can be configured for one-time use, apply to specific plans, and be restricted to one use per partner organization.
+    *   The coupon code should be applied in-app *before* the Stripe checkout is initiated.
+
+*   **Role Management (DEFERRED):**
+    *   A complex role system was requested, including  and  roles with specific restrictions, along with granular module-level read/write permissions. This was deemed a separate, large-scale task and has been deferred.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a multi-tenant SaaS platform. All requested features, including partner self-service plan management, invoicing, overdue subscription cancellation, and various UI enhancements have been implemented and successfully tested. The core application is stable. However, the connection to the user's remote GitHub repository is broken due to a history rewrite performed to clean up large files and secrets, which now prevents pushing changes.
+The agent has performed a massive, parallel implementation of the backend logic required for the new billing features. This includes creating new database models for  and , adding new API endpoints for the two upgrade flows, and modifying the scheduler service to handle unpaid subscriptions and reset one-time boosts. The backend code has been written and organized into new and existing files. However, **none of the corresponding frontend changes have been made.** The application is currently in a broken, half-implemented state.
 
 **Last working item**:
-    - Last item agent was working: Resolving a  failure caused by GitHub's secret scanning, which detected a Stripe API key in the repository's history. The agent used  to purge all  files from the entire commit history and then re-added the remote origin. The user was instructed on the final steps.
-    - Status: USER VERIFICATION PENDING
-    - Agent Testing Done: N/A
-    - Which testing method agent to use? Manual action by the user is required. The user needs to use the Save to Github feature in the UI.
+    - Last item agent was working: Implementing the extensive list of billing and plan management features. The agent finished writing all the required backend code, including new models, routes, services, and scheduler jobs. The last action was verifying that the new backend code compiles without errors.
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use? both
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - **Issue 1: Git push is blocked, preventing work from being saved to GitHub. (Priority: P0 - BLOCKER)**
-     - Attempted fixes:
-        - Used  to remove a large binary file from history. This was successful but revealed a second blocker.
-        - Used  again to purge all instances of  and  from the entire git history. The remote origin was then re-added.
-     - Next debug checklist:
-        1.  The user must try the **Save to Github** feature again.
-        2.  If it is still blocked by secret scanning, the user must follow the unique URL provided in the error message to manually approve the secret on the GitHub website. The URL from the error was: 
-     - Why fix this issue and what will be achieved with the fix? This is a critical blocker. Fixing it will allow the user to synchronize the application's codebase with their remote GitHub repository.
-     - Status:  USER VERIFICATION PENDING
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? N/A (DevOps issue)
-     - Blocked on other issue: No
+  - **Issue 1: Mis-aligned Frontend and Backend (Priority: P0)**
+    - The backend has been significantly changed to support new upgrade flows, coupons, and billing logic, but the frontend is completely unaware of these changes. The UI does not have the new buttons, modals, or form fields.
+    - Attempted fixes: None. The backend implementation was just completed.
+    - Next debug checklist: The next agent MUST implement the corresponding frontend changes in  and .
+    - Why fix this issue and what will be achieved with the fix? The application is currently broken. Fixing this will complete the feature implementation and make the new billing flows functional.
+    - Status: IN PROGRESS
+    - Is recurring issue? N
+    - Should Test frontend/backend/both after fix? both
+    - Blocked on other issue: None.
 
 **In progress Task List**:
-  None.
+  - **Task 1: Complete the Billing & Plan Management Feature Implementation (Priority: P0)**
+     - Where to resume: The backend code is written. The next agent must now implement all the frontend changes. Key files to modify are  (for the two new upgrade buttons and modals) and  (for the One Time Plans rate table and Coupons CRUD sections).
+     - What will be achieved with this? This will complete the user's complex request, introducing flexible new revenue models (one-time upgrades) and marketing tools (coupons).
+     - Status:  IN PROGRESS
+     - Should Test frontend/backend/both after fix? both
+     - Blocked on something: None.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks (P0):**
-    *   **UI/UX Fix - Add User Form Parity:** Make the Add User form consistent across the Users and Partner Orgs modules. This was part of the original PRD but has not been implemented yet.
+*   **Upcoming Tasks (P1):**
+    *   **Role & Permission System Overhaul:** Implement the deferred role management features, including  and , and granular module-level read/write permissions.
 *   **Future Tasks (from PRD):**
-    *   **(P1) Google Drive & OneDrive Integration**.
+    *   **(P2) UI/UX Fix - Add User Form Parity:** This task was in progress but was superseded by the large billing feature request. It needs to be re-evaluated after the current work is complete.
+    *   **(P2) Google Drive & OneDrive Integration**.
     *   **(P2) Customer Portal Enhancements**: Implement self-service subscription cancellation, display renewal dates, and a Reorder button.
-    *   **(P2) Security Audit**.
-    *   **(P2) Centralize Email Settings**.
+    - **(P2) Centralize Email Settings**.
 
 **Completed work in this session**
-- **Feature: Full Partner Lifecycle Management (Phases 3, 4, 5, 2B, 6)**:
-  - Implemented partner self-service plan upgrades and downgrade requests (, ).
-  - Implemented admin-side submission approval ().
-  - Implemented a scheduler job for automated overdue subscription cancellation, with a corresponding admin settings UI ().
-  - Added a product-level choice between pro-rata and fixed-date billing ().
-  - Added a partner organization filter to the main user list ().
-- **Feature: Invoice System & Customization**:
-  - Implemented server-side PDF invoice generation using .
-  - Added Download Invoice buttons for partners () and admins ().
-  - Added UI in  for admins to add a company logo, VAT number, and bank details, which are now correctly embedded in the invoice PDF footer.
-- **Bug Fix: Tooltip Behavior**:
-  - Corrected a UI bug by converting hover-based tooltips to be click-to-open in , fixing the issue application-wide.
-- **DevOps: Git History Cleanup**:
-  - Successfully purged both a large binary file and committed  files (containing secrets) from the entire Git history using , cleaning the repository to allow pushes.
+- **Backend Implementation (Code Written, Not Tested):**
+  - Created new backend models: , .
+  - Created new API routes: , .
+  - Heavily modified  to handle unpaid subscriptions and reset one-time boosts on renewal.
+  - Modified  and  to add new endpoints and logic for ongoing and one-time upgrades.
+  - Updated  to protect the default plan.
+  - Updated  to propagate paid order status to the subscription.
+  - Added a startup migration in  to set the  flag on the Free Plan.
 
 **Earlier issues found/mentioned but not fixed**
-   - None.
+   - The complex role and permissions overhaul was explicitly deferred to a future session.
+   - Add User Form Parity was partially completed but then paused.
 
 **Known issue recurrence from previous fork**
   - None.
@@ -87,72 +85,76 @@ The application is a multi-tenant SaaS platform. All requested features, includi
 
 
 **Key Technical Concepts**
-- **Git History Rewriting**: Used  to permanently remove large files and secrets from all commits, a necessary step to resolve push failures to GitHub.
-- **Server-side PDF Generation**: Leveraged the  library in  to dynamically generate PDF invoices with custom data, headers, and footers.
-- **Click-Controlled UI State**: Refactored a tooltip component () from a CSS  implementation to a React -based click toggle to fix a widespread UI bug.
-- **Scheduled Jobs**: Extended  to include a daily job that checks for and cancels overdue partner subscriptions based on admin-configurable settings.
+- **Dual Upgrade Paths**: Differentiating between recurring Ongoing Plan upgrades and temporary One-time Limit upgrades, each with its own pricing logic and Stripe Checkout flow.
+- **Dynamic Rate Tables**: A new  collection allows admins to set prices for consumable resources, forming the basis for the one-time upgrade feature.
+- **In-App Coupon Application**: Applying discounts before creating the Stripe Checkout session, allowing for complex validation logic within the application.
+- **Scheduler-Driven Status Management**: Using a background scheduler () to automatically change subscription statuses based on payment states (e.g., to ) and to reset temporary boosts.
 
 **key DB schema**
-- : Added  (Float),  (String).
-- : Added  (String, enum: 'pro-rata', 'fixed-date').
-- : New collection implemented with fields for , , , etc.
-- : Utilized to store  and .
-- : Utilized  to store custom invoice details like , , .
+- **one_time_plans**: 
+- **coupons**: 
+- **plans**: added 
+- **subscriptions**: added  (e.g., )
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
-*   **Key New Files**:
+*   **New Backend Files**:
     *   
     *   
     *   
     *   
-    *   
-    *   
-    *   
-*   **Key Modified Files**:
-    *    (added logo/footer details)
-    *    (added cancellation job)
-    *    (added invoice settings UI)
-    *    (fixed hover bug)
-    *    (registered new API routes)
+*   **Modified Backend Files**:
+    *    (added new routers, startup migration)
+    *    (added  helper)
+    *    (new job for unpaid subscriptions, reset boosts)
+    *    (new upgrade endpoints)
+    *    (new webhook handler for one-time upgrades)
+    *    (protect default plan)
+    *    (activate subscription on paid order)
+*   **Key Frontend Files to be Modified**:
+    *    (to add coupon and one-time plan management)
+    *    (to add the two new upgrade buttons and modals)
 
 **Areas that need refactoring**:
-- None.
+- None explicitly identified, but the large influx of code will require thorough testing and potential cleanup.
 
 **key api endpoints**
-*   
-*   
-*   , 
-*   
-*   
-*   
-*   
+*   **New Endpoints:**
+    *   , , , 
+    *   , , , 
+    *   
+    *   
+    *   
+*   **Modified Endpoints:**
+    *    (now triggers subscription activation)
+    *    (now blocks deletion of default plan)
 
 **Critical Info for New Agent**
-1.  **Resolve Git Issue First**: Your absolute first priority is to guide the user in resolving the Git push failure. The application code is complete and tested, but it cannot be saved to the user's GitHub repository. Reiterate the steps from the Pending Issue section. Do not proceed with any coding tasks until the user confirms they can successfully Save to Github.
-2.  **All Feature Work is Complete**: All user-requested features from this session (self-service, invoicing, schedulers, UI fixes) are finished and have passed automated testing.
-3.  **Next Task After Git Fix**: Once the Git issue is resolved, the next task is to implement the Add User Form Parity from the Upcoming Tasks list.
+1.  **You are in the middle of a major implementation.** The previous agent has written all the backend code for a complex set of billing features but has **not started the frontend implementation.** The application is currently in a non-functional state.
+2.  **Your immediate and only priority is to build the frontend UI** to match the new backend capabilities. Do not get sidetracked.
+3.  **Key Frontend Files:** Focus your efforts on  (for the new partner-facing upgrade flows) and  (for the new admin-facing coupon and rate table management).
+4.  **Test Thoroughly:** Once the frontend is implemented, you must conduct comprehensive end-to-end testing of all new flows: creating coupons, setting one-time rates, and executing both types of plan upgrades with and without coupons.
+5.  **Deferred Task:** The complex role and permission overhaul has been explicitly postponed. Do not attempt to implement it until the current billing feature is fully complete and verified by the user.
 
 **documents and test reports created in this job**
-  -  (Updated multiple times)
-  -  (34/34 tests passed)
-  -  (23/23 tests passed)
-  -  (26/26 tests passed)
+- None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (Pending):** Shared a git push error indicating Secret push protection is enabled due to a Stripe key being detected in the repository's history.
-2.  **User:** Confirmed they wanted to proceed with the agent's proposed fix for the *previous* git issue.
-3.  **User:** Reported that Save to Github was not working (spinning wheel) after the agent fixed a large-file issue.
-4.  **User:** Reported the initial git push failure due to a file exceeding GitHub's 100MB size limit.
-5.  **User:** Requested the ability to add a company logo, VAT number, and bank details to the invoice footer. (COMPLETED)
-6.  **User:** Requested the invoice download feature. (COMPLETED)
-7.  **User:** Instructed the agent to proceed with the next action items in the plan. (COMPLETED)
-8.  **User:** Reported a UI bug with tooltips and asked for it to be fixed before the agent continued with other tasks. (COMPLETED)
+1.  **User:** Confirmed payment logic for ongoing plan upgrades: pay the difference now, new rate from next cycle.
+2.  **User:** Clarified one-time limit upgrades are additive, paid per unit, and reset on renewal. They stack on top of higher plan limits.
+3.  **User:** Specified that coupons should be applied in-app before checkout and are per-partner-organization.
+4.  **User:** Requested all features to be implemented in one go.
+5.  **Agent:** Asked clarifying questions about the new upgrade flows and coupons.
+6.  **User:** Requested two types of upgrade buttons (Ongoing plan vs One-time limits), a One Time Plans rate table module, and a full coupon system.
+7.  **Agent:** Responded to a long list of questions about billing automation, clarifying existing logic and identifying gaps to be fixed.
+8.  **User:** Asked a series of detailed questions about billing automation (pro-rata, next billing date, renewal reminders, cancellation behavior) and requested several enhancements.
+9.  **Agent:** Confirmed successful implementation of Stripe Checkout for plan upgrades.
+10. **User:** yes, since stripe is connected to automate-accounts, can you not use that? - confirming to proceed with Stripe integration for upgrades.
 
 **Project Health Check:**
-- **Broken**: Yes. The version control pipeline is broken. The user cannot push code to their remote GitHub repository. The application itself is functional.
+- **Broken**: YES. The backend has been heavily modified, but the frontend has not been updated. The application is not in a runnable or testable state.
 - **Mocked**: None.
 
 **3rd Party Integrations**
@@ -161,15 +163,15 @@ The application is a multi-tenant SaaS platform. All requested features, includi
 *   Zoho Mail, Zoho WorkDrive, Zoho CRM, Zoho Books
 *   Resend (Email)
 *    (FX rates)
-*    &  (Frontend PDF Generation - not used for invoices)
+*    &  (Frontend PDF Generation)
 *    (Backend Scheduled Jobs)
 *    &  (Backend, for Invoice PDF Generation)
 
 **Testing status**
-  - Testing agent used after significant changes: YES. All major features were followed by a successful testing agent run, with all tests passing.
+  - Testing agent used after significant changes: NO
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: None.
-  - Known regressions: None. The testing agent caught and fixed one minor token key bug ( vs ).
+  - Known regressions: The entire application is in a broken state due to the partial implementation.
 
 **Credentials to test flow:**
 - **Platform Admin:**
@@ -180,4 +182,4 @@ The application is a multi-tenant SaaS platform. All requested features, includi
     - Password: 
 
 **What agent forgot to execute**
-- From the original product requirements, the task to **make the Add User form consistent across the Users and Partner Orgs modules** was not implemented. This should be prioritized after the critical git issue is resolved.</analysis>
+- The agent was mid-execution of a very large plan. It did not forget anything, but the task is only 50% complete. The entire frontend implementation for the new billing features is pending. The complex role management feature was intentionally deferred.</analysis>
