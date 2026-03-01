@@ -117,9 +117,12 @@ def generate_partner_invoice_pdf(
     # ── Build story ────────────────────────────────────────────────────────────
     story = []
 
-    # ── Header row: INVOICE title + company name ───────────────────────────────
+    # ── Header row: INVOICE title + company name/logo ─────────────────────────
+    logo_img = _fetch_logo(logo_url) if logo_url else None
+    company_cell = logo_img if logo_img else Paragraph(platform_name, h3)
+
     header_data = [
-        [Paragraph("INVOICE", h1), Paragraph(platform_name, h3)],
+        [Paragraph("INVOICE", h1), company_cell],
     ]
     header_tbl = Table(header_data, colWidths=[W * 0.6, W * 0.4])
     header_tbl.setStyle(TableStyle([
@@ -127,6 +130,9 @@ def generate_partner_invoice_pdf(
         ("ALIGN", (1, 0), (1, 0), "RIGHT"),
     ]))
     story.append(header_tbl)
+    # Show company name below logo if logo present
+    if logo_img:
+        story.append(Paragraph(f'<para alignment="right"><font size="8" color="#64748b">{platform_name}</font></para>', body))
     story.append(HRFlowable(width=W, thickness=2, color=ACCENT, spaceAfter=6))
 
     # ── Invoice meta + Bill To ─────────────────────────────────────────────────
