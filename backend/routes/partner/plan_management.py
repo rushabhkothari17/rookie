@@ -11,11 +11,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+
+import stripe as stripe_sdk
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, tenant_id_of, DEFAULT_TENANT_ID
+from core.config import STRIPE_API_KEY
 from db.session import db
 from services.audit_service import create_audit_log
 
