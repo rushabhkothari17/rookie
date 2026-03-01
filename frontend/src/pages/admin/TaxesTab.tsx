@@ -580,7 +580,20 @@ const TEMPLATE_OPTIONS = [
 ];
 
 function InvoiceSettingsPanel() {
-  const [settings, setSettings] = useState<any>({ prefix: "INV", payment_terms: "Due on receipt", footer_notes: "", show_terms: true, template: "classic" });
+  const [settings, setSettings] = useState<any>({
+    prefix: "INV",
+    payment_terms: "Due on receipt",
+    footer_notes: "",
+    show_terms: true,
+    template: "classic",
+    company_name: "",
+    company_email: "",
+    company_phone: "",
+    company_address: "",
+    logo_url: "",
+    vat_number: "",
+    bank_details: { bank_name: "", account_name: "", account_number: "", sort_code: "", iban: "", bic: "" },
+  });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [customTemplates, setCustomTemplates] = useState<any[]>([]);
