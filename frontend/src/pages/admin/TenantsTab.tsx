@@ -397,6 +397,12 @@ export function TenantsTab() {
                       <StickyNote className="h-3.5 w-3.5 mr-2" /> Notes
                     </DropdownMenuItem>
                     <DropdownMenuItem
+                      onClick={() => openEditDetails(tenant)}
+                      data-testid={`edit-details-btn-${tenant.code}`}
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-2" /> Edit Org Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
                       onClick={() => setAuditTenant({ id: tenant.id, name: tenant.name })}
                       data-testid={`logs-btn-${tenant.code}`}
                     >
