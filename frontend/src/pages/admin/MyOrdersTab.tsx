@@ -117,6 +117,7 @@ export function MyOrdersTab() {
               <th className="text-left px-4 py-3">Status</th>
               <th className="text-left px-4 py-3">Due</th>
               <th className="text-left px-4 py-3">Paid</th>
+              <th className="text-right px-4 py-3">Invoice</th>
             </tr>
           </thead>
           <tbody>
