@@ -405,6 +405,7 @@ function SubFormModal({
 }
 
 export function PartnerSubscriptionsTab() {
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [subs, setSubs] = useState<PartnerSubscription[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
