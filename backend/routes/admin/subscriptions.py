@@ -15,8 +15,13 @@ from core.constants import ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHOD
 from db.session import db
 from models import SubscriptionUpdate, ManualSubscriptionCreate
 from services.audit_service import create_audit_log
-from services.webhook_service import dispatch_event
-from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
+from routes.admin.permissions import has_permission as _has_perm
+
+_MODULE = "subscriptions"
+
+async def _check(admin: Dict[str, Any], action: str):
+    if not await _has_perm(admin, _MODULE, action):
+        raise HTTPException(403, f"No {action} access to {_MODULE} module")
 
 from services.checkout_service import get_fx_rate, get_tenant_base_currency
 

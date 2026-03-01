@@ -18,6 +18,13 @@ from models import (
     AddressUpdate,
 )
 from services.audit_service import create_audit_log
+from routes.admin.permissions import has_permission as _has_perm
+
+_MODULE = "customers"
+
+async def _check(admin: Dict[str, Any], action: str):
+    if not await _has_perm(admin, _MODULE, action):
+        raise HTTPException(403, f"No {action} access to {_MODULE} module")
 from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
 
 router = APIRouter(prefix="/api", tags=["admin-customers"])
