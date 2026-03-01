@@ -20,6 +20,8 @@ interface Plan {
   description?: string;
   monthly_price: number;
   currency?: string;
+  display_price?: number;
+  display_currency?: string;
   max_users?: number;
   max_customers_per_month?: number;
   max_orders_per_month?: number;
@@ -40,6 +42,8 @@ interface PlanData {
   license: any;
   subscription: any;
   available_plans: Plan[];
+  base_currency: string;
+  current_price_in_base: number;
 }
 
 interface CouponResult {
