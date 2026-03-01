@@ -96,9 +96,9 @@ export function TenantsTab() {
   // Create partner admin dialog
   const [showCreateAdmin, setShowCreateAdmin] = useState<string | null>(null);
   const [newAdmin, setNewAdmin] = useState({ 
-    email: "", full_name: "", password: "", role: "partner_super_admin",
-    preset_role: "", access_level: "read_only", modules: [] as string[]
+    email: "", full_name: "", password: "", role: "partner_admin",
   });
+  const [newAdminPerms, setNewAdminPerms] = useState<Record<string, "read" | "write" | "none">>({});
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [modules, setModules] = useState<ModuleInfo[]>([]);
   const [presetRoles, setPresetRoles] = useState<PresetRole[]>([]);
