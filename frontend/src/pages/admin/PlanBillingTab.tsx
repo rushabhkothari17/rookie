@@ -284,7 +284,7 @@ export function PlanBillingTab() {
                     {upgrading === plan.id ? (
                       <><Loader2 size={13} className="mr-1.5 animate-spin" />Upgrading...</>
                     ) : (
-                      <><ArrowUp size={13} className="mr-1.5" />Upgrade Now</>
+                      <><CreditCard size={13} className="mr-1.5" />Pay &amp; Upgrade</>
                     )}
                   </Button>
                 </div>
