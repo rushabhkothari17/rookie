@@ -83,6 +83,7 @@ def restricted_partner_admin_token(partner_super_admin_token):
     partner_headers = {"Authorization": f"Bearer {partner_super_admin_token}"}
 
     # Create user via partner_super_admin API (creates user in test-partner-co tenant)
+    # NOTE: modules and access_level are top-level fields, NOT nested under permissions
     create_resp = requests.post(
         f"{BASE_URL}/api/admin/users",
         json={
@@ -90,7 +91,8 @@ def restricted_partner_admin_token(partner_super_admin_token):
             "password": "TestPass123!",
             "full_name": "TEST Restricted Admin",
             "role": "partner_admin",
-            "permissions": {"modules": ["customers"], "access_level": "full_access"},
+            "access_level": "full_access",
+            "modules": ["customers"],
         },
         headers=partner_headers,
     )
