@@ -16,7 +16,9 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, ExternalLink, ScrollText, RefreshCw, Copy, Download } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+
+const ISO_CURRENCIES = ["GBP","USD","EUR","AUD","CAD","CHF","SGD","NZD","HKD","JPY","INR","AED","ZAR","MYR","NOK","SEK","DKK"];
 
 type Tenant = { id: string; name: string };
 type Plan = { id: string; name: string; is_active: boolean };
