@@ -60,6 +60,27 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUSES = ["pending", "unpaid", "paid", "cancelled", "refunded"];
 const PAYMENT_METHODS = ["manual", "offline", "bank_transfer", "card"];
 
+function downloadInvoice(orderId: string, orderNumber: string, endpoint: string) {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+  const base = (window as any).__REACT_APP_BACKEND_URL__ || process.env.REACT_APP_BACKEND_URL || "";
+  fetch(`${base}/api/${endpoint}/${orderId}/download-invoice`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(r => {
+      if (!r.ok) throw new Error("Failed to generate invoice");
+      return r.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice-${orderNumber}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    })
+    .catch(() => toast.error("Invoice generation failed"));
+}
+
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
