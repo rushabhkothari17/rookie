@@ -136,9 +136,14 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Prioritized Backlog
 
-### P0 — Next Sprint
+### P0 — Completed
 - ✅ **Role & Permission System Overhaul** — COMPLETE (Mar 2026)
 - ✅ **UI/UX Enhancements Batch** — COMPLETE (Mar 2026)
+- ✅ **Supported Currencies Module** — COMPLETE (Mar 2026): dynamic list in MongoDB, admin CRUD tab (super admin only), `useSupportedCurrencies` hook used across all dropdowns
+- ✅ **Plan Visibility Rules** — COMPLETE (Mar 2026): rule-based system (field/operator/value) on each plan, evaluated against tenant attributes (country, partner_code, base_currency, partner_type, industry, tags)
+- ✅ **Tenant Profile Fields** — COMPLETE (Mar 2026): partner_type, industry, tags on create form + Edit Org Details dialog
+- ✅ **FX Currency Fix in Plan Billing** — COMPLETE (Mar 2026): prices converted to partner org base_currency; upgrade fee in base_currency
+- ✅ **Plan & Billing 2-Button Layout** — COMPLETE (Mar 2026): "Upgrade Plan" opens UpgradePlansModal with FX prices; "Buy Extra Limits" opens one-time modal
   - Shared `ISO_CURRENCIES` constant in `frontend/src/lib/constants.ts`, imported across 4 admin files
   - SearchableSelect (combobox with search) for Partner and Plan fields in `PartnerOrdersTab` and `PartnerSubscriptionsTab` form modals
   - Currency field in `PartnerOrders` create/edit form changed from text input to Select dropdown
