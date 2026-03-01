@@ -1,0 +1,57 @@
+{
+  "summary": "Comprehensive testing of billing upgrade flow features: Admin One-Time Rates & Coupons CRUD, Partner Plan & Billing upgrade flows. All 41 backend tests passed. All frontend features verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Plan & Billing (One-Time Upgrade Modal)",
+        "issues": [
+          "Coupon field is conditionally rendered only when subtotal > 0 — this is correct UX behavior but may surprise users entering coupon before quantity"
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter159_billing_upgrade_features.py",
+    "/app/test_reports/pytest/pytest_iter159.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Admin.tsx: isPlatformAdmin correctly includes platform_super_admin role. isPartnerAdmin excludes platform admins — platform admins (admin@automateaccounts.local) CANNOT see the Plan & Billing tab. Tested with testpartner@example.com (partner_super_admin). This is intentional separation of concerns.",
+    "CouponField component in PlanBillingTab.tsx uses same data-testid='coupon-code-input' for both OngoingUpgradeDialog and OneTimeUpgradeModal — could cause flaky tests but functionally correct.",
+    "OneTimeUpgradeModal conditionally renders CouponField only when subtotal > 0 (subtotal > 0 check) — correct UX behavior."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter159_billing_upgrade_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (41/41 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123! (partner_code: automate-accounts)",
+    "partner_admin": "testpartner@example.com / TestPass123! (partner_code: test-partner-co, role: partner_super_admin)"
+  },
+  "seed_data_creation": "Created SAVE10 coupon (10% off, Both, 2027-12-31, per-org) and Orders/month rate (GBP 1.00) for testing. Both left in DB.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All billing upgrade features tested and working. Backend: /api/admin/one-time-plans, /api/admin/coupons, /api/partner/coupons/validate, /api/partner/one-time-rates, /api/partner/upgrade-plan-ongoing, /api/partner/one-time-upgrade. Frontend: Admin Plans tab 3-section nav (License Plans|One-Time Rates|Coupons), full CRUD for rates and coupons, Free Trial locked buttons, Partner Plan & Billing with 2 upgrade flows both verified. Test partner: testpartner@example.com / TestPass123! / test-partner-co (Starter plan, can upgrade to Professional).",
+  "features_verified": {
+    "admin_plans_tab_3_sections": "PASS - License Plans | One-Time Rates | Coupons tab navigation working",
+    "one_time_rates_crud": "PASS - Create Orders/month GBP 1.00, visible in table, edit to 1.50, delete confirmed",
+    "coupons_crud": "PASS - Create SAVE10 (10%, both, 2027-12-31, per-org), visible in table, edit to 15%",
+    "free_trial_default_badge": "PASS - Default badge visible, Delete/Deactivate buttons disabled",
+    "partner_plan_billing_two_sections": "PASS - Upgrade Plan (ongoing) and Extra Limits (One-Time) sections both visible",
+    "ongoing_upgrade_dialog": "PASS - Opens on 'Upgrade to Professional' click, shows flat diff GBP 50.00, coupon input, Apply button, Pay & Upgrade button",
+    "one_time_upgrade_modal": "PASS - Opens on 'Buy Extra Limits' click, shows module table (Orders/month), quantity input, subtotal updates, coupon field (conditional on subtotal > 0), Pay & Activate button",
+    "api_get_one_time_plans": "PASS - 200 with rates and modules",
+    "api_post_coupons": "PASS - 200 creates coupon",
+    "api_get_coupons": "PASS - 200 lists coupons",
+    "api_get_partner_one_time_rates": "PASS - 200 returns active rates only"
+  }
+}
