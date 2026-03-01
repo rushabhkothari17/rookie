@@ -510,12 +510,37 @@ export function TenantsTab() {
                 <Select value={newPartner.base_currency} onValueChange={v => setNewPartner(p => ({ ...p, base_currency: v }))}>
                   <SelectTrigger className="w-full bg-white" data-testid="new-partner-currency"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["USD — US Dollar", "CAD — Canadian Dollar", "EUR — Euro", "AUD — Australian Dollar", "GBP — British Pound", "INR — Indian Rupee", "MXN — Mexican Peso"].map(opt => {
-                      const code = opt.split(" — ")[0];
-                      return <SelectItem key={code} value={code}>{opt}</SelectItem>;
-                    })}
+                    {(supportedCurrencies.length ? supportedCurrencies : ["USD","CAD","EUR","GBP","AUD","INR","MXN"]).map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Partner Type, Industry, Tags */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Partner Type</label>
+                  <Select value={newPartner.partner_type} onValueChange={v => setNewPartner(p => ({ ...p, partner_type: v }))}>
+                    <SelectTrigger data-testid="new-partner-type"><SelectValue placeholder="Select type…" /></SelectTrigger>
+                    <SelectContent>
+                      {["Reseller","Direct","Wholesale","Agency","Affiliate","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Industry</label>
+                  <Select value={newPartner.industry} onValueChange={v => setNewPartner(p => ({ ...p, industry: v }))}>
+                    <SelectTrigger data-testid="new-partner-industry"><SelectValue placeholder="Select industry…" /></SelectTrigger>
+                    <SelectContent>
+                      {["Technology","Finance","Healthcare","Retail","Education","Real Estate","Manufacturing","Professional Services","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Tags <span className="normal-case font-normal text-slate-400">(comma-separated)</span></label>
+                  <Input placeholder="e.g. vip, enterprise, us-market" value={newPartner.tags} onChange={e => setNewPartner(p => ({ ...p, tags: e.target.value }))} data-testid="new-partner-tags" />
+                </div>
               </div>
 
               {/* Address */}
