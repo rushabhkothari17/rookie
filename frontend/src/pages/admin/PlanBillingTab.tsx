@@ -761,13 +761,11 @@ export function PlanBillingTab() {
               </p>
             </div>
           </div>
-          {data.pending_upgrade_order.stripe_session_id && (
+          {data.pending_upgrade_order.checkout_url && (
             <Button
               size="sm"
               className="bg-amber-600 hover:bg-amber-700 shrink-0"
-              onClick={() => {
-                window.location.href = `https://checkout.stripe.com/c/pay/${data!.pending_upgrade_order!.stripe_session_id}`;
-              }}
+              onClick={() => { window.location.href = data!.pending_upgrade_order!.checkout_url!; }}
               data-testid="resume-checkout-btn"
             >
               Resume Checkout
