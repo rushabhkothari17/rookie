@@ -75,8 +75,20 @@ export function TenantsTab() {
 
   // Create partner admin dialog
   const [showCreateAdmin, setShowCreateAdmin] = useState<string | null>(null);
-  const [newAdmin, setNewAdmin] = useState({ email: "", full_name: "", password: "", role: "partner_super_admin" });
+  const [newAdmin, setNewAdmin] = useState({ 
+    email: "", full_name: "", password: "", role: "partner_super_admin",
+    preset_role: "", access_level: "full_access", modules: [] as string[]
+  });
   const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [modules, setModules] = useState<ModuleInfo[]>([]);
+  const [presetRoles, setPresetRoles] = useState<PresetRole[]>([]);
+
+  useEffect(() => {
+    api.get("/admin/permissions/modules").then(r => {
+      setModules(r.data.modules || []);
+      setPresetRoles(r.data.preset_roles || []);
+    }).catch(() => {});
+  }, []);
 
   // Address edit dialog
   const [showAddressEdit, setShowAddressEdit] = useState<string | null>(null);
