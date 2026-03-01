@@ -108,6 +108,8 @@ def generate_partner_invoice_pdf(
     company_phone = invoice_settings.get("company_phone") or ""
     company_address = invoice_settings.get("company_address") or ""
     vat_number = invoice_settings.get("vat_number") or ""
+    logo_url = invoice_settings.get("logo_url") or ""
+    bank_details: Dict[str, str] = invoice_settings.get("bank_details") or {}
     prefix = invoice_settings.get("prefix") or "PINV"
 
     invoice_number = f"{prefix}-{order_number}"
