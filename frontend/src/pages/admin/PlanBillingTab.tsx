@@ -750,7 +750,7 @@ export function PlanBillingTab() {
         </div>
       )}
 
-      {/* Pending upgrade banner — Resume Checkout */}
+      {/* Pending upgrade banner — Resume or Dismiss */}
       {data?.pending_upgrade_order && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-center justify-between gap-4" data-testid="resume-checkout-banner">
           <div className="flex items-center gap-3">
@@ -762,16 +762,32 @@ export function PlanBillingTab() {
               </p>
             </div>
           </div>
-          {data.pending_upgrade_order.checkout_url && (
+          <div className="flex gap-2 shrink-0">
+            {data.pending_upgrade_order.checkout_url && (
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700"
+                onClick={() => { window.location.href = data!.pending_upgrade_order!.checkout_url!; }}
+                data-testid="resume-checkout-btn"
+              >
+                Resume Checkout
+              </Button>
+            )}
             <Button
               size="sm"
-              className="bg-amber-600 hover:bg-amber-700 shrink-0"
-              onClick={() => { window.location.href = data!.pending_upgrade_order!.checkout_url!; }}
-              data-testid="resume-checkout-btn"
+              variant="outline"
+              className="border-amber-300 text-amber-700 hover:bg-amber-100"
+              onClick={async () => {
+                try {
+                  await api.post("/partner/cancel-pending-upgrade");
+                  load();
+                } catch { toast.error("Could not dismiss"); }
+              }}
+              data-testid="dismiss-pending-upgrade-btn"
             >
-              Resume Checkout
+              Dismiss
             </Button>
-          )}
+          </div>
         </div>
       )}
 
