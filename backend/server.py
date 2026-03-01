@@ -130,6 +130,7 @@ from routes.documents import router as documents_router
 from routes.admin.forms import router as admin_forms_router
 from routes.admin.integration_requests import router as integration_requests_router
 from routes.partner.plan_management import router as partner_plan_management_router
+from routes.admin.currencies import router as currencies_router
 from routes.admin.partner_submissions import router as partner_submissions_router
 from routes.admin.platform_billing_settings import router as platform_billing_settings_router
 

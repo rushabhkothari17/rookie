@@ -50,12 +50,18 @@ class TenantCreate(BaseModel):
     code: str  # unique slug, used at login
     status: str = "active"
     owner_email: Optional[str] = None  # email of initial partner_super_admin
+    partner_type: Optional[str] = None
+    industry: Optional[str] = None
+    tags: Optional[List[str]] = None
 
 
 class TenantUpdate(BaseModel):
     name: Optional[str] = None
     status: Optional[str] = None
     default_reminder_days: Optional[int] = None  # None = use hardcoded default; 0/blank = disable
+    partner_type: Optional[str] = None
+    industry: Optional[str] = None
+    tags: Optional[List[str]] = None
 
 
 class CreatePartnerAdminRequest(BaseModel):
