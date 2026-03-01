@@ -120,6 +120,14 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             "display_currency": base_currency,
         })
 
+    # Check if there is a pending (unconfirmed) upgrade order so the UI can offer "Resume Checkout"
+    pending_upgrade = await db.partner_orders.find_one(
+        {"partner_id": tid, "status": "pending_payment", "order_type": "ongoing_upgrade"},
+        {"_id": 0, "id": 1, "plan_id": 1, "plan_name": 1, "amount": 1, "currency": 1,
+         "stripe_session_id": 1, "order_number": 1},
+        sort=[("created_at", -1)],
+    )
+
     return {
         "current_plan": current_plan,
         "license": license_info,
