@@ -749,7 +749,7 @@ export function TenantsTab() {
                   <SelectTrigger data-testid="edit-org-partner-type"><SelectValue placeholder="Select type…" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">— Not set —</SelectItem>
-                    {["Reseller","Direct","Wholesale","Agency","Affiliate","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {partnerTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -759,7 +759,7 @@ export function TenantsTab() {
                   <SelectTrigger data-testid="edit-org-industry"><SelectValue placeholder="Select industry…" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">— Not set —</SelectItem>
-                    {["Technology","Finance","Healthcare","Retail","Education","Real Estate","Manufacturing","Professional Services","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {industries.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
