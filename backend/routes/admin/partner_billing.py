@@ -313,6 +313,16 @@ async def update_partner_order(
     updates["updated_at"] = now_iso()
 
     await db.partner_orders.update_one({"id": order_id}, {"$set": updates})
+
+    # When order is marked paid → auto-activate linked subscription
+    if updates.get("status") == "paid":
+        order_full = await db.partner_orders.find_one({"id": order_id}, {"_id": 0, "subscription_id": 1})
+        if order_full and order_full.get("subscription_id"):
+            await db.partner_subscriptions.update_one(
+                {"id": order_full["subscription_id"], "status": {"$in": ["unpaid", "pending_payment", "pending"]}},
+                {"$set": {"status": "active", "updated_at": now_iso()}},
+            )
+
     await create_audit_log(
         entity_type="partner_order", entity_id=order_id, action="updated",
         actor=admin.get("email", "admin"), details=updates,
