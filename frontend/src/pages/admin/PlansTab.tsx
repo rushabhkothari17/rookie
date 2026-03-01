@@ -612,7 +612,10 @@ function RateFormDialog({ modules, rate, onClose, onSaved }: { modules: OTPModul
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Currency</label>
-              <Input value={currency} onChange={e => setCurrency(e.target.value.toUpperCase())} placeholder="GBP" data-testid="rate-currency-input" />
+              <Select value={currency} onValueChange={v => setCurrency(v)} data-testid="rate-currency-select">
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{ISO_CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
