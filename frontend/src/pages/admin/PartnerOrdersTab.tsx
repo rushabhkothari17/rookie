@@ -438,6 +438,7 @@ export function PartnerOrdersTab() {
                 <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(order.invoice_date)}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => downloadInvoice(order.id, order.order_number, "admin/partner-orders")} title="Download Invoice" data-testid={`download-invoice-${order.id}`}><Download className="h-4 w-4 text-slate-500" /></Button>
                     <Button size="sm" variant="ghost" onClick={() => setEditOrder(order)} data-testid={`edit-order-${order.id}`}><Pencil className="h-4 w-4" /></Button>
                     <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600" onClick={() => setDeleteOrder(order)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
