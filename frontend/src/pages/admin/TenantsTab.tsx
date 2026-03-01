@@ -80,7 +80,7 @@ export function TenantsTab() {
   const [codeCopied, setCodeCopied] = useState(false);
   const [newPartner, setNewPartner] = useState({
     name: "", admin_name: "", admin_email: "", admin_password: "",
-    base_currency: "GBP",
+    base_currency: "USD",
     partner_type: "", industry: "", tags: "",
     address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" },
   });
