@@ -15,6 +15,25 @@ router = APIRouter(prefix="/api", tags=["platform-currencies"])
 DEFAULT_CURRENCIES = ["AUD", "CAD", "EUR", "GBP", "INR", "MXN", "USD"]
 _DOC_KEY = "supported_currencies"
 
+DEFAULT_PARTNER_TYPES = ["Reseller", "Direct", "Wholesale", "Agency", "Affiliate", "Other"]
+DEFAULT_INDUSTRIES = [
+    "Technology", "Finance", "Healthcare", "Retail", "Education",
+    "Real Estate", "Manufacturing", "Professional Services", "Other",
+]
+
+
+async def _get_list_doc(key: str, defaults: list) -> Dict:
+    doc = await db.platform_settings.find_one({"type": key}, {"_id": 0})
+    if not doc:
+        doc = {"type": key, "values": defaults, "updated_at": now_iso()}
+        await db.platform_settings.insert_one({**doc})
+    return doc
+
+
+async def _get_list(key: str, defaults: list) -> List[str]:
+    doc = await _get_list_doc(key, defaults)
+    return doc.get("values", defaults)
+
 
 async def _get_doc() -> Dict:
     doc = await db.platform_settings.find_one({"type": _DOC_KEY}, {"_id": 0})
