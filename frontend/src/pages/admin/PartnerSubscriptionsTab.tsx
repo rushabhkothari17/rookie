@@ -550,6 +550,7 @@ export function PartnerSubscriptionsTab() {
               <th className="text-left px-4 py-3">Method</th>
               <th className="text-left px-4 py-3">Status</th>
               <th className="text-left px-4 py-3">Next Billing</th>
+              <th className="text-left px-4 py-3">Expiry</th>
               <th className="text-right px-4 py-3">Actions</th>
             </tr>
           </thead>
