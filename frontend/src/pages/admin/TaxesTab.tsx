@@ -723,6 +723,133 @@ function InvoiceSettingsPanel() {
         </Button>
       </div>
 
+      {/* Company Details */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Company Details</h3>
+          <p className="text-xs text-slate-500 mt-1">Shown in the "From" section of every generated invoice PDF.</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Company Name</Label>
+          <Input
+            data-testid="company-name-input"
+            placeholder="Acme Ltd"
+            value={settings.company_name || ""}
+            onChange={e => setSettings({ ...settings, company_name: e.target.value })}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Email</Label>
+            <Input
+              data-testid="company-email-input"
+              placeholder="billing@company.com"
+              value={settings.company_email || ""}
+              onChange={e => setSettings({ ...settings, company_email: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Phone</Label>
+            <Input
+              data-testid="company-phone-input"
+              placeholder="+44 20 0000 0000"
+              value={settings.company_phone || ""}
+              onChange={e => setSettings({ ...settings, company_phone: e.target.value })}
+            />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Address</Label>
+          <Input
+            data-testid="company-address-input"
+            placeholder="123 High Street, London, EC1A 1BB"
+            value={settings.company_address || ""}
+            onChange={e => setSettings({ ...settings, company_address: e.target.value })}
+          />
+        </div>
+        <Button data-testid="company-details-save-btn" onClick={save} disabled={saving} size="sm">
+          {saving ? "Saving..." : "Save Company Details"}
+        </Button>
+      </div>
+
+      {/* Logo & VAT */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Logo &amp; VAT</h3>
+          <p className="text-xs text-slate-500 mt-1">Your logo appears in the invoice header. VAT number appears in the footer.</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Logo URL <FieldTip tip="Paste the public URL of your company logo (PNG, JPG, or SVG). It will be embedded in the top-right of every PDF invoice." /></Label>
+          <Input
+            data-testid="logo-url-input"
+            placeholder="https://your-domain.com/logo.png"
+            value={settings.logo_url || ""}
+            onChange={e => setSettings({ ...settings, logo_url: e.target.value })}
+          />
+          {settings.logo_url && (
+            <div className="mt-2 border border-slate-200 rounded-lg p-3 bg-slate-50 flex items-center gap-3">
+              <img
+                src={settings.logo_url}
+                alt="Logo preview"
+                className="max-h-10 max-w-[120px] object-contain"
+                data-testid="logo-preview"
+                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+              <p className="text-xs text-slate-500">Logo preview</p>
+            </div>
+          )}
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">VAT Registration Number</Label>
+          <Input
+            data-testid="vat-number-input"
+            placeholder="GB 123 4567 89"
+            value={settings.vat_number || ""}
+            onChange={e => setSettings({ ...settings, vat_number: e.target.value })}
+          />
+        </div>
+        <Button data-testid="logo-vat-save-btn" onClick={save} disabled={saving} size="sm">
+          {saving ? "Saving..." : "Save Logo &amp; VAT"}
+        </Button>
+      </div>
+
+      {/* Bank Details */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Bank Details</h3>
+          <p className="text-xs text-slate-500 mt-1">Displayed in the invoice footer so partners know where to send payment.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Bank Name</Label>
+            <Input data-testid="bank-name-input" placeholder="Barclays" value={(settings.bank_details || {}).bank_name || ""} onChange={e => setBank("bank_name", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Account Name</Label>
+            <Input data-testid="bank-account-name-input" placeholder="Acme Ltd" value={(settings.bank_details || {}).account_name || ""} onChange={e => setBank("account_name", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Account Number</Label>
+            <Input data-testid="bank-account-number-input" placeholder="12345678" value={(settings.bank_details || {}).account_number || ""} onChange={e => setBank("account_number", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Sort Code</Label>
+            <Input data-testid="bank-sort-code-input" placeholder="20-00-00" value={(settings.bank_details || {}).sort_code || ""} onChange={e => setBank("sort_code", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">IBAN</Label>
+            <Input data-testid="bank-iban-input" placeholder="GB29 NWBK 6016 1331 9268 19" value={(settings.bank_details || {}).iban || ""} onChange={e => setBank("iban", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">BIC / SWIFT</Label>
+            <Input data-testid="bank-bic-input" placeholder="BARCGB22" value={(settings.bank_details || {}).bic || ""} onChange={e => setBank("bic", e.target.value)} />
+          </div>
+        </div>
+        <Button data-testid="bank-details-save-btn" onClick={save} disabled={saving} size="sm">
+          {saving ? "Saving..." : "Save Bank Details"}
+        </Button>
+      </div>
+
       {/* Custom Invoice Templates */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
         <div className="flex items-center justify-between">
