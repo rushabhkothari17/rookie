@@ -227,13 +227,27 @@ export function TenantsTab() {
     if (!showCreateAdmin) return;
     setCreatingAdmin(true);
     try {
-      await api.post(`/admin/tenants/${showCreateAdmin}/create-admin`, {
+      const payload: any = {
         tenant_id: showCreateAdmin,
-        ...newAdmin,
-      });
+        email: newAdmin.email,
+        full_name: newAdmin.full_name,
+        password: newAdmin.password,
+        role: newAdmin.role
+      };
+      
+      if (newAdmin.role !== "partner_super_admin") {
+         if (newAdmin.preset_role) {
+             payload.preset_role = newAdmin.preset_role;
+         } else {
+             payload.access_level = newAdmin.access_level;
+             payload.modules = newAdmin.modules;
+         }
+      }
+
+      await api.post(`/admin/tenants/${showCreateAdmin}/create-admin`, payload);
       toast.success("Admin user created");
       setShowCreateAdmin(null);
-      setNewAdmin({ email: "", full_name: "", password: "", role: "partner_super_admin" });
+      setNewAdmin({ email: "", full_name: "", password: "", role: "partner_super_admin", preset_role: "", access_level: "full_access", modules: [] });
       loadUsers(showCreateAdmin);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to create admin");
