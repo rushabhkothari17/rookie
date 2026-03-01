@@ -260,6 +260,10 @@ async def create_manual_subscription(
     tf = get_tenant_filter(admin)
     await _check(admin, "create")
     user = await db.users.find_one({**tf, "email": payload.customer_email.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    customer = await db.customers.find_one({**tf, "user_id": user["id"]}, {"_id": 0})
     if not customer:
         raise HTTPException(status_code=404, detail="Customer record not found")
 
