@@ -55,7 +55,7 @@ export function UsersTab() {
   });
   const [editForm, setEditForm] = useState({ 
     full_name: "", email: "", 
-    access_level: "read_only", modules: [] as string[]
+    preset_role: "", access_level: "read_only", modules: [] as string[]
   });
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
