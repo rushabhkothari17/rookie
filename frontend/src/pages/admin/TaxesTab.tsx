@@ -622,6 +622,9 @@ function InvoiceSettingsPanel() {
     finally { setSaving(false); }
   };
 
+  const setBank = (field: string, value: string) =>
+    setSettings((s: any) => ({ ...s, bank_details: { ...(s.bank_details || {}), [field]: value } }));
+
   const saveTemplate = async () => {
     if (!tmplForm.name.trim()) return toast.error("Template name is required");
     try {
