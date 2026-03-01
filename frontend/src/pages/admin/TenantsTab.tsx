@@ -521,12 +521,66 @@ export function TenantsTab() {
               <Select value={newAdmin.role} onValueChange={v => setNewAdmin(p => ({ ...p, role: v }))}>
                 <SelectTrigger className="w-full bg-white" data-testid="new-admin-role"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="partner_super_admin">Partner Super Admin</SelectItem>
+                  <SelectItem value="partner_super_admin">Partner Super Admin (Full Access)</SelectItem>
                   <SelectItem value="partner_admin">Partner Admin</SelectItem>
                   <SelectItem value="partner_staff">Partner Staff</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {newAdmin.role !== "partner_super_admin" && (
+              <div className="space-y-3 pt-2 border-t border-slate-100">
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500 flex items-center gap-1">
+                    Role Template <FieldTip tip="Pre-configured permission sets. Selecting one auto-fills permissions." />
+                  </label>
+                  <Select value={newAdmin.preset_role || "custom"} onValueChange={applyPresetRole}>
+                    <SelectTrigger data-testid="new-admin-preset">
+                      <SelectValue placeholder="Select a preset role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="custom">Custom (configure below)</SelectItem>
+                      {presetRoles.map(role => (
+                        <SelectItem key={role.key} value={role.key}>{role.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: create/edit/delete. Read Only: view only." /></label>
+                  <Select value={newAdmin.access_level} onValueChange={v => setNewAdmin(prev => ({ ...prev, access_level: v, preset_role: "" }))}>
+                    <SelectTrigger data-testid="new-admin-access">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="full_access">
+                        <div className="flex items-center gap-2"><ShieldCheck size={14} className="text-emerald-500" /> Full Access</div>
+                      </SelectItem>
+                      <SelectItem value="read_only">
+                        <div className="flex items-center gap-2"><Eye size={14} className="text-amber-500" /> Read Only</div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">Module Access ({newAdmin.modules.length} selected)</label>
+                  <div className="border border-slate-200 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
+                    {modules.map(mod => (
+                      <label key={mod.key} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-slate-50 rounded px-1">
+                        <Checkbox
+                          checked={newAdmin.modules.includes(mod.key)}
+                          onCheckedChange={() => toggleModule(mod.key)}
+                        />
+                        <span className="text-xs text-slate-700">{mod.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowCreateAdmin(null)}>Cancel</Button>
               <Button type="submit" disabled={creatingAdmin} data-testid="confirm-create-admin">
