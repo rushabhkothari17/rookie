@@ -481,7 +481,7 @@ export function UsersTab() {
             </Table>
           </div>
 
-          <AdminPagination page={page} totalPages={totalPages} onPageChange={p => load(p)} />
+          <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={p => load(p)} />
         </TabsContent>
       </Tabs>
 
