@@ -6,13 +6,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Shield, ShieldCheck, Eye, Pencil, PowerOff, Power, ScrollText, Lock } from "lucide-react";
+import { Plus, Shield, ShieldCheck, Eye, Pencil, PowerOff, Power, ScrollText, Lock, Users, Zap } from "lucide-react";
 import { FieldTip } from "./shared/FieldTip";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
