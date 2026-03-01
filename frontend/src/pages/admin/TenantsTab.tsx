@@ -209,7 +209,7 @@ export function TenantsTab() {
     setGeneratedCode("");
     setCodeCopied(false);
     setCreateCountry("");
-    setNewPartner({ name: "", admin_name: "", admin_email: "", admin_password: "", base_currency: "GBP", partner_type: "", industry: "", tags: "", address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" } });
+    setNewPartner({ name: "", admin_name: "", admin_email: "", admin_password: "", base_currency: "USD", partner_type: "", industry: "", tags: "", address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" } });
   };
 
   const openEditDetails = (tenant: Tenant) => {
