@@ -22,33 +22,6 @@
         Learn how to configure a non-root public URL by running `npm run build`.
         -->
         <title>Emergent | Fullstack App</title>
-        <style>
-          #emergent-badge {
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-            width: 0 !important;
-            height: 0 !important;
-            overflow: hidden !important;
-          }
-        </style>
-        <script>
-          (function() {
-            function hideBadge() {
-              var b = document.getElementById('emergent-badge');
-              if (b) {
-                b.style.setProperty('visibility', 'hidden', 'important');
-                b.style.setProperty('opacity', '0', 'important');
-                b.style.setProperty('width', '0', 'important');
-                b.style.setProperty('height', '0', 'important');
-                b.style.setProperty('overflow', 'hidden', 'important');
-                b.style.setProperty('pointer-events', 'none', 'important');
-              }
-              requestAnimationFrame(hideBadge);
-            }
-            requestAnimationFrame(hideBadge);
-          })();
-        </script>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
         <!--
