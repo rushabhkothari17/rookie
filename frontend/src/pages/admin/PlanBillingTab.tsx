@@ -792,7 +792,7 @@ export function PlanBillingTab() {
                 <SelectContent>
                   {downgrades.map(p => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.name} — {p.currency || currency} {(p.monthly_price ?? 0).toFixed(2)}/mo
+                      {p.name} — {p.display_currency || baseCurrency} {(p.display_price ?? p.monthly_price ?? 0).toFixed(2)}/mo
                     </SelectItem>
                   ))}
                 </SelectContent>
