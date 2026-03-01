@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Download } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-700",
@@ -41,6 +41,27 @@ export function MyOrdersTab() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const LIMIT = 20;
+
+  const handleDownloadInvoice = (orderId: string, orderNumber: string) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+    const base = process.env.REACT_APP_BACKEND_URL || "";
+    fetch(`${base}/api/partner/my-orders/${orderId}/download-invoice`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => {
+        if (!r.ok) throw new Error("Failed");
+        return r.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `invoice-${orderNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch(() => toast.error("Invoice generation failed"));
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
