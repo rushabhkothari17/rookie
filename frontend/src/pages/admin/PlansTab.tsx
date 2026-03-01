@@ -1130,6 +1130,7 @@ export function PlansTab() {
       {section === "plans" && <PlansSection />}
       {section === "rates" && <OneTimeRatesSection />}
       {section === "coupons" && <CouponsSection />}
+      {section === "usage" && <CouponUsageSection />}
     </div>
   );
 }
