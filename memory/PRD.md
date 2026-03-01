@@ -144,7 +144,15 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Completed (Recent)
 
-### Stripe-Gated Plan Upgrades (Mar 2026)
+### Partner Subscriptions Admin Improvements (Mar 2026)
+- **Auto-calculate Next Billing Date**: Changes automatically when Start Date or Billing Interval changes (blue 'auto' badge shown); manually edited value preserved if user overrides it
+- **Auto-calculate Expiry Date**: Changes automatically when Start Date or Term Months changes (blue 'auto' badge shown); can be overridden manually
+- **Billing Interval → Next Billing Date**: monthly=+1m, quarterly=+3m, annual=+12m (always 1st of month)
+- **Currency dropdown**: ISO currency dropdown (GBP, USD, EUR, AUD, CAD, CHF etc.) replaces free-text input
+- **Expiry Date column** added to subscriptions table
+- **Scheduler fix**: `create_renewal_orders` now advances `next_billing_date` by billing interval after creating each renewal order (was previously not advanced)
+- **`advance_billing_date(date, interval)`** helper added to `billing_service.py`
+- **Stripe Customer Portal button** in partner My Subscriptions tab: `POST /api/partner/billing-portal` creates Stripe Customer (if not exists), returns portal_url; partner redirected to manage payment method / cancel / view invoices
 - Partner plan upgrades now require Stripe payment before plan activation
 - `POST /api/partner/upgrade-plan` creates a Stripe Checkout Session when pro-rata > £0; returns `checkout_url`
 - Frontend redirects to Stripe Checkout; plan is only activated on `checkout.session.completed` webhook
