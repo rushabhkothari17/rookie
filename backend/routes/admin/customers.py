@@ -407,8 +407,12 @@ async def update_customer(
     tf = get_tenant_filter(admin)
     await _check(admin, "edit")
     customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
 
-    changes: Dict[str, Any] = {}
+    user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
     user_updates: Dict[str, Any] = {}
     if customer_data.full_name is not None:
