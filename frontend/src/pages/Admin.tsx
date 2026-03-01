@@ -314,6 +314,11 @@ export default function Admin() {
               <BillingSettingsTab />
             </TabsContent>
           )}
+          {showPartnerOrgs && authUser?.role === "platform_super_admin" && (
+            <TabsContent value="currencies" className="space-y-4">
+              <CurrenciesTab />
+            </TabsContent>
+          )}
           {!isPlatformAdmin && (
             <TabsContent value="usage" className="space-y-4">
               <UsageDashboard />
