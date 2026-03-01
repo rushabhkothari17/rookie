@@ -248,6 +248,11 @@ export function PlanBillingTab() {
         </div>
       )}
 
+      {/* Usage & Limits — clubbed into Plan & Billing */}
+      <div className="border-t border-slate-200 pt-6">
+        <UsageDashboard />
+      </div>
+
       {/* Downgrade Dialog */}
       <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
         <DialogContent data-testid="downgrade-dialog">
