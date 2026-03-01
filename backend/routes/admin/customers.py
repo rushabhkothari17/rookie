@@ -499,6 +499,10 @@ async def admin_set_customer_active(
     tf = get_tenant_filter(admin)
     await _check(admin, "edit")
     customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    linked_user = await db.users.find_one({"id": customer.get("user_id")}, {"_id": 0})
     if linked_user and linked_user["id"] == admin["id"] and not active:
         raise HTTPException(status_code=400, detail="You cannot deactivate your own account")
 
