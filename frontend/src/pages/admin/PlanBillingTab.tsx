@@ -179,6 +179,30 @@ export function PlanBillingTab() {
 
   return (
     <div className="space-y-8" data-testid="plan-billing-tab">
+
+      {/* Payment status banner */}
+      {paymentStatus && (
+        <div className={`flex items-start gap-3 rounded-xl p-4 border ${
+          paymentStatus.type === "success" ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
+          paymentStatus.type === "cancelled" ? "bg-amber-50 border-amber-200 text-amber-800" :
+          paymentStatus.type === "loading" ? "bg-blue-50 border-blue-200 text-blue-800" :
+          "bg-red-50 border-red-200 text-red-800"
+        }`} data-testid="payment-status-banner">
+          {paymentStatus.type === "loading" && <Loader2 size={18} className="animate-spin mt-0.5 shrink-0" />}
+          {paymentStatus.type === "success" && <CheckCircle size={18} className="mt-0.5 shrink-0" />}
+          {paymentStatus.type === "cancelled" && <XCircle size={18} className="mt-0.5 shrink-0" />}
+          {paymentStatus.type === "timeout" && <AlertCircle size={18} className="mt-0.5 shrink-0" />}
+          {paymentStatus.type === "error" && <AlertCircle size={18} className="mt-0.5 shrink-0" />}
+          <div className="flex-1 text-sm">
+            {paymentStatus.type === "loading" && "Confirming your payment with Stripe…"}
+            {paymentStatus.type === "success" && `Payment confirmed. Your plan has been upgraded to ${paymentStatus.planName}.`}
+            {paymentStatus.type === "cancelled" && "Payment was cancelled. Your plan has not changed."}
+            {paymentStatus.type === "timeout" && "Payment confirmation is taking longer than expected. Refresh this page in a few minutes."}
+            {paymentStatus.type === "error" && "Could not confirm payment status. Please contact support if your plan was not updated."}
+          </div>
+          <button onClick={() => setPaymentStatus(null)} className="text-current opacity-60 hover:opacity-100 text-lg leading-none">&times;</button>
+        </div>
+      )}
       {/* Current Plan Card */}
       <div>
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Current Plan</h2>
