@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Check, Copy, Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, Shield, Eye, StickyNote, ScrollText, MoreHorizontal } from "lucide-react";
+import { Check, Copy, Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, Shield, Eye, StickyNote, ScrollText, MoreHorizontal, Pencil } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldTip } from "./shared/FieldTip";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCountries, useProvinces } from "@/hooks/useCountries";
 import { TenantLicenseModal } from "./TenantLicenseModal";
 import { TenantNotesModal } from "./TenantNotesModal";
+import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
 type TenantAddress = {
   line1?: string; line2?: string; city?: string; region?: string; postal?: string; country?: string;
@@ -26,6 +27,10 @@ type Tenant = {
   status: "active" | "inactive";
   created_at: string;
   address?: TenantAddress;
+  base_currency?: string;
+  partner_type?: string;
+  industry?: string;
+  tags?: string[];
 };
 
 type TenantUser = {
