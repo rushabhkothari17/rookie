@@ -202,6 +202,7 @@ function OrderFormModal({
                 options={[{ value: "", label: "— None —" }, ...plans.map(p => ({ value: p.id, label: p.name }))]}
                 placeholder="No plan"
                 searchPlaceholder="Search plans…"
+                data-testid="order-plan-select"
               />
             </div>
             <div className="space-y-1">
