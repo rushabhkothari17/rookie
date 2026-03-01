@@ -206,7 +206,7 @@ function OngoingUpgradeDialog({
           <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-1.5 text-sm">
             <div className="flex justify-between text-slate-600">
               <span>New monthly rate</span>
-              <span className="font-medium">{currency} {(plan.monthly_price ?? 0).toFixed(2)}/mo</span>
+              <span className="font-medium">{currency} {displayPrice.toFixed(2)}/mo</span>
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Due now (flat difference)</span>
