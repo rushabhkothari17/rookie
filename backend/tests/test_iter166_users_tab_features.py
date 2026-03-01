@@ -180,6 +180,7 @@ class TestCreateUser:
         """Platform super admin creating a partner role without target_tenant_id should fail."""
         r = auth_session.post(f"{BASE_URL}/api/admin/users", json={
             "email": "TEST_nodest@example.com",
+            "full_name": "Test NoOrg",
             "password": "TestPass123!",
             "role": "partner_admin",
             # no target_tenant_id
@@ -191,6 +192,7 @@ class TestCreateUser:
         """Platform super admin cannot be created manually."""
         r = auth_session.post(f"{BASE_URL}/api/admin/users", json={
             "email": "TEST_newsuperadmin@example.com",
+            "full_name": "Test SuperAdmin",
             "password": "TestPass123!",
             "role": "platform_super_admin",
         })
@@ -199,11 +201,9 @@ class TestCreateUser:
 
     def test_partner_admin_role_is_valid_to_create(self, auth_session):
         """Verify partner_admin is in the list of creatable roles for platform super admin."""
-        # We test this by checking the roles list is correct via the validate/roles concept
-        # We know from the code that platform_super_admin can create: platform_admin, partner_super_admin, partner_admin, partner_staff
-        # We can't easily test this without a valid target_tenant_id, but we can check the error message
         r = auth_session.post(f"{BASE_URL}/api/admin/users", json={
             "email": "TEST_partneradmin@example.com",
+            "full_name": "Test Partner Admin",
             "password": "TestPass123!",
             "role": "partner_admin",
             "target_tenant_id": "nonexistent-org-12345",
@@ -212,7 +212,6 @@ class TestCreateUser:
         assert r.status_code in (400, 404), f"Unexpected status: {r.status_code}: {r.text}"
         # If 400, should NOT say "invalid roles"
         if r.status_code == 400:
-            # Check it's NOT a role validation error
             detail = r.json().get("detail", "")
             assert "partner_admin" not in detail or "invalid" not in detail.lower()
         print(f"PASS: partner_admin role is recognized as valid (org not found = {r.status_code})")
@@ -221,6 +220,7 @@ class TestCreateUser:
         """Creating a partner role user with nonexistent tenant_id returns 404."""
         r = auth_session.post(f"{BASE_URL}/api/admin/users", json={
             "email": "TEST_notenant@example.com",
+            "full_name": "Test No Tenant",
             "password": "TestPass123!",
             "role": "partner_admin",
             "target_tenant_id": "nonexistent-tenant-xyz-999",
@@ -230,9 +230,6 @@ class TestCreateUser:
 
     def test_cannot_create_duplicate_partner_super_admin(self, auth_session):
         """Creating a 2nd partner_super_admin for the same org should fail."""
-        # First, get the tenant that already has a super admin
-        # Liger Inc should already have cadrashtishah@gmail.com or cadrashtishah1@gmail.com as partner_super_admin
-        # We need to find the Liger Inc tenant ID
         r = auth_session.get(f"{BASE_URL}/api/admin/tenants", params={"search": "Liger"})
         assert r.status_code == 200
         tenants = r.json().get("tenants", [])
@@ -247,6 +244,7 @@ class TestCreateUser:
         # Try to create another partner_super_admin for Liger Inc
         r = auth_session.post(f"{BASE_URL}/api/admin/users", json={
             "email": "TEST_ligersuperadmin2@example.com",
+            "full_name": "Test Liger SA",
             "password": "TestPass123!",
             "role": "partner_super_admin",
             "target_tenant_id": liger_id,
