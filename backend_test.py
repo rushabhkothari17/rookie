@@ -404,6 +404,10 @@ class PartnerAdminTester:
             if not await self.verify_user_permissions():
                 return False
             
+            # Additional API verification
+            if not await self.verify_via_admin_users_api():
+                return False
+            
             print("\n" + "=" * 70)
             print("🎉 All Partner Admin Creation with Permissions tests PASSED!")
             return True
