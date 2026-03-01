@@ -108,9 +108,22 @@ export function MySubscriptionsTab() {
 
   return (
     <div className="space-y-4" data-testid="my-subscriptions-tab">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900">My Subscriptions</h2>
-        <p className="text-sm text-slate-500">Your active platform subscriptions.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">My Subscriptions</h2>
+          <p className="text-sm text-slate-500">Your active platform subscriptions.</p>
+        </div>
+        <Button
+          onClick={handleBillingPortal}
+          disabled={portalLoading}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          data-testid="open-billing-portal-btn"
+        >
+          {portalLoading ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
+          Manage Payment Method
+        </Button>
       </div>
 
       <div className="flex gap-2 flex-wrap">
