@@ -51,6 +51,7 @@ interface PlanData {
     amount: number;
     currency: string;
     stripe_session_id?: string;
+    checkout_url?: string;
     order_number: string;
   } | null;
 }
