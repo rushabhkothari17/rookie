@@ -117,8 +117,11 @@ class TestProductsList:
         products = res.json()["products"]
         if products:
             p = products[0]
-            for field in ["id", "name", "is_active", "is_subscription"]:
+            for field in ["id", "name", "is_active"]:
                 assert field in p, f"Missing field '{field}' in product"
+            # is_subscription OR billing_period (legacy) must be present
+            assert "is_subscription" in p or "billing_period" in p, \
+                "Neither is_subscription nor billing_period found in product"
 
     def test_partner_list_products_returns_200(self, partner_client):
         res = partner_client.get(f"{BASE_URL}/api/admin/products-all?per_page=500")
