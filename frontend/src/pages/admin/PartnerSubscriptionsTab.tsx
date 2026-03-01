@@ -196,7 +196,7 @@ function SubFormModal({
     }
     setSaving(true);
     try {
-      const payload: Record<string, any> = {
+    const payload: Record<string, any> = {
         ...form,
         amount: parseFloat(form.amount),
         plan_id: form.plan_id || null,
@@ -207,6 +207,7 @@ function SubFormModal({
         term_months: form.term_months ? parseInt(form.term_months) : null,
         auto_cancel_on_termination: form.auto_cancel_on_termination,
         reminder_days: form.reminder_days !== "" ? parseInt(form.reminder_days) : null,
+        contract_end_date: form.contract_end_date || null,
       };
       if (isEdit) {
         await api.put(`/admin/partner-subscriptions/${sub.id}`, payload);
