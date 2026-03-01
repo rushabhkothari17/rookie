@@ -1,6 +1,6 @@
 # SaaS Application Process & Business Function Guide
 
-**Version:** 1.0 (Current Implementation)
+**Version:** 1.1 (Comprehensive)
 **Audience:** Stakeholders, Product Owners, Operations Teams
 
 ---
@@ -33,7 +33,7 @@ Plans control what a partner can do. This is the primary upsell mechanism.
 *   **Hard Limits:** Max users, max storage, max orders/month.
 *   **Soft Limits:** Warning thresholds (e.g., email alert at 80% usage).
 
-### Self-Service Upgrades (New!)
+### Self-Service Upgrades
 Partners can upgrade their plan without talking to sales.
 *   **Workflow:**
     1.  Partner views "My Plan" in the portal.
@@ -66,20 +66,41 @@ Partners can upgrade their plan without talking to sales.
     *   Bank Details (IBAN/SWIFT) in the footer.
 *   **Delivery:** Emailed to partners/customers and available for download in the portal.
 
+### Tax & Compliance
+*   **Tax Tables:** Configurable tax rates by country (e.g., UK VAT 20%).
+*   **Override Rules:** Special logic (e.g., "If Customer is in EU AND Product is Digital Service → 0% Reverse Charge").
+
 ### Automated Scheduler (Daily Jobs)
 Running every day at 09:00 UTC:
 1.  **Renewal Reminders:** Sends emails X days before a subscription renews.
 2.  **Auto-Cancellation:** Cancels subscriptions when their contract term ends.
-3.  **Overdue Enforcement:** Warns partners with unpaid invoices, then cancels their service after a grace period (e.g., 7 days).
+3.  **Overdue Enforcement:** Warns partners with unpaid invoices, then cancels their service after a grace period.
 
 ---
 
-## 4. Customer Experience (The Storefront)
+## 4. Marketing & Store Customization (The Brand)
+*Tools for partners to make the platform their own.*
+
+### Storefront Customization
+*   **Branding:** Partners upload their Logo, Brand Colors (Primary/Accent), and Login Screen images.
+*   **Store Filters:** Partners create custom filters (e.g., "Industry", "Service Type") to help customers browse products.
+
+### Promo Codes
+*   **Discounts:** Fixed amount ($10 off) or Percentage (20% off).
+*   **Rules:**
+    *   Limit to specific products.
+    *   Limit total number of uses (e.g., "First 50 customers").
+    *   Set expiry dates.
+    *   "One-time use" codes for specific campaigns.
+
+---
+
+## 5. Customer Experience (The Storefront)
 *The white-labeled shopping experience for End Customers.*
 
 ### The Storefront
 *   **Product Catalogue:** Partners can choose which products to sell.
-*   **Visibility Logic:** sophisticated rules determine who sees what.
+*   **Visibility Logic:** Sophisticated rules determine who sees what.
     *   *Global:* Visible to everyone.
     *   *Exclusive:* Visible only to specific customers (VIPs).
     *   *Conditional:* "Show this product only if Customer Country = 'UK'".
@@ -90,12 +111,17 @@ Running every day at 09:00 UTC:
 ### Purchase Flows
 1.  **One-Off Orders:** Standard e-commerce cart.
 2.  **Subscriptions:** Recurring billing with defined contract terms (e.g., 12 months).
-3.  **Scope Requests:** Customers request a quote for custom work.
+3.  **Scope Requests (Dynamic Intake):** Customers request a quote for custom work.
+    *   *Intake Forms:* Admins build complex forms (drag-and-drop) to capture project details.
     *   *Workflow:* Customer fills form → Partner reviews → Partner converts to Order → Customer pays.
+
+### Customer Portal
+*   **Self-Service:** View Order History, Active Subscriptions, and Download Invoices.
+*   **Documents:** Secure file sharing between Partner and Customer.
 
 ---
 
-## 5. Operational Workflows (The Day-to-Day)
+## 6. Operational Workflows (The Day-to-Day)
 *Tools for running the business efficiently.*
 
 ### User Management
@@ -105,20 +131,22 @@ Running every day at 09:00 UTC:
     *   **Custom Roles:** Define granular permissions per module.
 
 ### Communication Center
-*   **Email Templates:** rich HTML templates for every system event (Welcome, Invoice, Reset Password).
+*   **Email Templates:** Rich HTML templates for every system event (Welcome, Invoice, Reset Password).
 *   **Resources (Knowledge Base):**
     *   Publish Articles, Guides, and SOPs.
-    *   "Scope Final" feature: Locks a document once a client accepts a quote, preserving the legal agreement.
+    *   **"Scope Final" Feature:** Locks a document once a client accepts a quote, preserving the legal agreement.
 
-### Audit Trail
-*   **Immutable Logs:** Every action (login, edit, delete) is recorded.
-*   **Traceability:** Who did what, when, and from which IP address.
-*   **Security:** Logs cannot be deleted, even by admins.
+### Bank Reconciliation (Manual)
+*   For "Bank Transfer" orders, admins use a reconciliation tool to match incoming bank transactions to pending orders.
+
+### Integrations Ecosystem
+*   **Zoho Suite:** Syncs Customers (CRM), Invoices (Books), and Files (WorkDrive).
+*   **Resend:** Reliable transactional email delivery.
 
 ---
 
-## 6. Security & Compliance (The Guardrails)
+## 7. Security & Compliance (The Guardrails)
 *   **Authentication:** Secure login with JWT (JSON Web Tokens).
 *   **Tenant Isolation:** Middleware ensures a partner can *never* access another partner's data.
 *   **GDPR Tools:** Built-in "Right to Erasure" and "Data Export" workflows.
-*   **Secret Scanning:** Prevents sensitive API keys (Stripe, AWS) from being exposed.
+*   **Audit Trail:** Immutable logs of every action (login, edit, delete), traceable to the specific user and IP.
