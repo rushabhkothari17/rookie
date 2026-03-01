@@ -737,10 +737,10 @@ export function TenantsTab() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600">Partner Type</label>
-                <Select value={editDetailsForm.partner_type} onValueChange={v => setEditDetailsForm(p => ({ ...p, partner_type: v }))}>
+                <Select value={editDetailsForm.partner_type || "__none__"} onValueChange={v => setEditDetailsForm(p => ({ ...p, partner_type: v === "__none__" ? "" : v }))}>
                   <SelectTrigger data-testid="edit-org-partner-type"><SelectValue placeholder="Select type…" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— Not set —</SelectItem>
+                    <SelectItem value="__none__">— Not set —</SelectItem>
                     {["Reseller","Direct","Wholesale","Agency","Affiliate","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
