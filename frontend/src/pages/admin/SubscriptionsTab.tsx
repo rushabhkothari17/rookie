@@ -87,6 +87,7 @@ function computeExpiryDate(startDate: string, termMonths: string | number): stri
 export function SubscriptionsTab() {
   const { user: authUser } = useAuth();
   const isPlatformAdmin = authUser?.role === "platform_admin";
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [subs, setSubs] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [page, setPage] = useState(1);
