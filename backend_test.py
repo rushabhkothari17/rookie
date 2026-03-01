@@ -47,12 +47,13 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                self.admin_token = data.get("access_token")
+                print(f"Login response data: {data}")  # Debug output
+                self.admin_token = data.get("access_token") or data.get("token")  # Try both fields
                 if self.admin_token:
                     self.log_test("Platform Admin Login", "PASS", "Successfully logged in as platform admin")
                     return True
                 else:
-                    self.log_test("Platform Admin Login", "FAIL", "No access token in response")
+                    self.log_test("Platform Admin Login", "FAIL", f"No access token in response. Response: {data}")
                     return False
             else:
                 self.log_test("Platform Admin Login", "FAIL", f"HTTP {response.status_code}: {response.text}")
