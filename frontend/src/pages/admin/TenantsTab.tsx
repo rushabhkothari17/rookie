@@ -355,6 +355,18 @@ export function TenantsTab() {
           />
         </TabsContent>
 
+        {/* ── Tags management ── */}
+        <TabsContent value="tags">
+          <GenericListManager
+            adminSlug="admin/platform/tags"
+            cacheSlug="tags"
+            label="Tags"
+            description="Manage the taxonomy of tags that can be applied to partner orgs and used in plan visibility rules."
+            inputPlaceholder="e.g. enterprise"
+            testId="tags-manager"
+          />
+        </TabsContent>
+
         {/* ── Partner list ── */}
         <TabsContent value="partners">
         <div className="space-y-4">
