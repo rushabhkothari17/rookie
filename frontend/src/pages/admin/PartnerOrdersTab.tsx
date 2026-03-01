@@ -61,7 +61,7 @@ const STATUSES = ["pending", "unpaid", "paid", "cancelled", "refunded"];
 const PAYMENT_METHODS = ["manual", "offline", "bank_transfer", "card"];
 
 function downloadInvoice(orderId: string, orderNumber: string, endpoint: string) {
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+  const token = localStorage.getItem("aa_token") || "";
   const base = (window as any).__REACT_APP_BACKEND_URL__ || process.env.REACT_APP_BACKEND_URL || "";
   fetch(`${base}/api/${endpoint}/${orderId}/download-invoice`, {
     headers: { Authorization: `Bearer ${token}` },

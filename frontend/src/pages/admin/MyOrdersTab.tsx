@@ -43,7 +43,7 @@ export function MyOrdersTab() {
   const LIMIT = 20;
 
   const handleDownloadInvoice = (orderId: string, orderNumber: string) => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+    const token = localStorage.getItem("aa_token") || "";
     const base = process.env.REACT_APP_BACKEND_URL || "";
     fetch(`${base}/api/partner/my-orders/${orderId}/download-invoice`, {
       headers: { Authorization: `Bearer ${token}` },
