@@ -170,18 +170,18 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
                     # Use the real URL from Stripe (may differ from stored)
                     pending_upgrade["checkout_url"] = session.url
             except Exception:
-                # If Stripe is unreachable, fall back to showing the banner
+                # If Stripe is unreachable, show banner using stored URL if available
                 pending_upgrade = {
                     k: pending_upgrade_raw[k]
                     for k in ("id", "plan_id", "plan_name", "amount", "currency",
-                              "stripe_session_id", "order_number")
+                              "stripe_session_id", "order_number", "checkout_url")
                     if k in pending_upgrade_raw
                 }
         else:
             pending_upgrade = {
                 k: pending_upgrade_raw[k]
                 for k in ("id", "plan_id", "plan_name", "amount", "currency",
-                          "stripe_session_id", "order_number")
+                          "stripe_session_id", "order_number", "checkout_url")
                 if k in pending_upgrade_raw
             }
 
