@@ -53,6 +53,35 @@ const getProcessorLink = (id: string | undefined): string | null => {
 const SUB_STATUSES_FALLBACK = ["active", "unpaid", "paused", "canceled_pending", "cancelled", "pending_direct_debit_setup", "offline_manual"];
 const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "offline", "manual"];
 
+const ISO_CURRENCIES = ["GBP","USD","EUR","AUD","CAD","CHF","SGD","NZD","HKD","JPY","INR","AED","ZAR","MYR","NOK","SEK","DKK"];
+const BILLING_INTERVALS = [
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly (3 mo)" },
+  { value: "biannual", label: "Bi-annual (6 mo)" },
+  { value: "annual", label: "Annual (12 mo)" },
+];
+
+function computeNextBillingDate(startDate: string, interval: string): string {
+  if (!startDate) return "";
+  const d = new Date(startDate + "T00:00:00");
+  if (interval === "weekly") d.setDate(d.getDate() + 7);
+  else if (interval === "monthly") d.setMonth(d.getMonth() + 1);
+  else if (interval === "quarterly") d.setMonth(d.getMonth() + 3);
+  else if (interval === "biannual") d.setMonth(d.getMonth() + 6);
+  else if (interval === "annual") d.setFullYear(d.getFullYear() + 1);
+  else d.setMonth(d.getMonth() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function computeExpiryDate(startDate: string, termMonths: string | number): string {
+  const months = parseInt(String(termMonths) || "0");
+  if (!startDate || !months || months <= 0) return "";
+  const d = new Date(startDate + "T00:00:00");
+  d.setMonth(d.getMonth() + months);
+  return d.toISOString().slice(0, 10);
+}
+
 export function SubscriptionsTab() {
   const { user: authUser } = useAuth();
   const isPlatformAdmin = authUser?.role === "platform_admin";
