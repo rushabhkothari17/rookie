@@ -185,22 +185,24 @@ function OrderFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-slate-600">Partner *</label>
-              <Select value={form.partner_id} onValueChange={v => set("partner_id", v)}>
-                <SelectTrigger data-testid="order-partner-select"><SelectValue placeholder="Select partner…" /></SelectTrigger>
-                <SelectContent>
-                  {tenants.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={form.partner_id || undefined}
+                onValueChange={v => set("partner_id", v)}
+                options={tenants.map(t => ({ value: t.id, label: t.name }))}
+                placeholder="Select partner…"
+                searchPlaceholder="Search partners…"
+                data-testid="order-partner-select"
+              />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Plan (optional)</label>
-              <Select value={form.plan_id || "__none__"} onValueChange={v => set("plan_id", v === "__none__" ? "" : v)}>
-                <SelectTrigger><SelectValue placeholder="No plan" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">— None —</SelectItem>
-                  {plans.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={form.plan_id || undefined}
+                onValueChange={v => set("plan_id", v === "" ? "" : v)}
+                options={[{ value: "", label: "— None —" }, ...plans.map(p => ({ value: p.id, label: p.name }))]}
+                placeholder="No plan"
+                searchPlaceholder="Search plans…"
+              />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Status</label>
