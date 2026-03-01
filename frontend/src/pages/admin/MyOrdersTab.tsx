@@ -20,6 +20,7 @@ const STATUSES = ["pending", "unpaid", "paid", "cancelled", "refunded"];
 type PartnerOrder = {
   id: string;
   order_number: string;
+  subscription_number?: string;
   description: string;
   amount: number;
   currency: string;
