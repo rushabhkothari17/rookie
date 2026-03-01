@@ -52,7 +52,7 @@ async def list_coupons(admin: Dict[str, Any] = Depends(require_platform_admin)):
 
 
 @router.post("/admin/coupons")
-async def create_coupon(body: CouponCreate, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def create_coupon(body: CouponCreate, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     code = body.code.upper().strip()
     if await db.coupons.find_one({"code": code}):
         raise HTTPException(409, "A coupon with this code already exists")
@@ -79,7 +79,7 @@ async def create_coupon(body: CouponCreate, admin: Dict[str, Any] = Depends(requ
 
 
 @router.put("/admin/coupons/{coupon_id}")
-async def update_coupon(coupon_id: str, body: CouponUpdate, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def update_coupon(coupon_id: str, body: CouponUpdate, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     coupon = await db.coupons.find_one({"id": coupon_id}, {"_id": 0})
     if not coupon:
         raise HTTPException(404, "Coupon not found")
@@ -92,7 +92,7 @@ async def update_coupon(coupon_id: str, body: CouponUpdate, admin: Dict[str, Any
 
 
 @router.delete("/admin/coupons/{coupon_id}")
-async def delete_coupon(coupon_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def delete_coupon(coupon_id: str, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     if not await db.coupons.find_one({"id": coupon_id}):
         raise HTTPException(404, "Coupon not found")
     await db.coupons.delete_one({"id": coupon_id})

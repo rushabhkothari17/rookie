@@ -158,7 +158,7 @@ async def update_plan(plan_id: str, payload: PlanUpdate, admin: Dict[str, Any] =
 
 
 @router.delete("/admin/plans/{plan_id}")
-async def delete_plan(plan_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def delete_plan(plan_id: str, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     plan = await db.plans.find_one({"id": plan_id}, {"_id": 0, "id": 1, "name": 1, "is_readonly": 1, "is_default": 1})
     if plan is None:
         raise HTTPException(status_code=404, detail="Plan not found")
