@@ -259,10 +259,50 @@ function PlanFormModal({ plan, onClose, onSaved }: { plan: Plan | null; onClose:
               <label className="text-xs font-medium text-slate-600">Currency</label>
               <Select value={form.currency} onValueChange={v => set("currency", v)} data-testid="plan-currency-select">
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{ISO_CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>{currencyList.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
+
+          {/* Visibility Rules — only shown when not public */}
+          {form.is_public !== "true" && (
+            <div className="space-y-3 rounded-lg border border-slate-200 p-3 bg-slate-50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-slate-700">Visibility Rules</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Define which partner orgs can see this plan. Leave empty to hide from all.</p>
+                </div>
+                <Button type="button" size="sm" variant="outline" onClick={addRule} data-testid="add-visibility-rule-btn">
+                  <PlusCircle size={13} className="mr-1.5" /> Add Rule
+                </Button>
+              </div>
+              {rules.length === 0 && (
+                <p className="text-xs text-slate-400 italic">No rules — plan is hidden from all partner orgs.</p>
+              )}
+              {rules.map((rule, i) => (
+                <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center" data-testid={`visibility-rule-${i}`}>
+                  <Select value={rule.field} onValueChange={v => updateRule(i, "field", v)}>
+                    <SelectTrigger className="text-xs h-8"><SelectValue /></SelectTrigger>
+                    <SelectContent>{RULE_FIELDS.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={rule.operator} onValueChange={v => updateRule(i, "operator", v)}>
+                    <SelectTrigger className="text-xs h-8"><SelectValue /></SelectTrigger>
+                    <SelectContent>{RULE_OPERATORS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <input
+                    className="h-8 rounded-md border border-slate-200 bg-white px-2 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400"
+                    placeholder="value"
+                    value={rule.value}
+                    onChange={e => updateRule(i, "value", e.target.value)}
+                    data-testid={`rule-value-${i}`}
+                  />
+                  <button type="button" onClick={() => removeRule(i)} className="text-slate-400 hover:text-red-500">
+                    <MinusCircle size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <p className="text-xs text-slate-400">Leave any limit blank for unlimited.</p>
           <div className="rounded-lg border border-slate-200 overflow-hidden">
             <table className="w-full text-sm">
