@@ -19,8 +19,6 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## What's Been Implemented
 
-## What's Been Implemented
-
 ### Phase 1: Partner Licensing & Plans
 - Plan creation and assignment to partners
 - License usage tracking with strict enforcement on all manual create paths
@@ -47,30 +45,37 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 - Partner admins can configure product filters for their customer-facing stores (FiltersTab)
 - Login page accepts `partnerCode` URL parameter for streamlined partner login
 
-### Phase 7: Overdue Cancellation, Product Billing Type & User Filter (Feb 2026)
-- **Phase 5 — Overdue Cancellation**: Scheduler Job 4 (`cancel_overdue_partner_subscriptions`, daily 09:15 UTC) detects overdue partner orders, sends warning email at configurable days, auto-cancels subscription + reverts to Free Trial past grace period. New `GET/PUT /api/admin/platform-billing-settings` endpoint + new admin "Billing Settings" tab in Platform section.
-- **Phase 2B — Product Billing Type**: Added `billing_type: "prorata" | "fixed"` field to products. Visible in Product Form > Pricing > "Subscription billing method" dropdown (shown only when `is_subscription=true`). Pro-rata aligns first invoice to 1st of month; Fixed always charges full monthly price from start date.
-- **Phase 6 — User Form Parity**: Platform admins can filter the Users tab by partner organisation via a new dropdown. Backend `/api/admin/users` now accepts optional `partner_id` query parameter.
-- **FieldTip Bug Fix**: Converted tooltips from CSS hover (`group-hover`) to click-to-toggle React state. Fixes all-tooltips-visible-at-once bug caused by parent `group` class conflict.
-- `GET /api/partner/my-plan` — returns current plan, subscription, and available public plans
-- `POST /api/partner/upgrade-plan` — instant self-service upgrade with pro-rata billing (creates order + updates subscription)
-- `POST /api/partner/submissions` — submit a downgrade or support request (effective next 1st of month)
-- `GET /api/partner/submissions` — partner views their own submissions
-- `GET /api/admin/partner-submissions` — platform admin views all partner submissions (with status filter, search)
-- `PUT /api/admin/partner-submissions/{id}` — approve/reject submission; approval immediately applies plan change to tenant
-- **New Frontend Tabs**: `PlanBillingTab` (partner), `MySubmissionsTab` (partner), `PartnerSubmissionsTab` (platform admin)
-- Plans now support `monthly_price` and `currency` fields for pricing display + pro-rata calculation
-- Plans table in Admin shows Price column and `Public` badge for self-service eligible plans
-- **APScheduler** integrated (3 daily jobs at 09:00–09:10 UTC):
-  1. **send_renewal_reminders** — configurable `reminder_days` per subscription/tenant
-  2. **auto_cancel_subscriptions** — auto-cancels when `contract_end_date <= today` and `auto_cancel_on_termination=true`
-  3. **create_renewal_orders** — creates `pending` orders for manual-payment subs on billing day
-- **Configurable Reminder Days**:
-  - `reminder_days` field on each subscription (customer + partner) — overrides org default
-  - `default_reminder_days` on tenant document — org-level default
-  - `null`/blank = no reminders sent for that scope
-  - UI: SettingsTab "Subscription Notifications" section, plus per-subscription field with tooltip
-  - PUT `/api/admin/tenant-settings` endpoint for any admin to update their org default
+### Phase 5–7: Billing Automation, Plan Upgrades, Stripe
+- Stripe Checkout for partner plan upgrades (pro-rata and flat-diff flows)
+- APScheduler 4 daily jobs: renewal reminders, auto-cancel, renewal orders, overdue cancellation
+- Configurable `reminder_days` per subscription and per tenant
+- `GET /api/partner/my-plan`, `POST /api/partner/upgrade-plan`, `POST /api/partner/submissions`
+- Partner billing portal, Usage & Limits embedded in Plan & Billing tab
+
+### Phase 8: Advanced Billing Features (Mar 2026)
+- **Dual Upgrade Flows** (frontend + backend):
+  - `POST /api/partner/upgrade-plan-ongoing` — flat monthly difference, partner pays upfront, plan activates on Stripe confirmation
+  - `POST /api/partner/one-time-upgrade` — per-module extra capacity for current billing cycle only, resets on renewal
+- **Coupon System** (admin + partner):
+  - Admin CRUD: `GET/POST/PUT/DELETE /api/admin/coupons`
+  - Partner validation: `POST /api/partner/coupons/validate`
+  - Supports: percentage/fixed, expiry, single-use global, one-use-per-org, applicable plans restriction
+  - Coupon code applied in-app before Stripe checkout
+- **One-Time Plans Rate Table** (admin):
+  - Admin CRUD: `GET/POST/PUT/DELETE /api/admin/one-time-plans`
+  - Partner read: `GET /api/partner/one-time-rates`
+  - Configurable price-per-unit for 10 module types
+- **Admin Plans Tab** redesigned with 3 inner sections: License Plans | One-Time Rates | Coupons
+- **Partner Plan & Billing Tab** updated with:
+  - "Upgrade to [Plan]" button → OngoingUpgradeDialog (flat diff + coupon)
+  - "Buy Extra Limits" button → OneTimeUpgradeModal (per-module qty + coupon)
+  - Active boosts displayed if present
+  - `onetimeupgrade_status` URL param handled on return from Stripe
+- **Free Trial plan protection**: `is_default=true`, delete/deactivate buttons disabled in UI and blocked in API
+- **Unpaid subscription status**: scheduler marks subscriptions `unpaid` when renewal order unpaid >1 day; auto-reactivates when order paid
+- **Subscription status**: `paused` removed; `pending` treated as Free Plan
+- **`isPlatformAdmin` check** updated to include `platform_super_admin` role in Admin.tsx
+- **Scheduler** resets `one_time_boosts` on each renewal cycle
 
 ---
 
@@ -79,61 +84,61 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 ### Backend (New/Modified)
 | File | Purpose |
 |------|---------|
-| `backend/services/scheduler_service.py` | 3 APScheduler jobs |
-| `backend/routes/admin/tenants.py` | Added PUT `/admin/tenant-settings` |
-| `backend/routes/admin/subscriptions.py` | reminder_days on create/update |
-| `backend/routes/admin/partner_billing.py` | reminder_days on partner subs |
-| `backend/routes/admin/store_filters.py` | Store product filters |
-| `backend/routes/partner/billing_view.py` | Partner-facing billing views |
-| `backend/models.py` | reminder_days, default_reminder_days, term fields |
+| `backend/routes/admin/one_time_plans.py` | One-Time rate table CRUD |
+| `backend/routes/admin/coupons.py` | Coupon CRUD + partner validate |
+| `backend/routes/partner/plan_management.py` | upgrade-plan-ongoing, one-time-upgrade, one-time-rates |
+| `backend/routes/admin/plans.py` | Protect default (Free Trial) plan |
+| `backend/routes/admin/partner_billing.py` | Activate subscription on paid order |
+| `backend/services/scheduler_service.py` | Unpaid sub marking, one-time boost reset |
+| `backend/services/billing_service.py` | `calculate_upgrade_flat`, `advance_billing_date` |
+| `backend/routes/webhooks.py` | one_time_upgrade webhook handler |
 
 ### Frontend (New/Modified)
 | File | Purpose |
 |------|---------|
-| `frontend/src/pages/admin/SettingsTab.tsx` | ReminderNotificationSection |
-| `frontend/src/pages/admin/SubscriptionsTab.tsx` | reminder_days field |
-| `frontend/src/pages/admin/PartnerSubscriptionsTab.tsx` | reminder_days field |
-| `frontend/src/pages/admin/FiltersTab.tsx` | Store filter management |
-| `frontend/src/pages/partner/MyOrdersTab.tsx` | Partner order history |
-| `frontend/src/pages/partner/MySubscriptionsTab.tsx` | Partner sub history |
+| `frontend/src/pages/admin/PlansTab.tsx` | 3 sections: Plans, One-Time Rates, Coupons |
+| `frontend/src/pages/admin/PlanBillingTab.tsx` | Dual upgrade flows, coupon apply |
+| `frontend/src/pages/Admin.tsx` | isPlatformAdmin includes platform_super_admin |
 
 ---
 
 ## Key API Endpoints
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/api/admin/subscriptions/{id}/send-reminder` | Immediately send test renewal reminder |
-| POST | `/api/admin/partner-subscriptions/{id}/send-reminder` | Immediately send test renewal reminder |
+| POST | `/api/partner/upgrade-plan-ongoing` | Flat monthly diff upgrade, Stripe checkout |
+| POST | `/api/partner/one-time-upgrade` | Per-module capacity boost, Stripe checkout |
+| GET | `/api/partner/one-time-upgrade-status` | Poll after Stripe return |
+| GET | `/api/partner/one-time-rates` | Partner read-only rate catalogue |
+| POST | `/api/partner/coupons/validate` | Preview coupon discount before checkout |
+| GET/POST/PUT/DELETE | `/api/admin/one-time-plans` | One-time rate table CRUD |
+| GET/POST/PUT/DELETE | `/api/admin/coupons` | Coupon CRUD |
+| POST | `/api/admin/subscriptions/{id}/send-reminder` | Send test renewal reminder |
 | PUT | `/api/admin/tenant-settings` | Update org-level default_reminder_days |
-| POST | `/api/admin/subscriptions/manual` | Create customer sub (includes reminder_days) |
-| PUT | `/api/admin/subscriptions/{id}` | Update customer sub (includes reminder_days) |
-| POST | `/api/admin/partner-subscriptions` | Create partner sub (includes reminder_days) |
-| PUT | `/api/admin/partner-subscriptions/{id}` | Update partner sub (includes reminder_days) |
+| GET | `/api/partner/my-plan` | Current plan, subscription, available upgrades |
 | GET | `/api/admin/store-filters` | Get store filters |
 | POST | `/api/admin/store-filters` | Save store filters |
-| GET | `/api/partner/my-orders` | Partner's own orders |
-| GET | `/api/partner/my-subscriptions` | Partner's own subs |
 
 ---
 
 ## DB Schema (Key Fields)
-- `subscriptions`, `partner_subscriptions`: `term_months`, `contract_end_date`, `auto_cancel_on_termination`, `reminder_days`, `reminder_sent_for_renewal_date`, `auto_renewal_order_date`
-- `tenants`: `default_reminder_days`
-- `products`: `default_term_months`
-- `store_filters`: `{ tenant_id, filters: [{id, name, type, options}] }`
+- `subscriptions`, `partner_subscriptions`: `term_months`, `contract_end_date`, `auto_cancel_on_termination`, `reminder_days`, `reminder_sent_for_renewal_date`, `auto_renewal_order_date`, `status` (active/pending/unpaid/cancelled)
+- `tenants`: `default_reminder_days`, `license.one_time_boosts`, `license.one_time_boosts_expire_at`
+- `plans`: `is_default`, `is_public`, `monthly_price`, `currency`
+- `coupons`: `code`, `discount_type`, `discount_value`, `expiry_date`, `is_single_use`, `applies_to`, `applicable_plan_ids`, `is_one_time_per_org`, `is_active`, `usage_count`, `used_by_orgs`
+- `one_time_plan_rates`: `module_key`, `label`, `price_per_record`, `currency`, `is_active`
+- `one_time_upgrades`: `partner_id`, `upgrades`, `subtotal`, `final_amount`, `billing_period_end`, `status`
 
 ---
 
 ## Prioritized Backlog
 
 ### P0 — Next Sprint
-- **Google Drive & OneDrive** cloud storage integration (currently "Coming Soon")
-- **Customer Portal Self-Service**: subscription cancellation, renewal date display, "Reorder" button
+- **Role & Permission System Overhaul**: `platform_super_admin` and `partner_super_admin` with granular module-level read/write permissions
 
 ### P1 — Future
-- Security audit / penetration test
+- **Google Drive & OneDrive** cloud storage integration (currently "Coming Soon")
+- **Customer Portal Self-Service**: subscription cancellation, renewal date display, "Reorder" button
 - Centralize all email integration settings in one UI section
-- **SAAS_PROCESS_GUIDE.md**: Review and confirm completeness with user
 
 ### P2 — Backlog
 - GoCardless mandate management UI
@@ -144,30 +149,12 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Completed (Recent)
 
-### Partner Subscriptions Admin Improvements (Mar 2026)
-- **Auto-calculate Next Billing Date**: Changes automatically when Start Date or Billing Interval changes (blue 'auto' badge shown); manually edited value preserved if user overrides it
-- **Auto-calculate Expiry Date**: Changes automatically when Start Date or Term Months changes (blue 'auto' badge shown); can be overridden manually
-- **Billing Interval → Next Billing Date**: monthly=+1m, quarterly=+3m, annual=+12m (always 1st of month)
-- **Currency dropdown**: ISO currency dropdown (GBP, USD, EUR, AUD, CAD, CHF etc.) replaces free-text input
-- **Expiry Date column** added to subscriptions table
-- **Scheduler fix**: `create_renewal_orders` now advances `next_billing_date` by billing interval after creating each renewal order (was previously not advanced)
-- **`advance_billing_date(date, interval)`** helper added to `billing_service.py`
-- **Stripe Customer Portal button** in partner My Subscriptions tab: `POST /api/partner/billing-portal` creates Stripe Customer (if not exists), returns portal_url; partner redirected to manage payment method / cancel / view invoices
-- Partner plan upgrades now require Stripe payment before plan activation
-- `POST /api/partner/upgrade-plan` creates a Stripe Checkout Session when pro-rata > £0; returns `checkout_url`
-- Frontend redirects to Stripe Checkout; plan is only activated on `checkout.session.completed` webhook
-- `GET /api/partner/upgrade-plan-status?session_id=xxx` polls/confirms payment; falls back to Stripe API if webhook is delayed
-- Webhook handler extended with `partner_upgrade` case: marks order paid, activates subscription, assigns plan to tenant license
-- If pro-rata == £0 (same period, no charge) the plan is applied immediately without payment
-- Stripe fallback: if Stripe session creation fails, falls back to offline billing so upgrades are never blocked
-- **MY BILLING** section moved ABOVE People in partner admin sidebar; "Account" section label removed
-- **Usage & Limits** content embedded directly into Plan & Billing tab (no longer a separate sidebar item)
-- **My Orders** now shows **Subscription #** column linking each order to its parent subscription
-- Fixed duplicate import + broken type definitions + misplaced functions in `TenantsTab.tsx` (build error)
-- **Partner Orgs → Add Admin form** now matches **Users → Create Admin User form**:
-  - 2-column grid layout (Full Name | Email, Password full-width)
-  - `*` required labels matching Users Tab style
-  - FieldTip tooltip text matches exactly
-  - Default `access_level` changed from `full_access` → `read_only` for parity
-  - Full-width `w-full` submit button replacing DialogFooter Cancel+Submit pattern
-  - Role Template / Access Level / Module Access conditional section unchanged (needed for partner-specific role logic)
+### Advanced Billing Features (Mar 2026)
+- Dual upgrade paths: Ongoing Plan (flat diff) + One-Time Limits (per-module boost)
+- Full coupon management system with admin CRUD and partner validation
+- One-Time Plans rate table (admin configures $/unit, partners buy capacity)
+- Free Trial plan protection (default badge, locked buttons)
+- Unpaid subscription lifecycle via scheduler
+- One-time boosts reset on renewal cycle
+- isPlatformAdmin includes platform_super_admin role (Admin.tsx fix)
+- 41/41 backend tests passing, all frontend features verified
