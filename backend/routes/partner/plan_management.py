@@ -126,6 +126,14 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
         "subscription": subscription,
         "available_plans": visible_plans,
         "base_currency": base_currency,
+        "current_price_in_base": round(
+            (current_plan or {}).get("monthly_price", 0) or 0,
+            2
+        ) if ((current_plan or {}).get("currency") or "USD").upper() == base_currency else round(
+            ((current_plan or {}).get("monthly_price", 0) or 0) * await get_fx_rate(
+                ((current_plan or {}).get("currency") or "USD").upper(), base_currency
+            ), 2
+        ) if (current_plan or {}).get("monthly_price") else 0,
     }
 
 
