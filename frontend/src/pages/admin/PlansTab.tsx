@@ -220,14 +220,17 @@ function PlanFormModal({ plan, onClose, onSaved }: { plan: Plan | null; onClose:
               <p className="text-xs text-slate-400">Partners can see and select this plan from their billing portal.</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Monthly Price</label>
               <Input type="number" min={0} step="0.01" value={form.monthly_price} onChange={e => set("monthly_price", e.target.value)} placeholder="0.00" data-testid="plan-monthly-price-input" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Currency</label>
-              <Input value={form.currency} onChange={e => set("currency", e.target.value)} placeholder="GBP" data-testid="plan-currency-input" />
+              <Select value={form.currency} onValueChange={v => set("currency", v)} data-testid="plan-currency-select">
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{ISO_CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
           </div>
           <p className="text-xs text-slate-400">Leave any limit blank for unlimited.</p>
