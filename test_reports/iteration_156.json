@@ -1,0 +1,89 @@
+{
+  "summary": "Tested Invoice Settings feature: Company Details, Logo & VAT, Bank Details sections in TaxesTab > Invoice Settings. Backend: 26/26 tests passed. Frontend: All UI elements present and working - save buttons functional, data persists after reload, logo preview works. Fixed minor JSX rendering issue: &amp; entity in button label.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Logo & VAT save button",
+        "issue": "'Save Logo &amp; VAT' button label was rendering literal '&amp;' instead of '&' due to HTML entity in JSX string expression. FIXED: changed \"Save Logo &amp; VAT\" to \"Save Logo & VAT\" in TaxesTab.tsx line 812.",
+        "selector": "[data-testid='logo-vat-save-btn']",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter156_invoice_settings_bank_vat.py",
+    "/app/test_reports/pytest/pytest_iter156_invoice_settings.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FIXED: TaxesTab.tsx line 812 - 'Save Logo &amp; VAT' JSX string used HTML entity literal; changed to 'Save Logo & VAT'",
+    "Company Details section correctly shows company_name, company_email, company_phone, company_address",
+    "Logo & VAT section shows logo_url (with preview when URL valid) and vat_number",
+    "Bank Details section shows all 6 fields: bank_name, account_name, account_number, sort_code, iban, bic",
+    "All 3 save buttons (company-details-save-btn, logo-vat-save-btn, bank-details-save-btn) call the same save() function which PUTs to /api/admin/taxes/invoice-settings",
+    "GET /api/admin/taxes/invoice-settings returns all new fields including bank_details object",
+    "PDF (admin download) contains Bank Details section with bank_name, sort_code, IBAN, BIC",
+    "PDF contains VAT Registration No and Payment Terms in footer",
+    "Partner download endpoint reads same platform invoice_settings - works correctly"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/admin/TaxesTab.tsx",
+    "/app/backend/tests/test_iter156_invoice_settings_bank_vat.py"
+  ],
+  "success_rate": {
+    "backend": "100% (26/26 tests passed)",
+    "frontend": "100% (all flows passing)"
+  },
+  "seed_data_creation": "Backend tests set invoice_settings: vat_number=GB 123 456 789, bank_details.bank_name=Barclays Bank, sort_code=20-00-00, iban=GB29 BARC 2000 0012 3456 78, bic=BARCGB22, payment_terms=Net 30. UI tests changed company_name=Test Company Ltd, sort_code=30-20-10.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Invoice Settings feature fully tested. Admin auth: code='automate-accounts', email=admin@automateaccounts.local, pw=ChangeMe123!. Partner auth: code='test-partner-co', email=testpartner@example.com, pw=TestPass123!. Known partner order ID for PDF tests: 28987c23-5ae4-447e-a199-710456191278. Invoice Settings is in Admin > Taxes > Invoice Settings tab (data-testid: taxes-tab-invoices). All 15 form elements have data-testid attributes. All 3 section save buttons work and show 'Invoice settings saved' toast. PDF generation verified to include bank details, VAT, payment terms.",
+  "test_results": {
+    "backend": {
+      "GET /api/admin/taxes/invoice-settings returns 200": "PASS",
+      "Response has invoice_settings key": "PASS",
+      "invoice_settings has bank_details object": "PASS",
+      "invoice_settings has vat_number field": "PASS",
+      "invoice_settings has logo_url field": "PASS",
+      "Unauthenticated GET returns 401": "PASS",
+      "PUT /api/admin/taxes/invoice-settings returns 200": "PASS",
+      "PUT response has message key": "PASS",
+      "PUT persists vat_number=GB 123 456 789": "PASS",
+      "PUT persists bank_details (bank_name, sort_code, iban, bic)": "PASS",
+      "PUT persists company_details (name, email, address)": "PASS",
+      "PUT persists payment_terms=Net 30": "PASS",
+      "Admin PDF download returns 200": "PASS",
+      "Admin PDF content-type is application/pdf": "PASS",
+      "Admin PDF starts with %PDF magic bytes": "PASS",
+      "Admin PDF size > 1000 bytes": "PASS",
+      "Admin PDF contains bank details (Barclays Bank)": "PASS",
+      "Admin PDF contains VAT number (GB 123 456 789)": "PASS",
+      "Admin PDF contains payment terms (Net 30)": "PASS",
+      "Admin PDF contains sort code (20-00-00)": "PASS",
+      "Admin PDF contains IBAN": "PASS",
+      "Admin PDF contains BIC": "PASS",
+      "Partner PDF returns 200": "PASS",
+      "Partner PDF is valid (%PDF + size > 1000)": "PASS",
+      "Partner PDF contains bank details": "PASS",
+      "Partner PDF contains VAT number": "PASS"
+    },
+    "frontend": {
+      "Navigate to Admin > Taxes > Invoice Settings tab": "PASS",
+      "All 15 data-testid elements present": "PASS",
+      "Company Details section loaded with correct values": "PASS",
+      "Logo & VAT section loaded with VAT=GB 123 456 789": "PASS",
+      "Bank Details loaded: bank_name=Barclays Bank, all 6 fields": "PASS",
+      "Save Company Details - success toast shown": "PASS",
+      "Save Logo & VAT - logo preview visible on valid URL": "PASS",
+      "Save Logo & VAT - success toast shown": "PASS",
+      "Save Bank Details - success toast shown": "PASS",
+      "Data persists after page reload": "PASS"
+    }
+  }
+}
