@@ -142,6 +142,7 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
                 ((current_plan or {}).get("currency") or "USD").upper(), base_currency
             ), 2
         ) if (current_plan or {}).get("monthly_price") else 0,
+        "pending_upgrade_order": pending_upgrade,
     }
 
 
