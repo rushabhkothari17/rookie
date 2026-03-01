@@ -333,11 +333,20 @@ function SubFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Contract Term (months)</label>
-              <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={form.term_months} onChange={e => set("term_months", e.target.value)} data-testid="partner-sub-term-months" />
+              <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={form.term_months} onChange={e => { setExpManual(false); set("term_months", e.target.value); }} data-testid="partner-sub-term-months" />
             </div>
-            <div className="flex items-center gap-2 pt-5">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                Expiry Date
+                {!expManual && form.contract_end_date && (
+                  <span className="text-[10px] bg-blue-100 text-blue-600 rounded px-1">auto</span>
+                )}
+              </label>
+              <Input type="date" value={form.contract_end_date} onChange={e => { setExpManual(true); set("contract_end_date", e.target.value); }} data-testid="partner-sub-expiry-date" />
+            </div>
+            <div className="flex items-center gap-2 pt-1">
               <input type="checkbox" id="ps_auto_cancel" data-testid="partner-sub-auto-cancel" checked={form.auto_cancel_on_termination} onChange={e => setForm(f => ({ ...f, auto_cancel_on_termination: e.target.checked }))} />
-              <label htmlFor="ps_auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
+              <label htmlFor="ps_auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end (as per Expiry Date)</label>
             </div>
           </div>
           {/* Renewal reminder */}
