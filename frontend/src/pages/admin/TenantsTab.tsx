@@ -747,10 +747,10 @@ export function TenantsTab() {
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600">Industry</label>
-                <Select value={editDetailsForm.industry} onValueChange={v => setEditDetailsForm(p => ({ ...p, industry: v }))}>
+                <Select value={editDetailsForm.industry || "__none__"} onValueChange={v => setEditDetailsForm(p => ({ ...p, industry: v === "__none__" ? "" : v }))}>
                   <SelectTrigger data-testid="edit-org-industry"><SelectValue placeholder="Select industry…" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— Not set —</SelectItem>
+                    <SelectItem value="__none__">— Not set —</SelectItem>
                     {["Technology","Finance","Healthcare","Retail","Education","Real Estate","Manufacturing","Professional Services","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
