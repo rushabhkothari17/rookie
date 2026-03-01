@@ -39,10 +39,8 @@ class BillingSettingsUpdate(BaseModel):
 @router.put("/admin/platform-billing-settings")
 async def update_billing_settings(
     payload: BillingSettingsUpdate,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(require_platform_super_admin),
 ):
-    if not is_platform_admin(admin):
-        raise HTTPException(status_code=403, detail="Platform admins only")
 
     current = await _get_settings()
     if payload.overdue_grace_days is not None:
