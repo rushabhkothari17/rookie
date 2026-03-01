@@ -89,6 +89,7 @@ async def create_plan(payload: PlanCreate, admin: Dict[str, Any] = Depends(requi
         "description": (payload.description or "").strip(),
         "is_active": True,
         "is_public": payload.is_public,
+        "visibility_rules": [r.dict() for r in (payload.visibility_rules or [])],
         "is_default": False,
         "warning_threshold_pct": payload.warning_threshold_pct,
         "monthly_price": payload.monthly_price,
