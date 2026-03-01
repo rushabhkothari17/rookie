@@ -210,6 +210,38 @@ async def admin_update_user(
     if "full_name" in payload and payload["full_name"]:
         updates["full_name"] = payload["full_name"].strip()
 
+    # Role change
+    if "role" in payload and payload["role"]:
+        new_role = payload["role"]
+        current_role = user.get("role", "")
+        caller_role = admin.get("role", "")
+        SUPER_ROLES = {"platform_super_admin", "partner_super_admin"}
+
+        if new_role == current_role:
+            pass  # no-op
+        elif new_role == "platform_super_admin":
+            raise HTTPException(400, "Cannot assign platform super admin role")
+        elif current_role in SUPER_ROLES:
+            raise HTTPException(403, "Cannot change a super admin's role — use Transfer Super Admin for partner super admin")
+        elif new_role == "partner_super_admin":
+            # Check if org already has one
+            existing_super = await db.users.find_one(
+                {"tenant_id": user.get("tenant_id"), "role": "partner_super_admin", "is_active": True, "id": {"$ne": user_id}},
+                {"_id": 0, "email": 1}
+            )
+            if existing_super:
+                raise HTTPException(
+                    400,
+                    f"Org already has a partner super admin ({existing_super['email']}). "
+                    "Use 'Transfer Super Admin' in Partner Orgs instead."
+                )
+            updates["role"] = new_role
+            updates["module_permissions"] = {}  # super admin: no restrictions
+        elif new_role in ("platform_admin",) and caller_role != "platform_super_admin":
+            raise HTTPException(403, "Only the platform super admin can assign the platform admin role")
+        else:
+            updates["role"] = new_role
+
     # Handle module_permissions update (new format)
     if "module_permissions" in payload:
         mp = payload["module_permissions"] or {}
