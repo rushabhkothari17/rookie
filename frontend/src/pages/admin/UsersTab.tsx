@@ -356,8 +356,37 @@ export function UsersTab() {
             </div>
 
             <div className="space-y-1">
+              <label className="text-xs text-slate-500 flex items-center gap-1">
+                Role Template <FieldTip tip="Pre-configured permission sets. Selecting one auto-fills the Access Level and Modules below. Choose 'Custom' to configure permissions manually." />
+              </label>
+              <Select
+                value={editForm.preset_role || "custom"}
+                onValueChange={v => {
+                  if (v === "custom") {
+                    setEditForm(prev => ({ ...prev, preset_role: "" }));
+                  } else {
+                    const preset = presetRoles.find(r => r.key === v);
+                    if (preset) {
+                      setEditForm(prev => ({ ...prev, preset_role: v, access_level: preset.access_level, modules: preset.modules }));
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger data-testid="admin-edit-user-preset">
+                  <SelectValue placeholder="Select a preset role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="custom">Custom (configure below)</SelectItem>
+                  {presetRoles.map(role => (
+                    <SelectItem key={role.key} value={role.key}>{role.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
               <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: can create, edit, and delete. Read Only: can view data but cannot make changes." /></label>
-              <Select value={editForm.access_level} onValueChange={v => setEditForm({ ...editForm, access_level: v })}>
+              <Select value={editForm.access_level} onValueChange={v => setEditForm({ ...editForm, access_level: v, preset_role: "" })}>
                 <SelectTrigger data-testid="admin-edit-user-access">
                   <SelectValue />
                 </SelectTrigger>
