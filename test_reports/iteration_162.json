@@ -1,0 +1,54 @@
+{
+  "summary": "Tested all 4 new features: Supported Currencies module, FX Currency conversion in partner plan, Plan Visibility Rules, and Tenant partner_type/industry/tags fields. All 21 backend tests passed. All frontend flows verified with Playwright. Found and fixed 1 critical bug in Edit Org Details dialog (SelectItem empty string value crash). Partner user 'admin@ligerinc.local' was created as it didn't exist in DB.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "TenantsTab - Edit Org Details Dialog",
+        "issue": "SelectItem with empty string value `value=\"\"` caused Radix UI runtime error: 'A <SelectItem /> must have a value prop that is not an empty string'. Dialog crashed on open for any tenant without partner_type/industry set.",
+        "selector": "[data-testid='edit-org-details-dialog']",
+        "priority": "HIGH",
+        "status": "FIXED by T1 - changed value=\"\" to value=\"__none__\" in both Partner Type and Industry SelectItems"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin Tables (Partner Orders, Subscriptions, Plans tables)",
+        "issues": ["Pre-existing React hydration warnings: <span> inside <tbody>, <tr> inside <span> inside <tbody> - invalid HTML nesting (not new in this iteration)"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter162_currencies_visibility_plans.py",
+    "/app/test_reports/pytest/pytest_iter162.xml"
+  ],
+  "action_items": [
+    "Review and fix pre-existing HTML nesting issue: <span> wrapper inside <tbody> in table components (Admin/PartnerOrdersTab/PartnerSubscriptionsTab/PlansTab) - React hydration warnings"
+  ],
+  "critical_code_review_comments": [
+    "TenantsTab.tsx: SelectItem empty string value issue was caught and FIXED - ensure same pattern not used elsewhere in app",
+    "useSupportedCurrencies.ts: Good implementation with cache and fallback to defaults on error",
+    "PlanBillingTab.tsx: Upgrade Plan button only renders when upgrades.length > 0, Buy Extra Limits only when rates.length > 0 - correct conditional rendering",
+    "FX conversion in plan_management.py: Plans correctly show display_price/display_currency in partner's base_currency"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/admin/TenantsTab.tsx"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21 tests passed)",
+    "frontend": "95% (all features working, 1 bug fixed)"
+  },
+  "seed_data_creation": "Created partner org 'Liger Inc' with admin user 'admin@ligerinc.local' (ChangeMe123!) as it didn't exist in the DB for testing partner plan & billing features. Partner code: liger-inc, base_currency: USD.",
+  "test_credentials": {
+    "admin": "admin@automateaccounts.local / ChangeMe123! (code: automate-accounts)",
+    "partner": "admin@ligerinc.local / ChangeMe123! (code: liger-inc)"
+  },
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All 4 new features tested and working: (1) Supported Currencies tab visible in platform_super_admin sidebar at /admin?tab=currencies with add/remove working; (2) FX currency conversion in /api/partner/my-plan returns display_price in base_currency; (3) Plan visibility rules builder UI works in Plans edit modal when is_public is unchecked; (4) Tenant Edit Org Details dialog now shows partner_type/industry/tags (fixed SelectItem crash). Backend test file at /app/backend/tests/test_iter162_currencies_visibility_plans.py (21 tests, all pass). Partner credentials: admin@ligerinc.local / ChangeMe123! (code: liger-inc). Note that data-testids for Plan&Billing buttons are 'open-upgrade-plan-btn' and 'open-one-time-modal-btn' (not 'upgrade-plan-btn'/'buy-extra-limits-btn').",
+  "rca_of_issue": "Root Cause: In TenantsTab.tsx Edit Org Details dialog, the Partner Type and Industry Select components used `<SelectItem value=''>` for the 'Not set' option. Radix UI Select component explicitly disallows empty string as SelectItem value (since empty string is used internally to clear the selection/show placeholder). When the edit dialog opened for a tenant with no partner_type/industry set (default empty string ''), the Select tried to find matching SelectItem with value='' and threw: 'A <SelectItem /> must have a value prop that is not an empty string'. Fix: Changed value='' to value='__none__' and mapped '__none__' back to '' in the onValueChange handler. The same fix was applied to both Partner Type and Industry selects."
+}
