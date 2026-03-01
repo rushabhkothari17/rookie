@@ -323,12 +323,13 @@ export function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string
 }
 
 // ─── Base Currency ────────────────────────────────────────────────────────────
-const CURRENCIES = ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"];
 
 export function BaseCurrencyWidget() {
   const [currency, setCurrency] = useState("USD");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const { currencies } = useSupportedCurrencies();
+  const currencyList = currencies.length ? currencies : ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"];
 
   useEffect(() => {
     api.get("/admin/tenant/base-currency").then(r => {
@@ -359,7 +360,7 @@ export function BaseCurrencyWidget() {
             <SelectValue placeholder="Select currency" />
           </SelectTrigger>
           <SelectContent>
-            {CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {currencyList.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Button onClick={handleSave} disabled={saving} size="sm" data-testid="base-currency-save-btn">
