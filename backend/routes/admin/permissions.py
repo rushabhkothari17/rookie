@@ -85,20 +85,6 @@ PRESET_ROLES = {
     },
 }
 
-# ── Pydantic models ───────────────────────────────────────────────────────────
-
-class RoleCreate(BaseModel):
-    name: str
-    description: str = ""
-    module_permissions: Dict[str, str] = {}  # {module_key: "read"|"write"}
-
-
-class RoleUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    module_permissions: Optional[Dict[str, str]] = None
-
-
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get("/admin/permissions/modules")
