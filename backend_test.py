@@ -48,7 +48,6 @@ class PartnerAdminTester:
             async with self.session.post(f"{self.base_url}/auth/login", json=login_data) as resp:
                 if resp.status == 200:
                     result = await resp.json()
-                    print(f"Login response: {result}")  # Debug output
                     self.admin_token = result.get("token")  # Fix: use "token" not "access_token"
                     if self.admin_token:
                         # Update session headers with auth token
@@ -57,7 +56,6 @@ class PartnerAdminTester:
                         return True
                     else:
                         print("❌ No access token received")
-                        print(f"Full response: {result}")
                         return False
                 else:
                     error_text = await resp.text()
@@ -227,69 +225,9 @@ class PartnerAdminTester:
         except Exception as e:
             print(f"❌ Partner Super Admin (default) creation error: {e}")
             return False
-        """Step 5: Create Partner Super Admin and verify it defaults to full access."""
-        print(f"\n👑 Step 5: Creating Partner Super Admin...")
-        
-        super_admin_data = {
-            "tenant_id": self.created_tenant_id,  # Required by model
-            "email": f"partner.superadmin.{self.timestamp}@testorg.local", 
-            "full_name": "Test Partner Super Admin",
-            "password": "SecurePass123!",
-            "role": "partner_super_admin",
-            "access_level": "read_only",  # This should be ignored/defaulted to full
-            "modules": ["customers"]  # This should be ignored for super admin
-        }
-        
-        try:
-            async with self.session.post(f"{self.base_url}/admin/tenants/{self.created_tenant_id}/create-admin", json=super_admin_data) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    user_id = result.get("user_id")
-                    if user_id:
-                        self.created_users.append({"id": user_id, "email": super_admin_data["email"], "role": "partner_super_admin"})
-                        print(f"✅ Partner Super Admin created: {super_admin_data['email']} (ID: {user_id})")
-                        return True
-                    else:
-                        print("❌ No user ID received")
-                        return False
-                else:
-                    error_text = await resp.text()
-                    print(f"❌ Partner Super Admin creation failed: {resp.status} - {error_text}")
-                    return False
-        except Exception as e:
-            print(f"❌ Partner Super Admin creation error: {e}")
-            return False
     
     async def verify_user_permissions(self) -> bool:
-        """Additional verification via GET /api/admin/users endpoint."""
-        print(f"\n📊 Additional Verification: Testing GET /api/admin/users endpoint...")
-        
-        try:
-            async with self.session.get(f"{self.base_url}/admin/users") as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    users = result.get("users", [])
-                    
-                    # Filter to our test users
-                    test_users = [u for u in users if str(self.timestamp) in u.get("email", "")]
-                    print(f"   Found {len(test_users)} test users in admin/users endpoint")
-                    
-                    for user in test_users[:3]:  # Limit output
-                        email = user.get("email")
-                        role = user.get("role") 
-                        access_level = user.get("access_level")
-                        modules = user.get("permissions", {}).get("modules", [])
-                        print(f"   📋 {email}: role={role}, access_level={access_level}, modules={modules}")
-                    
-                    return True
-                else:
-                    error_text = await resp.text()
-                    print(f"❌ Failed to get admin users: {resp.status} - {error_text}")
-                    return False
-        except Exception as e:
-            print(f"❌ Error testing admin users API: {e}")
-            return False
-        """Step 4 & 6: Verify users have correct permissions via GET /api/admin/users."""
+        """Step 4 & 6: Verify users have correct permissions via GET /api/admin/tenants/{id}/users."""
         print(f"\n🔍 Step 4 & 6: Verifying user permissions in database...")
         
         # Get tenant users to verify permissions
@@ -335,7 +273,7 @@ class PartnerAdminTester:
                                             print(f"   ✅ Partner Super Admin permissions correct (access_level defaulted to full)")
                                             verified_count += 1
                                         else:
-                                            print(f"   ⚠️  Partner Super Admin ISSUE FOUND:")
+                                            print(f"   ⚠️  Partner Super Admin BEHAVIOR ISSUE FOUND:")
                                             print(f"      Per review requirements, partner_super_admin should ignore access_level and default to full")
                                             print(f"      Expected: access_level should be 'full_access' (ignored from input)")
                                             print(f"      Actual: access_level={access_level} (used the provided input)")
@@ -402,10 +340,6 @@ class PartnerAdminTester:
             
             # Step 4 & 6: Verify all permissions
             if not await self.verify_user_permissions():
-                return False
-            
-            # Additional API verification
-            if not await self.verify_via_admin_users_api():
                 return False
             
             print("\n" + "=" * 70)
