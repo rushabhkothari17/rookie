@@ -1,370 +1,289 @@
 #!/usr/bin/env python3
 """
-Backend Test Suite for Partner Admin Creation with Permissions Flow
-Tests the new granular permissions system for Partner Admin users.
+Backend Testing Suite for Partner Admin Creation - Access Level Override
+Testing the specific fix for Partner Super Admin Access Level Override
 """
 
 import asyncio
-import aiohttp
 import json
+import os
 import sys
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
+# Add backend directory to path for imports
+sys.path.insert(0, "/app/backend")
 
-class PartnerAdminTester:
+import requests
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv("/app/frontend/.env")
+
+# Get backend URL from environment
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://partner-billing-hub-1.preview.emergentagent.com")
+API_BASE = f"{BACKEND_URL}/api"
+
+class BackendTester:
     def __init__(self):
-        # Use the production backend URL from frontend/.env
-        self.base_url = "https://partner-billing-hub-1.preview.emergentagent.com/api"
-        self.session: Optional[aiohttp.ClientSession] = None
-        self.admin_token: Optional[str] = None
-        self.created_tenant_id: Optional[str] = None
-        self.created_users: list = []
-        # Use timestamp for unique emails
-        import time
-        self.timestamp = int(time.time())
+        self.admin_token = None
+        self.test_tenant_id = None
         
-    async def setup_session(self):
-        """Initialize aiohttp session with proper headers."""
-        self.session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=30),
-            headers={"Content-Type": "application/json"}
-        )
+    def log_test(self, test_name: str, status: str, details: str = ""):
+        """Log test results with clear formatting."""
+        status_emoji = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
+        print(f"{status_emoji} {test_name}: {status}")
+        if details:
+            print(f"   Details: {details}")
+        print()
     
-    async def cleanup(self):
-        """Clean up the session."""
-        if self.session:
-            await self.session.close()
-    
-    async def login_platform_admin(self) -> bool:
-        """Step 1: Login as Platform Admin."""
-        print("🔐 Step 1: Logging in as Platform Admin...")
-        
-        login_data = {
-            "email": "admin@automateaccounts.local",
-            "password": "ChangeMe123!"
-        }
-        
+    async def test_platform_admin_login(self):
+        """Test 1: Platform admin can login successfully."""
         try:
-            async with self.session.post(f"{self.base_url}/auth/login", json=login_data) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    self.admin_token = result.get("token")  # Fix: use "token" not "access_token"
-                    if self.admin_token:
-                        # Update session headers with auth token
-                        self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
-                        print("✅ Platform Admin login successful")
-                        return True
-                    else:
-                        print("❌ No access token received")
-                        return False
+            response = requests.post(f"{API_BASE}/auth/login", json={
+                "email": "admin@automateaccounts.local",
+                "password": "ChangeMe123!",
+                "login_type": "platform"
+            }, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data.get("access_token")
+                if self.admin_token:
+                    self.log_test("Platform Admin Login", "PASS", "Successfully logged in as platform admin")
+                    return True
                 else:
-                    error_text = await resp.text()
-                    print(f"❌ Platform Admin login failed: {resp.status} - {error_text}")
+                    self.log_test("Platform Admin Login", "FAIL", "No access token in response")
                     return False
-        except Exception as e:
-            print(f"❌ Platform Admin login error: {e}")
-            return False
-    
-    async def create_partner_org(self) -> bool:
-        """Step 2: Create a new Partner Organization."""
-        print("\n🏢 Step 2: Creating Test Partner Organization...")
-        
-        org_data = {
-            "name": "Test Partner Org",
-            "code": "test-partner-permissions",
-            "status": "active"
-        }
-        
-        try:
-            async with self.session.post(f"{self.base_url}/admin/tenants", json=org_data) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    tenant = result.get("tenant", {})
-                    self.created_tenant_id = tenant.get("id")
-                    if self.created_tenant_id:
-                        print(f"✅ Partner Organization created: {tenant.get('name')} (ID: {self.created_tenant_id})")
-                        return True
-                    else:
-                        print("❌ No tenant ID received")
-                        return False
-                elif resp.status == 400:
-                    error_data = await resp.json()
-                    if "already in use" in error_data.get("detail", ""):
-                        # Try to find existing tenant
-                        print("ℹ️  Partner code already exists, finding existing tenant...")
-                        return await self.find_existing_tenant()
-                    else:
-                        print(f"❌ Partner org creation failed: {error_data.get('detail')}")
-                        return False
-                else:
-                    error_text = await resp.text()
-                    print(f"❌ Partner org creation failed: {resp.status} - {error_text}")
-                    return False
-        except Exception as e:
-            print(f"❌ Partner org creation error: {e}")
-            return False
-    
-    async def find_existing_tenant(self) -> bool:
-        """Find existing tenant if code is already in use."""
-        try:
-            async with self.session.get(f"{self.base_url}/admin/tenants") as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    tenants = result.get("tenants", [])
-                    for tenant in tenants:
-                        if tenant.get("code") == "test-partner-permissions":
-                            self.created_tenant_id = tenant.get("id")
-                            print(f"✅ Found existing Partner Organization: {tenant.get('name')} (ID: {self.created_tenant_id})")
-                            return True
-                    print("❌ Could not find existing tenant")
-                    return False
-                else:
-                    print(f"❌ Failed to list tenants: {resp.status}")
-                    return False
-        except Exception as e:
-            print(f"❌ Error finding tenant: {e}")
-            return False
-    
-    async def create_partner_admin_with_permissions(self) -> bool:
-        """Step 3: Create Partner Admin with specific permissions."""
-        print(f"\n👤 Step 3: Creating Partner Admin with read-only permissions...")
-        
-        admin_data = {
-            "tenant_id": self.created_tenant_id,  # Required by model
-            "email": f"partner.admin.{self.timestamp}@testorg.local",
-            "full_name": "Test Partner Admin",
-            "password": "SecurePass123!",
-            "role": "partner_admin",  # NOT partner_super_admin
-            "access_level": "read_only",
-            "modules": ["customers", "orders"]
-        }
-        
-        try:
-            async with self.session.post(f"{self.base_url}/admin/tenants/{self.created_tenant_id}/create-admin", json=admin_data) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    user_id = result.get("user_id")
-                    if user_id:
-                        self.created_users.append({"id": user_id, "email": admin_data["email"], "role": "partner_admin"})
-                        print(f"✅ Partner Admin created: {admin_data['email']} (ID: {user_id})")
-                        return True
-                    else:
-                        print("❌ No user ID received")
-                        return False
-                else:
-                    error_text = await resp.text()
-                    print(f"❌ Partner Admin creation failed: {resp.status} - {error_text}")
-                    return False
-        except Exception as e:
-            print(f"❌ Partner Admin creation error: {e}")
-            return False
-    
-    async def create_partner_super_admin(self) -> bool:
-        """Step 5: Create Partner Super Admin and verify it defaults to full access."""
-        print(f"\n👑 Step 5: Creating Partner Super Admin...")
-        
-        super_admin_data = {
-            "tenant_id": self.created_tenant_id,  # Required by model
-            "email": f"partner.superadmin.{self.timestamp}@testorg.local", 
-            "full_name": "Test Partner Super Admin",
-            "password": "SecurePass123!",
-            "role": "partner_super_admin",
-            "access_level": "read_only",  # This should be ignored/defaulted to full
-            "modules": ["customers"]  # This should be ignored for super admin
-        }
-        
-        try:
-            async with self.session.post(f"{self.base_url}/admin/tenants/{self.created_tenant_id}/create-admin", json=super_admin_data) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    user_id = result.get("user_id")
-                    if user_id:
-                        self.created_users.append({"id": user_id, "email": super_admin_data["email"], "role": "partner_super_admin"})
-                        print(f"✅ Partner Super Admin created: {super_admin_data['email']} (ID: {user_id})")
-                        return True
-                    else:
-                        print("❌ No user ID received")
-                        return False
-                else:
-                    error_text = await resp.text()
-                    print(f"❌ Partner Super Admin creation failed: {resp.status} - {error_text}")
-                    return False
-        except Exception as e:
-            print(f"❌ Partner Super Admin creation error: {e}")
-            return False
-    
-    async def create_partner_super_admin_default(self) -> bool:
-        """Test: Create Partner Super Admin without access_level to see default behavior."""
-        print(f"\n🔍 Additional Test: Creating Partner Super Admin without access_level...")
-        
-        super_admin_data = {
-            "tenant_id": self.created_tenant_id,
-            "email": f"partner.superadmin.default.{self.timestamp}@testorg.local", 
-            "full_name": "Test Partner Super Admin (Default)",
-            "password": "SecurePass123!",
-            "role": "partner_super_admin"
-            # No access_level or modules specified
-        }
-        
-        try:
-            async with self.session.post(f"{self.base_url}/admin/tenants/{self.created_tenant_id}/create-admin", json=super_admin_data) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    user_id = result.get("user_id")
-                    if user_id:
-                        self.created_users.append({"id": user_id, "email": super_admin_data["email"], "role": "partner_super_admin_default"})
-                        print(f"✅ Partner Super Admin (default) created: {super_admin_data['email']} (ID: {user_id})")
-                        return True
-                    else:
-                        print("❌ No user ID received")
-                        return False
-                else:
-                    error_text = await resp.text()
-                    print(f"❌ Partner Super Admin (default) creation failed: {resp.status} - {error_text}")
-                    return False
-        except Exception as e:
-            print(f"❌ Partner Super Admin (default) creation error: {e}")
-            return False
-    
-    async def verify_user_permissions(self) -> bool:
-        """Step 4 & 6: Verify users have correct permissions via GET /api/admin/tenants/{id}/users."""
-        print(f"\n🔍 Step 4 & 6: Verifying user permissions in database...")
-        
-        # Get tenant users to verify permissions
-        try:
-            async with self.session.get(f"{self.base_url}/admin/tenants/{self.created_tenant_id}/users") as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    users = result.get("users", [])
-                    
-                    verified_count = 0
-                    for created_user in self.created_users:
-                        user_found = False
-                        for db_user in users:
-                            if db_user.get("email") == created_user["email"]:
-                                user_found = True
-                                email = db_user.get("email")
-                                role = db_user.get("role")
-                                access_level = db_user.get("access_level")
-                                modules = db_user.get("permissions", {}).get("modules", [])
-                                
-                                print(f"\n📋 User: {email}")
-                                print(f"   Role: {role}")
-                                print(f"   Access Level: {access_level}")
-                                print(f"   Modules: {modules}")
-                                
-                                if created_user["role"] == "partner_admin":
-                                    # Verify partner_admin has expected permissions
-                                    if (role == "partner_admin" and 
-                                        access_level == "read_only" and 
-                                        set(modules) == {"customers", "orders"}):
-                                        print(f"   ✅ Partner Admin permissions correct")
-                                        verified_count += 1
-                                    else:
-                                        print(f"   ❌ Partner Admin permissions incorrect")
-                                        print(f"      Expected: role=partner_admin, access_level=read_only, modules=['customers', 'orders']")
-                                        print(f"      Actual: role={role}, access_level={access_level}, modules={modules}")
-                                        
-                                elif created_user["role"] == "partner_super_admin":
-                                    # Verify partner_super_admin - per review requirements should ignore access_level
-                                    # and default to full access, but current implementation doesn't do this
-                                    if role == "partner_super_admin":
-                                        if access_level == "full_access" or access_level is None:
-                                            print(f"   ✅ Partner Super Admin permissions correct (access_level defaulted to full)")
-                                            verified_count += 1
-                                        else:
-                                            print(f"   ⚠️  Partner Super Admin BEHAVIOR ISSUE FOUND:")
-                                            print(f"      Per review requirements, partner_super_admin should ignore access_level and default to full")
-                                            print(f"      Expected: access_level should be 'full_access' (ignored from input)")
-                                            print(f"      Actual: access_level={access_level} (used the provided input)")
-                                            print(f"      This suggests missing logic to override access_level for partner_super_admin role")
-                                            # Still count as verified for role correctness, but flag the access_level issue
-                                            verified_count += 1
-                                    else:
-                                        print(f"   ❌ Partner Super Admin role incorrect")
-                                        print(f"      Expected: role=partner_super_admin")
-                                        print(f"      Actual: role={role}")
-                                        
-                                elif created_user["role"] == "partner_super_admin_default":
-                                    # Verify default behavior when no access_level specified
-                                    if role == "partner_super_admin":
-                                        print(f"   📊 Partner Super Admin (default behavior):")
-                                        print(f"      Access Level: {access_level}")
-                                        print(f"      Modules: {modules}")
-                                        if access_level == "full_access":
-                                            print(f"   ✅ Partner Super Admin defaults correctly when no access_level provided")
-                                        else:
-                                            print(f"   ℹ️  Partner Super Admin default: access_level={access_level}")
-                                        verified_count += 1
-                                break
-                        
-                        if not user_found:
-                            print(f"❌ User {created_user['email']} not found in tenant users")
-                    
-                    return verified_count == len(self.created_users)
-                else:
-                    error_text = await resp.text()
-                    print(f"❌ Failed to get tenant users: {resp.status} - {error_text}")
-                    return False
-        except Exception as e:
-            print(f"❌ Error verifying permissions: {e}")
-            return False
-    
-    async def run_full_test(self) -> bool:
-        """Run the complete Partner Admin Creation with Permissions test flow."""
-        print("🚀 Starting Partner Admin Creation with Permissions Test Flow")
-        print("=" * 70)
-        
-        await self.setup_session()
-        
-        try:
-            # Step 1: Login as Platform Admin
-            if not await self.login_platform_admin():
+            else:
+                self.log_test("Platform Admin Login", "FAIL", f"HTTP {response.status_code}: {response.text}")
                 return False
-            
-            # Step 2: Create Partner Organization
-            if not await self.create_partner_org():
-                return False
-            
-            # Step 3: Create Partner Admin with permissions
-            if not await self.create_partner_admin_with_permissions():
-                return False
-            
-            # Step 5: Create Partner Super Admin
-            if not await self.create_partner_super_admin():
-                return False
-            
-            # Additional Test: Create Partner Super Admin without access_level
-            if not await self.create_partner_super_admin_default():
-                return False
-            
-            # Step 4 & 6: Verify all permissions
-            if not await self.verify_user_permissions():
-                return False
-            
-            print("\n" + "=" * 70)
-            print("🎉 All Partner Admin Creation with Permissions tests PASSED!")
-            return True
-            
         except Exception as e:
-            print(f"\n❌ Test execution error: {e}")
+            self.log_test("Platform Admin Login", "FAIL", f"Exception: {str(e)}")
             return False
-        finally:
-            await self.cleanup()
 
+    async def test_create_test_tenant(self):
+        """Test 2: Create a test tenant for partner admin testing."""
+        if not self.admin_token:
+            self.log_test("Create Test Tenant", "FAIL", "No admin token available")
+            return False
+            
+        try:
+            response = requests.post(f"{API_BASE}/admin/tenants", 
+                json={
+                    "name": "Test Partner Super Admin Org",
+                    "code": "test-super-admin-org",
+                    "status": "active"
+                },
+                headers={"Authorization": f"Bearer {self.admin_token}"},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.test_tenant_id = data["tenant"]["id"]
+                self.log_test("Create Test Tenant", "PASS", f"Created tenant with ID: {self.test_tenant_id}")
+                return True
+            else:
+                self.log_test("Create Test Tenant", "FAIL", f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Create Test Tenant", "FAIL", f"Exception: {str(e)}")
+            return False
+
+    async def test_partner_super_admin_access_level_override(self):
+        """Test 3: Partner Super Admin access_level override - CRITICAL TEST from review request."""
+        if not self.admin_token or not self.test_tenant_id:
+            self.log_test("Partner Super Admin Access Level Override", "FAIL", "Missing admin token or tenant ID")
+            return False
+            
+        try:
+            # Create partner_super_admin with EXPLICIT access_level="read_only"
+            response = requests.post(f"{API_BASE}/admin/tenants/{self.test_tenant_id}/create-admin",
+                json={
+                    "email": "super.admin@testorg.com",
+                    "full_name": "Test Super Admin",
+                    "password": "TestPass123!",
+                    "role": "partner_super_admin",
+                    "access_level": "read_only"  # EXPLICITLY setting to read_only
+                },
+                headers={"Authorization": f"Bearer {self.admin_token}"},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                user_id = data.get("user_id")
+                
+                # Verify in database by getting the user details
+                users_response = requests.get(f"{API_BASE}/admin/tenants/{self.test_tenant_id}/users",
+                    headers={"Authorization": f"Bearer {self.admin_token}"},
+                    timeout=30
+                )
+                
+                if users_response.status_code == 200:
+                    users_data = users_response.json()
+                    super_admin_user = None
+                    
+                    for user in users_data.get("users", []):
+                        if user.get("email") == "super.admin@testorg.com":
+                            super_admin_user = user
+                            break
+                    
+                    if super_admin_user:
+                        stored_access_level = super_admin_user.get("access_level")
+                        if stored_access_level == "full_access":
+                            self.log_test("Partner Super Admin Access Level Override", "PASS", 
+                                        f"✅ CORRECT: access_level stored as 'full_access' (was overridden from 'read_only')")
+                            return True
+                        else:
+                            self.log_test("Partner Super Admin Access Level Override", "FAIL", 
+                                        f"❌ BUG: access_level stored as '{stored_access_level}' (should be 'full_access')")
+                            return False
+                    else:
+                        self.log_test("Partner Super Admin Access Level Override", "FAIL", "User not found in tenant users list")
+                        return False
+                else:
+                    self.log_test("Partner Super Admin Access Level Override", "FAIL", f"Failed to get users: {users_response.text}")
+                    return False
+            else:
+                self.log_test("Partner Super Admin Access Level Override", "FAIL", f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Partner Super Admin Access Level Override", "FAIL", f"Exception: {str(e)}")
+            return False
+
+    async def test_partner_admin_read_only_acceptance(self):
+        """Test 4: Regular partner_admin still accepts read_only access level."""
+        if not self.admin_token or not self.test_tenant_id:
+            self.log_test("Partner Admin Read Only Acceptance", "FAIL", "Missing admin token or tenant ID")
+            return False
+            
+        try:
+            # Create partner_admin with access_level="read_only"
+            response = requests.post(f"{API_BASE}/admin/tenants/{self.test_tenant_id}/create-admin",
+                json={
+                    "email": "regular.admin@testorg.com",
+                    "full_name": "Test Regular Admin", 
+                    "password": "TestPass123!",
+                    "role": "partner_admin",
+                    "access_level": "read_only"
+                },
+                headers={"Authorization": f"Bearer {self.admin_token}"},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                # Verify the access level was stored correctly
+                users_response = requests.get(f"{API_BASE}/admin/tenants/{self.test_tenant_id}/users",
+                    headers={"Authorization": f"Bearer {self.admin_token}"},
+                    timeout=30
+                )
+                
+                if users_response.status_code == 200:
+                    users_data = users_response.json()
+                    regular_admin_user = None
+                    
+                    for user in users_data.get("users", []):
+                        if user.get("email") == "regular.admin@testorg.com":
+                            regular_admin_user = user
+                            break
+                    
+                    if regular_admin_user:
+                        stored_access_level = regular_admin_user.get("access_level")
+                        if stored_access_level == "read_only":
+                            self.log_test("Partner Admin Read Only Acceptance", "PASS", 
+                                        f"✅ CORRECT: partner_admin access_level stored as 'read_only'")
+                            return True
+                        else:
+                            self.log_test("Partner Admin Read Only Acceptance", "FAIL", 
+                                        f"❌ BUG: partner_admin access_level stored as '{stored_access_level}' (should be 'read_only')")
+                            return False
+                    else:
+                        self.log_test("Partner Admin Read Only Acceptance", "FAIL", "Regular admin user not found")
+                        return False
+                else:
+                    self.log_test("Partner Admin Read Only Acceptance", "FAIL", f"Failed to get users: {users_response.text}")
+                    return False
+            else:
+                self.log_test("Partner Admin Read Only Acceptance", "FAIL", f"HTTP {response.status_code}: {response.text}")
+                return False
+        except Exception as e:
+            self.log_test("Partner Admin Read Only Acceptance", "FAIL", f"Exception: {str(e)}")
+            return False
+
+    async def cleanup_test_tenant(self):
+        """Cleanup: Delete the test tenant."""
+        if self.admin_token and self.test_tenant_id:
+            try:
+                # Deactivate the test tenant
+                response = requests.post(f"{API_BASE}/admin/tenants/{self.test_tenant_id}/deactivate",
+                    headers={"Authorization": f"Bearer {self.admin_token}"},
+                    timeout=30
+                )
+                if response.status_code == 200:
+                    self.log_test("Cleanup Test Tenant", "PASS", "Test tenant deactivated successfully")
+                else:
+                    self.log_test("Cleanup Test Tenant", "FAIL", f"Failed to deactivate: {response.text}")
+            except Exception as e:
+                self.log_test("Cleanup Test Tenant", "FAIL", f"Cleanup failed: {str(e)}")
+
+    async def run_all_tests(self):
+        """Run all tests in sequence."""
+        print("🔍 BACKEND TESTING - Partner Super Admin Access Level Override")
+        print("=" * 80)
+        print(f"Testing against: {API_BASE}")
+        print()
+        
+        test_results = []
+        
+        # Test 1: Platform Admin Login
+        result1 = await self.test_platform_admin_login()
+        test_results.append(("Platform Admin Login", result1))
+        
+        if result1:
+            # Test 2: Create Test Tenant
+            result2 = await self.test_create_test_tenant()
+            test_results.append(("Create Test Tenant", result2))
+            
+            if result2:
+                # Test 3: CRITICAL - Partner Super Admin Access Level Override
+                result3 = await self.test_partner_super_admin_access_level_override()
+                test_results.append(("Partner Super Admin Access Level Override", result3))
+                
+                # Test 4: Partner Admin Read Only Acceptance
+                result4 = await self.test_partner_admin_read_only_acceptance()
+                test_results.append(("Partner Admin Read Only Acceptance", result4))
+                
+                # Cleanup
+                await self.cleanup_test_tenant()
+        
+        # Summary
+        print("=" * 80)
+        print("📊 TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for _, result in test_results if result)
+        total = len(test_results)
+        
+        for test_name, result in test_results:
+            status = "✅ PASS" if result else "❌ FAIL"
+            print(f"{status} {test_name}")
+        
+        print()
+        print(f"Results: {passed}/{total} tests passed ({(passed/total*100):.1f}%)")
+        
+        if passed == total:
+            print("🎉 ALL TESTS PASSED! Partner Super Admin Access Level Override is working correctly.")
+        else:
+            print("⚠️  SOME TESTS FAILED! Review the failures above.")
+        
+        return passed == total
 
 async def main():
-    """Main test execution."""
-    tester = PartnerAdminTester()
-    success = await tester.run_full_test()
-    
-    if success:
-        print("\n✅ PARTNER ADMIN CREATION WITH PERMISSIONS FLOW: ALL TESTS PASSED")
-        sys.exit(0)
-    else:
-        print("\n❌ PARTNER ADMIN CREATION WITH PERMISSIONS FLOW: SOME TESTS FAILED")
-        sys.exit(1)
-
+    tester = BackendTester()
+    success = await tester.run_all_tests()
+    return success
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    success = asyncio.run(main())
+    sys.exit(0 if success else 1)
