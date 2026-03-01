@@ -723,6 +723,53 @@ export function TenantsTab() {
         />
       )}
 
+      {/* Edit Org Details Dialog */}
+      <Dialog open={!!showEditDetails} onOpenChange={open => !open && setShowEditDetails(null)}>
+        <DialogContent className="max-w-md" data-testid="edit-org-details-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil size={16} /> Edit Org Details — {showEditDetails?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">Organization Name</label>
+              <Input value={editDetailsForm.name} onChange={e => setEditDetailsForm(p => ({ ...p, name: e.target.value }))} data-testid="edit-org-name" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Partner Type</label>
+                <Select value={editDetailsForm.partner_type} onValueChange={v => setEditDetailsForm(p => ({ ...p, partner_type: v }))}>
+                  <SelectTrigger data-testid="edit-org-partner-type"><SelectValue placeholder="Select type…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">— Not set —</SelectItem>
+                    {["Reseller","Direct","Wholesale","Agency","Affiliate","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-600">Industry</label>
+                <Select value={editDetailsForm.industry} onValueChange={v => setEditDetailsForm(p => ({ ...p, industry: v }))}>
+                  <SelectTrigger data-testid="edit-org-industry"><SelectValue placeholder="Select industry…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">— Not set —</SelectItem>
+                    {["Technology","Finance","Healthcare","Retail","Education","Real Estate","Manufacturing","Professional Services","Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1 col-span-2">
+                <label className="text-xs font-medium text-slate-600">Tags <span className="font-normal text-slate-400">(comma-separated)</span></label>
+                <Input placeholder="e.g. vip, enterprise, us-market" value={editDetailsForm.tags} onChange={e => setEditDetailsForm(p => ({ ...p, tags: e.target.value }))} data-testid="edit-org-tags" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDetails(null)}>Cancel</Button>
+            <Button onClick={handleSaveDetails} disabled={savingDetails} data-testid="save-org-details-btn">
+              {savingDetails ? "Saving…" : "Save Details"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Audit Logs dialog for a Partner Org */}
       {auditTenant && (
         <AuditLogDialog
