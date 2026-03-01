@@ -363,6 +363,8 @@ class AdminCreateUserRequest(BaseModel):
     phone: Optional[str] = ""
     password: str
     role: str = "partner_admin"
+    # When platform admin creates a partner org user, specify the target partner org
+    target_tenant_id: Optional[str] = None
     # New per-module permissions format
     module_permissions: Optional[Dict[str, str]] = None  # {module_key: "read"|"write"}
     # Legacy fields (kept for backwards compatibility)
