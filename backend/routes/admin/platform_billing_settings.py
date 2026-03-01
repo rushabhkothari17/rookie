@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from core.helpers import now_iso
-from core.tenant import get_tenant_admin, is_platform_admin
+from core.tenant import get_tenant_admin, is_platform_admin, require_platform_super_admin
 from db.session import db
 
 router = APIRouter(prefix="/api", tags=["admin-platform-billing"])
