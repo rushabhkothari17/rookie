@@ -23,6 +23,10 @@ async def _check(admin: Dict[str, Any], action: str):
     if not await _has_perm(admin, _MODULE, action):
         raise HTTPException(403, f"No {action} access to {_MODULE} module")
 
+from services.webhook_service import dispatch_event
+from services.zoho_service import auto_sync_to_zoho_crm, auto_sync_to_zoho_books
+from gocardless_helper import create_payment
+
 from services.checkout_service import get_fx_rate, get_tenant_base_currency
 
 router = APIRouter(prefix="/api", tags=["admin-orders"])
