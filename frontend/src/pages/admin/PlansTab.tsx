@@ -1104,6 +1104,7 @@ export function PlansTab() {
     { key: "plans", label: "License Plans", icon: <LayoutList size={14} /> },
     { key: "rates", label: "One-Time Rates", icon: <Zap size={14} /> },
     { key: "coupons", label: "Coupons", icon: <Gift size={14} /> },
+    { key: "usage", label: "Coupon Usage", icon: <BarChart2 size={14} /> },
   ];
 
   return (
