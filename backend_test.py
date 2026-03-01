@@ -19,6 +19,9 @@ class PartnerAdminTester:
         self.admin_token: Optional[str] = None
         self.created_tenant_id: Optional[str] = None
         self.created_users: list = []
+        # Use timestamp for unique emails
+        import time
+        self.timestamp = int(time.time())
         
     async def setup_session(self):
         """Initialize aiohttp session with proper headers."""
