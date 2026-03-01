@@ -191,6 +191,7 @@ async def create_manual_order(
 ):
     tf = get_tenant_filter(admin)
     tid = tenant_id_of(admin)
+    await _check(admin, "create")
     user = await db.users.find_one({**tf, "email": payload.customer_email.lower()}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="Customer not found")
