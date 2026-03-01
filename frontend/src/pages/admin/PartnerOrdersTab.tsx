@@ -19,6 +19,7 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Copy, ExternalLink, RefreshCw, Plus, Pencil, Trash2, Download } from "lucide-react";
 import { ISO_CURRENCIES } from "@/lib/constants";
+import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
 type Tenant = { id: string; name: string };
 type Plan = { id: string; name: string; is_active: boolean };
