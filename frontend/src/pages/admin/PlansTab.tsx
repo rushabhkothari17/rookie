@@ -26,6 +26,7 @@ type Plan = {
   description?: string;
   is_active: boolean;
   is_public: boolean;
+  visibility_rules?: VisibilityRule[];
   monthly_price?: number | null;
   currency?: string;
   warning_threshold_pct: number;
