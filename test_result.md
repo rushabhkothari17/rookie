@@ -248,15 +248,18 @@ backend:
 
   - task: "Partner Orgs - Add User Form Parity"
     implemented: true
-    working: "NA"
+    working: false
     file: "backend/routes/admin/tenants.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented granular permissions (access_level, modules, preset_role) for Partner Admin creation in backend."
+      - working: false
+        agent: "testing"
+        comment: "❌ PARTIAL IMPLEMENTATION ISSUE FOUND - Partner Admin Creation API works correctly for partner_admin role with granular permissions (access_level: read_only, modules: ['customers', 'orders']) but has a behavior issue with partner_super_admin role. When creating partner_super_admin with explicit access_level='read_only', the system uses that value instead of ignoring it and defaulting to full_access as specified in requirements. However, when no access_level is provided, it correctly defaults to full_access. This suggests missing logic to override access_level for partner_super_admin role regardless of input. API endpoint: POST /api/admin/tenants/{tenant_id}/create-admin successfully creates users with correct structure but needs access_level override logic for super admin role."
 
 frontend:
   - task: "Cart Error Handling - No React Crash"
