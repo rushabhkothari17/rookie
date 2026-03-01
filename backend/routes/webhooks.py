@@ -346,7 +346,39 @@ async def stripe_webhook(request: Request):
                     action="paid_via_stripe", actor="stripe_webhook", details={},
                 )
 
-        elif event_meta.get("type") == "partner_upgrade":
+        elif event_meta.get("type") == "one_time_upgrade":
+            if webhook_response.event_type == "checkout.session.completed":
+                upgrade_id = event_meta.get("upgrade_id")
+                partner_id = event_meta.get("partner_id")
+                order_id_meta = event_meta.get("order_id")
+                coupon_id_meta = event_meta.get("coupon_id")
+
+                upgrade = await db.one_time_upgrades.find_one({"id": upgrade_id}, {"_id": 0}) if upgrade_id else None
+                if upgrade:
+                    boosts = {i["module_key"]: i["quantity"] for i in upgrade.get("upgrades", [])}
+                    bp_end = upgrade.get("billing_period_end", "")
+                    await db.tenants.update_one({"id": partner_id}, {"$set": {
+                        "license.one_time_boosts": boosts,
+                        "license.one_time_boosts_expire_at": bp_end,
+                    }})
+                    await db.one_time_upgrades.update_one({"id": upgrade_id}, {"$set": {
+                        "status": "active", "updated_at": now_iso(),
+                    }})
+                if order_id_meta:
+                    await db.partner_orders.update_one(
+                        {"id": order_id_meta},
+                        {"$set": {"status": "paid", "paid_at": now_iso(), "payment_method": "card", "updated_at": now_iso()}},
+                    )
+                if coupon_id_meta and partner_id:
+                    await db.coupons.update_one(
+                        {"id": coupon_id_meta},
+                        {"$inc": {"usage_count": 1}, "$addToSet": {"used_by_orgs": partner_id}},
+                    )
+                await create_audit_log(
+                    entity_type="one_time_upgrade", entity_id=upgrade_id or "",
+                    action="activated_via_stripe", actor="stripe_webhook",
+                    details={"partner_id": partner_id, "order_id": order_id_meta},
+                )
             if webhook_response.event_type == "checkout.session.completed":
                 partner_order_id = event_meta.get("partner_order_id")
                 plan_id = event_meta.get("plan_id")
