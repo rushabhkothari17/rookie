@@ -1,59 +1,60 @@
 <analysis>**original_problem_statement:**
-The user requested a major enhancement to the partner-facing side of the application, focusing on self-service plan management and billing automation.
+The user initially requested a major enhancement for a partner-facing self-service portal, including plan upgrades, pro-rata billing, downgrade requests, and invoice generation. Throughout the session, the user also requested:
+1.  **Invoice Customization:** Add the company logo, VAT registration number, and bank details to the PDF invoice footer.
+2.  **UI Bug Fix:** Tooltips in the new product form were showing on hover over a parent container instead of on click of the question mark icon.
+3.  **Git Push Failure Resolution:** The user was unable to save their work to GitHub, encountering two consecutive errors:
+    *   A large binary file () was present in the git history.
+    *   A Stripe API key was present in  files committed to the git history, triggering GitHub's Secret Scanning protection.
 
 **PRODUCT REQUIREMENTS:**
-1.  **Partner Self-Service Plan Upgrades:** Partners should be able to see available public plans and upgrade their subscription themselves.
-2.  **Pro-rata Billing:** All partner billing should be aligned to the 1st of every month. New subscriptions and mid-month upgrades must be billed on a pro-rata basis.
-3.  **Downgrade Requests:** Downgrades should not be immediate. Instead, partners must submit a request, which an admin can approve. The change takes effect on the next renewal date. A new Partner Submissions module is needed to track these requests.
-4.  **Free Trial Logic:** A default Free Trial plan should be automatically created and assigned to all new partners. If a partner's paid subscription is canceled, they should be automatically downgraded to this Free Trial plan.
-5.  **Invoice Generation:** Partners need to be able to download PDF invoices for their orders. The invoice templates should be editable by the platform admin.
-6.  **Overdue Subscription Cancellation:** A scheduler job must automatically cancel a partner's subscription if their payment is overdue by a configurable number of days, with a warning email sent beforehand.
-7.  **Product-Level Billing Configuration:** Partner admins should have the choice, at the product level, between pro-rated billing or fixed monthly billing from the subscription start date.
-8.  **UI/UX Fixes:**
-    *   The Add User form should be consistent across the Users and Partner Orgs modules.
-    *   Platform admins need a way to filter the main user list by partner organization.
-    *   The non-functional Audit Log button on the Partner Orgs tab needs to be fixed.
+This list includes all original and subsequent user requests.
+*   **Partner Self-Service Plan Upgrades** (DONE)
+*   **Pro-rata Billing** (DONE)
+*   **Downgrade Requests & Admin Approval** (DONE)
+*   **Free Trial Logic** (DONE in previous session)
+*   **Invoice Generation & Download** (DONE)
+*   **Overdue Subscription Cancellation** (DONE)
+*   **Product-Level Billing Configuration** (DONE)
+*   **UI/UX Fixes:**
+    *   Tooltip hover-bug (DONE)
+    *   Platform admins need a way to filter the main user list by partner organization. (DONE)
+    *   Non-functional Audit Log button on the Partner Orgs tab. (DONE in previous session)
+    *   Add User form should be consistent across Users and Partner Orgs modules. (PENDING)
+*   **Invoice Customization:** Add logo, VAT, and bank details to invoices. (DONE)
+*   **DevOps:** Resolve all Git push failures to enable saving work to GitHub. (IN PROGRESS)
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a multi-tenant SaaS platform with partner licensing, billing, and a partner portal. A scheduler () is integrated for automated tasks.
-
-The agent has already completed the foundational work (Phase 1 & 2A) for the new feature set:
-*   A  for pro-rata calculations has been created.
-*   A default Free Trial plan is now automatically created and assigned to new partners.
-*   Logic to revert canceled subscriptions back to the Free Trial plan is in place.
-*   Plans can be marked as  to control visibility in the partner portal, with a UI toggle for admins.
-*   The Audit Log button bug on the Partner Orgs tab has been fixed.
+The application is a multi-tenant SaaS platform. All requested features, including partner self-service plan management, invoicing, overdue subscription cancellation, and various UI enhancements have been implemented and successfully tested. The core application is stable. However, the connection to the user's remote GitHub repository is broken due to a history rewrite performed to clean up large files and secrets, which now prevents pushing changes.
 
 **Last working item**:
-    - Last item agent was working: The agent was about to begin implementing Phase 3 (Partner Self-Service Plan Management) and Phase 4 (Invoice System). The agent had just finished reviewing all necessary files and was preparing to create the new backend routes and services.
-    - Status: NOT STARTED
-    - Agent Testing Done: N
-    - Which testing method agent to use? both. This is a large feature involving multiple new backend routes (, , ) and new frontend tabs (, ). Full end-to-end testing is required.
+    - Last item agent was working: Resolving a  failure caused by GitHub's secret scanning, which detected a Stripe API key in the repository's history. The agent used  to purge all  files from the entire commit history and then re-added the remote origin. The user was instructed on the final steps.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: N/A
+    - Which testing method agent to use? Manual action by the user is required. The user needs to use the Save to Github feature in the UI.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  None.
+  - **Issue 1: Git push is blocked, preventing work from being saved to GitHub. (Priority: P0 - BLOCKER)**
+     - Attempted fixes:
+        - Used  to remove a large binary file from history. This was successful but revealed a second blocker.
+        - Used  again to purge all instances of  and  from the entire git history. The remote origin was then re-added.
+     - Next debug checklist:
+        1.  The user must try the **Save to Github** feature again.
+        2.  If it is still blocked by secret scanning, the user must follow the unique URL provided in the error message to manually approve the secret on the GitHub website. The URL from the error was: 
+     - Why fix this issue and what will be achieved with the fix? This is a critical blocker. Fixing it will allow the user to synchronize the application's codebase with their remote GitHub repository.
+     - Status:  USER VERIFICATION PENDING
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? N/A (DevOps issue)
+     - Blocked on other issue: No
 
 **In progress Task List**:
-  - **Task 1: Implement Partner Self-Service & Invoicing (Phases 3 & 4)**
-     - Where to resume: The agent was about to start coding Batch 1 of the implementation, which involves creating all the new backend files and routes in parallel:
-        - 
-        - 
-        - 
-        - 
-        - 
-     - What will be achieved with this? This will create the API infrastructure for partners to upgrade/downgrade plans, for admins to manage submissions, and for generating PDF invoices.
-     - Status: IN PROGRESS
-     - Should Test frontend/backend/both after fix? both
-     - Blocked on something: No.
+  None.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks (P0):**
-    *   **Phase 5: Overdue Cancellation:** Implement the daily scheduler job to cancel overdue partner subscriptions and the corresponding admin settings.
-    *   **Phase 2B: Product-Level Billing Choice:** Implement the UI for partner admins to choose between pro-rata and fixed-date billing for their products.
-    *   **Phase 6: User Form Parity:** Add a role selector to the partner admin creation form and a partner-org filter to the main Users tab.
+    *   **UI/UX Fix - Add User Form Parity:** Make the Add User form consistent across the Users and Partner Orgs modules. This was part of the original PRD but has not been implemented yet.
 *   **Future Tasks (from PRD):**
     *   **(P1) Google Drive & OneDrive Integration**.
     *   **(P2) Customer Portal Enhancements**: Implement self-service subscription cancellation, display renewal dates, and a Reorder button.
@@ -61,22 +62,20 @@ The agent has already completed the foundational work (Phase 1 & 2A) for the new
     *   **(P2) Centralize Email Settings**.
 
 **Completed work in this session**
-- **Feature: Partner Self-Service Foundation (Phase 1 & 2A)**:
-  - Created a  for pro-rata calculations.
-  - Implemented the Free Trial plan lifecycle: auto-creation via , auto-assignment on partner signup (), and auto-revert on subscription cancellation.
-  - Added an  flag to plans () and a UI toggle () to control which plans partners can upgrade to.
-- **Bug Fix: Partner Orgs Audit Logs**:
-  - Fixed the non-functional Audit Log button in  by correctly wiring up the state and component props.
-- **Feature: Test Reminder Button**:
-  - Added backend endpoints (, ) and frontend buttons (, ) for admins to send on-demand test renewal emails.
-- **Feature: Admin New Partner Form Parity**:
-  - Overhauled the New Partner Org dialog in  to match the public signup form, enabling consistent partner creation through the same  API endpoint.
-- **Feature: Scheduler & Configurable Reminders**:
-  - Implemented and successfully tested scheduler jobs for auto-cancellation, auto-order creation for manual renewals, and configurable renewal reminders.
-- **Data Management: Full DB Cleanup**:
-  - Wiped all transactional data from the database, resetting the application to a clean state with only system-essential data remaining.
-- **Documentation: Core Product Document**:
-  - Authored a comprehensive, non-technical  detailing the entire platform's functionality, user roles, modules, and workflows for stakeholder onboarding.
+- **Feature: Full Partner Lifecycle Management (Phases 3, 4, 5, 2B, 6)**:
+  - Implemented partner self-service plan upgrades and downgrade requests (, ).
+  - Implemented admin-side submission approval ().
+  - Implemented a scheduler job for automated overdue subscription cancellation, with a corresponding admin settings UI ().
+  - Added a product-level choice between pro-rata and fixed-date billing ().
+  - Added a partner organization filter to the main user list ().
+- **Feature: Invoice System & Customization**:
+  - Implemented server-side PDF invoice generation using .
+  - Added Download Invoice buttons for partners () and admins ().
+  - Added UI in  for admins to add a company logo, VAT number, and bank details, which are now correctly embedded in the invoice PDF footer.
+- **Bug Fix: Tooltip Behavior**:
+  - Corrected a UI bug by converting hover-based tooltips to be click-to-open in , fixing the issue application-wide.
+- **DevOps: Git History Cleanup**:
+  - Successfully purged both a large binary file and committed  files (containing secrets) from the entire Git history using , cleaning the repository to allow pushes.
 
 **Earlier issues found/mentioned but not fixed**
    - None.
@@ -88,72 +87,72 @@ The agent has already completed the foundational work (Phase 1 & 2A) for the new
 
 
 **Key Technical Concepts**
-- **Pro-rata Billing**: A new shared service () calculates partial charges for mid-month signups and upgrades to align all billing to the 1st of the month.
-- **Plan Lifecycle Management**: A Free Trial plan is now a core part of the partner lifecycle, seeded at startup and automatically assigned or reverted to upon signup/cancellation.
-- **Server-side PDF Generation**: The architecture plans to use the existing  and  libraries to create a new  for generating PDF invoices from HTML templates.
-- **Feature Flagging ()**: A simple boolean flag on the  model controls which plans are available for partner self-service upgrades.
+- **Git History Rewriting**: Used  to permanently remove large files and secrets from all commits, a necessary step to resolve push failures to GitHub.
+- **Server-side PDF Generation**: Leveraged the  library in  to dynamically generate PDF invoices with custom data, headers, and footers.
+- **Click-Controlled UI State**: Refactored a tooltip component () from a CSS  implementation to a React -based click toggle to fix a widespread UI bug.
+- **Scheduled Jobs**: Extended  to include a daily job that checks for and cancels overdue partner subscriptions based on admin-configurable settings.
 
 **key DB schema**
-- : Modified to include  (Boolean, default: ).
--  (New Collection): 
--  (New Collection): 
--  (To Be Modified): 
+- : Added  (Float),  (String).
+- : Added  (String, enum: 'pro-rata', 'fixed-date').
+- : New collection implemented with fields for , , , etc.
+- : Utilized to store  and .
+- : Utilized  to store custom invoice details like , , .
 
 **changes in tech stack**
-- None. The implementation will leverage existing libraries (, ).
+- None.
 
 **All files of reference**
 *   **Key New Files**:
     *   
     *   
+    *   
+    *   
+    *   
+    *   
+    *   
 *   **Key Modified Files**:
-    *    (Added plan seeder)
-    *    (Assigned free trial)
-    *    (Reset to free trial)
-    *    (Reset to free trial)
-    *    (Fixed audit log)
-    *    (Added  toggle)
-*   **Key Planned Files**: All files listed under the In progress Task List.
+    *    (added logo/footer details)
+    *    (added cancellation job)
+    *    (added invoice settings UI)
+    *    (fixed hover bug)
+    *    (registered new API routes)
 
 **Areas that need refactoring**:
 - None.
 
 **key api endpoints**
-*   : New endpoint fetches all plans where  is true.
-*   **Planned Endpoints**:
-    *   
-    *   
-    *   , 
-    *   
-    *   CRUD for 
-    *   
+*   
+*   
+*   , 
+*   
+*   
+*   
+*   
 
 **Critical Info for New Agent**
-1.  **Resume Implementation**: Your primary task is to continue the large feature implementation. Phase 1 & 2A are done and tested. You need to start **Phase 3 (Partner Self-Service)** and **Phase 4 (Invoicing)**.
-2.  **Follow the Plan**: The agent was about to create the backend routes and services for these phases in parallel. Start there.
-3.  **PDF Generation**: The plan is to use  and  for server-side PDF generation in a new . The libraries are already installed.
+1.  **Resolve Git Issue First**: Your absolute first priority is to guide the user in resolving the Git push failure. The application code is complete and tested, but it cannot be saved to the user's GitHub repository. Reiterate the steps from the Pending Issue section. Do not proceed with any coding tasks until the user confirms they can successfully Save to Github.
+2.  **All Feature Work is Complete**: All user-requested features from this session (self-service, invoicing, schedulers, UI fixes) are finished and have passed automated testing.
+3.  **Next Task After Git Fix**: Once the Git issue is resolved, the next task is to implement the Add User Form Parity from the Upcoming Tasks list.
 
 **documents and test reports created in this job**
-  - 
-  -  (Updated)
-  - 
-  - 
-  -  (Passed 35/35 tests for Phase 1 & 2A)
+  -  (Updated multiple times)
+  -  (34/34 tests passed)
+  -  (23/23 tests passed)
+  -  (26/26 tests passed)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requests a massive feature set: self-service partner upgrades, pro-rata billing, downgrade requests, invoice downloads, and overdue cancellation. Also points out bugs/inconsistencies with user creation and audit logs. Asks for an architecture plan.
-2.  **Agent:** Provides a detailed, 6-phase architecture plan.
-3.  **User:** Approves the plan with clarifications: partner admins need a choice on pro-rata billing for their products, invoice download is a new feature,  flag for plans is a good idea, and both partner/platform admins should get overdue warnings.
-4.  **Agent:** Acknowledges clarifications, confirms no invoice generation exists yet, and states it will begin implementing Phase 1 and 2A.
-5.  **Agent:** Implements Phase 1 (Free Trial Logic) and Phase 2A (Pro-rata Service) and fixes the audit log bug.
-6.  **Agent:** Runs the testing agent, which passes all 35 tests.
-7.  **Agent:** Realizes the  toggle was missing from the UI and adds it to the Plans admin page.
-8.  **Agent:** Confirms the backend is running and finishes the task for Phase 1 & 2A, updating the PRD.
-9.  **User:** Phase 3 and 4 - Instructs the agent to proceed with the next phases.
-10. **Agent:** Confirms it will build Phase 3 (Self-Service) and 4 (Invoicing), reads all necessary files, and prepares to create the new backend routes.
+1.  **User (Pending):** Shared a git push error indicating Secret push protection is enabled due to a Stripe key being detected in the repository's history.
+2.  **User:** Confirmed they wanted to proceed with the agent's proposed fix for the *previous* git issue.
+3.  **User:** Reported that Save to Github was not working (spinning wheel) after the agent fixed a large-file issue.
+4.  **User:** Reported the initial git push failure due to a file exceeding GitHub's 100MB size limit.
+5.  **User:** Requested the ability to add a company logo, VAT number, and bank details to the invoice footer. (COMPLETED)
+6.  **User:** Requested the invoice download feature. (COMPLETED)
+7.  **User:** Instructed the agent to proceed with the next action items in the plan. (COMPLETED)
+8.  **User:** Reported a UI bug with tooltips and asked for it to be fixed before the agent continued with other tasks. (COMPLETED)
 
 **Project Health Check:**
-- **Broken**: No. The application is stable and the last set of changes passed all automated tests.
+- **Broken**: Yes. The version control pipeline is broken. The user cannot push code to their remote GitHub repository. The application itself is functional.
 - **Mocked**: None.
 
 **3rd Party Integrations**
@@ -164,13 +163,13 @@ The agent has already completed the foundational work (Phase 1 & 2A) for the new
 *    (FX rates)
 *    &  (Frontend PDF Generation - not used for invoices)
 *    (Backend Scheduled Jobs)
-*    &  (Backend, planned for Invoice PDF Generation)
+*    &  (Backend, for Invoice PDF Generation)
 
 **Testing status**
-  - Testing agent used after significant changes: YES (for Phase 1 & 2A, passed 35/35 tests)
+  - Testing agent used after significant changes: YES. All major features were followed by a successful testing agent run, with all tests passing.
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: []
-  - Known regressions: None.
+  - Test files created: None.
+  - Known regressions: None. The testing agent caught and fixed one minor token key bug ( vs ).
 
 **Credentials to test flow:**
 - **Platform Admin:**
@@ -181,4 +180,4 @@ The agent has already completed the foundational work (Phase 1 & 2A) for the new
     - Password: 
 
 **What agent forgot to execute**
-Nothing. The agent has followed the user-approved architecture plan systematically and is ready to proceed with the next logical step.</analysis>
+- From the original product requirements, the task to **make the Add User form consistent across the Users and Partner Orgs modules** was not implemented. This should be prioritized after the critical git issue is resolved.</analysis>
