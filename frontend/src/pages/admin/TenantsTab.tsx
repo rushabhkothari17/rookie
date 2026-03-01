@@ -33,6 +33,9 @@ type TenantUser = {
   email: string;
   full_name: string;
   role: string;
+  is_active: boolean;
+};
+
 interface ModuleInfo {
   key: string;
   name: string;
@@ -46,8 +49,6 @@ interface PresetRole {
   access_level: string;
   modules: string[];
 }
-  is_active: boolean;
-};
 
 export function TenantsTab() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
