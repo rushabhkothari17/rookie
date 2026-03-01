@@ -94,7 +94,7 @@ async def activate_tenant(tenant_id: str, admin: Dict[str, Any] = Depends(requir
 
 
 @router.post("/admin/tenants/{tenant_id}/deactivate")
-async def deactivate_tenant(tenant_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+async def deactivate_tenant(tenant_id: str, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     if tenant_id == DEFAULT_TENANT_ID:
         raise HTTPException(status_code=400, detail="Cannot deactivate the default tenant")
     result = await db.tenants.update_one(
