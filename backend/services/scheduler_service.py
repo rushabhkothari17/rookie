@@ -371,9 +371,17 @@ async def create_renewal_orders() -> None:
                 "created_by": "scheduler",
             }
             await db.partner_orders.insert_one(order_doc)
+
+            # Advance next_billing_date by billing interval
+            from services.billing_service import advance_billing_date
+            new_nbd = advance_billing_date(today_str, psub.get("billing_interval", "monthly"))
             await db.partner_subscriptions.update_one(
                 {"id": psub["id"]},
-                {"$set": {"auto_renewal_order_date": today_str}},
+                {"$set": {
+                    "auto_renewal_order_date": today_str,
+                    "next_billing_date": new_nbd,
+                    "reminder_sent_for_renewal_date": None,  # reset so next reminder fires
+                }},
             )
 
             # Notify partner admin
