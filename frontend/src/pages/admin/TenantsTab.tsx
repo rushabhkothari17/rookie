@@ -504,6 +504,27 @@ export function TenantsTab() {
                           <span className="text-slate-400 ml-2">{user.email}</span>
                         </div>
                         <Badge variant="outline" className="text-xs ml-auto">{user.role}</Badge>
+                        {/* Transfer super admin button — visible to platform admins, for non-super-admin users */}
+                        {user.role !== "partner_super_admin" && (
+                          <Button
+                            size="sm" variant="ghost"
+                            className="h-6 px-2 text-[10px] text-violet-600 hover:text-violet-700 hover:bg-violet-50"
+                            onClick={async () => {
+                              try {
+                                await api.post(`/admin/tenants/${tenant.id}/transfer-super-admin`, { new_user_id: user.id });
+                                toast.success(`${user.email} is now the partner super admin`);
+                                // Reload users for this tenant
+                                const r = await api.get(`/admin/tenants/${tenant.id}/users`);
+                                setTenantUsers(prev => ({ ...prev, [tenant.id]: r.data.users || [] }));
+                              } catch (e: any) {
+                                toast.error(e.response?.data?.detail || "Failed to transfer super admin");
+                              }
+                            }}
+                            data-testid={`transfer-super-admin-${user.id}`}
+                          >
+                            <ShieldCheck size={12} className="mr-1" />Make Super Admin
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
