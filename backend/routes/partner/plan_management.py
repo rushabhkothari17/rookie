@@ -139,12 +139,42 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             age_hours = 0
 
         if age_hours > 23:
-            # Session has expired — mark order as cancelled so it doesn't linger
+            # Session has certainly expired — mark order as cancelled
             await db.partner_orders.update_one(
                 {"id": pending_upgrade_raw["id"]},
                 {"$set": {"status": "cancelled", "updated_at": now_iso(),
                            "notes": "Stripe checkout session expired"}},
             )
+        elif pending_upgrade_raw.get("stripe_session_id"):
+            # Verify the actual Stripe session status (handles early expiry / abandonment)
+            try:
+                stripe_sdk.api_key = STRIPE_API_KEY
+                session = stripe_sdk.checkout.Session.retrieve(
+                    pending_upgrade_raw["stripe_session_id"]
+                )
+                if session.status in ("expired", "complete"):
+                    new_status = "cancelled" if session.status == "expired" else "paid"
+                    await db.partner_orders.update_one(
+                        {"id": pending_upgrade_raw["id"]},
+                        {"$set": {"status": new_status, "updated_at": now_iso(),
+                                   "notes": f"Auto-updated from Stripe status: {session.status}"}},
+                    )
+                else:
+                    # Session is still open — safe to show Resume Checkout
+                    pending_upgrade = {
+                        k: pending_upgrade_raw[k]
+                        for k in ("id", "plan_id", "plan_name", "amount", "currency",
+                                  "stripe_session_id", "order_number")
+                        if k in pending_upgrade_raw
+                    }
+            except Exception:
+                # If Stripe is unreachable, fall back to showing the banner
+                pending_upgrade = {
+                    k: pending_upgrade_raw[k]
+                    for k in ("id", "plan_id", "plan_name", "amount", "currency",
+                              "stripe_session_id", "order_number")
+                    if k in pending_upgrade_raw
+                }
         else:
             pending_upgrade = {
                 k: pending_upgrade_raw[k]
