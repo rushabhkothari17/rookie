@@ -119,6 +119,11 @@ export function PlanBillingTab() {
     setUpgrading(planId);
     try {
       const r = await api.post("/partner/upgrade-plan", { plan_id: planId });
+      if (r.data.checkout_url) {
+        toast.info("Redirecting to secure payment...");
+        window.location.href = r.data.checkout_url;
+        return; // page will navigate away
+      }
       toast.success(r.data.message || "Plan upgraded successfully");
       if (r.data.prorata_amount > 0) {
         toast.info(`Pro-rata charge: ${data?.subscription?.currency || "GBP"} ${r.data.prorata_amount.toFixed(2)} (${r.data.orders_created?.[0] || "order created"})`);
