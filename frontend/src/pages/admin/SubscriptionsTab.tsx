@@ -611,7 +611,7 @@ export function SubscriptionsTab() {
                 <Select value={manualSub.currency} onValueChange={v => setManualSub({ ...manualSub, currency: v })}>
                   <SelectTrigger className="w-full bg-white" data-testid="manual-sub-currency-select"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {ISO_CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {(supportedCurrencies.length ? supportedCurrencies : ISO_CURRENCIES).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
