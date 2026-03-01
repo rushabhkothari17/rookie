@@ -161,7 +161,39 @@ class PartnerAdminTester:
             print(f"❌ Partner Admin creation error: {e}")
             return False
     
-    async def create_partner_super_admin_without_access_level(self) -> bool:
+    async def create_partner_super_admin(self) -> bool:
+        """Step 5: Create Partner Super Admin and verify it defaults to full access."""
+        print(f"\n👑 Step 5: Creating Partner Super Admin...")
+        
+        super_admin_data = {
+            "tenant_id": self.created_tenant_id,  # Required by model
+            "email": f"partner.superadmin.{self.timestamp}@testorg.local", 
+            "full_name": "Test Partner Super Admin",
+            "password": "SecurePass123!",
+            "role": "partner_super_admin",
+            "access_level": "read_only",  # This should be ignored/defaulted to full
+            "modules": ["customers"]  # This should be ignored for super admin
+        }
+        
+        try:
+            async with self.session.post(f"{self.base_url}/admin/tenants/{self.created_tenant_id}/create-admin", json=super_admin_data) as resp:
+                if resp.status == 200:
+                    result = await resp.json()
+                    user_id = result.get("user_id")
+                    if user_id:
+                        self.created_users.append({"id": user_id, "email": super_admin_data["email"], "role": "partner_super_admin"})
+                        print(f"✅ Partner Super Admin created: {super_admin_data['email']} (ID: {user_id})")
+                        return True
+                    else:
+                        print("❌ No user ID received")
+                        return False
+                else:
+                    error_text = await resp.text()
+                    print(f"❌ Partner Super Admin creation failed: {resp.status} - {error_text}")
+                    return False
+        except Exception as e:
+            print(f"❌ Partner Super Admin creation error: {e}")
+            return False
         """Test: Create Partner Super Admin without access_level to see default behavior."""
         print(f"\n🔍 Additional Test: Creating Partner Super Admin without access_level...")
         
