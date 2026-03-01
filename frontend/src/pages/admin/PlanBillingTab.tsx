@@ -749,6 +749,33 @@ export function PlanBillingTab() {
         </div>
       )}
 
+      {/* Pending upgrade banner — Resume Checkout */}
+      {data?.pending_upgrade_order && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-center justify-between gap-4" data-testid="resume-checkout-banner">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-amber-100 p-2"><Loader2 size={16} className="text-amber-600" /></div>
+            <div>
+              <p className="text-sm font-semibold text-amber-900">Payment pending — {data.pending_upgrade_order.plan_name}</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                {data.pending_upgrade_order.order_number} · {data.pending_upgrade_order.currency} {data.pending_upgrade_order.amount?.toFixed(2)} · Awaiting payment confirmation
+              </p>
+            </div>
+          </div>
+          {data.pending_upgrade_order.stripe_session_id && (
+            <Button
+              size="sm"
+              className="bg-amber-600 hover:bg-amber-700 shrink-0"
+              onClick={() => {
+                window.location.href = `https://checkout.stripe.com/c/pay/${data!.pending_upgrade_order!.stripe_session_id}`;
+              }}
+              data-testid="resume-checkout-btn"
+            >
+              Resume Checkout
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Usage */}
       <div className="border-t border-slate-200 pt-6">
         <UsageDashboard />
