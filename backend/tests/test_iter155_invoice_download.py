@@ -29,11 +29,10 @@ KNOWN_ORDER_NUMBER = "PO-2026-0006"
 
 @pytest.fixture(scope="module")
 def admin_token():
-    """Get platform admin auth token."""
+    """Get platform admin auth token (no partner_code for platform admin)."""
     resp = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": ADMIN_EMAIL,
         "password": ADMIN_PASSWORD,
-        "partner_code": "automate-accounts",
     })
     if resp.status_code == 200:
         data = resp.json()
