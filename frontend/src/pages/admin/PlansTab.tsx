@@ -90,7 +90,7 @@ type Coupon = {
   created_at: string;
 };
 
-// ─── Plan limit fields ────────────────────────────────────────────────────────
+const ISO_CURRENCIES = ["GBP","USD","EUR","AUD","CAD","CHF","SGD","NZD","HKD","JPY","INR","AED","ZAR","MYR","NOK","SEK","DKK"];
 const LIMIT_FIELDS = [
   { key: "max_users", label: "Users (total)" },
   { key: "max_storage_mb", label: "Storage (MB)" },
