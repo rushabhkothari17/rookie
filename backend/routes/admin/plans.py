@@ -26,11 +26,18 @@ LIMIT_FIELDS = [
 ]
 
 
+class VisibilityRule(BaseModel):
+    field: str    # country, partner_code, base_currency, partner_type, industry, tags
+    operator: str  # equals, not_equals, in, contains
+    value: str
+
+
 class PlanCreate(BaseModel):
     name: str
     description: Optional[str] = None
     warning_threshold_pct: int = 80
     is_public: bool = False  # visible to partners for self-service upgrade
+    visibility_rules: Optional[List[VisibilityRule]] = None  # evaluated when is_public=False
     monthly_price: Optional[float] = None
     currency: Optional[str] = None
     max_users: Optional[int] = None
