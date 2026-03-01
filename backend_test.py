@@ -163,6 +163,7 @@ class PartnerAdminTester:
         print(f"\n👑 Step 5: Creating Partner Super Admin...")
         
         super_admin_data = {
+            "tenant_id": self.created_tenant_id,  # Required by model
             "email": "partner.superadmin@testorg.local", 
             "full_name": "Test Partner Super Admin",
             "password": "SecurePass123!",
