@@ -69,10 +69,14 @@ class BackendTester:
             return False
             
         try:
+            # Use a timestamp to ensure uniqueness
+            import time
+            unique_suffix = str(int(time.time() * 1000))[-8:]  # Last 8 digits
+            
             response = requests.post(f"{API_BASE}/admin/tenants", 
                 json={
-                    "name": "Test Partner Super Admin Org",
-                    "code": "test-super-admin-org",
+                    "name": f"Test Partner Super Admin Org {unique_suffix}",
+                    "code": f"test-super-admin-{unique_suffix}",
                     "status": "active"
                 },
                 headers={"Authorization": f"Bearer {self.admin_token}"},
