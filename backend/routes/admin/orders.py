@@ -303,6 +303,10 @@ async def update_order(
     tf = get_tenant_filter(admin)
     await _check(admin, "edit")
     order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if payload.status and payload.status not in ALLOWED_ORDER_STATUSES:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid status. Allowed: {', '.join(ALLOWED_ORDER_STATUSES)}",
