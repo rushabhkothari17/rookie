@@ -571,6 +571,7 @@ export function PartnerSubscriptionsTab() {
                   <Badge className={`text-[11px] ${STATUS_COLORS[sub.status] || "bg-slate-100"}`}>{sub.status}</Badge>
                 </td>
                 <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(sub.next_billing_date)}</td>
+                <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(sub.contract_end_date)}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-1">
                     <Button size="sm" variant="ghost" title="Audit Logs" onClick={() => { setLogsUrl(`/admin/partner-subscriptions/${sub.id}`); setShowAuditLogs(true); }} data-testid={`sub-logs-${sub.id}`}>
