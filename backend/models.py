@@ -69,8 +69,11 @@ class CreatePartnerAdminRequest(BaseModel):
     email: str
     full_name: str
     password: str
-    role: str = "partner_super_admin"
-    access_level: Optional[str] = "full_access"
+    role: str = "partner_admin"
+    # New per-module permissions format
+    module_permissions: Optional[Dict[str, str]] = None
+    # Legacy fields (kept for backwards compatibility)
+    access_level: Optional[str] = "read_only"
     modules: Optional[List[str]] = None
     preset_role: Optional[str] = None
 
