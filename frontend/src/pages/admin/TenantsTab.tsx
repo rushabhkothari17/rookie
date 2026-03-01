@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Check, Copy, Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, Shield, Eye, StickyNote, ScrollText, MoreHorizontal, Pencil } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Check, Copy, Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, Eye, StickyNote, ScrollText, MoreHorizontal, Pencil, Tag, Briefcase } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldTip } from "./shared/FieldTip";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
@@ -15,6 +16,8 @@ import { useCountries, useProvinces } from "@/hooks/useCountries";
 import { TenantLicenseModal } from "./TenantLicenseModal";
 import { TenantNotesModal } from "./TenantNotesModal";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
+import { usePlatformList } from "@/hooks/usePlatformList";
+import { GenericListManager } from "@/components/admin/GenericListManager";
 
 type TenantAddress = {
   line1?: string; line2?: string; city?: string; region?: string; postal?: string; country?: string;
