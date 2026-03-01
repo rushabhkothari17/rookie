@@ -869,7 +869,7 @@ async def admin_download_partner_invoice(
     partner_id = order.get("partner_id", "")
     partner_org = await db.tenants.find_one({"id": partner_id}, {"_id": 0}) or {}
     platform_ts = await db.tenants.find_one({"id": DEFAULT_TENANT_ID}, {"_id": 0}) or {}
-    invoice_settings = platform_ts.get("invoice_settings") or {}
+    invoice_settings = (platform_ts.get("tax_settings") or {}).get("invoice_settings") or {}
 
     from services.invoice_service import generate_partner_invoice_pdf
     platform_name = invoice_settings.get("company_name") or platform_ts.get("name") or "Automate Accounts"
