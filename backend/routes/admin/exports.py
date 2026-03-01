@@ -81,6 +81,8 @@ async def export_orders_csv(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
+    if not await _has_perm(admin, "reports", "view"):
+        raise HTTPException(403, "No access to reports module")
     query: Dict[str, Any] = {**tf}
     if not include_deleted:
         query["deleted_at"] = {"$exists": False}
