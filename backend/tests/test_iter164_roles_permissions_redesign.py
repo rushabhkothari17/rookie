@@ -54,7 +54,6 @@ class TestHealthAndAuth:
 
     def test_platform_super_admin_login(self):
         r = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "partner_code": "automate-accounts",
             "email": "admin@automateaccounts.local",
             "password": "ChangeMe123!"
         })
