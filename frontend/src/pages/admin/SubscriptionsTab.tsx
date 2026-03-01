@@ -584,6 +584,23 @@ export function SubscriptionsTab() {
                 data-testid="manual-sub-product-select"
               />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Start Date</label>
+                <Input type="date" value={manualSub.start_date}
+                  onChange={e => setManualSub({ ...manualSub, start_date: e.target.value, renewal_date: computeNextBillingDate(e.target.value, manualSub.billing_interval) })}
+                  data-testid="manual-sub-start-date" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Billing Interval</label>
+                <Select value={manualSub.billing_interval} onValueChange={v => setManualSub({ ...manualSub, billing_interval: v, renewal_date: computeNextBillingDate(manualSub.start_date, v) })}>
+                  <SelectTrigger data-testid="manual-sub-billing-interval"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {BILLING_INTERVALS.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1"><label className="text-xs text-slate-500">Amount</label><Input type="number" step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} /></div>
               <div className="space-y-1">
@@ -591,16 +608,27 @@ export function SubscriptionsTab() {
                 <Select value={manualSub.currency} onValueChange={v => setManualSub({ ...manualSub, currency: v })}>
                   <SelectTrigger className="w-full bg-white" data-testid="manual-sub-currency-select"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {ISO_CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1"><label className="text-xs text-slate-500">Renewal Date</label><Input type="date" value={manualSub.renewal_date} onChange={e => setManualSub({ ...manualSub, renewal_date: e.target.value })} /></div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Next Billing Date</label>
+                <Input type="date" value={manualSub.renewal_date}
+                  onChange={e => setManualSub({ ...manualSub, renewal_date: e.target.value })}
+                  data-testid="manual-sub-renewal-date" />
+                <p className="text-[10px] text-slate-400">Auto-computed from start date + interval</p>
+              </div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-500">Contract Term (months)</label>
-                <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={manualSub.term_months as string} onChange={e => setManualSub({ ...manualSub, term_months: e.target.value })} data-testid="manual-sub-term-months" />
+                <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={manualSub.term_months as string}
+                  onChange={e => setManualSub({ ...manualSub, term_months: e.target.value })}
+                  data-testid="manual-sub-term-months" />
+                {computeExpiryDate(manualSub.start_date, manualSub.term_months) && (
+                  <p className="text-[10px] text-slate-400">Expires: {computeExpiryDate(manualSub.start_date, manualSub.term_months)}</p>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-4">
                 <input type="checkbox" id="auto_cancel" checked={manualSub.auto_cancel_on_termination} onChange={e => setManualSub({ ...manualSub, auto_cancel_on_termination: e.target.checked })} />
                 <label htmlFor="auto_cancel" className="text-xs text-slate-600">Auto-cancel on term end</label>
               </div>
