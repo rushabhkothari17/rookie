@@ -1,0 +1,78 @@
+{
+  "summary": "Tested all Users Tab features from iteration 166: role options in Add User dialog, OrgPicker for partner roles, module scoping, duplicate super admin warning, partner org column, Protected label, edit dialog with role field, and super admin info box. Fixed 1 TypeScript compilation error in UsersTab.tsx. 1 critical data bug remains: platformadmin1@test.local still has platform_super_admin role (should have been demoted).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/admin/users",
+        "issue": "platformadmin1@test.local still has platform_super_admin role. Task said '3 test users demoted to platform_admin' but this user was missed. API returns 2 active platform_super_admins: admin@automateaccounts.local AND platformadmin1@test.local.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "UsersTab - AdminPagination",
+        "issue": "FIXED: TypeScript error in UsersTab.tsx:484 - AdminPagination was called with onPageChange prop (doesn't exist) and missing required total/perPage props. Fixed to: <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={p => load(p)} />",
+        "selector": "AdminPagination",
+        "priority": "CRITICAL (caused compilation error preventing app from loading)"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter166_users_tab_features.py",
+    "/app/test_reports/pytest/pytest_iter166.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Demote platformadmin1@test.local from platform_super_admin to platform_admin in the database. Currently it shows as Protected in the UI and cannot be edited via the admin panel. Direct MongoDB update needed: db.users.updateOne({email: 'platformadmin1@test.local'}, {$set: {role: 'platform_admin'}})."
+  ],
+  "critical_code_review_comments": [
+    "AdminPagination in UsersTab.tsx used wrong prop names (onPageChange vs onPage) and was missing required total/perPage props - this caused a TypeScript compilation error that blocked the entire frontend from loading. Fixed.",
+    "The editableRoles function (line 365-372 of UsersTab.tsx) filters `r !== 'platform_super_admin'` but the array base already doesn't include 'platform_super_admin' so the filter is redundant (no functional impact).",
+    "In the edit dialog for partner_super_admin, T16 is correctly showing the super admin info box (verified via screenshot: 'This user is a super admin with full access. Module restrictions don't apply.').",
+    "OrgPicker only shows when isPlatformSuperAdmin is true AND PARTNER_ROLES.has(role) - correct logic.",
+    "modulesForRole() correctly returns only partner modules for partner roles and all modules for platform_admin.",
+    "The duplicate partner_super_admin check (backend) works correctly - returns 400 with informative error message."
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/admin/UsersTab.tsx"
+  ],
+  "success_rate": {
+    "backend": "18/19 tests passed (95%) - 1 failure: extra platform_super_admin in DB",
+    "frontend": "10/11 features verified (91%) - 10 PASS, 1 CRITICAL data issue (platformadmin1 not demoted)"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "iteration_166: Fixed TypeScript compilation error in UsersTab.tsx (AdminPagination onPageChange→onPage, added total/perPage). Critical DB bug: platformadmin1@test.local still has platform_super_admin role (should be platform_admin) - causes test_only_one_platform_super_admin to fail. All 10 other UI features verified: role dropdown options PASS, OrgPicker for partner roles PASS, module scoping PASS, duplicate SA warning PASS, Platform Admin sees all modules PASS, Partner Org column PASS, Protected label PASS, edit dialog role field PASS, super admin info box PASS.",
+  "test_features_verified": {
+    "role_dropdown_no_platform_super_admin": "PASS: Add User dialog shows Platform Admin, Partner Super Admin, Partner Admin, Partner Staff (NOT Platform Super Admin)",
+    "org_picker_for_partner_admin": "PASS: data-testid=new-user-org-picker appears when Partner Admin selected",
+    "partner_admin_only_partner_modules": "PASS: Only partner modules shown (Customers, Orders, Subscriptions, etc.) - no Partner Orgs, Plans, Billing Settings, Currencies",
+    "partner_super_admin_liger_warning": "PASS: Amber warning shown when Liger Inc selected with Partner Super Admin role",
+    "platform_admin_all_modules_no_org_picker": "PASS: Platform Admin shows ALL modules (partner_orgs, plans, billing_settings, customers, etc.) - no org picker",
+    "partner_org_column_in_table": "PASS: Partner Org column shows tenant names (Apex Holding, Test Partner Org, etc.)",
+    "protected_label_for_platform_super_admin": "PASS: admin@automateaccounts.local row shows Protected label",
+    "edit_dialog_role_field": "PASS: data-testid=admin-edit-user-role present in edit dialog for partner_admin",
+    "edit_super_admin_info_box": "PASS: Edit dialog for cadrashtishah1@gmail.com shows 'super admin has full access' info box",
+    "only_one_platform_super_admin": "FAIL: platformadmin1@test.local still has platform_super_admin role (backend data not updated)",
+    "backend_duplicate_super_admin_blocked": "PASS: POST /admin/users with 2nd partner_super_admin returns 400",
+    "backend_tenant_name_in_response": "PASS: GET /admin/users returns tenant_name for all partner users",
+    "backend_all_module_keys_in_permissions": "PASS: GET /admin/permissions/modules returns all_module_keys and partner_module_keys"
+  },
+  "rca_of_issue": {
+    "typescript_compilation_error": {
+      "cause": "UsersTab.tsx used <AdminPagination onPageChange={...}/> but AdminPagination's interface defines onPage (not onPageChange). Also missing required props total and perPage.",
+      "file": "/app/frontend/src/pages/admin/UsersTab.tsx:484",
+      "fix": "Changed to: <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={p => load(p)} />"
+    },
+    "extra_platform_super_admin": {
+      "cause": "Migration script to demote test users to platform_admin was incomplete - missed platformadmin1@test.local",
+      "evidence": "GET /api/admin/users returns 2 active users with role=platform_super_admin: admin@automateaccounts.local and platformadmin1@test.local",
+      "fix": "Direct MongoDB update: db.users.updateOne({email: 'platformadmin1@test.local'}, {$set: {role: 'platform_admin'}})"
+    }
+  }
+}
