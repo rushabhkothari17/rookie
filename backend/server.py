@@ -387,6 +387,13 @@ async def startup_tasks():
     await SettingsService.seed()
     await seed_admin_user()
     await seed_products()
+    await _seed_free_trial_plan()  # Ensure Free Trial plan has is_default=True and is_readonly=True
+
+    # Migrate platform_admin → platform_super_admin (one-time, idempotent)
+    await db.users.update_many(
+        {"role": "platform_admin"},
+        {"$set": {"role": "platform_super_admin"}},
+    )
     await db.customers.update_many(
         {"allow_bank_transfer": {"$exists": False}},
         {"$set": {"allow_bank_transfer": True}},
