@@ -164,6 +164,7 @@ class BackendTester:
             # Create partner_admin with access_level="read_only"
             response = requests.post(f"{API_BASE}/admin/tenants/{self.test_tenant_id}/create-admin",
                 json={
+                    "tenant_id": self.test_tenant_id,  # Required in body as per model
                     "email": "regular.admin@testorg.com",
                     "full_name": "Test Regular Admin", 
                     "password": "TestPass123!",
