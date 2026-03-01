@@ -4,16 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Shield, ShieldCheck, Eye } from "lucide-react";
+import { Plus, Shield, ShieldCheck, Eye, Pencil, PowerOff, Power, ScrollText, Lock } from "lucide-react";
 import { FieldTip } from "./shared/FieldTip";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ModuleInfo {
   key: string;
@@ -25,13 +27,107 @@ interface PresetRole {
   key: string;
   name: string;
   description: string;
-  access_level: string;
-  modules: string[];
+  module_permissions: Record<string, "read" | "write">;
 }
+
+type ModulePerm = Record<string, "read" | "write" | "none">;
+
+// ── Module Permission Editor ───────────────────────────────────────────────────
+
+function ModulePermEditor({
+  modules,
+  value,
+  onChange,
+}: {
+  modules: ModuleInfo[];
+  value: ModulePerm;
+  onChange: (mp: ModulePerm) => void;
+}) {
+  if (!modules.length) return null;
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <div className="bg-slate-50 px-3 py-2 border-b border-slate-200">
+        <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Module Permissions</p>
+      </div>
+      <div className="max-h-56 overflow-y-auto divide-y divide-slate-100">
+        {modules.map(mod => (
+          <div key={mod.key} className="flex items-center justify-between px-3 py-2 hover:bg-slate-50">
+            <div>
+              <p className="text-xs font-medium text-slate-700">{mod.name}</p>
+              <p className="text-[10px] text-slate-400">{mod.description}</p>
+            </div>
+            <Select
+              value={value[mod.key] || "none"}
+              onValueChange={v => onChange({ ...value, [mod.key]: v as "read" | "write" | "none" })}
+            >
+              <SelectTrigger className="w-36 h-7 text-xs" data-testid={`perm-${mod.key}`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  <span className="text-slate-400">No Access</span>
+                </SelectItem>
+                <SelectItem value="read">
+                  <span className="flex items-center gap-1.5"><Eye size={11} className="text-amber-500" />Read</span>
+                </SelectItem>
+                <SelectItem value="write">
+                  <span className="flex items-center gap-1.5"><ShieldCheck size={11} className="text-emerald-500" />Read &amp; Write</span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function toModulePerm(mp: Record<string, string> | undefined): ModulePerm {
+  const out: ModulePerm = {};
+  if (!mp) return out;
+  for (const [k, v] of Object.entries(mp)) {
+    if (v === "read" || v === "write") out[k] = v;
+  }
+  return out;
+}
+
+/** Strip "none" entries before sending to API */
+function toApiPerm(mp: ModulePerm): Record<string, "read" | "write"> {
+  return Object.fromEntries(Object.entries(mp).filter(([, v]) => v !== "none")) as Record<string, "read" | "write">;
+}
+
+function roleLabel(role: string): string {
+  const map: Record<string, string> = {
+    platform_super_admin: "Platform Super Admin",
+    platform_admin: "Platform Admin",
+    partner_super_admin: "Partner Super Admin",
+    partner_admin: "Partner Admin",
+    partner_staff: "Partner Staff",
+    admin: "Admin",
+    super_admin: "Super Admin",
+  };
+  return map[role] ?? role;
+}
+
+function roleBadgeColor(role: string) {
+  if (role === "platform_super_admin") return "bg-violet-100 text-violet-700 border-violet-200";
+  if (role === "platform_admin") return "bg-blue-100 text-blue-700 border-blue-200";
+  if (role === "partner_super_admin") return "bg-emerald-100 text-emerald-700 border-emerald-200";
+  if (role === "partner_admin") return "bg-amber-100 text-amber-700 border-amber-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
 
 export function UsersTab() {
   const { user: authUser } = useAuth();
+  const isPlatformSuperAdmin = authUser?.role === "platform_super_admin";
+  const isPartnerSuperAdmin = authUser?.role === "partner_super_admin";
+  const isSuperAdmin = isPlatformSuperAdmin || isPartnerSuperAdmin || authUser?.role === "super_admin";
   const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
+
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -41,414 +137,389 @@ export function UsersTab() {
   const [partnerFilter, setPartnerFilter] = useState("all");
   const [partners, setPartners] = useState<{ id: string; name: string }[]>([]);
 
-  // Permission system data
+  // Permission system data (scoped to caller's context)
   const [modules, setModules] = useState<ModuleInfo[]>([]);
   const [presetRoles, setPresetRoles] = useState<PresetRole[]>([]);
 
-  // Dialogs
+  // Create dialog
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newUser, setNewUser] = useState({
+    email: "", full_name: "", password: "", role: "",
+  });
+  const [newUserPerms, setNewUserPerms] = useState<ModulePerm>({});
+
+  // Edit dialog
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editUser, setEditUser] = useState<any>(null);
-  const [newUser, setNewUser] = useState({ 
-    email: "", full_name: "", password: "", 
-    preset_role: "", access_level: "read_only", modules: [] as string[]
-  });
-  const [editForm, setEditForm] = useState({ 
-    full_name: "", email: "", 
-    preset_role: "", access_level: "read_only", modules: [] as string[]
-  });
+  const [editForm, setEditForm] = useState({ full_name: "" });
+  const [editPerms, setEditPerms] = useState<ModulePerm>({});
+
+  // Misc
   const [logsUrl, setLogsUrl] = useState("");
-  const [showAuditLogs, setShowAuditLogs] = useState(false);
-  const [confirmToggleUser, setConfirmToggleUser] = useState<{id: string, active: boolean} | null>(null);
+  const [deactivateUserId, setDeactivateUserId] = useState<string | null>(null);
+
+  // Which roles can the caller create?
+  const creatableRoles = isPlatformSuperAdmin
+    ? [
+        { value: "platform_admin", label: "Platform Admin" },
+        { value: "partner_admin", label: "Partner Admin" },
+        { value: "partner_staff", label: "Partner Staff" },
+      ]
+    : isPartnerSuperAdmin
+    ? [
+        { value: "partner_admin", label: "Partner Admin" },
+        { value: "partner_staff", label: "Partner Staff" },
+      ]
+    : [];
 
   const load = useCallback(async (p = 1) => {
     try {
-      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
-      if (searchFilter) params.append("search", searchFilter);
-      if (partnerFilter && partnerFilter !== "all") params.append("partner_id", partnerFilter);
-      const res = await api.get(`/admin/users?${params}`);
-      setAdminUsers(res.data.users || []);
-      setTotal(res.data.total || 0);
-      setTotalPages(res.data.total_pages || 1);
+      const params: any = { page: p, per_page: PER_PAGE };
+      if (searchFilter) params.search = searchFilter;
+      if (partnerFilter !== "all") params.partner_id = partnerFilter;
+      const r = await api.get("/admin/users", { params });
+      setAdminUsers(r.data.users || []);
+      setTotalPages(r.data.total_pages || 1);
+      setTotal(r.data.total || 0);
       setPage(p);
-    } catch { toast.error("Failed to load admin users"); }
+    } catch {
+      toast.error("Failed to load users");
+    }
   }, [searchFilter, partnerFilter]);
 
-  const loadPermissionsData = async () => {
+  const loadMeta = useCallback(async () => {
     try {
-      const res = await api.get("/admin/permissions/modules");
-      setModules(res.data.modules || []);
-      setPresetRoles(res.data.preset_roles || []);
+      const r = await api.get("/admin/permissions/modules");
+      setModules(r.data.modules || []);
+      setPresetRoles(r.data.preset_roles || []);
     } catch { /* ignore */ }
-  };
-
-  // Load partner tenants for filter (platform admin only)
-  const loadPartners = useCallback(async () => {
-    if (!isPlatformAdmin) return;
-    try {
-      const res = await api.get("/admin/tenants?per_page=100");
-      setPartners((res.data.tenants || []).filter((t: any) => t.id !== "automate-accounts").map((t: any) => ({ id: t.id, name: t.name })));
-    } catch { /* ignore */ }
+    if (isPlatformAdmin) {
+      try {
+        const r = await api.get("/admin/tenants");
+        setPartners((r.data.tenants || []).map((t: any) => ({ id: t.id, name: t.name })));
+      } catch { /* ignore */ }
+    }
   }, [isPlatformAdmin]);
 
-  useEffect(() => { load(1); loadPermissionsData(); loadPartners(); }, [searchFilter, partnerFilter]);
+  useEffect(() => { load(); loadMeta(); }, []); // eslint-disable-line
+
+  useEffect(() => {
+    const t = setTimeout(() => load(1), 300);
+    return () => clearTimeout(t);
+  }, [searchFilter, partnerFilter]); // eslint-disable-line
+
+  // ── Create ──────────────────────────────────────────────────────────────────
 
   const handleCreate = async () => {
+    if (!newUser.email || !newUser.password || !newUser.role) {
+      toast.error("Email, password and role are required");
+      return;
+    }
     try {
-      const payload: any = {
+      await api.post("/admin/users", {
         email: newUser.email,
+        full_name: newUser.full_name,
         password: newUser.password,
-        full_name: newUser.full_name
-      };
-      if (newUser.preset_role) {
-        payload.preset_role = newUser.preset_role;
-      } else {
-        payload.access_level = newUser.access_level;
-        payload.modules = newUser.modules;
-      }
-      await api.post("/admin/users", payload);
-      toast.success(`Admin user ${newUser.email} created`);
+        role: newUser.role,
+        module_permissions: toApiPerm(newUserPerms),
+      });
+      toast.success(`User ${newUser.email} created`);
       setShowCreateDialog(false);
-      setNewUser({ email: "", full_name: "", password: "", preset_role: "", access_level: "read_only", modules: [] });
+      setNewUser({ email: "", full_name: "", password: "", role: "" });
+      setNewUserPerms({});
       load(1);
-    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create user"); }
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to create user");
+    }
   };
 
-  const openEdit = (u: any) => { 
-    setEditUser(u); 
-    setEditForm({ 
-      full_name: u.full_name || "", 
-      email: u.email || "", 
-      preset_role: u.preset_role || "",
-      access_level: u.access_level || "full_access",
-      modules: u.permissions?.modules || []
-    }); 
-    setShowEditDialog(true); 
+  const applyPreset = (presetKey: string, setPerms: (mp: ModulePerm) => void) => {
+    const preset = presetRoles.find(r => r.key === presetKey);
+    if (preset?.module_permissions) {
+      setPerms(toModulePerm(preset.module_permissions));
+    }
+  };
+
+  // ── Edit ────────────────────────────────────────────────────────────────────
+
+  const openEdit = (u: any) => {
+    setEditUser(u);
+    setEditForm({ full_name: u.full_name || "" });
+    setEditPerms(toModulePerm(u.module_permissions));
+    setShowEditDialog(true);
   };
 
   const handleEdit = async () => {
     if (!editUser) return;
     try {
-      const payload: any = {
+      await api.put(`/admin/users/${editUser.id}`, {
         full_name: editForm.full_name,
-        access_level: editForm.access_level,
-        modules: editForm.modules
-      };
-      if (editForm.preset_role) payload.preset_role = editForm.preset_role;
-      await api.put(`/admin/users/${editUser.id}`, payload);
+        module_permissions: toApiPerm(editPerms),
+      });
       toast.success("User updated");
       setShowEditDialog(false);
       setEditUser(null);
       load(page);
-    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update user"); }
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to update user");
+    }
   };
 
-  const handleToggleActive = async (userId: string, currentActive: boolean) => {
-    const newState = !currentActive;
+  // ── Deactivate ───────────────────────────────────────────────────────────────
+
+  const handleDeactivate = async (userId: string) => {
     try {
-      if (newState) {
-        await api.post(`/admin/users/${userId}/reactivate`);
-      } else {
-        await api.delete(`/admin/users/${userId}`);
-      }
-      toast.success(`User ${newState ? "activated" : "deactivated"}`);
+      await api.patch(`/admin/users/${userId}/active`, null, { params: { active: false } });
+      toast.success("User deactivated");
       load(page);
-    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
-  };
-
-  const applyPresetRole = (roleKey: string) => {
-    if (roleKey === "custom") {
-      setNewUser(prev => ({ ...prev, preset_role: "" }));
-      return;
-    }
-    const preset = presetRoles.find(r => r.key === roleKey);
-    if (preset) {
-      setNewUser(prev => ({
-        ...prev,
-        preset_role: roleKey,
-        access_level: preset.access_level,
-        modules: preset.modules
-      }));
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to deactivate user");
+    } finally {
+      setDeactivateUserId(null);
     }
   };
 
-  const toggleModule = (key: string, isCreate: boolean) => {
-    if (isCreate) {
-      setNewUser(prev => ({
-        ...prev,
-        preset_role: "",
-        modules: prev.modules.includes(key) 
-          ? prev.modules.filter(m => m !== key)
-          : [...prev.modules, key]
-      }));
-    } else {
-      setEditForm(prev => ({
-        ...prev,
-        modules: prev.modules.includes(key)
-          ? prev.modules.filter(m => m !== key)
-          : [...prev.modules, key]
-      }));
+  const handleReactivate = async (userId: string) => {
+    try {
+      await api.patch(`/admin/users/${userId}/active`, null, { params: { active: true } });
+      toast.success("User reactivated");
+      load(page);
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to reactivate user");
     }
   };
 
-  const getRoleDisplay = (u: any) => {
-    if (u.role === "platform_super_admin" || u.role === "partner_super_admin" || u.role === "super_admin") {
-      return { label: "Super Admin", color: "bg-purple-100 text-purple-700" };
-    }
-    const preset = presetRoles.find(r => r.key === u.role);
-    if (preset) return { label: preset.name, color: "bg-blue-100 text-blue-700" };
-    return { label: "Custom", color: "bg-slate-100 text-slate-700" };
-  };
+  const isPlatformSuperAdminUser = (u: any) => u.role === "platform_super_admin";
 
   return (
-    <div className="space-y-4" data-testid="users-tab">
-      <AdminPageHeader title="Admin Users" subtitle="Only super admins can manage admin users" actions={
-        <Button size="sm" onClick={() => setShowCreateDialog(true)} data-testid="admin-create-user-btn"><Plus size={14} className="mr-1" />Create Admin User</Button>
-      } />
+    <div data-testid="users-tab">
+      <AdminPageHeader
+        title="Admin Users"
+        description={`${total} admin user${total !== 1 ? "s" : ""}`}
+        actions={
+          isSuperAdmin ? (
+            <Button size="sm" onClick={() => setShowCreateDialog(true)} data-testid="create-user-btn">
+              <Plus size={14} className="mr-1.5" />Add User
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {/* Filter */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex gap-2 items-center flex-wrap">
-          <Input placeholder="Search email or name…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-52" data-testid="admin-users-search" />
-          {isPlatformAdmin && (
-            <Select value={partnerFilter} onValueChange={setPartnerFilter} data-testid="admin-users-partner-filter">
-              <SelectTrigger className="h-8 text-xs w-48">
-                <SelectValue placeholder="All partner orgs" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All partner orgs</SelectItem>
-                {partners.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          )}
-          <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setPartnerFilter("all"); }} className="h-8 text-xs">Clear</Button>
-        </div>
+      {/* Filters */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <Input
+          placeholder="Search by name or email…"
+          value={searchFilter}
+          onChange={e => setSearchFilter(e.target.value)}
+          className="max-w-xs"
+          data-testid="users-search"
+        />
+        {isPlatformAdmin && partners.length > 0 && (
+          <Select value={partnerFilter} onValueChange={setPartnerFilter}>
+            <SelectTrigger className="w-44" data-testid="users-partner-filter"><SelectValue placeholder="All Partners" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Partners</SelectItem>
+              {partners.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <Table data-testid="admin-users-table" className="text-sm">
+      {/* Table */}
+      <div className="rounded-lg border border-slate-200 overflow-hidden">
+        <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Access</TableHead>
-              <TableHead>Modules</TableHead>
-              <TableHead>Status</TableHead>
-              {isPlatformAdmin && <TableHead>Partner</TableHead>}
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-xs">Name / Email</TableHead>
+              <TableHead className="text-xs">Role</TableHead>
+              <TableHead className="text-xs">Modules</TableHead>
+              <TableHead className="text-xs">Status</TableHead>
+              <TableHead className="text-xs text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {adminUsers.map((u: any) => {
-              const isActive = u.is_active !== false;
-              const roleDisplay = getRoleDisplay(u);
-              const moduleCount = u.permissions?.modules?.length || 0;
+            {adminUsers.map(u => {
+              const isImmutable = isPlatformSuperAdminUser(u);
+              const mpKeys = Object.keys(u.module_permissions || {});
               return (
-                <TableRow key={u.id} data-testid={`admin-user-row-${u.id}`}>
-                  <TableCell>{u.full_name}</TableCell>
-                  <TableCell className="text-xs">{u.email}</TableCell>
-                  <TableCell><span className={`px-2 py-0.5 rounded text-xs ${roleDisplay.color}`}>{roleDisplay.label}</span></TableCell>
+                <TableRow key={u.id} data-testid={`user-row-${u.id}`} className={!u.is_active ? "opacity-50" : ""}>
                   <TableCell>
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] ${
-                      (u.role === "partner_super_admin" || u.role === "super_admin" || u.role === "platform_admin" || u.access_level === "full_access")
-                        ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
-                    }`}>
-                      {(u.role === "partner_super_admin" || u.role === "super_admin" || u.role === "platform_admin" || u.access_level === "full_access")
-                        ? <ShieldCheck size={10} /> : <Eye size={10} />}
-                      {(u.role === "partner_super_admin" || u.role === "super_admin" || u.role === "platform_admin" || u.access_level === "full_access")
-                        ? "Full" : "Read"}
+                    <p className="text-sm font-medium">{u.full_name || "—"}</p>
+                    <p className="text-xs text-slate-400">{u.email}</p>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border ${roleBadgeColor(u.role)}`}>
+                      {isImmutable && <Lock size={9} />}
+                      {roleLabel(u.role)}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs text-slate-500">{moduleCount > 0 ? `${moduleCount} modules` : "All"}</span>
+                    {isImmutable || u.role === "partner_super_admin" ? (
+                      <span className="text-xs text-slate-400 italic">Full access</span>
+                    ) : mpKeys.length === 0 ? (
+                      <span className="text-xs text-slate-400 italic">No access</span>
+                    ) : (
+                      <span className="text-xs text-slate-500">{mpKeys.length} module{mpKeys.length !== 1 ? "s" : ""}</span>
+                    )}
                   </TableCell>
-                  <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-user-status-${u.id}`}>{isActive ? "Active" : "Inactive"}</span></TableCell>
-                  {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-user-partner-${u.id}`}>{u.partner_code || "—"}</TableCell>}
                   <TableCell>
-                    <div className="flex gap-1">
-                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => openEdit(u)} data-testid={`admin-user-edit-${u.id}`}>Edit</Button>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/users/${u.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-user-logs-${u.id}`}>Logs</Button>
-                      {u.id !== authUser?.id && (
-                        <Button variant={isActive ? "destructive" : "outline"} size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmToggleUser({id: u.id, active: isActive})} data-testid={`admin-user-toggle-${u.id}`}>{isActive ? "Deactivate" : "Activate"}</Button>
-                      )}
-                    </div>
+                    <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${u.is_active ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"}`}>
+                      {u.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {isImmutable ? (
+                      <span className="text-xs text-slate-400 italic flex items-center justify-end gap-1">
+                        <Lock size={11} /> Protected
+                      </span>
+                    ) : isSuperAdmin ? (
+                      <div className="flex gap-1.5 justify-end">
+                        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => openEdit(u)} data-testid={`edit-user-${u.id}`}>
+                          <Pencil size={13} />
+                        </Button>
+                        <Button
+                          size="sm" variant="ghost"
+                          className={`h-7 px-2 ${u.is_active ? "text-red-500 hover:text-red-600" : "text-emerald-500 hover:text-emerald-600"}`}
+                          onClick={() => u.is_active ? setDeactivateUserId(u.id) : handleReactivate(u.id)}
+                          data-testid={`toggle-active-${u.id}`}
+                        >
+                          {u.is_active ? <PowerOff size={13} /> : <Power size={13} />}
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setLogsUrl(`/admin/audit-logs?entity_type=user&entity_id=${u.id}`)} data-testid={`logs-user-${u.id}`}>
+                          <ScrollText size={13} />
+                        </Button>
+                      </div>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               );
             })}
-            {adminUsers.length === 0 && <TableRow><TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-4">No admin users found.</TableCell></TableRow>}
+            {adminUsers.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-sm text-slate-400 py-8">No admin users found</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
-      <AdminPagination page={page} totalPages={totalPages} total={total} perPage={PER_PAGE} onPage={(p) => load(p)} />
 
-      {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-create-user-dialog">
-          <DialogHeader><DialogTitle>Create Admin User</DialogTitle></DialogHeader>
+      <AdminPagination page={page} totalPages={totalPages} onPageChange={p => load(p)} />
+
+      {/* ── Create Dialog ─────────────────────────────────────────────────── */}
+      <Dialog open={showCreateDialog} onOpenChange={open => { setShowCreateDialog(open); if (!open) { setNewUser({ email: "", full_name: "", password: "", role: "" }); setNewUserPerms({}); } }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="create-user-dialog">
+          <DialogHeader><DialogTitle>Add Admin User</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><label className="text-xs text-slate-500">Full Name *</label><Input value={newUser.full_name} onChange={e => setNewUser({ ...newUser, full_name: e.target.value })} data-testid="admin-new-user-name" /></div>
-              <div className="space-y-1"><label className="text-xs text-slate-500">Email *</label><Input type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} data-testid="admin-new-user-email" /></div>
-              <div className="space-y-1 col-span-2"><label className="text-xs text-slate-500">Password *</label><Input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} data-testid="admin-new-user-password" /></div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500 flex items-center gap-1">
-                Role Template <FieldTip tip="Pre-configured permission sets. Selecting one auto-fills the Access Level and Modules below. Choose 'Custom' to configure permissions manually." />
-              </label>
-              <Select value={newUser.preset_role || "custom"} onValueChange={applyPresetRole}>
-                <SelectTrigger data-testid="admin-new-user-preset">
-                  <SelectValue placeholder="Select a preset role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="custom">Custom (configure below)</SelectItem>
-                  {presetRoles.map(role => (
-                    <SelectItem key={role.key} value={role.key}>{role.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: can create, edit, and delete. Read Only: can view data but cannot make changes." /></label>
-              <Select value={newUser.access_level} onValueChange={v => setNewUser({ ...newUser, access_level: v, preset_role: "" })}>
-                <SelectTrigger data-testid="admin-new-user-access">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full_access">
-                    <div className="flex items-center gap-2"><ShieldCheck size={14} className="text-emerald-500" /> Full Access</div>
-                  </SelectItem>
-                  <SelectItem value="read_only">
-                    <div className="flex items-center gap-2"><Eye size={14} className="text-amber-500" /> Read Only</div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500">Module Access ({newUser.modules.length} selected)</label>
-              <div className="border border-slate-200 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
-                {modules.map(mod => (
-                  <label key={mod.key} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-slate-50 rounded px-1">
-                    <Checkbox
-                      checked={newUser.modules.includes(mod.key)}
-                      onCheckedChange={() => toggleModule(mod.key, true)}
-                    />
-                    <span className="text-xs text-slate-700">{mod.name}</span>
-                  </label>
-                ))}
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Full Name</label>
+                <Input value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} placeholder="Jane Smith" data-testid="new-user-name" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500">Role <span className="text-red-400">*</span></label>
+                <Select value={newUser.role} onValueChange={v => { setNewUser(p => ({ ...p, role: v })); setNewUserPerms({}); }}>
+                  <SelectTrigger data-testid="new-user-role"><SelectValue placeholder="Select role…" /></SelectTrigger>
+                  <SelectContent>
+                    {creatableRoles.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <Button onClick={handleCreate} className="w-full" data-testid="admin-new-user-submit">Create Admin User</Button>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Email <span className="text-red-400">*</span></label>
+              <Input type="email" value={newUser.email} onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))} placeholder="jane@company.com" data-testid="new-user-email" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Temporary Password <span className="text-red-400">*</span></label>
+              <Input type="password" value={newUser.password} onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))} placeholder="Min 10 chars, upper, lower, digit, symbol" data-testid="new-user-password" />
+            </div>
+
+            {/* Preset quick-fill */}
+            {presetRoles.length > 0 && (
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500 flex items-center gap-1">
+                  Quick Preset <FieldTip tip="Selecting a preset auto-fills the module permissions below. You can still adjust them manually." />
+                </label>
+                <Select onValueChange={v => applyPreset(v, setNewUserPerms)}>
+                  <SelectTrigger data-testid="new-user-preset"><SelectValue placeholder="Apply a preset (optional)…" /></SelectTrigger>
+                  <SelectContent>
+                    {presetRoles.map(r => <SelectItem key={r.key} value={r.key}>{r.name} — {r.description}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Per-module permissions */}
+            {modules.length > 0 && (
+              <ModulePermEditor modules={modules} value={newUserPerms} onChange={setNewUserPerms} />
+            )}
+
+            <Button onClick={handleCreate} className="w-full" data-testid="create-user-submit">Create User</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) setEditUser(null); }}>
+      {/* ── Edit Dialog ───────────────────────────────────────────────────── */}
+      <Dialog open={showEditDialog} onOpenChange={open => { setShowEditDialog(open); if (!open) setEditUser(null); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-edit-user-dialog">
           <DialogHeader><DialogTitle>Edit User: {editUser?.email}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Full Name</label>
-              <Input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} data-testid="admin-edit-user-name" />
+              <Input value={editForm.full_name} onChange={e => setEditForm(p => ({ ...p, full_name: e.target.value }))} data-testid="admin-edit-user-name" />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500 flex items-center gap-1">
-                Role Template <FieldTip tip="Pre-configured permission sets. Selecting one auto-fills the Access Level and Modules below. Choose 'Custom' to configure permissions manually." />
-              </label>
-              <Select
-                value={editForm.preset_role || "custom"}
-                onValueChange={v => {
-                  if (v === "custom") {
-                    setEditForm(prev => ({ ...prev, preset_role: "" }));
-                  } else {
-                    const preset = presetRoles.find(r => r.key === v);
-                    if (preset) {
-                      setEditForm(prev => ({ ...prev, preset_role: v, access_level: preset.access_level, modules: preset.modules }));
-                    }
-                  }
-                }}
-              >
-                <SelectTrigger data-testid="admin-edit-user-preset">
-                  <SelectValue placeholder="Select a preset role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="custom">Custom (configure below)</SelectItem>
-                  {presetRoles.map(role => (
-                    <SelectItem key={role.key} value={role.key}>{role.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500 flex items-center gap-1">Access Level <FieldTip tip="Full Access: can create, edit, and delete. Read Only: can view data but cannot make changes." /></label>
-              <Select value={editForm.access_level} onValueChange={v => setEditForm({ ...editForm, access_level: v, preset_role: "" })}>
-                <SelectTrigger data-testid="admin-edit-user-access">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full_access">
-                    <div className="flex items-center gap-2"><ShieldCheck size={14} className="text-emerald-500" /> Full Access</div>
-                  </SelectItem>
-                  <SelectItem value="read_only">
-                    <div className="flex items-center gap-2"><Eye size={14} className="text-amber-500" /> Read Only</div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-slate-500">Module Access ({editForm.modules.length} selected)</label>
-              <div className="border border-slate-200 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
-                {modules.map(mod => (
-                  <label key={mod.key} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-slate-50 rounded px-1">
-                    <Checkbox
-                      checked={editForm.modules.includes(mod.key)}
-                      onCheckedChange={() => toggleModule(mod.key, false)}
-                    />
-                    <span className="text-xs text-slate-700">{mod.name}</span>
-                  </label>
-                ))}
+            {/* Preset quick-fill */}
+            {presetRoles.length > 0 && (
+              <div className="space-y-1">
+                <label className="text-xs text-slate-500 flex items-center gap-1">
+                  Quick Preset <FieldTip tip="Selecting a preset overwrites the module permissions below." />
+                </label>
+                <Select onValueChange={v => applyPreset(v, setEditPerms)}>
+                  <SelectTrigger data-testid="admin-edit-user-preset"><SelectValue placeholder="Apply a preset…" /></SelectTrigger>
+                  <SelectContent>
+                    {presetRoles.map(r => <SelectItem key={r.key} value={r.key}>{r.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
+            )}
+
+            {/* Per-module permissions */}
+            {modules.length > 0 && (
+              <ModulePermEditor modules={modules} value={editPerms} onChange={setEditPerms} />
+            )}
 
             <Button onClick={handleEdit} className="w-full" data-testid="admin-edit-user-save">Save Changes</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* User Audit Logs Dialog */}
-      <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="User Audit Logs" logsUrl={logsUrl} />
-
-      {/* Deactivate/Activate User Confirmation */}
-      <AlertDialog open={!!confirmToggleUser} onOpenChange={(open) => !open && setConfirmToggleUser(null)}>
+      {/* ── Deactivate Confirm ───────────────────────────────────────────── */}
+      <AlertDialog open={!!deactivateUserId} onOpenChange={open => { if (!open) setDeactivateUserId(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{confirmToggleUser?.active ? "Deactivate User" : "Activate User"}</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to {confirmToggleUser?.active ? "deactivate" : "activate"} this user?
-              {confirmToggleUser?.active && " They will no longer be able to log in."}
-            </AlertDialogDescription>
+            <AlertDialogTitle>Deactivate User?</AlertDialogTitle>
+            <AlertDialogDescription>This user will lose access immediately. You can reactivate them later.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className={confirmToggleUser?.active ? "bg-red-600 hover:bg-red-700" : ""}
-              onClick={() => { handleToggleActive(confirmToggleUser!.id, confirmToggleUser!.active); setConfirmToggleUser(null); }}
-              data-testid="confirm-user-toggle"
-            >
-              {confirmToggleUser?.active ? "Deactivate" : "Activate"}
+            <AlertDialogAction onClick={() => deactivateUserId && handleDeactivate(deactivateUserId)} className="bg-red-600 hover:bg-red-700">
+              Deactivate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Audit Logs */}
+      {logsUrl && (
+        <AuditLogDialog
+          open={!!logsUrl}
+          onOpenChange={open => { if (!open) setLogsUrl(""); }}
+          title="User Audit Logs"
+          logsUrl={logsUrl}
+        />
+      )}
     </div>
   );
 }
