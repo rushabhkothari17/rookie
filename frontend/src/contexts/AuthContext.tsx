@@ -175,6 +175,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         customer,
         address,
         loading,
+        permissions,
         login,
         logout,
         register,
