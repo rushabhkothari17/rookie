@@ -137,18 +137,20 @@ function CouponBlock({
 // ─── Ongoing Upgrade Dialog ───────────────────────────────────────────────────
 function OngoingUpgradeDialog({
   plan,
-  currentPrice,
-  currency,
+  currentPriceInBase,
+  baseCurrency,
   onClose,
   onSuccess,
 }: {
   plan: Plan;
-  currentPrice: number;
-  currency: string;
+  currentPriceInBase: number;
+  baseCurrency: string;
   onClose: () => void;
   onSuccess: (result: any) => void;
 }) {
-  const flatDiff = Math.max(0, (plan.monthly_price ?? 0) - currentPrice);
+  const displayPrice = plan.display_price ?? plan.monthly_price ?? 0;
+  const currency = plan.display_currency || baseCurrency;
+  const flatDiff = Math.max(0, displayPrice - currentPriceInBase);
   const [couponCode, setCouponCode] = useState("");
   const [couponResult, setCouponResult] = useState<CouponResult | null>(null);
   const [applying, setApplying] = useState(false);
