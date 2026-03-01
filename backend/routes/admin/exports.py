@@ -15,6 +15,7 @@ from core.security import require_admin
 from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
 from db.session import db
 from services.audit_service import create_audit_log
+from routes.admin.permissions import has_permission as _has_perm
 
 router = APIRouter(prefix="/api", tags=["admin-exports"])
 
