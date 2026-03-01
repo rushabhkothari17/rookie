@@ -110,6 +110,7 @@ class PartnerSubscriptionCreate(BaseModel):
     term_months: Optional[int] = None  # None/0 = cancel anytime; 1-999 = locked term
     auto_cancel_on_termination: bool = False
     reminder_days: Optional[int] = None  # None = use org default
+    contract_end_date: Optional[str] = None
 
 
 class PartnerSubscriptionUpdate(BaseModel):
@@ -126,6 +127,7 @@ class PartnerSubscriptionUpdate(BaseModel):
     term_months: Optional[int] = None  # -1 sentinel to clear term
     auto_cancel_on_termination: Optional[bool] = None
     reminder_days: Optional[int] = None  # -1 to clear (set to null)
+    contract_end_date: Optional[str] = None
 
 
 class PartnerCheckoutRequest(BaseModel):
