@@ -12,6 +12,7 @@ from db.session import db
 from models import AppSettingsUpdate
 from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
+from routes.admin.permissions import has_permission as _has_perm
 
 router = APIRouter(prefix="/api", tags=["settings"])
 
