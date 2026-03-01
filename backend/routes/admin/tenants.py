@@ -426,6 +426,22 @@ async def create_partner_admin(
 
     user_id = make_id()
     hashed = pwd_context.hash(payload.password)
+
+    # Build module_permissions
+    module_permissions: Dict[str, str] = {}
+    if payload.role == "partner_super_admin":
+        # Super admin: no module restrictions needed
+        module_permissions = {}
+    elif payload.module_permissions:
+        module_permissions = {k: v for k, v in payload.module_permissions.items() if v in ("read", "write")}
+    elif payload.preset_role:
+        from routes.admin.permissions import PRESET_ROLES
+        if payload.preset_role in PRESET_ROLES:
+            module_permissions = PRESET_ROLES[payload.preset_role]["module_permissions"]
+    elif payload.modules:
+        level = "write" if (payload.access_level or "read_only") == "full_access" else "read"
+        module_permissions = {m: level for m in (payload.modules or [])}
+
     user_doc = {
         "id": user_id,
         "email": payload.email.lower(),
@@ -434,11 +450,10 @@ async def create_partner_admin(
         "company_name": "",
         "job_title": "",
         "phone": "",
-        "is_verified": True,  # Platform admin creates verified users
+        "is_verified": True,
         "is_admin": True,
         "role": payload.role,
-        "access_level": access_level,
-        "permissions": {"modules": modules},
+        "module_permissions": module_permissions,
         "tenant_id": tenant_id,
         "is_active": True,
         "created_at": now_iso(),
