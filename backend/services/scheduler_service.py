@@ -384,6 +384,12 @@ async def create_renewal_orders() -> None:
                 }},
             )
 
+            # Reset one-time boosts (they expire each billing cycle)
+            await db.tenants.update_one(
+                {"id": psub.get("partner_id")},
+                {"$unset": {"license.one_time_boosts": "", "license.one_time_boosts_expire_at": ""}},
+            )
+
             # Notify partner admin
             partner_admin = await db.users.find_one(
                 {"tenant_id": psub.get("partner_id"), "role": {"$in": ["partner_super_admin", "partner_admin"]}},
