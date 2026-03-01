@@ -430,6 +430,8 @@ async def delete_order(
     order = await db.orders.find_one({**tf, "id": order_id}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+
+    await db.orders.update_one(
         {"id": order_id},
         {"$set": {"deleted_at": now_iso(), "deleted_by": admin["id"]}},
     )
