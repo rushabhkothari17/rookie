@@ -438,9 +438,9 @@ async def create_partner_subscription(
     sub_number = await _gen_sub_number()
     term_months_val = payload.term_months if payload.term_months and payload.term_months > 0 else None
     start_str = payload.start_date or now_iso()[:10]
-    # Calculate contract_end_date from term_months
-    contract_end_date: Optional[str] = None
-    if term_months_val:
+    # Calculate contract_end_date: prefer explicit value from frontend, else derive from term_months
+    contract_end_date: Optional[str] = payload.contract_end_date
+    if not contract_end_date and term_months_val:
         from datetime import timedelta
         try:
             start_dt = datetime.fromisoformat(start_str)
