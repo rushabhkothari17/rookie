@@ -99,6 +99,7 @@ async def get_available_modules(admin: Dict[str, Any] = Depends(get_tenant_admin
         "modules": [{"key": k, **v} for k, v in modules_dict.items()],
         "platform_module_keys": list(PLATFORM_MODULES.keys()),
         "partner_module_keys": list(PARTNER_MODULES.keys()),
+        "all_module_keys": list(ADMIN_MODULES.keys()),
         "preset_roles": [{"key": k, **v} for k, v in PRESET_ROLES.items()],
     }
 
