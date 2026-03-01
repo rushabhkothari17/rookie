@@ -128,89 +128,64 @@ async def get_plan(plan_id: str, admin: Dict[str, Any] = Depends(require_platfor
 
 
 @router.put("/admin/plans/{plan_id}")
-async def update_plan(
-    plan_id: str,
-    payload: PlanUpdate,
-    admin: Dict[str, Any] = Depends(require_platform_admin),
-):
-    """
-    Update a plan and auto-propagate the new limits to ALL tenants on this plan.
-    Per-tenant overrides (other license fields not belonging to the plan) are preserved.
-    """
+async def update_plan(plan_id: str, payload: PlanUpdate, admin: Dict[str, Any] = Depends(require_platform_admin)):
     plan = await db.plans.find_one({"id": plan_id}, {"_id": 0})
     if plan is None:
         raise HTTPException(status_code=404, detail="Plan not found")
+    if plan.get("is_readonly"):
+        raise HTTPException(status_code=403, detail="This is the default Free Plan and cannot be edited. Mark it as public to show it to partners.")
 
-    # Build update dict from payload (only provided fields)
     updates = payload.dict(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
-
     updates["updated_at"] = now_iso()
-
     await db.plans.update_one({"id": plan_id}, {"$set": updates})
-
-    # Fetch the now-updated plan
     updated_plan = await db.plans.find_one({"id": plan_id}, {"_id": 0})
     updated_plan.pop("_id", None)
 
-    # --- Auto-propagate to all tenants on this plan ---
-    tenant_limit_updates = {
-        f: updated_plan.get(f)
-        for f in LIMIT_FIELDS
-    }
+    tenant_limit_updates = {f: updated_plan.get(f) for f in LIMIT_FIELDS}
     tenant_limit_updates["warning_threshold_pct"] = updated_plan.get("warning_threshold_pct", 80)
     tenant_limit_updates["plan"] = updated_plan.get("name")
-
     result = await db.tenants.update_many(
         {"license.plan_id": plan_id},
-        {"$set": {
-            **{f"license.{k}": v for k, v in tenant_limit_updates.items()},
-            "updated_at": now_iso(),
-        }},
+        {"$set": {**{f"license.{k}": v for k, v in tenant_limit_updates.items()}, "updated_at": now_iso()}},
     )
-    affected = result.modified_count
-
-    await create_audit_log(
-        entity_type="plan",
-        entity_id=plan_id,
-        action="updated",
-        actor=admin.get("email", "admin"),
-        details={
-            "changes": {k: v for k, v in updates.items() if k != "updated_at"},
-            "tenants_propagated": affected,
-        },
-    )
-
-    return {
-        "plan": updated_plan,
-        "tenants_propagated": affected,
-    }
+    await create_audit_log(entity_type="plan", entity_id=plan_id, action="updated",
+                           actor=admin.get("email", "admin"),
+                           details={"changes": {k: v for k, v in updates.items() if k != "updated_at"},
+                                    "tenants_propagated": result.modified_count})
+    return {"plan": updated_plan, "tenants_propagated": result.modified_count}
 
 
 @router.delete("/admin/plans/{plan_id}")
 async def delete_plan(plan_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
-    """Delete a plan. Blocked if any tenant is currently on this plan."""
-    plan = await db.plans.find_one({"id": plan_id}, {"_id": 0, "id": 1, "name": 1})
+    plan = await db.plans.find_one({"id": plan_id}, {"_id": 0, "id": 1, "name": 1, "is_readonly": 1, "is_default": 1})
     if plan is None:
         raise HTTPException(status_code=404, detail="Plan not found")
-
+    if plan.get("is_readonly") or plan.get("is_default"):
+        raise HTTPException(status_code=403, detail="The default Free Plan cannot be deleted.")
     tenant_count = await db.tenants.count_documents({"license.plan_id": plan_id})
     if tenant_count > 0:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Cannot delete: {tenant_count} partner org(s) are on this plan. Mark it inactive instead.",
-        )
-
+        raise HTTPException(status_code=409, detail=f"Cannot delete: {tenant_count} partner org(s) are on this plan.")
     await db.plans.delete_one({"id": plan_id})
-    await create_audit_log(
-        entity_type="plan",
-        entity_id=plan_id,
-        action="deleted",
-        actor=admin.get("email", "admin"),
-        details={"name": plan.get("name")},
-    )
+    await create_audit_log(entity_type="plan", entity_id=plan_id, action="deleted",
+                           actor=admin.get("email", "admin"), details={"name": plan.get("name")})
     return {"message": "Plan deleted"}
+
+
+@router.patch("/admin/plans/{plan_id}/set-default")
+async def set_default_plan(plan_id: str, admin: Dict[str, Any] = Depends(require_platform_admin)):
+    """Designate a plan as the system default (Free) plan. Only one can be default at a time."""
+    plan = await db.plans.find_one({"id": plan_id}, {"_id": 0, "id": 1})
+    if not plan:
+        raise HTTPException(404, "Plan not found")
+    # Unset previous default
+    await db.plans.update_many({"is_default": True}, {"$set": {"is_default": False, "is_readonly": False}})
+    # Set new default
+    await db.plans.update_one({"id": plan_id}, {"$set": {"is_default": True, "is_readonly": True, "is_active": True}})
+    await create_audit_log(entity_type="plan", entity_id=plan_id, action="set_default",
+                           actor=admin.get("email", "admin"), details={})
+    return {"message": "Default plan updated"}
 
 
 @router.patch("/admin/plans/{plan_id}/status")
