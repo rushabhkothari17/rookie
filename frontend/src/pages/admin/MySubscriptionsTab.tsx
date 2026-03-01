@@ -61,6 +61,7 @@ export function MySubscriptionsTab() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [cancelSub, setCancelSub] = useState<PartnerSub | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
   const LIMIT = 20;
 
   const load = useCallback(async () => {
@@ -77,6 +78,17 @@ export function MySubscriptionsTab() {
   }, [page, search, status]);
 
   useEffect(() => { load(); }, [load]);
+
+  const handleBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const r = await api.post("/partner/billing-portal");
+      window.location.href = r.data.portal_url;
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to open Stripe billing portal");
+      setPortalLoading(false);
+    }
+  };
 
   const handleCancel = async () => {
     if (!cancelSub) return;
