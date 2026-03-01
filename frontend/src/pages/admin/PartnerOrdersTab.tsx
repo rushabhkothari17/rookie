@@ -116,6 +116,7 @@ function OrderFormModal({
   onSaved: () => void;
 }) {
   const isEdit = !!order;
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [form, setForm] = useState<OrderFormData>(
     order ? {
       partner_id: order.partner_id, plan_id: "", description: order.description,
