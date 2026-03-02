@@ -201,7 +201,26 @@ export function CustomersTab() {
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create customer"); }
   };
 
-  const clearFilters = () => { setSearch(""); setCountryFilter(""); setStatusFilter(""); setPaymentModeFilter(""); setPartnerMapFilter("all"); };
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+
+  const displayCustomers = useMemo(() => {
+    const r = [...customers];
+    if (colSort) {
+      r.sort((a, b) => {
+        const um: Record<string, any> = {};
+        users.forEach((u: any) => { um[u.id] = u; });
+        let av: any = "", bv: any = "";
+        if (colSort.col === "name") { av = (um[a.user_id]?.full_name || a.company_name || "").toLowerCase(); bv = (um[b.user_id]?.full_name || b.company_name || "").toLowerCase(); }
+        else if (colSort.col === "email") { av = um[a.user_id]?.email || ""; bv = um[b.user_id]?.email || ""; }
+        else if (colSort.col === "country") { av = a.country || ""; bv = b.country || ""; }
+        else if (colSort.col === "status") { av = um[a.user_id]?.is_active ? 1 : 0; bv = um[b.user_id]?.is_active ? 1 : 0; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [customers, users, colSort]);
 
   return (
     <div className="space-y-4" data-testid="customers-tab">
