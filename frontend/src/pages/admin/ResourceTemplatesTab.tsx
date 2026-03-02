@@ -27,6 +27,32 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   const [showImport, setShowImport] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [tplFilters, setTplFilters] = useState({ name: "", category: "all" });
+  const setTF = (k: keyof typeof tplFilters, v: any) => setTplFilters(f => ({ ...f, [k]: v }));
+
+  const displayTemplates = useMemo(() => {
+    let r = [...templates];
+    if (tplFilters.name) r = r.filter(t => t.name.toLowerCase().includes(tplFilters.name.toLowerCase()) || (t.description || "").toLowerCase().includes(tplFilters.name.toLowerCase()));
+    if (tplFilters.category !== "all") r = r.filter(t => (t.category || "") === tplFilters.category);
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "name") { av = a.name; bv = b.name; }
+        else if (colSort.col === "category") { av = a.category || ""; bv = b.category || ""; }
+        else if (colSort.col === "type") { av = a.is_default ? 1 : 0; bv = b.is_default ? 1 : 0; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [templates, tplFilters, colSort]);
+
+  const categoryOptions = useMemo(() => {
+    const cats = [...new Set(templates.map(t => t.category).filter(Boolean))] as string[];
+    return [["all", "All"], ...cats.map(c => [c, c])] as [string, string][];
+  }, [templates]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Template | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
