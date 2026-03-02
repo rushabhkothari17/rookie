@@ -571,9 +571,23 @@ async def list_my_submissions(admin: Dict[str, Any] = Depends(get_tenant_admin))
 
 @router.get("/partner/one-time-rates")
 async def get_one_time_rates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Return active one-time upgrade rates so the partner UI can display pricing."""
+    """Return active one-time upgrade rates, prices converted to partner's base currency."""
+    from services.checkout_service import get_fx_rate, get_tenant_base_currency
+    tid = tenant_id_of(admin)
+    partner_currency = await get_tenant_base_currency(tid)
     rates = await db.one_time_plan_rates.find({"is_active": True}, {"_id": 0}).sort("module_key", 1).to_list(50)
-    return {"rates": rates}
+    converted = []
+    for rate in rates:
+        rate_currency = (rate.get("currency") or "USD").upper()
+        r = dict(rate)
+        if rate_currency != partner_currency.upper():
+            fx = await get_fx_rate(rate_currency, partner_currency)
+            r["price_per_record"] = round(rate["price_per_record"] * fx, 6)
+            r["display_currency"] = partner_currency
+        else:
+            r["display_currency"] = partner_currency
+        converted.append(r)
+    return {"rates": converted}
 
 
 
