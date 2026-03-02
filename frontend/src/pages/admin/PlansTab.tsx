@@ -649,17 +649,17 @@ function OneTimeRatesSection() {
       ) : (
         <div className="rounded-xl border border-slate-200 overflow-hidden">
           <table className="w-full text-sm" data-testid="rates-table">
-            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="text-left px-4 py-3">Module</th>
-                <th className="text-left px-4 py-3">Price / Unit</th>
-                <th className="text-left px-4 py-3">Currency</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-right px-4 py-3">Actions</th>
+                <ColHeader label="Module" colKey="module" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="text" filterValue={rateFilters.module} onFilter={v => setRF("module", v)} onClearFilter={() => setRF("module", "")} />
+                <ColHeader label="Price / Unit" colKey="price" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="number-range" filterValue={rateFilters.price} onFilter={v => setRF("price", v)} onClearFilter={() => setRF("price", { min: "", max: "" })} />
+                <ColHeader label="Currency" colKey="currency" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="text" filterValue={rateFilters.currency} onFilter={v => setRF("currency", v)} onClearFilter={() => setRF("currency", "")} />
+                <ColHeader label="Status" colKey="status" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="status" filterValue={rateFilters.status} onFilter={v => setRF("status", v)} onClearFilter={() => setRF("status", "all")} />
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {rates.map(r => (
+              {displayRates.map(r => (
                 <tr key={r.id} className="border-t border-slate-100 hover:bg-slate-50">
                   <td className="px-4 py-3">
                     <p className="font-medium text-slate-800">{r.label}</p>
