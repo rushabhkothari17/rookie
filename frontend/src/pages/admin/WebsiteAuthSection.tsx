@@ -21,6 +21,7 @@ function getSlideTitle(key: AuthSlide | null): string {
   if (!key) return "";
   const map: Record<AuthSlide, string> = {
     login: "Login Page", signup: "Sign Up Page", verify_email: "Verify Email Page",
+    partner_signup: "Partner Sign-Up Page",
     portal: "Customer Portal", profile: "Profile Page",
     not_found: "404 Not Found Page", admin_panel: "Admin Panel",
     checkout_builder: "Checkout Page Builder", checkout_success: "Checkout Success",
