@@ -408,7 +408,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
         </>
       } />
 
-      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as typeof subTab)}>
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as "resources" | "templates" | "email-templates" | "categories")}>
         <TabsList className="mb-4">
           <TabsTrigger value="resources" data-testid="subtab-resources">Resources</TabsTrigger>
           <TabsTrigger value="templates" data-testid="subtab-templates">
