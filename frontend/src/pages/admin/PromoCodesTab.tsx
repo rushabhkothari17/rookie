@@ -91,13 +91,33 @@ export function PromoCodesTab() {
   useEffect(() => { load(1); }, [codeFilter, appliesToFilter, statusFilter, startDate, endDate]);
 
   // Filter by expiry client-side (backend doesn't support this filter)
-  const filtered = promoCodes.filter(p => {
-    if (!expiryFrom && !expiryTo) return true;
-    const exp = p.expiry_date?.slice(0, 10) || "";
-    if (expiryFrom && exp && exp < expiryFrom) return false;
-    if (expiryTo && exp && exp > expiryTo) return false;
-    return true;
-  });
+  const displayPromos = useMemo(() => {
+    let r = promoCodes.filter(p => {
+      if (!expiryFrom && !expiryTo) return true;
+      const exp = p.expiry_date?.slice(0, 10) || "";
+      if (expiryFrom && exp && exp < expiryFrom) return false;
+      if (expiryTo && exp && exp > expiryTo) return false;
+      return true;
+    });
+    if (colSort) {
+      r = [...r];
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "code") { av = a.code; bv = b.code; }
+        else if (colSort.col === "discount") { av = a.discount_value; bv = b.discount_value; }
+        else if (colSort.col === "applies_to") { av = a.applies_to; bv = b.applies_to; }
+        else if (colSort.col === "expiry") { av = a.expiry_date || ""; bv = b.expiry_date || ""; }
+        else if (colSort.col === "max_uses") { av = a.max_uses ?? 0; bv = b.max_uses ?? 0; }
+        else if (colSort.col === "uses") { av = a.use_count ?? 0; bv = b.use_count ?? 0; }
+        else if (colSort.col === "status") { av = a.enabled ? 1 : 0; bv = b.enabled ? 1 : 0; }
+        else if (colSort.col === "created") { av = a.created_at || ""; bv = b.created_at || ""; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [promoCodes, expiryFrom, expiryTo, colSort]);
 
   const handleCreate = async () => {
     try {
