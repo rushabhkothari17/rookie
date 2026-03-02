@@ -389,8 +389,8 @@ function PlansSection() {
   // ── Sort & filter ──
   const [sort, setSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
   const [filters, setFilters] = useState({
-    name: "",
-    status: "all" as "all" | "active" | "inactive",
+    name: [] as string[],
+    status: [] as string[],
     price: { min: "", max: "" },
     orgs: { min: "", max: "" },
     date: { from: "", to: "" },
@@ -399,8 +399,8 @@ function PlansSection() {
 
   const displayPlans = useMemo(() => {
     let result = [...plans];
-    if (filters.name) result = result.filter(p => p.name.toLowerCase().includes(filters.name.toLowerCase()) || (p.description || "").toLowerCase().includes(filters.name.toLowerCase()));
-    if (filters.status !== "all") result = result.filter(p => filters.status === "active" ? p.is_active : !p.is_active);
+    if (filters.name.length) result = result.filter(p => filters.name.includes(p.name));
+    if (filters.status.length) result = result.filter(p => filters.status.includes(p.is_active ? "active" : "inactive"));
     if (filters.price.min) result = result.filter(p => (p.monthly_price ?? 0) >= parseFloat(filters.price.min));
     if (filters.price.max) result = result.filter(p => (p.monthly_price ?? 0) <= parseFloat(filters.price.max));
     if (filters.orgs.min) result = result.filter(p => (p.tenant_count ?? 0) >= parseInt(filters.orgs.min));
@@ -422,6 +422,7 @@ function PlansSection() {
     }
     return result;
   }, [plans, filters, sort]);
+  const planNameOptions = useMemo(() => Array.from(new Set(plans.map(p => p.name))).sort().map(n => [n, n] as [string, string]), [plans]);
 
   const load = async () => {
     setLoading(true);
@@ -466,10 +467,10 @@ function PlansSection() {
           <table className="w-full text-sm" data-testid="plans-table">
             <thead className="bg-slate-50">
               <tr>
-                <ColHeader label="Plan" colKey="name" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="text" filterValue={filters.name} onFilter={v => setF("name", v)} onClearFilter={() => setF("name", "")} />
+                <ColHeader label="Plan" colKey="name" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="dropdown" filterValue={filters.name} onFilter={v => setF("name", v)} onClearFilter={() => setF("name", [])} statusOptions={planNameOptions} />
                 <ColHeader label="Price" colKey="price" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="number-range" filterValue={filters.price} onFilter={v => setF("price", v)} onClearFilter={() => setF("price", { min: "", max: "" })} />
                 <ColHeader label="Orgs" colKey="orgs" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="number-range" filterValue={filters.orgs} onFilter={v => setF("orgs", v)} onClearFilter={() => setF("orgs", { min: "", max: "" })} />
-                <ColHeader label="Status" colKey="status" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="status" filterValue={filters.status} onFilter={v => setF("status", v)} onClearFilter={() => setF("status", "all")} />
+                <ColHeader label="Status" colKey="status" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="dropdown" filterValue={filters.status} onFilter={v => setF("status", v)} onClearFilter={() => setF("status", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
                 <ColHeader label="Created" colKey="created" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="date-range" filterValue={filters.date} onFilter={v => setF("date", v)} onClearFilter={() => setF("date", { from: "", to: "" })} />
                 <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
@@ -536,7 +537,7 @@ function PlansSection() {
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
                     No plans match the current filters.{" "}
-                    <button className="text-blue-500 hover:underline text-xs" onClick={() => setFilters({ name: "", status: "all", price: { min: "", max: "" }, orgs: { min: "", max: "" }, date: { from: "", to: "" } })}>Clear all filters</button>
+                    <button className="text-blue-500 hover:underline text-xs" onClick={() => setFilters({ name: [], status: [], price: { min: "", max: "" }, orgs: { min: "", max: "" }, date: { from: "", to: "" } })}>Clear all filters</button>
                   </td>
                 </tr>
               )}
@@ -581,16 +582,16 @@ function OneTimeRatesSection() {
 
   // ── Sort & filter ──
   const [sortRates, setSortRates] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
-  const [rateFilters, setRateFilters] = useState({ module: "", price: { min: "", max: "" }, currency: "", status: "all" });
+  const [rateFilters, setRateFilters] = useState({ module: [] as string[], price: { min: "", max: "" }, currency: [] as string[], status: [] as string[] });
   const setRF = (key: keyof typeof rateFilters, val: any) => setRateFilters(f => ({ ...f, [key]: val }));
 
   const displayRates = useMemo(() => {
     let r = [...rates];
-    if (rateFilters.module) r = r.filter(x => x.label.toLowerCase().includes(rateFilters.module.toLowerCase()) || x.module_key.toLowerCase().includes(rateFilters.module.toLowerCase()));
+    if (rateFilters.module.length) r = r.filter(x => rateFilters.module.includes(x.label || x.module_key));
     if (rateFilters.price.min) r = r.filter(x => x.price_per_record >= parseFloat(rateFilters.price.min));
     if (rateFilters.price.max) r = r.filter(x => x.price_per_record <= parseFloat(rateFilters.price.max));
-    if (rateFilters.currency) r = r.filter(x => x.currency.toLowerCase().includes(rateFilters.currency.toLowerCase()));
-    if (rateFilters.status !== "all") r = r.filter(x => rateFilters.status === "active" ? x.is_active : !x.is_active);
+    if (rateFilters.currency.length) r = r.filter(x => rateFilters.currency.includes(x.currency));
+    if (rateFilters.status.length) r = r.filter(x => rateFilters.status.includes(x.is_active ? "active" : "inactive"));
     if (sortRates) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -605,6 +606,8 @@ function OneTimeRatesSection() {
     }
     return r;
   }, [rates, rateFilters, sortRates]);
+  const moduleOptions = useMemo(() => Array.from(new Set(rates.map(r => r.label || r.module_key))).sort().map(v => [v, v] as [string, string]), [rates]);
+  const currencyOptions = useMemo(() => Array.from(new Set(rates.map(r => r.currency))).sort().map(v => [v, v] as [string, string]), [rates]);
 
   const load = async () => {
     setLoading(true);
@@ -651,10 +654,10 @@ function OneTimeRatesSection() {
           <table className="w-full text-sm" data-testid="rates-table">
             <thead className="bg-slate-50">
               <tr>
-                <ColHeader label="Module" colKey="module" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="text" filterValue={rateFilters.module} onFilter={v => setRF("module", v)} onClearFilter={() => setRF("module", "")} />
+                <ColHeader label="Module" colKey="module" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="dropdown" filterValue={rateFilters.module} onFilter={v => setRF("module", v)} onClearFilter={() => setRF("module", [])} statusOptions={moduleOptions} />
                 <ColHeader label="Price / Unit" colKey="price" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="number-range" filterValue={rateFilters.price} onFilter={v => setRF("price", v)} onClearFilter={() => setRF("price", { min: "", max: "" })} />
-                <ColHeader label="Currency" colKey="currency" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="text" filterValue={rateFilters.currency} onFilter={v => setRF("currency", v)} onClearFilter={() => setRF("currency", "")} />
-                <ColHeader label="Status" colKey="status" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="status" filterValue={rateFilters.status} onFilter={v => setRF("status", v)} onClearFilter={() => setRF("status", "all")} />
+                <ColHeader label="Currency" colKey="currency" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="dropdown" filterValue={rateFilters.currency} onFilter={v => setRF("currency", v)} onClearFilter={() => setRF("currency", [])} statusOptions={currencyOptions} />
+                <ColHeader label="Status" colKey="status" sortCol={sortRates?.col} sortDir={sortRates?.dir} onSort={(c, d) => setSortRates({ col: c, dir: d })} onClearSort={() => setSortRates(null)} filterType="dropdown" filterValue={rateFilters.status} onFilter={v => setRF("status", v)} onClearFilter={() => setRF("status", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
                 <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
             </thead>
@@ -791,23 +794,23 @@ function CouponsSection() {
   // ── Sort & filter ──
   const [sortCoupons, setSortCoupons] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
   const [couponFilters, setCouponFilters] = useState({
-    code: "", discount: { min: "", max: "" },
-    applies_to: "all", expiry: { from: "", to: "" },
-    uses: { min: "", max: "" }, status: "all",
+    code: [] as string[], discount: { min: "", max: "" },
+    applies_to: [] as string[], expiry: { from: "", to: "" },
+    uses: { min: "", max: "" }, status: [] as string[],
   });
   const setCF = (key: keyof typeof couponFilters, val: any) => setCouponFilters(f => ({ ...f, [key]: val }));
 
   const displayCoupons = useMemo(() => {
     let c = [...coupons];
-    if (couponFilters.code) c = c.filter(x => x.code.toLowerCase().includes(couponFilters.code.toLowerCase()) || (x.internal_note || "").toLowerCase().includes(couponFilters.code.toLowerCase()));
+    if (couponFilters.code.length) c = c.filter(x => couponFilters.code.includes(x.code));
     if (couponFilters.discount.min) c = c.filter(x => x.discount_value >= parseFloat(couponFilters.discount.min));
     if (couponFilters.discount.max) c = c.filter(x => x.discount_value <= parseFloat(couponFilters.discount.max));
-    if (couponFilters.applies_to !== "all") c = c.filter(x => x.applies_to === couponFilters.applies_to);
+    if (couponFilters.applies_to.length) c = c.filter(x => couponFilters.applies_to.includes(x.applies_to));
     if (couponFilters.expiry.from) c = c.filter(x => x.expiry_date && x.expiry_date >= couponFilters.expiry.from);
     if (couponFilters.expiry.to) c = c.filter(x => x.expiry_date && x.expiry_date <= couponFilters.expiry.to);
     if (couponFilters.uses.min) c = c.filter(x => x.usage_count >= parseInt(couponFilters.uses.min));
     if (couponFilters.uses.max) c = c.filter(x => x.usage_count <= parseInt(couponFilters.uses.max));
-    if (couponFilters.status !== "all") c = c.filter(x => couponFilters.status === "active" ? x.is_active : !x.is_active);
+    if (couponFilters.status.length) c = c.filter(x => couponFilters.status.includes(x.is_active ? "active" : "inactive"));
     if (sortCoupons) {
       c.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -824,6 +827,7 @@ function CouponsSection() {
     }
     return c;
   }, [coupons, couponFilters, sortCoupons]);
+  const codeOptions = useMemo(() => Array.from(new Set(coupons.map(c => c.code))).sort().map(v => [v, v] as [string, string]), [coupons]);
 
   const load = async () => {
     setLoading(true);
@@ -860,13 +864,13 @@ function CouponsSection() {
         <table className="w-full text-sm" data-testid="coupons-table">
           <thead className="bg-slate-50">
             <tr>
-              <ColHeader label="Code" colKey="code" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="text" filterValue={couponFilters.code} onFilter={v => setCF("code", v)} onClearFilter={() => setCF("code", "")} />
+              <ColHeader label="Code" colKey="code" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="dropdown" filterValue={couponFilters.code} onFilter={v => setCF("code", v)} onClearFilter={() => setCF("code", [])} statusOptions={codeOptions} />
               <ColHeader label="Discount" colKey="discount" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.discount} onFilter={v => setCF("discount", v)} onClearFilter={() => setCF("discount", { min: "", max: "" })} />
-              <ColHeader label="Applies To" colKey="applies_to" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.applies_to} onFilter={v => setCF("applies_to", v)} onClearFilter={() => setCF("applies_to", "all")} statusOptions={[["all", "All"], ["ongoing", "Ongoing only"], ["one_time", "One-time only"], ["both", "Both"]]} />
+              <ColHeader label="Applies To" colKey="applies_to" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="dropdown" filterValue={couponFilters.applies_to} onFilter={v => setCF("applies_to", v)} onClearFilter={() => setCF("applies_to", [])} statusOptions={[["ongoing", "Ongoing only"], ["one_time", "One-time only"], ["both", "Both"]]} />
               <ColHeader label="Expiry" colKey="expiry" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="date-range" filterValue={couponFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
               <th className="text-left px-4 py-3 text-xs font-medium uppercase text-slate-500">Flags</th>
               <ColHeader label="Uses" colKey="uses" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.uses} onFilter={v => setCF("uses", v)} onClearFilter={() => setCF("uses", { min: "", max: "" })} />
-              <ColHeader label="Status" colKey="status" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.status} onFilter={v => setCF("status", v)} onClearFilter={() => setCF("status", "all")} />
+              <ColHeader label="Status" colKey="status" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="dropdown" filterValue={couponFilters.status} onFilter={v => setCF("status", v)} onClearFilter={() => setCF("status", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
               <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>

@@ -1,0 +1,131 @@
+{
+  "summary": "Comprehensive frontend testing of large-scale multi-select filter upgrade across 7 admin tables. All filter dropdowns verified as checkbox-based multi-select (no radio buttons). Filter functionality confirmed working: multi-select, blue dot indicator, N-selected counter, clear filter. Also found and fixed a critical backend bug: missing @router.get decorator on list_partner_orders endpoint causing 405 Method Not Allowed.",
+
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/admin/partner-orders",
+        "issue": "Missing @router.get('/admin/partner-orders') decorator on list_partner_orders function — returned 405 Method Not Allowed on every load",
+        "priority": "CRITICAL",
+        "status": "FIXED — added @router.get decorator back at line 184 in /app/backend/routes/admin/partner_billing.py"
+      }
+    ],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "All admin tables (PlansTab, PartnerOrdersTab)",
+        "issues": [
+          "Console hydration warnings: '<tr> cannot be child of <span>' and '<span> cannot be child of tbody'. These originate from the preview environment's visual editor wrapper (x-ve-dynamic='true') injecting <span> elements inside table structures — NOT a code bug, cannot be fixed in app code."
+        ]
+      }
+    ]
+  },
+
+  "filter_tests_results": [
+    { "table": "Plans > License Plans", "column": "Plan", "filterType": "dropdown", "items": ["Free Trial", "Professional", "Starter"], "has_radio": false, "status": "PASS" },
+    { "table": "Plans > License Plans", "column": "Status", "filterType": "dropdown", "items": ["Active", "Inactive"], "has_radio": false, "status": "PASS" },
+    { "table": "Plans > One-Time Rates", "column": "Module", "filterType": "dropdown", "items": ["Admin Users", "Customers / month", "Orders / month"], "has_radio": false, "status": "PASS" },
+    { "table": "Plans > One-Time Rates", "column": "Currency", "filterType": "dropdown", "items": ["CAD", "EUR", "GBP", "USD"], "has_radio": false, "status": "PASS" },
+    { "table": "Plans > One-Time Rates", "column": "Status", "filterType": "dropdown", "items": ["Active", "Inactive"], "has_radio": false, "status": "PASS" },
+    { "table": "Plans > Coupons", "column": "Code", "filterType": "dropdown", "items": ["TEST"], "has_radio": false, "status": "PASS" },
+    { "table": "Plans > Coupons", "column": "Applies To", "filterType": "dropdown", "items": ["Ongoing only", "One-time only", "Both"], "has_radio": false, "status": "PASS" },
+    { "table": "Plans > Coupons", "column": "Status", "filterType": "dropdown", "items": ["Active", "Inactive"], "has_radio": false, "status": "PASS" },
+    { "table": "Partner Subscriptions", "column": "Sub #", "filterType": "dropdown", "items": [], "has_radio": false, "status": "PASS (no data)" },
+    { "table": "Partner Subscriptions", "column": "Partner", "filterType": "dropdown", "items": [], "has_radio": false, "status": "PASS (no data)" },
+    { "table": "Partner Subscriptions", "column": "Plan", "filterType": "dropdown", "items": [], "has_radio": false, "status": "PASS (no data)" },
+    { "table": "Partner Subscriptions", "column": "Interval", "filterType": "dropdown", "items": ["Monthly", "Quarterly", "Annual"], "has_radio": false, "status": "PASS" },
+    { "table": "Partner Subscriptions", "column": "Method", "filterType": "dropdown", "items": ["Manual", "Offline", "Bank Transfer", "Card"], "has_radio": false, "status": "PASS" },
+    { "table": "Partner Subscriptions", "column": "Status", "filterType": "dropdown", "items": ["Pending", "Active", "Unpaid", "Paused", "Cancelled"], "has_radio": false, "status": "PASS" },
+    { "table": "Partner Orders", "column": "Order #", "filterType": "dropdown", "items": ["PO-2026-0001", "PO-2026-0002", "PO-2026-0003"], "has_radio": false, "status": "PASS (after backend fix)" },
+    { "table": "Partner Orders", "column": "Partner", "filterType": "dropdown", "items": ["Apex Investments Holding"], "has_radio": false, "status": "PASS (after backend fix)" },
+    { "table": "Partner Orders", "column": "Method", "filterType": "dropdown", "items": ["Manual", "Offline", "Bank Transfer", "Card"], "has_radio": false, "status": "PASS" },
+    { "table": "Partner Orders", "column": "Status", "filterType": "dropdown", "items": ["Pending", "Unpaid", "Paid", "Cancelled", "Refunded"], "has_radio": false, "status": "PASS" },
+    { "table": "Partner Submissions", "column": "Partner", "filterType": "dropdown", "items": ["Apex Investments Holding"], "has_radio": false, "status": "PASS" },
+    { "table": "Partner Submissions", "column": "Type", "filterType": "dropdown", "items": ["Plan Downgrade"], "has_radio": false, "status": "PASS (was filterType=none before)" },
+    { "table": "Partner Submissions", "column": "From → To", "filterType": "dropdown", "items": ["Starter → Free Trial"], "has_radio": false, "status": "PASS (was static th before)" },
+    { "table": "Partner Submissions", "column": "Effective", "filterType": "date-range", "date_inputs": 2, "status": "PASS (was filterType=none before)" },
+    { "table": "Partner Submissions", "column": "Submitted", "filterType": "date-range", "date_inputs": 2, "status": "PASS (was filterType=none before)" },
+    { "table": "Partner Submissions", "column": "Status", "filterType": "dropdown", "items": ["Pending", "Approved", "Rejected"], "has_radio": false, "status": "PASS" },
+    { "table": "Users", "column": "Name / Email", "filterType": "dropdown", "items": ["Rushabh Kothari"], "has_radio": false, "status": "PASS" },
+    { "table": "Users", "column": "Role", "filterType": "dropdown", "items": ["partner_super_admin", "platform_super_admin"], "has_radio": false, "status": "PASS (was filterType=none before)" },
+    { "table": "Users", "column": "Partner Org", "filterType": "dropdown", "items": ["Platform", "Apex Investments Holding"], "has_radio": false, "status": "PASS" },
+    { "table": "Users", "column": "Status", "filterType": "dropdown", "items": ["Active", "Inactive"], "has_radio": false, "status": "PASS (was filterType=none before)" }
+  ],
+
+  "filter_functionality_tests": [
+    {
+      "test": "Single-select filter (Plans > License Plans > Plan = 'Starter')",
+      "initial_rows": 3,
+      "filtered_rows": 1,
+      "correct_row_shown": true,
+      "status": "PASS"
+    },
+    {
+      "test": "Multi-select filter (Plans > License Plans > Plan = 'Starter' + 'Professional')",
+      "selected_count_display": "2 selected",
+      "filtered_rows": 2,
+      "status": "PASS"
+    },
+    {
+      "test": "Blue dot indicator on active filter",
+      "before_filter": false,
+      "after_filter": true,
+      "after_clear": false,
+      "status": "PASS"
+    },
+    {
+      "test": "Clear filter resets to all rows",
+      "rows_after_clear": 3,
+      "matches_initial": true,
+      "status": "PASS"
+    },
+    {
+      "test": "'N selected' counter in popover",
+      "shows_1_selected": true,
+      "shows_2_selected": true,
+      "status": "PASS"
+    }
+  ],
+
+  "test_report_links": [
+    "/app/test_reports/iter171_04_plan_col_dropdown.jpeg",
+    "/app/test_reports/iter171_05_coupons.jpeg",
+    "/app/test_reports/iter171_07_partner_subs.jpeg",
+    "/app/test_reports/iter171_08_partner_orders.jpeg",
+    "/app/test_reports/iter171_10_partner_subs_tab.jpeg",
+    "/app/test_reports/iter171_12_users.jpeg",
+    "/app/test_reports/iter171_14_filter_selected.jpeg",
+    "/app/test_reports/iter171_15_after_filter.jpeg",
+    "/app/test_reports/iter171_16_filter_cleared.jpeg",
+    "/app/test_reports/iter171_20_orders_fixed.jpeg",
+    "/app/backend/routes/admin/partner_billing.py"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "FIXED: Missing @router.get('/admin/partner-orders') decorator on list_partner_orders function in /app/backend/routes/admin/partner_billing.py (line 184). This caused 405 Method Not Allowed every time Partner Orders tab loaded.",
+    "NOTE: The _parse_multi_filter helper was added at line 175 but the accompanying route decorator was accidentally removed during the refactor."
+  ],
+
+  "updated_files": [
+    "/app/backend/routes/admin/partner_billing.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (after fix)",
+    "frontend": "100% — all 28 filter columns verified as multi-select dropdown (no radio buttons), filter functionality working correctly"
+  },
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Login: partner code 'automate-accounts', admin@automateaccounts.local / ChangeMe123!. Admin panel at /admin. All multi-select filter upgrades from iteration 171 are verified and working. Critical backend bug fixed: missing @router.get decorator on list_partner_orders in /app/backend/routes/admin/partner_billing.py. Partner Orders now loads correctly (3 orders visible). Partner Subscriptions has no data (0 subs). Plans has 3 plans: Free Trial (default), Professional, Starter. Partner Submissions has 1 submission. Users has 2 users.",
+
+  "rca_of_backend_issue": "During the multi-filter backend upgrade, a _parse_multi_filter() helper function was added before list_partner_orders() function definition. During this refactoring, the @router.get('/admin/partner-orders') decorator was accidentally deleted (it was directly above the async def line). The function became an unregistered helper, and the GET /admin/partner-orders route was lost, causing 405 Method Not Allowed. Fix: re-added @router.get('/admin/partner-orders') decorator."
+}

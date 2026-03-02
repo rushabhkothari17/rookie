@@ -172,6 +172,15 @@ async def partner_orders_stats(admin: Dict[str, Any] = Depends(require_platform_
 # Partner Orders — CRUD
 # ---------------------------------------------------------------------------
 
+def _parse_multi_filter(val: str):
+    """Convert comma-separated string to MongoDB $in filter or exact match."""
+    if not val:
+        return None
+    parts = [v.strip() for v in val.split(",") if v.strip()]
+    return {"$in": parts} if len(parts) > 1 else parts[0]
+
+
+
 @router.get("/admin/partner-orders")
 async def list_partner_orders(
     partner_id: Optional[str] = None,
@@ -187,9 +196,9 @@ async def list_partner_orders(
     if partner_id:
         query["partner_id"] = partner_id
     if status:
-        query["status"] = status
+        query["status"] = _parse_multi_filter(status)
     if payment_method:
-        query["payment_method"] = payment_method
+        query["payment_method"] = _parse_multi_filter(payment_method)
     if plan_id:
         query["plan_id"] = plan_id
     if search:
@@ -403,13 +412,13 @@ async def list_partner_subscriptions(
     if partner_id:
         query["partner_id"] = partner_id
     if status:
-        query["status"] = status
+        query["status"] = _parse_multi_filter(status)
     if payment_method:
-        query["payment_method"] = payment_method
+        query["payment_method"] = _parse_multi_filter(payment_method)
     if plan_id:
         query["plan_id"] = plan_id
     if billing_interval:
-        query["billing_interval"] = billing_interval
+        query["billing_interval"] = _parse_multi_filter(billing_interval)
     if search:
         query["$or"] = [
             {"partner_name": {"$regex": search, "$options": "i"}},

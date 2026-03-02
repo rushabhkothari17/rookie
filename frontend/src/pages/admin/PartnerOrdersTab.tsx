@@ -307,14 +307,21 @@ export function PartnerOrdersTab() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({ search: "", partner_id: "", status: "", payment_method: "", plan_id: "" });
+  const [filters, setFilters] = useState({ partner_id: "", plan_id: "" });
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
-  const [colFilters, setColFilters] = useState({ partnerName: "", description: "", amount: { min: "", max: "" }, date: { from: "", to: "" } });
+  const [colFilters, setColFilters] = useState({
+    orderNumbers: [] as string[], partnerNames: [] as string[],
+    methods: [] as string[], statuses: [] as string[],
+    description: "", amount: { min: "", max: "" }, date: { from: "", to: "" },
+  });
   const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
 
   const displayOrders = useMemo(() => {
     let r = [...orders];
-    if (colFilters.partnerName) r = r.filter(o => o.partner_name?.toLowerCase().includes(colFilters.partnerName.toLowerCase()));
+    if (colFilters.orderNumbers.length) r = r.filter(o => colFilters.orderNumbers.includes(o.order_number));
+    if (colFilters.partnerNames.length) r = r.filter(o => colFilters.partnerNames.includes(o.partner_name));
+    if (colFilters.methods.length) r = r.filter(o => colFilters.methods.includes(o.payment_method));
+    if (colFilters.statuses.length) r = r.filter(o => colFilters.statuses.includes(o.status));
     if (colFilters.description) r = r.filter(o => o.description?.toLowerCase().includes(colFilters.description.toLowerCase()));
     if (colFilters.amount.min) r = r.filter(o => o.amount >= parseFloat(colFilters.amount.min));
     if (colFilters.amount.max) r = r.filter(o => o.amount <= parseFloat(colFilters.amount.max));
@@ -337,6 +344,8 @@ export function PartnerOrdersTab() {
     }
     return r;
   }, [orders, colFilters, colSort]);
+  const orderNumOpts = useMemo(() => Array.from(new Set(orders.map(o => o.order_number).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [orders]);
+  const orderPartnerOpts = useMemo(() => Array.from(new Set(orders.map(o => o.partner_name).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [orders]);
   const [showCreate, setShowCreate] = useState(false);
   const [editOrder, setEditOrder] = useState<PartnerOrder | null>(null);
   const [deleteOrder, setDeleteOrder] = useState<PartnerOrder | null>(null);
@@ -346,10 +355,7 @@ export function PartnerOrdersTab() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-      if (filters.search) params.set("search", filters.search);
       if (filters.partner_id) params.set("partner_id", filters.partner_id);
-      if (filters.status && filters.status !== "all") params.set("status", filters.status);
-      if (filters.payment_method && filters.payment_method !== "all") params.set("payment_method", filters.payment_method);
       if (filters.plan_id && filters.plan_id !== "all") params.set("plan_id", filters.plan_id);
       const [ordersRes, statsRes] = await Promise.all([
         api.get(`/admin/partner-orders?${params}`),
@@ -425,12 +431,12 @@ export function PartnerOrdersTab() {
         <table className="w-full text-sm" data-testid="partner-orders-table">
           <thead className="bg-slate-50">
             <tr>
-              <ColHeader label="Order #" colKey="order_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={filters.search} onFilter={v => { setFilters(f => ({ ...f, search: v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, search: "" })); setPage(1); }} />
-              <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.partnerName} onFilter={v => setCF("partnerName", v)} onClearFilter={() => setCF("partnerName", "")} />
+              <ColHeader label="Order #" colKey="order_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.orderNumbers} onFilter={v => setCF("orderNumbers", v)} onClearFilter={() => setCF("orderNumbers", [])} statusOptions={orderNumOpts} />
+              <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={orderPartnerOpts} />
               <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.description} onFilter={v => setCF("description", v)} onClearFilter={() => setCF("description", "")} />
               <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "" })} />
-              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={filters.payment_method || "all"} onFilter={v => { setFilters(f => ({ ...f, payment_method: v === "all" ? "" : v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, payment_method: "" })); setPage(1); }} statusOptions={[["all", "All"], ["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={filters.status || "all"} onFilter={v => { setFilters(f => ({ ...f, status: v === "all" ? "" : v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, status: "" })); setPage(1); }} statusOptions={[["all", "All"], ["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"]]} />
+              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"]]} />
               <ColHeader label="Date" colKey="date" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.date} onFilter={v => setCF("date", v)} onClearFilter={() => setCF("date", { from: "", to: "" })} />
               <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>

@@ -415,15 +415,23 @@ export function PartnerSubscriptionsTab() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({ search: "", partner_id: "", status: "", payment_method: "", plan_id: "", billing_interval: "" });
+  const [filters, setFilters] = useState({ partner_id: "", plan_id: "" });
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
-  const [colFilters, setColFilters] = useState({ partnerName: "", planName: "", amount: { min: "", max: "" }, nextBilling: { from: "", to: "" }, expiry: { from: "", to: "" } });
+  const [colFilters, setColFilters] = useState({
+    subNumbers: [] as string[], partnerNames: [] as string[], planNames: [] as string[],
+    intervals: [] as string[], methods: [] as string[], statuses: [] as string[],
+    amount: { min: "", max: "" }, nextBilling: { from: "", to: "" }, expiry: { from: "", to: "" },
+  });
   const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
 
   const displaySubs = useMemo(() => {
     let r = [...subs];
-    if (colFilters.partnerName) r = r.filter(s => s.partner_name?.toLowerCase().includes(colFilters.partnerName.toLowerCase()));
-    if (colFilters.planName) r = r.filter(s => s.plan_name?.toLowerCase().includes(colFilters.planName.toLowerCase()));
+    if (colFilters.subNumbers.length) r = r.filter(s => colFilters.subNumbers.includes(s.subscription_number));
+    if (colFilters.partnerNames.length) r = r.filter(s => colFilters.partnerNames.includes(s.partner_name));
+    if (colFilters.planNames.length) r = r.filter(s => s.plan_name && colFilters.planNames.includes(s.plan_name));
+    if (colFilters.intervals.length) r = r.filter(s => colFilters.intervals.includes(s.billing_interval));
+    if (colFilters.methods.length) r = r.filter(s => colFilters.methods.includes(s.payment_method));
+    if (colFilters.statuses.length) r = r.filter(s => colFilters.statuses.includes(s.status));
     if (colFilters.amount.min) r = r.filter(s => s.amount >= parseFloat(colFilters.amount.min));
     if (colFilters.amount.max) r = r.filter(s => s.amount <= parseFloat(colFilters.amount.max));
     if (colFilters.nextBilling.from) r = r.filter(s => s.next_billing_date && s.next_billing_date >= colFilters.nextBilling.from);
@@ -449,6 +457,9 @@ export function PartnerSubscriptionsTab() {
     }
     return r;
   }, [subs, colFilters, colSort]);
+  const subNumOpts = useMemo(() => Array.from(new Set(subs.map(s => s.subscription_number).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [subs]);
+  const partnerOpts = useMemo(() => Array.from(new Set(subs.map(s => s.partner_name).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [subs]);
+  const planOpts = useMemo(() => Array.from(new Set(subs.map(s => s.plan_name).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [subs]);
   const [showCreate, setShowCreate] = useState(false);
   const [editSub, setEditSub] = useState<PartnerSubscription | null>(null);
   const [cancelSub, setCancelSub] = useState<PartnerSubscription | null>(null);
@@ -460,12 +471,8 @@ export function PartnerSubscriptionsTab() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-      if (filters.search) params.set("search", filters.search);
       if (filters.partner_id) params.set("partner_id", filters.partner_id);
-      if (filters.status && filters.status !== "all") params.set("status", filters.status);
-      if (filters.payment_method && filters.payment_method !== "all") params.set("payment_method", filters.payment_method);
       if (filters.plan_id && filters.plan_id !== "all") params.set("plan_id", filters.plan_id);
-      if (filters.billing_interval && filters.billing_interval !== "all") params.set("billing_interval", filters.billing_interval);
       const [subsRes, statsRes] = await Promise.all([
         api.get(`/admin/partner-subscriptions?${params}`),
         api.get("/admin/partner-subscriptions/stats"),
@@ -548,13 +555,13 @@ export function PartnerSubscriptionsTab() {
         <table className="w-full text-sm" data-testid="partner-subscriptions-table">
           <thead className="bg-slate-50">
             <tr>
-              <ColHeader label="Sub #" colKey="sub_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={filters.search} onFilter={v => { setFilters(f => ({ ...f, search: v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, search: "" })); setPage(1); }} />
-              <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.partnerName} onFilter={v => setCF("partnerName", v)} onClearFilter={() => setCF("partnerName", "")} />
-              <ColHeader label="Plan" colKey="plan" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.planName} onFilter={v => setCF("planName", v)} onClearFilter={() => setCF("planName", "")} />
+              <ColHeader label="Sub #" colKey="sub_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.subNumbers} onFilter={v => setCF("subNumbers", v)} onClearFilter={() => setCF("subNumbers", [])} statusOptions={subNumOpts} />
+              <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={partnerOpts} />
+              <ColHeader label="Plan" colKey="plan" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.planNames} onFilter={v => setCF("planNames", v)} onClearFilter={() => setCF("planNames", [])} statusOptions={planOpts} />
               <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "" })} />
-              <ColHeader label="Interval" colKey="interval" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={filters.billing_interval || "all"} onFilter={v => { setFilters(f => ({ ...f, billing_interval: v === "all" ? "" : v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, billing_interval: "" })); setPage(1); }} statusOptions={[["all", "All"], ["monthly", "Monthly"], ["quarterly", "Quarterly"], ["annual", "Annual"]]} />
-              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={filters.payment_method || "all"} onFilter={v => { setFilters(f => ({ ...f, payment_method: v === "all" ? "" : v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, payment_method: "" })); setPage(1); }} statusOptions={[["all", "All"], ["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={filters.status || "all"} onFilter={v => { setFilters(f => ({ ...f, status: v === "all" ? "" : v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, status: "" })); setPage(1); }} statusOptions={[["all", "All"], ["pending", "Pending"], ["active", "Active"], ["unpaid", "Unpaid"], ["paused", "Paused"], ["cancelled", "Cancelled"]]} />
+              <ColHeader label="Interval" colKey="interval" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.intervals} onFilter={v => setCF("intervals", v)} onClearFilter={() => setCF("intervals", [])} statusOptions={[["monthly", "Monthly"], ["quarterly", "Quarterly"], ["annual", "Annual"]]} />
+              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["active", "Active"], ["unpaid", "Unpaid"], ["paused", "Paused"], ["cancelled", "Cancelled"]]} />
               <ColHeader label="Next Billing" colKey="next_billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.nextBilling} onFilter={v => setCF("nextBilling", v)} onClearFilter={() => setCF("nextBilling", { from: "", to: "" })} />
               <ColHeader label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
               <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>

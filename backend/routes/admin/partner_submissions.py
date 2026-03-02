@@ -28,7 +28,8 @@ async def list_partner_submissions(
         tid = tenant_id_of(admin)
         query["partner_id"] = tid
     if status:
-        query["status"] = status
+        parts = [v.strip() for v in status.split(",") if v.strip()]
+        query["status"] = {"$in": parts} if len(parts) > 1 else parts[0]
 
     total = await db.partner_submissions.count_documents(query)
     skip = (page - 1) * per_page

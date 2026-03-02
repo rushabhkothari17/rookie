@@ -40,24 +40,27 @@ const TYPE_LABELS: Record<string, string> = {
 export function PartnerSubmissionsTab() {
   const [items, setItems] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("pending");
-  const [search, setSearch] = useState("");
 
   // Sort & filter
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
-
-  const filtered = items.filter(i => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      i.partner_name?.toLowerCase().includes(q) ||
-      i.current_plan_name?.toLowerCase().includes(q) ||
-      i.requested_plan_name?.toLowerCase().includes(q)
-    );
+  const [colFilters, setColFilters] = useState({
+    partnerNames: [] as string[], types: [] as string[], planChanges: [] as string[],
+    statuses: [] as string[], effective: { from: "", to: "" }, submitted: { from: "", to: "" },
   });
+  const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
 
   const displayItems = useMemo(() => {
-    const r = [...filtered];
+    let r = [...items];
+    if (colFilters.partnerNames.length) r = r.filter(i => colFilters.partnerNames.includes(i.partner_name));
+    if (colFilters.types.length) r = r.filter(i => colFilters.types.includes(i.type));
+    if (colFilters.planChanges.length) {
+      r = r.filter(i => colFilters.planChanges.includes(`${i.current_plan_name} → ${i.requested_plan_name}`));
+    }
+    if (colFilters.statuses.length) r = r.filter(i => colFilters.statuses.includes(i.status));
+    if (colFilters.effective.from) r = r.filter(i => i.effective_date && i.effective_date >= colFilters.effective.from);
+    if (colFilters.effective.to) r = r.filter(i => i.effective_date && i.effective_date <= colFilters.effective.to);
+    if (colFilters.submitted.from) r = r.filter(i => i.created_at && i.created_at >= colFilters.submitted.from);
+    if (colFilters.submitted.to) r = r.filter(i => i.created_at && i.created_at <= colFilters.submitted.to + "T23:59:59");
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -72,7 +75,10 @@ export function PartnerSubmissionsTab() {
       });
     }
     return r;
-  }, [filtered, colSort]);
+  }, [items, colFilters, colSort]);
+  const partnerOpts = useMemo(() => Array.from(new Set(items.map(i => i.partner_name).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [items]);
+  const typeOpts = useMemo(() => Array.from(new Set(items.map(i => i.type).filter((v): v is string => !!v))).sort().map(v => [v, TYPE_LABELS[v] || v] as [string, string]), [items]);
+  const planChangeOpts = useMemo(() => Array.from(new Set(items.map(i => `${i.current_plan_name} → ${i.requested_plan_name}`).filter(v => v !== "undefined → undefined" && v !== " → "))).sort().map(v => [v, v] as [string, string]), [items]);
   const [selected, setSelected] = useState<Submission | null>(null);
   const [resolveAction, setResolveAction] = useState<"approve" | "reject">("approve");
   const [resolutionNote, setResolutionNote] = useState("");
@@ -81,16 +87,14 @@ export function PartnerSubmissionsTab() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const params: any = { per_page: 50 };
-      if (statusFilter && statusFilter !== "all") params.status = statusFilter;
-      const r = await api.get("/admin/partner-submissions", { params });
+      const r = await api.get("/admin/partner-submissions", { params: { per_page: 200 } });
       setItems(r.data.submissions || []);
     } catch {
       toast.error("Failed to load submissions");
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -131,12 +135,6 @@ export function PartnerSubmissionsTab() {
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button variant="outline" size="sm" onClick={load} data-testid="submissions-admin-refresh-btn">
-          <RefreshCw size={13} className="mr-1.5" />Refresh
-        </Button>
-      </div>
 
       {/* Table */}
       {loading ? (
@@ -148,12 +146,12 @@ export function PartnerSubmissionsTab() {
           <Table data-testid="submissions-admin-table">
             <TableHeader>
               <TableRow className="bg-slate-50">
-                <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={search} onFilter={v => setSearch(v)} onClearFilter={() => setSearch("")} />
-                <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">From → To</th>
-                <ColHeader label="Effective" colKey="effective" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-                <ColHeader label="Submitted" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-                <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter} onFilter={v => setStatusFilter(v)} onClearFilter={() => setStatusFilter("all")} statusOptions={[["all", "All"], ["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]]} />
+                <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={partnerOpts} />
+                <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.types} onFilter={v => setCF("types", v)} onClearFilter={() => setCF("types", [])} statusOptions={typeOpts} />
+                <ColHeader label="From → To" colKey="plan_change" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.planChanges} onFilter={v => setCF("planChanges", v)} onClearFilter={() => setCF("planChanges", [])} statusOptions={planChangeOpts} />
+                <ColHeader label="Effective" colKey="effective" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.effective} onFilter={v => setCF("effective", v)} onClearFilter={() => setCF("effective", { from: "", to: "" })} />
+                <ColHeader label="Submitted" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.submitted} onFilter={v => setCF("submitted", v)} onClearFilter={() => setCF("submitted", { from: "", to: "" })} />
+                <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]]} />
                 <th className="px-4 py-3 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
               </TableRow>
             </TableHeader>
