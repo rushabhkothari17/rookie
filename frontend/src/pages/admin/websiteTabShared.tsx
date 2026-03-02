@@ -40,7 +40,7 @@ export interface WebsiteData {
   nav_store_label: string; nav_articles_label: string; nav_portal_label: string;
   scope_form_title: string; scope_form_subtitle: string;
   signup_form_title: string; signup_form_subtitle: string;
-  scope_form_schema: string; signup_form_schema: string;
+  scope_form_schema: string; signup_form_schema: string; partner_signup_form_schema: string;
   email_from_name: string; email_article_subject_template: string;
   email_article_cta_text: string; email_article_footer_text: string;
   email_verification_subject: string; email_verification_body: string;
