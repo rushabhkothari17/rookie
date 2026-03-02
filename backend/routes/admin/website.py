@@ -166,6 +166,7 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "quote_form_schema": _QUOTE_FORM_SCHEMA,
     "scope_form_schema": _SCOPE_FORM_SCHEMA,
     "signup_form_schema": _SIGNUP_FORM_SCHEMA,
+    "partner_signup_form_schema": _PARTNER_SIGNUP_FORM_SCHEMA,
     # Email templates — empty by default
     "email_from_name": "",
     "email_article_subject_template": "Article: {{article_title}}",
