@@ -60,6 +60,7 @@ export function CustomersTab() {
     return opts;
   }, [ws.gocardless_enabled, ws.stripe_enabled]);
   const [search, setSearch] = useState("");
+  const [emailSearch, setEmailSearch] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [paymentModeFilter, setPaymentModeFilter] = useState("");
