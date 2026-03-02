@@ -507,7 +507,7 @@ async def create_checkout_session(
         subtotal = subscription_items[0]["pricing"]["subtotal"]
         if not subtotal or subtotal <= 0:
             raise HTTPException(status_code=400, detail="Subscription pricing not configured. Please contact support.")
-        if not customer.get("allow_card_payment", False):
+        if not customer.get("allow_card_payment", True):
             raise HTTPException(status_code=403, detail="Card payment is not enabled for your account. Please contact support or use Bank Transfer.")
         tenant_id = customer.get("tenant_id", "")
         stripe_globally_enabled = await is_stripe_enabled(tenant_id)
@@ -522,7 +522,7 @@ async def create_checkout_session(
         stripe_globally_enabled = await is_stripe_enabled(tenant_id)
         if not stripe_globally_enabled:
             raise HTTPException(status_code=400, detail="Card payments are currently not available.")
-        if not customer.get("allow_card_payment", False):
+        if not customer.get("allow_card_payment", True):
             raise HTTPException(status_code=403, detail="Card payment is not enabled for your account. Please contact support or use Bank Transfer.")
         for item in order_items:
             if item["pricing"].get("is_subscription"):
