@@ -88,6 +88,8 @@ export function ProductsTab() {
     }
   };
 
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+
   const filtered = products.filter((p) => {
     const matchFilter =
       catalogFilter === "all" ||
@@ -99,8 +101,27 @@ export function ProductsTab() {
     const matchSearch = !searchText || p.name?.toLowerCase().includes(searchText.toLowerCase()) || p.category?.toLowerCase().includes(searchText.toLowerCase());
     return matchFilter && matchCategory && matchSearch;
   });
-  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+
+  const displayFiltered = useMemo(() => {
+    const r = [...filtered];
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "name") { av = a.name?.toLowerCase() || ""; bv = b.name?.toLowerCase() || ""; }
+        else if (colSort.col === "category") { av = a.category || ""; bv = b.category || ""; }
+        else if (colSort.col === "billing") { av = a.is_subscription ? 1 : 0; bv = b.is_subscription ? 1 : 0; }
+        else if (colSort.col === "price") { av = a.base_price || 0; bv = b.base_price || 0; }
+        else if (colSort.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [filtered, colSort]);
+
+  const paged = displayFiltered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(displayFiltered.length / PER_PAGE));
 
   return (
     <div className="space-y-4">
