@@ -659,7 +659,6 @@ export function TenantsTab() {
                   <SelectTrigger className="w-full bg-white" data-testid="new-admin-role"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="partner_admin">Partner Admin</SelectItem>
-                    <SelectItem value="partner_staff">Partner Staff</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
