@@ -489,6 +489,43 @@ function PlansSection() {
   const [deleteError, setDeleteError] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  // ── Sort & filter ──
+  const [sort, setSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [filters, setFilters] = useState({
+    name: "",
+    status: "all" as "all" | "active" | "inactive",
+    price: { min: "", max: "" },
+    orgs: { min: "", max: "" },
+    date: { from: "", to: "" },
+  });
+  const setF = (key: keyof typeof filters, val: any) => setFilters(f => ({ ...f, [key]: val }));
+
+  const displayPlans = useMemo(() => {
+    let result = [...plans];
+    if (filters.name) result = result.filter(p => p.name.toLowerCase().includes(filters.name.toLowerCase()) || (p.description || "").toLowerCase().includes(filters.name.toLowerCase()));
+    if (filters.status !== "all") result = result.filter(p => filters.status === "active" ? p.is_active : !p.is_active);
+    if (filters.price.min) result = result.filter(p => (p.monthly_price ?? 0) >= parseFloat(filters.price.min));
+    if (filters.price.max) result = result.filter(p => (p.monthly_price ?? 0) <= parseFloat(filters.price.max));
+    if (filters.orgs.min) result = result.filter(p => (p.tenant_count ?? 0) >= parseInt(filters.orgs.min));
+    if (filters.orgs.max) result = result.filter(p => (p.tenant_count ?? 0) <= parseInt(filters.orgs.max));
+    if (filters.date.from) result = result.filter(p => p.created_at >= filters.date.from);
+    if (filters.date.to) result = result.filter(p => p.created_at <= filters.date.to + "T23:59:59");
+    if (sort) {
+      result.sort((a, b) => {
+        let av: any, bv: any;
+        if (sort.col === "name") { av = a.name.toLowerCase(); bv = b.name.toLowerCase(); }
+        else if (sort.col === "price") { av = a.monthly_price ?? -1; bv = b.monthly_price ?? -1; }
+        else if (sort.col === "orgs") { av = a.tenant_count ?? 0; bv = b.tenant_count ?? 0; }
+        else if (sort.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
+        else if (sort.col === "created") { av = a.created_at; bv = b.created_at; }
+        if (av < bv) return sort.dir === "asc" ? -1 : 1;
+        if (av > bv) return sort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return result;
+  }, [plans, filters, sort]);
+
   const load = async () => {
     setLoading(true);
     try { const { data } = await api.get("/admin/plans"); setPlans(data.plans || []); }
