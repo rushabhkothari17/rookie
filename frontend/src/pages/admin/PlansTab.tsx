@@ -632,9 +632,11 @@ function OneTimeRatesSection() {
 
 function RateFormDialog({ modules, rate, onClose, onSaved }: { modules: OTPModule[]; rate: OTPRate | null; onClose: () => void; onSaved: () => void }) {
   const isEdit = !!rate;
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
+  const defaultCurrency = supportedCurrencies[0] || "USD";
   const [moduleKey, setModuleKey] = useState(rate?.module_key || "");
   const [price, setPrice] = useState(rate ? String(rate.price_per_record) : "");
-  const [currency, setCurrency] = useState(rate?.currency || "GBP");
+  const [currency, setCurrency] = useState(rate?.currency || defaultCurrency);
   const [isActive, setIsActive] = useState(rate?.is_active ?? true);
   const [saving, setSaving] = useState(false);
 
