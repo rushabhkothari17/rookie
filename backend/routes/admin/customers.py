@@ -152,6 +152,8 @@ async def admin_customers(
                 {"company_name": search_regex}
             ]
         })
+    if email:
+        match_filters.append({"user_data.email": {"$regex": email, "$options": "i"}})
     
     if match_filters:
         pipeline.append({"$match": {"$and": match_filters}})
