@@ -282,7 +282,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                         );
                       })}
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1.5">Country and State/Province options are loaded from your tax configuration.</p>
+                    <p className="text-[10px] text-slate-400 mt-1.5">Country and Province/State options are dynamically pulled from your <strong>Taxes</strong> configuration.</p>
                   </div>
                 ) : (
                   <>
