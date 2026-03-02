@@ -187,6 +187,13 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Completed (Recent)
 
+### Column-Level Sorting & Filtering Across All Admin Tables (Feb 2026)
+- Created reusable `frontend/src/components/shared/ColHeader.tsx` component with sort (asc/desc), filter controls (text, number-range, date-range, status dropdown)
+- Applied ColHeader to all 18 admin panel tables, removing old separate filter UIs
+- Fixed SubscriptionsTab.tsx: Amount, Tax, Currency columns now use subscription-specific data (not plan data)
+- Fixed empty-state rendering: Coupons and Partner Submissions tables now always show table headers even when no data exists
+- All 18 tables verified via testing agent: 100% pass rate
+
 ### Sub-tab Design Unification (Mar 2026)
 - Plans tab: Converted from custom button navigation to Shadcn `Tabs` components (matching Partner Orgs design)
 - Resources tab: Converted from custom button navigation to Shadcn `Tabs` components
