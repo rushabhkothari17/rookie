@@ -35,6 +35,7 @@ interface Rate {
   label: string;
   price_per_record: number;
   currency: string;
+  display_currency?: string;
 }
 
 interface PlanData {
