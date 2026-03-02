@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
@@ -33,8 +34,13 @@ export function ColHeader({
   statusOptions,
 }: ColHeaderProps) {
   const isActive = sortCol === colKey;
+  const [dropdownSearch, setDropdownSearch] = useState("");
   const effectiveOptions: [string, string][] =
     statusOptions ?? [["all", "All"], ["active", "Active"], ["inactive", "Inactive"]];
+
+  const filteredDropdownOptions = dropdownSearch
+    ? effectiveOptions.filter(([, lbl]) => lbl.toLowerCase().includes(dropdownSearch.toLowerCase()))
+    : effectiveOptions;
 
   const hasFilter =
     filterType === "none" ? false
@@ -58,7 +64,7 @@ export function ColHeader({
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-52 p-3 space-y-3" align="start" side="bottom">
+        <PopoverContent className={`${filterType === "dropdown" ? "w-60" : "w-52"} p-3 space-y-3`} align="start" side="bottom">
           <div>
             <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1.5">Sort</p>
             <div className="flex flex-col gap-0.5">
@@ -100,15 +106,31 @@ export function ColHeader({
                   </div>
                 )}
                 {filterType === "dropdown" && (
-                  <select
-                    className="w-full h-7 text-xs border border-slate-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300"
-                    value={filterValue || "all"}
-                    onChange={e => onFilter && onFilter(e.target.value)}
-                  >
-                    {effectiveOptions.map(([val, lbl]) => (
-                      <option key={val} value={val}>{lbl}</option>
-                    ))}
-                  </select>
+                  <div>
+                    {effectiveOptions.length > 6 && (
+                      <Input
+                        className="h-6 text-xs mb-1.5"
+                        placeholder="Search…"
+                        value={dropdownSearch}
+                        onChange={e => setDropdownSearch(e.target.value)}
+                      />
+                    )}
+                    <div className="max-h-44 overflow-y-auto space-y-0.5 pr-0.5">
+                      {filteredDropdownOptions.map(([val, lbl]) => (
+                        <button
+                          key={val}
+                          onClick={() => { onFilter && onFilter(val); setDropdownSearch(""); }}
+                          className={`w-full flex items-center justify-between gap-2 text-xs px-2 py-1.5 rounded text-left hover:bg-slate-100 ${filterValue === val ? "bg-slate-100 font-semibold text-slate-800" : "text-slate-600"}`}
+                        >
+                          <span className="truncate">{lbl}</span>
+                          {filterValue === val && <Check size={11} className="shrink-0 text-blue-500" />}
+                        </button>
+                      ))}
+                      {filteredDropdownOptions.length === 0 && (
+                        <p className="text-xs text-slate-400 px-2 py-1.5">No results</p>
+                      )}
+                    </div>
+                  </div>
                 )}
                 {filterType === "number-range" && (
                   <div className="space-y-1.5">
