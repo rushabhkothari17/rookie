@@ -106,7 +106,7 @@ export const WEB_DEFAULTS: WebsiteData = {
   nav_store_label: "", nav_articles_label: "", nav_portal_label: "",
   scope_form_title: "", scope_form_subtitle: "",
   signup_form_title: "", signup_form_subtitle: "",
-  scope_form_schema: "", signup_form_schema: "",
+  scope_form_schema: "", signup_form_schema: "", partner_signup_form_schema: "",
   email_from_name: "", email_article_subject_template: "",
   email_article_cta_text: "", email_article_footer_text: "",
   email_verification_subject: "", email_verification_body: "",
