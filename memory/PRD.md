@@ -183,6 +183,12 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Completed (Recent)
 
+### Sub-tab Design Unification (Mar 2026)
+- Plans tab: Converted from custom button navigation to Shadcn `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` components (matching Partner Orgs design)
+- Resources tab: Converted from custom button navigation to Shadcn `Tabs` components (Resources, Templates, Email Templates, Categories)
+- Supported Currencies Add button: Confirmed working (uses newCode state correctly)
+- All 3 features tested and verified at 100% pass rate (iteration_167)
+
 ### Advanced Billing Features (Mar 2026)
 - Dual upgrade paths: Ongoing Plan (flat diff) + One-Time Limits (per-module boost)
 - Full coupon management system with admin CRUD and partner validation
