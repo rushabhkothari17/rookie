@@ -1173,42 +1173,29 @@ function CouponUsageSection() {
 }
 
 // ─── Main PlansTab ────────────────────────────────────────────────────────────
-type TabSection = "plans" | "rates" | "coupons" | "usage";
-
 export function PlansTab() {
-  const [section, setSection] = useState<TabSection>("plans");
-
-  const tabs: { key: TabSection; label: string; icon: React.ReactNode }[] = [
-    { key: "plans", label: "License Plans", icon: <LayoutList size={14} /> },
-    { key: "rates", label: "One-Time Rates", icon: <Zap size={14} /> },
-    { key: "coupons", label: "Coupons", icon: <Gift size={14} /> },
-    { key: "usage", label: "Coupon Usage", icon: <BarChart2 size={14} /> },
-  ];
-
   return (
-    <div className="space-y-6" data-testid="plans-tab">
-      {/* Inner section navigation */}
-      <div className="flex gap-1 border-b border-slate-200">
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setSection(t.key)}
-            data-testid={`plans-section-${t.key}`}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
-              section === t.key
-                ? "border-slate-900 text-slate-900 bg-white"
-                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            {t.icon}{t.label}
-          </button>
-        ))}
-      </div>
-
-      {section === "plans" && <PlansSection />}
-      {section === "rates" && <OneTimeRatesSection />}
-      {section === "coupons" && <CouponsSection />}
-      {section === "usage" && <CouponUsageSection />}
+    <div data-testid="plans-tab">
+      <Tabs defaultValue="plans">
+        <TabsList className="mb-4">
+          <TabsTrigger value="plans" data-testid="plans-section-plans">
+            <LayoutList size={14} className="mr-1.5" />License Plans
+          </TabsTrigger>
+          <TabsTrigger value="rates" data-testid="plans-section-rates">
+            <Zap size={14} className="mr-1.5" />One-Time Rates
+          </TabsTrigger>
+          <TabsTrigger value="coupons" data-testid="plans-section-coupons">
+            <Gift size={14} className="mr-1.5" />Coupons
+          </TabsTrigger>
+          <TabsTrigger value="usage" data-testid="plans-section-usage">
+            <BarChart2 size={14} className="mr-1.5" />Coupon Usage
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="plans"><PlansSection /></TabsContent>
+        <TabsContent value="rates"><OneTimeRatesSection /></TabsContent>
+        <TabsContent value="coupons"><CouponsSection /></TabsContent>
+        <TabsContent value="usage"><CouponUsageSection /></TabsContent>
+      </Tabs>
     </div>
   );
 }
