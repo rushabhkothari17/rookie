@@ -25,7 +25,7 @@ interface ModuleInfo { key: string; name: string; description: string; }
 interface PresetRole { key: string; name: string; description: string; module_permissions: Record<string, "read" | "write">; }
 type ModulePerm = Record<string, "read" | "write" | "none">;
 
-const PARTNER_ROLES = new Set(["partner_super_admin", "partner_admin", "partner_staff"]);
+const PARTNER_ROLES = new Set(["partner_super_admin", "partner_admin"]);
 
 // ── Module Permission Editor ───────────────────────────────────────────────────
 
