@@ -856,27 +856,28 @@ function CouponsSection() {
         </Button>
       </div>
 
-      {coupons.length === 0 ? (
-        <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center text-slate-400 text-sm">
-          No coupons yet. Create your first coupon to offer discounts on plan upgrades.
-        </div>
-      ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden">
-          <table className="w-full text-sm" data-testid="coupons-table">
-            <thead className="bg-slate-50">
+      <div className="rounded-xl border border-slate-200 overflow-hidden">
+        <table className="w-full text-sm" data-testid="coupons-table">
+          <thead className="bg-slate-50">
+            <tr>
+              <ColHeader label="Code" colKey="code" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="text" filterValue={couponFilters.code} onFilter={v => setCF("code", v)} onClearFilter={() => setCF("code", "")} />
+              <ColHeader label="Discount" colKey="discount" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.discount} onFilter={v => setCF("discount", v)} onClearFilter={() => setCF("discount", { min: "", max: "" })} />
+              <ColHeader label="Applies To" colKey="applies_to" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.applies_to} onFilter={v => setCF("applies_to", v)} onClearFilter={() => setCF("applies_to", "all")} statusOptions={[["all", "All"], ["ongoing", "Ongoing only"], ["one_time", "One-time only"], ["both", "Both"]]} />
+              <ColHeader label="Expiry" colKey="expiry" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="date-range" filterValue={couponFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase text-slate-500">Flags</th>
+              <ColHeader label="Uses" colKey="uses" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.uses} onFilter={v => setCF("uses", v)} onClearFilter={() => setCF("uses", { min: "", max: "" })} />
+              <ColHeader label="Status" colKey="status" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.status} onFilter={v => setCF("status", v)} onClearFilter={() => setCF("status", "all")} />
+              <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayCoupons.length === 0 ? (
               <tr>
-                <ColHeader label="Code" colKey="code" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="text" filterValue={couponFilters.code} onFilter={v => setCF("code", v)} onClearFilter={() => setCF("code", "")} />
-                <ColHeader label="Discount" colKey="discount" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.discount} onFilter={v => setCF("discount", v)} onClearFilter={() => setCF("discount", { min: "", max: "" })} />
-                <ColHeader label="Applies To" colKey="applies_to" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.applies_to} onFilter={v => setCF("applies_to", v)} onClearFilter={() => setCF("applies_to", "all")} statusOptions={[["all", "All"], ["ongoing", "Ongoing only"], ["one_time", "One-time only"], ["both", "Both"]]} />
-                <ColHeader label="Expiry" colKey="expiry" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="date-range" filterValue={couponFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
-                <th className="text-left px-4 py-3 text-xs font-medium uppercase text-slate-500">Flags</th>
-                <ColHeader label="Uses" colKey="uses" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.uses} onFilter={v => setCF("uses", v)} onClearFilter={() => setCF("uses", { min: "", max: "" })} />
-                <ColHeader label="Status" colKey="status" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.status} onFilter={v => setCF("status", v)} onClearFilter={() => setCF("status", "all")} />
-                <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
+                <td colSpan={8} className="px-4 py-12 text-center text-sm text-slate-400">
+                  No coupons yet. Create your first coupon to offer discounts on plan upgrades.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {displayCoupons.map(c => (
+            ) : displayCoupons.map(c => (
                 <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50">
                   <td className="px-4 py-3">
                     <span className="font-mono font-semibold text-slate-800 text-sm">{c.code}</span>
