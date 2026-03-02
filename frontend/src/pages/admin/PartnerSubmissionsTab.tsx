@@ -94,7 +94,7 @@ export function PartnerSubmissionsTab() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Resolve dialog state = (item: Submission, action: "approve" | "reject") => {
+  const openResolve = (item: Submission, action: "approve" | "reject") => {
     setSelected(item);
     setResolveAction(action);
     setResolutionNote("");
