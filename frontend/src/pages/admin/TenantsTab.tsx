@@ -29,9 +29,6 @@ type Tenant = {
   created_at: string;
   address?: TenantAddress;
   base_currency?: string;
-  partner_type?: string;
-  industry?: string;
-  tags?: string[];
 };
 
 type TenantUser = {
