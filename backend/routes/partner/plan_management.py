@@ -97,19 +97,12 @@ async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
 
     from services.checkout_service import get_fx_rate
 
-    current_plan_price = (current_plan or {}).get("monthly_price") or 0
-
     visible_plans = []
     for plan in all_active_plans:
         is_visible = plan.get("is_public", False)
         if not is_visible:
             rules = plan.get("visibility_rules") or []
             is_visible = _tenant_matches_any_rule(tenant or {}, rules)
-        # Always include lower-priced plans so the partner can request a downgrade
-        if not is_visible:
-            plan_price = plan.get("monthly_price") or 0
-            if plan_price < current_plan_price:
-                is_visible = True
         if not is_visible:
             continue
 

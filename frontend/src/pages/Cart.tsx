@@ -152,9 +152,23 @@ export default function Cart() {
     return groups;
   }, [preview]);
 
-  // Payment settings
-  const allowBankTransfer = ws.gocardless_enabled !== false;
-  const allowCardPayment = ws.stripe_enabled !== false;
+  // Payment settings — workspace level AND per-customer overrides
+  const wsAllowBankTransfer = ws.gocardless_enabled !== false;
+  const wsAllowCardPayment = ws.stripe_enabled !== false;
+  // If a customer is logged in, respect their per-account payment permissions
+  const customerAllowBank = customer == null || customer.allow_bank_transfer !== false;
+  const customerAllowCard = customer == null ? false : (customer.allow_card_payment ?? false);
+  const allowBankTransfer = wsAllowBankTransfer && customerAllowBank;
+  const allowCardPayment = wsAllowCardPayment && customerAllowCard;
+
+  // Auto-select payment method based on what is allowed for this customer
+  useEffect(() => {
+    if (!allowBankTransfer && allowCardPayment) {
+      setPaymentMethod("card");
+    } else if (allowBankTransfer && !allowCardPayment) {
+      setPaymentMethod("bank_transfer");
+    }
+  }, [allowBankTransfer, allowCardPayment]);
   const stripeFeeRate = ws.stripe_fee_rate || 0.05;
   const stripeFeePercent = Math.round(stripeFeeRate * 1000) / 10;
   const showFee = paymentMethod === "card";
