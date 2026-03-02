@@ -117,6 +117,45 @@ _ISO_TO_NAME = {
     "NEW ZEALAND":"New Zealand","INDIA":"India","SOUTH AFRICA":"South Africa",
 }
 
+# Reverse map: full name → ISO-2 code  (e.g. "CANADA" → "CA")
+_NAME_TO_ISO: dict = {v.upper(): k for k, v in _ISO_TO_NAME.items() if len(k) <= 2}
+# Flat label-lookup for known province/state codes
+_STATE_LABEL: dict = {row["value"].upper(): row["label"] for row in _CANADA_PROVINCES + _USA_STATES}
+
+
+@router.get("/utils/provinces")
+async def get_provinces(country_code: str = Query(..., description="Country name or ISO code")):
+    """Return provinces/states for a country — pulled from tax_tables, falling back to static list."""
+    key = country_code.strip()
+    KEY = key.upper()
+
+    # Normalise to ISO-2 code (handles "Canada" → "CA", "United States" → "US", "CA", etc.)
+    iso = _NAME_TO_ISO.get(KEY) or (KEY if len(KEY) <= 3 else None)
+
+    # Try to load from tax_tables first
+    if iso:
+        try:
+            raw_codes = await db.tax_tables.distinct("state_code", {"country_code": iso})
+            if raw_codes:
+                regions = []
+                seen: set = set()
+                for code in sorted(c for c in raw_codes if c):
+                    cu = code.upper()
+                    if cu not in seen:
+                        seen.add(cu)
+                        regions.append({
+                            "value": code,
+                            "label": _STATE_LABEL.get(cu, code),
+                        })
+                if regions:
+                    return {"country_code": KEY, "regions": regions}
+        except Exception:
+            pass
+
+    # Fallback to hardcoded list (also handles "Canada", "CANADA", "CA" etc.)
+    regions = _COUNTRY_MAP.get(KEY, _COUNTRY_MAP.get(iso or "", []))
+    return {"country_code": KEY, "regions": regions}
+
 _FALLBACK_COUNTRIES = [
     {"value": "Canada", "label": "Canada"},
     {"value": "USA", "label": "United States"},
