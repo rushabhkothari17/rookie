@@ -15,6 +15,7 @@ import { TenantLicenseModal } from "./TenantLicenseModal";
 import { TenantNotesModal } from "./TenantNotesModal";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { PartnerOrgForm, PartnerOrgFormValue, EMPTY_PARTNER_ORG } from "@/components/admin/PartnerOrgForm";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
 type TenantAddress = {
   line1?: string; line2?: string; city?: string; region?: string; postal?: string; country?: string;
