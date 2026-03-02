@@ -1,0 +1,99 @@
+{
+  "summary": "Comprehensive ColHeader sort/filter testing across all 18 admin table sections. 17/19 tabs PASS with ColHeader buttons correctly implemented and functional. Sort and filter functionality verified working. 1 genuine bug found (Subscriptions missing ColHeader on Amount/Tax/Currency). 2 empty-state failures (Coupons, Partner Submissions) where ColHeader code exists but table only renders with data.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "SubscriptionsTab",
+        "issue": "Amount, Tax, Currency columns use plain <th> instead of ColHeader (SubscriptionsTab.tsx lines 310-312). Task requires ColHeader on ALL columns including Amount, Tax, Currency.",
+        "selector": "th:has-text('Amount'), th:has-text('Tax'), th:has-text('Currency')",
+        "priority": "MEDIUM"
+      },
+      {
+        "component": "PlansTab - CouponsSection",
+        "issue": "Coupons table (including ColHeader) is wrapped in `coupons.length === 0 ? <empty-div> : <table>`. With no coupons in DB, ColHeader buttons are not visible. ColHeader IS implemented in code (line 868-874) but users see empty state with no sort/filter.",
+        "selector": "[data-testid='coupons-table']",
+        "priority": "LOW"
+      },
+      {
+        "component": "PartnerSubmissionsTab",
+        "issue": "Partner Submissions table (with ColHeader) only renders when displayItems.length > 0. Default statusFilter='pending', no pending submissions → empty state → ColHeader not visible. ColHeader IS implemented in code (lines 155-160).",
+        "selector": "[data-testid='submissions-admin-table']",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tabs": {
+    "plans_license_plans": "PASS - Plan, Price, Orgs, Status, Created - popover Sort+Filter OK",
+    "plans_one_time_rates": "PASS - Module, Price/Unit, Currency, Status - popover Sort+Filter OK",
+    "partner_subscriptions": "PASS - Sub#, Partner, Plan, Amount, Interval, Method, Status, Next Billing, Expiry - popover OK",
+    "partner_orders": "PASS - Order#, Partner, Description, Amount, Method, Status, Date - popover OK",
+    "users": "PASS - Name/Email, Status - popover OK",
+    "customers": "PASS - Name, Email, Country, Status, Payment Methods - popover OK",
+    "products_products": "PASS - Name, Category, Billing, Price, Status - popover OK",
+    "products_categories": "PASS - Name, Description, Products, Status - popover OK",
+    "products_promo_codes": "PASS - Code, Discount, Applies To, Expiry, Usage, Created, Status - popover OK",
+    "products_terms": "PASS - Title, Status, Created - popover OK",
+    "subscriptions": "PASS (partial) - Created, Sub#, Processor ID, Customer Email, Plan, Renewal, Start, Contract End, Payment, Status have ColHeader. Amount/Tax/Currency are plain <th> (BUG)",
+    "orders": "PASS - Date, Order#, Email, Product(s), Sub#, Processor ID, Pay Date, Method, Status - popover OK",
+    "enquiries": "PASS - Date, Order#, Customer, Status - popover OK",
+    "resources": "PASS - Created, Category, Title/Visible - popover OK",
+    "resources_templates": "PASS - Name, Category, Type - popover OK",
+    "resources_email_templates": "PASS - Name, Subject - popover OK",
+    "resources_categories": "PASS - Name, Description, Scope Final - popover OK"
+  },
+
+  "sort_filter_verification": {
+    "sort_works": "VERIFIED - Plans License Plans: sort changed row order (Professional→Free Trial first after A→Z sort)",
+    "filter_works": "VERIFIED - Products: 20 rows → 17 rows after filtering by 'a'. Filter updates table in real-time.",
+    "popover_verified": "All 17 passing tabs show Sort+Filter popover with Sort section (Sort=True, Filter=True)"
+  },
+
+  "old_filter_bar_removal": {
+    "verified": true,
+    "notes": "No standalone <select> elements found outside table elements on any tested tab. Old filter bars (search input + partner_id/status/plan_id/interval dropdowns) are removed."
+  },
+
+  "test_report_links": [
+    "/app/tests/test_colheader_admin.py",
+    "/app/tests/test_sort_filter.py",
+    "/app/test_reports/iter169_results.json"
+  ],
+
+  "action_items": [
+    "FIX: SubscriptionsTab.tsx lines 310-312 - Replace plain <th> for Amount, Tax, Currency with <ColHeader> component (same pattern as other columns in that file)",
+    "OPTIONAL: Consider rendering table header even in empty state for Coupons section (PlansTab.tsx line 859) and Partner Submissions table so users can see available sort/filter columns",
+    "NOTE: Plans > Coupons ColHeader IS implemented at PlansTab.tsx lines 868-874, no code change needed unless empty state behavior is to be changed",
+    "NOTE: Partner Submissions ColHeader IS implemented at PartnerSubmissionsTab.tsx lines 155-160, no code change needed unless empty state behavior is to be changed"
+  ],
+
+  "critical_code_review_comments": [
+    "SubscriptionsTab.tsx lines 310-312: Amount, Tax, Currency columns NOT converted to ColHeader despite task requirement. These are plain <th> elements. Easy fix: wrap with ColHeader component like the adjacent columns.",
+    "Conditional table rendering in PlansTab.tsx (CouponsSection) and PartnerSubmissionsTab.tsx hides column headers (including ColHeader) when data is empty. Consider always rendering <thead> with ColHeader to allow sort/filter controls to be visible even with empty data.",
+    "PlansTab.tsx line 872 'Flags' column uses plain <th> (no ColHeader) - this may be intentional as Flags is a computed display column."
+  ],
+
+  "updated_files": [],
+
+  "success_rate": {
+    "frontend": "89% (17/19 tabs fully passing, 1 additional partial pass with bug)"
+  },
+
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+
+  "context_for_next_testing_agent": "Login: partner code 'automate-accounts', then admin@automateaccounts.local / ChangeMe123!. Admin panel at /admin. ColHeader uses CSS 'uppercase' class so innerText() returns uppercase - use case-insensitive comparison. Sidebar items have role='tab'. Plans/Products/Resources have sub-tabs within the page (content area x>400) vs sidebar tabs. Plans Coupons section and Partner Submissions show empty state (no data in test env) so ColHeader buttons won't be visible there. Subscriptions tab has Amount/Tax/Currency as plain <th> - this is the main remaining bug.",
+
+  "rca_of_issues": {
+    "subscriptions_missing_colheader": "Root cause: Developer forgot to convert Amount, Tax, Currency columns in SubscriptionsTab.tsx (lines 310-312) from plain <th> to ColHeader component during the migration. All other columns in the same table were correctly converted. Fix: Replace 3 plain <th> elements with ColHeader components following the same pattern as Renewal, Start, Contract End columns.",
+    "empty_state_colheader": "Root cause: Coupons table (PlansTab.tsx) and Submissions table (PartnerSubmissionsTab.tsx) use conditional rendering - the entire <table> element is only shown when data exists. This means ColHeader buttons in <thead> are not accessible when data is empty. This is a common pattern but prevents users from seeing available sort/filter options when first landing on an empty section."
+  }
+}
