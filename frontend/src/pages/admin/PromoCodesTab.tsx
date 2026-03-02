@@ -266,7 +266,7 @@ export function PromoCodesTab() {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-slate-400 py-6">No promo codes found.</TableCell></TableRow>}
+            {displayPromos.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-slate-400 py-6">No promo codes found.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
