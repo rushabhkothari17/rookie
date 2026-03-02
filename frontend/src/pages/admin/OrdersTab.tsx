@@ -261,40 +261,13 @@ export function OrdersTab() {
       {/* Stats Dashboard */}
       <OrdersStats />
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap gap-2 items-end">
-          <Input placeholder="Customer email" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-orders-email-filter" />
-          <Input placeholder="Order # (AA-...)" value={orderNumberFilter} onChange={e => setOrderNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-number-filter" />
-          <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-sub-number-filter" />
-          <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-processor-filter" />
-          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-orders-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Statuses</SelectItem>{orderStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={payMethodFilter || "all"} onValueChange={v => setPayMethodFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-orders-method-filter"><SelectValue placeholder="All Methods" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-          </Select>
-          <Input placeholder="Product name" value={productFilter} onChange={e => setProductFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-orders-product-filter" />
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Pay date</span>
-            <Input type="date" value={payDateFrom} onChange={e => setPayDateFrom(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-pay-date-from" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={payDateTo} onChange={e => setPayDateTo(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-pay-date-to" />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Created</span>
-            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-start-date" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-orders-end-date" />
-          </div>
-          <label className="flex items-center gap-1 text-xs text-slate-600 cursor-pointer">
-            <input type="checkbox" checked={includeDeleted} onChange={e => setIncludeDeleted(e.target.checked)} />
-            Show deleted
-          </label>
-          <Button size="sm" variant="outline" onClick={clearFilters} className="h-8 text-xs" data-testid="admin-orders-clear-filters">Clear</Button>
-        </div>
+      {/* Filters removed — use column headers */}
+
+      <div className="flex items-center gap-2 flex-wrap text-xs text-slate-500 mb-1 px-1">
+        <label className="flex items-center gap-1 cursor-pointer">
+          <input type="checkbox" checked={includeDeleted} onChange={e => setIncludeDeleted(e.target.checked)} className="h-3 w-3" />
+          Show deleted
+        </label>
       </div>
 
       {/* Table */}
@@ -302,23 +275,23 @@ export function OrdersTab() {
         <Table data-testid="admin-orders-table" className="min-w-[1100px]">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => setSortOrder(o => o === "desc" ? "asc" : "desc")}>Date {sortOrder === "desc" ? "↓" : "↑"}</TableHead>
-              <TableHead>Order #</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Product(s)</TableHead>
-              <TableHead>Sub #</TableHead>
-              <TableHead>Processor ID</TableHead>
-              <TableHead>Subtotal</TableHead>
-              <TableHead>Fee</TableHead>
-              <TableHead>Tax</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Currency</TableHead>
-              <TableHead>Pay Date</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Status</TableHead>
-              {isPlatformAdmin && <TableHead>Partner</TableHead>}
-              <TableHead>Actions</TableHead>
+              <ColHeader label="Date" colKey="date" sortCol="date" sortDir={sortOrder} onSort={(_, d) => setSortOrder(d)} onClearSort={() => setSortOrder("desc")} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); }} onClearFilter={() => { setStartDate(""); setEndDate(""); }} />
+              <ColHeader label="Order #" colKey="order_number" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={orderNumberFilter} onFilter={v => setOrderNumberFilter(v)} onClearFilter={() => setOrderNumberFilter("")} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Customer</th>
+              <ColHeader label="Email" colKey="email" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={emailFilter} onFilter={v => setEmailFilter(v)} onClearFilter={() => setEmailFilter("")} />
+              <ColHeader label="Product(s)" colKey="product" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={productFilter} onFilter={v => setProductFilter(v)} onClearFilter={() => setProductFilter("")} />
+              <ColHeader label="Sub #" colKey="sub_number" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={subNumberFilter} onFilter={v => setSubNumberFilter(v)} onClearFilter={() => setSubNumberFilter("")} />
+              <ColHeader label="Processor ID" colKey="processor_id" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={processorIdFilter} onFilter={v => setProcessorIdFilter(v)} onClearFilter={() => setProcessorIdFilter("")} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Subtotal</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Fee</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Tax</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Total</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Currency</th>
+              <ColHeader label="Pay Date" colKey="pay_date" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="date-range" filterValue={{ from: payDateFrom, to: payDateTo }} onFilter={v => { setPayDateFrom(v.from || ""); setPayDateTo(v.to || ""); }} onClearFilter={() => { setPayDateFrom(""); setPayDateTo(""); }} />
+              <ColHeader label="Method" colKey="method" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="status" filterValue={payMethodFilter || "all"} onFilter={v => setPayMethodFilter(v === "all" ? "" : v)} onClearFilter={() => setPayMethodFilter("")} statusOptions={[["all", "All"], ...paymentMethods.map(m => [m, m] as [string, string])]} />
+              <ColHeader label="Status" colKey="status" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="status" filterValue={statusFilter || "all"} onFilter={v => setStatusFilter(v === "all" ? "" : v)} onClearFilter={() => setStatusFilter("")} statusOptions={[["all", "All"], ...orderStatuses.map(s => [s, s] as [string, string])]} />
+              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
