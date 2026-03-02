@@ -1,0 +1,251 @@
+{
+  "plans_license_plans": {
+    "found": [],
+    "missing": [
+      "Plan",
+      "Price",
+      "Orgs",
+      "Status",
+      "Created"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "plans_one_time_rates": {
+    "found": [],
+    "missing": [
+      "Module",
+      "Price / Unit",
+      "Currency",
+      "Status"
+    ],
+    "popover_ok": false,
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "plans_coupons": {
+    "found": [],
+    "missing": [
+      "Code",
+      "Discount",
+      "Applies To",
+      "Expiry",
+      "Uses",
+      "Status"
+    ],
+    "popover_ok": false,
+    "pass": false
+  },
+  "partner_subscriptions": {
+    "found": [],
+    "missing": [
+      "Sub #",
+      "Partner",
+      "Plan",
+      "Amount",
+      "Interval",
+      "Method",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "partner_orders": {
+    "found": [],
+    "missing": [
+      "Order #",
+      "Partner",
+      "Description",
+      "Amount",
+      "Method",
+      "Status",
+      "Date"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "partner_submissions": {
+    "found": [],
+    "missing": [
+      "Partner",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "users": {
+    "found": [],
+    "missing": [
+      "Name / Email",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "customers": {
+    "found": [],
+    "missing": [
+      "Name",
+      "Email",
+      "Country",
+      "Status",
+      "Payment Methods"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "products_products": {
+    "found": [],
+    "missing": [
+      "Name",
+      "Category",
+      "Billing",
+      "Price",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "products_categories": {
+    "found": [],
+    "missing": [
+      "Name",
+      "Description",
+      "Products",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "products_promo_codes": {
+    "found": [],
+    "missing": [
+      "Code",
+      "Discount",
+      "Applies To",
+      "Expiry",
+      "Usage",
+      "Created",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "products_terms": {
+    "found": [],
+    "missing": [
+      "Title",
+      "Status",
+      "Created"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "subscriptions": {
+    "found": [],
+    "missing": [
+      "Sub #",
+      "Customer Email",
+      "Plan",
+      "Amount",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "orders": {
+    "found": [],
+    "missing": [
+      "Date",
+      "Order #",
+      "Email",
+      "Method",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "enquiries": {
+    "found": [],
+    "missing": [
+      "Date",
+      "Order #",
+      "Customer",
+      "Status"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "resources": {
+    "found": [],
+    "missing": [
+      "Created",
+      "Category",
+      "Title / Visible"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "resources_templates": {
+    "found": [],
+    "missing": [
+      "Name",
+      "Category",
+      "Type"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "resources_email_templates": {
+    "found": [],
+    "missing": [
+      "Name",
+      "Subject"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  },
+  "resources_categories": {
+    "found": [],
+    "missing": [
+      "Name",
+      "Description"
+    ],
+    "popover_ok": false,
+    "popover_msg": "No ColHeaders",
+    "old_filter_removed": true,
+    "pass": false
+  }
+}
