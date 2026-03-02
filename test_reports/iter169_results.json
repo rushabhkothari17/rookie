@@ -1,46 +1,46 @@
 {
   "plans_license_plans": {
-    "found": [],
-    "missing": [
+    "found": [
       "Plan",
       "Price",
       "Orgs",
       "Status",
       "Created"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'PLAN': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "plans_one_time_rates": {
-    "found": [],
+    "found": [
+      "Status"
+    ],
     "missing": [
       "Module",
       "Price / Unit",
-      "Currency",
-      "Status"
+      "Currency"
     ],
-    "popover_ok": false,
-    "old_filter_removed": true,
+    "popover_ok": true,
     "pass": false
   },
   "plans_coupons": {
-    "found": [],
+    "found": [
+      "Status"
+    ],
     "missing": [
       "Code",
       "Discount",
       "Applies To",
       "Expiry",
-      "Uses",
-      "Status"
+      "Uses"
     ],
-    "popover_ok": false,
+    "popover_ok": true,
     "pass": false
   },
   "partner_subscriptions": {
-    "found": [],
-    "missing": [
+    "found": [
       "Sub #",
       "Partner",
       "Plan",
@@ -49,14 +49,14 @@
       "Method",
       "Status"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'SUB #': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "partner_orders": {
-    "found": [],
-    "missing": [
+    "found": [
       "Order #",
       "Partner",
       "Description",
@@ -65,10 +65,11 @@
       "Status",
       "Date"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'ORDER #': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "partner_submissions": {
     "found": [],
@@ -77,61 +78,61 @@
       "Status"
     ],
     "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "popover_msg": "Skipped",
     "old_filter_removed": true,
     "pass": false
   },
   "users": {
-    "found": [],
-    "missing": [
+    "found": [
       "Name / Email",
       "Status"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'NAME / EMAIL': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "customers": {
-    "found": [],
-    "missing": [
+    "found": [
       "Name",
       "Email",
       "Country",
       "Status",
       "Payment Methods"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "products_products": {
-    "found": [],
-    "missing": [
+    "found": [
       "Name",
       "Category",
       "Billing",
       "Price",
       "Status"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "products_categories": {
-    "found": [],
-    "missing": [
+    "found": [
       "Name",
       "Description",
       "Products",
       "Status"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "products_promo_codes": {
     "found": [],
@@ -145,7 +146,7 @@
       "Status"
     ],
     "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "popover_msg": "Skipped",
     "old_filter_removed": true,
     "pass": false
   },
@@ -157,74 +158,75 @@
       "Created"
     ],
     "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "popover_msg": "Skipped",
     "old_filter_removed": true,
     "pass": false
   },
   "subscriptions": {
-    "found": [],
-    "missing": [
+    "found": [
       "Sub #",
       "Customer Email",
       "Plan",
-      "Amount",
       "Status"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [
+      "Amount"
+    ],
+    "popover_ok": true,
+    "popover_msg": "'CREATED': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
     "old_filter_removed": true,
     "pass": false
   },
   "orders": {
-    "found": [],
-    "missing": [
+    "found": [
       "Date",
       "Order #",
       "Email",
       "Method",
       "Status"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'DATE': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "enquiries": {
-    "found": [],
-    "missing": [
+    "found": [
       "Date",
       "Order #",
       "Customer",
       "Status"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'DATE': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "resources": {
-    "found": [],
-    "missing": [
+    "found": [
       "Created",
       "Category",
       "Title / Visible"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'CREATED': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "resources_templates": {
-    "found": [],
-    "missing": [
+    "found": [
       "Name",
       "Category",
       "Type"
     ],
-    "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "missing": [],
+    "popover_ok": true,
+    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
     "old_filter_removed": true,
-    "pass": false
+    "pass": true
   },
   "resources_email_templates": {
     "found": [],
@@ -233,7 +235,7 @@
       "Subject"
     ],
     "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "popover_msg": "Skipped",
     "old_filter_removed": true,
     "pass": false
   },
@@ -244,7 +246,7 @@
       "Description"
     ],
     "popover_ok": false,
-    "popover_msg": "No ColHeaders",
+    "popover_msg": "Skipped",
     "old_filter_removed": true,
     "pass": false
   }
