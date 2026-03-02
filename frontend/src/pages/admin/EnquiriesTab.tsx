@@ -49,6 +49,25 @@ export function EnquiriesTab() {
   const [statusFilter, setStatusFilter] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+
+  const displayEnquiries = useMemo(() => {
+    const r = [...enquiries];
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "date") { av = a.created_at || ""; bv = b.created_at || ""; }
+        else if (colSort.col === "order") { av = a.order_number || ""; bv = b.order_number || ""; }
+        else if (colSort.col === "customer") { av = a.customer_name || a.customer_email || ""; bv = b.customer_name || b.customer_email || ""; }
+        else if (colSort.col === "status") { av = a.status; bv = b.status; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [enquiries, colSort]);
+  const [endDate, setEndDate] = useState("");
 
   // Dialog
   const [viewEnquiry, setViewEnquiry] = useState<any>(null);

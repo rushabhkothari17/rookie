@@ -35,6 +35,28 @@ export function PromoCodesTab() {
   const [endDate, setEndDate] = useState("");
   const [expiryFrom, setExpiryFrom] = useState("");
   const [expiryTo, setExpiryTo] = useState("");
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+
+  const displayPromos = useMemo(() => {
+    const r = [...promoCodes];
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "code") { av = a.code; bv = b.code; }
+        else if (colSort.col === "discount") { av = a.discount_value; bv = b.discount_value; }
+        else if (colSort.col === "applies_to") { av = a.applies_to; bv = b.applies_to; }
+        else if (colSort.col === "expiry") { av = a.expiry_date || ""; bv = b.expiry_date || ""; }
+        else if (colSort.col === "max_uses") { av = a.max_uses ?? 0; bv = b.max_uses ?? 0; }
+        else if (colSort.col === "uses") { av = a.use_count ?? 0; bv = b.use_count ?? 0; }
+        else if (colSort.col === "status") { av = a.enabled ? 1 : 0; bv = b.enabled ? 1 : 0; }
+        else if (colSort.col === "created") { av = a.created_at || ""; bv = b.created_at || ""; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [promoCodes, colSort]);
 
   // Dialogs
   const [showCreateDialog, setShowCreateDialog] = useState(false);

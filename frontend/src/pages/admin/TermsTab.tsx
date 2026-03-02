@@ -29,6 +29,23 @@ export function TermsTab() {
   const [statusFilter, setStatusFilter] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+
+  const displayTerms = useMemo(() => {
+    const r = [...terms];
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "title") { av = a.title; bv = b.title; }
+        else if (colSort.col === "status") { av = a.status; bv = b.status; }
+        else if (colSort.col === "created") { av = a.created_at || ""; bv = b.created_at || ""; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [terms, colSort]);
 
   // Dialogs
   const [showCreateDialog, setShowCreateDialog] = useState(false);

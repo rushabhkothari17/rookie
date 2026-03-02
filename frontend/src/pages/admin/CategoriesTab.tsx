@@ -31,6 +31,24 @@ export function CategoriesTab() {
   // Filters
   const [searchFilter, setSearchFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+
+  const displayCategories = useMemo(() => {
+    const r = [...categories];
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "name") { av = a.name; bv = b.name; }
+        else if (colSort.col === "description") { av = a.description || ""; bv = b.description || ""; }
+        else if (colSort.col === "products") { av = a.product_count ?? 0; bv = b.product_count ?? 0; }
+        else if (colSort.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [categories, colSort]);
 
   // Dialog
   const [showDialog, setShowDialog] = useState(false);
