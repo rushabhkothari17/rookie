@@ -181,6 +181,10 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+### Critical Billing Bug Fixes (Mar 2026)
+- **Dismiss Pending Upgrade (P0):** Removed invalid `sort=` parameter from `update_one` call in `cancel_pending_upgrade` — was causing a `TypeError` (500 error) in `partner/plan_management.py`.
+- **Exchange Rate for One-Time Upgrades (P0):** Modified `GET /api/partner/one-time-rates` to fetch partner's `base_currency` and apply live FX conversion (`get_fx_rate`) to each rate's `price_per_record` before returning. Partners now see correctly priced rates in their own currency.
+
 ## Completed (Recent)
 
 ### Sub-tab Design Unification (Mar 2026)
