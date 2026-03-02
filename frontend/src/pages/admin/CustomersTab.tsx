@@ -112,9 +112,9 @@ export function CustomersTab() {
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load customers"); }
-  }, [search, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, page]);
+  }, [search, emailSearch, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, page]);
 
-  useEffect(() => { load(1); }, [search, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter]);
+  useEffect(() => { load(1); }, [search, emailSearch, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter]);
 
   // Fetch signup form schema to drive the Create Customer form
   useEffect(() => {
