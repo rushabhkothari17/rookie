@@ -429,7 +429,6 @@ export function TenantsTab() {
             <DialogTitle>New Partner Organization</DialogTitle>
           </DialogHeader>
 
-          {/* Success screen */}
           {generatedCode ? (
             <div className="py-4 space-y-5 text-center">
               <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center mx-auto">
@@ -459,83 +458,12 @@ export function TenantsTab() {
             </div>
           ) : (
             <form onSubmit={handleCreate} className="space-y-4 mt-2">
-              {/* Org name */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Organization Name *</label>
-                <Input placeholder="Acme Accounting" value={newPartner.name} onChange={e => setNewPartner(p => ({ ...p, name: e.target.value }))} required data-testid="new-tenant-name" />
-                <p className="text-xs text-slate-400">Partner code will be auto-generated from this name.</p>
-              </div>
-
-              {/* Admin details */}
-              <div className="pt-1 space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Admin Account</p>
-                <Input placeholder="Full name *" value={newPartner.admin_name} onChange={e => setNewPartner(p => ({ ...p, admin_name: e.target.value }))} required data-testid="new-partner-admin-name" />
-                <Input type="email" placeholder="Email address *" value={newPartner.admin_email} onChange={e => setNewPartner(p => ({ ...p, admin_email: e.target.value }))} required data-testid="new-partner-admin-email" />
-                <Input type="password" placeholder="Password * (min 10 chars, upper, lower, number, symbol)" value={newPartner.admin_password} onChange={e => setNewPartner(p => ({ ...p, admin_password: e.target.value }))} required data-testid="new-partner-admin-password" />
-              </div>
-
-              {/* Base currency */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Base Currency</label>
-                <Select value={newPartner.base_currency} onValueChange={v => setNewPartner(p => ({ ...p, base_currency: v }))}>
-                  <SelectTrigger className="w-full bg-white" data-testid="new-partner-currency"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(supportedCurrencies.length ? supportedCurrencies : ["USD","CAD","EUR","GBP","AUD","INR","MXN"]).map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Partner Type, Industry, Tags */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Partner Type</label>
-                  <Select value={newPartner.partner_type} onValueChange={v => setNewPartner(p => ({ ...p, partner_type: v }))}>
-                    <SelectTrigger data-testid="new-partner-type"><SelectValue placeholder="Select type…" /></SelectTrigger>
-                    <SelectContent>
-                      {partnerTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Industry</label>
-                  <Select value={newPartner.industry} onValueChange={v => setNewPartner(p => ({ ...p, industry: v }))}>
-                    <SelectTrigger data-testid="new-partner-industry"><SelectValue placeholder="Select industry…" /></SelectTrigger>
-                    <SelectContent>
-                      {industries.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5 col-span-2">
-                  <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Tags <span className="normal-case font-normal text-slate-400">(comma-separated)</span></label>
-                  <Input placeholder="e.g. vip, enterprise, us-market" value={newPartner.tags} onChange={e => setNewPartner(p => ({ ...p, tags: e.target.value }))} data-testid="new-partner-tags" />
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="space-y-1.5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Organization Address</p>
-                <Input placeholder="Line 1 *" value={newPartner.address.line1} onChange={e => setNewPartner(p => ({ ...p, address: { ...p.address, line1: e.target.value } }))} required data-testid="new-partner-addr-line1" />
-                <Input placeholder="Line 2 (optional)" value={newPartner.address.line2} onChange={e => setNewPartner(p => ({ ...p, address: { ...p.address, line2: e.target.value } }))} data-testid="new-partner-addr-line2" />
-                <div className="grid grid-cols-2 gap-2">
-                  <Input placeholder="City *" value={newPartner.address.city} onChange={e => setNewPartner(p => ({ ...p, address: { ...p.address, city: e.target.value } }))} required data-testid="new-partner-addr-city" />
-                  <Input placeholder="Postal Code *" value={newPartner.address.postal} onChange={e => setNewPartner(p => ({ ...p, address: { ...p.address, postal: e.target.value } }))} required data-testid="new-partner-addr-postal" />
-                </div>
-                <Select value={newPartner.address.country} onValueChange={v => { setCreateCountry(v); setNewPartner(p => ({ ...p, address: { ...p.address, country: v, region: "" } })); }}>
-                  <SelectTrigger data-testid="new-partner-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
-                  <SelectContent>{countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-                </Select>
-                {createProvinces.length > 0 ? (
-                  <Select value={newPartner.address.region} onValueChange={v => setNewPartner(p => ({ ...p, address: { ...p.address, region: v } }))}>
-                    <SelectTrigger data-testid="new-partner-addr-region-select"><SelectValue placeholder="Province / State *" /></SelectTrigger>
-                    <SelectContent>{createProvinces.map(pv => <SelectItem key={pv.value} value={pv.value}>{pv.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                ) : (
-                  <Input placeholder="State / Province *" value={newPartner.address.region} onChange={e => setNewPartner(p => ({ ...p, address: { ...p.address, region: e.target.value } }))} required data-testid="new-partner-addr-region-input" />
-                )}
-              </div>
-
+              <PartnerOrgForm
+                value={newPartner}
+                onChange={setNewPartner}
+                currencies={supportedCurrencies}
+                testIdPrefix="new-partner"
+              />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={handleCloseCreate}>Cancel</Button>
                 <Button type="submit" disabled={creating} data-testid="confirm-create-tenant">
