@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImportModal } from "@/components/admin/ImportModal";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +16,7 @@ import { PromoCodesTab } from "./PromoCodesTab";
 import { TermsTab } from "./TermsTab";
 import { Download, Upload, ExternalLink, Package, FolderTree, Tag, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { ColHeader } from "@/components/shared/ColHeader";
 
 export function ProductsTab() {
   const { user: authUser } = useAuth();
