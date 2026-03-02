@@ -1,0 +1,172 @@
+<analysis>**original_problem_statement:**
+The user requested a complete overhaul of the role and permission system to be more granular and module-based. This included defining specific super admin roles, restricting user creation/editing capabilities based on roles, and ensuring a strict separation between platform and partner modules.
+
+Additionally, the user requested several UI/UX changes and bug fixes:
+*   Make Partner Type, Industry, and Tags manageable lists.
+*   Fix various bugs related to user creation, role assignment, and data visibility.
+*   Set a default currency for new partner organizations.
+*   Restructure the admin UI by removing the Roles tab and integrating its functionality into the Users tab.
+*   A request to wipe all application data, preserving only the primary super admin account.
+*   A new request to add sub-tabs to the Plans and Resources pages, similar to the Partner Orgs page.
+*   A bug report that the Add button on the Supported Currencies tab is not working.
+
+**PRODUCT REQUIREMENTS:**
+Refer to the detailed problem statement above.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The agent has successfully executed a major overhaul of the Roles & Permissions system, moving from a basic access level to a granular, module-based system. This new system distinguishes between , , , and , with strict rules about who can create/edit whom. The UI now dynamically renders available modules and actions based on the logged-in user's permissions.
+
+Several related features and fixes were also completed:
+*   The Partner Staff role was completely removed from the application.
+*   A Tags management UI was added as a sub-tab under Partner Orgs.
+*   The entire database was wiped clean, leaving only the root  user.
+*   The Roles tab was removed, and a read-only Presets sub-tab was added within the Users tab.
+*   Multiple bugs related to incorrect role assignments and data visibility across tenants have been fixed with new backend guards.
+
+The agent was investigating a new bug report regarding the Supported Currencies page when the session ended.
+
+**Last working item**:
+    - Last item agent was working: The user reported two items: 1) The Add button in the Admin Currencies tab is not working. 2) A feature request to add sub-tabs to the Plans and Resources sections. The agent began investigating the currency bug.
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use? frontend testing agent
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  - **Issue 1: Add button in Supported Currencies tab is broken (Priority: P0)**
+     - **Description:** Clicking the Add button does not add the new currency to the list. The agent's investigation suggested the  function was incorrectly trying to read from a  () instead of using the component's state ().
+     - **Next debug checklist:**
+         1.  Navigate to .
+         2.  Modify the  function to use the  state variable for the new currency's value instead of .
+         3.  Ensure the  callback from the mutation invalidates the query cache to refresh the list.
+         4.  Test by adding a new currency via the UI.
+     - **Status:** IN PROGRESS
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** frontend
+
+**In progress Task List**:
+  - None
+
+**Upcoming and Future Tasks**
+*   **Upcoming Tasks:**
+    *   **(P1) Add Sub-tabs to Plans and Resources pages:** The user wants to replicate the sub-tab design from the Partner Orgs page for the Plans and Resources sections to improve navigation and organization.
+*   **Future Tasks (from PRD):**
+    *   **(P2) Google Drive & OneDrive Integration.**
+    *   **(P2) Customer Portal Enhancements:** Implement self-service subscription cancellation, display renewal dates, and a Reorder button.
+    *   **(P2) Centralize Email Settings.**
+
+**Completed work in this session**
+- **Roles & Permissions Overhaul:** Implemented a new granular, module-based permission system (/ per module) and defined strict super admin roles.
+- **Role System Cleanup:** Completely removed the Partner Staff role from the backend, frontend, and database.
+- **Data Wipe:** Wiped all tenants, users (except the root admin), orders, and other transactional data from the database as requested.
+- **UI Restructuring:**
+    - Removed the top-level Roles tab.
+    - Added a Presets sub-tab within the Users tab to display built-in role templates.
+    - Added a Tags sub-tab to the Partner Orgs page for managing tags.
+- **Bug Fixes:**
+    - Prevented platform admins from being assigned to partner organizations and vice-versa.
+    - Fixed an issue where the user edit form incorrectly showed No Access for users with Full Access.
+    - Added a searchable partner org dropdown when creating partner-level users.
+    - Ensured only one super admin can exist per partner organization.
+    - Added the Partner Org name as a column in the main Users table.
+- **Default Currency:** Set the default base currency to USD when creating a new Partner Org.
+
+**Earlier issues found/mentioned but not fixed**
+   - None.
+
+**Known issue recurrence from previous fork**
+  - **Module-wise roles & permissions:** This was a recurring request from a previous fork and has now been fully re-implemented and resolved in this session.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Granular, Module-Based Permissions:** The core concept is attaching a  object to each user document, which dictates their access rights across the application.
+- **Singleton Super Admin:** Logic in the backend enforces that only one  can exist for the platform and only one  can exist per partner tenant.
+- **Strict Role Scoping:** Backend guards now prevent assigning platform-level roles (e.g., ) to users outside the main platform tenant ().
+- **Dynamic UI Rendering:** Frontend components like sidebars, tabs, and action buttons are conditionally rendered based on the  and  functions derived from the user's permissions.
+- **Database Seeding/Wiping:** The agent created and executed a script to programmatically wipe all collections in the database, leaving only a single root user, effectively resetting the application's state.
+
+**key DB schema**
+  - **users** (collection, modified):
+    - : Enum, now one of , , , . The  role was removed.
+    - : A new dictionary field storing module keys and their corresponding access level ( or ).
+  - All other collections (, , , etc.) were wiped of all data. The schema remains, but they are empty.
+
+**All files of reference**
+*   **Files related to pending issue/task:**
+    *    (Contains the Add button bug)
+    *    (Will need refactoring for sub-tabs)
+    *    (Serves as a reference for implementing sub-tabs)
+*   **Key files from recent implementation:**
+    *    (The source of truth for permission logic)
+    -  (Contains the new user management API logic)
+    *    (The main frontend implementation of the new user management UI)
+    -  (The script used to wipe the database)
+
+**Areas that need refactoring**:
+-  and a to-be-created  need to be refactored to support a nested, sub-tab layout.
+
+**key api endpoints**
+*   **New:**
+    *   : Atomically changes the  for a partner org.
+*   **Modified:**
+    *   : Returns all available modules and identifies which are partner-specific.
+    *   : Rewritten to handle ,  for partner user creation, and role scoping guards.
+    *   : Rewritten to handle updates to  and  with new validation.
+    *   : The response now includes the  for each user.
+*   **Removed:**
+    - All endpoints related to creating/editing custom roles (formerly in ) have been deleted.
+
+**Critical Info for New Agent**
+1.  **Immediate Priority (P0):** Your first task is to fix the broken Add button in the **Admin > Settings > Supported Currencies** tab. The previous agent identified the likely cause in .
+2.  **Next Task (P1):** After fixing the bug, implement the user's request to add **sub-tabs** to the Plans and Resources pages, using the Partner Orgs page () as a design reference.
+3.  **The Database is Empty:** The user requested a full data wipe. All data (partners, users, etc.) except for the single root admin () has been deleted. This is the expected state.
+4.  **The New Permission System is Live:** The application now operates on a granular, module-based permission model. All user management logic (UI and API) has been significantly changed. Refer to  and  for a complete understanding before making any changes to user management.
+
+**documents and test reports created in this job**
+  -  (updated with all completed work)
+  -  through 
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.   **Request/Bug:** What is the design of the tabs in Partner Orgs called? I want that for Plans and Resources. Also, the Add button in Supported Currencies doesn't work. (Status: **IN PROGRESS**)
+2.   **Question:** What are the tabs in Partner Orgs called? (e.g., Partner List, Types, etc.) (Status: **ANSWERED**)
+3.  **Confirmation:** User confirmed to wipe all data except for the root  account. (Status: **DONE**)
+4.  **Request:** Delete the Partner Staff role and delete all data from the application. (Status: **PARTIALLY DONE**, pending confirmation on data wipe scope)
+5.  **Question/Bug Report:** What is the difference between Partner Staff and Admin? How can a partner user become a platform admin? (Status: **ANSWERED & RESOLVED**)
+6.  **Confirmation:** User agreed with the agent's proposed fix for role/permission bugs. (Status: **DONE**)
+7.  **Bug Report:** A series of bugs related to the new role system: Platform super admin is not a selectable role; a user with Full Access appears to have no access on edit; partner org selection is missing when creating a partner user; multiple super admins can be created. (Status: **RESOLVED**)
+8.  **Request:** Default base currency should be USD. Does this update in the partner's view? (Status: **RESOLVED**)
+9.  **Request/Bug Report:** The Roles tab in the admin panel doesn't work. It should be a sub-tab within Users. Merge or delete Roles. (Status: **RESOLVED**)
+10. **Request/Question:** Add a Tags management tab. Add platform admin as a creatable role. Re-specified the entire roles and permissions logic in detail. (Status: **RESOLVED**)
+
+**Project Health Check:**
+- **Broken**: YES (The Add Currency feature is non-functional).
+- **Mocked**: None.
+
+**3rd Party Integrations**
+*   GoCardless (Payments)
+*   Stripe (Payments)
+*   Zoho Mail, Zoho WorkDrive, Zoho CRM, Zoho Books
+*   Resend (Email)
+*    (FX rates)
+*    &  (Frontend PDF Generation)
+*    (Backend Scheduled Jobs)
+*    &  (Backend, for Invoice PDF Generation)
+
+**Testing status**
+  - Testing agent used after significant changes: YES, used multiple times after the permissions overhaul and subsequent fixes, with all tests passing.
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: None.
+  - Known regressions: The Add Currency feature is now broken.
+
+**Credentials to test flow:**
+- **Platform Super Admin:**
+    - Email: 
+    - Password: 
+- **All other users have been deleted.**
+
+**What agent forgot to execute**
+The agent was in the process of debugging the Add Currency button bug and has not yet started the user's new feature request to add sub-tabs to the Plans and Resources pages.</analysis>
