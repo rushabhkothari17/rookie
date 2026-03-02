@@ -247,6 +247,8 @@ async def admin_update_user(
             updates["module_permissions"] = {}  # super admin: no restrictions
         elif new_role in ("platform_admin",) and caller_role != "platform_super_admin":
             raise HTTPException(403, "Only the platform super admin can assign the platform admin role")
+        elif new_role == "platform_admin" and user.get("tenant_id") not in ("automate-accounts", None):
+            raise HTTPException(400, "Cannot assign platform admin role to a user outside the platform organisation")
         else:
             updates["role"] = new_role
 
