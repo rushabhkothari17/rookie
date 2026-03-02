@@ -295,69 +295,28 @@ export function SubscriptionsTab() {
       {/* Stats Dashboard */}
       <SubscriptionsStats />
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap gap-2 items-end">
-          <Input placeholder="Customer email" value={email} onChange={e => setEmail(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-sub-filter-email" />
-          <Input placeholder="Sub # (SUB-...)" value={subNumberFilter} onChange={e => setSubNumberFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-sub-number" />
-          <Input placeholder="Processor ID" value={processorIdFilter} onChange={e => setProcessorIdFilter(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-processor-id" />
-          <Input placeholder="Plan name" value={planFilter} onChange={e => setPlanFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-sub-filter-plan" />
-          <Select value={status || "all"} onValueChange={v => setStatus(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-sub-filter-status"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Statuses</SelectItem>{subStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={payment || "all"} onValueChange={v => setPayment(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-sub-filter-payment"><SelectValue placeholder="All Methods" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Methods</SelectItem>{paymentMethods.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-          </Select>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Renewal</span>
-            <Input type="date" value={renewalFrom} onChange={e => setRenewalFrom(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-renewal-from" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={renewalTo} onChange={e => setRenewalTo(e.target.value)} className="h-8 text-xs w-32" data-testid="admin-sub-filter-renewal-to" />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Created</span>
-            <Input type="date" value={createdFrom} onChange={e => setCreatedFrom(e.target.value)} className="h-8 text-xs w-32" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={createdTo} onChange={e => setCreatedTo(e.target.value)} className="h-8 text-xs w-32" />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Start</span>
-            <Input type="date" value={startFrom} onChange={e => setStartFrom(e.target.value)} className="h-8 text-xs w-32" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={startTo} onChange={e => setStartTo(e.target.value)} className="h-8 text-xs w-32" />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Contract End</span>
-            <Input type="date" value={contractEndFrom} onChange={e => setContractEndFrom(e.target.value)} className="h-8 text-xs w-32" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={contractEndTo} onChange={e => setContractEndTo(e.target.value)} className="h-8 text-xs w-32" />
-          </div>
-          <Button size="sm" variant="outline" onClick={clearFilters} className="h-8 text-xs">Clear</Button>
-        </div>
-      </div>
+      {/* Filters removed — use column headers */}
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <Table className="min-w-[900px] text-sm" data-testid="admin-subs-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              {sortHeader("created_at", "Created")}
-              <TableHead>Sub #</TableHead>
-              <TableHead>Processor ID</TableHead>
-              <TableHead>Customer Email</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Tax</TableHead>
-              <TableHead>Currency</TableHead>
-              {sortHeader("renewal_date", "Renewal")}
-              {sortHeader("start_date", "Start")}
-              {sortHeader("contract_end_date", "Contract End")}
-              <TableHead>Payment</TableHead>
-              <TableHead>Status</TableHead>
-              {isPlatformAdmin && <TableHead>Partner</TableHead>}
-              <TableHead>Actions</TableHead>
+              {sortColHeader("created_at", "Created", "date-range", { filterValue: { from: createdFrom, to: createdTo }, onFilter: (v: any) => { setCreatedFrom(v.from || ""); setCreatedTo(v.to || ""); }, onClearFilter: () => { setCreatedFrom(""); setCreatedTo(""); } })}
+              {sortColHeader("sub_number", "Sub #", "text", { filterValue: subNumberFilter, onFilter: setSubNumberFilter, onClearFilter: () => setSubNumberFilter("") })}
+              <ColHeader label="Processor ID" colKey="processor_id" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="text" filterValue={processorIdFilter} onFilter={setProcessorIdFilter} onClearFilter={() => setProcessorIdFilter("")} />
+              <ColHeader label="Customer Email" colKey="email" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="text" filterValue={email} onFilter={setEmail} onClearFilter={() => setEmail("")} />
+              <ColHeader label="Plan" colKey="plan" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="text" filterValue={planFilter} onFilter={setPlanFilter} onClearFilter={() => setPlanFilter("")} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Amount</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Tax</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Currency</th>
+              {sortColHeader("renewal_date", "Renewal", "date-range", { filterValue: { from: renewalFrom, to: renewalTo }, onFilter: (v: any) => { setRenewalFrom(v.from || ""); setRenewalTo(v.to || ""); }, onClearFilter: () => { setRenewalFrom(""); setRenewalTo(""); } })}
+              {sortColHeader("start_date", "Start", "date-range", { filterValue: { from: startFrom, to: startTo }, onFilter: (v: any) => { setStartFrom(v.from || ""); setStartTo(v.to || ""); }, onClearFilter: () => { setStartFrom(""); setStartTo(""); } })}
+              {sortColHeader("contract_end_date", "Contract End", "date-range", { filterValue: { from: contractEndFrom, to: contractEndTo }, onFilter: (v: any) => { setContractEndFrom(v.from || ""); setContractEndTo(v.to || ""); }, onClearFilter: () => { setContractEndFrom(""); setContractEndTo(""); } })}
+              <ColHeader label="Payment" colKey="payment" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="status" filterValue={payment || "all"} onFilter={v => setPayment(v === "all" ? "" : v)} onClearFilter={() => setPayment("")} statusOptions={[["all", "All"], ...paymentMethods.map(m => [m, m] as [string, string])]} />
+              <ColHeader label="Status" colKey="status" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="status" filterValue={status || "all"} onFilter={v => setStatus(v === "all" ? "" : v)} onClearFilter={() => setStatus("")} statusOptions={[["all", "All"], ...subStatuses.map(s => [s, s] as [string, string])]} />
+              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
