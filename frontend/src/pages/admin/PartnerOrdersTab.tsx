@@ -410,36 +410,8 @@ export function PartnerOrdersTab() {
         </div>
       )}
 
-      {/* Filters + Create */}
+      {/* Create */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Input
-          placeholder="Search orders…"
-          value={filters.search}
-          onChange={e => { setFilters(f => ({ ...f, search: e.target.value })); setPage(1); }}
-          className="w-48"
-          data-testid="orders-search"
-        />
-        <Select value={filters.partner_id || "all"} onValueChange={v => { setFilters(f => ({ ...f, partner_id: v === "all" ? "" : v })); setPage(1); }}>
-          <SelectTrigger className="w-44"><SelectValue placeholder="All partners" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All partners</SelectItem>
-            {tenants.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={filters.status || "all"} onValueChange={v => { setFilters(f => ({ ...f, status: v === "all" ? "" : v })); setPage(1); }}>
-          <SelectTrigger className="w-36"><SelectValue placeholder="All statuses" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={filters.plan_id || "all"} onValueChange={v => { setFilters(f => ({ ...f, plan_id: v === "all" ? "" : v })); setPage(1); }}>
-          <SelectTrigger className="w-36"><SelectValue placeholder="All plans" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All plans</SelectItem>
-            {plans.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
         <Button size="sm" variant="outline" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
         <div className="ml-auto">
           <Button onClick={() => setShowCreate(true)} data-testid="create-partner-order-btn">
@@ -451,24 +423,24 @@ export function PartnerOrdersTab() {
       {/* Table */}
       <div className="rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-sm" data-testid="partner-orders-table">
-          <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+          <thead className="bg-slate-50">
             <tr>
-              <th className="text-left px-4 py-3">Order #</th>
-              <th className="text-left px-4 py-3">Partner</th>
-              <th className="text-left px-4 py-3">Description</th>
-              <th className="text-left px-4 py-3">Amount</th>
-              <th className="text-left px-4 py-3">Method</th>
-              <th className="text-left px-4 py-3">Status</th>
-              <th className="text-left px-4 py-3">Date</th>
-              <th className="text-right px-4 py-3">Actions</th>
+              <ColHeader label="Order #" colKey="order_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={filters.search} onFilter={v => { setFilters(f => ({ ...f, search: v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, search: "" })); setPage(1); }} />
+              <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.partnerName} onFilter={v => setCF("partnerName", v)} onClearFilter={() => setCF("partnerName", "")} />
+              <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.description} onFilter={v => setCF("description", v)} onClearFilter={() => setCF("description", "")} />
+              <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "" })} />
+              <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={filters.payment_method || "all"} onFilter={v => { setFilters(f => ({ ...f, payment_method: v === "all" ? "" : v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, payment_method: "" })); setPage(1); }} statusOptions={[["all", "All"], ["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={filters.status || "all"} onFilter={v => { setFilters(f => ({ ...f, status: v === "all" ? "" : v })); setPage(1); }} onClearFilter={() => { setFilters(f => ({ ...f, status: "" })); setPage(1); }} statusOptions={[["all", "All"], ["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"]]} />
+              <ColHeader label="Date" colKey="date" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.date} onFilter={v => setCF("date", v)} onClearFilter={() => setCF("date", { from: "", to: "" })} />
+              <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr><td colSpan={8} className="text-center py-8 text-slate-400">Loading…</td></tr>
-            ) : orders.length === 0 ? (
+            ) : displayOrders.length === 0 ? (
               <tr><td colSpan={8} className="text-center py-8 text-slate-400">No orders found.</td></tr>
-            ) : orders.map(order => (
+            ) : displayOrders.map(order => (
               <tr key={order.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3 font-mono text-xs text-slate-600">{order.order_number}</td>
                 <td className="px-4 py-3 font-medium">{order.partner_name}</td>
