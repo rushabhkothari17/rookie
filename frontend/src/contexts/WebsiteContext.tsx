@@ -213,6 +213,7 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   quote_form_schema: "",
   scope_form_schema: "",
   signup_form_schema: "",
+  partner_signup_form_schema: "",
   email_from_name: "",
   email_article_subject_template: "Article: {{article_title}}",
   email_article_cta_text: "View Article",
