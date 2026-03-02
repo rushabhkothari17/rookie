@@ -635,6 +635,14 @@ function PlansSection() {
                   )}
                 </React.Fragment>
               ))}
+              {displayPlans.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
+                    No plans match the current filters.{" "}
+                    <button className="text-blue-500 hover:underline text-xs" onClick={() => setFilters({ name: "", status: "all", price: { min: "", max: "" }, orgs: { min: "", max: "" }, date: { from: "", to: "" } })}>Clear all filters</button>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
