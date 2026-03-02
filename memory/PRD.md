@@ -3,6 +3,22 @@
 ## Original Problem Statement
 Build a multi-tenant SaaS platform with a comprehensive B2B partner management layer including partner licensing, plan management, partner billing (orders & subscriptions), a partner-facing portal, automated email notifications, and scheduled background jobs.
 
+---
+
+## Latest Updates (March 2, 2026)
+
+### Completed: Large-Scale Filter Refactor ✅
+- Converted text/radio filters to multi-select dropdowns with search across 7 admin tables
+- Tables updated: Plans, Partner Subscriptions, Partner Orders, Partner Submissions, Users
+- Component enhanced: `ColHeader.tsx` with "multi-select" filter type
+- Backend updated: Comma-separated filter values parsed with MongoDB `$in` operator
+- **Testing Status:** 100% pass (iteration_171.json)
+
+### Bug Fixes Applied:
+1. **Stripe 403 Error** - Fixed in `Cart.tsx` by disabling payment options based on customer permissions
+2. **Partner Orders 405 Error** - Testing agent restored missing `@router.get` decorator in `partner_billing.py`
+3. **Customers Table** - Added Email text search + Country multi-select dropdown
+
 ## Target Users
 - **Platform Admins**: Manage all tenants, partners, products, billing
 - **Partner Admins**: Manage their own customers, storefronts, view own billing
