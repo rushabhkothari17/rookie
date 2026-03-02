@@ -405,7 +405,7 @@ async def create_partner_admin(
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered for this tenant")
 
-    valid_roles = ("partner_super_admin", "partner_admin", "partner_staff")
+    valid_roles = ("partner_super_admin", "partner_admin")
     if payload.role not in valid_roles:
         raise HTTPException(status_code=400, detail=f"Role must be one of: {valid_roles}")
 
