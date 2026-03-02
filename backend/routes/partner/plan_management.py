@@ -769,6 +769,7 @@ async def one_time_upgrade(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     """Buy extra per-module limits for the current billing cycle.  Resets on renewal."""
+    from services.checkout_service import get_fx_rate
     tid = tenant_id_of(admin)
 
     for item in payload.upgrades:
