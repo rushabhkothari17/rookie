@@ -392,7 +392,7 @@ async def upgrade_plan(
                 "amount": prorata_amount,
                 "currency": currency,
             }
-        except Exception as exc:
+        except Exception:
             # Stripe failed — fall through to offline billing so upgrade isn't blocked
             await db.partner_orders.update_one(
                 {"id": order_id},
