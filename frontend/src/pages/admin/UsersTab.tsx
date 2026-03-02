@@ -362,9 +362,9 @@ export function UsersTab() {
   // Edit role options (excludes super admin roles + filters based on caller)
   const editableRoles = (currentRole: string) => {
     const base = isPlatformSuperAdmin
-      ? ["platform_admin", "partner_super_admin", "partner_admin", "partner_staff"]
+      ? ["platform_admin", "partner_super_admin", "partner_admin"]
       : isPartnerSuperAdmin
-      ? ["partner_admin", "partner_staff"]
+      ? ["partner_admin"]
       : [];
     return base.filter(r => r !== "platform_super_admin");
   };
