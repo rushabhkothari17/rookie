@@ -47,13 +47,8 @@ export default function Signup() {
 
   // Countries/provinces from taxes module
   const countries = useCountries(partnerCode || undefined);
-  const [partnerOrgCountry, setPartnerOrgCountry] = useState("");
-  const partnerOrgProvinces = useProvinces(partnerOrgCountry);
-
-  const [partnerOrg, setPartnerOrg] = useState({
-    name: "", admin_name: "", admin_email: "", admin_password: "", base_currency: "USD",
-    address: { line1: "", line2: "", city: "", region: "", postal: "", country: "Canada" }
-  });
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
+  const [partnerOrg, setPartnerOrg] = useState<PartnerOrgFormValue>(EMPTY_PARTNER_ORG);
   const [partnerLoading, setPartnerLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
