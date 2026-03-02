@@ -156,63 +156,32 @@ export function EnquiriesTab() {
         actions={null}
       />
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap gap-2 items-end">
-          <Input
-            placeholder="Customer email…"
-            value={emailFilter}
-            onChange={e => setEmailFilter(e.target.value)}
-            className="h-8 text-xs w-44"
-            data-testid="enquiries-email-filter"
-          />
-          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="enquiries-status-filter">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {STATUS_OPTIONS.map(s => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">From</span>
-            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="enquiries-start-date" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" data-testid="enquiries-end-date" />
-          </div>
-          <Button size="sm" variant="outline" onClick={clearFilters} className="h-8 text-xs" data-testid="enquiries-clear-filters">
-            Clear
-          </Button>
-        </div>
-      </div>
+      {/* Filters removed — use column headers */}
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <Table data-testid="enquiries-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead>Date</TableHead>
-              <TableHead>Order #</TableHead>
-              <TableHead>Customer</TableHead>
-              {isPlatformAdmin && <TableHead>Partner</TableHead>}
-              <TableHead>Products</TableHead>
-              <TableHead>Summary</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <ColHeader label="Date" colKey="date" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
+              <ColHeader label="Order #" colKey="order" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Customer" colKey="customer" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={emailFilter} onFilter={v => { setEmailFilter(v); setPage(1); }} onClearFilter={() => { setEmailFilter(""); setPage(1); }} />
+              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Products</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Summary</th>
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["scope_pending", "Pending"], ["scope_requested", "Requested"], ["responded", "Responded"], ["closed", "Closed"]]} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {enquiries.length === 0 && (
+            {displayEnquiries.length === 0 && (
               <TableRow>
                 <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8">
                   No enquiries found.
                 </TableCell>
               </TableRow>
             )}
-            {enquiries.map((e) => (
+            {displayEnquiries.map((e) => (
               <TableRow key={e.id} data-testid={`enquiry-row-${e.id}`}>
                 <TableCell className="whitespace-nowrap text-xs">{e.created_at?.slice(0, 10)}</TableCell>
                 <TableCell className="font-mono text-xs">{e.order_number}</TableCell>

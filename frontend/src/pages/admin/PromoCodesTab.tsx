@@ -230,52 +230,26 @@ export function PromoCodesTab() {
         </>
       } />
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap gap-2 items-end">
-          <Input placeholder="Filter by code…" value={codeFilter} onChange={e => setCodeFilter(e.target.value)} className="h-8 text-xs w-36" data-testid="admin-promo-code-filter" />
-          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-promo-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem><SelectItem value="Expired">Expired</SelectItem></SelectContent>
-          </Select>
-          <Select value={appliesToFilter || "all"} onValueChange={v => setAppliesToFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-promo-applies-filter"><SelectValue placeholder="All Types" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Types</SelectItem><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time</SelectItem><SelectItem value="subscription">Subscription</SelectItem></SelectContent>
-          </Select>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Created</span>
-            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Expiry</span>
-            <Input type="date" value={expiryFrom} onChange={e => setExpiryFrom(e.target.value)} className="h-8 text-xs w-32" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={expiryTo} onChange={e => setExpiryTo(e.target.value)} className="h-8 text-xs w-32" />
-          </div>
-          <Button size="sm" variant="outline" onClick={() => { setCodeFilter(""); setStatusFilter(""); setAppliesToFilter(""); setStartDate(""); setEndDate(""); setExpiryFrom(""); setExpiryTo(""); }} className="h-8 text-xs" data-testid="admin-promo-clear-filters">Clear</Button>
-        </div>
-      </div>
+      {/* Filters removed — use column headers */}
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
         <Table data-testid="admin-promo-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead>Code</TableHead>
-              <TableHead>Discount</TableHead>
-              <TableHead>Applies To</TableHead>
-              <TableHead>Expiry</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Enabled</TableHead>
-              <TableHead>Actions</TableHead>
+              <ColHeader label="Code" colKey="code" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={codeFilter} onFilter={v => { setCodeFilter(v); setPage(1); }} onClearFilter={() => { setCodeFilter(""); setPage(1); }} />
+              <ColHeader label="Discount" colKey="discount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Applies To" colKey="applies_to" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={appliesToFilter || "all"} onFilter={v => { setAppliesToFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setAppliesToFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["both", "Both"], ["one-time", "One-time"], ["subscription", "Subscription"]]} />
+              <ColHeader label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: expiryFrom, to: expiryTo }} onFilter={v => { setExpiryFrom(v.from || ""); setExpiryTo(v.to || ""); }} onClearFilter={() => { setExpiryFrom(""); setExpiryTo(""); }} />
+              <ColHeader label="Usage" colKey="uses" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Created" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["Active", "Active"], ["Inactive", "Inactive"], ["Expired", "Expired"]]} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Enabled</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((promo) => (
+            {displayPromos.map((promo) => (
               <TableRow key={promo.id} data-testid={`admin-promo-row-${promo.id}`} className="border-b border-slate-100">
                 <TableCell className="font-mono font-semibold">{promo.code}</TableCell>
                 <TableCell>{promo.discount_type === "percent" ? `${promo.discount_value}%` : `$${promo.discount_value}`}</TableCell>
