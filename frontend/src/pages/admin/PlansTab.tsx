@@ -860,8 +860,8 @@ function CouponsSection() {
         <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center text-slate-400 text-sm">
           No coupons yet. Create your first coupon to offer discounts on plan upgrades.
         </div>
-      ) : null}
-      <div className={`rounded-xl border border-slate-200 overflow-hidden ${coupons.length === 0 ? "hidden" : ""}`}>
+      ) : (
+        <div className="rounded-xl border border-slate-200 overflow-hidden">
           <table className="w-full text-sm" data-testid="coupons-table">
             <thead className="bg-slate-50">
               <tr>
