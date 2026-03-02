@@ -81,6 +81,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
         <AuthTile title="Login Page" description="Login title, subtitle, portal label" preview={ws.login_title || undefined} onEdit={() => setAuthSlide("login")} testId="auth-tile-login" />
         <AuthTile title="Sign Up Page" description={`Register page + ${getFieldCount(ws.signup_form_schema)} form fields`} preview={ws.register_title || undefined} onEdit={() => setAuthSlide("signup")} testId="auth-tile-signup" />
         <AuthTile title="Verify Email" description="Verification page content" preview={ws.verify_email_title || undefined} onEdit={() => setAuthSlide("verify_email")} testId="auth-tile-verify-email" />
+        <AuthTile title="Partner Sign-Up Page" description={`Partner registration form · ${getFieldCount(ws.partner_signup_form_schema)} fields`} onEdit={() => setAuthSlide("partner_signup")} testId="auth-tile-partner-signup" />
       </div>
 
       <SectionDivider label="App Pages" />
