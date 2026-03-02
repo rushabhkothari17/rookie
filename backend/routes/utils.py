@@ -132,35 +132,28 @@ _FALLBACK_COUNTRIES = [
 
 @router.get("/utils/countries")
 async def get_countries(partner_code: str = Query(None, description="Partner code to scope tax-table lookup")):
-    """
-    Return all countries for address forms (full ISO list).
-    Countries with tax-table entries are sorted to the top.
-    """
-    # Collect tax-configured country codes to pin at top
-    prioritised: set = set()
+    """Return countries that have a tax-table entry (scoped to the tenant if partner_code supplied)."""
+    query: dict = {}
     try:
-        query: dict = {}
         if partner_code:
             tenant = await db.tenants.find_one({"code": partner_code.strip().lower()}, {"_id": 0, "id": 1})
             if tenant:
                 query["tenant_id"] = tenant["id"]
         raw = await db.tax_tables.distinct("country_code", query)
-        for c in raw:
-            name = _ISO_TO_NAME.get(c.upper().strip())
-            if name:
-                prioritised.add(name)
+        codes = sorted(set(c.upper().strip() for c in raw if c))
     except Exception:
-        pass
+        codes = []
 
-    # Full global list
-    all_countries = [
-        {"value": name, "label": name}
-        for name in sorted(_ISO_TO_NAME.values())
-    ]
+    result = []
+    seen: set = set()
+    for code in codes:
+        name = _ISO_TO_NAME.get(code)
+        if not name:
+            # Some entries store the full name as country_code — accept if > 2 chars
+            name = code.title() if len(code) > 2 else None
+        if name and name not in seen:
+            seen.add(name)
+            result.append({"value": name, "label": name})
 
-    if prioritised:
-        top  = [c for c in all_countries if c["value"] in prioritised]
-        rest = [c for c in all_countries if c["value"] not in prioritised]
-        return {"countries": top + rest}
-
-    return {"countries": all_countries}
+    result.sort(key=lambda x: x["label"])
+    return {"countries": result if result else _FALLBACK_COUNTRIES}
