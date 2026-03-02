@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import React from "react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
@@ -15,7 +15,8 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Power, PowerOff, ScrollText, ChevronDown, ChevronUp, Tag, Zap, Lock, DollarSign, Gift, LayoutList, BarChart2, TrendingDown, ArrowUpRight, Receipt, PlusCircle, MinusCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Power, PowerOff, ScrollText, ChevronDown, ChevronUp, ChevronsUpDown, Tag, Zap, Lock, DollarSign, Gift, LayoutList, BarChart2, TrendingDown, ArrowUpRight, Receipt, PlusCircle, MinusCircle } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
