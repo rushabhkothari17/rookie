@@ -437,36 +437,20 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
 
         <TabsContent value="resources">
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap gap-2 items-end">
-          <Input placeholder="Search title or ID…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="resources-search-filter" />
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="resources-category-filter"><SelectValue placeholder="All categories" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All categories</SelectItem>{(dynamicCategories.length > 0 ? dynamicCategories.map(c => c.name) : HARDCODED_CATEGORIES).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-          </Select>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Created</span>
-            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" data-testid="resources-start-date" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" data-testid="resources-end-date" />
-          </div>
-          <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setCategoryFilter("all"); setStartDate(""); setEndDate(""); }} className="h-8 text-xs" data-testid="resources-clear-filters">Clear</Button>
-        </div>
-      </div>
+      {/* Filters removed — use column headers */}
 
       <div className="rounded-xl border border-slate-200 overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead className="text-xs">ID</TableHead>
-              <TableHead className="text-xs">Created</TableHead>
-              <TableHead className="text-xs">Modified</TableHead>
-              <TableHead className="text-xs">Category</TableHead>
-              <TableHead className="text-xs">Price</TableHead>
-              <TableHead className="text-xs">Visible to</TableHead>
-              {isPlatformAdmin && <TableHead className="text-xs">Partner</TableHead>}
-              <TableHead className="text-xs">Actions</TableHead>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">ID</th>
+              <ColHeader label="Created" colKey="created" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Modified</th>
+              <ColHeader label="Category" colKey="category" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="status" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter("all"); setPage(1); }} statusOptions={[["all", "All categories"], ...(dynamicCategories.length > 0 ? dynamicCategories : HARDCODED_CATEGORIES.map(c => ({ name: c }))).map((c: any) => [c.name, c.name] as [string, string])]} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Price</th>
+              <ColHeader label="Title / Visible" colKey="title" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
+              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
