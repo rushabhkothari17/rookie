@@ -16,6 +16,7 @@ import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, ShieldCheck, Eye, Pencil, PowerOff, Power, ScrollText, Lock, Users, Zap, ChevronsUpDown, Check, AlertTriangle } from "lucide-react";
+import { ColHeader } from "@/components/shared/ColHeader";
 import { FieldTip } from "./shared/FieldTip";
 import { cn } from "@/lib/utils";
 
