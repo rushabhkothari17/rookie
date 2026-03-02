@@ -783,21 +783,31 @@ async def one_time_upgrade(
             raise HTTPException(400, f"No active rate configured for module: {item.module_key}")
         rates[item.module_key] = rate
 
+    # Partner's base currency (for FX conversion)
+    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "name": 1, "base_currency": 1})
+    base_currency = (tenant or {}).get("base_currency", "USD")
+
     line_items = []
     subtotal = 0.0
     for item in payload.upgrades:
         r = rates[item.module_key]
-        item_total = round(item.quantity * r["price_per_record"], 2)
+        rate_currency = r.get("currency", "USD")
+        price_in_base = r["price_per_record"]
+        if rate_currency != base_currency:
+            fx = await get_fx_rate(rate_currency, base_currency)
+            price_in_base = round(r["price_per_record"] * fx, 4)
+        item_total = round(item.quantity * price_in_base, 2)
         subtotal += item_total
         line_items.append({
             "module_key": item.module_key,
             "label": r.get("label", item.module_key),
             "quantity": item.quantity,
-            "price_per_record": r["price_per_record"],
+            "price_per_record": price_in_base,
+            "rate_currency": rate_currency,
             "total": item_total,
         })
 
-    currency = rates[payload.upgrades[0].module_key].get("currency", "GBP")
+    currency = base_currency
     final_amount, coupon_id = await _apply_coupon(payload.coupon_code, "one_time", None, subtotal, tid)
 
     # Get current subscription for billing_period_end
