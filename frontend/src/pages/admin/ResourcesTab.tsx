@@ -408,25 +408,33 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
         </>
       } />
 
-      {/* Sub-tab switcher */}
-      <div className="flex gap-1 border-b border-slate-200">
-        <button onClick={() => setSubTab("resources")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${subTab === "resources" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-resources">Resources</button>
-        <button onClick={() => setSubTab("templates")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "templates" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-templates"><LayoutTemplate size={13} /> Templates</button>
-        <button onClick={() => setSubTab("email-templates")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "email-templates" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-email-templates"><Mail size={13} /> Email Templates</button>
-        <button onClick={() => setSubTab("categories")} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${subTab === "categories" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-700"}`} data-testid="subtab-categories"><Tag size={13} /> Categories</button>
-      </div>
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as typeof subTab)}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="resources" data-testid="subtab-resources">Resources</TabsTrigger>
+          <TabsTrigger value="templates" data-testid="subtab-templates">
+            <LayoutTemplate size={13} className="mr-1.5" />Templates
+          </TabsTrigger>
+          <TabsTrigger value="email-templates" data-testid="subtab-email-templates">
+            <Mail size={13} className="mr-1.5" />Email Templates
+          </TabsTrigger>
+          <TabsTrigger value="categories" data-testid="subtab-categories">
+            <Tag size={13} className="mr-1.5" />Categories
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Templates sub-tab */}
-      {subTab === "templates" && <ArticleTemplatesTab categories={dynamicCategories} />}
+        <TabsContent value="templates">
+          <ArticleTemplatesTab categories={dynamicCategories} />
+        </TabsContent>
 
-      {/* Email Templates sub-tab */}
-      {subTab === "email-templates" && <ArticleEmailTemplatesTab />}
+        <TabsContent value="email-templates">
+          <ArticleEmailTemplatesTab />
+        </TabsContent>
 
-      {/* Categories sub-tab */}
-      {subTab === "categories" && <ArticleCategoriesTab />}
+        <TabsContent value="categories">
+          <ArticleCategoriesTab />
+        </TabsContent>
 
-      {/* Resources sub-tab */}
-      {subTab === "resources" && (<>
+        <TabsContent value="resources">
 
       {/* Filters */}
       <div className="rounded-xl border border-slate-200 bg-white p-3">
