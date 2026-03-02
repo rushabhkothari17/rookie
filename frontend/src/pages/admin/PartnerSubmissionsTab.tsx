@@ -143,10 +143,6 @@ export function PartnerSubmissionsTab() {
         <div className="flex justify-center py-16">
           <Loader2 className="animate-spin text-slate-400" size={24} />
         </div>
-      ) : displayItems.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400" data-testid="submissions-admin-empty">
-          No submissions found.
-        </div>
       ) : (
         <div className="rounded-2xl border border-slate-200 overflow-hidden">
           <Table data-testid="submissions-admin-table">
@@ -162,7 +158,13 @@ export function PartnerSubmissionsTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayItems.map(item => {
+              {displayItems.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="px-4 py-12 text-center text-sm text-slate-400" data-testid="submissions-admin-empty">
+                    No submissions found.
+                  </TableCell>
+                </TableRow>
+              ) : displayItems.map(item => {
                 const s = STATUS_MAP[item.status] || STATUS_MAP.pending;
                 return (
                   <TableRow key={item.id} className="hover:bg-slate-50/50" data-testid={`submission-row-${item.id}`}>
