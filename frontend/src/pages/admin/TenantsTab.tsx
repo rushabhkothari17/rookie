@@ -624,32 +624,6 @@ export function TenantsTab() {
               <label className="text-xs font-medium text-slate-600">Organization Name</label>
               <Input value={editDetailsForm.name} onChange={e => setEditDetailsForm(p => ({ ...p, name: e.target.value }))} data-testid="edit-org-name" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Partner Type</label>
-                <Select value={editDetailsForm.partner_type || "__none__"} onValueChange={v => setEditDetailsForm(p => ({ ...p, partner_type: v === "__none__" ? "" : v }))}>
-                  <SelectTrigger data-testid="edit-org-partner-type"><SelectValue placeholder="Select type…" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">— Not set —</SelectItem>
-                    {partnerTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Industry</label>
-                <Select value={editDetailsForm.industry || "__none__"} onValueChange={v => setEditDetailsForm(p => ({ ...p, industry: v === "__none__" ? "" : v }))}>
-                  <SelectTrigger data-testid="edit-org-industry"><SelectValue placeholder="Select industry…" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">— Not set —</SelectItem>
-                    {industries.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1 col-span-2">
-                <label className="text-xs font-medium text-slate-600">Tags <span className="font-normal text-slate-400">(comma-separated)</span></label>
-                <Input placeholder="e.g. vip, enterprise, us-market" value={editDetailsForm.tags} onChange={e => setEditDetailsForm(p => ({ ...p, tags: e.target.value }))} data-testid="edit-org-tags" />
-              </div>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDetails(null)}>Cancel</Button>
