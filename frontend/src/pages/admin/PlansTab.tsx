@@ -913,7 +913,6 @@ function CouponsSection() {
             </tbody>
           </table>
         </div>
-      )}
 
       {showCreate && <CouponFormDialog coupon={null} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
       {editCoupon && <CouponFormDialog coupon={editCoupon} onClose={() => setEditCoupon(null)} onSaved={() => { setEditCoupon(null); load(); }} />}
