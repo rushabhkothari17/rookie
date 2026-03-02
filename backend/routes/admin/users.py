@@ -93,9 +93,9 @@ async def admin_create_admin_user(
 
     # Determine which roles the caller can create
     if caller_role == "platform_super_admin":
-        valid_roles = ("platform_admin", "partner_super_admin", "partner_admin", "partner_staff")
+        valid_roles = ("platform_admin", "partner_super_admin", "partner_admin")
     elif caller_role == "partner_super_admin":
-        valid_roles = ("partner_admin", "partner_staff")
+        valid_roles = ("partner_admin",)
     else:
         raise HTTPException(403, "Insufficient privileges to create users")
 
