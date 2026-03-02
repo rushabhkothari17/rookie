@@ -145,7 +145,8 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 - ✅ **FX Currency Fix in Plan Billing** — COMPLETE (Mar 2026)
 - ✅ **Plan & Billing 2-Button Layout** — COMPLETE (Mar 2026)
 - ✅ **Partner Type & Industry Management** — COMPLETE (Feb 2026): TenantsTab now has 3 sub-tabs (Partner List, Partner Types, Industries); `GenericListManager` reusable CRUD component; `usePlatformList` hook; all dropdowns pull from API not hardcoded
-- ✅ **Users Tab Major UX Overhaul** — COMPLETE (Feb 2026):
+- ✅ **Partner Staff Role Removed** — COMPLETE (Feb 2026): Removed from backend valid_roles, frontend dropdowns, and role label maps; only Platform Admin, Partner Super Admin, Partner Admin remain
+- ✅ **Full Data Wipe** — COMPLETE (Feb 2026): All collections cleared; only admin@automateaccounts.local preserved
   - Role dropdown in Add User: Platform Admin, Partner Super Admin, Partner Admin, Partner Staff (no Platform Super Admin option)
   - Searchable partner org picker appears when creating partner roles from platform admin context
   - Block 2nd partner super admin with clear transfer-flow guidance
