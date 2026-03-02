@@ -957,7 +957,6 @@ async def cancel_pending_upgrade(admin: Dict[str, Any] = Depends(get_tenant_admi
          "order_type": {"$in": ["ongoing_upgrade", "one_time_upgrade"]}},
         {"$set": {"status": "cancelled", "updated_at": now_iso(),
                   "notes": "Dismissed by partner — session abandoned"}},
-        sort=[("created_at", -1)],
     )
     if result.modified_count == 0:
         raise HTTPException(404, "No pending upgrade order found")
