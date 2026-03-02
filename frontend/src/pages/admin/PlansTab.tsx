@@ -567,18 +567,18 @@ function PlansSection() {
       ) : (
         <div className="rounded-xl border border-slate-200 overflow-hidden">
           <table className="w-full text-sm" data-testid="plans-table">
-            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="text-left px-4 py-3">Plan</th>
-                <th className="text-left px-4 py-3">Price</th>
-                <th className="text-left px-4 py-3">Orgs</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-left px-4 py-3">Created</th>
-                <th className="text-right px-4 py-3">Actions</th>
+                <ColHeader label="Plan" colKey="name" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="text" filterValue={filters.name} onFilter={v => setF("name", v)} onClearFilter={() => setF("name", "")} />
+                <ColHeader label="Price" colKey="price" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="number-range" filterValue={filters.price} onFilter={v => setF("price", v)} onClearFilter={() => setF("price", { min: "", max: "" })} />
+                <ColHeader label="Orgs" colKey="orgs" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="number-range" filterValue={filters.orgs} onFilter={v => setF("orgs", v)} onClearFilter={() => setF("orgs", { min: "", max: "" })} />
+                <ColHeader label="Status" colKey="status" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="status" filterValue={filters.status} onFilter={v => setF("status", v)} onClearFilter={() => setF("status", "all")} />
+                <ColHeader label="Created" colKey="created" sortCol={sort?.col} sortDir={sort?.dir} onSort={(c, d) => setSort({ col: c, dir: d })} onClearSort={() => setSort(null)} filterType="date-range" filterValue={filters.date} onFilter={v => setF("date", v)} onClearFilter={() => setF("date", { from: "", to: "" })} />
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {plans.map(plan => (
+              {displayPlans.map(plan => (
                 <React.Fragment key={plan.id}>
                   <tr className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
