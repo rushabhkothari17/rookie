@@ -412,35 +412,23 @@ export function UsersTab() {
             ) : undefined}
           />
 
-          {/* Filters */}
-          <div className="flex gap-2 mb-4 flex-wrap">
-            <Input placeholder="Search by name or email…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="max-w-xs" data-testid="users-search" />
-            {isPlatformAdmin && partners.length > 0 && (
-              <Select value={partnerFilter} onValueChange={setPartnerFilter}>
-                <SelectTrigger className="w-44" data-testid="users-partner-filter"><SelectValue placeholder="All Partners" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Partners</SelectItem>
-                  {partners.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+          {/* Filters removed — use column headers below */}
 
           {/* Table */}
           <div className="rounded-lg border border-slate-200 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50">
-                  <TableHead className="text-xs">Name / Email</TableHead>
-                  <TableHead className="text-xs">Role</TableHead>
-                  {isPlatformAdmin && <TableHead className="text-xs">Partner Org</TableHead>}
-                  <TableHead className="text-xs">Modules</TableHead>
-                  <TableHead className="text-xs">Status</TableHead>
-                  <TableHead className="text-xs text-right">Actions</TableHead>
+                  <ColHeader label="Name / Email" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchFilter} onFilter={v => setSearchFilter(v)} onClearFilter={() => setSearchFilter("")} />
+                  <ColHeader label="Role" colKey="role" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                  {isPlatformAdmin && <ColHeader label="Partner Org" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colPartnerFilter} onFilter={v => setColPartnerFilter(v)} onClearFilter={() => setColPartnerFilter("")} />}
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Modules</th>
+                  <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {adminUsers.map(u => {
+                {displayUsers.map(u => {
                   const isImmutable = isPlatformSuperAdminUser(u);
                   const isSA = isSuperAdminUser(u);
                   const mpKeys = Object.keys(u.module_permissions || {}).filter(k => u.module_permissions[k] !== "none");
