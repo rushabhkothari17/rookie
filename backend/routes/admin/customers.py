@@ -137,7 +137,11 @@ async def admin_customers(
     # Add filters based on joined data
     match_filters = []
     if country:
-        match_filters.append({"address_data.country": {"$regex": f"^{country}$", "$options": "i"}})
+        country_list = [c.strip() for c in country.split(",") if c.strip()]
+        if len(country_list) == 1:
+            match_filters.append({"address_data.country": {"$regex": f"^{country_list[0]}$", "$options": "i"}})
+        else:
+            match_filters.append({"address_data.country": {"$in": country_list}})
     if status:
         if status == "active":
             match_filters.append({"$or": [{"user_data.is_active": True}, {"user_data.is_active": {"$exists": False}}]})

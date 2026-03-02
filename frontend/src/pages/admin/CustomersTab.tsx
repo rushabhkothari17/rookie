@@ -61,7 +61,7 @@ export function CustomersTab() {
   }, [ws.gocardless_enabled, ws.stripe_enabled]);
   const [search, setSearch] = useState("");
   const [emailSearch, setEmailSearch] = useState("");
-  const [countryFilter, setCountryFilter] = useState("");
+  const [countryFilter, setCountryFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [paymentModeFilter, setPaymentModeFilter] = useState("");
   const [partnerMapFilter, setPartnerMapFilter] = useState("all");
@@ -97,7 +97,7 @@ export function CustomersTab() {
       const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
       if (search) params.append("search", search);
       if (emailSearch) params.append("email", emailSearch);
-      if (countryFilter) params.append("country", countryFilter);
+      if (countryFilter.length > 0) params.append("country", countryFilter.join(","));
       if (statusFilter) params.append("status", statusFilter);
       if (paymentModeFilter) params.append("payment_mode", paymentModeFilter);
       const res = await api.get(`/admin/customers?${params}`);
@@ -251,7 +251,7 @@ export function CustomersTab() {
               <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={search} onFilter={v => setSearch(v)} onClearFilter={() => setSearch("")} />
               <ColHeader label="Email" colKey="email" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={emailSearch} onFilter={v => setEmailSearch(v)} onClearFilter={() => setEmailSearch("")} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">State/Province</th>
-              <ColHeader label="Country" colKey="country" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={countryFilter || "all"} onFilter={v => setCountryFilter(v === "all" ? "" : v)} onClearFilter={() => setCountryFilter("")} statusOptions={[["all", "All Countries"], ...countries.map(c => [c.value, c.label] as [string, string])]} />
+              <ColHeader label="Country" colKey="country" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={countryFilter} onFilter={v => setCountryFilter(v)} onClearFilter={() => setCountryFilter([])} statusOptions={countries.map(c => [c.value, c.label] as [string, string])} />
               <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => setStatusFilter(v === "all" ? "" : v)} onClearFilter={() => setStatusFilter("")} statusOptions={[["all", "All"], ["active", "Active"], ["inactive", "Inactive"]]} />
               <ColHeader label="Payment Methods" colKey="payment" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={paymentModeFilter || "all_modes"} onFilter={v => setPaymentModeFilter(v === "all_modes" ? "" : v)} onClearFilter={() => setPaymentModeFilter("")} statusOptions={paymentFilterOptions.map(o => [o.value, o.label] as [string, string])} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner Map</th>

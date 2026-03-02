@@ -46,7 +46,7 @@ export function ColHeader({
     filterType === "none" ? false
     : filterType === "text" ? !!filterValue
     : filterType === "status" ? filterValue !== "all" && !!filterValue
-    : filterType === "dropdown" ? filterValue !== "all" && !!filterValue
+    : filterType === "dropdown" ? Array.isArray(filterValue) && filterValue.length > 0
     : filterType === "number-range" ? !!(filterValue?.min || filterValue?.max)
     : !!(filterValue?.from || filterValue?.to);
 
@@ -107,6 +107,9 @@ export function ColHeader({
                 )}
                 {filterType === "dropdown" && (
                   <div>
+                    {(Array.isArray(filterValue) && filterValue.length > 0) && (
+                      <p className="text-[10px] text-blue-500 font-medium mb-1">{filterValue.length} selected</p>
+                    )}
                     {effectiveOptions.length > 6 && (
                       <Input
                         className="h-6 text-xs mb-1.5"
@@ -116,16 +119,26 @@ export function ColHeader({
                       />
                     )}
                     <div className="max-h-44 overflow-y-auto space-y-0.5 pr-0.5">
-                      {filteredDropdownOptions.map(([val, lbl]) => (
-                        <button
-                          key={val}
-                          onClick={() => { onFilter && onFilter(val); setDropdownSearch(""); }}
-                          className={`w-full flex items-center justify-between gap-2 text-xs px-2 py-1.5 rounded text-left hover:bg-slate-100 ${filterValue === val ? "bg-slate-100 font-semibold text-slate-800" : "text-slate-600"}`}
-                        >
-                          <span className="truncate">{lbl}</span>
-                          {filterValue === val && <Check size={11} className="shrink-0 text-blue-500" />}
-                        </button>
-                      ))}
+                      {filteredDropdownOptions.map(([val, lbl]) => {
+                        const selected = Array.isArray(filterValue) && filterValue.includes(val);
+                        const toggle = () => {
+                          const current: string[] = Array.isArray(filterValue) ? filterValue : [];
+                          const next = selected ? current.filter(v => v !== val) : [...current, val];
+                          onFilter && onFilter(next);
+                        };
+                        return (
+                          <button
+                            key={val}
+                            onClick={toggle}
+                            className={`w-full flex items-center gap-2 text-xs px-2 py-1.5 rounded text-left hover:bg-slate-100 ${selected ? "bg-slate-50 font-medium text-slate-800" : "text-slate-600"}`}
+                          >
+                            <span className={`h-3.5 w-3.5 shrink-0 rounded border flex items-center justify-center ${selected ? "bg-blue-500 border-blue-500" : "border-slate-300"}`}>
+                              {selected && <Check size={9} className="text-white" strokeWidth={3} />}
+                            </span>
+                            <span className="truncate">{lbl}</span>
+                          </button>
+                        );
+                      })}
                       {filteredDropdownOptions.length === 0 && (
                         <p className="text-xs text-slate-400 px-2 py-1.5">No results</p>
                       )}
