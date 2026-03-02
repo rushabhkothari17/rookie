@@ -579,6 +579,33 @@ function OneTimeRatesSection() {
   const [editRate, setEditRate] = useState<OTPRate | null>(null);
   const [deleteRate, setDeleteRate] = useState<OTPRate | null>(null);
 
+  // ── Sort & filter ──
+  const [sortRates, setSortRates] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [rateFilters, setRateFilters] = useState({ module: "", price: { min: "", max: "" }, currency: "", status: "all" });
+  const setRF = (key: keyof typeof rateFilters, val: any) => setRateFilters(f => ({ ...f, [key]: val }));
+
+  const displayRates = useMemo(() => {
+    let r = [...rates];
+    if (rateFilters.module) r = r.filter(x => x.label.toLowerCase().includes(rateFilters.module.toLowerCase()) || x.module_key.toLowerCase().includes(rateFilters.module.toLowerCase()));
+    if (rateFilters.price.min) r = r.filter(x => x.price_per_record >= parseFloat(rateFilters.price.min));
+    if (rateFilters.price.max) r = r.filter(x => x.price_per_record <= parseFloat(rateFilters.price.max));
+    if (rateFilters.currency) r = r.filter(x => x.currency.toLowerCase().includes(rateFilters.currency.toLowerCase()));
+    if (rateFilters.status !== "all") r = r.filter(x => rateFilters.status === "active" ? x.is_active : !x.is_active);
+    if (sortRates) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (sortRates.col === "module") { av = a.label.toLowerCase(); bv = b.label.toLowerCase(); }
+        else if (sortRates.col === "price") { av = a.price_per_record; bv = b.price_per_record; }
+        else if (sortRates.col === "currency") { av = a.currency; bv = b.currency; }
+        else if (sortRates.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
+        if (av < bv) return sortRates.dir === "asc" ? -1 : 1;
+        if (av > bv) return sortRates.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [rates, rateFilters, sortRates]);
+
   const load = async () => {
     setLoading(true);
     try {
