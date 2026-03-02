@@ -99,6 +99,17 @@ export function ColHeader({
                     ))}
                   </div>
                 )}
+                {filterType === "dropdown" && (
+                  <select
+                    className="w-full h-7 text-xs border border-slate-200 rounded-md px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                    value={filterValue || "all"}
+                    onChange={e => onFilter && onFilter(e.target.value)}
+                  >
+                    {effectiveOptions.map(([val, lbl]) => (
+                      <option key={val} value={val}>{lbl}</option>
+                    ))}
+                  </select>
+                )}
                 {filterType === "number-range" && (
                   <div className="space-y-1.5">
                     <Input className="h-7 text-xs" type="number" placeholder="Min" value={filterValue?.min || ""} onChange={e => onFilter && onFilter({ ...filterValue, min: e.target.value })} />
