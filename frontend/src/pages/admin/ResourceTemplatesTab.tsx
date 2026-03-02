@@ -142,18 +142,18 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead className="text-xs">Name</TableHead>
-              <TableHead className="text-xs">Category</TableHead>
-              <TableHead className="text-xs">Type</TableHead>
-              <TableHead className="text-xs">Actions</TableHead>
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={tplFilters.name} onFilter={v => setTF("name", v)} onClearFilter={() => setTF("name", "")} />
+              <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={tplFilters.category} onFilter={v => setTF("category", v)} onClearFilter={() => setTF("category", "all")} statusOptions={categoryOptions} />
+              <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={tplFilters.type ?? "all"} onFilter={v => setTF("type" as any, v)} onClearFilter={() => setTF("type" as any, "all")} statusOptions={[["all", "All"], ["1", "Default"], ["0", "Custom"]]} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8 text-sm">Loading…</TableCell></TableRow>
-            ) : templates.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8 text-sm">No templates yet.</TableCell></TableRow>
-            ) : templates.map((tpl) => (
+            ) : displayTemplates.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8 text-sm">No templates found.</TableCell></TableRow>
+            ) : displayTemplates.map((tpl) => (
               <TableRow key={tpl.id} data-testid={`template-row-${tpl.id}`}>
                 <TableCell>
                   <div className="text-sm font-medium text-slate-900">{tpl.name}</div>
