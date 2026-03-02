@@ -297,7 +297,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                         <span className="text-xs text-slate-600">Required</span>
                       </label>
                     </div>
-                    {field.type === "select" && (
+                      {field.type === "select" && (
                       <div className="col-span-2">
                         <label className="text-[11px] text-slate-500 font-medium">Options (one per line, format: Label|value)</label>
                         <Textarea
@@ -306,11 +306,19 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                               ? field.options.join("\n")
                               : (field.options || "")
                           }
-                          onChange={e => updateField(field.id, { options: e.target.value.split("\n").filter(Boolean) })}
-                          rows={3}
+                          onChange={e =>
+                            // Keep empty lines while typing so cursor/newlines are preserved
+                            updateField(field.id, { options: e.target.value.split("\n") })
+                          }
+                          onBlur={e =>
+                            // Strip blank lines only when the user leaves the field
+                            updateField(field.id, { options: e.target.value.split("\n").filter(s => s.trim()) })
+                          }
+                          rows={4}
                           className="mt-0.5 text-xs font-mono"
-                          placeholder="Option One|opt_1&#10;Option Two|opt_2"
+                          placeholder={"Option One|opt_1\nOption Two|opt_2\nOption Three|opt_3"}
                         />
+                        <p className="text-[10px] text-slate-400 mt-1">Press Enter to add a new option. Use Label|value format to set separate display labels and values.</p>
                       </div>
                     )}
                   </>
