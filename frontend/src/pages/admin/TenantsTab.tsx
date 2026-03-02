@@ -7,8 +7,7 @@ import { toast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Check, Copy, Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, Eye, StickyNote, ScrollText, MoreHorizontal, Pencil, Tag, Briefcase } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Check, Copy, Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, Eye, StickyNote, ScrollText, MoreHorizontal, Pencil } from "lucide-react";
 import { FieldTip } from "./shared/FieldTip";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,8 +15,7 @@ import { useCountries, useProvinces } from "@/hooks/useCountries";
 import { TenantLicenseModal } from "./TenantLicenseModal";
 import { TenantNotesModal } from "./TenantNotesModal";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
-import { usePlatformList } from "@/hooks/usePlatformList";
-import { GenericListManager } from "@/components/admin/GenericListManager";
+import { PartnerOrgForm, PartnerOrgFormValue, EMPTY_PARTNER_ORG } from "@/components/admin/PartnerOrgForm";
 
 type TenantAddress = {
   line1?: string; line2?: string; city?: string; region?: string; postal?: string; country?: string;
