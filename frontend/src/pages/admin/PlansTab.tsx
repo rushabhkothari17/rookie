@@ -121,9 +121,6 @@ const RULE_FIELDS = [
   { value: "partner_code", label: "Partner Code" },
   { value: "country", label: "Country" },
   { value: "base_currency", label: "Base Currency" },
-  { value: "partner_type", label: "Partner Type" },
-  { value: "industry", label: "Industry" },
-  { value: "tags", label: "Tags" },
   { value: "name", label: "Org Name" },
 ];
 
