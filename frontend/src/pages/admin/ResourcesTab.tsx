@@ -881,7 +881,9 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
           )}
         </DialogContent>
       </Dialog>
-    </>) /* end resources sub-tab */}
+        </TabsContent>
+      </Tabs>
+
       <ImportModal
         entity="resources"
         entityLabel="Resources"
