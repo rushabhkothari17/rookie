@@ -52,13 +52,8 @@ interface PresetRole {
   module_permissions: Record<string, "read" | "write">;
 }
 
-const FALLBACK_TYPES = ["Reseller", "Direct", "Wholesale", "Agency", "Affiliate", "Other"];
-const FALLBACK_INDUSTRIES = ["Technology", "Finance", "Healthcare", "Retail", "Education", "Real Estate", "Manufacturing", "Professional Services", "Other"];
-
 export function TenantsTab() {
   const { currencies: supportedCurrencies } = useSupportedCurrencies();
-  const { values: partnerTypes } = usePlatformList("partner-types", FALLBACK_TYPES);
-  const { values: industries } = usePlatformList("industries", FALLBACK_INDUSTRIES);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedTenant, setExpandedTenant] = useState<string | null>(null);
