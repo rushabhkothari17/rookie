@@ -122,17 +122,17 @@ export function ArticleEmailTemplatesTab() {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead className="text-xs">Name</TableHead>
-              <TableHead className="text-xs">Subject</TableHead>
-              <TableHead className="text-xs">Actions</TableHead>
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={etFilters.name} onFilter={v => setEF("name", v)} onClearFilter={() => setEF("name", "")} />
+              <ColHeader label="Subject" colKey="subject" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={etFilters.subject} onFilter={v => setEF("subject", v)} onClearFilter={() => setEF("subject", "")} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={3} className="text-center text-slate-400 py-8 text-sm">Loading…</TableCell></TableRow>
-            ) : templates.length === 0 ? (
-              <TableRow><TableCell colSpan={3} className="text-center text-slate-400 py-8 text-sm">No email templates yet. Create one to speed up resource sharing.</TableCell></TableRow>
-            ) : templates.map((tpl) => (
+            ) : displayTemplates.length === 0 ? (
+              <TableRow><TableCell colSpan={3} className="text-center text-slate-400 py-8 text-sm">No email templates found.</TableCell></TableRow>
+            ) : displayTemplates.map((tpl) => (
               <TableRow key={tpl.id} data-testid={`email-template-row-${tpl.id}`}>
                 <TableCell>
                   <div className="text-sm font-medium text-slate-900">{tpl.name}</div>
