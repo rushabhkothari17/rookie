@@ -363,7 +363,7 @@ function OneTimeUpgradeModal({
                   return (
                     <tr key={r.module_key} className="border-t border-slate-100">
                       <td className="px-3 py-2.5 text-slate-700 font-medium">{r.label}</td>
-                      <td className="px-3 py-2.5 text-right text-slate-500 text-xs">{r.currency} {r.price_per_record.toFixed(2)}</td>
+                      <td className="px-3 py-2.5 text-right text-slate-500 text-xs">{r.display_currency || r.currency} {r.price_per_record.toFixed(2)}</td>
                       <td className="px-3 py-2.5 text-right">
                         <Input
                           type="number" min={0}
