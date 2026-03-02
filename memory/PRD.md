@@ -184,10 +184,16 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 ## Completed (Recent)
 
 ### Sub-tab Design Unification (Mar 2026)
-- Plans tab: Converted from custom button navigation to Shadcn `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` components (matching Partner Orgs design)
-- Resources tab: Converted from custom button navigation to Shadcn `Tabs` components (Resources, Templates, Email Templates, Categories)
-- Supported Currencies Add button: Confirmed working (uses newCode state correctly)
-- All 3 features tested and verified at 100% pass rate (iteration_167)
+- Plans tab: Converted from custom button navigation to Shadcn `Tabs` components (matching Partner Orgs design)
+- Resources tab: Converted from custom button navigation to Shadcn `Tabs` components
+- Supported Currencies Add button: Confirmed working
+
+### PartnerOrgForm Unification (Mar 2026)
+- Deleted Partner Types, Industries, and Tags concept entirely (sub-tabs, plan visibility rule fields, edit form, backend routes)
+- Created shared `PartnerOrgForm` component used by both Admin "New Partner Org" dialog and public `/signup?type=partner`
+- Both forms now identical: Org Name, Admin Account (name/email/password), Base Currency, Address
+- Added "Partner Sign-Up Page" tile in Auth & Pages with FormSchemaBuilder (6 fields, 4 locked + Currency + Address toggleable)
+- Currency uses live `useSupportedCurrencies` list everywhere (no more hardcoded options)
 
 ### Advanced Billing Features (Mar 2026)
 - Dual upgrade paths: Ongoing Plan (flat diff) + One-Time Limits (per-module boost)
