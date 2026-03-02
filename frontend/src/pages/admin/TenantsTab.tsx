@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Check, Copy, Plus, Building2, Users, Power, PowerOff, RefreshCw, ChevronDown, ChevronUp, MapPin, ShieldCheck, Eye, StickyNote, ScrollText, MoreHorizontal, Pencil } from "lucide-react";
 import { FieldTip } from "./shared/FieldTip";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
