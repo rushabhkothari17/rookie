@@ -94,17 +94,7 @@ export function PartnerSubmissionsTab() {
 
   useEffect(() => { load(); }, [load]);
 
-  const filtered = items.filter(i => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      i.partner_name?.toLowerCase().includes(q) ||
-      i.current_plan_name?.toLowerCase().includes(q) ||
-      i.requested_plan_name?.toLowerCase().includes(q)
-    );
-  });
-
-  const openResolve = (item: Submission, action: "approve" | "reject") => {
+  // Resolve dialog state = (item: Submission, action: "approve" | "reject") => {
     setSelected(item);
     setResolveAction(action);
     setResolutionNote("");
