@@ -57,13 +57,46 @@ _COUNTRY_MAP = {
     "UNITED STATES": _USA_STATES,
 }
 
+# Build a full-name → ISO-2 reverse map so we can normalise "Canada" → "CA"
+_NAME_TO_ISO: dict = {v.upper(): k for k, v in _ISO_TO_NAME.items() if len(k) <= 2}
+# Also build a flat label-lookup from the hardcoded lists
+_STATE_LABEL: dict = {}
+for _row in _CANADA_PROVINCES + _USA_STATES:
+    _STATE_LABEL[_row["value"].upper()] = _row["label"]
+
 
 @router.get("/utils/provinces")
-async def get_provinces(country_code: str = Query(..., description="ISO country code (CA, US) or country name")):
-    """Return list of provinces/states for a given country."""
-    key = country_code.upper().strip()
-    regions = _COUNTRY_MAP.get(key, [])
-    return {"country_code": key, "regions": regions}
+async def get_provinces(country_code: str = Query(..., description="Country name or ISO code")):
+    """Return provinces/states for a country — pulled from tax_tables, falling back to static list."""
+    key = country_code.strip()
+    KEY = key.upper()
+
+    # Normalise to ISO-2 code (handles "Canada" → "CA", "United States" → "US", "CA", etc.)
+    iso = _NAME_TO_ISO.get(KEY) or (KEY if len(KEY) <= 3 else None)
+
+    # Try to load from tax_tables first
+    if iso:
+        try:
+            raw_codes = await db.tax_tables.distinct("state_code", {"country_code": iso})
+            if raw_codes:
+                regions = []
+                seen = set()
+                for code in sorted(c for c in raw_codes if c):
+                    cu = code.upper()
+                    if cu not in seen:
+                        seen.add(cu)
+                        regions.append({
+                            "value": code,
+                            "label": _STATE_LABEL.get(cu, code),
+                        })
+                if regions:
+                    return {"country_code": KEY, "regions": regions}
+        except Exception:
+            pass
+
+    # Fallback to hardcoded list
+    regions = _COUNTRY_MAP.get(KEY, _COUNTRY_MAP.get(iso or "", []))
+    return {"country_code": KEY, "regions": regions}
 
 
 # Country code → display name mapping (covers ISO 2-letter codes)
