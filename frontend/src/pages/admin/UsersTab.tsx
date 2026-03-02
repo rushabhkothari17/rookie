@@ -219,12 +219,10 @@ export function UsersTab() {
         { value: "platform_admin", label: "Platform Admin" },
         { value: "partner_super_admin", label: "Partner Super Admin" },
         { value: "partner_admin", label: "Partner Admin" },
-        { value: "partner_staff", label: "Partner Staff" },
       ]
     : isPartnerSuperAdmin
     ? [
         { value: "partner_admin", label: "Partner Admin" },
-        { value: "partner_staff", label: "Partner Staff" },
       ]
     : [];
 
