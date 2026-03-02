@@ -144,7 +144,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
             <TableRow className="bg-slate-50">
               <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={tplFilters.name} onFilter={v => setTF("name", v)} onClearFilter={() => setTF("name", "")} />
               <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={tplFilters.category} onFilter={v => setTF("category", v)} onClearFilter={() => setTF("category", "all")} statusOptions={categoryOptions} />
-              <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={tplFilters.type ?? "all"} onFilter={v => setTF("type" as any, v)} onClearFilter={() => setTF("type" as any, "all")} statusOptions={[["all", "All"], ["1", "Default"], ["0", "Custom"]]} />
+              <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
