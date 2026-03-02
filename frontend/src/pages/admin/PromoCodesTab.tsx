@@ -56,9 +56,7 @@ export function PromoCodesTab() {
       });
     }
     return r;
-  }, [promoCodes, colSort]);
-
-  // Dialogs
+  const displayPromos = useMemo(() => {
     let r = promoCodes.filter(p => {
       if (!expiryFrom && !expiryTo) return true;
       const exp = p.expiry_date?.slice(0, 10) || "";
@@ -85,6 +83,37 @@ export function PromoCodesTab() {
     }
     return r;
   }, [promoCodes, expiryFrom, expiryTo, colSort]);
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editPromo, setEditPromo] = useState<any>(null);
+  const [newPromo, setNewPromo] = useState(INITIAL_PROMO);
+  const [editForm, setEditForm] = useState({ code: "", discount_type: "percent", discount_value: 10, applies_to: "both", applies_to_products: "all", product_ids: [] as string[], expiry_date: "", max_uses: "", one_time_code: false, enabled: true, promo_note: "" });
+  const [logsUrl, setLogsUrl] = useState("");
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
+  const [confirmDeletePromo, setConfirmDeletePromo] = useState<any>(null);
+
+  const load = useCallback(async (p = 1) => {
+    try {
+      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
+      if (codeFilter) params.append("search", codeFilter);
+      if (appliesToFilter) params.append("applies_to", appliesToFilter);
+      if (statusFilter) params.append("status", statusFilter);
+      if (startDate) params.append("created_from", startDate);
+      if (endDate) params.append("created_to", endDate);
+      const [promoRes, prodRes] = await Promise.all([
+        api.get(`/admin/promo-codes?${params}`),
+        products.length ? Promise.resolve({ data: { products } }) : api.get("/admin/products-all?per_page=500"),
+      ]);
+      setPromoCodes(promoRes.data.promo_codes || []);
+      setTotal(promoRes.data.total || 0);
+      setTotalPages(promoRes.data.total_pages || 1);
+      setPage(p);
+      if (!products.length) setProducts(prodRes.data.products || []);
+    } catch { toast.error("Failed to load promo codes"); }
+  }, [codeFilter, appliesToFilter, statusFilter, startDate, endDate]);
+
+  useEffect(() => { load(1); }, [codeFilter, appliesToFilter, statusFilter, startDate, endDate]);
 
   const handleCreate = async () => {
     try {
