@@ -308,6 +308,35 @@ export function PartnerOrdersTab() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({ search: "", partner_id: "", status: "", payment_method: "", plan_id: "" });
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [colFilters, setColFilters] = useState({ partnerName: "", description: "", amount: { min: "", max: "" }, date: { from: "", to: "" } });
+  const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
+
+  const displayOrders = useMemo(() => {
+    let r = [...orders];
+    if (colFilters.partnerName) r = r.filter(o => o.partner_name?.toLowerCase().includes(colFilters.partnerName.toLowerCase()));
+    if (colFilters.description) r = r.filter(o => o.description?.toLowerCase().includes(colFilters.description.toLowerCase()));
+    if (colFilters.amount.min) r = r.filter(o => o.amount >= parseFloat(colFilters.amount.min));
+    if (colFilters.amount.max) r = r.filter(o => o.amount <= parseFloat(colFilters.amount.max));
+    if (colFilters.date.from) r = r.filter(o => o.invoice_date && o.invoice_date >= colFilters.date.from);
+    if (colFilters.date.to) r = r.filter(o => o.invoice_date && o.invoice_date <= colFilters.date.to);
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "order_number") { av = a.order_number || ""; bv = b.order_number || ""; }
+        else if (colSort.col === "partner") { av = a.partner_name || ""; bv = b.partner_name || ""; }
+        else if (colSort.col === "description") { av = a.description || ""; bv = b.description || ""; }
+        else if (colSort.col === "amount") { av = a.amount; bv = b.amount; }
+        else if (colSort.col === "method") { av = a.payment_method || ""; bv = b.payment_method || ""; }
+        else if (colSort.col === "status") { av = a.status; bv = b.status; }
+        else if (colSort.col === "date") { av = a.invoice_date || ""; bv = b.invoice_date || ""; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [orders, colFilters, colSort]);
   const [showCreate, setShowCreate] = useState(false);
   const [editOrder, setEditOrder] = useState<PartnerOrder | null>(null);
   const [deleteOrder, setDeleteOrder] = useState<PartnerOrder | null>(null);
