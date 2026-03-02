@@ -18,7 +18,7 @@ import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 export type Section = "branding" | "auth" | "forms" | "sysconfig";
 
 export type AuthSlide =
-  | "login" | "signup" | "verify_email"
+  | "login" | "signup" | "verify_email" | "partner_signup"
   | "portal" | "profile" | "not_found" | "admin_panel"
   | "checkout_builder" | "checkout_success" | "gocardless_callback"
   | "checkout_messages"
