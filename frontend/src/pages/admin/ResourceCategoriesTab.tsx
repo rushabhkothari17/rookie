@@ -145,18 +145,18 @@ export function ArticleCategoriesTab() {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead className="text-xs w-[40%]">Name</TableHead>
-              <TableHead className="text-xs w-[35%]">Description</TableHead>
-              <TableHead className="text-xs w-[15%]">Scope Final</TableHead>
-              <TableHead className="text-xs w-[10%]">Actions</TableHead>
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={catFilters.name} onFilter={v => setCF("name", v)} onClearFilter={() => setCF("name", "")} />
+              <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Scope Final" colKey="scope_final" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={catFilters.scope_final} onFilter={v => setCF("scope_final", v)} onClearFilter={() => setCF("scope_final", "all")} statusOptions={[["all", "All"], ["yes", "Yes"], ["no", "No"]]} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8 text-sm">Loading…</TableCell></TableRow>
-            ) : categories.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8 text-sm">No categories yet. Create one to organise your resources.</TableCell></TableRow>
-            ) : categories.map((cat) => (
+            ) : displayCategories.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8 text-sm">No categories found.</TableCell></TableRow>
+            ) : displayCategories.map((cat) => (
               <TableRow key={cat.id} data-testid={`category-row-${cat.id}`}>
                 <TableCell>
                   <div className="flex items-center gap-2">
