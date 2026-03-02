@@ -162,7 +162,7 @@ export function PartnerSubmissionsTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map(item => {
+              {displayItems.map(item => {
                 const s = STATUS_MAP[item.status] || STATUS_MAP.pending;
                 return (
                   <TableRow key={item.id} className="hover:bg-slate-50/50" data-testid={`submission-row-${item.id}`}>
