@@ -40,6 +40,7 @@ function getSlideDesc(key: AuthSlide | null): string {
   if (!key) return "";
   const map: Record<AuthSlide, string> = {
     login: "Text shown on the login page.", signup: "Text + custom fields on the registration page.",
+    partner_signup: "Form fields shown on the partner organisation sign-up page (/signup?type=partner).",
     verify_email: "Text shown when customers verify their email.", portal: "Heading and subtitle on the customer portal.",
     profile: "Heading and subtitle on the profile page.", not_found: "Content for the 404 error page.",
     admin_panel: "Admin panel page heading, subtitle, and badge.",
