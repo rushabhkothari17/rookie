@@ -106,6 +106,14 @@ async def admin_create_admin_user(
     if payload.role == "platform_super_admin":
         raise HTTPException(400, "Platform super admin cannot be created manually")
 
+    # Platform roles must belong to the platform tenant
+    PLATFORM_TENANT_ID = "automate-accounts"
+    if payload.role == "platform_admin":
+        if tid != PLATFORM_TENANT_ID:
+            raise HTTPException(400, "Platform admin users must belong to the platform organisation")
+        # Ensure tenant is set correctly regardless of what was passed
+        tid = PLATFORM_TENANT_ID
+
     # Determine target tenant
     if payload.role in PARTNER_ROLES:
         if is_platform_admin(admin):
