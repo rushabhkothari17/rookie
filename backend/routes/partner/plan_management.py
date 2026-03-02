@@ -926,14 +926,21 @@ async def one_time_upgrade_status(
 
 @router.post("/partner/cancel-pending-upgrade")
 async def cancel_pending_upgrade(admin: Dict[str, Any] = Depends(get_tenant_admin)):
-    """Let the partner dismiss/cancel a stale pending_payment upgrade order."""
+    """Let the partner dismiss/cancel any stale pending_payment upgrade order (ongoing or one-time)."""
     tid = tenant_id_of(admin)
     result = await db.partner_orders.update_one(
-        {"partner_id": tid, "status": "pending_payment", "order_type": "ongoing_upgrade"},
+        {"partner_id": tid, "status": "pending_payment",
+         "order_type": {"$in": ["ongoing_upgrade", "one_time_upgrade"]}},
         {"$set": {"status": "cancelled", "updated_at": now_iso(),
                   "notes": "Dismissed by partner — session abandoned"}},
         sort=[("created_at", -1)],
     )
     if result.modified_count == 0:
         raise HTTPException(404, "No pending upgrade order found")
+
+    # Also cancel the linked one_time_upgrade record if present
+    await db.one_time_upgrades.update_many(
+        {"partner_id": tid, "status": "pending_payment"},
+        {"$set": {"status": "cancelled", "updated_at": now_iso()}},
+    )
     return {"message": "Pending upgrade cancelled"}
