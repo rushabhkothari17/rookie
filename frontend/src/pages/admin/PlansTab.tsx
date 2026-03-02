@@ -788,6 +788,43 @@ function CouponsSection() {
   const [editCoupon, setEditCoupon] = useState<Coupon | null>(null);
   const [deleteCoupon, setDeleteCoupon] = useState<Coupon | null>(null);
 
+  // ── Sort & filter ──
+  const [sortCoupons, setSortCoupons] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [couponFilters, setCouponFilters] = useState({
+    code: "", discount: { min: "", max: "" },
+    applies_to: "all", expiry: { from: "", to: "" },
+    uses: { min: "", max: "" }, status: "all",
+  });
+  const setCF = (key: keyof typeof couponFilters, val: any) => setCouponFilters(f => ({ ...f, [key]: val }));
+
+  const displayCoupons = useMemo(() => {
+    let c = [...coupons];
+    if (couponFilters.code) c = c.filter(x => x.code.toLowerCase().includes(couponFilters.code.toLowerCase()) || (x.internal_note || "").toLowerCase().includes(couponFilters.code.toLowerCase()));
+    if (couponFilters.discount.min) c = c.filter(x => x.discount_value >= parseFloat(couponFilters.discount.min));
+    if (couponFilters.discount.max) c = c.filter(x => x.discount_value <= parseFloat(couponFilters.discount.max));
+    if (couponFilters.applies_to !== "all") c = c.filter(x => x.applies_to === couponFilters.applies_to);
+    if (couponFilters.expiry.from) c = c.filter(x => x.expiry_date && x.expiry_date >= couponFilters.expiry.from);
+    if (couponFilters.expiry.to) c = c.filter(x => x.expiry_date && x.expiry_date <= couponFilters.expiry.to);
+    if (couponFilters.uses.min) c = c.filter(x => x.usage_count >= parseInt(couponFilters.uses.min));
+    if (couponFilters.uses.max) c = c.filter(x => x.usage_count <= parseInt(couponFilters.uses.max));
+    if (couponFilters.status !== "all") c = c.filter(x => couponFilters.status === "active" ? x.is_active : !x.is_active);
+    if (sortCoupons) {
+      c.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (sortCoupons.col === "code") { av = a.code; bv = b.code; }
+        else if (sortCoupons.col === "discount") { av = a.discount_value; bv = b.discount_value; }
+        else if (sortCoupons.col === "applies_to") { av = a.applies_to; bv = b.applies_to; }
+        else if (sortCoupons.col === "expiry") { av = a.expiry_date || ""; bv = b.expiry_date || ""; }
+        else if (sortCoupons.col === "uses") { av = a.usage_count; bv = b.usage_count; }
+        else if (sortCoupons.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
+        if (av < bv) return sortCoupons.dir === "asc" ? -1 : 1;
+        if (av > bv) return sortCoupons.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return c;
+  }, [coupons, couponFilters, sortCoupons]);
+
   const load = async () => {
     setLoading(true);
     try { const { data } = await api.get("/admin/coupons"); setCoupons(data.coupons || []); }
@@ -826,20 +863,20 @@ function CouponsSection() {
       ) : (
         <div className="rounded-xl border border-slate-200 overflow-hidden">
           <table className="w-full text-sm" data-testid="coupons-table">
-            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="text-left px-4 py-3">Code</th>
-                <th className="text-left px-4 py-3">Discount</th>
-                <th className="text-left px-4 py-3">Applies To</th>
-                <th className="text-left px-4 py-3">Expiry</th>
-                <th className="text-left px-4 py-3">Flags</th>
-                <th className="text-left px-4 py-3">Uses</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-right px-4 py-3">Actions</th>
+                <ColHeader label="Code" colKey="code" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="text" filterValue={couponFilters.code} onFilter={v => setCF("code", v)} onClearFilter={() => setCF("code", "")} />
+                <ColHeader label="Discount" colKey="discount" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.discount} onFilter={v => setCF("discount", v)} onClearFilter={() => setCF("discount", { min: "", max: "" })} />
+                <ColHeader label="Applies To" colKey="applies_to" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.applies_to} onFilter={v => setCF("applies_to", v)} onClearFilter={() => setCF("applies_to", "all")} statusOptions={[["all", "All"], ["ongoing", "Ongoing only"], ["one_time", "One-time only"], ["both", "Both"]]} />
+                <ColHeader label="Expiry" colKey="expiry" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="date-range" filterValue={couponFilters.expiry} onFilter={v => setCF("expiry", v)} onClearFilter={() => setCF("expiry", { from: "", to: "" })} />
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase text-slate-500">Flags</th>
+                <ColHeader label="Uses" colKey="uses" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="number-range" filterValue={couponFilters.uses} onFilter={v => setCF("uses", v)} onClearFilter={() => setCF("uses", { min: "", max: "" })} />
+                <ColHeader label="Status" colKey="status" sortCol={sortCoupons?.col} sortDir={sortCoupons?.dir} onSort={(c, d) => setSortCoupons({ col: c, dir: d })} onClearSort={() => setSortCoupons(null)} filterType="status" filterValue={couponFilters.status} onFilter={v => setCF("status", v)} onClearFilter={() => setCF("status", "all")} />
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {coupons.map(c => (
+              {displayCoupons.map(c => (
                 <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50">
                   <td className="px-4 py-3">
                     <span className="font-mono font-semibold text-slate-800 text-sm">{c.code}</span>
