@@ -68,18 +68,11 @@ export function TenantsTab() {
   const [creating, setCreating] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
-  const [newPartner, setNewPartner] = useState({
-    name: "", admin_name: "", admin_email: "", admin_password: "",
-    base_currency: "USD",
-    partner_type: "", industry: "", tags: "",
-    address: { line1: "", line2: "", city: "", region: "", postal: "", country: "" },
-  });
-  const [createCountry, setCreateCountry] = useState("");
-  const createProvinces = useProvinces(createCountry);
+  const [newPartner, setNewPartner] = useState<PartnerOrgFormValue>(EMPTY_PARTNER_ORG);
 
   // Edit org details dialog
   const [showEditDetails, setShowEditDetails] = useState<Tenant | null>(null);
-  const [editDetailsForm, setEditDetailsForm] = useState({ name: "", partner_type: "", industry: "", tags: "" });
+  const [editDetailsForm, setEditDetailsForm] = useState({ name: "" });
   const [savingDetails, setSavingDetails] = useState(false);
 
   // Create partner admin dialog
