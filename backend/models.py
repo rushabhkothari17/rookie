@@ -567,6 +567,7 @@ class WebsiteSettingsUpdate(BaseModel):
     # Form schemas (JSON strings)
     scope_form_schema: Optional[str] = None
     signup_form_schema: Optional[str] = None
+    partner_signup_form_schema: Optional[str] = None
     # Email templates
     email_from_name: Optional[str] = None
     email_article_subject_template: Optional[str] = None
