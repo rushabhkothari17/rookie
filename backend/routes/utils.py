@@ -132,48 +132,35 @@ _FALLBACK_COUNTRIES = [
 
 @router.get("/utils/countries")
 async def get_countries(partner_code: str = Query(None, description="Partner code to scope tax-table lookup")):
-    """Return list of countries present in the tax tables.
-    Falls back to default list if no tax data found or partner_code not provided.
     """
-    codes: list = []
+    Return all countries for address forms (full ISO list).
+    Countries with tax-table entries are sorted to the top.
+    """
+    # Collect tax-configured country codes to pin at top
+    prioritised: set = set()
     try:
-        query = {}
+        query: dict = {}
         if partner_code:
-            from bson import ObjectId
-            tenant = await db.tenants.find_one({"code": partner_code.strip().lower()}, {"_id": 1})
+            tenant = await db.tenants.find_one({"code": partner_code.strip().lower()}, {"_id": 0, "id": 1})
             if tenant:
-                query["tenant_id"] = str(tenant["_id"])
+                query["tenant_id"] = tenant["id"]
         raw = await db.tax_tables.distinct("country_code", query)
-        codes = [c.upper() for c in raw if c]
+        for c in raw:
+            name = _ISO_TO_NAME.get(c.upper().strip())
+            if name:
+                prioritised.add(name)
     except Exception:
         pass
 
-    if not codes:
-        # Try global tax_tables (no tenant filter) as a fallback
-        try:
-            raw = await db.tax_tables.distinct("country_code", {})
-            codes = [c.upper() for c in raw if c]
-        except Exception:
-            pass
+    # Full global list
+    all_countries = [
+        {"value": name, "label": name}
+        for name in sorted(_ISO_TO_NAME.values())
+    ]
 
-    if not codes:
-        return {"countries": _FALLBACK_COUNTRIES}
+    if prioritised:
+        top  = [c for c in all_countries if c["value"] in prioritised]
+        rest = [c for c in all_countries if c["value"] not in prioritised]
+        return {"countries": top + rest}
 
-    # Normalise: map ISO codes to display names; pass-through already-readable names
-    seen_names: set = set()
-    result = []
-    for raw_code in sorted(set(codes)):
-        code = raw_code.upper().strip()
-        # Direct ISO lookup
-        name = _ISO_TO_NAME.get(code)
-        if not name:
-            # Check if the raw value is already a readable full name (e.g. "Australia")
-            title = raw_code.strip().title()
-            # Accept as-is if it looks like a real name (not a 2-3 char code)
-            name = title if len(raw_code.strip()) > 3 else raw_code.strip()
-        if name and name not in seen_names:
-            seen_names.add(name)
-            result.append({"value": name, "label": name})
-
-    result.sort(key=lambda x: x["label"])
-    return {"countries": result if result else _FALLBACK_COUNTRIES}
+    return {"countries": all_countries}
