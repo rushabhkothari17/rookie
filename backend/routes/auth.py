@@ -772,15 +772,21 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
     admin_password = payload.get("admin_password", "")
     base_currency = payload.get("base_currency", "USD").strip().upper() or "USD"
     address = payload.get("address", {})
+    extra_fields = payload.get("extra_fields", {})
+    if not isinstance(extra_fields, dict):
+        extra_fields = {}
 
-    # Validate mandatory address fields
-    mandatory_addr = ["line1", "city", "postal", "region", "country"]
-    missing = [f for f in mandatory_addr if not str(address.get(f, "")).strip()]
-    if missing:
-        raise HTTPException(status_code=400, detail=f"Address fields required: {', '.join(missing)}")
+    # Only validate address fields if address data is actually provided
+    if any(str(address.get(f, "")).strip() for f in ["line1", "city", "postal", "country"]):
+        mandatory_addr = ["line1", "city", "postal", "country"]
+        missing = [f for f in mandatory_addr if not str(address.get(f, "")).strip()]
+        if missing:
+            raise HTTPException(status_code=400, detail=f"Address fields required: {', '.join(missing)}")
 
-    VALID_CURRENCIES = ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]
-    if base_currency not in VALID_CURRENCIES:
+    # Accept any currency supported by the platform; fall back to USD
+    supported = await db.platform_settings.find_one({"_id_key": "supported_currencies"})
+    valid_currencies = supported.get("values", ["USD","CAD","EUR","AUD","GBP","INR","MXN"]) if supported else ["USD","CAD","EUR","AUD","GBP","INR","MXN"]
+    if base_currency not in valid_currencies:
         base_currency = "USD"
 
     if not all([name, admin_name, admin_email, admin_password]):
