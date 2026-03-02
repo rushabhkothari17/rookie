@@ -16,6 +16,7 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Power, PowerOff, ScrollText, ChevronDown, ChevronUp, Tag, Zap, Lock, DollarSign, Gift, LayoutList, BarChart2, TrendingDown, ArrowUpRight, Receipt, PlusCircle, MinusCircle } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
