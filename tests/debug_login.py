@@ -1,5 +1,5 @@
 """
-Debug script for admin login flow - with better waits
+Debug admin login - check for error messages
 """
 import asyncio
 from playwright.async_api import async_playwright
@@ -17,51 +17,61 @@ async def debug_login():
         
         page.on("console", lambda msg: print(f"CONSOLE[{msg.type}]: {msg.text}"))
         
-        # Navigate to /admin first
-        print("Navigating to /admin...")
+        # Navigate to /admin
         await page.goto(BASE_URL + "/admin")
         await page.wait_for_load_state("networkidle", timeout=15000)
-        print(f"URL: {page.url}")
         
         # Enter partner code
         await page.fill("input[placeholder='Partner code']", PARTNER_CODE)
-        await page.screenshot(path="/app/test_reports/iter169_debug_1.jpeg", quality=40, full_page=False)
-        
-        # Click continue
         await page.click("button:has-text('Continue')")
         
-        # Wait for email input to appear
-        try:
-            await page.wait_for_selector("input[type='email'], input[placeholder*='mail'], input[name='email']", timeout=8000)
-            print("Email input appeared!")
-        except Exception as e:
-            print(f"Email input not found: {e}")
-            await page.wait_for_timeout(2000)
+        # Wait for email input
+        await page.wait_for_selector("input[type='email']", timeout=8000)
         
-        await page.screenshot(path="/app/test_reports/iter169_debug_2.jpeg", quality=40, full_page=False)
-        print(f"URL after Continue: {page.url}")
+        # Fill credentials
+        await page.fill("input[type='email']", ADMIN_EMAIL)
+        await page.fill("input[type='password']", ADMIN_PASSWORD)
         
-        # Check ALL visible inputs
-        all_inputs = await page.query_selector_all("input")
-        print(f"Number of inputs: {len(all_inputs)}")
-        for inp in all_inputs:
-            inp_type = await inp.get_attribute("type")
-            inp_placeholder = await inp.get_attribute("placeholder")
-            inp_name = await inp.get_attribute("name")
-            is_visible = await inp.is_visible()
-            print(f"  Input: type={inp_type}, placeholder={inp_placeholder}, name={inp_name}, visible={is_visible}")
+        await page.screenshot(path="/app/test_reports/iter169_before_submit.jpeg", quality=40, full_page=False)
         
-        # Check all buttons
-        all_buttons = await page.query_selector_all("button")
-        for btn in all_buttons:
-            btn_text = await btn.inner_text()
-            btn_type = await btn.get_attribute("type")
-            is_visible = await btn.is_visible()
-            print(f"  Button: text='{btn_text}', type={btn_type}, visible={is_visible}")
+        # Click Sign In
+        await page.click("button[type='submit']")
         
-        # Check full page text
-        full_text = await page.evaluate("() => document.body.innerText")
-        print(f"Full page text: {full_text[:800]}")
+        # Wait a bit for response
+        await page.wait_for_timeout(3000)
+        
+        print(f"URL after submit: {page.url}")
+        
+        await page.screenshot(path="/app/test_reports/iter169_after_submit.jpeg", quality=40, full_page=False)
+        
+        # Check for error messages
+        error_text = await page.evaluate("""
+            () => {
+                const errorElements = Array.from(document.querySelectorAll('.error, [class*="error"], [id*="error"], [class*="Error"]'));
+                return errorElements.map(el => el.textContent).join(", ");
+            }
+        """)
+        if error_text:
+            print(f"Error messages found: {error_text}")
+        
+        # Check page content
+        content = await page.evaluate("() => document.body.innerText")
+        print(f"Page content after submit: {content[:600]}")
+        
+        # Check localStorage / sessionStorage for auth token
+        auth_data = await page.evaluate("""
+            () => {
+                const keys = Object.keys(localStorage);
+                const result = {};
+                keys.forEach(k => { result[k] = localStorage.getItem(k); });
+                return result;
+            }
+        """)
+        print(f"localStorage keys: {list(auth_data.keys())}")
+        
+        # Check cookies
+        cookies = await context.cookies()
+        print(f"Cookies: {[c['name'] for c in cookies]}")
         
         await browser.close()
 
