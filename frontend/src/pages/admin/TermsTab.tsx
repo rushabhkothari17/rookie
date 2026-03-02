@@ -131,40 +131,24 @@ export function TermsTab() {
         }
       />
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap gap-2 items-end">
-          <Input placeholder="Search title…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-terms-search-filter" />
-          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-terms-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
-          </Select>
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Created</span>
-            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-32" />
-            <span className="text-xs text-slate-400">–</span>
-            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-32" />
-          </div>
-          <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setStatusFilter(""); setStartDate(""); setEndDate(""); }} className="h-8 text-xs" data-testid="admin-terms-clear-filters">Clear</Button>
-        </div>
-      </div>
+      {/* Filters removed — use column headers */}
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
         <Table data-testid="admin-terms-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead>Title</TableHead>
-              <TableHead>Preview</TableHead>
-              <TableHead>Products Linked</TableHead>
-              <TableHead>Default</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Actions</TableHead>
+              <ColHeader label="Title" colKey="title" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Preview</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Products Linked</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Default</th>
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["active", "Active"], ["inactive", "Inactive"]]} />
+              <ColHeader label="Created" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {terms.map((t: any) => {
+            {displayTerms.map((t: any) => {
               const linked = products.filter((p: any) => p.terms_id === t.id);
               return (
                 <TableRow key={t.id} data-testid={`admin-terms-row-${t.id}`} className="border-b border-slate-100">

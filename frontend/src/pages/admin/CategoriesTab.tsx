@@ -121,31 +121,21 @@ export function CategoriesTab() {
         </>
       } />
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex gap-2 items-center">
-          <Input placeholder="Search by name…" value={searchFilter} onChange={e => setSearchFilter(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-categories-search" />
-          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-categories-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
-          </Select>
-          <Button size="sm" variant="outline" onClick={() => { setSearchFilter(""); setStatusFilter(""); }} className="h-8 text-xs" data-testid="admin-categories-clear-filters">Clear</Button>
-        </div>
-      </div>
+      {/* Filters removed — use column headers */}
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
         <Table data-testid="admin-categories-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Products</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
+              <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Products" colKey="products" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {categories.map((cat) => (
+            {displayCategories.map((cat) => (
               <TableRow key={cat.id} data-testid={`admin-category-row-${cat.id}`}>
                 <TableCell className="font-medium">{cat.name}</TableCell>
                 <TableCell className="text-sm text-slate-500 max-w-xs"><span className="line-clamp-2">{cat.description || "—"}</span></TableCell>
