@@ -21,6 +21,26 @@ interface EmailTemplate { id: string; name: string; subject: string; html_body: 
 
 export function ArticleEmailTemplatesTab() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [etFilters, setEtFilters] = useState({ name: "", subject: "" });
+  const setEF = (k: keyof typeof etFilters, v: string) => setEtFilters(f => ({ ...f, [k]: v }));
+
+  const displayTemplates = useMemo(() => {
+    let r = [...templates];
+    if (etFilters.name) r = r.filter(t => t.name.toLowerCase().includes(etFilters.name.toLowerCase()));
+    if (etFilters.subject) r = r.filter(t => (t.subject || "").toLowerCase().includes(etFilters.subject.toLowerCase()));
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "name") { av = a.name; bv = b.name; }
+        else if (colSort.col === "subject") { av = a.subject || ""; bv = b.subject || ""; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [templates, etFilters, colSort]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<EmailTemplate | null>(null);
