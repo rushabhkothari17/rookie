@@ -239,44 +239,26 @@ export function CustomersTab() {
       {/* Stats Dashboard */}
       <CustomersStats />
 
-      {/* Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap gap-2 items-end">
-          <Input placeholder="Search name / email / company" value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 text-xs w-52" data-testid="admin-customers-search" />
-          <Select value={countryFilter || "all"} onValueChange={v => setCountryFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-36 bg-white" data-testid="admin-customers-country-filter"><SelectValue placeholder="All Countries" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Countries</SelectItem>{countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-32 bg-white" data-testid="admin-customers-status-filter"><SelectValue placeholder="All Statuses" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
-          </Select>
-          <Select value={paymentModeFilter || "all_modes"} onValueChange={v => setPaymentModeFilter(v === "all_modes" ? "" : v)}>
-            <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="admin-customers-payment-filter"><SelectValue placeholder="All Methods" /></SelectTrigger>
-            <SelectContent>{paymentFilterOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={partnerMapFilter} onValueChange={setPartnerMapFilter}>
-            <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="admin-customer-partner-map-filter"><SelectValue placeholder="All Partner Maps" /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All Partner Maps</SelectItem><SelectItem value="none">Not set</SelectItem>{PARTNER_MAP_OPTIONS.filter(o => o.value).map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
-          </Select>
-          <Button size="sm" variant="outline" onClick={clearFilters} className="h-8 text-xs" data-testid="admin-customers-clear">Clear</Button>
-        </div>
-      </div>
+      {/* Filters removed — use column headers */}
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <Table data-testid="admin-customer-table" className="text-sm min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>State/Province</TableHead>
-              <TableHead>Country</TableHead><TableHead>Status</TableHead>
-              <TableHead>Payment Methods</TableHead><TableHead>Partner Map <FieldTip tip="Associates this customer with a pricing tier or partner track. Products restricted to a partner map are only visible to customers in that map." side="left" /></TableHead>
-              {isPlatformAdmin && <TableHead>Partner</TableHead>}
-              <TableHead>Actions</TableHead>
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={search} onFilter={v => setSearch(v)} onClearFilter={() => setSearch("")} />
+              <ColHeader label="Email" colKey="email" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">State/Province</th>
+              <ColHeader label="Country" colKey="country" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={countryFilter || "all"} onFilter={v => setCountryFilter(v === "all" ? "" : v)} onClearFilter={() => setCountryFilter("")} statusOptions={[["all", "All"], ...countries.map(c => [c.value, c.label] as [string, string])]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => setStatusFilter(v === "all" ? "" : v)} onClearFilter={() => setStatusFilter("")} statusOptions={[["all", "All"], ["active", "Active"], ["inactive", "Inactive"]]} />
+              <ColHeader label="Payment Methods" colKey="payment" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={paymentModeFilter || "all_modes"} onFilter={v => setPaymentModeFilter(v === "all_modes" ? "" : v)} onClearFilter={() => setPaymentModeFilter("")} statusOptions={paymentFilterOptions.map(o => [o.value, o.label] as [string, string])} />
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner Map</th>
+              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer) => {
+            {displayCustomers.map((customer) => {
               const user = userMap[customer.user_id] || {};
               const address = addrMap[customer.id] || {};
               const isActive = user.is_active !== false;
