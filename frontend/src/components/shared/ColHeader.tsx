@@ -40,6 +40,7 @@ export function ColHeader({
     filterType === "none" ? false
     : filterType === "text" ? !!filterValue
     : filterType === "status" ? filterValue !== "all" && !!filterValue
+    : filterType === "dropdown" ? filterValue !== "all" && !!filterValue
     : filterType === "number-range" ? !!(filterValue?.min || filterValue?.max)
     : !!(filterValue?.from || filterValue?.to);
 
