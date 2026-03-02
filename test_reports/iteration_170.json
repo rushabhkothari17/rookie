@@ -1,0 +1,69 @@
+{
+  "summary": "Verified all 3 bug fixes from iteration_169: (1) SubscriptionsTab Amount/Tax/Currency now use ColHeader components (fixed from plain <th>). (2) PlansTab CouponsSection empty state now shows table headers with ColHeader buttons (thead always rendered). (3) PartnerSubmissionsTab empty state now shows table headers with ColHeader buttons (TableHeader always rendered). Regression checks on Users, Orders, Products all PASS. No console errors.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "fixes_verified": [
+    {
+      "fix": "SubscriptionsTab - Amount/Tax/Currency ColHeader",
+      "status": "PASS",
+      "detail": "All 3 columns now use sortColHeader() wrapper around ColHeader. Button texts found: ['CREATED', 'SUB #', 'PROCESSOR ID', 'CUSTOMER EMAIL', 'PLAN', 'AMOUNT', 'TAX', 'CURRENCY', 'RENEWAL', 'START', 'CONTRACT END', 'PAYMENT', 'STATUS']. Sort popover on Amount works: A→Z, Z→A options visible."
+    },
+    {
+      "fix": "SubscriptionsTab - Amount/Tax/Currency show subscription-specific data",
+      "status": "PASS (code verified, no DB data to display)",
+      "detail": "Code review confirms: Amount cell uses sub.amount, Tax cell uses sub.tax_amount, Currency cell uses sub.currency. No plan data leakage. DB has 0 subscription rows so live data not verifiable but code path is correct."
+    },
+    {
+      "fix": "PlansTab CouponsSection - Empty state shows table headers",
+      "status": "PASS",
+      "detail": "thead always renders with ColHeader buttons: ['CODE', 'DISCOUNT', 'APPLIES TO', 'EXPIRY', 'USES', 'STATUS']. Empty state message 'No coupons yet...' is inside tbody row. Screenshot shows all column headers visible above empty state."
+    },
+    {
+      "fix": "PartnerSubmissionsTab - Empty state shows table headers",
+      "status": "PASS",
+      "detail": "TableHeader always renders with ColHeader buttons: ['PARTNER', 'TYPE', 'EFFECTIVE', 'SUBMITTED', 'STATUS']. Empty state 'No submissions found.' detected via data-testid='submissions-admin-empty' inside TableBody. Screenshot confirms headers visible."
+    }
+  ],
+
+  "regression_checks": [
+    {"tab": "Users", "colheaders": ["NAME / EMAIL", "ROLE", "PARTNER ORG", "STATUS"], "status": "PASS"},
+    {"tab": "Orders", "colheaders": ["DATE", "ORDER #", "EMAIL", "PRODUCT(S)", "SUB #", "PROCESSOR ID", "PAY DATE", "METHOD", "STATUS"], "status": "PASS"},
+    {"tab": "Products", "colheaders": ["NAME", "CATEGORY", "BILLING", "PRICE", "STATUS"], "status": "PASS", "note": "22 products with data rendered correctly"},
+    {"tab": "Customers", "colheaders": ["NAME", "EMAIL", "STATUS", "PAYMENT METHODS"], "status": "PASS (from admin panel screenshot)"}
+  ],
+
+  "test_report_links": [
+    "/app/test_reports/iter170_04_subscriptions.jpeg",
+    "/app/test_reports/iter170_05_amount_sort.jpeg",
+    "/app/test_reports/iter170_06_plans_coupons.jpeg",
+    "/app/test_reports/iter170_07_partner_submissions.jpeg",
+    "/app/test_reports/iter170_08_users.jpeg",
+    "/app/test_reports/iter170_09_orders.jpeg",
+    "/app/test_reports/iter170_10_products.jpeg"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [],
+
+  "updated_files": [],
+
+  "success_rate": {
+    "frontend": "100% (all 3 bug fixes verified, regression on 4 additional tables all pass)"
+  },
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Login: partner code 'automate-accounts', then admin@automateaccounts.local / ChangeMe123!. Admin panel at /admin. All ColHeader bugs from iteration_169 are fixed. SubscriptionsTab now has ColHeader on ALL 13 columns including Amount, Tax, Currency. CouponsSection (Plans tab) and PartnerSubmissionsTab both show thead/headers even in empty state. DB is empty (0 subscriptions, 0 customers, 22 products exist). Sort popover tested and working on Amount column."
+}
