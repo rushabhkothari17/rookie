@@ -74,12 +74,6 @@ async def update_tenant(tenant_id: str, payload: TenantUpdate, admin: Dict[str, 
         updates["status"] = payload.status
     if payload.default_reminder_days is not None:
         updates["default_reminder_days"] = payload.default_reminder_days if payload.default_reminder_days > 0 else None
-    if payload.partner_type is not None:
-        updates["partner_type"] = payload.partner_type.strip() or None
-    if payload.industry is not None:
-        updates["industry"] = payload.industry.strip() or None
-    if payload.tags is not None:
-        updates["tags"] = [t.strip() for t in payload.tags if t.strip()]
 
     await db.tenants.update_one({"id": tenant_id}, {"$set": updates})
     updated = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
