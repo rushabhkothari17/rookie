@@ -154,42 +154,23 @@ export function ProductsTab() {
                 <Button size="sm" onClick={openCreate} data-testid="admin-create-product-btn">+ New Product</Button>
               </>
             } />
-            <div className="rounded-xl border border-slate-200 bg-white p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Input placeholder="Search products..." value={searchText} onChange={(e) => setSearchText(e.target.value)} className="h-8 text-xs w-44" data-testid="admin-products-search" />
-                <Select value={catalogFilter} onValueChange={v => { setCatalogFilter(v); setPage(1); }}>
-                  <SelectTrigger className="h-8 text-xs w-32" data-testid="admin-catalog-filter"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Billing</SelectItem>
-                    <SelectItem value="subscription">Subscriptions</SelectItem>
-                    <SelectItem value="one-time">One-time</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={categoryFilter} onValueChange={v => { setCategoryFilter(v); setPage(1); }}>
-                  <SelectTrigger className="h-8 text-xs w-40 bg-white" data-testid="admin-catalog-category-filter"><SelectValue placeholder="All Categories" /></SelectTrigger>
-                  <SelectContent><SelectItem value="all">All Categories</SelectItem>{categories.map((c: any) => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
-                <Button size="sm" variant="outline" onClick={() => { setSearchText(""); setCatalogFilter("all"); setCategoryFilter("all"); setPage(1); }} className="h-8 text-xs" data-testid="admin-catalog-clear-filters">Clear</Button>
-              </div>
-            </div>
+            {/* Filters removed — use column headers */}
             <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
               <Table data-testid="admin-catalog-table">
                 <TableHeader>
                   <TableRow className="bg-slate-50">
-                    <TableHead>Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Billing</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Status</TableHead>
-                    {isPlatformAdmin && <TableHead>Partner</TableHead>}
-                    <TableHead>Actions</TableHead>
+                    <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchText} onFilter={v => { setSearchText(v); setPage(1); }} onClearFilter={() => { setSearchText(""); setPage(1); }} />
+                    <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter("all"); setPage(1); }} statusOptions={[["all", "All"], ...categories.map((c: any) => [c.name, c.name] as [string, string])]} />
+                    <ColHeader label="Billing" colKey="billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={catalogFilter} onFilter={v => { setCatalogFilter(v); setPage(1); }} onClearFilter={() => { setCatalogFilter("all"); setPage(1); }} statusOptions={[["all", "All"], ["subscription", "Subscription"], ["one-time", "One-time"], ["active", "Active"], ["inactive", "Inactive"]]} />
+                    <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                    <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                    {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading && <TableRow><TableCell colSpan={isPlatformAdmin ? 7 : 6} className="text-center text-slate-400">Loading...</TableCell></TableRow>}
-                  {!loading && filtered.length === 0 && <TableRow><TableCell colSpan={isPlatformAdmin ? 7 : 6} className="text-center text-slate-400">No products found.</TableCell></TableRow>}
+                  {!loading && displayFiltered.length === 0 && <TableRow><TableCell colSpan={isPlatformAdmin ? 7 : 6} className="text-center text-slate-400">No products found.</TableCell></TableRow>}
                   {paged.map((product) => (
                     <TableRow key={product.id} data-testid={`admin-product-row-${product.id}`}>
                       <TableCell>
