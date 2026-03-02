@@ -834,6 +834,7 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
             "postal": address.get("postal", "").strip(),
             "country": address.get("country", "").strip(),
         },
+        "extra_fields": extra_fields,
         "created_at": now,
         "updated_at": now,
     })
