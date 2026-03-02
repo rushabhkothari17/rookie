@@ -32,6 +32,28 @@ export function ArticleCategoriesTab() {
   const [showImport, setShowImport] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [catFilters, setCatFilters] = useState({ name: "", scope_final: "all" });
+  const setCF = (k: keyof typeof catFilters, v: any) => setCatFilters(f => ({ ...f, [k]: v }));
+
+  const displayCategories = useMemo(() => {
+    let r = [...categories];
+    if (catFilters.name) r = r.filter(c => c.name.toLowerCase().includes(catFilters.name.toLowerCase()) || (c.description || "").toLowerCase().includes(catFilters.name.toLowerCase()));
+    if (catFilters.scope_final === "yes") r = r.filter(c => c.is_scope_final);
+    else if (catFilters.scope_final === "no") r = r.filter(c => !c.is_scope_final);
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "name") { av = a.name; bv = b.name; }
+        else if (colSort.col === "description") { av = a.description || ""; bv = b.description || ""; }
+        else if (colSort.col === "scope_final") { av = a.is_scope_final ? 1 : 0; bv = b.is_scope_final ? 1 : 0; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [categories, catFilters, colSort]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
