@@ -817,7 +817,6 @@ async def one_time_upgrade(
     )
     billing_period_end = (existing_sub or {}).get("next_billing_date") or ""
 
-    tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "name": 1})
     today = datetime.now(timezone.utc).date()
     now = now_iso()
 
