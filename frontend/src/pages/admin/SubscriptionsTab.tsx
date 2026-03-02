@@ -207,10 +207,15 @@ export function SubscriptionsTab() {
     api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
   }, [email, status, payment, subNumberFilter, processorIdFilter, planFilter, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
 
-  const sortHeader = (field: string, label: string) => (
-    <TableHead className="cursor-pointer select-none whitespace-nowrap" onClick={() => { if (sortField === field) setSortOrder(o => o === "desc" ? "asc" : "desc"); else { setSortField(field); setSortOrder("desc"); } }}>
-      {label} {sortField === field ? (sortOrder === "desc" ? "↓" : "↑") : ""}
-    </TableHead>
+  const sortColHeader = (field: string, label: string, filterType: "text" | "date-range" | "status" | "number-range" | "none", filterProps: any = {}) => (
+    <ColHeader
+      label={label} colKey={field}
+      sortCol={sortField} sortDir={sortOrder}
+      onSort={(c, d) => { setSortField(c); setSortOrder(d); }}
+      onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }}
+      filterType={filterType}
+      {...filterProps}
+    />
   );
 
   const handleEdit = async () => {
