@@ -43,7 +43,36 @@ export function PartnerSubmissionsTab() {
   const [statusFilter, setStatusFilter] = useState("pending");
   const [search, setSearch] = useState("");
 
-  // Resolve dialog state
+  // Sort & filter
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+
+  const filtered = items.filter(i => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      i.partner_name?.toLowerCase().includes(q) ||
+      i.current_plan_name?.toLowerCase().includes(q) ||
+      i.requested_plan_name?.toLowerCase().includes(q)
+    );
+  });
+
+  const displayItems = useMemo(() => {
+    const r = [...filtered];
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "partner") { av = a.partner_name; bv = b.partner_name; }
+        else if (colSort.col === "type") { av = a.type; bv = b.type; }
+        else if (colSort.col === "effective") { av = a.effective_date || ""; bv = b.effective_date || ""; }
+        else if (colSort.col === "created") { av = a.created_at; bv = b.created_at; }
+        else if (colSort.col === "status") { av = a.status; bv = b.status; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [filtered, colSort]);
   const [selected, setSelected] = useState<Submission | null>(null);
   const [resolveAction, setResolveAction] = useState<"approve" | "reject">("approve");
   const [resolutionNote, setResolutionNote] = useState("");
