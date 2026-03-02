@@ -17,10 +17,11 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
-import { Bell, Plus, Pencil, Trash2, ExternalLink, ScrollText, RefreshCw, Copy, XCircle } from "lucide-react";
+import { Bell, Plus, Pencil, XCircle, ExternalLink, ScrollText, RefreshCw, Copy } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
+import { ColHeader } from "@/components/shared/ColHeader";
 
 /** Small reusable button that sends a test renewal reminder for a partner subscription. */
 function TestReminderButton({ subId }: { subId: string }) {
