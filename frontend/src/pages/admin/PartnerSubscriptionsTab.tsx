@@ -416,6 +416,39 @@ export function PartnerSubscriptionsTab() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({ search: "", partner_id: "", status: "", payment_method: "", plan_id: "", billing_interval: "" });
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [colFilters, setColFilters] = useState({ partnerName: "", planName: "", amount: { min: "", max: "" }, nextBilling: { from: "", to: "" }, expiry: { from: "", to: "" } });
+  const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
+
+  const displaySubs = useMemo(() => {
+    let r = [...subs];
+    if (colFilters.partnerName) r = r.filter(s => s.partner_name?.toLowerCase().includes(colFilters.partnerName.toLowerCase()));
+    if (colFilters.planName) r = r.filter(s => s.plan_name?.toLowerCase().includes(colFilters.planName.toLowerCase()));
+    if (colFilters.amount.min) r = r.filter(s => s.amount >= parseFloat(colFilters.amount.min));
+    if (colFilters.amount.max) r = r.filter(s => s.amount <= parseFloat(colFilters.amount.max));
+    if (colFilters.nextBilling.from) r = r.filter(s => s.next_billing_date && s.next_billing_date >= colFilters.nextBilling.from);
+    if (colFilters.nextBilling.to) r = r.filter(s => s.next_billing_date && s.next_billing_date <= colFilters.nextBilling.to);
+    if (colFilters.expiry.from) r = r.filter(s => s.contract_end_date && s.contract_end_date >= colFilters.expiry.from);
+    if (colFilters.expiry.to) r = r.filter(s => s.contract_end_date && s.contract_end_date <= colFilters.expiry.to);
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "sub_number") { av = a.subscription_number || ""; bv = b.subscription_number || ""; }
+        else if (colSort.col === "partner") { av = a.partner_name || ""; bv = b.partner_name || ""; }
+        else if (colSort.col === "plan") { av = a.plan_name || ""; bv = b.plan_name || ""; }
+        else if (colSort.col === "amount") { av = a.amount; bv = b.amount; }
+        else if (colSort.col === "interval") { av = a.billing_interval; bv = b.billing_interval; }
+        else if (colSort.col === "method") { av = a.payment_method; bv = b.payment_method; }
+        else if (colSort.col === "status") { av = a.status; bv = b.status; }
+        else if (colSort.col === "next_billing") { av = a.next_billing_date || ""; bv = b.next_billing_date || ""; }
+        else if (colSort.col === "expiry") { av = a.contract_end_date || ""; bv = b.contract_end_date || ""; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [subs, colFilters, colSort]);
   const [showCreate, setShowCreate] = useState(false);
   const [editSub, setEditSub] = useState<PartnerSubscription | null>(null);
   const [cancelSub, setCancelSub] = useState<PartnerSubscription | null>(null);
