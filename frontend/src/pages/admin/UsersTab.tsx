@@ -191,6 +191,26 @@ export function UsersTab() {
   const [searchFilter, setSearchFilter] = useState("");
   const [partnerFilter, setPartnerFilter] = useState("all");
   const [partners, setPartners] = useState<{ id: string; name: string }[]>([]);
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
+  const [colPartnerFilter, setColPartnerFilter] = useState("");
+
+  const displayUsers = useMemo(() => {
+    let r = [...adminUsers];
+    if (colPartnerFilter) r = r.filter(u => (u.org_name || u.partner_name || "").toLowerCase().includes(colPartnerFilter.toLowerCase()));
+    if (colSort) {
+      r.sort((a, b) => {
+        let av: any = "", bv: any = "";
+        if (colSort.col === "name") { av = (a.full_name || a.email || "").toLowerCase(); bv = (b.full_name || b.email || "").toLowerCase(); }
+        else if (colSort.col === "role") { av = a.role; bv = b.role; }
+        else if (colSort.col === "partner") { av = a.org_name || ""; bv = b.org_name || ""; }
+        else if (colSort.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
+        if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+        if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return r;
+  }, [adminUsers, colPartnerFilter, colSort]);
 
   // All modules and partner module keys (for role-scoped filtering)
   const [allModules, setAllModules] = useState<ModuleInfo[]>([]);
