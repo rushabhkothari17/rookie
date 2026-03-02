@@ -91,6 +91,7 @@ async def admin_customers(
     country: Optional[str] = None,
     status: Optional[str] = None,
     payment_mode: Optional[str] = None,
+    email: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
