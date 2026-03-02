@@ -207,7 +207,7 @@ export function ProductsTab() {
                 </TableBody>
               </Table>
             </div>
-            <AdminPagination page={page} totalPages={totalPages} total={filtered.length} perPage={PER_PAGE} onPage={(p) => setPage(p)} />
+            <AdminPagination page={page} totalPages={totalPages} total={displayFiltered.length} perPage={PER_PAGE} onPage={(p) => setPage(p)} />
             <AuditLogDialog open={showAuditLogs} onOpenChange={setShowAuditLogs} title="Product Audit Logs" logsUrl={logsUrl} />
             <ImportModal entity="catalog" entityLabel="Products" open={showImport} onClose={() => setShowImport(false)} onSuccess={load} />
             <AlertDialog open={!!confirmToggleProduct} onOpenChange={(open) => !open && setConfirmToggleProduct(null)}>
