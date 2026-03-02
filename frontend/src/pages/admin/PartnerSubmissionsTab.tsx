@@ -132,28 +132,10 @@ export function PartnerSubmissionsTab() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-[180px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <Input
-            className="pl-8 h-9 text-sm"
-            placeholder="Search partner, plan..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            data-testid="submissions-search"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter} data-testid="submissions-status-filter">
-          <SelectTrigger className="w-36 h-9 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button variant="outline" size="sm" onClick={load} data-testid="submissions-admin-refresh-btn">
+          <RefreshCw size={13} className="mr-1.5" />Refresh
+        </Button>
       </div>
 
       {/* Table */}
@@ -161,7 +143,7 @@ export function PartnerSubmissionsTab() {
         <div className="flex justify-center py-16">
           <Loader2 className="animate-spin text-slate-400" size={24} />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : displayItems.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400" data-testid="submissions-admin-empty">
           No submissions found.
         </div>
