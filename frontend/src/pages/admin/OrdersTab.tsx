@@ -3,7 +3,7 @@ import { ImportModal } from "@/components/admin/ImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
@@ -16,6 +16,7 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Download, ExternalLink, Upload} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { ColHeader } from "@/components/shared/ColHeader";
 
 const getProcessorLink = (id: string | undefined): string | null => {
   if (!id) return null;
