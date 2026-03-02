@@ -152,13 +152,13 @@ export function PartnerSubmissionsTab() {
           <Table data-testid="submissions-admin-table">
             <TableHeader>
               <TableRow className="bg-slate-50">
-                <TableHead className="text-xs font-semibold text-slate-500">Partner</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500">Type</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500">From → To</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500">Effective</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500">Submitted</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500">Status</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 text-right">Actions</TableHead>
+                <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={search} onFilter={v => setSearch(v)} onClearFilter={() => setSearch("")} />
+                <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">From → To</th>
+                <ColHeader label="Effective" colKey="effective" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                <ColHeader label="Submitted" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter} onFilter={v => setStatusFilter(v)} onClearFilter={() => setStatusFilter("all")} statusOptions={[["all", "All"], ["pending", "Pending"], ["approved", "Approved"], ["rejected", "Rejected"]]} />
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
               </TableRow>
             </TableHeader>
             <TableBody>
