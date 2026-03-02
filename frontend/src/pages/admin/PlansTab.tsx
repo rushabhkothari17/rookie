@@ -685,7 +685,7 @@ function RateFormDialog({ modules, rate, onClose, onSaved }: { modules: OTPModul
               <label className="text-xs font-medium text-slate-600">Currency</label>
               <Select value={currency} onValueChange={v => setCurrency(v)} data-testid="rate-currency-select">
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{ISO_CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>{(supportedCurrencies.length ? supportedCurrencies : ["USD"]).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
