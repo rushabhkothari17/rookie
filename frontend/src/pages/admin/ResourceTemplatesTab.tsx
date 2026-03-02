@@ -50,7 +50,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   }, [templates, tplFilters, colSort]);
 
   const categoryOptions = useMemo(() => {
-    const cats = [...new Set(templates.map(t => t.category).filter(Boolean))] as string[];
+    const cats = Array.from(new Set(templates.map(t => t.category).filter(Boolean))) as string[];
     return [["all", "All"], ...cats.map(c => [c, c])] as [string, string][];
   }, [templates]);
   const [showForm, setShowForm] = useState(false);

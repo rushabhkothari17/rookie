@@ -67,7 +67,6 @@ export function EnquiriesTab() {
     }
     return r;
   }, [enquiries, colSort]);
-  const [endDate, setEndDate] = useState("");
 
   // Dialog
   const [viewEnquiry, setViewEnquiry] = useState<any>(null);
