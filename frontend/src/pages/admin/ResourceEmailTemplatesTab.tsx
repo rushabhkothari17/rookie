@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Plus, Trash2, Clock } from "lucide-react";
+import { ColHeader } from "@/components/shared/ColHeader";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 
 function EmailBodyEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
