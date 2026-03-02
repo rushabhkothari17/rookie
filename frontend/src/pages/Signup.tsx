@@ -245,60 +245,15 @@ export default function Signup() {
           </div>
 
           <form className="space-y-3" onSubmit={handlePartnerSubmit}>
-            <div className="relative">
-              <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" placeholder="Organization name *" value={partnerOrg.name} onChange={e => setPartnerOrg(p => ({ ...p, name: e.target.value }))} required data-testid="partner-org-name" />
-            </div>
-            <div className="relative">
-              <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" placeholder="Your full name *" value={partnerOrg.admin_name} onChange={e => setPartnerOrg(p => ({ ...p, admin_name: e.target.value }))} required data-testid="partner-admin-name" />
-            </div>
-            <div className="relative">
-              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" type="email" placeholder="Admin email address *" value={partnerOrg.admin_email} onChange={e => setPartnerOrg(p => ({ ...p, admin_email: e.target.value }))} required data-testid="partner-admin-email" />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-              <Input className="pl-9" type="password" placeholder="Password * (min 10 chars, upper, lower, number, symbol)" value={partnerOrg.admin_password} onChange={e => setPartnerOrg(p => ({ ...p, admin_password: e.target.value }))} required data-testid="partner-admin-password" />
-            </div>
+            <PartnerOrgForm
+              value={partnerOrg}
+              onChange={setPartnerOrg}
+              currencies={supportedCurrencies.length ? supportedCurrencies : ["USD", "CAD", "EUR", "GBP", "AUD", "INR", "MXN"]}
+              schema={ws.partner_signup_form_schema}
+              compact
+              testIdPrefix="partner"
+            />
             <p className="text-xs text-slate-400"><span className="text-red-500">*</span> Required field</p>
-            <Select value={partnerOrg.base_currency} onValueChange={v => setPartnerOrg(p => ({ ...p, base_currency: v }))}>
-              <SelectTrigger className="w-full" data-testid="partner-base-currency">
-                <SelectValue placeholder="Select base currency" />
-              </SelectTrigger>
-              <SelectContent>
-                {["USD — US Dollar", "CAD — Canadian Dollar", "EUR — Euro", "AUD — Australian Dollar", "GBP — British Pound", "INR — Indian Rupee", "MXN — Mexican Peso"].map(opt => {
-                  const code = opt.split(" — ")[0];
-                  return <SelectItem key={code} value={code}>{opt}</SelectItem>;
-                })}
-              </SelectContent>
-            </Select>
-
-            {/* Organization Address */}
-            <div className="pt-2 space-y-1">
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Organization Address</p>
-              <Input placeholder="Line 1 *" value={partnerOrg.address.line1} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, line1: e.target.value } }))} required data-testid="partner-addr-line1" />
-              <Input placeholder="Line 2 (optional)" value={partnerOrg.address.line2} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, line2: e.target.value } }))} data-testid="partner-addr-line2" />
-              <div className="grid grid-cols-2 gap-1">
-                <Input placeholder="City *" value={partnerOrg.address.city} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, city: e.target.value } }))} required data-testid="partner-addr-city" />
-                <Input placeholder="Postal Code *" value={partnerOrg.address.postal} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, postal: e.target.value } }))} required data-testid="partner-addr-postal" />
-              </div>
-              <Select value={partnerOrg.address.country} onValueChange={v => { setPartnerOrg(p => ({ ...p, address: { ...p.address, country: v, region: "" } })); setPartnerOrgCountry(v); }}>
-                <SelectTrigger data-testid="partner-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
-                <SelectContent>
-                  {countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              {partnerOrgProvinces.length > 0 ? (
-                <Select value={partnerOrg.address.region} onValueChange={v => setPartnerOrg(p => ({ ...p, address: { ...p.address, region: v } }))}>
-                  <SelectTrigger data-testid="partner-addr-region-select"><SelectValue placeholder="Province / State *" /></SelectTrigger>
-                  <SelectContent>{partnerOrgProvinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
-                </Select>
-              ) : (
-                <Input placeholder="State / Province *" value={partnerOrg.address.region} onChange={e => setPartnerOrg(p => ({ ...p, address: { ...p.address, region: e.target.value } }))} required data-testid="partner-addr-region-input" />
-              )}
-            </div>
-
             <Button
               type="submit"
               className="w-full h-11 font-semibold bg-slate-900 hover:bg-slate-700 text-white"
