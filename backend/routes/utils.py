@@ -57,38 +57,6 @@ _COUNTRY_MAP = {
     "UNITED STATES": _USA_STATES,
 }
 
-async def get_provinces(country_code: str = Query(..., description="Country name or ISO code")):
-    """Return provinces/states for a country — pulled from tax_tables, falling back to static list."""
-    key = country_code.strip()
-    KEY = key.upper()
-
-    # Normalise to ISO-2 code (handles "Canada" → "CA", "United States" → "US", "CA", etc.)
-    iso = _NAME_TO_ISO.get(KEY) or (KEY if len(KEY) <= 3 else None)
-
-    # Try to load from tax_tables first
-    if iso:
-        try:
-            raw_codes = await db.tax_tables.distinct("state_code", {"country_code": iso})
-            if raw_codes:
-                regions = []
-                seen = set()
-                for code in sorted(c for c in raw_codes if c):
-                    cu = code.upper()
-                    if cu not in seen:
-                        seen.add(cu)
-                        regions.append({
-                            "value": code,
-                            "label": _STATE_LABEL.get(cu, code),
-                        })
-                if regions:
-                    return {"country_code": KEY, "regions": regions}
-        except Exception:
-            pass
-
-    # Fallback to hardcoded list
-    regions = _COUNTRY_MAP.get(KEY, _COUNTRY_MAP.get(iso or "", []))
-    return {"country_code": KEY, "regions": regions}
-
 
 # Country code → display name mapping (covers ISO 2-letter codes)
 _ISO_TO_NAME = {
