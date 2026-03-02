@@ -463,6 +463,7 @@ export function TenantsTab() {
                 value={newPartner}
                 onChange={setNewPartner}
                 currencies={supportedCurrencies}
+                schema={ws.partner_signup_form_schema}
                 testIdPrefix="new-partner"
               />
               <DialogFooter>
