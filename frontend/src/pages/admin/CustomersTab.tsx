@@ -96,6 +96,7 @@ export function CustomersTab() {
     try {
       const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
       if (search) params.append("search", search);
+      if (emailSearch) params.append("email", emailSearch);
       if (countryFilter) params.append("country", countryFilter);
       if (statusFilter) params.append("status", statusFilter);
       if (paymentModeFilter) params.append("payment_mode", paymentModeFilter);
