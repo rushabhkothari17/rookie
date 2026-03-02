@@ -165,6 +165,20 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
             <Field label="Subtitle / instructions" value={ws.verify_email_subtitle} onChange={s("verify_email_subtitle")} multiline testId="ws-ve-subtitle" />
           </div>
         )}
+        {authSlide === "partner_signup" && (
+          <div className="space-y-4">
+            <p className="text-xs text-slate-500">
+              Control which fields appear on the partner organisation sign-up page{" "}
+              <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">/signup?type=partner</code>.
+              Locked fields (Org Name, Admin Name, Email, Password) are always visible.
+            </p>
+            <FormSchemaBuilder
+              title="Partner sign-up form fields"
+              value={ws.partner_signup_form_schema || ""}
+              onChange={s("partner_signup_form_schema")}
+            />
+          </div>
+        )}
         {authSlide === "portal" && (
           <div className="space-y-4">
             <Field label="Page title" value={ws.portal_title} onChange={s("portal_title")} testId="ws-portal-title" />
