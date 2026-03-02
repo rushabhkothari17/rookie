@@ -112,7 +112,6 @@ function roleLabel(role: string): string {
     platform_admin: "Platform Admin",
     partner_super_admin: "Partner Super Admin",
     partner_admin: "Partner Admin",
-    partner_staff: "Partner Staff",
     admin: "Admin",
     super_admin: "Super Admin",
   };
