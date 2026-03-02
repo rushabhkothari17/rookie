@@ -1,8 +1,10 @@
 """
 Test ColHeader implementation across all 18 admin table sections.
-Tests: ColHeader buttons appear, old filter bars gone, sort/filter popover works.
+Tests: ColHeader buttons appear in thead, old filter bars gone, sort/filter popover works.
+Login flow: partner code -> email/password -> admin panel
 """
 import asyncio
+import json
 from playwright.async_api import async_playwright
 
 BASE_URL = "https://admin-column-headers.preview.emergentagent.com"
@@ -12,256 +14,222 @@ ADMIN_PASSWORD = "ChangeMe123!"
 
 results = {}
 
-async def login(page):
-    """Login to admin panel"""
-    await page.goto(BASE_URL)
-    await page.wait_for_load_state("networkidle", timeout=15000)
-    print(f"Initial URL: {page.url}")
-    
-    # Enter partner code
-    await page.fill("input[placeholder='Partner code']", PARTNER_CODE)
-    await page.click("button:has-text('Continue')")
-    await page.wait_for_load_state("networkidle", timeout=10000)
-    print(f"After partner code URL: {page.url}")
-    
-    # Take screenshot to see what page we're on
-    await page.screenshot(path="/app/test_reports/iter169_login_1.jpeg", quality=40, full_page=False)
-    
-    # Login with admin credentials
-    email_input = await page.query_selector("input[type='email']")
-    if not email_input:
-        email_input = await page.query_selector("input[placeholder*='mail'], input[name='email']")
-    
-    if email_input:
-        await email_input.fill(ADMIN_EMAIL)
-        
-        pw_input = await page.query_selector("input[type='password']")
-        if pw_input:
-            await pw_input.fill(ADMIN_PASSWORD)
-        
-        submit_btn = await page.query_selector("button[type='submit']")
-        if not submit_btn:
-            submit_btn = await page.query_selector("button:has-text('Sign in'), button:has-text('Login'), button:has-text('Log in')")
-        
-        if submit_btn:
-            await submit_btn.click()
-            await page.wait_for_load_state("networkidle", timeout=10000)
-            print(f"After login submit URL: {page.url}")
-    else:
-        print("ERROR: Email input not found after partner code")
-        await page.screenshot(path="/app/test_reports/iter169_login_err.jpeg", quality=40, full_page=False)
-        return False
-    
-    # Wait a bit more for auth to complete
-    await page.wait_for_timeout(2000)
-    print(f"After auth wait URL: {page.url}")
-    
-    # Navigate to admin
+async def login_to_admin(page):
+    """Full login flow: partner code -> email/password -> navigate to admin"""
+    # Navigate to /admin which redirects to login
     await page.goto(BASE_URL + "/admin")
     await page.wait_for_load_state("networkidle", timeout=15000)
-    final_url = page.url
-    print(f"Admin URL after navigate: {final_url}")
+    print(f"Redirected to: {page.url}")
     
-    await page.screenshot(path="/app/test_reports/iter169_admin_after_login.jpeg", quality=40, full_page=False)
+    # Step 1: Enter partner code
+    await page.fill("input[placeholder='Partner code']", PARTNER_CODE)
+    await page.click("button:has-text('Continue')")
     
-    return "/admin" in final_url and "login" not in final_url
+    # Wait for email input to appear
+    await page.wait_for_selector("input[type='email']", timeout=8000)
+    print("Partner code accepted, email form shown")
+    
+    # Step 2: Enter credentials
+    await page.fill("input[type='email']", ADMIN_EMAIL)
+    await page.fill("input[type='password']", ADMIN_PASSWORD)
+    await page.click("button[type='submit']")  # "Sign In" button
+    
+    # Wait for navigation after successful login
+    await page.wait_for_load_state("networkidle", timeout=15000)
+    print(f"After login URL: {page.url}")
+    
+    # Should be at /admin now
+    if "/admin" in page.url and "login" not in page.url:
+        print("SUCCESS: Logged in to admin panel!")
+        return True
+    
+    # If not, might need to navigate explicitly
+    await page.goto(BASE_URL + "/admin")
+    await page.wait_for_load_state("networkidle", timeout=15000)
+    print(f"After navigate to /admin: {page.url}")
+    
+    return "/admin" in page.url and "login" not in page.url
 
-async def check_col_header_buttons(page, expected_labels):
-    """Check that ColHeader buttons appear in table header - ColHeader renders as th > button"""
+async def find_col_header_buttons_in_thead(page, expected_labels):
+    """Find ColHeader buttons within table header (thead/th elements)"""
     found = []
     missing = []
+    
     for label in expected_labels:
-        # Try multiple selector approaches
-        btn = await page.query_selector(f"th button:has-text('{label}')")
-        if not btn:
-            # Try within thead
-            btn = await page.query_selector(f"thead button:has-text('{label}')")
+        # ColHeader renders as th > Popover > PopoverTrigger > button
+        # The button is inside th element
+        btn = None
+        
+        # Try exact text match in th buttons
+        candidates = await page.query_selector_all("th button")
+        for candidate in candidates:
+            try:
+                text = await candidate.inner_text()
+                if label.strip() in text.strip() or text.strip() in label.strip():
+                    is_visible = await candidate.is_visible()
+                    if is_visible:
+                        btn = candidate
+                        break
+            except:
+                pass
+        
         if btn:
-            is_visible = await btn.is_visible()
-            if is_visible:
-                found.append(label)
-            else:
-                missing.append(f"{label}(hidden)")
+            found.append(label)
         else:
             missing.append(label)
+    
     return found, missing
 
-async def click_colheader_and_check_popover(page, label):
-    """Click a ColHeader button and verify popover appears with sort/filter"""
-    btn = await page.query_selector(f"th button:has-text('{label}')")
-    if not btn:
-        btn = await page.query_selector(f"thead button:has-text('{label}')")
-    if not btn:
-        return False, f"ColHeader button '{label}' not found"
+async def click_first_colheader_popover(page):
+    """Click first available ColHeader button and verify popover"""
+    th_buttons = await page.query_selector_all("th button")
+    if not th_buttons:
+        return False, "No th buttons found"
     
-    await btn.click()
+    first_btn = th_buttons[0]
+    btn_text = await first_btn.inner_text()
+    await first_btn.click()
     await page.wait_for_timeout(600)
     
-    # Check for popover content (radix popover)
-    popover = await page.query_selector("[data-radix-popper-content-wrapper], [data-state='open'][role='dialog'], [data-radix-popover-content]")
-    if not popover:
-        # Check for any visible popover-like element
-        popover = await page.query_selector(".space-y-3")
+    # Check for popover with Sort section
+    # Radix popover shows as [data-radix-popper-content-wrapper]
+    popover_wrapper = await page.query_selector("[data-radix-popper-content-wrapper]")
+    if not popover_wrapper:
+        return False, f"Popover not found for '{btn_text}'"
     
-    if not popover:
-        return False, "Popover did not appear"
+    # Check for sort section text
+    popover_content = await popover_wrapper.inner_text()
+    has_sort = "Sort" in popover_content
+    has_filter = "Filter" in popover_content
     
-    # Check for Sort section
-    sort_text = await page.query_selector("p:has-text('Sort'), .uppercase:has-text('Sort')")
-    
-    # Close popover by pressing Escape
+    # Close popover
     await page.keyboard.press("Escape")
     await page.wait_for_timeout(300)
     
-    return True, f"Popover shown {'with Sort section' if sort_text else 'but no Sort section found'}"
+    return True, f"Popover for '{btn_text.strip()}': Sort={has_sort}, Filter={has_filter}"
 
-async def get_admin_page_content(page):
-    """Get page content to debug navigation"""
-    return await page.evaluate("() => document.body.innerText.substring(0, 500)")
+async def check_old_filter_bar_removed(page):
+    """Check that standalone filter bars with selects/inputs outside tables are gone"""
+    # Old filter bars were flex rows with search inputs + select dropdowns above the table
+    # They typically had: div.flex > input[type=text/search] + select elements
+    # But we need to be careful not to flag the ColHeader popover inputs
+    
+    # Check for standalone select elements (old filter dropdowns) - outside table
+    selects_outside_table = await page.evaluate("""
+        () => {
+            const selects = Array.from(document.querySelectorAll('select'));
+            return selects.filter(s => {
+                // Check if select is outside a table
+                let parent = s.parentElement;
+                while (parent) {
+                    if (parent.tagName === 'TABLE' || parent.tagName === 'THEAD' || parent.tagName === 'TBODY') {
+                        return false;
+                    }
+                    parent = parent.parentElement;
+                }
+                return s.offsetParent !== null; // visible
+            }).map(s => ({ name: s.name, id: s.id, class: s.className }));
+        }
+    """)
+    
+    if selects_outside_table:
+        return False, f"Found {len(selects_outside_table)} select(s) outside table: {selects_outside_table}"
+    
+    return True, "No old select filter bars found outside tables"
 
-async def navigate_sidebar(page, text):
-    """Navigate using sidebar links"""
-    # Look for sidebar nav items
-    all_navs = await page.query_selector_all("aside a, aside button, nav a, nav button, [class*='sidebar'] a, [class*='sidebar'] button, [class*='nav'] a")
-    for nav in all_navs:
+async def navigate_to_sidebar_item(page, label):
+    """Navigate using the sidebar by text label"""
+    # Find sidebar links/buttons by text
+    candidates = await page.query_selector_all("aside a, aside button, [class*='sidebar'] a, [class*='sidebar'] button, nav a")
+    for candidate in candidates:
         try:
-            nav_text = await nav.inner_text()
-            if nav_text.strip() == text:
-                await nav.click()
+            text = await candidate.inner_text()
+            if text.strip() == label:
+                await candidate.click()
                 await page.wait_for_timeout(1500)
                 return True
         except:
             pass
-    # Try by text content anywhere in nav-like elements
-    nav_item = await page.query_selector(f"aside *:has-text('{text}'), nav *:has-text('{text}')")
-    if nav_item:
-        await nav_item.click()
-        await page.wait_for_timeout(1500)
-        return True
+    
+    # Broader match
+    for candidate in candidates:
+        try:
+            text = await candidate.inner_text()
+            if label in text and len(text.strip()) < len(label) + 10:
+                await candidate.click()
+                await page.wait_for_timeout(1500)
+                return True
+        except:
+            pass
+    
     return False
 
-async def click_sub_tab(page, text):
-    """Click a sub-tab or sub-section"""
-    sub = await page.query_selector(f"[role='tab']:has-text('{text}'), button[role='tab']:has-text('{text}')")
-    if not sub:
-        sub = await page.query_selector(f"button:has-text('{text}')")
-    if sub:
-        await sub.click()
+async def click_tab(page, label):
+    """Click a tab or sub-tab element"""
+    tab = await page.query_selector(f"[role='tab']:has-text('{label}'), button[role='tab']:has-text('{label}')")
+    if tab:
+        await tab.click()
         await page.wait_for_timeout(1000)
         return True
+    
+    # Broader search
+    candidates = await page.query_selector_all("[role='tab'], button")
+    for candidate in candidates:
+        try:
+            text = await candidate.inner_text()
+            if text.strip() == label:
+                is_visible = await candidate.is_visible()
+                if is_visible:
+                    await candidate.click()
+                    await page.wait_for_timeout(1000)
+                    return True
+        except:
+            pass
     return False
 
-async def test_plans_license_plans(page):
-    """Test Plans > License Plans table"""
-    print("\n--- Test: Plans > License Plans ---")
+async def get_sidebar_items(page):
+    """Get all sidebar navigation items"""
+    items = []
+    candidates = await page.query_selector_all("aside a, aside button, [class*='sidebar'] a, [class*='sidebar'] button")
+    for c in candidates:
+        try:
+            text = await c.inner_text()
+            if text.strip():
+                items.append(text.strip())
+        except:
+            pass
+    return list(set(items))
+
+# ---- TAB TEST FUNCTIONS ----
+
+async def run_test(name, page, expected_labels, screenshot_path=None):
+    """Generic test runner for a tab"""
+    found, missing = await find_col_header_buttons_in_thead(page, expected_labels)
+    print(f"  Found: {found}")
+    print(f"  Missing: {missing}")
     
-    navigated = await navigate_sidebar(page, "Plans")
-    if not navigated:
-        print("  Could not navigate to Plans")
-    
-    await page.wait_for_timeout(1000)
-    
-    found, missing = await check_col_header_buttons(page, ["Plan", "Price", "Orgs", "Status", "Created"])
-    print(f"  ColHeaders found: {found}")
-    print(f"  ColHeaders missing: {missing}")
-    
-    # Test popover
+    # Test popover if we found any ColHeaders
+    popover_ok = False
+    popover_msg = "No ColHeaders to test"
     if found:
-        ok, msg = await click_colheader_and_check_popover(page, found[0])
-        print(f"  Popover test ({found[0]}): {ok} - {msg}")
+        popover_ok, popover_msg = await click_first_colheader_popover(page)
+        print(f"  Popover: {popover_ok} - {popover_msg}")
     
-    results["plans_license_plans"] = {
+    # Check old filter bar removed
+    filter_ok, filter_msg = await check_old_filter_bar_removed(page)
+    print(f"  Old filter bar removed: {filter_ok} - {filter_msg}")
+    
+    if screenshot_path:
+        await page.screenshot(path=screenshot_path, quality=40, full_page=False)
+    
+    results[name] = {
         "found": found,
         "missing": missing,
-        "pass": len(missing) == 0
+        "popover_ok": popover_ok,
+        "old_filter_removed": filter_ok,
+        "pass": len(missing) == 0 and popover_ok
     }
-
-async def test_plans_sections(page):
-    """Test Plans > One-Time Rates and Coupons"""
-    print("\n--- Test: Plans > One-Time Rates ---")
-    
-    # Make sure we're on Plans page
-    await navigate_sidebar(page, "Plans")
-    
-    # Try to find One-Time Rates section
-    rates_ok = await click_sub_tab(page, "One-Time Rates")
-    if not rates_ok:
-        # Might be a scrollable section, look for it  
-        rates_section = await page.query_selector("text=One-Time Rates")
-        if rates_section:
-            await rates_section.click()
-            await page.wait_for_timeout(1000)
-    
-    found_rates, missing_rates = await check_col_header_buttons(page, ["Module", "Price / Unit", "Currency", "Status"])
-    print(f"  [Rates] ColHeaders found: {found_rates}")
-    print(f"  [Rates] ColHeaders missing: {missing_rates}")
-    
-    results["plans_one_time_rates"] = {
-        "found": found_rates,
-        "missing": missing_rates,
-        "pass": len(missing_rates) == 0
-    }
-    
-    print("\n--- Test: Plans > Coupons ---")
-    coupons_ok = await click_sub_tab(page, "Coupons")
-    if not coupons_ok:
-        coupons_section = await page.query_selector("text=Coupons")
-        if coupons_section:
-            await coupons_section.click()
-            await page.wait_for_timeout(1000)
-    
-    found_coupons, missing_coupons = await check_col_header_buttons(page, ["Code", "Discount", "Applies To", "Expiry", "Uses", "Status"])
-    print(f"  [Coupons] ColHeaders found: {found_coupons}")
-    print(f"  [Coupons] ColHeaders missing: {missing_coupons}")
-    
-    results["plans_coupons"] = {
-        "found": found_coupons,
-        "missing": missing_coupons,
-        "pass": len(missing_coupons) == 0
-    }
-
-async def test_partner_tabs(page):
-    """Test Partner Subscriptions and Orders"""
-    print("\n--- Test: Partner Subscriptions ---")
-    
-    # Partner Subscriptions might be in a Partner section
-    # Try various navigation approaches
-    navigated = await navigate_sidebar(page, "Partner Subscriptions")
-    if not navigated:
-        navigated = await navigate_sidebar(page, "Subscriptions")
-    
-    await page.wait_for_timeout(1000)
-    
-    # Check URL to understand current section
-    current_url = page.url
-    print(f"  Current URL: {current_url}")
-    
-    found, missing = await check_col_header_buttons(page, ["Sub #", "Partner", "Plan", "Amount", "Interval", "Method", "Status"])
-    print(f"  ColHeaders found: {found}")
-    print(f"  ColHeaders missing: {missing}")
-    
-    results["partner_subscriptions"] = {
-        "found": found,
-        "missing": missing,
-        "pass": len(missing) == 0
-    }
-    
-    print("\n--- Test: Partner Orders ---")
-    navigated = await navigate_sidebar(page, "Partner Orders")
-    if not navigated:
-        navigated = await navigate_sidebar(page, "Orders")
-    
-    await page.wait_for_timeout(1000)
-    
-    found_o, missing_o = await check_col_header_buttons(page, ["Order #", "Partner", "Description", "Amount", "Method", "Status", "Date"])
-    print(f"  ColHeaders found: {found_o}")
-    print(f"  ColHeaders missing: {missing_o}")
-    
-    results["partner_orders"] = {
-        "found": found_o,
-        "missing": missing_o,
-        "pass": len(missing_o) == 0
-    }
+    return len(missing) == 0
 
 async def run_all_tests():
     async with async_playwright() as pw:
@@ -270,67 +238,228 @@ async def run_all_tests():
         page = await context.new_page()
         
         print("=" * 60)
-        print("ColHeader Admin Panel Test Suite")
+        print("ColHeader Admin Panel Test Suite - Iteration 169")
         print("=" * 60)
         
         # Login
-        try:
-            logged_in = await login(page)
-            if not logged_in:
-                print("ERROR: Failed to login to admin panel")
-                
-                # Check if we're stuck at login page
-                content = await get_admin_page_content(page)
-                print(f"Current page content: {content}")
-                await browser.close()
-                return
-            print("Login SUCCESS")
-        except Exception as e:
-            print(f"Login ERROR: {e}")
-            import traceback
-            traceback.print_exc()
+        logged_in = await login_to_admin(page)
+        if not logged_in:
+            print("CRITICAL: Could not log in to admin panel!")
+            await page.screenshot(path="/app/test_reports/iter169_login_fail.jpeg", quality=40, full_page=False)
             await browser.close()
             return
         
-        # Take screenshot of admin panel
         await page.screenshot(path="/app/test_reports/iter169_04_admin_logged_in.jpeg", quality=40, full_page=False)
         
-        # Verify we're on admin by checking content
-        content = await get_admin_page_content(page)
-        print(f"Admin page content preview: {content[:200]}")
+        # Check what sidebar items are available
+        sidebar_items = await get_sidebar_items(page)
+        print(f"Sidebar items: {sidebar_items}")
         
-        # Run all tests
-        tests_to_run = [
-            test_plans_license_plans,
-            test_plans_sections,
-            test_partner_tabs,
-        ]
+        # ==== TEST 1: Plans > License Plans ====
+        print("\n--- [1] Plans > License Plans ---")
+        await navigate_to_sidebar_item(page, "Plans")
+        # Default view should show License Plans
+        await page.wait_for_timeout(1000)
         
-        for test_fn in tests_to_run:
-            try:
-                await test_fn(page)
-            except Exception as e:
-                print(f"ERROR in {test_fn.__name__}: {e}")
-                import traceback
-                traceback.print_exc()
+        # Check if we need to click a Plans sub-tab
+        license_plans_tab = await page.query_selector("[role='tab']:has-text('License Plans'), [role='tab']:has-text('Plans')")
+        if license_plans_tab:
+            await license_plans_tab.click()
+            await page.wait_for_timeout(500)
         
-        # Summary
+        await run_test("plans_license_plans", page, ["Plan", "Price", "Orgs", "Status", "Created"],
+                      "/app/test_reports/iter169_05_plans_license.jpeg")
+        
+        # ==== TEST 2: Plans > One-Time Rates ====
+        print("\n--- [2] Plans > One-Time Rates ---")
+        # Try to find One-Time Rates section (could be a tab, accordion, or section within Plans)
+        rates_clicked = await click_tab(page, "One-Time Rates")
+        if not rates_clicked:
+            # Try to scroll to it or find it as a section
+            rates_heading = await page.query_selector("text=One-Time Rates")
+            if rates_heading:
+                await rates_heading.scroll_into_view_if_needed()
+                await page.wait_for_timeout(500)
+        
+        found_rates, missing_rates = await find_col_header_buttons_in_thead(page, ["Module", "Price / Unit", "Currency", "Status"])
+        print(f"  Found: {found_rates}")
+        print(f"  Missing: {missing_rates}")
+        
+        if found_rates:
+            popover_ok, popover_msg = await click_first_colheader_popover(page)
+            print(f"  Popover: {popover_ok} - {popover_msg}")
+        
+        await page.screenshot(path="/app/test_reports/iter169_06_plans_rates.jpeg", quality=40, full_page=False)
+        
+        results["plans_one_time_rates"] = {
+            "found": found_rates,
+            "missing": missing_rates,
+            "pass": len(missing_rates) == 0
+        }
+        
+        # ==== TEST 3: Plans > Coupons ====
+        print("\n--- [3] Plans > Coupons ---")
+        coupons_clicked = await click_tab(page, "Coupons")
+        if not coupons_clicked:
+            await navigate_to_sidebar_item(page, "Plans")
+        
+        await run_test("plans_coupons", page, ["Code", "Discount", "Applies To", "Expiry", "Uses", "Status"],
+                      "/app/test_reports/iter169_07_plans_coupons.jpeg")
+        
+        # ==== TEST 4: Partner Subscriptions ====
+        print("\n--- [4] Partner Subscriptions ---")
+        nav_ok = await navigate_to_sidebar_item(page, "Partner Subscriptions")
+        if not nav_ok:
+            nav_ok = await navigate_to_sidebar_item(page, "Subscriptions")
+        
+        await run_test("partner_subscriptions", page, 
+                      ["Sub #", "Partner", "Plan", "Amount", "Interval", "Method", "Status", "Next Billing", "Expiry"],
+                      "/app/test_reports/iter169_08_partner_subs.jpeg")
+        
+        # ==== TEST 5: Partner Orders ====
+        print("\n--- [5] Partner Orders ---")
+        nav_ok = await navigate_to_sidebar_item(page, "Partner Orders")
+        if not nav_ok:
+            nav_ok = await navigate_to_sidebar_item(page, "Orders")
+        
+        await run_test("partner_orders", page,
+                      ["Order #", "Partner", "Description", "Amount", "Method", "Status", "Date"],
+                      "/app/test_reports/iter169_09_partner_orders.jpeg")
+        
+        # ==== TEST 6: Partner Submissions ====
+        print("\n--- [6] Partner Submissions ---")
+        nav_ok = await navigate_to_sidebar_item(page, "Partner Submissions")
+        if not nav_ok:
+            nav_ok = await navigate_to_sidebar_item(page, "Submissions")
+        
+        await run_test("partner_submissions", page,
+                      ["Partner", "Type", "Status"],
+                      "/app/test_reports/iter169_10_partner_submissions.jpeg")
+        
+        # ==== TEST 7: Users ====
+        print("\n--- [7] Users ---")
+        await navigate_to_sidebar_item(page, "Users")
+        
+        await run_test("users", page, ["Name / Email", "Status"],
+                      "/app/test_reports/iter169_11_users.jpeg")
+        
+        # ==== TEST 8: Customers ====
+        print("\n--- [8] Customers ---")
+        await navigate_to_sidebar_item(page, "Customers")
+        
+        await run_test("customers", page, ["Name", "Email", "Country", "Status", "Payment Methods"],
+                      "/app/test_reports/iter169_12_customers.jpeg")
+        
+        # ==== TEST 9: Products > Products ====
+        print("\n--- [9] Products > Products ---")
+        await navigate_to_sidebar_item(page, "Products")
+        await page.wait_for_timeout(500)
+        await click_tab(page, "Products")
+        
+        await run_test("products_products", page, ["Name", "Category", "Billing", "Price", "Status"],
+                      "/app/test_reports/iter169_13_products.jpeg")
+        
+        # ==== TEST 10: Products > Categories ====
+        print("\n--- [10] Products > Categories ---")
+        await click_tab(page, "Categories")
+        
+        await run_test("products_categories", page, ["Name", "Description", "Products", "Status"],
+                      "/app/test_reports/iter169_14_categories.jpeg")
+        
+        # ==== TEST 11: Products > Promo Codes ====
+        print("\n--- [11] Products > Promo Codes ---")
+        await click_tab(page, "Promo Codes")
+        
+        await run_test("products_promo_codes", page, ["Code", "Discount", "Applies To", "Expiry", "Usage", "Created", "Status"],
+                      "/app/test_reports/iter169_15_promo_codes.jpeg")
+        
+        # ==== TEST 12: Products > Terms ====
+        print("\n--- [12] Products > Terms ---")
+        await click_tab(page, "Terms")
+        
+        await run_test("products_terms", page, ["Title", "Status", "Created"],
+                      "/app/test_reports/iter169_16_terms.jpeg")
+        
+        # ==== TEST 13: Subscriptions ====
+        print("\n--- [13] Subscriptions ---")
+        await navigate_to_sidebar_item(page, "Subscriptions")
+        
+        await run_test("subscriptions", page,
+                      ["Sub #", "Customer Email", "Plan", "Amount", "Status"],
+                      "/app/test_reports/iter169_17_subscriptions.jpeg")
+        
+        # ==== TEST 14: Orders ====
+        print("\n--- [14] Orders ---")
+        await navigate_to_sidebar_item(page, "Orders")
+        
+        await run_test("orders", page,
+                      ["Date", "Order #", "Email", "Method", "Status"],
+                      "/app/test_reports/iter169_18_orders.jpeg")
+        
+        # ==== TEST 15: Enquiries ====
+        print("\n--- [15] Enquiries ---")
+        await navigate_to_sidebar_item(page, "Enquiries")
+        
+        await run_test("enquiries", page, ["Date", "Order #", "Customer", "Status"],
+                      "/app/test_reports/iter169_19_enquiries.jpeg")
+        
+        # ==== TEST 16: Resources ====
+        print("\n--- [16] Resources ---")
+        await navigate_to_sidebar_item(page, "Resources")
+        
+        await run_test("resources", page, ["Created", "Category", "Title / Visible"],
+                      "/app/test_reports/iter169_20_resources.jpeg")
+        
+        # ==== TEST 17: Resources > Templates ====
+        print("\n--- [17] Resources > Templates ---")
+        await click_tab(page, "Templates")
+        
+        await run_test("resources_templates", page, ["Name", "Category", "Type"],
+                      "/app/test_reports/iter169_21_resources_templates.jpeg")
+        
+        # ==== TEST 18: Resources > Email Templates ====
+        print("\n--- [18] Resources > Email Templates ---")
+        await click_tab(page, "Email Templates")
+        
+        await run_test("resources_email_templates", page, ["Name", "Subject"],
+                      "/app/test_reports/iter169_22_email_templates.jpeg")
+        
+        # ==== TEST 19: Resources > Categories ====
+        print("\n--- [19] Resources > Categories ---")
+        await click_tab(page, "Categories")
+        
+        await run_test("resources_categories", page, ["Name", "Description"],
+                      "/app/test_reports/iter169_23_res_categories.jpeg")
+        
+        # ==== FINAL SUMMARY ====
         print("\n" + "=" * 60)
-        print("RESULTS SUMMARY")
+        print("FINAL RESULTS SUMMARY")
         print("=" * 60)
-        passed = 0
-        failed = 0
+        
+        total_passed = 0
+        total_failed = 0
+        failed_tests = []
+        
         for name, result in results.items():
             status = "PASS" if result.get("pass", False) else "FAIL"
             if result.get("pass", False):
-                passed += 1
+                total_passed += 1
             else:
-                failed += 1
+                total_failed += 1
+                failed_tests.append(name)
+            
             print(f"  {status}: {name}")
             if result.get("missing"):
                 print(f"    Missing ColHeaders: {result['missing']}")
+            if result.get("found"):
+                print(f"    Found ColHeaders: {result['found']}")
         
-        print(f"\nTotal: {passed} passed, {failed} failed")
+        print(f"\nPASSED: {total_passed} / {total_passed + total_failed}")
+        print(f"FAILED: {failed_tests}")
+        
+        # Save results to JSON
+        with open("/app/test_reports/iter169_results.json", "w") as f:
+            json.dump(results, f, indent=2)
         
         await browser.close()
         return results
