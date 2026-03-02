@@ -46,6 +46,7 @@ export interface WebsiteSettings {
   quote_form_schema: string;
   scope_form_schema: string;
   signup_form_schema: string;
+  partner_signup_form_schema: string;
   // Email templates
   email_from_name: string;
   email_article_subject_template: string;
