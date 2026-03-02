@@ -11,7 +11,7 @@ export type ColHeaderProps = {
   sortDir?: SortDirection;
   onSort: (col: string, dir: SortDirection) => void;
   onClearSort: () => void;
-  filterType: "text" | "number-range" | "status" | "date-range" | "none";
+  filterType: "text" | "number-range" | "status" | "date-range" | "dropdown" | "none";
   filterValue?: any;
   onFilter?: (val: any) => void;
   onClearFilter?: () => void;
