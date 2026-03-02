@@ -54,7 +54,7 @@ interface PresetRole {
 
 export function TenantsTab() {
   const { currencies: supportedCurrencies } = useSupportedCurrencies();
-  const { ws } = useWebsite();
+  const ws = useWebsite();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedTenant, setExpandedTenant] = useState<string | null>(null);
