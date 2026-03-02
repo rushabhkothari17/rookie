@@ -1,253 +1,282 @@
 {
-  "plans_license_plans": {
-    "found": [
-      "Plan",
-      "Price",
-      "Orgs",
-      "Status",
-      "Created"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'PLAN': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
+  "results": {
+    "plans_license_plans": {
+      "found": [
+        "Plan",
+        "Price",
+        "Orgs",
+        "Status",
+        "Created"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'PLAN': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "plans_one_time_rates": {
+      "found": [
+        "Module",
+        "Price / Unit",
+        "Currency",
+        "Status"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'MODULE': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "plans_coupons": {
+      "found": [],
+      "missing": [
+        "Code",
+        "Discount",
+        "Applies To",
+        "Expiry",
+        "Uses",
+        "Status"
+      ],
+      "popover_ok": false,
+      "popover_msg": "No ColHeaders found",
+      "pass": false,
+      "notes": ""
+    },
+    "partner_subscriptions": {
+      "found": [
+        "Sub #",
+        "Partner",
+        "Plan",
+        "Amount",
+        "Interval",
+        "Method",
+        "Status",
+        "Next Billing",
+        "Expiry"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'SUB #': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "partner_orders": {
+      "found": [
+        "Order #",
+        "Partner",
+        "Description",
+        "Amount",
+        "Method",
+        "Status",
+        "Date"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'ORDER #': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "partner_submissions": {
+      "found": [],
+      "missing": [
+        "Partner",
+        "Type",
+        "Status"
+      ],
+      "popover_ok": false,
+      "pass": false,
+      "notes": "Table renders empty state (no pending submissions). ColHeader IS in code (lines 155-160 of PartnerSubmissionsTab.tsx) but only renders when displayItems.length > 0. This is a conditional rendering issue."
+    },
+    "users": {
+      "found": [
+        "Name / Email",
+        "Status"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'NAME / EMAIL': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "customers": {
+      "found": [
+        "Name",
+        "Email",
+        "Country",
+        "Status",
+        "Payment Methods"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'NAME': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "products_products": {
+      "found": [
+        "Name",
+        "Category",
+        "Billing",
+        "Price",
+        "Status"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'NAME': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "products_categories": {
+      "found": [
+        "Name",
+        "Description",
+        "Products",
+        "Status"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'NAME': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "products_promo_codes": {
+      "found": [
+        "Code",
+        "Discount",
+        "Applies To",
+        "Expiry",
+        "Usage",
+        "Created",
+        "Status"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'CODE': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "products_terms": {
+      "found": [
+        "Title",
+        "Status",
+        "Created"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'TITLE': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "subscriptions": {
+      "found": [
+        "Created",
+        "Sub #",
+        "Processor ID",
+        "Customer Email",
+        "Plan",
+        "Renewal",
+        "Start",
+        "Contract End",
+        "Payment",
+        "Status"
+      ],
+      "missing": [],
+      "extra_plain_th": {
+        "Amount": true,
+        "Tax": true,
+        "Currency": true
+      },
+      "popover_ok": true,
+      "pass": true,
+      "notes": "Amount/Tax/Currency are plain <th> elements, not ColHeader. Bug reported."
+    },
+    "orders": {
+      "found": [
+        "Date",
+        "Order #",
+        "Email",
+        "Product(s)",
+        "Sub #",
+        "Processor ID",
+        "Pay Date",
+        "Method",
+        "Status"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'DATE': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "enquiries": {
+      "found": [
+        "Date",
+        "Order #",
+        "Customer",
+        "Status"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'DATE': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "resources": {
+      "found": [
+        "Created",
+        "Category",
+        "Title / Visible"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'CREATED': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "resources_templates": {
+      "found": [
+        "Name",
+        "Category",
+        "Type"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "popover_msg": "'NAME': Sort=True, Filter=True",
+      "pass": true,
+      "notes": ""
+    },
+    "resources_email_templates": {
+      "found": [
+        "Name",
+        "Subject"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "pass": true
+    },
+    "resources_categories": {
+      "found": [
+        "Name",
+        "Description"
+      ],
+      "missing": [],
+      "popover_ok": true,
+      "pass": true
+    }
   },
-  "plans_one_time_rates": {
-    "found": [
-      "Status"
-    ],
-    "missing": [
-      "Module",
-      "Price / Unit",
-      "Currency"
-    ],
-    "popover_ok": true,
-    "pass": false
-  },
-  "plans_coupons": {
-    "found": [
-      "Status"
-    ],
-    "missing": [
-      "Code",
-      "Discount",
-      "Applies To",
-      "Expiry",
-      "Uses"
-    ],
-    "popover_ok": true,
-    "pass": false
-  },
-  "partner_subscriptions": {
-    "found": [
-      "Sub #",
-      "Partner",
-      "Plan",
-      "Amount",
-      "Interval",
-      "Method",
-      "Status"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'SUB #': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "partner_orders": {
-    "found": [
-      "Order #",
-      "Partner",
-      "Description",
-      "Amount",
-      "Method",
-      "Status",
-      "Date"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'ORDER #': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "partner_submissions": {
-    "found": [],
-    "missing": [
-      "Partner",
-      "Status"
-    ],
-    "popover_ok": false,
-    "popover_msg": "Skipped",
-    "old_filter_removed": true,
-    "pass": false
-  },
-  "users": {
-    "found": [
-      "Name / Email",
-      "Status"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'NAME / EMAIL': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "customers": {
-    "found": [
-      "Name",
-      "Email",
-      "Country",
-      "Status",
-      "Payment Methods"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "products_products": {
-    "found": [
-      "Name",
-      "Category",
-      "Billing",
-      "Price",
-      "Status"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "products_categories": {
-    "found": [
-      "Name",
-      "Description",
-      "Products",
-      "Status"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "products_promo_codes": {
-    "found": [],
-    "missing": [
-      "Code",
-      "Discount",
-      "Applies To",
-      "Expiry",
-      "Usage",
-      "Created",
-      "Status"
-    ],
-    "popover_ok": false,
-    "popover_msg": "Skipped",
-    "old_filter_removed": true,
-    "pass": false
-  },
-  "products_terms": {
-    "found": [],
-    "missing": [
-      "Title",
-      "Status",
-      "Created"
-    ],
-    "popover_ok": false,
-    "popover_msg": "Skipped",
-    "old_filter_removed": true,
-    "pass": false
-  },
-  "subscriptions": {
-    "found": [
-      "Sub #",
-      "Customer Email",
-      "Plan",
-      "Status"
-    ],
-    "missing": [
-      "Amount"
-    ],
-    "popover_ok": true,
-    "popover_msg": "'CREATED': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
-    "old_filter_removed": true,
-    "pass": false
-  },
-  "orders": {
-    "found": [
-      "Date",
-      "Order #",
-      "Email",
-      "Method",
-      "Status"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'DATE': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "enquiries": {
-    "found": [
-      "Date",
-      "Order #",
-      "Customer",
-      "Status"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'DATE': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "resources": {
-    "found": [
-      "Created",
-      "Category",
-      "Title / Visible"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'CREATED': Sort=True, Filter=True, preview='SORT\n\nOldest first\nNewest first\n\nFILTER\n\nFrom\n\nTo'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "resources_templates": {
-    "found": [
-      "Name",
-      "Category",
-      "Type"
-    ],
-    "missing": [],
-    "popover_ok": true,
-    "popover_msg": "'NAME': Sort=True, Filter=True, preview='SORT\n\nA \u2192 Z\nZ \u2192 A\n\nFILTER'",
-    "old_filter_removed": true,
-    "pass": true
-  },
-  "resources_email_templates": {
-    "found": [],
-    "missing": [
-      "Name",
-      "Subject"
-    ],
-    "popover_ok": false,
-    "popover_msg": "Skipped",
-    "old_filter_removed": true,
-    "pass": false
-  },
-  "resources_categories": {
-    "found": [],
-    "missing": [
-      "Name",
-      "Description"
-    ],
-    "popover_ok": false,
-    "popover_msg": "Skipped",
-    "old_filter_removed": true,
-    "pass": false
+  "bugs": [
+    {
+      "tab": "Subscriptions",
+      "issue": "Amount, Tax, Currency columns use plain <th> instead of ColHeader (SubscriptionsTab.tsx lines 310-312)",
+      "severity": "MEDIUM",
+      "expected": "ColHeader with sort/filter on Amount, Tax, Currency columns",
+      "actual": "Plain <th> elements without sort/filter functionality"
+    }
+  ],
+  "summary": {
+    "passed": 17,
+    "failed": 2,
+    "total": 19,
+    "pass_rate": "89%"
   }
 }
