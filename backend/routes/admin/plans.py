@@ -27,7 +27,7 @@ LIMIT_FIELDS = [
 
 
 class VisibilityRule(BaseModel):
-    field: str    # country, partner_code, base_currency, partner_type, industry, tags
+    field: str    # country, partner_code, base_currency, name
     operator: str  # equals, not_equals, in, contains
     value: str
 
