@@ -50,6 +50,17 @@ _SIGNUP_FORM_SCHEMA = json.dumps([
      "address_config": _DEFAULT_ADDRESS_CONFIG},
 ])
 
+_PARTNER_SIGNUP_FORM_SCHEMA = json.dumps([
+    {"id": "pf_org_name",    "key": "org_name",       "label": "Organization Name", "type": "text",     "required": True,  "placeholder": "", "options": [], "locked": True,  "enabled": True,  "order": 0},
+    {"id": "pf_admin_name",  "key": "admin_name",     "label": "Admin Full Name",   "type": "text",     "required": True,  "placeholder": "", "options": [], "locked": True,  "enabled": True,  "order": 1},
+    {"id": "pf_admin_email", "key": "admin_email",    "label": "Admin Email",       "type": "email",    "required": True,  "placeholder": "", "options": [], "locked": True,  "enabled": True,  "order": 2},
+    {"id": "pf_admin_pass",  "key": "admin_password", "label": "Password",          "type": "password", "required": True,  "placeholder": "", "options": [], "locked": True,  "enabled": True,  "order": 3},
+    {"id": "pf_currency",    "key": "base_currency",  "label": "Base Currency",     "type": "select",   "required": False, "placeholder": "", "options": [], "locked": False, "enabled": True,  "order": 4},
+    {"id": "pf_address",     "key": "address",        "label": "Organization Address","type": "address", "required": False, "placeholder": "", "options": [], "locked": False, "enabled": True,  "order": 5,
+     "address_config": _DEFAULT_ADDRESS_CONFIG},
+])
+
+
 def _migrate_signup_schema(schema_str: str) -> str:
     """Migrate old signup schema format to current format.
     - Removes standalone country/email/password locked fields
