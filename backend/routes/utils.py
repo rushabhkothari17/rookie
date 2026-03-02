@@ -57,15 +57,6 @@ _COUNTRY_MAP = {
     "UNITED STATES": _USA_STATES,
 }
 
-# Build a full-name → ISO-2 reverse map so we can normalise "Canada" → "CA"
-_NAME_TO_ISO: dict = {v.upper(): k for k, v in _ISO_TO_NAME.items() if len(k) <= 2}
-# Also build a flat label-lookup from the hardcoded lists
-_STATE_LABEL: dict = {}
-for _row in _CANADA_PROVINCES + _USA_STATES:
-    _STATE_LABEL[_row["value"].upper()] = _row["label"]
-
-
-@router.get("/utils/provinces")
 async def get_provinces(country_code: str = Query(..., description="Country name or ISO code")):
     """Return provinces/states for a country — pulled from tax_tables, falling back to static list."""
     key = country_code.strip()
