@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Plus, Pencil, Trash2, Tag, Upload, Download, Clock } from "lucide-react";
+import { ColHeader } from "@/components/shared/ColHeader";
 
 const PRESET_COLORS = [
   "#0f172a", "#1e40af", "#7c3aed", "#be185d", "#dc2626",
