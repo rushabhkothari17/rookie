@@ -154,9 +154,11 @@ function OptionsEditor({ options, onChange, affects_price }: {
       ) : (
         <>
           {options.map((opt, i) => (
-            <div key={i} className="flex gap-2 items-center">
+            <div key={`opt_${i}`} className="flex gap-2 items-center">
               <Input value={opt.label} onChange={e => {
-                const n = [...options]; n[i] = { ...n[i], label: e.target.value, value: labelToKey(e.target.value) }; onChange(n);
+                const n = [...options]; n[i] = { ...n[i], label: e.target.value }; onChange(n);
+              }} onBlur={e => {
+                const n = [...options]; n[i] = { ...n[i], value: labelToKey(e.target.value) }; onChange(n);
               }} placeholder="Option label" className="h-8 text-xs flex-1" />
               {affects_price && (
                 <Input type="number" value={opt.price_value ?? 0} onChange={e => {
@@ -540,7 +542,8 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 <div>
                   <label className="label-xs">Label * <FieldTip tip="The question text shown to the customer. Changing the label auto-updates the Key field." side="right" /></label>
                   <Input value={q.label}
-                    onChange={e => onChange({ ...q, label: e.target.value, key: labelToKey(e.target.value) })}
+                    onChange={e => onChange({ ...q, label: e.target.value })}
+                    onBlur={e => { if (!q.key || q.key === labelToKey(q.label.slice(0, -1))) onChange({ ...q, key: labelToKey(e.target.value) }); }}
                     placeholder="Question label" className="h-9 text-sm" />
                 </div>
 
@@ -862,7 +865,7 @@ export function IntakeSchemaBuilder({ schema, onChange }: { schema: IntakeSchema
       {/* Question list */}
       <div className="space-y-3">
         {questions.map((q, i) => (
-          <QuestionCard key={q.key || `q_${i}`} q={q} idx={i} total={questions.length} allKeys={allKeys}
+          <QuestionCard key={`q_${i}_${q.type}`} q={q} idx={i} total={questions.length} allKeys={allKeys}
             allQuestions={questions} onChange={nq => changeQ(i, nq)}
             onRemove={() => removeQ(i)} onMove={dir => moveQ(i, dir)} />
         ))}
