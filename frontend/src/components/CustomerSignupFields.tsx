@@ -95,11 +95,11 @@ export function CustomerSignupFields({
       return (
         <div key="address" className={compact ? "space-y-2 border-t border-slate-100 pt-3" : "space-y-4"}>
           {compact
-            ? <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Address</p>
+            ? <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{field.label}</p>
             : (
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-slate-100" />
-                <span className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5"><MapPin size={11} />Address</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5"><MapPin size={11} />{field.label}</span>
                 <div className="h-px flex-1 bg-slate-100" />
               </div>
             )

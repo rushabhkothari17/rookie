@@ -26,7 +26,7 @@ export default function Signup() {
   const [partnerPrimaryColor, setPartnerPrimaryColor] = useState<string>("");
 
   // Countries/provinces from taxes module
-  const countries = useCountries(partnerCode || undefined);
+  const countries = useCountries();
   const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [partnerOrg, setPartnerOrg] = useState<PartnerOrgFormValue>(EMPTY_PARTNER_ORG);
   const [partnerLoading, setPartnerLoading] = useState(false);
