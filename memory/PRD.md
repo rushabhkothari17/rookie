@@ -7,6 +7,11 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Latest Updates (March 3, 2026)
 
+### Completed: Signup page & Add Customer form — shared single source of truth ✅
+- **Problem**: Both forms used `signup_form_schema` but rendered fields differently (different ordering, different sections, Add Customer missing custom fields).
+- **Fix**: Created `frontend/src/components/CustomerSignupFields.tsx` — a single shared component used by both `/signup` page and the admin "Add Customer" dialog. Fields render in schema order with email+password always injected after `full_name`. Supports compact (dialog) and full-page layouts.
+- **Verified**: Testing agent confirmed 100% pass — same field order on both forms (Full Name → Email → Password → Company → Job Title → Phone → Address), labels from schema, no cursor loss, customer creation succeeds.
+
 ### Completed: Signup page & Add Customer form now share the same schema ✅
 - **Problem**: The `/signup` page and admin "Add Customer" dialog both read from `signup_form_schema` (Auth & Pages > Customer Sign up), but the "Add Customer" dialog was not rendering custom extra fields and was not saving `profile_meta`.
 - **Fix**: Added custom field rendering (text, textarea, select, number, date) to the Create Customer dialog, `profile_meta` is now passed to the API and stored on the user document.
