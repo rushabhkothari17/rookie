@@ -7,6 +7,12 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Latest Updates (March 3, 2026)
 
+### Completed: Signup page & Add Customer form now share the same schema ✅
+- **Problem**: The `/signup` page and admin "Add Customer" dialog both read from `signup_form_schema` (Auth & Pages > Customer Sign up), but the "Add Customer" dialog was not rendering custom extra fields and was not saving `profile_meta`.
+- **Fix**: Added custom field rendering (text, textarea, select, number, date) to the Create Customer dialog, `profile_meta` is now passed to the API and stored on the user document.
+- **Backend**: Added `profile_meta: Optional[Dict[str, Any]]` to `AdminCreateCustomerRequest` model; stored in `user_doc` on creation.
+- **Files changed**: `backend/models.py`, `backend/routes/admin/customers.py`, `frontend/src/pages/admin/CustomersTab.tsx`
+
 ### Completed: Two Bug Fixes ✅
 - **PromoCodesTab cursor bug fixed**: `PromoForm` component was defined inside `PromoCodesTab`, causing full remount (and focus loss) on every keystroke. Moved to module level. Verified by testing agent (iteration_173.json).
 - **Hardcoded currency symbol fixed**: Admin Products table and ProductDetail preview page were displaying `$` regardless of product currency. Now uses `Intl.NumberFormat` with `product.currency` (e.g., A$300, CA$199). Verified by testing agent.

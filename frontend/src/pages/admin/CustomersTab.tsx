@@ -18,7 +18,8 @@ import { Download, Plus, Upload} from "lucide-react";
 import { ColHeader } from "@/components/shared/ColHeader";
 import { FieldTip } from "./shared/FieldTip";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import { getAddressConfig } from "@/components/FormSchemaBuilder";
+import { getAddressConfig, parseSchema } from "@/components/FormSchemaBuilder";
+import { Textarea } from "@/components/ui/textarea";
 
 const PARTNER_MAP_OPTIONS = [
   { value: "", label: "Not set" },
@@ -76,6 +77,7 @@ export function CustomersTab() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
   const [signupSchema, setSignupSchema] = useState<any[]>([]);
+  const [newCustomerExtras, setNewCustomerExtras] = useState<Record<string, string>>({});
   const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
   const [countries, setCountries] = useState<{value:string;label:string}[]>([]);
 
@@ -198,9 +200,11 @@ export function CustomersTab() {
     });
     if (errors.length) { toast.error(`Required: ${errors.join(", ")}`); return; }
     try {
-      await api.post("/admin/customers/create", newCustomer);
+      const profile_meta = Object.keys(newCustomerExtras).length ? newCustomerExtras : undefined;
+      await api.post("/admin/customers/create", { ...newCustomer, ...(profile_meta ? { profile_meta } : {}) });
       toast.success("Customer created"); setShowCreateDialog(false);
       setNewCustomer({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
+      setNewCustomerExtras({});
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create customer"); }
   };
@@ -561,6 +565,57 @@ export function CustomersTab() {
                       onChange={e => setNewCustomer({ ...newCustomer, region: e.target.value })}
                       data-testid="create-customer-region"
                     />
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* Custom extra fields from signup schema */}
+            {(() => {
+              const STANDARD = ["full_name", "email", "password", "company_name", "job_title", "phone", "address"];
+              const customFields = parseSchema(JSON.stringify(signupSchema)).filter(
+                f => !STANDARD.includes(f.key) && f.enabled !== false
+              );
+              if (!customFields.length) return null;
+              return (
+                <div className="space-y-2 border-t border-slate-100 pt-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Additional details</p>
+                  {customFields.map(field => (
+                    <div key={field.key} className="space-y-1">
+                      <label className="text-xs font-medium text-slate-600">
+                        {field.label} {field.required && <span className="text-red-500">*</span>}
+                      </label>
+                      {field.type === "textarea" ? (
+                        <Textarea
+                          value={newCustomerExtras[field.key] || ""}
+                          onChange={e => setNewCustomerExtras(p => ({ ...p, [field.key]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          rows={2}
+                          className="text-sm resize-none"
+                          required={field.required}
+                          data-testid={`create-customer-extra-${field.key}`}
+                        />
+                      ) : field.type === "select" ? (
+                        <Select value={newCustomerExtras[field.key] || ""} onValueChange={v => setNewCustomerExtras(p => ({ ...p, [field.key]: v }))}>
+                          <SelectTrigger data-testid={`create-customer-extra-${field.key}`}><SelectValue placeholder="Select…" /></SelectTrigger>
+                          <SelectContent>
+                            {(field.options || []).map(opt => {
+                              const [label, val] = opt.includes("|") ? opt.split("|") : [opt, opt];
+                              return <SelectItem key={val} value={val}>{label}</SelectItem>;
+                            })}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+                          value={newCustomerExtras[field.key] || ""}
+                          onChange={e => setNewCustomerExtras(p => ({ ...p, [field.key]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          data-testid={`create-customer-extra-${field.key}`}
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               );

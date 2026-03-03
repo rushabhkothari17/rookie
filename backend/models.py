@@ -381,6 +381,7 @@ class AdminCreateCustomerRequest(BaseModel):
     postal: Optional[str] = ""
     country: Optional[str] = ""
     mark_verified: bool = True
+    profile_meta: Optional[Dict[str, Any]] = None
 
 
 class SubscriptionUpdate(BaseModel):
