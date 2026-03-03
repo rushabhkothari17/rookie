@@ -21,6 +21,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { getAddressConfig, parseSchema } from "@/components/FormSchemaBuilder";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomerSignupFields } from "@/components/CustomerSignupFields";
+import { useCountries } from "@/hooks/useCountries";
 
 const PARTNER_MAP_OPTIONS = [
   { value: "", label: "Not set" },
@@ -80,7 +81,7 @@ export function CustomersTab() {
   const [signupSchema, setSignupSchema] = useState<any[]>([]);
   const [newCustomerExtras, setNewCustomerExtras] = useState<Record<string, string>>({});
   const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
-  const [countries, setCountries] = useState<{value:string;label:string}[]>([]);
+  const countries = useCountries(authUser?.partner_code || undefined);
 
   const STD_CREATE_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "line1", "line2", "city", "region", "postal", "country"];
 
@@ -101,12 +102,6 @@ export function CustomersTab() {
     ...newCustomerExtras,
   };
 
-  // Fetch countries from taxes module on mount
-  useEffect(() => {
-    api.get("/utils/countries")
-      .then(r => setCountries(r.data.countries || []))
-      .catch(() => setCountries([{value:"Canada",label:"Canada"},{value:"USA",label:"United States"}]));
-  }, []);
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmToggleCustomer, setConfirmToggleCustomer] = useState<{id: string, active: boolean} | null>(null);
