@@ -7,6 +7,10 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ## Latest Updates (March 3, 2026)
 
+### Completed: Two Bug Fixes ✅
+- **PromoCodesTab cursor bug fixed**: `PromoForm` component was defined inside `PromoCodesTab`, causing full remount (and focus loss) on every keystroke. Moved to module level. Verified by testing agent (iteration_173.json).
+- **Hardcoded currency symbol fixed**: Admin Products table and ProductDetail preview page were displaying `$` regardless of product currency. Now uses `Intl.NumberFormat` with `product.currency` (e.g., A$300, CA$199). Verified by testing agent.
+
 ### Completed: Extended Filter Refactor (12 Modules) ✅
 - Extended multi-select dropdown filters to 12 additional admin modules:
   - **Customers**: Name, State/Province, Payment Methods, Partner Map, Partner, Status
