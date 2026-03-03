@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import api from "@/lib/api";
 import { Section, WebsiteData, BrandingData, AuthSlide, WEB_DEFAULTS } from "./websiteTabShared";
-import { OrgInfoSection } from "./WebsiteOrgSection";
+import { OrgInfoSection, DEFAULT_BRAND_COLORS } from "./WebsiteOrgSection";
 import { AuthPagesSection } from "./WebsiteAuthSection";
 import { FormsSection } from "./WebsiteFormsSection";
 import { SysConfigSection } from "./WebsiteSysSection";
@@ -81,10 +81,24 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
   const b = (key: keyof BrandingData) => (v: string) => {
     setBranding(prev => {
       const next = { ...prev, [key]: v };
-      // Live preview: apply colors to DOM immediately as admin changes them
       applyBrandingFromSettings(next);
       return next;
     });
+  };
+
+  const handleResetColors = async () => {
+    const reset = { ...branding, ...DEFAULT_BRAND_COLORS };
+    setBranding(reset);
+    applyBrandingFromSettings(reset);
+    setSaving(true);
+    try {
+      await Promise.all([
+        api.put("/admin/website-settings", ws),
+        api.put("/admin/settings", reset),
+      ]);
+      toast.success("Colors reset to default");
+    } catch { toast.error("Failed to reset colors"); }
+    finally { setSaving(false); }
   };
 
   const save = async () => {
@@ -184,6 +198,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
           {displaySection === "branding" && (
             <OrgInfoSection
               ws={ws} branding={branding} s={s} b={b}
+              onResetColors={handleResetColors}
               save={save} saving={saving} forcedSection={!!forcedSection}
               uploadingLogo={uploadingLogo} handleLogoUpload={handleLogoUpload}
               handleRemoveLogo={handleRemoveLogo} fileRef={fileRef}

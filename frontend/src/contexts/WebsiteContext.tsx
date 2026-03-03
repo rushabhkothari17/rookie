@@ -357,20 +357,49 @@ function _applyBrandingToDOM(s: Record<string, any>) {
     const b = parseInt(m[1].slice(4, 6), 16) / 255;
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const l = (max + min) / 2;
-    let h = 0, s = 0;
+    let h = 0, sv = 0;
     if (max !== min) {
       const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      sv = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
       else if (max === g) h = (b - r) / d + 2;
       else h = (r - g) / d + 4;
       h /= 6;
     }
-    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+    return `${Math.round(h * 360)} ${Math.round(sv * 100)}% ${Math.round(l * 100)}%`;
+  };
+  // Relative luminance for WCAG contrast
+  const _luminance = (hex: string): number => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+    if (!m) return 0;
+    return [0, 2, 4].reduce((sum, i, idx) => {
+      const c = parseInt(m[1].slice(i, i + 2), 16) / 255;
+      const lin = c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      return sum + lin * [0.2126, 0.7152, 0.0722][idx];
+    }, 0);
   };
   const set = (v: string, c: string) => document.documentElement.style.setProperty(v, c);
   const setHsl = (v: string, c: string) => { const h = _hexToHsl(c); if (h) set(v, h); };
-  if (s.primary_color) { set("--aa-primary", s.primary_color); setHsl("--primary", s.primary_color); document.documentElement.style.setProperty("--primary-foreground", "0 0% 98%"); }
+  if (s.primary_color) {
+    set("--aa-primary", s.primary_color);
+    setHsl("--primary", s.primary_color);
+    document.documentElement.style.setProperty("--primary-foreground", "0 0% 98%");
+    // Auto-contrast footer text: white text on dark primary, dark text on light primary
+    const lum = _luminance(s.primary_color);
+    if (lum < 0.35) {
+      // Dark primary — use white-based text
+      set("--aa-footer-text",       "#f1f5f9");  // slate-100
+      set("--aa-footer-text-muted", "#94a3b8");  // slate-400
+      set("--aa-footer-text-dim",   "#475569");  // slate-600
+      set("--aa-footer-border",     "rgba(255,255,255,0.08)");
+    } else {
+      // Light primary — use dark text
+      set("--aa-footer-text",       "#0f172a");  // slate-900
+      set("--aa-footer-text-muted", "#475569");  // slate-600
+      set("--aa-footer-text-dim",   "#94a3b8");  // slate-400
+      set("--aa-footer-border",     "rgba(0,0,0,0.1)");
+    }
+  }
   if (s.accent_color) { set("--aa-accent", s.accent_color); set("--aa-accent-hover", s.accent_color); setHsl("--ring", s.accent_color); }
   if (s.danger_color) { set("--aa-danger", s.danger_color); setHsl("--destructive", s.danger_color); }
   if (s.success_color) set("--aa-success", s.success_color);

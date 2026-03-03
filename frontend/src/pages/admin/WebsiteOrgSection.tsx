@@ -1,14 +1,27 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload } from "lucide-react";
+import { Upload, RotateCcw } from "lucide-react";
 import { BrandingData, WebsiteData, BaseCurrencyWidget, ColorInput, Field, OrgAddressSection } from "./websiteTabShared";
+
+export const DEFAULT_BRAND_COLORS: Partial<BrandingData> = {
+  primary_color:    "#0f172a",
+  accent_color:     "#1e40af",
+  background_color: "#f8fafc",
+  text_color:       "#0f172a",
+  border_color:     "#e2e8f0",
+  danger_color:     "#dc2626",
+  success_color:    "#16a34a",
+  warning_color:    "#d97706",
+  muted_color:      "#64748b",
+};
 
 interface Props {
   ws: WebsiteData;
   branding: BrandingData;
   s: (key: keyof WebsiteData) => (v: string) => void;
   b: (key: keyof BrandingData) => (v: string) => void;
+  onResetColors: () => void;
   save: () => void;
   saving: boolean;
   forcedSection?: boolean;
@@ -18,7 +31,7 @@ interface Props {
   fileRef: React.RefObject<HTMLInputElement>;
 }
 
-export function OrgInfoSection({ ws, branding, b, save, saving, forcedSection, uploadingLogo, handleLogoUpload, handleRemoveLogo, fileRef }: Props) {
+export function OrgInfoSection({ ws, branding, b, onResetColors, save, saving, forcedSection, uploadingLogo, handleLogoUpload, handleRemoveLogo, fileRef }: Props) {
   return (
     <>
       <h3 className="text-sm font-semibold text-slate-700">Store Information</h3>
@@ -45,8 +58,20 @@ export function OrgInfoSection({ ws, branding, b, save, saving, forcedSection, u
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} data-testid="ws-logo-input" />
       </div>
       <div className="border-t border-slate-100 pt-4">
-        <h3 className="text-sm font-semibold text-slate-700 mb-1">Brand Colors</h3>
-        <p className="text-xs text-slate-400 mb-3">Changes apply across the storefront on next page load.</p>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm font-semibold text-slate-700">Brand Colors</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-slate-500 h-7 px-2 gap-1.5"
+            onClick={onResetColors}
+            data-testid="ws-reset-colors-btn"
+          >
+            <RotateCcw size={11} />
+            Reset to default
+          </Button>
+        </div>
+        <p className="text-xs text-slate-400 mb-3">Changes apply live as you edit. Click Save to persist.</p>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-4">
             <ColorInput label="Primary — Hero banners, sidebar, buttons" value={branding.primary_color} onChange={b("primary_color")} testId="ws-primary-color" />

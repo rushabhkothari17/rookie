@@ -15,6 +15,11 @@
   --aa-danger: #dc2626;
   --aa-success: #16a34a;
   --aa-warning: #d97706;
+  /* Footer auto-contrast defaults (dark primary) */
+  --aa-footer-text:       #f1f5f9;
+  --aa-footer-text-muted: #94a3b8;
+  --aa-footer-text-dim:   #475569;
+  --aa-footer-border:     rgba(255,255,255,0.08);
 }
 
 body {
