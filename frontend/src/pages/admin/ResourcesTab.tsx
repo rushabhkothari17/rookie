@@ -555,7 +555,8 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
                 <label className="text-xs font-medium text-slate-700">Title *</label>
                 <Input
                   value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value, slug: slugify(e.target.value) })}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  onBlur={(e) => { if (!form.slug || form.slug === slugify(form.title.slice(0, -1))) setForm(f => ({ ...f, slug: slugify(e.target.value) })); }}
                   placeholder="Resource title"
                   data-testid="resource-title-input"
                 />
