@@ -1,4 +1,4 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AppFooter from "@/components/AppFooter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
@@ -107,6 +107,7 @@ export default function Admin() {
   };
 
   return (
+    <>
     <div className="space-y-6" data-testid="admin-page">
       {/* Hero Banner */}
       <section className="relative overflow-hidden rounded-3xl px-10 py-10 shadow-[0_30px_70px_rgba(15,23,42,0.15)]" style={{ backgroundColor: "var(--aa-primary)" }}>
@@ -348,5 +349,7 @@ export default function Admin() {
         </div>
       </Tabs>
     </div>
+    <AppFooter />
+    </>
   );
 }
