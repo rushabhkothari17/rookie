@@ -45,14 +45,33 @@ export function EnquiriesTab() {
   const PER_PAGE = 20;
 
   // Filters
-  const [emailFilter, setEmailFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [orderFilter, setOrderFilter] = useState<string[]>([]);
+  const [customerFilter, setCustomerFilter] = useState<string[]>([]);
+  const [partnerFilter, setPartnerFilter] = useState<string[]>([]);
+  const [productsFilter, setProductsFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
 
+  // Build unique options for filters
+  const uniqueOrderNumbers = useMemo(() => Array.from(new Set(enquiries.map(e => e.order_number).filter(Boolean))), [enquiries]);
+  const uniqueCustomers = useMemo(() => Array.from(new Set(enquiries.map(e => e.customer_name || e.customer_email).filter(Boolean))), [enquiries]);
+  const uniquePartners = useMemo(() => Array.from(new Set(enquiries.map(e => e.partner_code).filter(Boolean))), [enquiries]);
+  const uniqueProducts = useMemo(() => {
+    const prods = new Set<string>();
+    enquiries.forEach(e => (e.products || []).forEach((p: string) => prods.add(p)));
+    return Array.from(prods);
+  }, [enquiries]);
+
   const displayEnquiries = useMemo(() => {
-    const r = [...enquiries];
+    let r = [...enquiries];
+    // Apply local multi-select filters
+    if (orderFilter.length > 0) r = r.filter(e => orderFilter.includes(e.order_number));
+    if (customerFilter.length > 0) r = r.filter(e => customerFilter.includes(e.customer_name) || customerFilter.includes(e.customer_email));
+    if (partnerFilter.length > 0) r = r.filter(e => partnerFilter.includes(e.partner_code));
+    if (productsFilter.length > 0) r = r.filter(e => (e.products || []).some((p: string) => productsFilter.includes(p)));
+    if (statusFilter.length > 0) r = r.filter(e => statusFilter.includes(e.status));
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -66,7 +85,7 @@ export function EnquiriesTab() {
       });
     }
     return r;
-  }, [enquiries, colSort]);
+  }, [enquiries, orderFilter, customerFilter, partnerFilter, productsFilter, statusFilter, colSort]);
 
   // Dialog
   const [viewEnquiry, setViewEnquiry] = useState<any>(null);
@@ -75,9 +94,7 @@ export function EnquiriesTab() {
 
   const load = useCallback(async (p = 1) => {
     try {
-      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
-      if (emailFilter) params.append("email_filter", emailFilter);
-      if (statusFilter) params.append("status_filter", statusFilter);
+      const params = new URLSearchParams({ page: String(p), per_page: String(500) });
       if (startDate) params.append("date_from", startDate);
       if (endDate) params.append("date_to", endDate);
       const res = await api.get(`/admin/enquiries?${params}`);
@@ -88,9 +105,9 @@ export function EnquiriesTab() {
     } catch {
       toast.error("Failed to load enquiries");
     }
-  }, [emailFilter, statusFilter, startDate, endDate]);
+  }, [startDate, endDate]);
 
-  useEffect(() => { load(1); }, [emailFilter, statusFilter, startDate, endDate]);
+  useEffect(() => { load(1); }, [startDate, endDate]);
 
   const handleStatusChange = async (enquiry: any, newStatus: string) => {
     setUpdatingStatus(enquiry.id);
@@ -136,8 +153,11 @@ export function EnquiriesTab() {
   };
 
   const clearFilters = () => {
-    setEmailFilter("");
-    setStatusFilter("");
+    setOrderFilter([]);
+    setCustomerFilter([]);
+    setPartnerFilter([]);
+    setProductsFilter([]);
+    setStatusFilter([]);
     setStartDate("");
     setEndDate("");
   };
@@ -163,12 +183,12 @@ export function EnquiriesTab() {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <ColHeader label="Date" colKey="date" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
-              <ColHeader label="Order #" colKey="order" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-              <ColHeader label="Customer" colKey="customer" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={emailFilter} onFilter={v => { setEmailFilter(v); setPage(1); }} onClearFilter={() => { setEmailFilter(""); setPage(1); }} />
-              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Products</th>
+              <ColHeader label="Order #" colKey="order" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={orderFilter} onFilter={v => { setOrderFilter(v); setPage(1); }} onClearFilter={() => { setOrderFilter([]); setPage(1); }} statusOptions={uniqueOrderNumbers.map(o => [o, o] as [string, string])} />
+              <ColHeader label="Customer" colKey="customer" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={customerFilter} onFilter={v => { setCustomerFilter(v); setPage(1); }} onClearFilter={() => { setCustomerFilter([]); setPage(1); }} statusOptions={uniqueCustomers.map(c => [c, c] as [string, string])} />
+              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerFilter} onFilter={v => { setPartnerFilter(v); setPage(1); }} onClearFilter={() => { setPartnerFilter([]); setPage(1); }} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
+              <ColHeader label="Products" colKey="products" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={productsFilter} onFilter={v => { setProductsFilter(v); setPage(1); }} onClearFilter={() => { setProductsFilter([]); setPage(1); }} statusOptions={uniqueProducts.map(p => [p, p] as [string, string])} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Summary</th>
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["scope_pending", "Pending"], ["scope_requested", "Requested"], ["responded", "Responded"], ["closed", "Closed"]]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => { setStatusFilter(v); setPage(1); }} onClearFilter={() => { setStatusFilter([]); setPage(1); }} statusOptions={[["scope_pending", "Pending"], ["scope_requested", "Requested"], ["responded", "Responded"], ["closed", "Closed"]]} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>

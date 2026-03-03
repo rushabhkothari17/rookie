@@ -27,9 +27,11 @@ export function ProductsTab() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [catalogFilter, setCatalogFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [searchText, setSearchText] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [billingFilter, setBillingFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [nameFilter, setNameFilter] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<{ min?: string; max?: string }>({});
   const [page, setPage] = useState(1);
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
@@ -90,16 +92,36 @@ export function ProductsTab() {
 
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
 
+  // Build unique options for dropdowns
+  const uniqueNames = useMemo(() => {
+    return Array.from(new Set(products.map(p => p.name).filter(Boolean))).sort().map(n => [n, n] as [string, string]);
+  }, [products]);
+
+  const uniqueCategories = useMemo(() => {
+    return categories.map((c: any) => [c.name, c.name] as [string, string]);
+  }, [categories]);
+
   const filtered = products.filter((p) => {
-    const matchFilter =
-      catalogFilter === "all" ||
-      (catalogFilter === "subscription" && p.is_subscription) ||
-      (catalogFilter === "one-time" && !p.is_subscription) ||
-      (catalogFilter === "active" && p.is_active) ||
-      (catalogFilter === "inactive" && !p.is_active);
-    const matchCategory = categoryFilter === "all" || p.category === categoryFilter;
-    const matchSearch = !searchText || p.name?.toLowerCase().includes(searchText.toLowerCase()) || p.category?.toLowerCase().includes(searchText.toLowerCase());
-    return matchFilter && matchCategory && matchSearch;
+    // Name filter (multi-select)
+    const matchName = nameFilter.length === 0 || nameFilter.some(n => p.name === n);
+    // Category filter (multi-select)
+    const matchCategory = categoryFilter.length === 0 || categoryFilter.includes(p.category);
+    // Billing filter (multi-select)
+    const matchBilling = billingFilter.length === 0 || billingFilter.some(f => {
+      if (f === "subscription") return p.is_subscription;
+      if (f === "one-time") return !p.is_subscription;
+      return true;
+    });
+    // Status filter (multi-select)
+    const matchStatus = statusFilter.length === 0 || statusFilter.some(s => {
+      if (s === "active") return p.is_active;
+      if (s === "inactive") return !p.is_active;
+      return true;
+    });
+    // Price range filter
+    const matchPrice = (!priceRange.min || (p.base_price && p.base_price >= parseFloat(priceRange.min))) &&
+                       (!priceRange.max || (p.base_price && p.base_price <= parseFloat(priceRange.max)));
+    return matchName && matchCategory && matchBilling && matchStatus && matchPrice;
   });
 
   const displayFiltered = useMemo(() => {
@@ -159,11 +181,11 @@ export function ProductsTab() {
               <Table data-testid="admin-catalog-table">
                 <TableHeader>
                   <TableRow className="bg-slate-50">
-                    <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchText} onFilter={v => { setSearchText(v); setPage(1); }} onClearFilter={() => { setSearchText(""); setPage(1); }} />
-                    <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter("all"); setPage(1); }} statusOptions={[["all", "All"], ...categories.map((c: any) => [c.name, c.name] as [string, string])]} />
-                    <ColHeader label="Billing" colKey="billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={catalogFilter} onFilter={v => { setCatalogFilter(v); setPage(1); }} onClearFilter={() => { setCatalogFilter("all"); setPage(1); }} statusOptions={[["all", "All"], ["subscription", "Subscription"], ["one-time", "One-time"], ["active", "Active"], ["inactive", "Inactive"]]} />
-                    <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-                    <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+                    <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => { setNameFilter(v); setPage(1); }} onClearFilter={() => { setNameFilter([]); setPage(1); }} statusOptions={uniqueNames} />
+                    <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter([]); setPage(1); }} statusOptions={uniqueCategories} />
+                    <ColHeader label="Billing" colKey="billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={billingFilter} onFilter={v => { setBillingFilter(v); setPage(1); }} onClearFilter={() => { setBillingFilter([]); setPage(1); }} statusOptions={[["subscription", "Subscription"], ["one-time", "One-time"]]} />
+                    <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} />
+                    <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => { setStatusFilter(v); setPage(1); }} onClearFilter={() => { setStatusFilter([]); setPage(1); }} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />
                     {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
                   </TableRow>

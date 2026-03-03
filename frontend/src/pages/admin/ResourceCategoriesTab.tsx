@@ -33,14 +33,16 @@ export function ArticleCategoriesTab() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
-  const [catFilters, setCatFilters] = useState({ name: "", scope_final: "all" });
-  const setCF = (k: keyof typeof catFilters, v: any) => setCatFilters(f => ({ ...f, [k]: v }));
+  const [nameFilter, setNameFilter] = useState<string[]>([]);
+  const [scopeFinalFilter, setScopeFinalFilter] = useState<string[]>([]);
+
+  // Build unique options for dropdowns
+  const uniqueNames = useMemo(() => categories.map(c => c.name).filter(Boolean), [categories]);
 
   const displayCategories = useMemo(() => {
     let r = [...categories];
-    if (catFilters.name) r = r.filter(c => c.name.toLowerCase().includes(catFilters.name.toLowerCase()) || (c.description || "").toLowerCase().includes(catFilters.name.toLowerCase()));
-    if (catFilters.scope_final === "yes") r = r.filter(c => c.is_scope_final);
-    else if (catFilters.scope_final === "no") r = r.filter(c => !c.is_scope_final);
+    if (nameFilter.length > 0) r = r.filter(c => nameFilter.includes(c.name));
+    if (scopeFinalFilter.length > 0) r = r.filter(c => scopeFinalFilter.some(f => (f === "yes" && c.is_scope_final) || (f === "no" && !c.is_scope_final)));
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -53,7 +55,7 @@ export function ArticleCategoriesTab() {
       });
     }
     return r;
-  }, [categories, catFilters, colSort]);
+  }, [categories, nameFilter, scopeFinalFilter, colSort]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -145,9 +147,9 @@ export function ArticleCategoriesTab() {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={catFilters.name} onFilter={v => setCF("name", v)} onClearFilter={() => setCF("name", "")} />
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => setNameFilter(v)} onClearFilter={() => setNameFilter([])} statusOptions={uniqueNames.map(n => [n, n] as [string, string])} />
               <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-              <ColHeader label="Scope Final" colKey="scope_final" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={catFilters.scope_final} onFilter={v => setCF("scope_final", v)} onClearFilter={() => setCF("scope_final", "all")} statusOptions={[["all", "All"], ["yes", "Yes"], ["no", "No"]]} />
+              <ColHeader label="Scope Final" colKey="scope_final" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={scopeFinalFilter} onFilter={v => setScopeFinalFilter(v)} onClearFilter={() => setScopeFinalFilter([])} statusOptions={[["yes", "Yes"], ["no", "No"]]} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>

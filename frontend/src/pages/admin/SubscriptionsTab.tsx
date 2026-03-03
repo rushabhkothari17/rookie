@@ -101,12 +101,15 @@ export function SubscriptionsTab() {
   const [paymentMethods, setPaymentMethods] = useState<string[]>(PAYMENT_METHODS_FALLBACK);
 
   // Filters
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("");
-  const [payment, setPayment] = useState("");
-  const [subNumberFilter, setSubNumberFilter] = useState("");
-  const [processorIdFilter, setProcessorIdFilter] = useState("");
-  const [planFilter, setPlanFilter] = useState("");
+  const [emailFilter, setEmailFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [paymentFilter, setPaymentFilter] = useState<string[]>([]);
+  const [subNumberFilter, setSubNumberFilter] = useState<string[]>([]);
+  const [processorIdFilter, setProcessorIdFilter] = useState<string[]>([]);
+  const [planFilter, setPlanFilter] = useState<string[]>([]);
+  const [currencyFilter, setCurrencyFilter] = useState<string[]>([]);
+  const [amountRange, setAmountRange] = useState<{ min?: string; max?: string }>({});
+  const [taxRange, setTaxRange] = useState<{ min?: string; max?: string }>({});
   const [renewalFrom, setRenewalFrom] = useState("");
   const [renewalTo, setRenewalTo] = useState("");
   const [createdFrom, setCreatedFrom] = useState("");
@@ -164,12 +167,17 @@ export function SubscriptionsTab() {
         page: String(p), per_page: String(PER_PAGE),
         sort_by: sortField, sort_order: sortOrder,
       });
-      if (email) params.append("email", email);
-      if (status) params.append("status", status);
-      if (payment) params.append("payment", payment);
-      if (subNumberFilter) params.append("sub_number", subNumberFilter);
-      if (processorIdFilter) params.append("processor_id_filter", processorIdFilter);
-      if (planFilter) params.append("plan_name_filter", planFilter);
+      if (emailFilter.length > 0) params.append("email", emailFilter.join(","));
+      if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
+      if (paymentFilter.length > 0) params.append("payment", paymentFilter.join(","));
+      if (subNumberFilter.length > 0) params.append("sub_number", subNumberFilter.join(","));
+      if (processorIdFilter.length > 0) params.append("processor_id_filter", processorIdFilter.join(","));
+      if (planFilter.length > 0) params.append("plan_name_filter", planFilter.join(","));
+      if (currencyFilter.length > 0) params.append("currency", currencyFilter.join(","));
+      if (amountRange.min) params.append("amount_min", amountRange.min);
+      if (amountRange.max) params.append("amount_max", amountRange.max);
+      if (taxRange.min) params.append("tax_min", taxRange.min);
+      if (taxRange.max) params.append("tax_max", taxRange.max);
       if (renewalFrom) params.append("renewal_from", renewalFrom);
       if (renewalTo) params.append("renewal_to", renewalTo);
       if (createdFrom) params.append("created_from", createdFrom);
@@ -195,7 +203,14 @@ export function SubscriptionsTab() {
       custs.forEach((c: any) => { em[c.id] = um[c.user_id] || c.id; });
       setCustomerEmails(em);
     } catch { toast.error("Failed to load subscriptions"); }
-  }, [email, status, payment, subNumberFilter, processorIdFilter, planFilter, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
+  }, [emailFilter, statusFilter, paymentFilter, subNumberFilter, processorIdFilter, planFilter, currencyFilter, amountRange, taxRange, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
+
+  // Build unique options for dropdown filters
+  const uniqueSubNumbers = subs.map(s => s.subscription_number || s.id?.slice(0, 8)).filter(Boolean);
+  const uniqueProcessorIds = subs.map(s => s.processor_id || s.stripe_subscription_id || s.gocardless_mandate_id).filter(Boolean);
+  const uniqueEmails = Object.values(customerEmails).filter(Boolean);
+  const uniquePlans = Array.from(new Set(subs.map(s => s.plan_name).filter(Boolean)));
+  const uniqueCurrencies = Array.from(new Set(subs.map(s => s.currency || "USD")));
 
   useEffect(() => {
     api.get("/admin/filter-options").then(r => {
@@ -205,7 +220,7 @@ export function SubscriptionsTab() {
     load(1);
     api.get("/admin/products-all?per_page=500").then(r => setProducts(r.data.products || [])).catch(() => {});
     api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
-  }, [email, status, payment, subNumberFilter, processorIdFilter, planFilter, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
+  }, [emailFilter, statusFilter, paymentFilter, subNumberFilter, processorIdFilter, planFilter, currencyFilter, amountRange, taxRange, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
 
   const sortColHeader = (field: string, label: string, filterType: "text" | "date-range" | "status" | "number-range" | "none", filterProps: any = {}) => (
     <ColHeader
@@ -262,8 +277,9 @@ export function SubscriptionsTab() {
   };
 
   const clearFilters = () => {
-    setEmail(""); setStatus(""); setPayment("");
-    setSubNumberFilter(""); setProcessorIdFilter(""); setPlanFilter("");
+    setEmailFilter([]); setStatusFilter([]); setPaymentFilter([]);
+    setSubNumberFilter([]); setProcessorIdFilter([]); setPlanFilter([]);
+    setCurrencyFilter([]); setAmountRange({}); setTaxRange({});
     setRenewalFrom(""); setRenewalTo("");
     setCreatedFrom(""); setCreatedTo(""); setStartFrom(""); setStartTo(""); setContractEndFrom(""); setContractEndTo("");
   };
@@ -303,18 +319,18 @@ export function SubscriptionsTab() {
           <TableHeader>
             <TableRow className="bg-slate-50">
               {sortColHeader("created_at", "Created", "date-range", { filterValue: { from: createdFrom, to: createdTo }, onFilter: (v: any) => { setCreatedFrom(v.from || ""); setCreatedTo(v.to || ""); }, onClearFilter: () => { setCreatedFrom(""); setCreatedTo(""); } })}
-              {sortColHeader("sub_number", "Sub #", "text", { filterValue: subNumberFilter, onFilter: setSubNumberFilter, onClearFilter: () => setSubNumberFilter("") })}
-              <ColHeader label="Processor ID" colKey="processor_id" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="text" filterValue={processorIdFilter} onFilter={setProcessorIdFilter} onClearFilter={() => setProcessorIdFilter("")} />
-              <ColHeader label="Customer Email" colKey="email" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="text" filterValue={email} onFilter={setEmail} onClearFilter={() => setEmail("")} />
-              <ColHeader label="Plan" colKey="plan" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="text" filterValue={planFilter} onFilter={setPlanFilter} onClearFilter={() => setPlanFilter("")} />
-              {sortColHeader("amount", "Amount", "none")}
-              {sortColHeader("tax", "Tax", "none")}
-              {sortColHeader("currency", "Currency", "none")}
+              <ColHeader label="Sub #" colKey="sub_number" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={subNumberFilter} onFilter={setSubNumberFilter} onClearFilter={() => setSubNumberFilter([])} statusOptions={uniqueSubNumbers.map(s => [s, s] as [string, string])} />
+              <ColHeader label="Processor ID" colKey="processor_id" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={processorIdFilter} onFilter={setProcessorIdFilter} onClearFilter={() => setProcessorIdFilter([])} statusOptions={uniqueProcessorIds.map(s => [s, s.slice(0, 14) + "…"] as [string, string])} />
+              <ColHeader label="Customer Email" colKey="email" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={emailFilter} onFilter={setEmailFilter} onClearFilter={() => setEmailFilter([])} statusOptions={uniqueEmails.map(e => [e, e] as [string, string])} />
+              <ColHeader label="Plan" colKey="plan" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={planFilter} onFilter={setPlanFilter} onClearFilter={() => setPlanFilter([])} statusOptions={uniquePlans.map(p => [p, p] as [string, string])} />
+              <ColHeader label="Amount" colKey="amount" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={amountRange} onFilter={setAmountRange} onClearFilter={() => setAmountRange({})} />
+              <ColHeader label="Tax" colKey="tax" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={taxRange} onFilter={setTaxRange} onClearFilter={() => setTaxRange({})} />
+              <ColHeader label="Currency" colKey="currency" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={currencyFilter} onFilter={setCurrencyFilter} onClearFilter={() => setCurrencyFilter([])} statusOptions={uniqueCurrencies.map(c => [c, c] as [string, string])} />
               {sortColHeader("renewal_date", "Renewal", "date-range", { filterValue: { from: renewalFrom, to: renewalTo }, onFilter: (v: any) => { setRenewalFrom(v.from || ""); setRenewalTo(v.to || ""); }, onClearFilter: () => { setRenewalFrom(""); setRenewalTo(""); } })}
               {sortColHeader("start_date", "Start", "date-range", { filterValue: { from: startFrom, to: startTo }, onFilter: (v: any) => { setStartFrom(v.from || ""); setStartTo(v.to || ""); }, onClearFilter: () => { setStartFrom(""); setStartTo(""); } })}
               {sortColHeader("contract_end_date", "Contract End", "date-range", { filterValue: { from: contractEndFrom, to: contractEndTo }, onFilter: (v: any) => { setContractEndFrom(v.from || ""); setContractEndTo(v.to || ""); }, onClearFilter: () => { setContractEndFrom(""); setContractEndTo(""); } })}
-              <ColHeader label="Payment" colKey="payment" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="status" filterValue={payment || "all"} onFilter={v => setPayment(v === "all" ? "" : v)} onClearFilter={() => setPayment("")} statusOptions={[["all", "All"], ...paymentMethods.map(m => [m, m] as [string, string])]} />
-              <ColHeader label="Status" colKey="status" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="status" filterValue={status || "all"} onFilter={v => setStatus(v === "all" ? "" : v)} onClearFilter={() => setStatus("")} statusOptions={[["all", "All"], ...subStatuses.map(s => [s, s] as [string, string])]} />
+              <ColHeader label="Payment" colKey="payment" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={paymentFilter} onFilter={setPaymentFilter} onClearFilter={() => setPaymentFilter([])} statusOptions={paymentMethods.map(m => [m, m] as [string, string])} />
+              <ColHeader label="Status" colKey="status" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={statusFilter} onFilter={setStatusFilter} onClearFilter={() => setStatusFilter([])} statusOptions={subStatuses.map(s => [s, s] as [string, string])} />
               {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>

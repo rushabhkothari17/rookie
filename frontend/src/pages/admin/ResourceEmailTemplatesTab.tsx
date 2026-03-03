@@ -22,13 +22,14 @@ interface EmailTemplate { id: string; name: string; subject: string; html_body: 
 export function ArticleEmailTemplatesTab() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
-  const [etFilters, setEtFilters] = useState({ name: "", subject: "" });
-  const setEF = (k: keyof typeof etFilters, v: string) => setEtFilters(f => ({ ...f, [k]: v }));
+  const [nameFilter, setNameFilter] = useState<string[]>([]);
+
+  // Build unique options for dropdowns
+  const uniqueNames = useMemo(() => templates.map(t => t.name).filter(Boolean), [templates]);
 
   const displayTemplates = useMemo(() => {
     let r = [...templates];
-    if (etFilters.name) r = r.filter(t => t.name.toLowerCase().includes(etFilters.name.toLowerCase()));
-    if (etFilters.subject) r = r.filter(t => (t.subject || "").toLowerCase().includes(etFilters.subject.toLowerCase()));
+    if (nameFilter.length > 0) r = r.filter(t => nameFilter.includes(t.name));
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -40,7 +41,7 @@ export function ArticleEmailTemplatesTab() {
       });
     }
     return r;
-  }, [templates, etFilters, colSort]);
+  }, [templates, nameFilter, colSort]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<EmailTemplate | null>(null);
@@ -122,8 +123,8 @@ export function ArticleEmailTemplatesTab() {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={etFilters.name} onFilter={v => setEF("name", v)} onClearFilter={() => setEF("name", "")} />
-              <ColHeader label="Subject" colKey="subject" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={etFilters.subject} onFilter={v => setEF("subject", v)} onClearFilter={() => setEF("subject", "")} />
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => setNameFilter(v)} onClearFilter={() => setNameFilter([])} statusOptions={uniqueNames.map(n => [n, n] as [string, string])} />
+              <ColHeader label="Subject" colKey="subject" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>

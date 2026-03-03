@@ -28,25 +28,56 @@ export function PromoCodesTab() {
   const PER_PAGE = 20;
 
   // Filters
-  const [codeFilter, setCodeFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [appliesToFilter, setAppliesToFilter] = useState("");
+  const [codeFilter, setCodeFilter] = useState<string[]>([]);
+  const [discountFilter, setDiscountFilter] = useState<string[]>([]);
+  const [appliesToFilter, setAppliesToFilter] = useState<string[]>([]);
+  const [usageFilter, setUsageFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [expiryFrom, setExpiryFrom] = useState("");
   const [expiryTo, setExpiryTo] = useState("");
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
 
+  // Build unique options for dropdowns
+  const uniqueCodes = useMemo(() => {
+    return Array.from(new Set(promoCodes.map(p => p.code).filter(Boolean))).sort().map(c => [c, c] as [string, string]);
+  }, [promoCodes]);
+
+  const uniqueDiscounts = useMemo(() => {
+    const discounts = new Set(promoCodes.map(p => p.discount_type === "percent" ? `${p.discount_value}%` : `$${p.discount_value}`));
+    return Array.from(discounts).sort().map(d => [d, d] as [string, string]);
+  }, [promoCodes]);
+
+  const uniqueUsages = useMemo(() => {
+    const usages = new Set(promoCodes.map(p => `${p.usage_count || 0}${p.max_uses ? ` / ${p.max_uses}` : ""}`));
+    return Array.from(usages).sort().map(u => [u, u] as [string, string]);
+  }, [promoCodes]);
+
   const displayPromos = useMemo(() => {
-    let r = promoCodes.filter(p => {
-      if (!expiryFrom && !expiryTo) return true;
-      const exp = p.expiry_date?.slice(0, 10) || "";
-      if (expiryFrom && exp && exp < expiryFrom) return false;
-      if (expiryTo && exp && exp > expiryTo) return false;
-      return true;
+    let r = [...promoCodes];
+    // Apply local multi-select filters
+    if (codeFilter.length > 0) r = r.filter(p => codeFilter.includes(p.code));
+    if (discountFilter.length > 0) r = r.filter(p => {
+      const disc = p.discount_type === "percent" ? `${p.discount_value}%` : `$${p.discount_value}`;
+      return discountFilter.includes(disc);
     });
+    if (appliesToFilter.length > 0) r = r.filter(p => appliesToFilter.includes(p.applies_to));
+    if (usageFilter.length > 0) r = r.filter(p => {
+      const usage = `${p.usage_count || 0}${p.max_uses ? ` / ${p.max_uses}` : ""}`;
+      return usageFilter.includes(usage);
+    });
+    if (statusFilter.length > 0) r = r.filter(p => statusFilter.includes(p.status));
+    // Date range filters
+    if (expiryFrom || expiryTo) {
+      r = r.filter(p => {
+        const exp = p.expiry_date?.slice(0, 10) || "";
+        if (expiryFrom && exp && exp < expiryFrom) return false;
+        if (expiryTo && exp && exp > expiryTo) return false;
+        return true;
+      });
+    }
     if (colSort) {
-      r = [...r];
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
         if (colSort.col === "code") { av = a.code; bv = b.code; }
@@ -63,7 +94,7 @@ export function PromoCodesTab() {
       });
     }
     return r;
-  }, [promoCodes, expiryFrom, expiryTo, colSort]);
+  }, [promoCodes, codeFilter, discountFilter, appliesToFilter, usageFilter, statusFilter, expiryFrom, expiryTo, colSort]);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -76,10 +107,7 @@ export function PromoCodesTab() {
 
   const load = useCallback(async (p = 1) => {
     try {
-      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
-      if (codeFilter) params.append("search", codeFilter);
-      if (appliesToFilter) params.append("applies_to", appliesToFilter);
-      if (statusFilter) params.append("status", statusFilter);
+      const params = new URLSearchParams({ page: String(p), per_page: String(500) });
       if (startDate) params.append("created_from", startDate);
       if (endDate) params.append("created_to", endDate);
       const [promoRes, prodRes] = await Promise.all([
@@ -92,9 +120,9 @@ export function PromoCodesTab() {
       setPage(p);
       if (!products.length) setProducts(prodRes.data.products || []);
     } catch { toast.error("Failed to load promo codes"); }
-  }, [codeFilter, appliesToFilter, statusFilter, startDate, endDate]);
+  }, [startDate, endDate]);
 
-  useEffect(() => { load(1); }, [codeFilter, appliesToFilter, statusFilter, startDate, endDate]);
+  useEffect(() => { load(1); }, [startDate, endDate]);
 
   const handleCreate = async () => {
     try {
@@ -133,9 +161,9 @@ export function PromoCodesTab() {
     const token = localStorage.getItem("aa_token");
     const base = process.env.REACT_APP_BACKEND_URL || "";
     const params = new URLSearchParams();
-    if (codeFilter) params.append("search", codeFilter);
-    if (appliesToFilter) params.append("applies_to", appliesToFilter);
-    if (statusFilter) params.append("status", statusFilter);
+    if (codeFilter.length > 0) params.append("search", codeFilter.join(","));
+    if (appliesToFilter.length > 0) params.append("applies_to", appliesToFilter.join(","));
+    if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
     fetch(`${base}/api/admin/export/promo-codes?${params}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `promo-codes-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));
@@ -214,13 +242,13 @@ export function PromoCodesTab() {
         <Table data-testid="admin-promo-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <ColHeader label="Code" colKey="code" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={codeFilter} onFilter={v => { setCodeFilter(v); setPage(1); }} onClearFilter={() => { setCodeFilter(""); setPage(1); }} />
-              <ColHeader label="Discount" colKey="discount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-              <ColHeader label="Applies To" colKey="applies_to" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={appliesToFilter || "all"} onFilter={v => { setAppliesToFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setAppliesToFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["both", "Both"], ["one-time", "One-time"], ["subscription", "Subscription"]]} />
+              <ColHeader label="Code" colKey="code" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={codeFilter} onFilter={v => { setCodeFilter(v); setPage(1); }} onClearFilter={() => { setCodeFilter([]); setPage(1); }} statusOptions={uniqueCodes} />
+              <ColHeader label="Discount" colKey="discount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={discountFilter} onFilter={v => { setDiscountFilter(v); setPage(1); }} onClearFilter={() => { setDiscountFilter([]); setPage(1); }} statusOptions={uniqueDiscounts} />
+              <ColHeader label="Applies To" colKey="applies_to" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={appliesToFilter} onFilter={v => { setAppliesToFilter(v); setPage(1); }} onClearFilter={() => { setAppliesToFilter([]); setPage(1); }} statusOptions={[["both", "Both"], ["one-time", "One-time"], ["subscription", "Subscription"]]} />
               <ColHeader label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: expiryFrom, to: expiryTo }} onFilter={v => { setExpiryFrom(v.from || ""); setExpiryTo(v.to || ""); }} onClearFilter={() => { setExpiryFrom(""); setExpiryTo(""); }} />
-              <ColHeader label="Usage" colKey="uses" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Usage" colKey="uses" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={usageFilter} onFilter={v => { setUsageFilter(v); setPage(1); }} onClearFilter={() => { setUsageFilter([]); setPage(1); }} statusOptions={uniqueUsages} />
               <ColHeader label="Created" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["Active", "Active"], ["Inactive", "Inactive"], ["Expired", "Expired"]]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => { setStatusFilter(v); setPage(1); }} onClearFilter={() => { setStatusFilter([]); setPage(1); }} statusOptions={[["Active", "Active"], ["Inactive", "Inactive"], ["Expired", "Expired"]]} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Enabled</th>
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>

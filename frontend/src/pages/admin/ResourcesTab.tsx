@@ -136,10 +136,14 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const [showEmailTemplatePicker, setShowEmailTemplatePicker] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [partnerFilter, setPartnerFilter] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<{ min?: string; max?: string }>({});
   const [searchFilter, setSearchFilter] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [modifiedFrom, setModifiedFrom] = useState("");
+  const [modifiedTo, setModifiedTo] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -160,11 +164,16 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const load = useCallback(async (p = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
-      if (categoryFilter !== "all") params.append("category", categoryFilter);
+      const params = new URLSearchParams({ page: String(p), per_page: String(500) });
+      if (categoryFilter.length > 0) params.append("category", categoryFilter.join(","));
       if (searchFilter) params.append("search", searchFilter);
       if (startDate) params.append("created_from", startDate);
       if (endDate) params.append("created_to", endDate);
+      if (modifiedFrom) params.append("modified_from", modifiedFrom);
+      if (modifiedTo) params.append("modified_to", modifiedTo);
+      if (priceRange.min) params.append("price_min", priceRange.min);
+      if (priceRange.max) params.append("price_max", priceRange.max);
+      if (partnerFilter.length > 0) params.append("partner", partnerFilter.join(","));
       const res = await api.get(`/resources/admin/list?${params}`);
       setResources(res.data.resources || []);
       setTotal(res.data.total || 0);
@@ -175,9 +184,12 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [categoryFilter, searchFilter, startDate, endDate]);
+  }, [categoryFilter, searchFilter, startDate, endDate, modifiedFrom, modifiedTo, priceRange, partnerFilter]);
 
-  useEffect(() => { load(1); }, [categoryFilter, searchFilter, startDate, endDate]);
+  // Build unique options for filters
+  const uniquePartners = Array.from(new Set(resources.map(r => r.partner_code).filter(Boolean)));
+
+  useEffect(() => { load(1); }, [categoryFilter, searchFilter, startDate, endDate, modifiedFrom, modifiedTo, priceRange, partnerFilter]);
 
   // Auto-open edit dialog when navigated from resource preview with editResourceId
   useEffect(() => {
@@ -348,7 +360,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
     const token = localStorage.getItem("aa_token");
     const base = process.env.REACT_APP_BACKEND_URL || "";
     const params = new URLSearchParams();
-    if (categoryFilter !== "all") params.append("category", categoryFilter);
+    if (categoryFilter.length > 0) params.append("category", categoryFilter.join(","));
     if (searchFilter) params.append("search", searchFilter);
     fetch(`${base}/api/admin/export/resources?${params}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `resources-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
@@ -445,11 +457,11 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
             <TableRow className="bg-slate-50">
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">ID</th>
               <ColHeader label="Created" colKey="created" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Modified</th>
-              <ColHeader label="Category" colKey="category" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="status" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter("all"); setPage(1); }} statusOptions={[["all", "All categories"], ...(dynamicCategories.length > 0 ? dynamicCategories : HARDCODED_CATEGORIES.map(c => ({ name: c }))).map((c: any) => [c.name, c.name] as [string, string])]} />
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Price</th>
+              <ColHeader label="Modified" colKey="modified" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="date-range" filterValue={{ from: modifiedFrom, to: modifiedTo }} onFilter={v => { setModifiedFrom(v.from || ""); setModifiedTo(v.to || ""); setPage(1); }} onClearFilter={() => { setModifiedFrom(""); setModifiedTo(""); setPage(1); }} />
+              <ColHeader label="Category" colKey="category" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter([]); setPage(1); }} statusOptions={(dynamicCategories.length > 0 ? dynamicCategories : HARDCODED_CATEGORIES.map(c => ({ name: c }))).map((c: any) => [c.name, c.name] as [string, string])} />
+              <ColHeader label="Price" colKey="price" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} />
               <ColHeader label="Title / Visible" colKey="title" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
-              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={partnerFilter} onFilter={v => { setPartnerFilter(v); setPage(1); }} onClearFilter={() => { setPartnerFilter([]); setPage(1); }} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>

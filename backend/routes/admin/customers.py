@@ -88,26 +88,73 @@ async def admin_customers(
     page: int = 1,
     per_page: int = 20,
     search: Optional[str] = None,
+    name: Optional[str] = None,
     country: Optional[str] = None,
+    state: Optional[str] = None,
     status: Optional[str] = None,
     payment_mode: Optional[str] = None,
     email: Optional[str] = None,
+    partner_map: Optional[str] = None,
+    partner: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     await _check(admin, "view")
     # Build base customer query
     query: Dict[str, Any] = {**tf}
-    if payment_mode == "gocardless":
-        query["allow_bank_transfer"] = True
-    elif payment_mode == "stripe":
-        query["allow_card_payment"] = True
-    elif payment_mode == "both":
-        query["allow_bank_transfer"] = True
-        query["allow_card_payment"] = True
-    elif payment_mode == "none":
-        query["allow_bank_transfer"] = False
-        query["allow_card_payment"] = False
+    
+    # Handle payment_mode filter (can be comma-separated multi-select)
+    if payment_mode:
+        mode_list = [m.strip() for m in payment_mode.split(",") if m.strip()]
+        if len(mode_list) == 1:
+            mode = mode_list[0]
+            if mode == "gocardless":
+                query["allow_bank_transfer"] = True
+            elif mode == "stripe":
+                query["allow_card_payment"] = True
+            elif mode == "both":
+                query["allow_bank_transfer"] = True
+                query["allow_card_payment"] = True
+            elif mode == "none":
+                query["allow_bank_transfer"] = False
+                query["allow_card_payment"] = False
+        else:
+            # Multi-select: OR logic across payment modes
+            or_conditions = []
+            for mode in mode_list:
+                if mode == "gocardless":
+                    or_conditions.append({"allow_bank_transfer": True})
+                elif mode == "stripe":
+                    or_conditions.append({"allow_card_payment": True})
+                elif mode == "both":
+                    or_conditions.append({"allow_bank_transfer": True, "allow_card_payment": True})
+                elif mode == "none":
+                    or_conditions.append({"allow_bank_transfer": False, "allow_card_payment": False})
+            if or_conditions:
+                query["$or"] = or_conditions
+    
+    # Handle partner_map filter (can be comma-separated multi-select)
+    if partner_map:
+        map_list = [m.strip() for m in partner_map.split(",") if m.strip()]
+        if len(map_list) == 1:
+            if map_list[0] == "none":
+                query["$or"] = [{"partner_map_id": None}, {"partner_map_id": {"$exists": False}}]
+            else:
+                query["partner_map_id"] = map_list[0]
+        else:
+            # Multi-select
+            or_conditions = []
+            for m in map_list:
+                if m == "none":
+                    or_conditions.append({"partner_map_id": None})
+                    or_conditions.append({"partner_map_id": {"$exists": False}})
+                else:
+                    or_conditions.append({"partner_map_id": m})
+            if or_conditions:
+                if "$or" in query:
+                    query["$and"] = [{"$or": query.pop("$or")}, {"$or": or_conditions}]
+                else:
+                    query["$or"] = or_conditions
     
     # Use aggregation pipeline for efficient querying
     pipeline: list = [
@@ -136,17 +183,62 @@ async def admin_customers(
     
     # Add filters based on joined data
     match_filters = []
+    
+    # Country filter (multi-select)
     if country:
         country_list = [c.strip() for c in country.split(",") if c.strip()]
         if len(country_list) == 1:
             match_filters.append({"address_data.country": {"$regex": f"^{country_list[0]}$", "$options": "i"}})
         else:
             match_filters.append({"address_data.country": {"$in": country_list}})
+    
+    # State filter (multi-select)
+    if state:
+        state_list = [s.strip() for s in state.split(",") if s.strip()]
+        if len(state_list) == 1:
+            match_filters.append({"address_data.region": {"$regex": f"^{state_list[0]}$", "$options": "i"}})
+        else:
+            match_filters.append({"address_data.region": {"$in": state_list}})
+    
+    # Status filter (multi-select)
     if status:
-        if status == "active":
-            match_filters.append({"$or": [{"user_data.is_active": True}, {"user_data.is_active": {"$exists": False}}]})
-        elif status == "inactive":
-            match_filters.append({"user_data.is_active": False})
+        status_list = [s.strip() for s in status.split(",") if s.strip()]
+        if len(status_list) == 1:
+            if status_list[0] == "active":
+                match_filters.append({"$or": [{"user_data.is_active": True}, {"user_data.is_active": {"$exists": False}}]})
+            elif status_list[0] == "inactive":
+                match_filters.append({"user_data.is_active": False})
+        else:
+            # Multi-select: if both active and inactive selected, no filter needed
+            pass
+    
+    # Name filter (multi-select)
+    if name:
+        name_list = [n.strip() for n in name.split(",") if n.strip()]
+        if len(name_list) == 1:
+            name_regex = {"$regex": name_list[0], "$options": "i"}
+            match_filters.append({
+                "$or": [
+                    {"user_data.full_name": name_regex},
+                    {"company_name": name_regex}
+                ]
+            })
+        else:
+            or_conditions = []
+            for n in name_list:
+                name_regex = {"$regex": f"^{n}$", "$options": "i"}
+                or_conditions.append({"user_data.full_name": name_regex})
+                or_conditions.append({"company_name": name_regex})
+            match_filters.append({"$or": or_conditions})
+    
+    # Partner filter (multi-select)
+    if partner:
+        partner_list = [p.strip() for p in partner.split(",") if p.strip()]
+        if len(partner_list) == 1:
+            match_filters.append({"tenant_id": partner_list[0]})
+        else:
+            match_filters.append({"tenant_id": {"$in": partner_list}})
+    
     if search:
         search_regex = {"$regex": search, "$options": "i"}
         match_filters.append({

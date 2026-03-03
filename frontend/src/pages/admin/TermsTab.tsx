@@ -25,14 +25,41 @@ export function TermsTab() {
   const PER_PAGE = 20;
 
   // Filters
-  const [searchFilter, setSearchFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [titleFilter, setTitleFilter] = useState<string[]>([]);
+  const [productsLinkedFilter, setProductsLinkedFilter] = useState<string[]>([]);
+  const [defaultFilter, setDefaultFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
 
+  // Build unique options for dropdowns
+  const uniqueTitles = useMemo(() => {
+    return Array.from(new Set(terms.map(t => t.title).filter(Boolean))).sort().map(t => [t, t] as [string, string]);
+  }, [terms]);
+
+  const linkedProductCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    terms.forEach(t => {
+      const linked = products.filter((p: any) => p.terms_id === t.id).length;
+      counts.set(t.id, linked);
+    });
+    const uniqueCounts = Array.from(new Set(Array.from(counts.values()))).sort((a, b) => a - b);
+    return uniqueCounts.map(c => [String(c), c === 0 ? "None" : String(c)] as [string, string]);
+  }, [terms, products]);
+
   const displayTerms = useMemo(() => {
-    const r = [...terms];
+    let r = [...terms];
+    // Apply local multi-select filters
+    if (titleFilter.length > 0) r = r.filter(t => titleFilter.includes(t.title));
+    if (productsLinkedFilter.length > 0) {
+      r = r.filter(t => {
+        const linked = products.filter((p: any) => p.terms_id === t.id).length;
+        return productsLinkedFilter.includes(String(linked));
+      });
+    }
+    if (defaultFilter.length > 0) r = r.filter(t => defaultFilter.some(d => (d === "yes" && t.is_default) || (d === "no" && !t.is_default)));
+    if (statusFilter.length > 0) r = r.filter(t => statusFilter.includes(t.status));
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -45,7 +72,7 @@ export function TermsTab() {
       });
     }
     return r;
-  }, [terms, colSort]);
+  }, [terms, titleFilter, productsLinkedFilter, defaultFilter, statusFilter, products, colSort]);
 
   // Dialogs
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -59,9 +86,7 @@ export function TermsTab() {
 
   const load = useCallback(async (p = 1) => {
     try {
-      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
-      if (searchFilter) params.append("search", searchFilter);
-      if (statusFilter) params.append("status", statusFilter);
+      const params = new URLSearchParams({ page: String(p), per_page: String(500) });
       if (startDate) params.append("created_from", startDate);
       if (endDate) params.append("created_to", endDate);
       const [termsRes, prodRes] = await Promise.all([
@@ -74,9 +99,9 @@ export function TermsTab() {
       setPage(p);
       setProducts(prodRes.data.products || []);
     } catch { toast.error("Failed to load terms"); }
-  }, [searchFilter, statusFilter, startDate, endDate]);
+  }, [startDate, endDate]);
 
-  useEffect(() => { load(1); }, [searchFilter, statusFilter, startDate, endDate]);
+  useEffect(() => { load(1); }, [startDate, endDate]);
 
   const handleCreate = async () => {
     try {
@@ -110,8 +135,8 @@ export function TermsTab() {
     const token = localStorage.getItem("aa_token");
     const base = process.env.REACT_APP_BACKEND_URL || "";
     const params = new URLSearchParams();
-    if (searchFilter) params.append("search", searchFilter);
-    if (statusFilter) params.append("status", statusFilter);
+    if (titleFilter.length > 0) params.append("search", titleFilter.join(","));
+    if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
     fetch(`${base}/api/admin/export/terms?${params}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `terms-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));
@@ -138,11 +163,11 @@ export function TermsTab() {
         <Table data-testid="admin-terms-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <ColHeader label="Title" colKey="title" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
+              <ColHeader label="Title" colKey="title" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={titleFilter} onFilter={v => { setTitleFilter(v); setPage(1); }} onClearFilter={() => { setTitleFilter([]); setPage(1); }} statusOptions={uniqueTitles} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Preview</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Products Linked</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Default</th>
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} statusOptions={[["all", "All"], ["active", "Active"], ["inactive", "Inactive"]]} />
+              <ColHeader label="Products Linked" colKey="products" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={productsLinkedFilter} onFilter={v => { setProductsLinkedFilter(v); setPage(1); }} onClearFilter={() => { setProductsLinkedFilter([]); setPage(1); }} statusOptions={linkedProductCounts} />
+              <ColHeader label="Default" colKey="default" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={defaultFilter} onFilter={v => { setDefaultFilter(v); setPage(1); }} onClearFilter={() => { setDefaultFilter([]); setPage(1); }} statusOptions={[["yes", "Yes"], ["no", "No"]]} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => { setStatusFilter(v); setPage(1); }} onClearFilter={() => { setStatusFilter([]); setPage(1); }} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />
               <ColHeader label="Created" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>

@@ -59,12 +59,14 @@ export function CustomersTab() {
     opts.push({ value: "none", label: "None assigned" });
     return opts;
   }, [ws.gocardless_enabled, ws.stripe_enabled]);
-  const [search, setSearch] = useState("");
+  const [nameFilter, setNameFilter] = useState<string[]>([]);
   const [emailSearch, setEmailSearch] = useState("");
+  const [stateFilter, setStateFilter] = useState<string[]>([]);
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState("");
-  const [paymentModeFilter, setPaymentModeFilter] = useState("");
-  const [partnerMapFilter, setPartnerMapFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [paymentModeFilter, setPaymentModeFilter] = useState<string[]>([]);
+  const [partnerMapFilter, setPartnerMapFilter] = useState<string[]>([]);
+  const [partnerFilter, setPartnerFilter] = useState<string[]>([]);
 
   // Dialogs
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
@@ -95,16 +97,16 @@ export function CustomersTab() {
   const load = useCallback(async (p = page) => {
     try {
       const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
-      if (search) params.append("search", search);
+      if (nameFilter.length > 0) params.append("name", nameFilter.join(","));
       if (emailSearch) params.append("email", emailSearch);
+      if (stateFilter.length > 0) params.append("state", stateFilter.join(","));
       if (countryFilter.length > 0) params.append("country", countryFilter.join(","));
-      if (statusFilter) params.append("status", statusFilter);
-      if (paymentModeFilter) params.append("payment_mode", paymentModeFilter);
+      if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
+      if (paymentModeFilter.length > 0) params.append("payment_mode", paymentModeFilter.join(","));
+      if (partnerMapFilter.length > 0) params.append("partner_map", partnerMapFilter.join(","));
+      if (partnerFilter.length > 0) params.append("partner", partnerFilter.join(","));
       const res = await api.get(`/admin/customers?${params}`);
       let custs = res.data.customers || [];
-      if (partnerMapFilter !== "all") {
-        custs = custs.filter((c: any) => partnerMapFilter === "none" ? !c.partner_map : c.partner_map === partnerMapFilter);
-      }
       setCustomers(custs);
       setUsers(res.data.users || []);
       setAddresses(res.data.addresses || []);
@@ -112,9 +114,9 @@ export function CustomersTab() {
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load customers"); }
-  }, [search, emailSearch, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, page]);
+  }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, partnerFilter, page]);
 
-  useEffect(() => { load(1); }, [search, emailSearch, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter]);
+  useEffect(() => { load(1); }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, partnerFilter]);
 
   // Fetch signup form schema to drive the Create Customer form
   useEffect(() => {
@@ -205,6 +207,33 @@ export function CustomersTab() {
 
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
 
+  // Build unique option lists for filters
+  const uniqueNames = useMemo(() => {
+    const names = new Set<string>();
+    customers.forEach(c => {
+      const u = userMap[c.user_id];
+      if (u?.full_name) names.add(u.full_name);
+      if (c.company_name) names.add(c.company_name);
+    });
+    return Array.from(names).sort().map(n => [n, n] as [string, string]);
+  }, [customers, userMap]);
+
+  const uniqueStates = useMemo(() => {
+    const states = new Set<string>();
+    addresses.forEach(a => { if (a.region) states.add(a.region); });
+    return Array.from(states).sort().map(s => [s, s] as [string, string]);
+  }, [addresses]);
+
+  const uniquePartnerMaps = useMemo(() => {
+    return PARTNER_MAP_OPTIONS.filter(o => o.value).map(o => [o.value, o.label] as [string, string]);
+  }, []);
+
+  const uniquePartners = useMemo(() => {
+    const partners = new Set<string>();
+    customers.forEach(c => { if (c.partner_code) partners.add(c.partner_code); });
+    return Array.from(partners).sort().map(p => [p, p] as [string, string]);
+  }, [customers]);
+
   const displayCustomers = useMemo(() => {
     const r = [...customers];
     if (colSort) {
@@ -248,14 +277,14 @@ export function CustomersTab() {
         <Table data-testid="admin-customer-table" className="text-sm min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={search} onFilter={v => setSearch(v)} onClearFilter={() => setSearch("")} />
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => setNameFilter(v)} onClearFilter={() => setNameFilter([])} statusOptions={uniqueNames} />
               <ColHeader label="Email" colKey="email" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={emailSearch} onFilter={v => setEmailSearch(v)} onClearFilter={() => setEmailSearch("")} />
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">State/Province</th>
+              <ColHeader label="State/Province" colKey="state" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={stateFilter} onFilter={v => setStateFilter(v)} onClearFilter={() => setStateFilter([])} statusOptions={uniqueStates} />
               <ColHeader label="Country" colKey="country" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={countryFilter} onFilter={v => setCountryFilter(v)} onClearFilter={() => setCountryFilter([])} statusOptions={countries.map(c => [c.value, c.label] as [string, string])} />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => setStatusFilter(v === "all" ? "" : v)} onClearFilter={() => setStatusFilter("")} statusOptions={[["all", "All"], ["active", "Active"], ["inactive", "Inactive"]]} />
-              <ColHeader label="Payment Methods" colKey="payment" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={paymentModeFilter || "all_modes"} onFilter={v => setPaymentModeFilter(v === "all_modes" ? "" : v)} onClearFilter={() => setPaymentModeFilter("")} statusOptions={paymentFilterOptions.map(o => [o.value, o.label] as [string, string])} />
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner Map</th>
-              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => setStatusFilter(v)} onClearFilter={() => setStatusFilter([])} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />
+              <ColHeader label="Payment Methods" colKey="payment" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={paymentModeFilter} onFilter={v => setPaymentModeFilter(v)} onClearFilter={() => setPaymentModeFilter([])} statusOptions={paymentFilterOptions.filter(o => o.value && o.value !== "all_modes").map(o => [o.value, o.label] as [string, string])} />
+              <ColHeader label="Partner Map" colKey="partner_map" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerMapFilter} onFilter={v => setPartnerMapFilter(v)} onClearFilter={() => setPartnerMapFilter([])} statusOptions={uniquePartnerMaps} />
+              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerFilter} onFilter={v => setPartnerFilter(v)} onClearFilter={() => setPartnerFilter([])} statusOptions={uniquePartners} />}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>

@@ -28,13 +28,16 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
-  const [tplFilters, setTplFilters] = useState({ name: "", category: "all" });
-  const setTF = (k: keyof typeof tplFilters, v: any) => setTplFilters(f => ({ ...f, [k]: v }));
+  const [nameFilter, setNameFilter] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [typeFilter, setTypeFilter] = useState<string[]>([]);
 
   const displayTemplates = useMemo(() => {
     let r = [...templates];
-    if (tplFilters.name) r = r.filter(t => t.name.toLowerCase().includes(tplFilters.name.toLowerCase()) || (t.description || "").toLowerCase().includes(tplFilters.name.toLowerCase()));
-    if (tplFilters.category !== "all") r = r.filter(t => (t.category || "") === tplFilters.category);
+    // Apply multi-select filters
+    if (nameFilter.length > 0) r = r.filter(t => nameFilter.includes(t.name));
+    if (categoryFilter.length > 0) r = r.filter(t => categoryFilter.includes(t.category));
+    if (typeFilter.length > 0) r = r.filter(t => typeFilter.some(tf => (tf === "default" && t.is_default) || (tf === "custom" && !t.is_default)));
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -47,12 +50,11 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
       });
     }
     return r;
-  }, [templates, tplFilters, colSort]);
+  }, [templates, nameFilter, categoryFilter, typeFilter, colSort]);
 
-  const categoryOptions = useMemo(() => {
-    const cats = Array.from(new Set(templates.map(t => t.category).filter(Boolean))) as string[];
-    return [["all", "All"], ...cats.map(c => [c, c])] as [string, string][];
-  }, [templates]);
+  // Build unique options for dropdowns
+  const uniqueNames = useMemo(() => templates.map(t => t.name).filter(Boolean), [templates]);
+  const uniqueCategories = useMemo(() => Array.from(new Set(templates.map(t => t.category).filter(Boolean))) as string[], [templates]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Template | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -142,9 +144,9 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={tplFilters.name} onFilter={v => setTF("name", v)} onClearFilter={() => setTF("name", "")} />
-              <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={tplFilters.category} onFilter={v => setTF("category", v)} onClearFilter={() => setTF("category", "all")} statusOptions={categoryOptions} />
-              <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => setNameFilter(v)} onClearFilter={() => setNameFilter([])} statusOptions={uniqueNames.map(n => [n, n] as [string, string])} />
+              <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={categoryFilter} onFilter={v => setCategoryFilter(v)} onClearFilter={() => setCategoryFilter([])} statusOptions={uniqueCategories.map(c => [c, c] as [string, string])} />
+              <ColHeader label="Type" colKey="type" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={typeFilter} onFilter={v => setTypeFilter(v)} onClearFilter={() => setTypeFilter([])} statusOptions={[["default", "Default"], ["custom", "Custom"]]} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>

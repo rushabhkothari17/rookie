@@ -55,13 +55,15 @@ export function OrdersTab() {
   const [products, setProducts] = useState<any[]>([]);
 
   // Filters
-  const [emailFilter, setEmailFilter] = useState("");
-  const [orderNumberFilter, setOrderNumberFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [productFilter, setProductFilter] = useState("");
-  const [subNumberFilter, setSubNumberFilter] = useState("");
-  const [processorIdFilter, setProcessorIdFilter] = useState("");
-  const [payMethodFilter, setPayMethodFilter] = useState("");
+  const [emailFilter, setEmailFilter] = useState<string[]>([]);
+  const [customerFilter, setCustomerFilter] = useState<string[]>([]);
+  const [orderNumberFilter, setOrderNumberFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [productFilter, setProductFilter] = useState<string[]>([]);
+  const [subNumberFilter, setSubNumberFilter] = useState<string[]>([]);
+  const [processorIdFilter, setProcessorIdFilter] = useState<string[]>([]);
+  const [payMethodFilter, setPayMethodFilter] = useState<string[]>([]);
+  const [partnerFilter, setPartnerFilter] = useState<string[]>([]);
   const [payDateFrom, setPayDateFrom] = useState("");
   const [payDateTo, setPayDateTo] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -114,21 +116,29 @@ export function OrdersTab() {
         sort_by: "created_at", sort_order: sortOrder,
         include_deleted: String(includeDeleted),
       });
-      if (orderNumberFilter) params.append("order_number_filter", orderNumberFilter);
-      if (statusFilter) params.append("status_filter", statusFilter);
-      if (productFilter) params.append("product_filter", productFilter);
-      if (subNumberFilter) params.append("sub_number_filter", subNumberFilter);
-      if (processorIdFilter) params.append("processor_id_filter", processorIdFilter);
-      if (payMethodFilter) params.append("payment_method_filter", payMethodFilter);
+      if (orderNumberFilter.length > 0) params.append("order_number_filter", orderNumberFilter.join(","));
+      if (statusFilter.length > 0) params.append("status_filter", statusFilter.join(","));
+      if (productFilter.length > 0) params.append("product_filter", productFilter.join(","));
+      if (subNumberFilter.length > 0) params.append("sub_number_filter", subNumberFilter.join(","));
+      if (processorIdFilter.length > 0) params.append("processor_id_filter", processorIdFilter.join(","));
+      if (payMethodFilter.length > 0) params.append("payment_method_filter", payMethodFilter.join(","));
+      if (partnerFilter.length > 0) params.append("partner_filter", partnerFilter.join(","));
       if (payDateFrom) params.append("pay_date_from", payDateFrom);
       if (payDateTo) params.append("pay_date_to", payDateTo);
       const res = await api.get(`/admin/orders?${params}`);
       let ords = res.data.orders || [];
       // Client-side email filter
-      if (emailFilter) {
+      if (emailFilter.length > 0) {
         const custUserMap: Record<string, string> = {};
         customers.forEach((c) => { custUserMap[c.id] = userMap[c.user_id]?.email || ""; });
-        ords = ords.filter((o: any) => custUserMap[o.customer_id]?.toLowerCase().includes(emailFilter.toLowerCase()));
+        ords = ords.filter((o: any) => emailFilter.some(e => custUserMap[o.customer_id]?.toLowerCase().includes(e.toLowerCase())));
+      }
+      // Client-side customer filter
+      if (customerFilter.length > 0) {
+        ords = ords.filter((o: any) => {
+          const u = getCustomerUser(o.customer_id);
+          return customerFilter.some(c => u?.full_name?.includes(c));
+        });
       }
       // Client-side date filter
       if (startDate) ords = ords.filter((o: any) => o.created_at >= startDate);
@@ -139,7 +149,7 @@ export function OrdersTab() {
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load orders"); }
-  }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, payDateFrom, payDateTo, emailFilter, startDate, endDate, customers, users]);
+  }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, partnerFilter, payDateFrom, payDateTo, emailFilter, customerFilter, startDate, endDate, customers, users]);
 
   useEffect(() => {
     api.get("/admin/filter-options").then(r => {
@@ -156,7 +166,16 @@ export function OrdersTab() {
     });
   }, []);
 
-  useEffect(() => { load(1); }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, payDateFrom, payDateTo]);
+  // Build unique dropdown options
+  const uniqueOrderNumbers = orders.map(o => o.order_number).filter(Boolean);
+  const uniqueEmails = Array.from(new Set(users.map(u => u.email).filter(Boolean)));
+  const uniqueCustomerNames = Array.from(new Set(users.map(u => u.full_name).filter(Boolean)));
+  const uniqueProductNames = Array.from(new Set(products.map((p: any) => p.name).filter(Boolean)));
+  const uniqueSubNumbers = Array.from(new Set(orders.map(o => o.subscription_number || o.subscription_id?.slice(0, 8)).filter(Boolean)));
+  const uniqueProcessorIds = orders.map(o => o.processor_id).filter(Boolean);
+  const uniquePartners = Array.from(new Set(orders.map(o => o.partner_code).filter(Boolean)));
+
+  useEffect(() => { load(1); }, [sortOrder, includeDeleted, orderNumberFilter, statusFilter, productFilter, subNumberFilter, processorIdFilter, payMethodFilter, partnerFilter, payDateFrom, payDateTo]);
 
   // customer search for edit dialog
   const [custSearch, setCustSearch] = useState("");
@@ -218,8 +237,8 @@ export function OrdersTab() {
   };
 
   const clearFilters = () => {
-    setEmailFilter(""); setOrderNumberFilter(""); setStatusFilter(""); setProductFilter("");
-    setSubNumberFilter(""); setProcessorIdFilter(""); setPayMethodFilter("");
+    setEmailFilter([]); setCustomerFilter([]); setOrderNumberFilter([]); setStatusFilter([]); setProductFilter([]);
+    setSubNumberFilter([]); setProcessorIdFilter([]); setPayMethodFilter([]); setPartnerFilter([]);
     setPayDateFrom(""); setPayDateTo("");
     setStartDate(""); setEndDate(""); setIncludeDeleted(false);
   };
@@ -228,9 +247,9 @@ export function OrdersTab() {
     const token = localStorage.getItem("aa_token");
     const baseUrl = process.env.REACT_APP_BACKEND_URL || "";
     const params = new URLSearchParams({ sort_order: sortOrder, include_deleted: String(includeDeleted) });
-    if (orderNumberFilter) params.append("order_number_filter", orderNumberFilter);
-    if (statusFilter) params.append("status_filter", statusFilter);
-    if (productFilter) params.append("product_filter", productFilter);
+    if (orderNumberFilter.length > 0) params.append("order_number_filter", orderNumberFilter.join(","));
+    if (statusFilter.length > 0) params.append("status_filter", statusFilter.join(","));
+    if (productFilter.length > 0) params.append("product_filter", productFilter.join(","));
     fetch(`${baseUrl}/api/admin/export/orders?${params}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));
@@ -276,21 +295,21 @@ export function OrdersTab() {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <ColHeader label="Date" colKey="date" sortCol="date" sortDir={sortOrder} onSort={(_, d) => setSortOrder(d)} onClearSort={() => setSortOrder("desc")} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); }} onClearFilter={() => { setStartDate(""); setEndDate(""); }} />
-              <ColHeader label="Order #" colKey="order_number" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={orderNumberFilter} onFilter={v => setOrderNumberFilter(v)} onClearFilter={() => setOrderNumberFilter("")} />
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Customer</th>
-              <ColHeader label="Email" colKey="email" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={emailFilter} onFilter={v => setEmailFilter(v)} onClearFilter={() => setEmailFilter("")} />
-              <ColHeader label="Product(s)" colKey="product" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={productFilter} onFilter={v => setProductFilter(v)} onClearFilter={() => setProductFilter("")} />
-              <ColHeader label="Sub #" colKey="sub_number" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={subNumberFilter} onFilter={v => setSubNumberFilter(v)} onClearFilter={() => setSubNumberFilter("")} />
-              <ColHeader label="Processor ID" colKey="processor_id" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={processorIdFilter} onFilter={v => setProcessorIdFilter(v)} onClearFilter={() => setProcessorIdFilter("")} />
+              <ColHeader label="Order #" colKey="order_number" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={orderNumberFilter} onFilter={v => setOrderNumberFilter(v)} onClearFilter={() => setOrderNumberFilter([])} statusOptions={uniqueOrderNumbers.map(o => [o, o] as [string, string])} />
+              <ColHeader label="Customer" colKey="customer" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={customerFilter} onFilter={v => setCustomerFilter(v)} onClearFilter={() => setCustomerFilter([])} statusOptions={uniqueCustomerNames.map(c => [c, c] as [string, string])} />
+              <ColHeader label="Email" colKey="email" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={emailFilter} onFilter={v => setEmailFilter(v)} onClearFilter={() => setEmailFilter([])} statusOptions={uniqueEmails.map(e => [e, e] as [string, string])} />
+              <ColHeader label="Product(s)" colKey="product" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={productFilter} onFilter={v => setProductFilter(v)} onClearFilter={() => setProductFilter([])} statusOptions={uniqueProductNames.map(p => [p, p] as [string, string])} />
+              <ColHeader label="Sub #" colKey="sub_number" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={subNumberFilter} onFilter={v => setSubNumberFilter(v)} onClearFilter={() => setSubNumberFilter([])} statusOptions={uniqueSubNumbers.map(s => [s, s] as [string, string])} />
+              <ColHeader label="Processor ID" colKey="processor_id" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={processorIdFilter} onFilter={v => setProcessorIdFilter(v)} onClearFilter={() => setProcessorIdFilter([])} statusOptions={uniqueProcessorIds.map(p => [p, p.slice(0, 14) + "…"] as [string, string])} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Subtotal</th>
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Fee</th>
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Tax</th>
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Total</th>
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Currency</th>
               <ColHeader label="Pay Date" colKey="pay_date" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="date-range" filterValue={{ from: payDateFrom, to: payDateTo }} onFilter={v => { setPayDateFrom(v.from || ""); setPayDateTo(v.to || ""); }} onClearFilter={() => { setPayDateFrom(""); setPayDateTo(""); }} />
-              <ColHeader label="Method" colKey="method" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="status" filterValue={payMethodFilter || "all"} onFilter={v => setPayMethodFilter(v === "all" ? "" : v)} onClearFilter={() => setPayMethodFilter("")} statusOptions={[["all", "All"], ...paymentMethods.map(m => [m, m] as [string, string])]} />
-              <ColHeader label="Status" colKey="status" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="status" filterValue={statusFilter || "all"} onFilter={v => setStatusFilter(v === "all" ? "" : v)} onClearFilter={() => setStatusFilter("")} statusOptions={[["all", "All"], ...orderStatuses.map(s => [s, s] as [string, string])]} />
-              {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
+              <ColHeader label="Method" colKey="method" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={payMethodFilter} onFilter={v => setPayMethodFilter(v)} onClearFilter={() => setPayMethodFilter([])} statusOptions={paymentMethods.map(m => [m, m] as [string, string])} />
+              <ColHeader label="Status" colKey="status" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={statusFilter} onFilter={v => setStatusFilter(v)} onClearFilter={() => setStatusFilter([])} statusOptions={orderStatuses.map(s => [s, s] as [string, string])} />
+              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={partnerFilter} onFilter={v => setPartnerFilter(v)} onClearFilter={() => setPartnerFilter([])} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>

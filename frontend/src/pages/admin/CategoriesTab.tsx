@@ -29,12 +29,29 @@ export function CategoriesTab() {
   const PER_PAGE = 20;
 
   // Filters
-  const [searchFilter, setSearchFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [nameFilter, setNameFilter] = useState<string[]>([]);
+  const [descSearch, setDescSearch] = useState("");
+  const [productsFilter, setProductsFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
 
+  // Build unique options for dropdowns
+  const uniqueNames = useMemo(() => {
+    return Array.from(new Set(categories.map(c => c.name).filter(Boolean))).sort().map(n => [n, n] as [string, string]);
+  }, [categories]);
+
+  const uniqueProductCounts = useMemo(() => {
+    const counts = new Set(categories.map(c => String(c.product_count ?? 0)));
+    return Array.from(counts).sort((a, b) => parseInt(a) - parseInt(b)).map(n => [n, n] as [string, string]);
+  }, [categories]);
+
   const displayCategories = useMemo(() => {
-    const r = [...categories];
+    let r = [...categories];
+    // Apply local filters
+    if (nameFilter.length > 0) r = r.filter(c => nameFilter.includes(c.name));
+    if (descSearch) r = r.filter(c => (c.description || "").toLowerCase().includes(descSearch.toLowerCase()));
+    if (productsFilter.length > 0) r = r.filter(c => productsFilter.includes(String(c.product_count ?? 0)));
+    if (statusFilter.length > 0) r = r.filter(c => statusFilter.some(s => (s === "active" && c.is_active) || (s === "inactive" && !c.is_active)));
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
@@ -48,7 +65,7 @@ export function CategoriesTab() {
       });
     }
     return r;
-  }, [categories, colSort]);
+  }, [categories, nameFilter, descSearch, productsFilter, statusFilter, colSort]);
 
   // Dialog
   const [showDialog, setShowDialog] = useState(false);
@@ -62,18 +79,16 @@ export function CategoriesTab() {
 
   const load = useCallback(async (p = 1) => {
     try {
-      const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
-      if (searchFilter) params.append("search", searchFilter);
-      if (statusFilter) params.append("status", statusFilter);
+      const params = new URLSearchParams({ page: String(p), per_page: String(500) });
       const res = await api.get(`/admin/categories?${params}`);
       setCategories(res.data.categories || []);
       setTotal(res.data.total || 0);
       setTotalPages(res.data.total_pages || 1);
       setPage(p);
     } catch { toast.error("Failed to load categories"); }
-  }, [searchFilter, statusFilter]);
+  }, []);
 
-  useEffect(() => { load(1); }, [searchFilter, statusFilter]);
+  useEffect(() => { load(1); }, [load]);
 
   const openCreate = () => { setEditCat(null); setForm({ name: "", description: "", is_active: true }); setShowDialog(true); };
   const openEdit = (cat: any) => { setEditCat(cat); setForm({ name: cat.name, description: cat.description || "", is_active: cat.is_active }); setShowDialog(true); };
@@ -103,10 +118,7 @@ export function CategoriesTab() {
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
     const base = process.env.REACT_APP_BACKEND_URL || "";
-    const params = new URLSearchParams();
-    if (searchFilter) params.append("search", searchFilter);
-    if (statusFilter) params.append("status", statusFilter);
-    fetch(`${base}/api/admin/export/categories?${params}`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${base}/api/admin/export/categories`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `categories-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));
   };
@@ -127,10 +139,10 @@ export function CategoriesTab() {
         <Table data-testid="admin-categories-table">
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
-              <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-              <ColHeader label="Products" colKey="products" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="none" />
-              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="status" filterValue={statusFilter || "all"} onFilter={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }} onClearFilter={() => { setStatusFilter(""); setPage(1); }} />
+              <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => { setNameFilter(v); setPage(1); }} onClearFilter={() => { setNameFilter([]); setPage(1); }} statusOptions={uniqueNames} />
+              <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={descSearch} onFilter={v => { setDescSearch(v); setPage(1); }} onClearFilter={() => { setDescSearch(""); setPage(1); }} />
+              <ColHeader label="Products" colKey="products" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={productsFilter} onFilter={v => { setProductsFilter(v); setPage(1); }} onClearFilter={() => { setProductsFilter([]); setPage(1); }} statusOptions={uniqueProductCounts} />
+              <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => { setStatusFilter(v); setPage(1); }} onClearFilter={() => { setStatusFilter([]); setPage(1); }} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
