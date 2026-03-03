@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/sonner";
 import { Eye, EyeOff, Upload, Save, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountries, useProvinces } from "@/hooks/useCountries";
+import { applyBrandingFromSettings } from "@/contexts/WebsiteContext";
 
 function OrgAddressSection() {
   const { user } = useAuth();
@@ -352,6 +353,7 @@ export function SettingsTab() {
     setSaving(true);
     try {
       await api.put("/admin/settings", settings);
+      applyBrandingFromSettings(settings);
       toast.success("Settings saved");
       load();
     } catch {

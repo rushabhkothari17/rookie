@@ -383,6 +383,11 @@ function _applyBrandingToDOM(s: Record<string, any>) {
 
 // (branding helpers are now in _applyBrandingToDOM above)
 
+/** Apply branding settings directly to DOM — use this after admin saves colors */
+export function applyBrandingFromSettings(s: Record<string, any>) {
+  _applyBrandingToDOM(s);
+}
+
 export function WebsiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<WebsiteSettings>(DEFAULT_SETTINGS);
 

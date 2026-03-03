@@ -7,6 +7,7 @@ import { OrgInfoSection } from "./WebsiteOrgSection";
 import { AuthPagesSection } from "./WebsiteAuthSection";
 import { FormsSection } from "./WebsiteFormsSection";
 import { SysConfigSection } from "./WebsiteSysSection";
+import { applyBrandingFromSettings } from "@/contexts/WebsiteContext";
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
@@ -77,7 +78,14 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
   useEffect(() => { load(); }, []);
 
   const s = (key: keyof WebsiteData) => (v: string) => setWs(prev => ({ ...prev, [key]: v }));
-  const b = (key: keyof BrandingData) => (v: string) => setBranding(prev => ({ ...prev, [key]: v }));
+  const b = (key: keyof BrandingData) => (v: string) => {
+    setBranding(prev => {
+      const next = { ...prev, [key]: v };
+      // Live preview: apply colors to DOM immediately as admin changes them
+      applyBrandingFromSettings(next);
+      return next;
+    });
+  };
 
   const save = async () => {
     setSaving(true);
@@ -86,6 +94,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
         api.put("/admin/website-settings", ws),
         api.put("/admin/settings", branding),
       ]);
+      applyBrandingFromSettings(branding);
       toast.success("Settings saved");
     } catch { toast.error("Failed to save settings"); }
     finally { setSaving(false); }
