@@ -68,12 +68,16 @@ function TaxSettingsPanel() {
   const [settings, setSettings] = useState<any>({ enabled: false, country: "", state: "" });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [rateTableCountries, setRateTableCountries] = useState<{value:string;label:string}[]>([]);
 
   useEffect(() => {
     api.get("/admin/taxes/settings").then((r) => {
       setSettings(r.data.tax_settings || {});
       setLoading(false);
     }).catch(() => setLoading(false));
+    api.get("/utils/countries?format=iso").then((r) => {
+      setRateTableCountries(r.data.countries || []);
+    }).catch(() => {});
   }, []);
 
   const save = async () => {
@@ -123,8 +127,8 @@ function TaxSettingsPanel() {
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                  {rateTableCountries.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

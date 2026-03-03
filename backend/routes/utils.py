@@ -131,15 +131,15 @@ _FALLBACK_COUNTRIES = [
 
 
 @router.get("/utils/countries")
-async def get_countries(partner_code: str = Query(None, description="Partner code to scope tax-table lookup")):
-    """Return countries that have a tax-table entry (scoped to the tenant if partner_code supplied)."""
-    query: dict = {}
+async def get_countries(
+    format: str = Query("name", description="'name' returns full names as values (default); 'iso' returns ISO codes as values"),
+):
+    """Return countries that have a tax-table entry (global rate table, no tenant filter).
+    format=name → {value: "Canada", label: "Canada"}
+    format=iso  → {value: "CA",     label: "Canada"}
+    """
     try:
-        if partner_code:
-            tenant = await db.tenants.find_one({"code": partner_code.strip().lower()}, {"_id": 0, "id": 1})
-            if tenant:
-                query["tenant_id"] = tenant["id"]
-        raw = await db.tax_tables.distinct("country_code", query)
+        raw = await db.tax_tables.distinct("country_code", {})
         codes = sorted(set(c.upper().strip() for c in raw if c))
     except Exception:
         codes = []
@@ -149,11 +149,17 @@ async def get_countries(partner_code: str = Query(None, description="Partner cod
     for code in codes:
         name = _ISO_TO_NAME.get(code)
         if not name:
-            # Some entries store the full name as country_code — accept if > 2 chars
             name = code.title() if len(code) > 2 else None
         if name and name not in seen:
             seen.add(name)
-            result.append({"value": name, "label": name})
+            if format == "iso":
+                result.append({"value": code, "label": name})
+            else:
+                result.append({"value": name, "label": name})
 
     result.sort(key=lambda x: x["label"])
-    return {"countries": result if result else _FALLBACK_COUNTRIES}
+    if not result:
+        if format == "iso":
+            return {"countries": [{"value": "CA", "label": "Canada"}, {"value": "US", "label": "United States"}]}
+        return {"countries": _FALLBACK_COUNTRIES}
+    return {"countries": result}

@@ -81,7 +81,7 @@ export function CustomersTab() {
   const [signupSchema, setSignupSchema] = useState<any[]>([]);
   const [newCustomerExtras, setNewCustomerExtras] = useState<Record<string, string>>({});
   const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
-  const countries = useCountries(authUser?.partner_code || undefined);
+  const countries = useCountries();
 
   const STD_CREATE_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "line1", "line2", "city", "region", "postal", "country"];
 
