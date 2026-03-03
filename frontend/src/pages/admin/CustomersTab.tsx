@@ -20,6 +20,7 @@ import { FieldTip } from "./shared/FieldTip";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { getAddressConfig, parseSchema } from "@/components/FormSchemaBuilder";
 import { Textarea } from "@/components/ui/textarea";
+import { CustomerSignupFields } from "@/components/CustomerSignupFields";
 
 const PARTNER_MAP_OPTIONS = [
   { value: "", label: "Not set" },
@@ -80,6 +81,25 @@ export function CustomersTab() {
   const [newCustomerExtras, setNewCustomerExtras] = useState<Record<string, string>>({});
   const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
   const [countries, setCountries] = useState<{value:string;label:string}[]>([]);
+
+  const STD_CREATE_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "line1", "line2", "city", "region", "postal", "country"];
+
+  const handleCreateFieldChange = (key: string, value: string) => {
+    if (STD_CREATE_KEYS.includes(key)) {
+      if (key === "country") {
+        setNewCustomer(prev => ({ ...prev, country: value, region: "" }));
+      } else {
+        setNewCustomer(prev => ({ ...prev, [key]: value }));
+      }
+    } else {
+      setNewCustomerExtras(prev => ({ ...prev, [key]: value }));
+    }
+  };
+
+  const createValues: Record<string, string> = {
+    ...Object.fromEntries(Object.entries(newCustomer).map(([k, v]) => [k, String(v)])),
+    ...newCustomerExtras,
+  };
 
   // Fetch countries from taxes module on mount
   useEffect(() => {
@@ -461,166 +481,15 @@ export function CustomersTab() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            {/* Always-required auth fields */}
-            {[["Full Name", "full_name", true], ["Email", "email", true], ["Password", "password", true]].map(([label, key, req]) => (
-              <div key={key as string} className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">
-                  {label as string} {req && <span className="text-red-500">*</span>}
-                </label>
-                <Input
-                  type={key === "password" ? "password" : "text"}
-                  value={(newCustomer as any)[key as string]}
-                  onChange={e => setNewCustomer({ ...newCustomer, [key as string]: e.target.value })}
-                  data-testid={`create-customer-${key}`}
-                />
-              </div>
-            ))}
-
-            {/* Schema-driven optional fields */}
-            {(["company_name", "job_title", "phone"] as const).map(key => {
-              const f = signupSchema.find((s: any) => s.key === key);
-              if (f && f.enabled === false) return null;
-              const label = f?.label || (key === "company_name" ? "Company" : key === "job_title" ? "Job Title" : "Phone");
-              const required = f?.required ?? false;
-              return (
-                <div key={key} className="space-y-1">
-                  <label className="text-xs font-medium text-slate-600">
-                    {label} {required && <span className="text-red-500">*</span>}
-                  </label>
-                  <Input
-                    value={newCustomer[key]}
-                    onChange={e => setNewCustomer({ ...newCustomer, [key]: e.target.value })}
-                    data-testid={`create-customer-${key}`}
-                  />
-                </div>
-              );
-            })}
-
-            {/* Address block — driven by address_config from schema */}
-            {(() => {
-              const addrField = signupSchema.find((s: any) => s.key === "address");
-              if (addrField && addrField.enabled === false) return null;
-              const cfg = addrField ? getAddressConfig(addrField) : null;
-              const sf = (key: string) => cfg ? (cfg as any)[key] : { enabled: true, required: false };
-              return (
-                <div className="space-y-2 border-t border-slate-100 pt-3">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Address</p>
-                  {sf("line1").enabled && (
-                    <Input
-                      placeholder={`Line 1${sf("line1").required ? " *" : ""}`}
-                      value={newCustomer.line1}
-                      onChange={e => setNewCustomer({ ...newCustomer, line1: e.target.value })}
-                      data-testid="create-customer-line1"
-                    />
-                  )}
-                  {sf("line2").enabled && (
-                    <Input
-                      placeholder={`Line 2${sf("line2").required ? " *" : " (optional)"}`}
-                      value={newCustomer.line2}
-                      onChange={e => setNewCustomer({ ...newCustomer, line2: e.target.value })}
-                      data-testid="create-customer-line2"
-                    />
-                  )}
-                  {(sf("city").enabled || sf("postal").enabled) && (
-                    <div className="grid grid-cols-2 gap-2">
-                      {sf("city").enabled && (
-                        <Input
-                          placeholder={`City${sf("city").required ? " *" : ""}`}
-                          value={newCustomer.city}
-                          onChange={e => setNewCustomer({ ...newCustomer, city: e.target.value })}
-                          data-testid="create-customer-city"
-                        />
-                      )}
-                      {sf("postal").enabled && (
-                        <Input
-                          placeholder={`Postal${sf("postal").required ? " *" : ""}`}
-                          value={newCustomer.postal}
-                          onChange={e => setNewCustomer({ ...newCustomer, postal: e.target.value })}
-                          data-testid="create-customer-postal"
-                        />
-                      )}
-                    </div>
-                  )}
-                  {sf("country").enabled && (
-                    <SearchableSelect
-                      value={newCustomer.country || undefined}
-                      onValueChange={v => setNewCustomer({ ...newCustomer, country: v, region: "" })}
-                      options={countries.length ? countries : [{value:"Canada",label:"Canada"},{value:"USA",label:"United States"}]}
-                      placeholder={`Country${sf("country").required ? " *" : ""}…`}
-                      searchPlaceholder="Search country…"
-                      data-testid="create-customer-country"
-                    />
-                  )}
-                  {sf("state").enabled && (provinces.length > 0 ? (
-                    <Select value={newCustomer.region} onValueChange={v => setNewCustomer({ ...newCustomer, region: v })}>
-                      <SelectTrigger data-testid="create-customer-region-select">
-                        <SelectValue placeholder={`Province / State${sf("state").required ? " *" : ""}…`} />
-                      </SelectTrigger>
-                      <SelectContent>{provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      placeholder={`State / Province${sf("state").required ? " *" : ""}`}
-                      value={newCustomer.region}
-                      onChange={e => setNewCustomer({ ...newCustomer, region: e.target.value })}
-                      data-testid="create-customer-region"
-                    />
-                  ))}
-                </div>
-              );
-            })()}
-
-            {/* Custom extra fields from signup schema */}
-            {(() => {
-              const STANDARD = ["full_name", "email", "password", "company_name", "job_title", "phone", "address"];
-              const customFields = parseSchema(JSON.stringify(signupSchema)).filter(
-                f => !STANDARD.includes(f.key) && f.enabled !== false
-              );
-              if (!customFields.length) return null;
-              return (
-                <div className="space-y-2 border-t border-slate-100 pt-3">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Additional details</p>
-                  {customFields.map(field => (
-                    <div key={field.key} className="space-y-1">
-                      <label className="text-xs font-medium text-slate-600">
-                        {field.label} {field.required && <span className="text-red-500">*</span>}
-                      </label>
-                      {field.type === "textarea" ? (
-                        <Textarea
-                          value={newCustomerExtras[field.key] || ""}
-                          onChange={e => setNewCustomerExtras(p => ({ ...p, [field.key]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          rows={2}
-                          className="text-sm resize-none"
-                          required={field.required}
-                          data-testid={`create-customer-extra-${field.key}`}
-                        />
-                      ) : field.type === "select" ? (
-                        <Select value={newCustomerExtras[field.key] || ""} onValueChange={v => setNewCustomerExtras(p => ({ ...p, [field.key]: v }))}>
-                          <SelectTrigger data-testid={`create-customer-extra-${field.key}`}><SelectValue placeholder="Select…" /></SelectTrigger>
-                          <SelectContent>
-                            {(field.options || []).map(opt => {
-                              const [label, val] = opt.includes("|") ? opt.split("|") : [opt, opt];
-                              return <SelectItem key={val} value={val}>{label}</SelectItem>;
-                            })}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
-                          value={newCustomerExtras[field.key] || ""}
-                          onChange={e => setNewCustomerExtras(p => ({ ...p, [field.key]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                          data-testid={`create-customer-extra-${field.key}`}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-
+            <CustomerSignupFields
+              schema={parseSchema(JSON.stringify(signupSchema))}
+              values={createValues}
+              onChange={handleCreateFieldChange}
+              provinces={provinces}
+              countries={countries.length ? countries : [{ value: "Canada", label: "Canada" }, { value: "USA", label: "United States" }]}
+              showPassword={true}
+              compact={true}
+            />
             <Button onClick={handleCreateCustomer} className="w-full" data-testid="admin-create-customer-save-btn">Create Customer</Button>
           </div>
         </DialogContent>

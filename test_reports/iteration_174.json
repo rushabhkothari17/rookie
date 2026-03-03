@@ -1,0 +1,74 @@
+{
+  "summary": "Frontend-only testing of shared CustomerSignupFields component used on both /signup page and Admin Create Customer dialog. All 6 test scenarios verified: fields present in correct schema order, labels from schema, no cursor loss on typing, and customer creation succeeds.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100%"
+  },
+  "test_credentials": "Partner code: automate-accounts | Admin: admin@automateaccounts.local / ChangeMe123! | localStorage: aa_partner_code='automate-accounts' required for /signup",
+  "seed_data_creation": "Created test customer 'Test Customer 001' (testcustomer001@test.example.com) in admin panel during testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "CustomerSignupFields shared component is working correctly on both /signup page and Admin Create Customer dialog. Fields are in correct schema order (Full Name → Email → Password → Company Name → Job Title → Phone → Address), labels come from schema (not hardcoded), cursor retention works for all input fields (no focus loss), and customer creation via admin dialog succeeds. The /signup page requires localStorage key 'aa_partner_code'='automate-accounts' to be set BEFORE navigating to /signup (navigate to root first, set localStorage, then navigate to /signup).",
+  "verified_fixes": {
+    "signup_page_fields": {
+      "status": "VERIFIED",
+      "evidence": [
+        "Full Name field: data-testid='signup-field-full_name' - present and visible",
+        "Email field: data-testid='signup-email-input' - present and visible",
+        "Password field: data-testid='signup-password-input' - present and visible",
+        "Company Name field: data-testid='signup-field-company_name' - present and visible",
+        "Job Title field: data-testid='signup-field-job_title' - present and visible",
+        "Phone field: data-testid='signup-field-phone' - present and visible",
+        "Address section with Line 1, Line 2, City, State/Province, Postal, Country - all present",
+        "Field order: Full Name(y=267) → Email(y=267) → Password(y=335) → Company Name(y=335) → Job Title(y=440) → Phone(y=440) - correct schema order",
+        "Labels from schema (not hardcoded): FULL NAME, EMAIL ADDRESS, PASSWORD, COMPANY NAME, JOB TITLE, PHONE"
+      ]
+    },
+    "signup_cursor_focus": {
+      "status": "VERIFIED",
+      "evidence": [
+        "Full Name: typed 'John Doe', got 'John Doe' - NO cursor loss",
+        "Email: typed 'test@example.com', got 'test@example.com' - NO cursor loss",
+        "Password: typed 'TestPass1!', got 'TestPass1!' - NO cursor loss"
+      ]
+    },
+    "admin_create_customer_dialog_fields": {
+      "status": "VERIFIED",
+      "evidence": [
+        "All 6 fields present: Full Name, Email, Password, Company Name, Job Title, Phone",
+        "Address section present: Line 1*, Line 2 (optional), City*, State/Province, Postal*, Country*",
+        "Field order: Full Name(y=224) → Email(y=284) → Password(y=344) → Company Name(y=441) → Job Title(y=501) → Phone(y=561) - correct"
+      ]
+    },
+    "admin_create_customer_cursor_focus": {
+      "status": "VERIFIED",
+      "evidence": [
+        "Full Name: typed 'Test User Create', got 'Test User Create' - NO cursor loss",
+        "Email: typed 'testcreate@example.com', got 'testcreate@example.com' - NO cursor loss",
+        "Password: typed 'TestPass1!Secure', got 'TestPass1!Secure' - NO cursor loss"
+      ]
+    },
+    "admin_create_customer_success": {
+      "status": "VERIFIED",
+      "evidence": [
+        "Filled: Full Name='Test Customer 001', Email='testcustomer001@test.example.com', Password='TestPass1!Secure', Address Line 1='123 Test Street', City='Toronto', Postal='M5V 3A8', Country='Canada'",
+        "Toast: 'Customer created'",
+        "Dialog closed after creation",
+        "New customer 'Test Customer 001' appeared in customers table with Canada as country"
+      ]
+    }
+  }
+}

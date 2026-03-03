@@ -3,34 +3,15 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite, applyPartnerBranding } from "@/contexts/WebsiteContext";
-import { parseSchema, getAddressConfig, type FormField } from "@/components/FormSchemaBuilder";
+import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
+import { CustomerSignupFields } from "@/components/CustomerSignupFields";
 import { useCountries } from "@/hooks/useCountries";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { PartnerOrgForm, PartnerOrgFormValue, EMPTY_PARTNER_ORG } from "@/components/admin/PartnerOrgForm";
 import api from "@/lib/api";
-import { User, Building2, Mail, Lock, Phone, Briefcase, MapPin, ChevronRight, CheckCircle2, ChevronLeft, Copy, Check, DollarSign } from "lucide-react";
-
-const STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country", "address"];
-const LOCKED_STANDARD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "country", "address"];
-
-function FieldWrapper({ label, icon: Icon, children, fullWidth = false, required = false }: {
-  label: string; icon?: any; children: React.ReactNode; fullWidth?: boolean; required?: boolean;
-}) {
-  return (
-    <div className={`space-y-1.5 ${fullWidth ? "sm:col-span-2" : ""}`}>
-      <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-        {Icon && <Icon size={12} className="text-slate-400" />}
-        {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      {children}
-    </div>
-  );
-}
+import { ChevronRight, CheckCircle2, ChevronLeft, Copy, Check, DollarSign } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -43,7 +24,6 @@ export default function Signup() {
   const [partnerName, setPartnerName] = useState<string>("");
   const [partnerLogoUrl, setPartnerLogoUrl] = useState<string>("");
   const [partnerPrimaryColor, setPartnerPrimaryColor] = useState<string>("");
-  const [phoneError, setPhoneError] = useState("");
 
   // Countries/provinces from taxes module
   const countries = useCountries(partnerCode || undefined);
@@ -88,7 +68,7 @@ export default function Signup() {
       api.get(`/utils/provinces?country_code=${encodeURIComponent(country)}`).then(r => {
         setProvinces(r.data.regions || []);
         if (r.data.regions && !r.data.regions.find((p: any) => p.value === form.region || p.label === form.region)) {
-          handleChange("region", "");
+          handleFieldChange("region", "");
         }
       }).catch(() => setProvinces([]));
     } else {
@@ -96,33 +76,24 @@ export default function Signup() {
     }
   }, [form.country]);
 
-  const handleChange = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
-
   const schema: FormField[] = parseSchema(ws.signup_form_schema);
-  const customFields = schema.filter(f => !STANDARD_KEYS.includes(f.key) && f.enabled !== false);
 
-  const getFieldProp = (key: string, prop: "required" | "label" | "placeholder" | "enabled") => {
-    const f = schema.find(f => f.key === key);
-    if (!f) return prop === "required" ? false : prop === "enabled" ? true : "";
-    return f[prop];
-  };
+  const STD_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "line1", "line2", "city", "region", "postal", "country"];
 
-  const isFieldVisible = (key: string, defaultEnabled = true): boolean => {
-    if (schema.length === 0) return defaultEnabled;
-    const f = schema.find(f => f.key === key);
-    if (!f) {
-      // Standard locked fields default to visible even when not in schema
-      return LOCKED_STANDARD_KEYS.includes(key) ? defaultEnabled : false;
+  const handleFieldChange = (key: string, value: string) => {
+    if (STD_KEYS.includes(key)) {
+      if (key === "country") {
+        setForm(prev => ({ ...prev, country: value, region: "" }));
+      } else {
+        setForm(prev => ({ ...prev, [key]: value }));
+      }
+    } else {
+      setExtraFields(prev => ({ ...prev, [key]: value }));
     }
-    return f.enabled !== false;
   };
 
-  const validatePhone = (phone: string) => {
-    if (!phone) return "";
-    const clean = phone.replace(/[\s\-().+]/g, "");
-    if (!/^\d{7,15}$/.test(clean)) return "Enter a valid phone number (7–15 digits)";
-    return "";
-  };
+  // Combined values for the shared field component
+  const allValues: Record<string, string> = { ...form, ...extraFields };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -365,163 +336,15 @@ export default function Signup() {
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* Section: Personal Info */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-px flex-1 bg-slate-100" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Personal info</span>
-                  <div className="h-px flex-1 bg-slate-100" />
-                </div>
-              {/* Required field note */}
-              <p className="text-xs text-slate-400"><span className="text-red-500">*</span> Required field</p>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FieldWrapper label={(getFieldProp("full_name", "label") as string) || "Full name"} icon={User} required>
-                  <Input value={form.full_name} onChange={e => handleChange("full_name", e.target.value)} data-testid="signup-fullname-input" required />
-                </FieldWrapper>
-                {isFieldVisible("job_title") && (
-                  <FieldWrapper label={(getFieldProp("job_title", "label") as string) || "Job title"} icon={Briefcase} required={getFieldProp("job_title", "required") as boolean}>
-                    <Input value={form.job_title} onChange={e => handleChange("job_title", e.target.value)} data-testid="signup-jobtitle-input" required={getFieldProp("job_title", "required") as boolean} />
-                  </FieldWrapper>
-                )}
-                {isFieldVisible("company_name") && (
-                  <FieldWrapper label={(getFieldProp("company_name", "label") as string) || "Company name"} icon={Building2} required={getFieldProp("company_name", "required") as boolean}>
-                    <Input value={form.company_name} onChange={e => handleChange("company_name", e.target.value)} data-testid="signup-company-input" required={getFieldProp("company_name", "required") as boolean} />
-                  </FieldWrapper>
-                )}
-                {isFieldVisible("phone") && (
-                  <FieldWrapper label={(getFieldProp("phone", "label") as string) || "Phone"} icon={Phone} required={getFieldProp("phone", "required") as boolean}>
-                    <Input
-                      value={form.phone}
-                      onChange={e => { handleChange("phone", e.target.value); setPhoneError(validatePhone(e.target.value)); }}
-                      onBlur={e => setPhoneError(validatePhone(e.target.value))}
-                      data-testid="signup-phone-input"
-                      required={getFieldProp("phone", "required") as boolean}
-                      type="tel"
-                      placeholder="+1 (555) 000-0000"
-                    />
-                    {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
-                  </FieldWrapper>
-                )}
-              </div>
-              </div>
-
-              {/* Section: Account Details */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-px flex-1 bg-slate-100" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Account details</span>
-                  <div className="h-px flex-1 bg-slate-100" />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FieldWrapper label="Email address" icon={Mail} required>
-                    <Input type="email" value={form.email} onChange={e => handleChange("email", e.target.value)} data-testid="signup-email-input" required />
-                  </FieldWrapper>
-                  <FieldWrapper label="Password" icon={Lock} required>
-                    <Input type="password" value={form.password} onChange={e => handleChange("password", e.target.value)} data-testid="signup-password-input" required />
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      Min. 10 characters · at least one uppercase letter · one number · one special character (!@#$%^&*)
-                    </p>
-                  </FieldWrapper>
-                </div>
-              </div>
-
-              {/* Custom extra fields */}
-              {customFields.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-px flex-1 bg-slate-100" />
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Additional details</span>
-                    <div className="h-px flex-1 bg-slate-100" />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {customFields.map(field => (
-                      <FieldWrapper key={field.id} label={`${field.label}${field.required ? " *" : ""}`} fullWidth={field.type === "textarea"}>
-                        {field.type === "textarea" ? (
-                          <Textarea value={extraFields[field.key] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.key]: e.target.value }))} placeholder={field.placeholder} required={field.required} data-testid={`signup-extra-${field.key}`} />
-                        ) : field.type === "select" ? (
-                          <Select value={extraFields[field.key] || ""} onValueChange={v => setExtraFields(p => ({ ...p, [field.key]: v }))}>
-                            <SelectTrigger data-testid={`signup-extra-${field.key}`}><SelectValue placeholder="Select…" /></SelectTrigger>
-                            <SelectContent>
-                              {(field.options || []).map(opt => {
-                                const [label, val] = opt.includes("|") ? opt.split("|") : [opt, opt];
-                                return <SelectItem key={val} value={val}>{label}</SelectItem>;
-                              })}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Input type={field.type} value={extraFields[field.key] || ""} onChange={e => setExtraFields(p => ({ ...p, [field.key]: e.target.value }))} placeholder={field.placeholder} required={field.required} data-testid={`signup-extra-${field.key}`} />
-                        )}
-                      </FieldWrapper>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Section: Address */}
-              {isFieldVisible("address") && (() => {
-                const addrSchemaField = schema.find(f => f.key === "address");
-                const addrCfg = addrSchemaField ? getAddressConfig(addrSchemaField) : null;
-                const sf = (key: keyof NonNullable<typeof addrCfg>) =>
-                  addrCfg ? addrCfg[key] : { enabled: true, required: (getFieldProp("address", "required") as boolean) };
-                return (
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-px flex-1 bg-slate-100" />
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5"><MapPin size={11} />Address</span>
-                    <div className="h-px flex-1 bg-slate-100" />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {sf("line1").enabled && (
-                      <FieldWrapper label="Street address" fullWidth required={sf("line1").required}>
-                        <Input value={form.line1} onChange={e => handleChange("line1", e.target.value)} data-testid="signup-line1-input" required={sf("line1").required} />
-                      </FieldWrapper>
-                    )}
-                    {sf("line2").enabled && (
-                      <FieldWrapper label={`Address line 2${sf("line2").required ? "" : " (optional)"}`} fullWidth required={sf("line2").required}>
-                        <Input value={form.line2} onChange={e => handleChange("line2", e.target.value)} data-testid="signup-line2-input" required={sf("line2").required} />
-                      </FieldWrapper>
-                    )}
-                    {sf("city").enabled && (
-                      <FieldWrapper label="City" required={sf("city").required}>
-                        <Input value={form.city} onChange={e => handleChange("city", e.target.value)} data-testid="signup-city-input" required={sf("city").required} />
-                      </FieldWrapper>
-                    )}
-                    {sf("state").enabled && (
-                      <FieldWrapper label="State / Province" required={sf("state").required}>
-                        {provinces.length > 0 ? (
-                          <Select value={form.region} onValueChange={v => handleChange("region", v)}>
-                            <SelectTrigger data-testid="signup-region-select"><SelectValue placeholder="Select province / state" /></SelectTrigger>
-                            <SelectContent>
-                              {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Input value={form.region} onChange={e => handleChange("region", e.target.value)} data-testid="signup-region-input" required={sf("state").required} />
-                        )}
-                      </FieldWrapper>
-                    )}
-                    {sf("postal").enabled && (
-                      <FieldWrapper label="Postal / ZIP" required={sf("postal").required}>
-                        <Input value={form.postal} onChange={e => handleChange("postal", e.target.value)} data-testid="signup-postal-input" required={sf("postal").required} />
-                      </FieldWrapper>
-                    )}
-                    {sf("country").enabled && (
-                      <FieldWrapper label="Country" required={sf("country").required}>
-                        <Select value={form.country} onValueChange={v => handleChange("country", v)}>
-                          <SelectTrigger data-testid="signup-country-select"><SelectValue placeholder="Select country" /></SelectTrigger>
-                          <SelectContent>
-                            {countries.map(c => (
-                              <SelectItem key={c.value} value={c.value} data-testid={`signup-country-${c.value.toLowerCase()}`}>{c.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FieldWrapper>
-                    )}
-                  </div>
-                </div>
-                );
-              })()}
+              <CustomerSignupFields
+                schema={schema}
+                values={allValues}
+                onChange={handleFieldChange}
+                provinces={provinces}
+                countries={countries}
+                showPassword={true}
+                compact={false}
+              />
 
               <Button
                 type="submit"
