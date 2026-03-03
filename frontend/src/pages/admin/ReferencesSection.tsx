@@ -213,8 +213,11 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
       <div>
         <label className="text-xs text-slate-600 font-medium">Label</label>
         <Input value={draft.label || ""} onChange={(e) => {
-          const label = e.target.value;
-          setDraft({ ...draft, label, key: lockKey ? draft.key : slugify(label) });
+          setDraft({ ...draft, label: e.target.value });
+        }} onBlur={(e) => {
+          if (!lockKey && (!draft.key || draft.key === slugify((draft.label || "").slice(0, -1)))) {
+            setDraft({ ...draft, key: slugify(e.target.value) });
+          }
         }} placeholder="Contact Email" className="mt-0.5 h-8 text-sm" data-testid="ref-label-input" />
       </div>
       <div>
