@@ -22,7 +22,7 @@ export default function AppFooter() {
   const hasContact = ws.contact_email || ws.contact_phone || ws.contact_address;
 
   return (
-    <footer className="bg-slate-950 text-slate-400 mt-auto" data-testid="app-footer">
+    <footer className="text-slate-400 mt-auto" style={{ backgroundColor: "var(--aa-primary)" }} data-testid="app-footer">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
@@ -130,7 +130,7 @@ export default function AppFooter() {
 
         {/* Bottom bar */}
         {ws.footer_copyright && (
-          <div className="mt-10 pt-6 border-t border-slate-800">
+          <div className="mt-10 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
             <p className="text-xs text-slate-600" data-testid="footer-copyright">{ws.footer_copyright}</p>
           </div>
         )}
