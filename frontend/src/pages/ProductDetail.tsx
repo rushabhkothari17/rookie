@@ -340,9 +340,8 @@ export default function ProductDetail() {
     if (isRFQ) {
       // If scope has been unlocked, switch CTA to Add to cart with the unlocked price
       if (scopeUnlock) {
-        return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
+        return { label: `Add to cart — ${new Intl.NumberFormat("en-US", { style: "currency", currency: product?.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(scopeUnlock.price)}`, onClick: handleAddToCart };
       }
-      // Otherwise navigate to cart — the cart page has Scope ID unlock + Request a Quote
       return {
         label: "Proceed to checkout",
         onClick: () => {
@@ -368,7 +367,7 @@ export default function ProductDetail() {
     if (pricing?.is_enquiry || product.pricing_type === "enquiry") {
       // If a Scope ID has been validated, switch CTA to Add to cart with the unlocked price
       if (scopeUnlock) {
-        return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
+        return { label: `Add to cart — ${new Intl.NumberFormat("en-US", { style: "currency", currency: product?.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(scopeUnlock.price)}`, onClick: handleAddToCart };
       }
       return { label: "Proceed to checkout", onClick: handleScopeRequest };
     }

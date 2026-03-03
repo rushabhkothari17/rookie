@@ -1,0 +1,54 @@
+{
+  "summary": "Frontend-only testing of two bug fixes: (1) PromoCodesTab cursor disappear fix - PromoForm moved to module level, (2) Currency symbol hardcoded as '$' fix using Intl.NumberFormat with product.currency. All 4 test scenarios passed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iter173_04_promo_codes.jpeg",
+    "/app/test_reports/iter173_05_create_promo.jpeg",
+    "/app/test_reports/iter173_06_promo_code_input.jpeg",
+    "/app/test_reports/iter173_07_promo_note.jpeg",
+    "/app/test_reports/iter173_08_edit_promo.jpeg",
+    "/app/test_reports/iter173_09_products_currency.jpeg"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100%"
+  },
+  "test_credentials": "Partner code: automate-accounts | Admin: admin@automateaccounts.local / ChangeMe123!",
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Both bugs are fixed and verified. (1) PromoForm is at module level (PromoCodesTab.tsx line 22) - typing in Code input and Promo Note textarea retains all characters without cursor loss. Verified: 'TESTCODE' typed char-by-char in Code field, 'This is a test note' in textarea, 'NEWCODE' in edit dialog - all retained focus. (2) ProductsTab.tsx line 208 uses Intl.NumberFormat with product.currency - verified 'A$300' for AUD product (not '$300'), 'CA$199' for CAD product (not '$199'), '$2,499/$999/$1,999' for USD products. ProductDetail.tsx lines 343/370 code-reviewed confirmed using Intl.NumberFormat with product?.currency for CTA labels.",
+  "verified_fixes": {
+    "promo_code_cursor_fix": {
+      "status": "VERIFIED",
+      "evidence": [
+        "Code input: T→TE→TES→TEST→TESTC→TESTCODE (no character loss)",
+        "Promo Note textarea: T→Th→Thi→This is a test note (no character loss)",
+        "Edit dialog Code input: TEST→NEWCODE (select-all + retype works)"
+      ],
+      "fix_location": "PromoCodesTab.tsx line 22 - PromoForm defined at module level"
+    },
+    "currency_symbol_fix": {
+      "status": "VERIFIED",
+      "evidence": [
+        "Product2 (AUD): shows A$300 (not $300)",
+        "Sample Service (CAD): shows CA$199 (not $199)",
+        "Zoho CRM Express Setup (USD): shows $2,499 (correct)",
+        "Zoho Expense Setup (USD): shows $999 (correct)"
+      ],
+      "fix_location": "ProductsTab.tsx line 208 - Intl.NumberFormat with product.currency || 'USD'",
+      "product_detail_cta": "Code-verified at ProductDetail.tsx lines 343 and 370 - uses product?.currency || 'USD'"
+    }
+  }
+}

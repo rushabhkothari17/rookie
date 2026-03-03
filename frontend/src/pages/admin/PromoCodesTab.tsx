@@ -18,6 +18,65 @@ import { ColHeader } from "@/components/shared/ColHeader";
 
 const INITIAL_PROMO = { code: "", discount_type: "percent", discount_value: 10, applies_to: "both", applies_to_products: "all", product_ids: [] as string[], expiry_date: "", max_uses: "", one_time_code: false, enabled: true, promo_note: "" };
 
+// Defined OUTSIDE PromoCodesTab to prevent remount on every keystroke
+function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) => void, products: any[] }) {
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1"><label className="text-xs text-slate-500">Code</label><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase() })} /></div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1"><label className="text-xs text-slate-500">Discount Type</label>
+          <Select value={form.discount_type} onValueChange={v => setF({ ...form, discount_type: v })}>
+            <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="percent">Percent (%)</SelectItem><SelectItem value="fixed">Fixed ($)</SelectItem></SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1"><label className="text-xs text-slate-500">Value</label><Input type="number" value={form.discount_value} onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })} /></div>
+      </div>
+      <div className="space-y-1"><label className="text-xs text-slate-500">Applies To</label>
+        <Select value={form.applies_to} onValueChange={v => setF({ ...form, applies_to: v })}>
+          <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time only</SelectItem><SelectItem value="subscription">Subscription only</SelectItem></SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-1"><label className="text-xs text-slate-500">Product Eligibility</label>
+        <Select value={form.applies_to_products} onValueChange={v => setF({ ...form, applies_to_products: v, product_ids: v === "all" ? [] : form.product_ids })}>
+          <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All Products</SelectItem><SelectItem value="selected">Selected Products</SelectItem></SelectContent>
+        </Select>
+      </div>
+      {form.applies_to_products === "selected" && (
+        <div className="space-y-1"><label className="text-xs text-slate-500">Select Products</label>
+          <div className="max-h-40 overflow-y-auto border border-slate-200 rounded p-2 space-y-1">
+            {prods.map((p: any) => <div key={p.id} className="flex items-center gap-2"><input type="checkbox" checked={form.product_ids.includes(p.id)} onChange={e => setF({ ...form, product_ids: e.target.checked ? [...form.product_ids, p.id] : form.product_ids.filter((id: string) => id !== p.id) })} /><label className="text-xs">{p.name}</label></div>)}
+          </div>
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Expiry Date <FieldTip tip="The code stops working after this date at midnight UTC. Leave blank for no expiry." /></label><Input type="date" value={form.expiry_date} onChange={e => setF({ ...form, expiry_date: e.target.value })} /></div>
+        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Max Uses <FieldTip tip="Total number of redemptions allowed across all customers. Once reached, the code is automatically deactivated. Leave blank for unlimited uses." /></label><Input type="number" value={form.max_uses} onChange={e => setF({ ...form, max_uses: e.target.value })} /></div>
+      </div>
+      <div className="flex items-center gap-4">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={form.one_time_code} onChange={e => setF({ ...form, one_time_code: e.target.checked })} />
+          One-time per customer
+          <FieldTip tip="When enabled, each customer can only use this code once, even if the Max Uses total hasn't been reached." />
+        </label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.enabled} onChange={e => setF({ ...form, enabled: e.target.checked })} />Enabled</label>
+      </div>
+      <div className="space-y-1">
+        <label className="text-xs text-slate-500">Promo Note <span className="text-slate-400">(optional — shown to customer at checkout if filled)</span></label>
+        <Textarea
+          value={form.promo_note}
+          onChange={e => setF({ ...form, promo_note: e.target.value })}
+          placeholder="e.g. This code is part of the Zoho Partner Sponsorship Programme."
+          className="text-xs resize-none"
+          rows={2}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function PromoCodesTab() {
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
@@ -168,62 +227,6 @@ export function PromoCodesTab() {
       .then(r => r.blob()).then(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `promo-codes-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); })
       .catch(() => toast.error("Export failed"));
   };
-
-  const PromoForm = ({ form, setF, products: prods }: { form: any, setF: (v: any) => void, products: any[] }) => (
-    <div className="space-y-3">
-      <div className="space-y-1"><label className="text-xs text-slate-500">Code</label><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase() })} /></div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1"><label className="text-xs text-slate-500">Discount Type</label>
-          <Select value={form.discount_type} onValueChange={v => setF({ ...form, discount_type: v })}>
-            <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="percent">Percent (%)</SelectItem><SelectItem value="fixed">Fixed ($)</SelectItem></SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1"><label className="text-xs text-slate-500">Value</label><Input type="number" value={form.discount_value} onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })} /></div>
-      </div>
-      <div className="space-y-1"><label className="text-xs text-slate-500">Applies To</label>
-        <Select value={form.applies_to} onValueChange={v => setF({ ...form, applies_to: v })}>
-          <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time only</SelectItem><SelectItem value="subscription">Subscription only</SelectItem></SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-1"><label className="text-xs text-slate-500">Product Eligibility</label>
-        <Select value={form.applies_to_products} onValueChange={v => setF({ ...form, applies_to_products: v, product_ids: v === "all" ? [] : form.product_ids })}>
-          <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="all">All Products</SelectItem><SelectItem value="selected">Selected Products</SelectItem></SelectContent>
-        </Select>
-      </div>
-      {form.applies_to_products === "selected" && (
-        <div className="space-y-1"><label className="text-xs text-slate-500">Select Products</label>
-          <div className="max-h-40 overflow-y-auto border border-slate-200 rounded p-2 space-y-1">
-            {prods.map((p: any) => <div key={p.id} className="flex items-center gap-2"><input type="checkbox" checked={form.product_ids.includes(p.id)} onChange={e => setF({ ...form, product_ids: e.target.checked ? [...form.product_ids, p.id] : form.product_ids.filter((id: string) => id !== p.id) })} /><label className="text-xs">{p.name}</label></div>)}
-          </div>
-        </div>
-      )}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Expiry Date <FieldTip tip="The code stops working after this date at midnight UTC. Leave blank for no expiry." /></label><Input type="date" value={form.expiry_date} onChange={e => setF({ ...form, expiry_date: e.target.value })} /></div>
-        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Max Uses <FieldTip tip="Total number of redemptions allowed across all customers. Once reached, the code is automatically deactivated. Leave blank for unlimited uses." /></label><Input type="number" value={form.max_uses} onChange={e => setF({ ...form, max_uses: e.target.value })} /></div>
-      </div>
-      <div className="flex items-center gap-4">
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.one_time_code} onChange={e => setF({ ...form, one_time_code: e.target.checked })} />
-          One-time per customer
-          <FieldTip tip="When enabled, each customer can only use this code once, even if the Max Uses total hasn't been reached." />
-        </label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.enabled} onChange={e => setF({ ...form, enabled: e.target.checked })} />Enabled</label>
-      </div>
-      <div className="space-y-1">
-        <label className="text-xs text-slate-500">Promo Note <span className="text-slate-400">(optional — shown to customer at checkout if filled)</span></label>
-        <Textarea
-          value={form.promo_note}
-          onChange={e => setF({ ...form, promo_note: e.target.value })}
-          placeholder="e.g. This code is part of the Zoho Partner Sponsorship Programme."
-          className="text-xs resize-none"
-          rows={2}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-4" data-testid="promo-codes-tab">

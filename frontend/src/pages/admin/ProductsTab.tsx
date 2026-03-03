@@ -205,7 +205,7 @@ export function ProductsTab() {
                           {product.is_subscription ? "Subscription" : "One-time"}
                         </span>
                       </TableCell>
-                      <TableCell className="text-sm">{product.base_price ? `$${product.base_price}` : <span className="text-slate-400 text-xs">RFQ</span>}</TableCell>
+                      <TableCell className="text-sm">{product.base_price ? new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(product.base_price) : <span className="text-slate-400 text-xs">RFQ</span>}</TableCell>
                       <TableCell>
                         <span className={`text-xs px-2 py-0.5 rounded font-medium ${product.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                           {product.is_active ? "Active" : "Inactive"}
