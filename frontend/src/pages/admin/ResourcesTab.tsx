@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { ImportModal } from "@/components/admin/ImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,6 +144,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const [endDate, setEndDate] = useState("");
   const [modifiedFrom, setModifiedFrom] = useState("");
   const [modifiedTo, setModifiedTo] = useState("");
+  const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -188,6 +189,23 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
 
   // Build unique options for filters
   const uniquePartners = Array.from(new Set(resources.map(r => r.partner_code).filter(Boolean)));
+
+  // Apply client-side sorting
+  const displayResources = useMemo(() => {
+    if (!colSort) return resources;
+    return [...resources].sort((a, b) => {
+      let av: any = "", bv: any = "";
+      if (colSort.col === "created") { av = a.created_at || ""; bv = b.created_at || ""; }
+      else if (colSort.col === "modified") { av = a.updated_at || ""; bv = b.updated_at || ""; }
+      else if (colSort.col === "category") { av = a.category || ""; bv = b.category || ""; }
+      else if (colSort.col === "price") { av = parseFloat(a.price) || 0; bv = parseFloat(b.price) || 0; }
+      else if (colSort.col === "title") { av = a.title || ""; bv = b.title || ""; }
+      else if (colSort.col === "partner") { av = a.partner_code || ""; bv = b.partner_code || ""; }
+      if (av < bv) return colSort.dir === "asc" ? -1 : 1;
+      if (av > bv) return colSort.dir === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [resources, colSort]);
 
   useEffect(() => { load(1); }, [categoryFilter, searchFilter, startDate, endDate, modifiedFrom, modifiedTo, priceRange, partnerFilter]);
 
@@ -456,12 +474,12 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">ID</th>
-              <ColHeader label="Created" colKey="created" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
-              <ColHeader label="Modified" colKey="modified" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="date-range" filterValue={{ from: modifiedFrom, to: modifiedTo }} onFilter={v => { setModifiedFrom(v.from || ""); setModifiedTo(v.to || ""); setPage(1); }} onClearFilter={() => { setModifiedFrom(""); setModifiedTo(""); setPage(1); }} />
-              <ColHeader label="Category" colKey="category" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter([]); setPage(1); }} statusOptions={(dynamicCategories.length > 0 ? dynamicCategories : HARDCODED_CATEGORIES.map(c => ({ name: c }))).map((c: any) => [c.name, c.name] as [string, string])} />
-              <ColHeader label="Price" colKey="price" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} />
-              <ColHeader label="Title / Visible" colKey="title" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
-              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={undefined} sortDir={undefined} onSort={() => {}} onClearSort={() => {}} filterType="dropdown" filterValue={partnerFilter} onFilter={v => { setPartnerFilter(v); setPage(1); }} onClearFilter={() => { setPartnerFilter([]); setPage(1); }} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
+              <ColHeader label="Created" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
+              <ColHeader label="Modified" colKey="modified" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: modifiedFrom, to: modifiedTo }} onFilter={v => { setModifiedFrom(v.from || ""); setModifiedTo(v.to || ""); setPage(1); }} onClearFilter={() => { setModifiedFrom(""); setModifiedTo(""); setPage(1); }} />
+              <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter([]); setPage(1); }} statusOptions={(dynamicCategories.length > 0 ? dynamicCategories : HARDCODED_CATEGORIES.map(c => ({ name: c }))).map((c: any) => [c.name, c.name] as [string, string])} />
+              <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} />
+              <ColHeader label="Title / Visible" colKey="title" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
+              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerFilter} onFilter={v => { setPartnerFilter(v); setPage(1); }} onClearFilter={() => { setPartnerFilter([]); setPage(1); }} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
           </TableHeader>
@@ -470,11 +488,11 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
               <TableRow>
                 <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8 text-sm">Loading…</TableCell>
               </TableRow>
-            ) : resources.length === 0 ? (
+            ) : displayResources.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8 text-sm">No resources yet.</TableCell>
               </TableRow>
-            ) : resources.map((a) => (
+            ) : displayResources.map((a) => (
               <TableRow key={a.id} data-testid={`resource-row-${a.id}`}>
                 <TableCell className="font-mono text-xs text-slate-500">{a.id?.slice(0, 8)}</TableCell>
                 <TableCell className="text-xs text-slate-500 whitespace-nowrap">{a.created_at?.slice(0, 10)}</TableCell>
