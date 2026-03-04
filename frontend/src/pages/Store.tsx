@@ -42,6 +42,7 @@ export default function Store() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [configuredFilters, setConfiguredFilters] = useState<StoreFilter[]>([]);
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({});
+  const [priceInputs, setPriceInputs] = useState<Record<string, { min: string; max: string }>>({});
   const ws = useWebsite();
   const partnerCode = usePartnerCode();
 
@@ -110,6 +111,22 @@ export default function Store() {
       ...prev,
       [filterId]: prev[filterId] === value ? null : value,
     }));
+  };
+
+  const applyPriceFilter = (filterId: string) => {
+    const { min, max } = priceInputs[filterId] || { min: "", max: "" };
+    if (!min && !max) {
+      setActiveFilters(prev => ({ ...prev, [filterId]: null }));
+      return;
+    }
+    const minVal = min || "0";
+    const maxVal = max || "999999";
+    setActiveFilters(prev => ({ ...prev, [filterId]: `${minVal}-${maxVal}` }));
+  };
+
+  const clearPriceFilter = (filterId: string) => {
+    setPriceInputs(prev => ({ ...prev, [filterId]: { min: "", max: "" } }));
+    setActiveFilters(prev => ({ ...prev, [filterId]: null }));
   };
 
   const hasActiveFilters = Object.values(activeFilters).some(Boolean);
@@ -188,7 +205,7 @@ export default function Store() {
                   {hasActiveFilters && (
                     <button
                       type="button"
-                      onClick={() => setActiveFilters({})}
+                      onClick={() => { setActiveFilters({}); setPriceInputs({}); }}
                       className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 px-2"
                       data-testid="clear-filters-btn"
                     >
@@ -201,7 +218,86 @@ export default function Store() {
                         {filter.name}
                       </p>
                       <div className="space-y-0.5">
-                        {filter.filter_type === "category"
+                        {filter.filter_type === "price_range" ? (
+                          <div className="px-2 space-y-2" data-testid={`price-range-filter-${filter.id}`}>
+                            <div className="flex gap-1.5 items-center">
+                              <input
+                                type="number"
+                                min="0"
+                                placeholder="Min"
+                                value={priceInputs[filter.id]?.min || ""}
+                                onChange={e => setPriceInputs(prev => ({
+                                  ...prev,
+                                  [filter.id]: { ...prev[filter.id], min: e.target.value }
+                                }))}
+                                onKeyDown={e => e.key === "Enter" && applyPriceFilter(filter.id)}
+                                className="w-full rounded border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-slate-400"
+                                data-testid={`price-min-input-${filter.id}`}
+                              />
+                              <span className="text-slate-400 text-xs shrink-0">—</span>
+                              <input
+                                type="number"
+                                min="0"
+                                placeholder="Max"
+                                value={priceInputs[filter.id]?.max || ""}
+                                onChange={e => setPriceInputs(prev => ({
+                                  ...prev,
+                                  [filter.id]: { ...prev[filter.id], max: e.target.value }
+                                }))}
+                                onKeyDown={e => e.key === "Enter" && applyPriceFilter(filter.id)}
+                                className="w-full rounded border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-slate-400"
+                                data-testid={`price-max-input-${filter.id}`}
+                              />
+                            </div>
+                            <div className="flex gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => applyPriceFilter(filter.id)}
+                                className="flex-1 rounded py-1 text-xs font-medium text-white transition-colors"
+                                style={{ backgroundColor: "var(--aa-primary)" }}
+                                data-testid={`price-apply-btn-${filter.id}`}
+                              >
+                                Apply
+                              </button>
+                              {activeFilters[filter.id] && (
+                                <button
+                                  type="button"
+                                  onClick={() => clearPriceFilter(filter.id)}
+                                  className="rounded px-2 py-1 text-xs text-slate-400 hover:text-slate-600 border border-slate-200"
+                                  data-testid={`price-clear-btn-${filter.id}`}
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                            {activeFilters[filter.id] && (
+                              <p className="text-[10px] text-slate-400 px-0.5">
+                                Filtered: {activeFilters[filter.id]?.replace("-", " – ")}
+                              </p>
+                            )}
+                            {/* Also render any predefined buckets if admin configured them */}
+                            {filter.options.length > 0 && filter.options.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => toggleFilter(filter.id, opt.value)}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all text-left ${
+                                  activeFilters[filter.id] === opt.value
+                                    ? "font-semibold"
+                                    : "text-slate-600 hover:bg-slate-100"
+                                }`}
+                                style={activeFilters[filter.id] === opt.value ? { color: "var(--aa-primary)" } : undefined}
+                              >
+                                <span className="truncate">{opt.label}</span>
+                                {filter.show_count && (
+                                  <span className="text-xs text-slate-400 ml-1">
+                                    {countForOpt(filter, opt.value)}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        ) : filter.filter_type === "category"
                           ? categories.map(cat => (
                               <button
                                 key={cat.name}
