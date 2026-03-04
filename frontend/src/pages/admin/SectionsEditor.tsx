@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -142,7 +143,7 @@ export function SectionsEditor({
               <div className="px-3 pb-3 space-y-3 border-t border-slate-100 pt-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[11px] text-slate-500">Section Name <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="text-[11px] text-slate-500 font-normal">Section Name</RequiredLabel>
                     <Input
                       value={sec.name}
                       onChange={e => update(i, { name: e.target.value })}

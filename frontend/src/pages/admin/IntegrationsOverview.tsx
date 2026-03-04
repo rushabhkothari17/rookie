@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1150,7 +1151,7 @@ export function IntegrationsOverview() {
               <div className="border-t border-slate-100 px-5 py-5 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="text-xs font-semibold text-slate-600 block mb-1.5">Integration name <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="font-semibold text-slate-600 block mb-1.5">Integration name</RequiredLabel>
                     <Input
                       value={reqForm.integration_name}
                       onChange={e => setReqForm(f => ({ ...f, integration_name: e.target.value }))}
@@ -1170,7 +1171,7 @@ export function IntegrationsOverview() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-slate-600 block mb-1.5">Your email <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="font-semibold text-slate-600 block mb-1.5">Your email</RequiredLabel>
                     <Input
                       type="email"
                       value={reqForm.contact_email}

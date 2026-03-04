@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -321,7 +322,7 @@ export function AdminDocumentsTab() {
           <DialogHeader><DialogTitle>Upload Document</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-slate-600 mb-1 block">Customer <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-600 font-normal mb-1 block">Customer</RequiredLabel>
               <Popover open={custOpen} onOpenChange={(v) => { setCustOpen(v); if (v) fetchCustomers(""); }}>
                 <PopoverTrigger asChild>
                   <Button
@@ -375,7 +376,7 @@ export function AdminDocumentsTab() {
               </Popover>
             </div>
             <div>
-              <label className="text-xs text-slate-600 mb-1 block">File <span className="text-red-500">*</span> (max 5 MB)</label>
+              <RequiredLabel className="text-slate-600 font-normal mb-1 block" trailing=" (max 5 MB)">File</RequiredLabel>
               <input
                 ref={fileRef} type="file"
                 onChange={e => setUploadFile(e.target.files?.[0] || null)}

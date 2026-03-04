@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ImportModal } from "@/components/admin/ImportModal";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -549,7 +550,7 @@ export function SubscriptionsTab() {
         <DialogContent><DialogHeader><DialogTitle>Create Manual Subscription</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs text-slate-500">Customer Email <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-500 font-normal">Customer Email</RequiredLabel>
               <input
                 list="manual-sub-customers"
                 placeholder="customer@example.com"
@@ -564,7 +565,7 @@ export function SubscriptionsTab() {
                 ))}
               </datalist>
             </div>
-            <div className="space-y-1"><label className="text-xs text-slate-500">Product <span className="text-red-500">*</span></label>
+            <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Product</RequiredLabel>
               <SearchableSelect
                 value={manualSub.product_id || undefined}
                 onValueChange={v => {
@@ -579,13 +580,13 @@ export function SubscriptionsTab() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Start Date <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Start Date</RequiredLabel>
                 <Input type="date" value={manualSub.start_date}
                   onChange={e => setManualSub({ ...manualSub, start_date: e.target.value, renewal_date: computeNextBillingDate(e.target.value, manualSub.billing_interval) })}
                   data-testid="manual-sub-start-date" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Billing Interval <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Billing Interval</RequiredLabel>
                 <Select value={manualSub.billing_interval} onValueChange={v => setManualSub({ ...manualSub, billing_interval: v, renewal_date: computeNextBillingDate(manualSub.start_date, v) })}>
                   <SelectTrigger data-testid="manual-sub-billing-interval"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -595,9 +596,9 @@ export function SubscriptionsTab() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1"><label className="text-xs text-slate-500">Amount <span className="text-red-500">*</span></label><Input type="number" step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} /></div>
+              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Amount</RequiredLabel><Input type="number" step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} /></div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Currency <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Currency</RequiredLabel>
                 <Select value={manualSub.currency} onValueChange={v => setManualSub({ ...manualSub, currency: v })}>
                   <SelectTrigger className="w-full bg-white" data-testid="manual-sub-currency-select"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -613,7 +614,7 @@ export function SubscriptionsTab() {
                 <p className="text-[10px] text-slate-400">Auto-computed from start date + interval</p>
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Contract Term (months) <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Contract Term (months)</RequiredLabel>
                 <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={manualSub.term_months as string}
                   onChange={e => setManualSub({ ...manualSub, term_months: e.target.value })}
                   data-testid="manual-sub-term-months" />

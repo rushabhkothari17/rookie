@@ -15,7 +15,7 @@ from fastapi.responses import Response
 
 from core.config import STRIPE_API_KEY
 from core.helpers import make_id, now_iso
-from core.tenant import get_tenant_admin, tenant_id_of, DEFAULT_TENANT_ID
+from core.tenant import get_tenant_admin, get_tenant_super_admin, tenant_id_of, DEFAULT_TENANT_ID
 from db.session import db
 from services.audit_service import create_audit_log
 
@@ -173,13 +173,15 @@ async def download_partner_invoice(
     order_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    """Partner downloads a PDF invoice for one of their own orders."""
+    """Partner downloads a PDF invoice for one of their own orders. Only available for paid orders."""
     _require_non_platform(admin)
     tid = tenant_id_of(admin)
 
     order, partner_org, invoice_settings = await _load_invoice_data(order_id, tid)
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
+    if order.get("status") != "paid":
+        raise HTTPException(status_code=400, detail="Invoice is only available for paid orders")
 
     from services.invoice_service import generate_partner_invoice_pdf
     platform_name = invoice_settings.get("company_name") or "Automate Accounts"
@@ -228,7 +230,7 @@ async def view_partner_invoice_html(
 @router.post("/partner/billing-portal")
 async def create_billing_portal_session(
     request: Request,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     """
     Creates a Stripe Customer Portal session so the partner can manage their

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -92,11 +93,11 @@ function FilterFormModal({
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Filter Name <span className="text-red-500">*</span></label>
+            <RequiredLabel className="text-slate-600">Filter Name</RequiredLabel>
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Service Type, Price Range" data-testid="filter-name-input" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Filter Type <span className="text-red-500">*</span></label>
+            <RequiredLabel className="text-slate-600">Filter Type</RequiredLabel>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger data-testid="filter-type-select"><SelectValue /></SelectTrigger>
               <SelectContent>

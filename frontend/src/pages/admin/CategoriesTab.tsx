@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ImportModal } from "@/components/admin/ImportModal";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -195,7 +196,7 @@ export function CategoriesTab() {
         <DialogContent data-testid="admin-category-dialog">
           <DialogHeader><DialogTitle>{editCat ? "Edit Category" : "New Category"}</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
-            <div><label className="text-sm font-medium text-slate-700">Name <span className="text-red-500">*</span></label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1" data-testid="admin-category-name-input" /></div>
+            <div><RequiredLabel className="text-sm">Name</RequiredLabel><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1" data-testid="admin-category-name-input" /></div>
             <div><label className="text-sm font-medium text-slate-700">Description</label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="mt-1" data-testid="admin-category-desc-input" /></div>
             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4" data-testid="admin-category-active-switch" /><span className="text-sm">Active (visible on storefront)</span></label>
             <div className="flex gap-2 justify-end">

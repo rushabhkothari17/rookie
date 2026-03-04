@@ -887,10 +887,12 @@ async def admin_download_partner_invoice(
     order_id: str,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    """Platform admin downloads a PDF invoice for any partner order."""
+    """Platform admin downloads a PDF invoice for any partner order. Only available for paid orders."""
     order = await db.partner_orders.find_one({"id": order_id}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+    if order.get("status") != "paid":
+        raise HTTPException(status_code=400, detail="Invoice is only available for paid orders")
 
     partner_id = order.get("partner_id", "")
     partner_org = await db.tenants.find_one({"id": partner_id}, {"_id": 0}) or {}

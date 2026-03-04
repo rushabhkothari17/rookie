@@ -5,6 +5,7 @@
  * Page automatically appears in both places.
  */
 import { useState, useEffect } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -178,7 +179,7 @@ export function PartnerOrgForm({ value, onChange, currencies, schema = "", compa
       if (field.key === "org_name") {
         return (
           <div key={field.id} className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label} <span className="text-red-500">*</span></label>
+            <RequiredLabel className="font-semibold uppercase tracking-wide text-slate-500">{field.label}</RequiredLabel>
             <Input placeholder="Acme Accounting" value={value.name} onChange={e => setCore("name", e.target.value)} required data-testid={tid} />
             <p className="text-xs text-slate-400">Partner code will be auto-generated from this name.</p>
           </div>

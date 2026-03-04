@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   X, Plus, ChevronUp, ChevronDown, ChevronRight,
@@ -540,7 +540,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
               <>
                 {/* Label */}
                 <div>
-                  <label className="label-xs">Label <span className="text-red-500">*</span> <FieldTip tip="The question text shown to the customer. Changing the label auto-updates the Key field." side="right" /></label>
+                  <RequiredLabel className="label-xs" trailing={<FieldTip tip="The question text shown to the customer. Changing the label auto-updates the Key field." side="right" />}>Label</RequiredLabel>
                   <Input value={q.label}
                     onChange={e => onChange({ ...q, label: e.target.value })}
                     onBlur={e => { if (!q.key || q.key === labelToKey(q.label.slice(0, -1))) onChange({ ...q, key: labelToKey(e.target.value) }); }}

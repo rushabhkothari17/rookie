@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -247,7 +248,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-600 mb-1 block">Endpoint URL <span className="text-red-500">*</span></label>
+              <RequiredLabel className="font-semibold text-slate-600 mb-1 block">Endpoint URL</RequiredLabel>
               <Input
                 value={url} onChange={e => setUrl(e.target.value)}
                 placeholder="https://your-server.com/webhook" data-testid="webhook-url-input"

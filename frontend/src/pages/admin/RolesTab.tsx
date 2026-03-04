@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -230,7 +231,7 @@ export function RolesTab() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Role Name <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-600">Role Name</RequiredLabel>
               <Input
                 value={form.name}
                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))}

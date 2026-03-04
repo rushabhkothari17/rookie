@@ -1,5 +1,6 @@
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -165,20 +166,20 @@ export function ArticleEmailTemplatesTab() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Template Name <span className="text-red-500">*</span></label>
+                <RequiredLabel>Template Name</RequiredLabel>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Scope Delivery" data-testid="email-template-name-input" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Description <span className="text-red-500">*</span></label>
+                <RequiredLabel>Description</RequiredLabel>
                 <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description" data-testid="email-template-desc-input" />
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Subject <span className="text-red-500">*</span></label>
+              <RequiredLabel>Subject</RequiredLabel>
               <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Email subject line" data-testid="email-template-subject-input" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Email Body <span className="text-red-500">*</span></label>
+              <RequiredLabel>Email Body</RequiredLabel>
               <EmailBodyEditor value={form.html_body} onChange={(v) => setForm({ ...form, html_body: v })} />
             </div>
             <div className="flex justify-end gap-2 pt-2">

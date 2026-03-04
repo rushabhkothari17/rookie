@@ -5,7 +5,28 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Feb 2026) — RequiredLabel Component + Payment Method Move
+## Latest Updates (Feb 2026) — Super Admin Billing, Invoice Status, RequiredLabel Migration
+
+### Completed: All Plan Management Restricted to Partner Super Admin ✅
+- Changed all endpoints in `plan_management.py` from `get_tenant_admin` → `get_tenant_super_admin`
+- Billing portal (`/partner/billing-portal`) in `partner_billing_view.py` also restricted to super admin
+- Only `super_admin` / `partner_super_admin` can now view Plans & Billing, upgrade/downgrade, manage payment method
+
+### Completed: Invoice Only Available for Paid Orders ✅
+- Backend: `partner_billing_view.py` and `partner_billing.py` now return HTTP 400 if order status ≠ `paid`
+- Frontend: Download button hidden in `MyOrdersTab.tsx` and `PartnerOrdersTab.tsx` when `status !== "paid"`
+
+### Completed: Order Status on Invoice PDF ✅
+- `invoice_service.py` meta section now includes STATUS field showing order status (e.g. "PAID")
+
+### Completed: Full RequiredLabel Migration ✅
+- All `<label>...<span className="text-red-500">*</span></label>` patterns migrated to `<RequiredLabel>` across 30+ files
+- Component extended with `trailing` prop for elements (FieldTip, notes) placed after the asterisk
+- Files migrated: PlansTab, ResourceEmailTemplatesTab, PartnerSubscriptionsTab, ResourcesTab, ArticlesTab, TermsTab, ArticleCategoriesTab, ArticleTemplatesTab, ProductForm, ResourceCategoriesTab, RolesTab, PromoCodesTab, ArticleEmailTemplatesTab, WebhooksTab, ReferencesSection, CategoriesTab, TenantsTab, ResourceTemplatesTab, PartnerOrgForm, AdminDocumentsTab, OrdersTab, FiltersTab, SectionsEditor, TaxesTab (partial - keeps Shadcn Label), FormsManagementTab, IntegrationsOverview, EnquiriesTab, UsersTab, PartnerOrdersTab, SubscriptionsTab, IntakeSchemaBuilder, ProductDetail, Cart
+
+---
+
+## Previous Updates (Feb 2026) — RequiredLabel Component + Payment Method Move
 
 ### Completed: Global RequiredLabel Component ✅
 Created `/app/frontend/src/components/shared/RequiredLabel.tsx`:

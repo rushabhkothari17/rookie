@@ -140,15 +140,17 @@ export function MyOrdersTab() {
                 <td className="px-4 py-3 text-slate-500 text-xs">{o.due_date ? new Date(o.due_date).toLocaleDateString() : "—"}</td>
                 <td className="px-4 py-3 text-slate-500 text-xs">{o.paid_at ? new Date(o.paid_at).toLocaleDateString() : "—"}</td>
                 <td className="px-4 py-3 text-right">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    title="Download Invoice PDF"
-                    onClick={() => handleDownloadInvoice(o.id, o.order_number)}
-                    data-testid={`download-invoice-${o.id}`}
-                  >
-                    <Download className="h-4 w-4 text-slate-500" />
-                  </Button>
+                  {o.status === "paid" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      title="Download Invoice PDF"
+                      onClick={() => handleDownloadInvoice(o.id, o.order_number)}
+                      data-testid={`download-invoice-${o.id}`}
+                    >
+                      <Download className="h-4 w-4 text-slate-500" />
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}

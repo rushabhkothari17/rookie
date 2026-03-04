@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -216,7 +216,7 @@ export function EnquiriesTab() {
           <DialogHeader><DialogTitle>Create Manual Enquiry</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <label className="text-xs font-medium text-slate-600">Customer Email <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-600">Customer Email</RequiredLabel>
               <Input className="mt-1" placeholder="customer@example.com" value={newEnquiry.customer_email} onChange={e => setNewEnquiry(p => ({ ...p, customer_email: e.target.value }))} data-testid="enquiry-customer-email" />
             </div>
             <div>

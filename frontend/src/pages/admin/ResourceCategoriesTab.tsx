@@ -1,5 +1,6 @@
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { ImportModal } from "@/components/admin/ImportModal";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -207,7 +208,7 @@ export function ArticleCategoriesTab() {
           </DialogHeader>
           <div className="space-y-4 py-1">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Name <span className="text-red-500">*</span></label>
+              <RequiredLabel>Name</RequiredLabel>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -216,7 +217,7 @@ export function ArticleCategoriesTab() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Description <span className="text-red-500">*</span></label>
+              <RequiredLabel>Description</RequiredLabel>
               <Input
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}

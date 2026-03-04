@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -638,12 +639,12 @@ export function ProductForm({
         <div className={sectionCls}>
           <div className={cardCls}>
             <div>
-              <label className={labelCls}>Product Name <span className="text-red-500">*</span></label>
+              <RequiredLabel className={labelCls}>Product Name</RequiredLabel>
               <Input value={form.name} onChange={e => s("name")(e.target.value)} placeholder="Product name" data-testid="pf-name" />
             </div>
 
             <div>
-              <label className={labelCls}>Category <span className="text-red-500">*</span></label>
+              <RequiredLabel className={labelCls}>Category</RequiredLabel>
               <Select value={form.category || undefined} onValueChange={s("category")}>
                 <SelectTrigger data-testid="pf-category"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
@@ -653,7 +654,7 @@ export function ProductForm({
             </div>
 
             <div>
-              <label className={labelCls}>Page layout <span className="text-red-500">*</span> <span className="text-slate-400 normal-case font-normal tracking-normal text-xs">(how product detail page is rendered)</span></label>
+              <RequiredLabel className={labelCls} trailing={<span className="text-slate-400 normal-case font-normal tracking-normal text-xs">(how product detail page is rendered)</span>}>Page layout</RequiredLabel>
               <Select value={form.display_layout || "standard"} onValueChange={s("display_layout")}>
                 <SelectTrigger data-testid="pf-layout"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -708,7 +709,7 @@ export function ProductForm({
       {activeTab === "pricing" && (
         <div className={sectionCls}>
           <div>
-            <label className={labelCls}>Checkout type <span className="text-red-500">*</span></label>
+            <RequiredLabel className={labelCls}>Checkout type</RequiredLabel>
           </div>
           <PricingTypeSelector value={form.pricing_type || "internal"} onChange={s("pricing_type")} />
 
@@ -721,7 +722,7 @@ export function ProductForm({
               <div className={cardCls}>
                 {/* Billing type + Stripe Price ID — shown first */}
                 <div className="space-y-3 pb-5 border-b border-slate-100 mb-6">
-                  <label className={labelCls}>Billing type <span className="text-red-500">*</span> <FieldTip tip="One-time: customer pays once at checkout. Subscription: recurring charge at a set interval — requires a Stripe Price ID." /></label>
+                  <RequiredLabel className={labelCls} trailing={<FieldTip tip="One-time: customer pays once at checkout. Subscription: recurring charge at a set interval — requires a Stripe Price ID." />}>Billing type</RequiredLabel>
                   <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
                   {form.is_subscription && (
                     <>
@@ -761,7 +762,7 @@ export function ProductForm({
                     <p className="text-[11px] text-slate-400 mt-1">Leave 0 for free or intake-only pricing</p>
                   </div>
                   <div>
-                    <label className={labelCls}>Currency <span className="text-red-500">*</span></label>
+                    <RequiredLabel className={labelCls}>Currency</RequiredLabel>
                     <Select value={form.currency || "USD"} onValueChange={v => s("currency")(v)}>
                       <SelectTrigger data-testid="pf-currency"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -772,7 +773,7 @@ export function ProductForm({
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <div>
-                    <label className={labelCls}>Price rounding <span className="text-red-500">*</span> <FieldTip tip="Rounds the final calculated price up to the nearest value. Useful for clean pricing (e.g. £125 → £150 on 'nearest 50')." /></label>
+                    <RequiredLabel className={labelCls} trailing={<FieldTip tip="Rounds the final calculated price up to the nearest value. Useful for clean pricing (e.g. £125 → £150 on 'nearest 50')." />}>Price rounding</RequiredLabel>
                     <Select value={form.price_rounding || "none"} onValueChange={v => s("price_rounding")(v === "none" ? "" : v)}>
                       <SelectTrigger data-testid="pf-price-rounding"><SelectValue placeholder="No rounding" /></SelectTrigger>
                       <SelectContent>
@@ -784,7 +785,7 @@ export function ProductForm({
                     </Select>
                   </div>
                   <div>
-                    <label className={labelCls}>Show price breakdown <span className="text-red-500">*</span> <FieldTip tip="When enabled, customers see a line-by-line breakdown of how their total was calculated (e.g. Base £100 + 2 users × £25). Useful for complex intake-driven pricing." /></label>
+                    <RequiredLabel className={labelCls} trailing={<FieldTip tip="When enabled, customers see a line-by-line breakdown of how their total was calculated (e.g. Base £100 + 2 users × £25). Useful for complex intake-driven pricing." />}>Show price breakdown</RequiredLabel>
                     <Select value={form.show_price_breakdown ? "yes" : "no"} onValueChange={v => s("show_price_breakdown")(v === "yes")}>
                       <SelectTrigger data-testid="pf-show-breakdown"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -874,7 +875,7 @@ export function ProductForm({
           {/* Shared: T&C */}
           <div className={cardCls}>
             <div>
-              <label className={labelCls}>Terms & Conditions <span className="text-red-500">*</span> <FieldTip tip="The T&C document the customer must agree to before completing checkout for this product. Manage documents under Settings → Terms & Conditions." /></label>
+              <RequiredLabel className={labelCls} trailing={<FieldTip tip="The T&C document the customer must agree to before completing checkout for this product. Manage documents under Settings → Terms & Conditions." />}>Terms & Conditions</RequiredLabel>
               <Select value={form.terms_id || "default"} onValueChange={v => s("terms_id")(v === "default" ? "" : v)}>
                 <SelectTrigger data-testid="pf-terms"><SelectValue placeholder="Default T&C" /></SelectTrigger>
                 <SelectContent>
@@ -891,7 +892,7 @@ export function ProductForm({
       {activeTab === "visibility" && (
         <div className={sectionCls}>
           <div className={cardCls}>
-            <label className={labelCls}>Customer visibility <span className="text-red-500">*</span> <FieldTip tip="Controls which customers can see and purchase this product in your store. 'Conditional' lets you target by customer fields (country, company type, etc.)." /></label>
+            <RequiredLabel className={labelCls} trailing={<FieldTip tip="Controls which customers can see and purchase this product in your store. 'Conditional' lets you target by customer fields (country, company type, etc.)." />}>Customer visibility</RequiredLabel>
             <div className="space-y-2.5 mt-1">
               {([
                 ["all",              "All customers",                           null],

@@ -97,6 +97,7 @@ def generate_partner_invoice_pdf(
     currency = order.get("currency", "GBP")
     description = order.get("description") or "Subscription billing"
     plan_name = order.get("plan_name", "")
+    order_status = (order.get("status") or "").upper()
 
     partner_name = partner_org.get("name", order.get("partner_name", "—"))
     partner_addr = partner_org.get("address") or {}
@@ -157,6 +158,9 @@ def generate_partner_invoice_pdf(
         Spacer(1, 6),
         Paragraph("DUE DATE", label_style),
         Paragraph(due_date or payment_terms, body),
+        Spacer(1, 6),
+        Paragraph("STATUS", label_style),
+        Paragraph(f"<b>{order_status}</b>", body),
     ]
 
     meta_data = [[bill_to_lines, meta_lines]]

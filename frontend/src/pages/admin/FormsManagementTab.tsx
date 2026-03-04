@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -247,9 +248,7 @@ export function FormsManagementTab() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">
-                Form Name <span className="text-red-500">*</span>
-              </label>
+              <RequiredLabel className="font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">Form Name</RequiredLabel>
               <Input
                 value={formName}
                 onChange={e => setFormName(e.target.value)}

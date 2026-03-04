@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -187,7 +188,7 @@ function OrderFormModal({
         <div className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 col-span-2">
-              <label className="text-xs font-medium text-slate-600">Partner <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-600">Partner</RequiredLabel>
               <SearchableSelect
                 value={form.partner_id || undefined}
                 onValueChange={v => set("partner_id", v)}
@@ -217,12 +218,12 @@ function OrderFormModal({
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Description <span className="text-red-500">*</span></label>
+            <RequiredLabel className="text-slate-600">Description</RequiredLabel>
             <Input value={form.description} onChange={e => set("description", e.target.value)} placeholder="Platform access — March 2026" data-testid="order-description-input" />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2">
-              <label className="text-xs font-medium text-slate-600">Amount <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-600">Amount</RequiredLabel>
               <Input type="number" min={0} step="0.01" value={form.amount} onChange={e => set("amount", e.target.value)} data-testid="order-amount-input" />
             </div>
             <div className="space-y-1">
@@ -460,7 +461,9 @@ export function PartnerOrdersTab() {
                 <td className="px-4 py-3 text-slate-500 text-xs">{fmtDate(order.invoice_date)}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-1">
-                    <Button size="sm" variant="ghost" onClick={() => downloadInvoice(order.id, order.order_number, "admin/partner-orders")} title="Download Invoice" data-testid={`download-invoice-${order.id}`}><Download className="h-4 w-4 text-slate-500" /></Button>
+                    {order.status === "paid" && (
+                      <Button size="sm" variant="ghost" onClick={() => downloadInvoice(order.id, order.order_number, "admin/partner-orders")} title="Download Invoice" data-testid={`download-invoice-${order.id}`}><Download className="h-4 w-4 text-slate-500" /></Button>
+                    )}
                     <Button size="sm" variant="ghost" onClick={() => setEditOrder(order)} data-testid={`edit-order-${order.id}`}><Pencil className="h-4 w-4" /></Button>
                     <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600" onClick={() => setDeleteOrder(order)}><Trash2 className="h-4 w-4" /></Button>
                   </div>

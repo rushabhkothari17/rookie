@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -508,11 +509,11 @@ export function UsersTab() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Full Name <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Full Name</RequiredLabel>
                 <Input value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} placeholder="Jane Smith" data-testid="new-user-name" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Role <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Role</RequiredLabel>
                 <Select value={newUser.role} onValueChange={v => { setNewUser(p => ({ ...p, role: v, target_tenant_id: "" })); setNewUserPerms({}); setOrgHasSuperAdmin(false); }}>
                   <SelectTrigger data-testid="new-user-role"><SelectValue placeholder="Select role…" /></SelectTrigger>
                   <SelectContent>
@@ -528,7 +529,7 @@ export function UsersTab() {
             {/* Partner org picker — only for partner roles created by platform admin */}
             {PARTNER_ROLES.has(newUser.role) && isPlatformSuperAdmin && (
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Partner Org <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Partner Org</RequiredLabel>
                 <OrgPicker
                   value={newUser.target_tenant_id}
                   onChange={id => { setNewUser(p => ({ ...p, target_tenant_id: id })); checkOrgSuperAdmin(id); }}
@@ -546,11 +547,11 @@ export function UsersTab() {
             )}
 
             <div className="space-y-1">
-              <label className="text-xs text-slate-500">Email <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-500 font-normal">Email</RequiredLabel>
               <Input type="email" value={newUser.email} onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))} placeholder="jane@company.com" data-testid="new-user-email" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-slate-500">Temporary Password <span className="text-red-500">*</span></label>
+              <RequiredLabel className="text-slate-500 font-normal">Temporary Password</RequiredLabel>
               <Input type="password" value={newUser.password} onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))} placeholder="Min 10 chars, upper, lower, digit, symbol" data-testid="new-user-password" />
             </div>
 
@@ -590,7 +591,7 @@ export function UsersTab() {
           {editUser && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Full Name <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Full Name</RequiredLabel>
                 <Input value={editForm.full_name} onChange={e => setEditForm(p => ({ ...p, full_name: e.target.value }))} data-testid="admin-edit-user-name" />
               </div>
 

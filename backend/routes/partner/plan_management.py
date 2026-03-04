@@ -17,7 +17,7 @@ from pydantic import BaseModel
 import stripe as stripe_sdk
 
 from core.helpers import make_id, now_iso
-from core.tenant import get_tenant_admin, tenant_id_of, DEFAULT_TENANT_ID
+from core.tenant import get_tenant_super_admin, tenant_id_of, DEFAULT_TENANT_ID
 from core.config import STRIPE_API_KEY
 from db.session import db
 from services.audit_service import create_audit_log
@@ -73,7 +73,7 @@ def _tenant_matches_any_rule(tenant: dict, rules: list) -> bool:
 
 
 @router.get("/partner/my-plan")
-async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+async def get_my_plan(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
     """Return current plan info, active subscription, and available plans (visibility-filtered, FX-converted)."""
     tid = tenant_id_of(admin)
     tenant = await db.tenants.find_one({"id": tid}, {"_id": 0})
@@ -215,7 +215,7 @@ class UpgradePlanRequest(BaseModel):
 async def upgrade_plan(
     payload: UpgradePlanRequest,
     request: Request,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     """
     Self-service plan upgrade.  When the pro-rata amount is > 0 the partner
@@ -438,7 +438,7 @@ async def upgrade_plan(
 @router.get("/partner/upgrade-plan-status")
 async def upgrade_plan_status(
     session_id: str,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     """Poll after returning from Stripe Checkout to confirm plan activation."""
     tid = tenant_id_of(admin)
@@ -512,7 +512,7 @@ class SubmissionCreate(BaseModel):
 @router.post("/partner/submissions")
 async def create_submission(
     payload: SubmissionCreate,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     tid = tenant_id_of(admin)
     tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "license": 1, "name": 1})
@@ -557,7 +557,7 @@ async def create_submission(
 # ---------------------------------------------------------------------------
 
 @router.get("/partner/submissions")
-async def list_my_submissions(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+async def list_my_submissions(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
     tid = tenant_id_of(admin)
     items = await db.partner_submissions.find(
         {"partner_id": tid}, {"_id": 0}
@@ -570,7 +570,7 @@ async def list_my_submissions(admin: Dict[str, Any] = Depends(get_tenant_admin))
 # ---------------------------------------------------------------------------
 
 @router.get("/partner/one-time-rates")
-async def get_one_time_rates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+async def get_one_time_rates(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
     """Return active one-time upgrade rates, prices converted to partner's base currency."""
     from services.checkout_service import get_fx_rate, get_tenant_base_currency
     tid = tenant_id_of(admin)
@@ -645,7 +645,7 @@ class OngoingUpgradeRequest(BaseModel):
 async def upgrade_plan_ongoing(
     payload: OngoingUpgradeRequest,
     request: Request,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     """
     Upgrade to a higher plan.  Charges the FLAT monthly difference between
@@ -780,7 +780,7 @@ class OneTimeUpgradeRequest(BaseModel):
 async def one_time_upgrade(
     payload: OneTimeUpgradeRequest,
     request: Request,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     """Buy extra per-module limits for the current billing cycle.  Resets on renewal."""
     from services.checkout_service import get_fx_rate
@@ -914,7 +914,7 @@ async def one_time_upgrade(
 @router.get("/partner/one-time-upgrade-status")
 async def one_time_upgrade_status(
     session_id: str,
-    admin: Dict[str, Any] = Depends(get_tenant_admin),
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
 ):
     tid = tenant_id_of(admin)
     upgrade = await db.one_time_upgrades.find_one(
@@ -949,7 +949,7 @@ async def one_time_upgrade_status(
 
 
 @router.post("/partner/cancel-pending-upgrade")
-async def cancel_pending_upgrade(admin: Dict[str, Any] = Depends(get_tenant_admin)):
+async def cancel_pending_upgrade(admin: Dict[str, Any] = Depends(get_tenant_super_admin)):
     """Let the partner dismiss/cancel any stale pending_payment upgrade order (ongoing or one-time)."""
     tid = tenant_id_of(admin)
     result = await db.partner_orders.update_one(

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -454,11 +455,11 @@ export default function ProductDetail() {
               return (
                 <>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Your Name <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="text-sm">Your Name</RequiredLabel>
                     <Input value={quoteFormData.name || ""} onChange={e => setQuoteFormData(p => ({ ...p, name: e.target.value }))} placeholder="Full name" data-testid="quote-name" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Email <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="text-sm">Email</RequiredLabel>
                     <Input type="email" value={quoteFormData.email || ""} onChange={e => setQuoteFormData(p => ({ ...p, email: e.target.value }))} placeholder="your@email.com" data-testid="quote-email" />
                   </div>
                   <div className="space-y-1">
@@ -512,15 +513,15 @@ export default function ProductDetail() {
               return (
                 <>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Project Summary <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="text-sm">Project Summary</RequiredLabel>
                     <Textarea placeholder="Describe your project..." value={scopeFormData.project_summary || ""} onChange={e => setScopeFormData(p => ({ ...p, project_summary: e.target.value }))} data-testid="scope-project-summary" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Desired Outcomes <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="text-sm">Desired Outcomes</RequiredLabel>
                     <Textarea placeholder="What do you want to achieve?" value={scopeFormData.desired_outcomes || ""} onChange={e => setScopeFormData(p => ({ ...p, desired_outcomes: e.target.value }))} data-testid="scope-desired-outcomes" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Apps Involved <span className="text-red-500">*</span></label>
+                    <RequiredLabel className="text-sm">Apps Involved</RequiredLabel>
                     <Input placeholder="e.g., CRM, accounting, email..." value={scopeFormData.apps_involved || ""} onChange={e => setScopeFormData(p => ({ ...p, apps_involved: e.target.value }))} data-testid="scope-apps-involved" />
                   </div>
                 </>

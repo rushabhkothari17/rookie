@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -486,15 +487,15 @@ export function TenantsTab() {
           <form onSubmit={handleCreateAdmin} className="space-y-3 mt-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Full Name <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Full Name</RequiredLabel>
                 <Input value={newAdmin.full_name} onChange={e => setNewAdmin(p => ({ ...p, full_name: e.target.value }))} required data-testid="new-admin-name" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Email <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Email</RequiredLabel>
                 <Input type="email" value={newAdmin.email} onChange={e => setNewAdmin(p => ({ ...p, email: e.target.value }))} required data-testid="new-admin-email" />
               </div>
               <div className="space-y-1 col-span-2">
-                <label className="text-xs text-slate-500">Password <span className="text-red-500">*</span></label>
+                <RequiredLabel className="text-slate-500 font-normal">Password</RequiredLabel>
                 <Input type="password" value={newAdmin.password} onChange={e => setNewAdmin(p => ({ ...p, password: e.target.value }))} required data-testid="new-admin-password" />
               </div>
               <div className="space-y-1 col-span-2">

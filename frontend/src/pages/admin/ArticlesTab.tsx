@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ImportModal } from "@/components/admin/ImportModal";
+import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -540,7 +541,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Title <span className="text-red-500">*</span></label>
+                <RequiredLabel>Title</RequiredLabel>
                 <Input
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -563,7 +564,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Category <span className="text-red-500">*</span></label>
+                <RequiredLabel>Category</RequiredLabel>
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v, price: SCOPE_FINAL.has(v) ? form.price : "" })}>
                   <SelectTrigger data-testid="article-category-select">
                     <SelectValue placeholder="Select category" />
@@ -577,7 +578,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
               </div>
               {SCOPE_FINAL.has(form.category) && (
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Price <span className="text-red-500">*</span> <span className="text-slate-400">(required for Scope - Final)</span></label>
+                  <RequiredLabel hint="required for Scope - Final">Price</RequiredLabel>
                   <Input
                     type="number"
                     min="0"
@@ -682,7 +683,7 @@ export function ArticlesTab({ editArticleId }: ArticlesTabProps) {
             {/* To field */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-slate-700">To <span className="text-red-500">*</span></label>
+                <RequiredLabel>To</RequiredLabel>
                 <button type="button" onClick={() => setShowCcBcc(v => !v)} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-0.5">
                   CC / BCC <ChevronDown size={12} className={`transition-transform ${showCcBcc ? "rotate-180" : ""}`} />
                 </button>
