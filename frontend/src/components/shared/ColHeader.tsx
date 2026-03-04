@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type SortDirection = "asc" | "desc";
 
@@ -67,7 +68,7 @@ export function ColHeader({
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent className={`${filterType === "dropdown" ? "w-60" : "w-52"} p-3 space-y-3`} align="start" side="bottom">
+        <PopoverContent className={`${filterType === "dropdown" ? "w-60" : filterType === "number-range" && currencyOptions ? "w-56" : "w-52"} p-3 space-y-3`} align="start" side="bottom">
           <div>
             <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1.5">Sort</p>
             <div className="flex flex-col gap-0.5">
@@ -153,16 +154,20 @@ export function ColHeader({
                     {currencyOptions && currencyOptions.length > 0 && (
                       <div>
                         <p className="text-[10px] text-slate-400 mb-0.5">Currency</p>
-                        <select
-                          className="w-full h-7 text-xs rounded border border-slate-200 px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                          value={filterValue?.currency || ""}
-                          onChange={e => onFilter && onFilter({ ...filterValue, currency: e.target.value || undefined })}
+                        <Select
+                          value={filterValue?.currency || "__any__"}
+                          onValueChange={val => onFilter && onFilter({ ...filterValue, currency: val === "__any__" ? undefined : val })}
                         >
-                          <option value="">Any currency</option>
-                          {currencyOptions.map(([val, lbl]) => (
-                            <option key={val} value={val}>{lbl}</option>
-                          ))}
-                        </select>
+                          <SelectTrigger className="h-7 text-xs w-full">
+                            <SelectValue placeholder="Any currency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__any__">Any currency</SelectItem>
+                            {currencyOptions.map(([val, lbl]) => (
+                              <SelectItem key={val} value={val}>{lbl}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
                     <Input className="h-7 text-xs" type="number" placeholder="Min" value={filterValue?.min || ""} onChange={e => onFilter && onFilter({ ...filterValue, min: e.target.value })} />
