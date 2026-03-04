@@ -59,6 +59,7 @@ export interface ProductFormData {
   enquiry_form_id: string;
   default_term_months: string;
   billing_type: string;
+  tags: string[];
 }
 
 type TabKey = "general" | "storecard" | "pricing" | "visibility" | "content";
@@ -86,6 +87,7 @@ export const EMPTY_FORM: ProductFormData = {
   enquiry_form_id: "",
   default_term_months: "",
   billing_type: "prorata",
+  tags: [],
 };
 
 // ── Style tokens (light theme — matches admin panel) ───────────────────────────
@@ -562,6 +564,7 @@ export function ProductForm({
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [visSearch, setVisSearch] = useState("");
   const [availableForms, setAvailableForms] = useState<Array<{ id: string; name: string }>>([]);
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (form.pricing_type === "enquiry") {
@@ -678,6 +681,76 @@ export function ProductForm({
 
           <div className={cardCls}>
             <Toggle checked={form.is_active} onChange={s("is_active")} label="Active" note="(visible on storefront)" testId="pf-active" />
+          </div>
+
+          {/* Tags */}
+          <div className={cardCls}>
+            <div>
+              <label className={labelCls}>
+                Filter Tags
+                <span className="ml-1.5 text-slate-400 normal-case font-normal tracking-normal text-xs">
+                  — used by Custom filters on the store
+                </span>
+              </label>
+              <p className="text-xs text-slate-400 mb-2">
+                Add tags that match the <strong>Values</strong> you set in Custom filter options. When a customer selects a filter option, only products with that tag will appear.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={e => {
+                    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
+                      e.preventDefault();
+                      const tag = tagInput.trim().replace(/,$/, "");
+                      if (tag && !(form.tags || []).includes(tag)) {
+                        s("tags")([...(form.tags || []), tag]);
+                      }
+                      setTagInput("");
+                    }
+                  }}
+                  placeholder='Type a tag and press Enter (e.g. "express")'
+                  className="text-sm"
+                  data-testid="pf-tag-input"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const tag = tagInput.trim();
+                    if (tag && !(form.tags || []).includes(tag)) {
+                      s("tags")([...(form.tags || []), tag]);
+                    }
+                    setTagInput("");
+                  }}
+                  className="shrink-0"
+                  data-testid="pf-tag-add-btn"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              {(form.tags || []).length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2" data-testid="pf-tags-list">
+                  {(form.tags || []).map(tag => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => s("tags")((form.tags || []).filter(t => t !== tag))}
+                        className="text-slate-400 hover:text-slate-700 transition-colors"
+                        data-testid={`pf-tag-remove-${tag}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

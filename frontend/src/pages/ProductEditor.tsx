@@ -108,6 +108,7 @@ export default function ProductEditor() {
       enquiry_form_id: p.enquiry_form_id || "",
       default_term_months: p.default_term_months ? String(p.default_term_months) : "",
       billing_type: p.billing_type || "prorata",
+      tags: p.tags || [],
     };
   };
 
@@ -158,6 +159,7 @@ export default function ProductEditor() {
         enquiry_form_id: form.enquiry_form_id || null,
         default_term_months: form.default_term_months ? parseInt(form.default_term_months) : null,
         billing_type: form.billing_type || "prorata",
+        tags: form.tags || [],
       };
 
       if (isNew) {

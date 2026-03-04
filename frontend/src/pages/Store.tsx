@@ -21,11 +21,12 @@ type StoreFilter = {
 type SortOption = "default" | "name_asc" | "name_desc" | "price_asc" | "price_desc";
 
 function matchesFilter(product: any, filterType: string, value: string): boolean {
-  if (filterType === "category" || filterType === "custom") {
+  if (filterType === "category") {
     return displayCategory(product.category).toLowerCase() === value.toLowerCase()
       || (product.category || "").toLowerCase().includes(value.toLowerCase());
   }
-  if (filterType === "tag") {
+  if (filterType === "tag" || filterType === "custom") {
+    // Both tag and custom filters match against product.tags
     const tags: string[] = product.tags || [];
     return tags.some(t => t.toLowerCase() === value.toLowerCase());
   }

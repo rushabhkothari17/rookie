@@ -264,6 +264,7 @@ class AdminProductUpdate(BaseModel):
     enquiry_form_id: Optional[str] = None
     default_term_months: Optional[int] = None
     billing_type: Optional[str] = None  # "prorata" | "fixed"
+    tags: Optional[List[str]] = None
 
 
 class AdminCustomerPaymentUpdate(BaseModel):

@@ -119,6 +119,18 @@ function FilterFormModal({
             </div>
           )}
 
+          {(type === "custom" || type === "tag") && (
+            <div className="bg-amber-50 rounded-lg p-3 text-xs text-amber-800 space-y-1">
+              <p className="font-semibold">How to associate products with this filter:</p>
+              <ol className="list-decimal list-inside space-y-1 text-amber-700">
+                <li>Add option(s) below — e.g. Label: <strong>"Express"</strong>, Value: <strong>"express"</strong></li>
+                <li>Open each product in the catalog editor → <strong>General</strong> tab → <strong>Filter Tags</strong></li>
+                <li>Add the tag value (e.g. <code className="bg-amber-100 px-1 rounded">express</code>) to that product</li>
+              </ol>
+              <p className="text-amber-600 mt-1">When a customer selects "Express", only products tagged <code className="bg-amber-100 px-1 rounded">express</code> will show.</p>
+            </div>
+          )}
+
           {needsOptions && (
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600">Options</label>
