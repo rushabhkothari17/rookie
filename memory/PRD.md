@@ -5,7 +5,28 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (March 4, 2026) — Bug Fixes
+## Latest Updates (March 4, 2026) — Form Validation & Enquiry Creation
+
+### Completed: Mandatory Field Validation Across All Admin Forms ✅
+Added validation (toast.error + early return) to:
+- **Users** (new/edit): Full Name required
+- **Promo Codes** (new/edit): Code, Discount type, Value, Applies to, Product eligibility, Expiry date
+- **ProductEditor**: Category, Checkout type, Terms & conditions
+- **Terms** (new/edit): Title, Content
+- **Filters**: Filter type
+- **Manual Subscription**: Customer email, Product, Start date, Billing interval, Amount, Currency, Contract term
+- **Manual Order**: Customer email, Product, Currency, Status
+- **Resources**: Content
+- **Templates**: Default category, Description, Content
+- **Email Templates**: Description, Email body
+- **Resource Categories**: Description
+- **References**: Value
+
+### Completed: Create Manual Enquiry Button + Dialog ✅
+- Backend: `POST /api/admin/enquiries/manual` in `orders.py` (validates customer email exists in DB, creates ENQ-XXXX record)
+- Frontend: "Create Enquiry" button in EnquiriesTab header → opens dialog with Customer Email (required), Product (optional), Notes (optional)
+
+
 
 ### Completed: Footer Full-Width Fix ✅
 - **Problem**: Admin panel footer was constrained inside `aa-container` (max-width + padding), not spanning full viewport width.
