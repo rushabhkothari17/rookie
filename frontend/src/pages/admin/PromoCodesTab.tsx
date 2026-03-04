@@ -22,23 +22,23 @@ const INITIAL_PROMO = { code: "", discount_type: "percent", discount_value: 10, 
 function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) => void, products: any[] }) {
   return (
     <div className="space-y-3">
-      <div className="space-y-1"><label className="text-xs text-slate-500">Code <span className="text-red-400">*</span></label><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase() })} /></div>
+      <div className="space-y-1"><label className="text-xs text-slate-500">Code <span className="text-red-500">*</span></label><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase() })} /></div>
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1"><label className="text-xs text-slate-500">Discount Type <span className="text-red-400">*</span></label>
+        <div className="space-y-1"><label className="text-xs text-slate-500">Discount Type <span className="text-red-500">*</span></label>
           <Select value={form.discount_type} onValueChange={v => setF({ ...form, discount_type: v })}>
             <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
             <SelectContent><SelectItem value="percent">Percent (%)</SelectItem><SelectItem value="fixed">Fixed ($)</SelectItem></SelectContent>
           </Select>
         </div>
-        <div className="space-y-1"><label className="text-xs text-slate-500">Value <span className="text-red-400">*</span></label><Input type="number" value={form.discount_value} onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })} /></div>
+        <div className="space-y-1"><label className="text-xs text-slate-500">Value <span className="text-red-500">*</span></label><Input type="number" value={form.discount_value} onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })} /></div>
       </div>
-      <div className="space-y-1"><label className="text-xs text-slate-500">Applies To <span className="text-red-400">*</span></label>
+      <div className="space-y-1"><label className="text-xs text-slate-500">Applies To <span className="text-red-500">*</span></label>
         <Select value={form.applies_to} onValueChange={v => setF({ ...form, applies_to: v })}>
           <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
           <SelectContent><SelectItem value="both">Both</SelectItem><SelectItem value="one-time">One-time only</SelectItem><SelectItem value="subscription">Subscription only</SelectItem></SelectContent>
         </Select>
       </div>
-      <div className="space-y-1"><label className="text-xs text-slate-500">Product Eligibility <span className="text-red-400">*</span></label>
+      <div className="space-y-1"><label className="text-xs text-slate-500">Product Eligibility <span className="text-red-500">*</span></label>
         <Select value={form.applies_to_products} onValueChange={v => setF({ ...form, applies_to_products: v, product_ids: v === "all" ? [] : form.product_ids })}>
           <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
           <SelectContent><SelectItem value="all">All Products</SelectItem><SelectItem value="selected">Selected Products</SelectItem></SelectContent>
@@ -52,7 +52,7 @@ function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) 
         </div>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Expiry Date <span className="text-red-400">*</span> <FieldTip tip="The code stops working after this date at midnight UTC. Leave blank for no expiry." /></label><Input type="date" value={form.expiry_date} onChange={e => setF({ ...form, expiry_date: e.target.value })} /></div>
+        <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Expiry Date <span className="text-red-500">*</span> <FieldTip tip="The code stops working after this date at midnight UTC. Leave blank for no expiry." /></label><Input type="date" value={form.expiry_date} onChange={e => setF({ ...form, expiry_date: e.target.value })} /></div>
         <div className="space-y-1"><label className="text-xs text-slate-500 flex items-center gap-1">Max Uses <FieldTip tip="Total number of redemptions allowed across all customers. Once reached, the code is automatically deactivated. Leave blank for unlimited uses." /></label><Input type="number" value={form.max_uses} onChange={e => setF({ ...form, max_uses: e.target.value })} /></div>
       </div>
       <div className="flex items-center gap-4">

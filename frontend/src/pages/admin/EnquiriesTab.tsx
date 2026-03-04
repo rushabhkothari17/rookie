@@ -216,11 +216,11 @@ export function EnquiriesTab() {
           <DialogHeader><DialogTitle>Create Manual Enquiry</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <label className="text-sm font-medium">Customer Email <span className="text-red-500">*</span></label>
+              <label className="text-xs font-medium text-slate-600">Customer Email <span className="text-red-500">*</span></label>
               <Input className="mt-1" placeholder="customer@example.com" value={newEnquiry.customer_email} onChange={e => setNewEnquiry(p => ({ ...p, customer_email: e.target.value }))} data-testid="enquiry-customer-email" />
             </div>
             <div>
-              <label className="text-sm font-medium">Product</label>
+              <label className="text-xs font-medium text-slate-600">Product</label>
               <Select value={newEnquiry.product_id || "__none__"} onValueChange={v => setNewEnquiry(p => ({ ...p, product_id: v === "__none__" ? "" : v }))}>
                 <SelectTrigger className="mt-1" data-testid="enquiry-product-select"><SelectValue placeholder="Select product (optional)" /></SelectTrigger>
                 <SelectContent>
@@ -230,7 +230,7 @@ export function EnquiriesTab() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Notes</label>
+              <label className="text-xs font-medium text-slate-600">Notes</label>
               <textarea className="mt-1 w-full min-h-[80px] text-sm border border-input rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Additional notes or message…" value={newEnquiry.notes} onChange={e => setNewEnquiry(p => ({ ...p, notes: e.target.value }))} data-testid="enquiry-notes" />
             </div>
             <div className="flex gap-2 justify-end pt-2">

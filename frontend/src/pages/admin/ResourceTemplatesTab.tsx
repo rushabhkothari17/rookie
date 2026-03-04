@@ -198,7 +198,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Weekly Update" data-testid="template-name-input" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Default Category <span className="text-red-400">*</span></label>
+                <label className="text-xs font-medium text-slate-700">Default Category <span className="text-red-500">*</span></label>
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger data-testid="template-category-select"><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent>
@@ -208,11 +208,11 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Description <span className="text-red-400">*</span></label>
+              <label className="text-xs font-medium text-slate-700">Description <span className="text-red-500">*</span></label>
               <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description of this template's purpose" data-testid="template-desc-input" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Content <span className="text-red-400">*</span></label>
+              <label className="text-xs font-medium text-slate-700">Content <span className="text-red-500">*</span></label>
               <RichHtmlEditor value={form.content} onChange={(v) => setForm({ ...form, content: v })} withImages minHeight="320px" placeholder="Write your template content here…" />
             </div>
             <div className="flex justify-end gap-2 pt-2">

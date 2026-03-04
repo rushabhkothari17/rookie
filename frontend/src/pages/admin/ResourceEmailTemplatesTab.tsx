@@ -169,7 +169,7 @@ export function ArticleEmailTemplatesTab() {
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Scope Delivery" data-testid="email-template-name-input" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Description <span className="text-red-400">*</span></label>
+                <label className="text-xs font-medium text-slate-700">Description <span className="text-red-500">*</span></label>
                 <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description" data-testid="email-template-desc-input" />
               </div>
             </div>
@@ -178,7 +178,7 @@ export function ArticleEmailTemplatesTab() {
               <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Email subject line" data-testid="email-template-subject-input" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Email Body <span className="text-red-400">*</span></label>
+              <label className="text-xs font-medium text-slate-700">Email Body <span className="text-red-500">*</span></label>
               <EmailBodyEditor value={form.html_body} onChange={(v) => setForm({ ...form, html_body: v })} />
             </div>
             <div className="flex justify-end gap-2 pt-2">
