@@ -518,11 +518,13 @@ async def update_customer(
     changes: Dict[str, Any] = {}
 
     user_updates: Dict[str, Any] = {}
+    customer_updates: Dict[str, Any] = {}
     if customer_data.full_name is not None:
         user_updates["full_name"] = customer_data.full_name
         changes["full_name"] = {"old": user.get("full_name"), "new": customer_data.full_name}
     if customer_data.company_name is not None:
         user_updates["company_name"] = customer_data.company_name
+        customer_updates["company_name"] = customer_data.company_name  # also stored on customers doc
         changes["company_name"] = {"old": user.get("company_name"), "new": customer_data.company_name}
     if customer_data.job_title is not None:
         user_updates["job_title"] = customer_data.job_title
@@ -533,6 +535,8 @@ async def update_customer(
 
     if user_updates:
         await db.users.update_one({"id": user["id"]}, {"$set": user_updates})
+    if customer_updates:
+        await db.customers.update_one({"id": customer_id}, {"$set": customer_updates})
 
     address = await db.addresses.find_one({"customer_id": customer_id}, {"_id": 0})
     if address:
