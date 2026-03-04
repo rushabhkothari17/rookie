@@ -1,4 +1,3 @@
-import AppFooter from "@/components/AppFooter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
@@ -350,7 +349,6 @@ export default function Admin() {
         </div>
       </Tabs>
     </div>
-    <AppFooter />
     </>
   );
 }
