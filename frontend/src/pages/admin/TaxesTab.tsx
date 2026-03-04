@@ -70,6 +70,8 @@ function TaxSettingsPanel() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [rateTableCountries, setRateTableCountries] = useState<{value:string;label:string}[]>([]);
+  const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
+  const [provincesLoading, setProvincesLoading] = useState(false);
 
   useEffect(() => {
     api.get("/admin/taxes/settings").then((r) => {
@@ -80,6 +82,20 @@ function TaxSettingsPanel() {
       setRateTableCountries(r.data.countries || []);
     }).catch(() => {});
   }, []);
+
+  // Fetch provinces whenever country changes to CA or US
+  useEffect(() => {
+    const country = settings.country;
+    if (country === "CA" || country === "US") {
+      setProvincesLoading(true);
+      api.get(`/utils/provinces?country_code=${country}`)
+        .then((r) => setProvinces(r.data.regions || []))
+        .catch(() => setProvinces([]))
+        .finally(() => setProvincesLoading(false));
+    } else {
+      setProvinces([]);
+    }
+  }, [settings.country]);
 
   const save = async () => {
     setSaving(true);
@@ -139,16 +155,33 @@ function TaxSettingsPanel() {
             {(settings.country === "CA" || settings.country === "US") && (
               <div className="space-y-1.5">
                 <Label className="text-sm">
-                  Your {settings.country === "CA" ? "Province" : "State"} Code
+                  Your {settings.country === "CA" ? "Province" : "State"}
                 </Label>
-                <Input
-                  data-testid="tax-state-input"
-                  placeholder={settings.country === "CA" ? "e.g. ON, BC, QC" : "e.g. CA, NY, TX"}
-                  value={settings.state || ""}
-                  onChange={(e) => setSettings({ ...settings, state: e.target.value.toUpperCase() })}
-                  maxLength={3}
-                  className="w-40"
-                />
+                {provinces.length > 0 ? (
+                  <Select
+                    value={settings.state || ""}
+                    onValueChange={(v) => setSettings({ ...settings, state: v })}
+                  >
+                    <SelectTrigger data-testid="tax-state-input" className="w-56">
+                      <SelectValue placeholder={provincesLoading ? "Loading…" : `Select ${settings.country === "CA" ? "province" : "state"}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {provinces.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    data-testid="tax-state-input"
+                    placeholder={provincesLoading ? "Loading…" : (settings.country === "CA" ? "e.g. ON, BC, QC" : "e.g. CA, NY, TX")}
+                    value={settings.state || ""}
+                    onChange={(e) => setSettings({ ...settings, state: e.target.value.toUpperCase() })}
+                    maxLength={3}
+                    className="w-40"
+                    disabled={provincesLoading}
+                  />
+                )}
                 <p className="text-xs text-slate-400">
                   {settings.country === "CA"
                     ? "Required for correct GST/HST/PST calculation."

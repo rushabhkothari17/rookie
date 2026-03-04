@@ -166,6 +166,7 @@ export function EnquiriesTab() {
 
   const handleCreateEnquiry = async () => {
     if (!newEnquiry.customer_email.trim()) { toast.error("Customer email is required"); return; }
+    if (!newEnquiry.product_id) { toast.error("Product is required"); return; }
     setCreating(true);
     try {
       const res = await api.post("/admin/enquiries/manual", {
@@ -221,9 +222,9 @@ export function EnquiriesTab() {
               <Input className="mt-1" placeholder="customer@example.com" value={newEnquiry.customer_email} onChange={e => setNewEnquiry(p => ({ ...p, customer_email: e.target.value }))} data-testid="enquiry-customer-email" />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600">Product</label>
+              <RequiredLabel className="text-slate-600">Product</RequiredLabel>
               <Select value={newEnquiry.product_id || "__none__"} onValueChange={v => setNewEnquiry(p => ({ ...p, product_id: v === "__none__" ? "" : v }))}>
-                <SelectTrigger className="mt-1" data-testid="enquiry-product-select"><SelectValue placeholder="Select product (optional)" /></SelectTrigger>
+                <SelectTrigger className="mt-1" data-testid="enquiry-product-select"><SelectValue placeholder="Select product" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">None</SelectItem>
                   {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}

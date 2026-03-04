@@ -1,8 +1,9 @@
 import SlideOver from "@/components/admin/SlideOver";
 import CheckoutSectionsBuilder from "@/components/admin/CheckoutSectionsBuilder";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
-import { AuthSlide, WebsiteData, AuthTile, Field, SectionDivider } from "./websiteTabShared";
+import { AuthSlide, WebsiteData, AuthTile, Field } from "./websiteTabShared";
 import { Section } from "./websiteTabShared";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SIGNUP_DEFAULT_SCHEMA = JSON.stringify([
   { id: "sf_full_name",    key: "full_name",    label: "Full Name",    type: "text", required: true,  placeholder: "", options: [], locked: true,  enabled: true,  order: 0 },
@@ -30,8 +31,8 @@ function getSlideTitle(key: AuthSlide | null): string {
     footer_basics: "Footer Text", footer_about: "About Us Section",
     footer_nav: "Navigation", footer_contact: "Contact Info", footer_social: "Social Media",
     documents_page: "Documents Page",
-    store_hero: "Store Hero Banner",
-    articles_hero: "Articles Hero Banner",
+    store_hero: "Services Page",
+    articles_hero: "Resources Page",
   };
   return map[key];
 }
@@ -54,8 +55,8 @@ function getSlideDesc(key: AuthSlide | null): string {
     footer_contact: "Contact details shown in the footer.",
     footer_social: "Social media platform links.",
     documents_page: "Customize the Documents page heading, subtitle, nav label, and upload instructions.",
-    store_hero: "Hero banner label, title, and subtitle shown on the main store page.",
-    articles_hero: "Hero banner label, title, and subtitle shown on the resources/articles page.",
+    store_hero: "Services page hero label, title, and subtitle.",
+    articles_hero: "Resources page hero label, title, and subtitle.",
   };
   return map[key];
 }
@@ -73,53 +74,63 @@ interface Props {
 export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, slideSaving, setActiveSection }: Props) {
   return (
     <>
-      <div className="mb-2">
+      <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-700">Auth & Pages</h3>
         <p className="text-xs text-slate-400 mt-0.5">Click any tile to edit text, forms, or page content.</p>
       </div>
 
-      <SectionDivider label="Authentication" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <AuthTile title="Login Page" description="Login title, subtitle, portal label" preview={ws.login_title || undefined} onEdit={() => setAuthSlide("login")} testId="auth-tile-login" />
-        <AuthTile title="Sign Up Page" description={`Register page + ${getFieldCount(ws.signup_form_schema)} form fields`} preview={ws.register_title || undefined} onEdit={() => setAuthSlide("signup")} testId="auth-tile-signup" />
-        <AuthTile title="Verify Email" description="Verification page content" preview={ws.verify_email_title || undefined} onEdit={() => setAuthSlide("verify_email")} testId="auth-tile-verify-email" />
-        <AuthTile title="Partner Sign-Up Page" description={`Partner registration form · ${getFieldCount(ws.partner_signup_form_schema)} fields`} onEdit={() => setAuthSlide("partner_signup")} testId="auth-tile-partner-signup" />
-      </div>
+      <Tabs defaultValue="auth" className="w-full">
+        <TabsList className="mb-4 flex-wrap h-auto gap-1">
+          <TabsTrigger value="auth">Authentication</TabsTrigger>
+          <TabsTrigger value="pages">App Pages</TabsTrigger>
+          <TabsTrigger value="checkout">Checkout Flow</TabsTrigger>
+          <TabsTrigger value="footer">Footer</TabsTrigger>
+        </TabsList>
 
-      <SectionDivider label="App Pages" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <AuthTile title="Customer Portal" preview={ws.portal_title || undefined} description="Portal heading & subtitle" onEdit={() => setAuthSlide("portal")} testId="auth-tile-portal" />
-        <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
-        <AuthTile title="Admin Panel" preview={ws.admin_page_title || "Admin Control Centre"} description="Admin panel heading, subtitle, and badge text" onEdit={() => setAuthSlide("admin_panel")} testId="auth-tile-admin-panel" />
-        <AuthTile title="404 Not Found" preview={ws.page_404_title || undefined} description="Error page content" onEdit={() => setAuthSlide("not_found")} testId="auth-tile-404" />
-        <AuthTile title="Documents Page" description="Page heading, subtitle, nav label, upload text" preview={ws.documents_page_title || undefined} onEdit={() => setAuthSlide("documents_page")} testId="auth-tile-documents" />
-      </div>
+        {/* ── Authentication ── */}
+        <TabsContent value="auth">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AuthTile title="Login Page" description="Login title, subtitle, portal label" preview={ws.login_title || undefined} onEdit={() => setAuthSlide("login")} testId="auth-tile-login" />
+            <AuthTile title="Sign Up Page" description={`Register page + ${getFieldCount(ws.signup_form_schema)} form fields`} preview={ws.register_title || undefined} onEdit={() => setAuthSlide("signup")} testId="auth-tile-signup" />
+            <AuthTile title="Verify Email" description="Verification page content" preview={ws.verify_email_title || undefined} onEdit={() => setAuthSlide("verify_email")} testId="auth-tile-verify-email" />
+            <AuthTile title="Partner Sign-Up Page" description={`Partner registration form · ${getFieldCount(ws.partner_signup_form_schema)} fields`} onEdit={() => setAuthSlide("partner_signup")} testId="auth-tile-partner-signup" />
+            <AuthTile title="404 Not Found" preview={ws.page_404_title || undefined} description="Error page content" onEdit={() => setAuthSlide("not_found")} testId="auth-tile-404" />
+          </div>
+        </TabsContent>
 
-      <SectionDivider label="Hero Banners" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <AuthTile title="Store Hero Banner" description="Label, title, subtitle on main store page" preview={ws.hero_title || undefined} onEdit={() => setAuthSlide("store_hero")} testId="auth-tile-store-hero" />
-        <AuthTile title="Articles Hero Banner" description="Label, title, subtitle on resources page" preview={ws.articles_hero_title || undefined} onEdit={() => setAuthSlide("articles_hero")} testId="auth-tile-articles-hero" />
-      </div>
+        {/* ── App Pages ── */}
+        <TabsContent value="pages">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AuthTile title="Navigation" description="Nav section title and link labels" preview={ws.footer_nav_title || undefined} onEdit={() => setAuthSlide("footer_nav")} testId="footer-tile-nav" />
+            <AuthTile title="Customer Portal" preview={ws.portal_title || undefined} description="Portal heading & subtitle" onEdit={() => setAuthSlide("portal")} testId="auth-tile-portal" />
+            <AuthTile title="Services Page" description="Hero label, title, subtitle on the main store page" preview={ws.hero_title || undefined} onEdit={() => setAuthSlide("store_hero")} testId="auth-tile-store-hero" />
+            <AuthTile title="Resources Page" description="Hero label, title, subtitle on the resources page" preview={ws.articles_hero_title || undefined} onEdit={() => setAuthSlide("articles_hero")} testId="auth-tile-articles-hero" />
+            <AuthTile title="Documents Page" description="Page heading, subtitle, nav label, upload text" preview={ws.documents_page_title || undefined} onEdit={() => setAuthSlide("documents_page")} testId="auth-tile-documents" />
+            <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
+            <AuthTile title="Admin Panel" preview={ws.admin_page_title || "Admin Control Centre"} description="Admin panel heading, subtitle, and badge text" onEdit={() => setAuthSlide("admin_panel")} testId="auth-tile-admin-panel" />
+          </div>
+        </TabsContent>
 
-      <SectionDivider label="Checkout Flow" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <AuthTile title="Checkout Page Builder" description="Dynamic sections + cart page settings" onEdit={() => setAuthSlide("checkout_builder")} testId="auth-tile-checkout-builder" />
-        <AuthTile title="Checkout Success" preview={ws.checkout_success_title || undefined} description="Page after successful payment or bank transfer" onEdit={() => setAuthSlide("checkout_success")} testId="auth-tile-checkout-success" />
-      </div>
+        {/* ── Checkout Flow ── */}
+        <TabsContent value="checkout">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AuthTile title="Checkout Page Builder" description="Dynamic sections + cart page settings" onEdit={() => setAuthSlide("checkout_builder")} testId="auth-tile-checkout-builder" />
+            <AuthTile title="Checkout Success" preview={ws.checkout_success_title || undefined} description="Page after successful payment or bank transfer" onEdit={() => setAuthSlide("checkout_success")} testId="auth-tile-checkout-success" />
+            <AuthTile title="GoCardless Callback" description="Processing, success, and error text during GoCardless setup" onEdit={() => setAuthSlide("gocardless_callback")} testId="auth-tile-gocardless" />
+            <AuthTile title="Checkout Messages" description="Cart, payment errors & messages" onEdit={() => setAuthSlide("checkout_messages")} testId="auth-tile-checkout-messages" />
+          </div>
+        </TabsContent>
 
-      <SectionDivider label="Messages" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <AuthTile title="Checkout Messages" description="Cart, payment errors & messages" onEdit={() => setAuthSlide("checkout_messages")} testId="auth-tile-checkout-messages" />
-      </div>
-
-      <SectionDivider label="Footer & Navigation" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <AuthTile title="Footer Text" description="Tagline and copyright" preview={ws.footer_tagline || ws.footer_copyright || undefined} onEdit={() => setAuthSlide("footer_basics")} testId="footer-tile-basics" />
-        <AuthTile title="About Us" description="About section heading and text" preview={ws.footer_about_title || undefined} onEdit={() => setAuthSlide("footer_about")} testId="footer-tile-about" />
-        <AuthTile title="Navigation" description="Nav section title and link labels" preview={ws.footer_nav_title || undefined} onEdit={() => setAuthSlide("footer_nav")} testId="footer-tile-nav" />
-        <AuthTile title="Contact Info" description="Email, phone, and address" preview={ws.contact_email || undefined} onEdit={() => setAuthSlide("footer_contact")} testId="footer-tile-contact" />
-        <AuthTile title="Social Media" description="Social network links" preview={ws.footer_social_title || undefined} onEdit={() => setAuthSlide("footer_social")} testId="footer-tile-social" />
-      </div>
+        {/* ── Footer ── */}
+        <TabsContent value="footer">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <AuthTile title="Footer Text" description="Tagline and copyright" preview={ws.footer_tagline || ws.footer_copyright || undefined} onEdit={() => setAuthSlide("footer_basics")} testId="footer-tile-basics" />
+            <AuthTile title="About Us" description="About section heading and text" preview={ws.footer_about_title || undefined} onEdit={() => setAuthSlide("footer_about")} testId="footer-tile-about" />
+            <AuthTile title="Contact Info" description="Email, phone, and address" preview={ws.contact_email || undefined} onEdit={() => setAuthSlide("footer_contact")} testId="footer-tile-contact" />
+            <AuthTile title="Social Media" description="Social network links" preview={ws.footer_social_title || undefined} onEdit={() => setAuthSlide("footer_social")} testId="footer-tile-social" />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Auth Slide Over */}
       <SlideOver
