@@ -165,7 +165,7 @@ export function ArticleEmailTemplatesTab() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Template Name *</label>
+                <label className="text-xs font-medium text-slate-700">Template Name <span className="text-red-500">*</span></label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Scope Delivery" data-testid="email-template-name-input" />
               </div>
               <div className="space-y-1">
@@ -174,7 +174,7 @@ export function ArticleEmailTemplatesTab() {
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Subject *</label>
+              <label className="text-xs font-medium text-slate-700">Subject <span className="text-red-500">*</span></label>
               <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Email subject line" data-testid="email-template-subject-input" />
             </div>
             <div className="space-y-1">

@@ -381,7 +381,7 @@ function EndpointCard({ ep, testApiKey }: { ep: EndpointDef; testApiKey: string 
 
                 {(ep.params || []).filter(p => p.in !== "header").map(p => (
                   <div key={p.name}>
-                    <label className="text-xs text-slate-500">{p.name} ({p.in}){p.required ? " *" : ""}</label>
+                    <label className="text-xs text-slate-500">{p.name} ({p.in}){p.required ? <span className="text-red-500"> *</span> : ""}</label>
                     <Input placeholder={p.example || `Enter ${p.name}`} value={tryInputs[p.name] || ""} onChange={e => setTryInputs(prev => ({ ...prev, [p.name]: e.target.value }))} className="mt-1 h-8 text-xs font-mono" />
                   </div>
                 ))}

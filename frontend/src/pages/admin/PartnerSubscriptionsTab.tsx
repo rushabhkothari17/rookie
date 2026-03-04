@@ -252,7 +252,7 @@ function SubFormModal({
         <div className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 col-span-2">
-              <label className="text-xs font-medium text-slate-600">Partner *</label>
+              <label className="text-xs font-medium text-slate-600">Partner <span className="text-red-500">*</span></label>
               <SearchableSelect
                 value={form.partner_id || undefined}
                 onValueChange={v => set("partner_id", v)}
@@ -286,7 +286,7 @@ function SubFormModal({
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2">
-              <label className="text-xs font-medium text-slate-600">Amount *</label>
+              <label className="text-xs font-medium text-slate-600">Amount <span className="text-red-500">*</span></label>
               <Input type="number" min={0} step="0.01" value={form.amount} onChange={e => set("amount", e.target.value)} data-testid="sub-amount-input" />
             </div>
             <div className="space-y-1">

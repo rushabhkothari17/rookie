@@ -92,7 +92,7 @@ function FilterFormModal({
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Filter Name *</label>
+            <label className="text-xs font-medium text-slate-600">Filter Name <span className="text-red-500">*</span></label>
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Service Type, Price Range" data-testid="filter-name-input" />
           </div>
           <div className="space-y-1">

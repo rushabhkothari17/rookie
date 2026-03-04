@@ -178,7 +178,7 @@ export function PartnerOrgForm({ value, onChange, currencies, schema = "", compa
       if (field.key === "org_name") {
         return (
           <div key={field.id} className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label} *</label>
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label} <span className="text-red-500">*</span></label>
             <Input placeholder="Acme Accounting" value={value.name} onChange={e => setCore("name", e.target.value)} required data-testid={tid} />
             <p className="text-xs text-slate-400">Partner code will be auto-generated from this name.</p>
           </div>
@@ -219,7 +219,7 @@ export function PartnerOrgForm({ value, onChange, currencies, schema = "", compa
     if (field.type === "textarea") {
       return (
         <div key={field.id} className={compact ? undefined : "space-y-1.5"}>
-          {!compact && <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label}{req ? " *" : ""}</label>}
+          {!compact && <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label}{req ? <span className="text-red-500"> *</span> : ""}</label>}
           <Textarea placeholder={placeholder} value={extraVal} onChange={e => setExtra(field.key, e.target.value)} required={req} data-testid={tid} rows={3} />
         </div>
       );
@@ -234,7 +234,7 @@ export function PartnerOrgForm({ value, onChange, currencies, schema = "", compa
     }
     return (
       <div key={field.id} className="space-y-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label}{req ? " *" : " (optional)"}</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field.label}{req ? <span className="text-red-500"> *</span> : " (optional)"}</label>
         <Input type={htmlType} placeholder={placeholder} value={extraVal} onChange={e => setExtra(field.key, e.target.value)} required={req} data-testid={tid} />
       </div>
     );

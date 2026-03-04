@@ -207,7 +207,7 @@ export function ArticleCategoriesTab() {
           </DialogHeader>
           <div className="space-y-4 py-1">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Name *</label>
+              <label className="text-xs font-medium text-slate-700">Name <span className="text-red-500">*</span></label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}

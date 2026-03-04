@@ -142,7 +142,7 @@ export function SectionsEditor({
               <div className="px-3 pb-3 space-y-3 border-t border-slate-100 pt-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[11px] text-slate-500">Section Name *</label>
+                    <label className="text-[11px] text-slate-500">Section Name <span className="text-red-500">*</span></label>
                     <Input
                       value={sec.name}
                       onChange={e => update(i, { name: e.target.value })}

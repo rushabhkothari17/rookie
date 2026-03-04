@@ -638,7 +638,7 @@ export function ProductForm({
         <div className={sectionCls}>
           <div className={cardCls}>
             <div>
-              <label className={labelCls}>Product Name *</label>
+              <label className={labelCls}>Product Name <span className="text-red-500">*</span></label>
               <Input value={form.name} onChange={e => s("name")(e.target.value)} placeholder="Product name" data-testid="pf-name" />
             </div>
 

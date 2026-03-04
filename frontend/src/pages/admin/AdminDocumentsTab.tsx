@@ -321,7 +321,7 @@ export function AdminDocumentsTab() {
           <DialogHeader><DialogTitle>Upload Document</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-slate-600 mb-1 block">Customer *</label>
+              <label className="text-xs text-slate-600 mb-1 block">Customer <span className="text-red-500">*</span></label>
               <Popover open={custOpen} onOpenChange={(v) => { setCustOpen(v); if (v) fetchCustomers(""); }}>
                 <PopoverTrigger asChild>
                   <Button
@@ -375,7 +375,7 @@ export function AdminDocumentsTab() {
               </Popover>
             </div>
             <div>
-              <label className="text-xs text-slate-600 mb-1 block">File * (max 5 MB)</label>
+              <label className="text-xs text-slate-600 mb-1 block">File <span className="text-red-500">*</span> (max 5 MB)</label>
               <input
                 ref={fileRef} type="file"
                 onChange={e => setUploadFile(e.target.files?.[0] || null)}

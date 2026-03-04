@@ -247,7 +247,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-600 mb-1 block">Endpoint URL *</label>
+              <label className="text-xs font-semibold text-slate-600 mb-1 block">Endpoint URL <span className="text-red-500">*</span></label>
               <Input
                 value={url} onChange={e => setUrl(e.target.value)}
                 placeholder="https://your-server.com/webhook" data-testid="webhook-url-input"

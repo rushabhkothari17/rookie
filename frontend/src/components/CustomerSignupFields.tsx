@@ -107,25 +107,25 @@ export function CustomerSignupFields({
           <div className={compact ? "space-y-2" : "grid gap-4 sm:grid-cols-2"}>
             {cfg.line1.enabled && (
               <div className={compact ? "space-y-1" : `space-y-1.5 sm:col-span-2`}>
-                {!compact && <Label compact={compact}>Street address{cfg.line1.required ? " *" : ""}</Label>}
+                {!compact && <Label compact={compact}>Street address{cfg.line1.required ? <span className="text-red-500"> *</span> : ""}</Label>}
                 <Input value={values.line1 || ""} onChange={e => onChange("line1", e.target.value)} placeholder={compact ? `Line 1${cfg.line1.required ? " *" : ""}` : ""} required={cfg.line1.required} data-testid="signup-field-line1" />
               </div>
             )}
             {cfg.line2.enabled && (
               <div className={compact ? "space-y-1" : `space-y-1.5 sm:col-span-2`}>
-                {!compact && <Label compact={compact}>Address line 2{!cfg.line2.required ? " (optional)" : " *"}</Label>}
+                {!compact && <Label compact={compact}>Address line 2{!cfg.line2.required ? " (optional)" : <span className="text-red-500"> *</span>}</Label>}
                 <Input value={values.line2 || ""} onChange={e => onChange("line2", e.target.value)} placeholder={compact ? `Line 2${cfg.line2.required ? " *" : " (optional)"}` : ""} required={cfg.line2.required} data-testid="signup-field-line2" />
               </div>
             )}
             {cfg.city.enabled && (
               <div className="space-y-1">
-                {!compact && <Label compact={compact}>City{cfg.city.required ? " *" : ""}</Label>}
+                {!compact && <Label compact={compact}>City{cfg.city.required ? <span className="text-red-500"> *</span> : ""}</Label>}
                 <Input value={values.city || ""} onChange={e => onChange("city", e.target.value)} placeholder={compact ? `City${cfg.city.required ? " *" : ""}` : ""} required={cfg.city.required} data-testid="signup-field-city" />
               </div>
             )}
             {cfg.state.enabled && (
               <div className="space-y-1">
-                {!compact && <Label compact={compact}>State / Province{cfg.state.required ? " *" : ""}</Label>}
+                {!compact && <Label compact={compact}>State / Province{cfg.state.required ? <span className="text-red-500"> *</span> : ""}</Label>}
                 {provinces.length > 0 ? (
                   <Select value={values.region || ""} onValueChange={v => onChange("region", v)}>
                     <SelectTrigger data-testid="signup-field-region-select"><SelectValue placeholder={compact ? `Province *` : "Select province / state"} /></SelectTrigger>
@@ -138,13 +138,13 @@ export function CustomerSignupFields({
             )}
             {cfg.postal.enabled && (
               <div className="space-y-1">
-                {!compact && <Label compact={compact}>Postal / ZIP{cfg.postal.required ? " *" : ""}</Label>}
+                {!compact && <Label compact={compact}>Postal / ZIP{cfg.postal.required ? <span className="text-red-500"> *</span> : ""}</Label>}
                 <Input value={values.postal || ""} onChange={e => onChange("postal", e.target.value)} placeholder={compact ? `Postal${cfg.postal.required ? " *" : ""}` : ""} required={cfg.postal.required} data-testid="signup-field-postal" />
               </div>
             )}
             {cfg.country.enabled && (
               <div className="space-y-1">
-                {!compact && <Label compact={compact}>Country{cfg.country.required ? " *" : ""}</Label>}
+                {!compact && <Label compact={compact}>Country{cfg.country.required ? <span className="text-red-500"> *</span> : ""}</Label>}
                 <SearchableSelect
                   value={values.country || undefined}
                   onValueChange={v => onChange("country", v)}

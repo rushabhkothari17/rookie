@@ -230,7 +230,7 @@ export function RolesTab() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Role Name *</label>
+              <label className="text-xs font-medium text-slate-600">Role Name <span className="text-red-500">*</span></label>
               <Input
                 value={form.name}
                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))}

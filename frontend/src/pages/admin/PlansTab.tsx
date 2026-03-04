@@ -231,7 +231,7 @@ function PlanFormModal({ plan, onClose, onSaved }: { plan: Plan | null; onClose:
           )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Plan Name *</label>
+              <label className="text-xs font-medium text-slate-600">Plan Name <span className="text-red-500">*</span></label>
               <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Starter, Growth" data-testid="plan-name-input" />
             </div>
             <div className="space-y-1">
@@ -745,7 +745,7 @@ function RateFormDialog({ modules, rate, onClose, onSaved }: { modules: OTPModul
         <div className="space-y-4 py-1">
           {!isEdit && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Module *</label>
+              <label className="text-xs font-medium text-slate-600">Module <span className="text-red-500">*</span></label>
               <Select value={moduleKey} onValueChange={setModuleKey} data-testid="rate-module-select">
                 <SelectTrigger><SelectValue placeholder="Select a module…" /></SelectTrigger>
                 <SelectContent>
@@ -756,7 +756,7 @@ function RateFormDialog({ modules, rate, onClose, onSaved }: { modules: OTPModul
           )}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Price per Unit *</label>
+              <label className="text-xs font-medium text-slate-600">Price per Unit <span className="text-red-500">*</span></label>
               <Input type="number" min={0} step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="1.00" data-testid="rate-price-input" />
             </div>
             <div className="space-y-1">
@@ -999,7 +999,7 @@ function CouponFormDialog({ coupon, onClose, onSaved }: { coupon: Coupon | null;
         <div className="space-y-4 py-1">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Coupon Code *</label>
+              <label className="text-xs font-medium text-slate-600">Coupon Code <span className="text-red-500">*</span></label>
               <Input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="SAVE20" className="font-mono" data-testid="coupon-code-field" />
             </div>
             <div className="space-y-1">
@@ -1010,7 +1010,7 @@ function CouponFormDialog({ coupon, onClose, onSaved }: { coupon: Coupon | null;
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Discount Type *</label>
+              <label className="text-xs font-medium text-slate-600">Discount Type <span className="text-red-500">*</span></label>
               <Select value={discountType} onValueChange={setDiscountType} data-testid="coupon-discount-type">
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
