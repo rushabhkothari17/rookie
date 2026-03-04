@@ -83,6 +83,7 @@ export default function Login() {
 
   const [step, setStep] = useState<"gateway" | "auth">("gateway");
   const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
+  const [loginSettings, setLoginSettings] = useState<Record<string, string>>({});
   const [authKey, setAuthKey] = useState(0);
   const [showForcePasswordChange, setShowForcePasswordChange] = useState(false);
 
@@ -122,6 +123,12 @@ export default function Login() {
         primary_color: branding.primary_color,
         accent_color: branding.accent_color,
         is_platform: tenant.is_platform ?? false,
+      });
+      setLoginSettings({
+        portal_label: branding.login_portal_label || "",
+        title:        branding.login_title || "Sign in",
+        subtitle:     branding.login_subtitle || "Welcome back. Enter your credentials to continue.",
+        btn_text:     branding.login_btn_text || "Sign In",
       });
       setAuthKey(k => k + 1);
       setStep("auth");
@@ -331,8 +338,17 @@ export default function Login() {
               >
                 <ChevronLeft size={12} strokeWidth={2.5} /> Back to partner select
               </button>
-              <h1 className="text-[1.75rem] font-bold text-slate-900 tracking-tight">Sign in</h1>
-              <p className="text-slate-400 text-sm mt-1">Welcome back. Enter your credentials to continue.</p>
+              {loginSettings.portal_label && (
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: accent }}>
+                  {loginSettings.portal_label}
+                </p>
+              )}
+              <h1 className="text-[1.75rem] font-bold text-slate-900 tracking-tight">
+                {loginSettings.title || "Sign in"}
+              </h1>
+              <p className="text-slate-400 text-sm mt-1">
+                {loginSettings.subtitle || "Welcome back. Enter your credentials to continue."}
+              </p>
             </div>
 
             {/* Error */}
@@ -418,7 +434,7 @@ export default function Login() {
                 >
                   {loginLoading ? (
                     <Loader2 size={16} className="animate-spin" />
-                  ) : "Sign In"}
+                  ) : (loginSettings.btn_text || "Sign In")}
                 </button>
               </div>
             </form>
