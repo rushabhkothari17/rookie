@@ -26,11 +26,17 @@ function matchesFilter(product: any, filterType: string, value: string): boolean
     return tags.some(t => t.toLowerCase() === value.toLowerCase());
   }
   if (filterType === "price_range") {
-    const [minStr, maxStr] = value.split("-");
-    const min = parseFloat(minStr ?? "0");
-    const max = parseFloat(maxStr ?? "999999");
+    // value format: "min-max" or "min-max:CURRENCY"
+    const [rangePart, currencyPart] = value.split(":");
+    const parts = rangePart.split("-");
+    const min = parseFloat(parts[0] ?? "0");
+    const max = parseFloat(parts[1] ?? "999999");
     const price = product.base_price ?? product.amount ?? 0;
-    return price >= min && price <= max;
+    const inRange = price >= min && (isNaN(max) ? true : price <= max);
+    if (currencyPart && currencyPart !== "ALL") {
+      return inRange && (product.currency || "").toUpperCase() === currencyPart.toUpperCase();
+    }
+    return inRange;
   }
   return false;
 }
@@ -42,7 +48,7 @@ export default function Store() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [configuredFilters, setConfiguredFilters] = useState<StoreFilter[]>([]);
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({});
-  const [priceInputs, setPriceInputs] = useState<Record<string, { min: string; max: string }>>({});
+  const [priceInputs, setPriceInputs] = useState<Record<string, { min: string; max: string; currency: string }>>({});
   const ws = useWebsite();
   const partnerCode = usePartnerCode();
 
@@ -114,20 +120,27 @@ export default function Store() {
   };
 
   const applyPriceFilter = (filterId: string) => {
-    const { min, max } = priceInputs[filterId] || { min: "", max: "" };
-    if (!min && !max) {
+    const { min, max, currency } = priceInputs[filterId] || { min: "", max: "", currency: "ALL" };
+    if (!min && !max && (!currency || currency === "ALL")) {
       setActiveFilters(prev => ({ ...prev, [filterId]: null }));
       return;
     }
     const minVal = min || "0";
     const maxVal = max || "999999";
-    setActiveFilters(prev => ({ ...prev, [filterId]: `${minVal}-${maxVal}` }));
+    const currencyPart = currency && currency !== "ALL" ? `:${currency}` : "";
+    setActiveFilters(prev => ({ ...prev, [filterId]: `${minVal}-${maxVal}${currencyPart}` }));
   };
 
   const clearPriceFilter = (filterId: string) => {
-    setPriceInputs(prev => ({ ...prev, [filterId]: { min: "", max: "" } }));
+    setPriceInputs(prev => ({ ...prev, [filterId]: { min: "", max: "", currency: "ALL" } }));
     setActiveFilters(prev => ({ ...prev, [filterId]: null }));
   };
+
+  const productCurrencies = useMemo(() => {
+    const seen = new Set<string>();
+    products.forEach(p => { if (p.currency) seen.add(p.currency.toUpperCase()); });
+    return Array.from(seen).sort();
+  }, [products]);
 
   const hasActiveFilters = Object.values(activeFilters).some(Boolean);
 
@@ -177,6 +190,23 @@ export default function Store() {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 px-2">Browse</p>
                 <nav className="space-y-0.5">
+                  {/* All option */}
+                  <button
+                    type="button"
+                    onClick={() => handleCategoryChange(null)}
+                    data-testid="category-btn-all"
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all text-left ${
+                      activeCategory === null
+                        ? "text-white font-semibold"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    }`}
+                    style={activeCategory === null ? { backgroundColor: "var(--aa-primary)" } : undefined}
+                  >
+                    <span className="truncate">All</span>
+                    <span className={`text-xs shrink-0 ml-2 ${activeCategory === null ? "text-slate-300" : "text-slate-400"}`}>
+                      {products.length}
+                    </span>
+                  </button>
                   {categories.map(cat => (
                     <button
                       key={cat.name}
@@ -220,6 +250,23 @@ export default function Store() {
                       <div className="space-y-0.5">
                         {filter.filter_type === "price_range" ? (
                           <div className="px-2 space-y-2" data-testid={`price-range-filter-${filter.id}`}>
+                            {/* Currency selector */}
+                            {productCurrencies.length > 1 && (
+                              <select
+                                value={priceInputs[filter.id]?.currency || "ALL"}
+                                onChange={e => setPriceInputs(prev => ({
+                                  ...prev,
+                                  [filter.id]: { ...prev[filter.id], currency: e.target.value }
+                                }))}
+                                className="w-full rounded border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-slate-400 bg-white"
+                                data-testid={`price-currency-select-${filter.id}`}
+                              >
+                                <option value="ALL">All currencies</option>
+                                {productCurrencies.map(c => (
+                                  <option key={c} value={c}>{c}</option>
+                                ))}
+                              </select>
+                            )}
                             <div className="flex gap-1.5 items-center">
                               <input
                                 type="number"
