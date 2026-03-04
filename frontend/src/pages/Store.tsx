@@ -62,6 +62,7 @@ export default function Store() {
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({});
   const [priceInputs, setPriceInputs] = useState<Record<string, { min: string; max: string; currency: string }>>({});
   const [sortBy, setSortBy] = useState<SortOption>("default");
+  const [fxRates, setFxRates] = useState<Record<string, number>>({});
   const ws = useWebsite();
   const partnerCode = usePartnerCode();
 
@@ -70,14 +71,16 @@ export default function Store() {
       const filterUrl = partnerCode
         ? `/store/filters?tenant_code=${encodeURIComponent(partnerCode)}`
         : "/store/filters";
-      const [prodRes, catRes, filterRes] = await Promise.all([
+      const [prodRes, catRes, filterRes, fxRes] = await Promise.all([
         api.get("/products"),
         api.get("/categories"),
         api.get(filterUrl).catch(() => ({ data: { filters: [] } })),
+        api.get("/store/fx-rates?base=USD").catch(() => ({ data: { rates: {} } })),
       ]);
       const prods: any[] = prodRes.data.products || [];
       setProducts(prods);
       setConfiguredFilters(filterRes.data.filters || []);
+      setFxRates(fxRes.data.rates || {});
 
       const catMap: Record<string, string> = catRes.data.category_blurbs || {};
       const catCounts: Record<string, number> = {};
@@ -115,15 +118,21 @@ export default function Store() {
       result = result.filter(p => matchesFilter(p, filter.filter_type, value));
     }
 
-    // Sort
+    // Sort — normalise to USD before comparing prices
     result = [...result];
+    const toUSD = (p: any) => {
+      const price = p.base_price ?? p.amount ?? 0;
+      const cur = (p.currency || "USD").toUpperCase();
+      const rate = fxRates[cur] ?? 1;
+      return price * rate;
+    };
     if (sortBy === "name_asc") result.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     else if (sortBy === "name_desc") result.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-    else if (sortBy === "price_asc") result.sort((a, b) => (a.base_price ?? a.amount ?? 0) - (b.base_price ?? b.amount ?? 0));
-    else if (sortBy === "price_desc") result.sort((a, b) => (b.base_price ?? b.amount ?? 0) - (a.base_price ?? a.amount ?? 0));
+    else if (sortBy === "price_asc") result.sort((a, b) => toUSD(a) - toUSD(b));
+    else if (sortBy === "price_desc") result.sort((a, b) => toUSD(b) - toUSD(a));
 
     return result;
-  }, [products, activeCategory, activeFilters, configuredFilters, sortBy]);
+  }, [products, activeCategory, activeFilters, configuredFilters, sortBy, fxRates]);
 
   const handleCategoryChange = (cat: string | null) => {
     setActiveCategory(cat);

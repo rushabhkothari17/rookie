@@ -15,12 +15,28 @@ from models import (
     ScopeRequestBody, ScopeRequestWithForm, ApplyPromoRequest,
 )
 from services.pricing_service import calculate_price
-from services.checkout_service import build_order_items
+from services.checkout_service import build_order_items, get_fx_rate
 from services.settings_service import SettingsService
 from services.audit_service import create_audit_log
 from core.constants import SERVICE_FEE_RATE
 
 router = APIRouter(prefix="/api", tags=["store"])
+
+
+@router.get("/store/fx-rates")
+async def get_store_fx_rates(base: str = "USD"):
+    """Return FX rates for all provided currencies relative to a base currency.
+    Used by the storefront to normalise prices for sorting."""
+    base = base.upper()
+    # Fetch rates for common currencies — frontend only needs what products use
+    common = ["USD", "AUD", "CAD", "GBP", "EUR", "NZD", "SGD", "JPY", "HKD", "INR", "ZAR"]
+    rates: dict[str, float] = {}
+    for cur in common:
+        if cur == base:
+            rates[cur] = 1.0
+        else:
+            rates[cur] = await get_fx_rate(cur, base)
+    return {"base": base, "rates": rates}
 
 
 async def get_stripe_fee_rate(tenant_id: str) -> float:
