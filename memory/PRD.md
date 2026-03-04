@@ -5,13 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Feb 2026) — Store Filters Tenant Isolation Bug Fix
+## Latest Updates (Feb 2026) — Store Filter Race Condition Fix
 
-### Fixed: Store Filters Leaking Across Tenants ✅
-**Root cause**: `GET /store/filters` had no `tenant_id` scoping when `tenant_code` query param was absent — returned all active filters from all tenants. `Store.tsx` never passed `tenant_code`.
-- **Backend** (`store_filters.py`): No `tenant_code` now defaults to `DEFAULT_TENANT_ID`; unknown `tenant_code` returns empty array (not other tenants' data)
-- **Frontend** (`Store.tsx`): Now reads `aa_partner_code` from `localStorage` and passes it as `?tenant_code=` to `/store/filters`
-- Test filter "Price Range" created for apex-holding tenant; verified correct scoping via curl
+### Fixed: Store Filter Race Condition on Initial Load ✅
+**Root cause**: `Store.tsx` read `localStorage.getItem("aa_partner_code")` directly inside a `useEffect([])` — a one-shot read that had no reactive dependency, so filters never re-fetched if the partner code changed after mount.
+- **`WebsiteContext.tsx`**: Added `PartnerCodeContext` with reactive `partnerCode` useState (initialized from localStorage). Exported `usePartnerCode()` hook. `WebsiteProvider` now wraps both `PartnerCodeContext.Provider` and `WebsiteContext.Provider`. Also adds `window.addEventListener("storage", ...)` to sync if localStorage changes cross-tab.
+- **`Store.tsx`**: Replaced `localStorage.getItem()` with `usePartnerCode()` hook; added `partnerCode` to `useEffect` dependency array so filters re-fetch reactively.
+- **Verified** (iteration_181.json): 100% pass — filter calls use `?tenant_code=<code>` when set, default when not set.
+
+### Previously Fixed: Store Filters Leaking Across Tenants ✅
+**Root cause**: `GET /store/filters` had no `tenant_id` scoping when `tenant_code` query param was absent — returned all active filters from all tenants.
+- **Backend** (`store_filters.py`): No `tenant_code` now defaults to `DEFAULT_TENANT_ID`; unknown `tenant_code` returns empty array
 
 ---
 
