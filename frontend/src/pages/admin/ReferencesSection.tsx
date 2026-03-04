@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
 import { Plus, Pencil, Trash2, Copy, X, Save } from "lucide-react";
