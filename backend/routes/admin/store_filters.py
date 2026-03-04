@@ -13,7 +13,7 @@ from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["store-filters"])
 
-FILTER_TYPES = {"category", "tag", "price_range", "custom", "checkout_type", "billing_type", "intake_field"}
+FILTER_TYPES = {"category", "tag", "price_range", "checkout_type", "billing_type", "intake_field"}
 
 
 class FilterOption(BaseModel):

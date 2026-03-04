@@ -20,9 +20,8 @@ import { Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronUp, X } from "l
 
 const FILTER_TYPES = [
   { value: "category", label: "Category", description: "Filter by product category (uses existing categories)" },
-  { value: "tag", label: "Tag", description: "Filter by custom product tags" },
+  { value: "tag", label: "Tag", description: "Filter by product tags — set tags on products in the catalog editor" },
   { value: "price_range", label: "Price Range", description: "Filter by price brackets" },
-  { value: "custom", label: "Custom", description: "Define your own filter name and options" },
   { value: "checkout_type", label: "Checkout Type", description: "Internal checkout, Enquiry Only, or External Link" },
   { value: "billing_type", label: "Billing Type", description: "One-off or Subscription payment" },
   { value: "intake_field", label: "Intake Field", description: "Filter by a specific intake question field and option value" },
@@ -86,7 +85,7 @@ function FilterFormModal({
     } finally { setSaving(false); }
   };
 
-  const needsOptions = type === "tag" || type === "price_range" || type === "custom" || type === "intake_field";
+  const needsOptions = type === "tag" || type === "price_range" || type === "intake_field";
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -143,7 +142,7 @@ function FilterFormModal({
             </div>
           )}
 
-          {(type === "custom" || type === "tag") && (
+          {type === "tag" && (
             <div className="bg-amber-50 rounded-lg p-3 text-xs text-amber-800 space-y-1">
               <p className="font-semibold">How to associate products with this filter:</p>
               <ol className="list-decimal list-inside space-y-1 text-amber-700">
