@@ -5,7 +5,25 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Feb 2026) — Super Admin Billing, Invoice Status, RequiredLabel Migration
+## Latest Updates (Feb 2026) — Enquiry Product Required, Tax Province Dropdown, Auth & Pages Subtabs
+
+### Completed: Manual Enquiry Product Field Required ✅
+- `EnquiriesTab.tsx`: Product selection is now required (validation before submit). Label updated to RequiredLabel. Placeholder changed from "Select product (optional)" → "Select product".
+
+### Completed: Tax Settings Province Dropdown ✅
+- `TaxesTab.tsx` TaxSettingsPanel: Province/State field replaced from text input to dynamic `<Select>` dropdown populated from `/utils/provinces?country_code=XX` (returns unique provinces from `tax_tables` collection). Falls back to text input if no provinces found. Fetches on country change.
+
+### Completed: Auth & Pages Reorganized into 4 Subtabs ✅
+- `WebsiteAuthSection.tsx`: Replaced stacked SectionDivider layout with 4 Shadcn `Tabs`: **Authentication**, **App Pages**, **Checkout Flow**, **Footer**.
+- Authentication: Login, Sign Up, Verify Email, Partner Sign-Up, 404 Not Found (moved here)
+- App Pages: Navigation (moved from Footer), Customer Portal, Services Page (renamed from Store Hero Banner), Resources Page (renamed from Articles Hero Banner), Documents Page, Profile Page, Admin Panel
+- Checkout Flow: Checkout Page Builder, Checkout Success, GoCardless Callback, Checkout Messages (moved from deleted Messages section)
+- Footer: Footer Text, About Us, Contact Info, Social Media (Navigation removed)
+- Removed: Hero Banners section, Messages section (Checkout Messages moved to Checkout Flow)
+
+---
+
+## Previous Updates (Feb 2026) — Super Admin Billing, Invoice Status, RequiredLabel Migration
 
 ### Completed: All Plan Management Restricted to Partner Super Admin ✅
 - Changed all endpoints in `plan_management.py` from `get_tenant_admin` → `get_tenant_super_admin`
