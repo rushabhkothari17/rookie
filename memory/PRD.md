@@ -5,6 +5,16 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (March 4, 2026)
+
+### Completed: Currency Dropdown in All Price/Amount Filters ✅
+- **Problem**: Price/Amount filter popovers only had Min/Max range inputs, no way to filter by currency alongside a value range.
+- **Fix**: Added optional `currencyOptions?: [string, string][]` prop to `ColHeader` component. When provided with `filterType="number-range"`, a currency `<select>` appears above the Min/Max inputs.
+- **Scope**: Applied to 6 columns across 5 tabs: Products (Price), Subscriptions (Amount + Tax), Partner Subscriptions (Amount), Partner Orders (Amount), Resources (Price).
+- **Filtering logic**: Client-side currency check added to ProductsTab, PartnerSubscriptionsTab, PartnerOrdersTab. Backend updated for SubscriptionsTab (`amount_min`, `amount_max`, `amount_currency`, `tax_min`, `tax_max`, `tax_currency`). ResourcesTab backend updated to handle `price_currency`, `price_min`, `price_max`, `modified_from`, `modified_to`, `partner` params.
+- **Bug fix**: `Admin.tsx` was missing `import { Tabs, TabsList, TabsTrigger, TabsContent }` causing compile errors — fixed.
+- **Verified**: Testing agent 100% pass (iteration_175.json).
+
 ## Latest Updates (March 3, 2026)
 
 ### Completed: Signup page & Add Customer form — shared single source of truth ✅
