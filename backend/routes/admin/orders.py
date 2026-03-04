@@ -957,3 +957,62 @@ async def delete_enquiry(order_id: str, admin: Dict[str, Any] = Depends(get_tena
         details={"order_number": order.get("order_number")},
     )
     return {"message": "Enquiry deleted"}
+
+
+class ManualEnquiryCreate(BaseModel):
+    customer_email: str
+    product_id: Optional[str] = None
+    notes: Optional[str] = None
+
+
+@router.post("/admin/enquiries/manual")
+async def create_manual_enquiry(
+    payload: ManualEnquiryCreate,
+    admin: Dict[str, Any] = Depends(get_tenant_admin),
+):
+    tf = get_tenant_filter(admin)
+    # Resolve customer
+    customer = await db.users.find_one({**tf, "email": payload.customer_email.lower().strip()}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found with that email")
+
+    order_id = make_id()
+    # Build order number
+    count = await db.orders.count_documents({**tf, "type": "scope_request"})
+    order_number = f"ENQ-{(count + 1):04d}"
+
+    product_name = None
+    if payload.product_id:
+        product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0, "name": 1})
+        if product:
+            product_name = product.get("name")
+
+    doc = {
+        "id": order_id,
+        "order_number": order_number,
+        "type": "scope_request",
+        "pricing_type": "enquiry",
+        "customer_id": customer.get("id"),
+        "customer_email": customer.get("email"),
+        "customer_name": customer.get("full_name", ""),
+        "product_id": payload.product_id,
+        "product_name": product_name,
+        "status": "enquiry",
+        "scope_form_data": {"notes": payload.notes or ""},
+        "notes": payload.notes or "",
+        "created_at": now_iso(),
+        "created_by": admin.get("email"),
+        "manually_created": True,
+    }
+    set_tenant_id(doc, admin)
+    await db.orders.insert_one(doc)
+    doc.pop("_id", None)
+    await create_audit_log(
+        entity_type="order",
+        entity_id=order_id,
+        action="manual_enquiry_created",
+        actor=admin.get("email", "admin"),
+        details={"order_number": order_number, "customer_email": payload.customer_email},
+    )
+    return {"message": "Enquiry created", "id": order_id, "order_number": order_number}
+

@@ -116,6 +116,18 @@ export default function ProductEditor() {
       toast.error("Product name is required");
       return;
     }
+    if (!form.category) {
+      toast.error("Category is required");
+      return;
+    }
+    if (!form.pricing_type) {
+      toast.error("Checkout type (internal checkout / external link / enquiry only) is required");
+      return;
+    }
+    if (!form.terms_id) {
+      toast.error("Terms & conditions is required");
+      return;
+    }
     setSaving(true);
     try {
       const payload = {

@@ -104,6 +104,8 @@ export function TermsTab() {
   useEffect(() => { load(1); }, [startDate, endDate]);
 
   const handleCreate = async () => {
+    if (!createForm.title.trim()) { toast.error("Title is required"); return; }
+    if (!createForm.content.trim()) { toast.error("Content is required"); return; }
     try {
       await api.post("/admin/terms", createForm);
       toast.success("Terms created");
@@ -117,6 +119,8 @@ export function TermsTab() {
 
   const handleEdit = async () => {
     if (!editTerm) return;
+    if (!editForm.title.trim()) { toast.error("Title is required"); return; }
+    if (!editForm.content.trim()) { toast.error("Content is required"); return; }
     try {
       await api.put(`/admin/terms/${editTerm.id}`, editForm);
       toast.success("Terms updated");

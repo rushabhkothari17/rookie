@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
@@ -152,6 +153,36 @@ export function EnquiriesTab() {
     }
   };
 
+  // Manual create enquiry
+  const [showCreate, setShowCreate] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [newEnquiry, setNewEnquiry] = useState({ customer_email: "", product_id: "", notes: "" });
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    api.get("/admin/products-all?per_page=200").then(r => setProducts(r.data.products || [])).catch(() => {});
+  }, []);
+
+  const handleCreateEnquiry = async () => {
+    if (!newEnquiry.customer_email.trim()) { toast.error("Customer email is required"); return; }
+    setCreating(true);
+    try {
+      const res = await api.post("/admin/enquiries/manual", {
+        customer_email: newEnquiry.customer_email.trim(),
+        product_id: newEnquiry.product_id || null,
+        notes: newEnquiry.notes || null,
+      });
+      toast.success(`Enquiry ${res.data.order_number} created`);
+      setShowCreate(false);
+      setNewEnquiry({ customer_email: "", product_id: "", notes: "" });
+      load(1);
+    } catch (e: any) {
+      toast.error(e?.response?.data?.detail || "Failed to create enquiry");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const clearFilters = () => {
     setOrderFilter([]);
     setCustomerFilter([]);
@@ -172,8 +203,45 @@ export function EnquiriesTab() {
       <AdminPageHeader
         title="Enquiries"
         subtitle={`${total} records`}
-        actions={null}
+        actions={
+          <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-enquiry-btn">
+            <Plus className="w-4 h-4 mr-1" /> Create Enquiry
+          </Button>
+        }
       />
+
+      {/* Create Enquiry Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Create Manual Enquiry</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-sm font-medium">Customer Email <span className="text-red-500">*</span></label>
+              <Input className="mt-1" placeholder="customer@example.com" value={newEnquiry.customer_email} onChange={e => setNewEnquiry(p => ({ ...p, customer_email: e.target.value }))} data-testid="enquiry-customer-email" />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Product</label>
+              <Select value={newEnquiry.product_id || "__none__"} onValueChange={v => setNewEnquiry(p => ({ ...p, product_id: v === "__none__" ? "" : v }))}>
+                <SelectTrigger className="mt-1" data-testid="enquiry-product-select"><SelectValue placeholder="Select product (optional)" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Notes</label>
+              <textarea className="mt-1 w-full min-h-[80px] text-sm border border-input rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Additional notes or message…" value={newEnquiry.notes} onChange={e => setNewEnquiry(p => ({ ...p, notes: e.target.value }))} data-testid="enquiry-notes" />
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+              <Button onClick={handleCreateEnquiry} disabled={creating} data-testid="enquiry-submit-btn">
+                {creating ? "Creating…" : "Create Enquiry"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters removed — use column headers */}
 

@@ -308,7 +308,7 @@ export function UsersTab() {
   // ── Create ──────────────────────────────────────────────────────────────────
 
   const handleCreate = async () => {
-    if (!newUser.email || !newUser.password || !newUser.role) { toast.error("Email, password and role are required"); return; }
+    if (!newUser.email || !newUser.password || !newUser.role || !newUser.full_name.trim()) { toast.error("Email, full name, password and role are required"); return; }
     if (PARTNER_ROLES.has(newUser.role) && isPlatformSuperAdmin && !newUser.target_tenant_id) {
       toast.error("Please select a partner org for this user"); return;
     }
@@ -348,6 +348,7 @@ export function UsersTab() {
 
   const handleEdit = async () => {
     if (!editUser) return;
+    if (!editForm.full_name.trim()) { toast.error("Full name is required"); return; }
     try {
       const body: any = { full_name: editForm.full_name };
       if (editForm.role && editForm.role !== editUser.role) body.role = editForm.role;

@@ -184,6 +184,12 @@ export function PromoCodesTab() {
   useEffect(() => { load(1); }, [startDate, endDate]);
 
   const handleCreate = async () => {
+    if (!newPromo.code.trim()) { toast.error("Promo code is required"); return; }
+    if (!newPromo.discount_type) { toast.error("Discount type is required"); return; }
+    if (newPromo.discount_value == null || newPromo.discount_value === undefined) { toast.error("Discount value is required"); return; }
+    if (!newPromo.applies_to) { toast.error("Applies to is required"); return; }
+    if (!newPromo.applies_to_products) { toast.error("Product eligibility is required"); return; }
+    if (!newPromo.expiry_date) { toast.error("Expiry date is required"); return; }
     try {
       await api.post("/admin/promo-codes", { ...newPromo, expiry_date: newPromo.expiry_date || null, max_uses: newPromo.max_uses ? parseInt(newPromo.max_uses) : null });
       toast.success("Promo code created");
@@ -197,6 +203,8 @@ export function PromoCodesTab() {
 
   const handleEdit = async () => {
     if (!editPromo) return;
+    if (!editForm.code?.trim()) { toast.error("Promo code is required"); return; }
+    if (!editForm.expiry_date) { toast.error("Expiry date is required"); return; }
     try {
       await api.put(`/admin/promo-codes/${editPromo.id}`, { ...editForm, expiry_date: editForm.expiry_date || null, max_uses: editForm.max_uses ? parseInt(editForm.max_uses) : null });
       toast.success("Promo code updated");

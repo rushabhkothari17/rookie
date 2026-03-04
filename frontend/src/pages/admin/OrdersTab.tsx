@@ -228,6 +228,10 @@ export function OrdersTab() {
   };
 
   const handleCreateManual = async () => {
+    if (!manualOrder.customer_email.trim()) { toast.error("Customer email is required"); return; }
+    if (!manualOrder.product_id) { toast.error("Product is required"); return; }
+    if (!manualOrder.currency) { toast.error("Currency is required"); return; }
+    if (!manualOrder.status) { toast.error("Status is required"); return; }
     try {
       await api.post("/admin/orders/manual", manualOrder);
       toast.success("Manual order created");

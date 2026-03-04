@@ -97,6 +97,9 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Template name is required"); return; }
+    if (!form.category) { toast.error("Default category is required"); return; }
+    if (!form.description.trim()) { toast.error("Description is required"); return; }
+    if (!form.content || !form.content.replace(/<[^>]*>/g, "").trim()) { toast.error("Content is required"); return; }
     setSaving(true);
     try {
       if (editing) {

@@ -65,6 +65,7 @@ function FilterFormModal({
 
   const handleSave = async () => {
     if (!name.trim()) { toast.error("Filter name is required"); return; }
+    if (!type) { toast.error("Filter type is required"); return; }
     setSaving(true);
     try {
       const payload = { name, filter_type: type, options, is_active: isActive, show_count: showCount };

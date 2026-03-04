@@ -256,6 +256,10 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
       toast.error("Title and category are required");
       return;
     }
+    if (!form.content || !form.content.replace(/<[^>]*>/g, "").trim()) {
+      toast.error("Content is required");
+      return;
+    }
     if (SCOPE_FINAL.has(form.category) && !form.price) {
       toast.error("Price is required for Scope - Final resources");
       return;

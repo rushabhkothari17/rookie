@@ -264,6 +264,13 @@ export function SubscriptionsTab() {
   };
 
   const handleCreateManual = async () => {
+    if (!manualSub.customer_email.trim()) { toast.error("Customer email is required"); return; }
+    if (!manualSub.product_id) { toast.error("Product is required"); return; }
+    if (!manualSub.start_date) { toast.error("Start date is required"); return; }
+    if (!manualSub.billing_interval) { toast.error("Billing interval is required"); return; }
+    if (!manualSub.amount && manualSub.amount !== 0) { toast.error("Amount is required"); return; }
+    if (!manualSub.currency) { toast.error("Currency is required"); return; }
+    if (manualSub.term_months === "" || manualSub.term_months == null) { toast.error("Contract term is required"); return; }
     try {
       const payload = {
         ...manualSub,

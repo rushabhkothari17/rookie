@@ -98,6 +98,7 @@ export function ArticleCategoriesTab() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Category name is required"); return; }
+    if (!form.description.trim()) { toast.error("Description is required"); return; }
     setSaving(true);
     try {
       if (editing) {

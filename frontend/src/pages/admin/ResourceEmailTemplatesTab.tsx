@@ -78,6 +78,8 @@ export function ArticleEmailTemplatesTab() {
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Template name is required"); return; }
     if (!form.subject.trim()) { toast.error("Subject is required"); return; }
+    if (!form.description.trim()) { toast.error("Description is required"); return; }
+    if (!form.html_body || !form.html_body.replace(/<[^>]*>/g, "").trim()) { toast.error("Email body is required"); return; }
     setSaving(true);
     try {
       if (editing) {

@@ -58,6 +58,7 @@ export default function ReferencesSection() {
 
   const save = async () => {
     if (!draft.label || !draft.key) { toast.error("Label and key are required"); return; }
+    if (!draft.value) { toast.error("Value is required"); return; }
     setSaving(true);
     try {
       if (creating) {
