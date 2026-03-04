@@ -672,19 +672,7 @@ export function ProductForm({
           </div>
 
           <div className={cardCls}>
-            <div>
-              <label className={labelCls}>Detail page description</label>
-              <Textarea value={form.description_long} onChange={e => s("description_long")(e.target.value)} placeholder="Full description for the product page" rows={3} className="resize-none text-sm" data-testid="pf-long-desc" />
-            </div>
-            <BulletsList bullets={form.bullets} onChange={s("bullets")} label="Bullet points (what's included)" />
-          </div>
-
-          <div className={cardCls}>
-            <Toggle checked={form.is_active} onChange={s("is_active")} label="Active" note="(visible on storefront)" testId="pf-active" />
-          </div>
-
-          {/* Tags */}
-          <div className={cardCls}>
+            {/* Tags */}
             <div>
               <label className={labelCls}>
                 Filter Tags
@@ -751,6 +739,18 @@ export function ProductForm({
                 </div>
               )}
             </div>
+          </div>
+
+          <div className={cardCls}>
+            <div>
+              <label className={labelCls}>Detail page description</label>
+              <Textarea value={form.description_long} onChange={e => s("description_long")(e.target.value)} placeholder="Full description for the product page" rows={3} className="resize-none text-sm" data-testid="pf-long-desc" />
+            </div>
+            <BulletsList bullets={form.bullets} onChange={s("bullets")} label="Bullet points (what's included)" />
+          </div>
+
+          <div className={cardCls}>
+            <Toggle checked={form.is_active} onChange={s("is_active")} label="Active" note="(visible on storefront)" testId="pf-active" />
           </div>
         </div>
       )}
