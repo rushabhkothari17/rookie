@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { X, ArrowUpDown } from "lucide-react";
+import { X, ArrowUpDown, Search } from "lucide-react";
 import api from "@/lib/api";
 import AppShell from "@/components/AppShell";
 import OfferingCard from "@/components/OfferingCard";
@@ -26,12 +26,10 @@ function matchesFilter(product: any, filterType: string, value: string): boolean
       || (product.category || "").toLowerCase().includes(value.toLowerCase());
   }
   if (filterType === "tag" || filterType === "custom") {
-    // Both tag and custom filters match against product.tags
     const tags: string[] = product.tags || [];
     return tags.some(t => t.toLowerCase() === value.toLowerCase());
   }
   if (filterType === "price_range") {
-    // value format: "min-max" or "min-max:CURRENCY"
     const [rangePart, currencyPart] = value.split(":");
     const parts = rangePart.split("-");
     const min = parseFloat(parts[0] ?? "0");
@@ -43,8 +41,55 @@ function matchesFilter(product: any, filterType: string, value: string): boolean
     }
     return inRange;
   }
+  if (filterType === "checkout_type") {
+    const pt = (product.pricing_type || "internal").toLowerCase();
+    if (value === "internal") return pt === "internal";
+    if (value === "enquiry") return pt === "enquiry" || pt === "scope_request" || pt === "inquiry";
+    if (value === "external") return pt === "external";
+    return false;
+  }
+  if (filterType === "billing_type") {
+    if (value === "subscription") return product.is_subscription === true;
+    if (value === "one_off") return !product.is_subscription;
+    return false;
+  }
+  if (filterType === "intake_field") {
+    // value format: "fieldname:optionvalue"
+    const colonIdx = value.indexOf(":");
+    if (colonIdx === -1) return false;
+    const fieldName = value.slice(0, colonIdx).toLowerCase();
+    const optionVal = value.slice(colonIdx + 1).toLowerCase();
+    const schema = product.intake_schema_json;
+    if (!schema?.groups) return false;
+    for (const group of schema.groups) {
+      for (const field of group.fields || []) {
+        const fName = (field.name || field.label || "").toLowerCase();
+        if (fName === fieldName || field.name?.toLowerCase() === fieldName) {
+          const opts: any[] = field.options || [];
+          return opts.some((o: any) => {
+            const v = typeof o === "string" ? o : (o.value ?? o.label ?? o);
+            return String(v).toLowerCase() === optionVal;
+          });
+        }
+      }
+    }
+    return false;
+  }
   return false;
 }
+
+// Auto-generated options for filter types that don't need admin-defined options
+const AUTO_OPTIONS: Record<string, { label: string; value: string }[]> = {
+  checkout_type: [
+    { label: "Internal Checkout", value: "internal" },
+    { label: "Enquiry Only",      value: "enquiry" },
+    { label: "External Link",     value: "external" },
+  ],
+  billing_type: [
+    { label: "One-off",      value: "one_off" },
+    { label: "Subscription", value: "subscription" },
+  ],
+};
 
 const SORT_LABELS: Record<SortOption, string> = {
   default: "Default",
@@ -64,6 +109,7 @@ export default function Store() {
   const [priceInputs, setPriceInputs] = useState<Record<string, { min: string; max: string; currency: string }>>({});
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [fxRates, setFxRates] = useState<Record<string, number>>({});
+  const [searchQuery, setSearchQuery] = useState("");
   const ws = useWebsite();
   const partnerCode = usePartnerCode();
 
@@ -112,6 +158,15 @@ export default function Store() {
       ? products.filter(p => displayCategory(p.category) === activeCategory)
       : products;
 
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p =>
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.description_long || "").toLowerCase().includes(q)
+      );
+    }
+
     for (const [filterId, value] of Object.entries(activeFilters)) {
       if (!value) continue;
       const filter = configuredFilters.find(f => f.id === filterId);
@@ -133,7 +188,7 @@ export default function Store() {
     else if (sortBy === "price_desc") result.sort((a, b) => toUSD(b) - toUSD(a));
 
     return result;
-  }, [products, activeCategory, activeFilters, configuredFilters, sortBy, fxRates]);
+  }, [products, activeCategory, activeFilters, configuredFilters, sortBy, fxRates, searchQuery]);
 
   const handleCategoryChange = (cat: string | null) => {
     setActiveCategory(cat);
@@ -169,6 +224,7 @@ export default function Store() {
     setActiveFilters({});
     setPriceInputs({});
     setActiveCategory(null);
+    setSearchQuery("");
     setSearchParams({});
   };
 
@@ -178,7 +234,7 @@ export default function Store() {
     return Array.from(seen).sort();
   }, [products]);
 
-  const hasActiveFilters = Object.values(activeFilters).some(Boolean) || activeCategory !== null;
+  const hasActiveFilters = Object.values(activeFilters).some(Boolean) || activeCategory !== null || searchQuery.trim() !== "";
   const countFor = (name: string) => products.filter(p => displayCategory(p.category) === name).length;
   const countForOpt = (filter: StoreFilter, value: string) =>
     (activeCategory ? products.filter(p => displayCategory(p.category) === activeCategory) : products)
@@ -186,6 +242,9 @@ export default function Store() {
 
   // Active filter pills
   const activeFilterPills: { label: string; onRemove: () => void }[] = [];
+  if (searchQuery.trim()) {
+    activeFilterPills.push({ label: `"${searchQuery}"`, onRemove: () => setSearchQuery("") });
+  }
   if (activeCategory) {
     activeFilterPills.push({ label: activeCategory, onRemove: () => handleCategoryChange(null) });
   }
@@ -198,7 +257,12 @@ export default function Store() {
       const label = `${f.name}: ${mn !== "0" ? mn : "0"}–${mx !== "999999" ? mx : "∞"}${cur && cur !== "ALL" ? ` (${cur})` : ""}`;
       activeFilterPills.push({ label, onRemove: () => clearPriceFilter(f.id) });
     } else {
-      const optLabel = f.options.find(o => o.value === val)?.label || val;
+      // For auto-option types, look up label from AUTO_OPTIONS first
+      const autoOpts = AUTO_OPTIONS[f.filter_type] || [];
+      const optLabel =
+        autoOpts.find(o => o.value === val)?.label ||
+        f.options.find(o => o.value === val)?.label ||
+        val;
       activeFilterPills.push({ label: `${f.name}: ${optLabel}`, onRemove: () => toggleFilter(f.id, val) });
     }
   });
@@ -416,9 +480,9 @@ export default function Store() {
                       ))}
                     </div>
                   ) : (
-                    /* Custom / Tag filter options */
+                    /* Custom / Tag / Intake / Checkout / Billing filter options */
                     <div className="space-y-0.5">
-                      {filter.options.map(opt => (
+                      {(AUTO_OPTIONS[filter.filter_type] || filter.options).map(opt => (
                         <FilterOptionButton
                           key={opt.value}
                           label={opt.label}
@@ -467,8 +531,32 @@ export default function Store() {
                   </p>
                 </div>
 
-                {/* Sort dropdown */}
-                <div className="shrink-0">
+                {/* Search + Sort row */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Search pill */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder="Search products…"
+                      className="h-9 w-48 rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
+                      data-testid="store-search-input"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Sort dropdown */}
                   <Select value={sortBy} onValueChange={val => setSortBy(val as SortOption)}>
                     <SelectTrigger
                       className="h-9 min-w-[175px] bg-white border-slate-200 hover:bg-slate-50 text-slate-700 text-sm"

@@ -23,6 +23,9 @@ const FILTER_TYPES = [
   { value: "tag", label: "Tag", description: "Filter by custom product tags" },
   { value: "price_range", label: "Price Range", description: "Filter by price brackets" },
   { value: "custom", label: "Custom", description: "Define your own filter name and options" },
+  { value: "checkout_type", label: "Checkout Type", description: "Internal checkout, Enquiry Only, or External Link" },
+  { value: "billing_type", label: "Billing Type", description: "One-off or Subscription payment" },
+  { value: "intake_field", label: "Intake Field", description: "Filter by a specific intake question field and option value" },
 ];
 
 type FilterOption = { label: string; value: string };
@@ -83,7 +86,7 @@ function FilterFormModal({
     } finally { setSaving(false); }
   };
 
-  const needsOptions = type === "tag" || type === "price_range" || type === "custom";
+  const needsOptions = type === "tag" || type === "price_range" || type === "custom" || type === "intake_field";
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -119,6 +122,27 @@ function FilterFormModal({
             </div>
           )}
 
+          {type === "checkout_type" && (
+            <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 space-y-1">
+              <p className="font-semibold">Auto-generates 3 options — no manual entry needed:</p>
+              <ul className="list-disc list-inside text-blue-600 space-y-0.5">
+                <li><strong>Internal Checkout</strong> — products with direct purchase</li>
+                <li><strong>Enquiry Only</strong> — products requiring a sales enquiry</li>
+                <li><strong>External Link</strong> — products that redirect to an external URL</li>
+              </ul>
+            </div>
+          )}
+
+          {type === "billing_type" && (
+            <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 space-y-1">
+              <p className="font-semibold">Auto-generates 2 options — no manual entry needed:</p>
+              <ul className="list-disc list-inside text-blue-600 space-y-0.5">
+                <li><strong>One-off</strong> — single payment products</li>
+                <li><strong>Subscription</strong> — recurring payment products</li>
+              </ul>
+            </div>
+          )}
+
           {(type === "custom" || type === "tag") && (
             <div className="bg-amber-50 rounded-lg p-3 text-xs text-amber-800 space-y-1">
               <p className="font-semibold">How to associate products with this filter:</p>
@@ -128,6 +152,18 @@ function FilterFormModal({
                 <li>Add the tag value (e.g. <code className="bg-amber-100 px-1 rounded">express</code>) to that product</li>
               </ol>
               <p className="text-amber-600 mt-1">When a customer selects "Express", only products tagged <code className="bg-amber-100 px-1 rounded">express</code> will show.</p>
+            </div>
+          )}
+
+          {type === "intake_field" && (
+            <div className="bg-violet-50 rounded-lg p-3 text-xs text-violet-800 space-y-1">
+              <p className="font-semibold">How Intake Field filtering works:</p>
+              <ol className="list-decimal list-inside space-y-1 text-violet-700">
+                <li>Find the intake field's <strong>name</strong> attribute in your product's intake schema (e.g. <code className="bg-violet-100 px-1 rounded">service_region</code>)</li>
+                <li>Note the exact <strong>option value</strong> for each option you want to filter by (e.g. <code className="bg-violet-100 px-1 rounded">australia</code>)</li>
+                <li>Add options below using <strong>Value</strong> format: <code className="bg-violet-100 px-1 rounded">fieldname:optionvalue</code></li>
+              </ol>
+              <p className="text-violet-600 mt-1">Example: Label = <em>"Australia"</em>, Value = <code className="bg-violet-100 px-1 rounded">service_region:australia</code></p>
             </div>
           )}
 
@@ -147,10 +183,19 @@ function FilterFormModal({
               </div>
               <div className="flex gap-2">
                 <Input value={newOptLabel} onChange={e => setNewOptLabel(e.target.value)} placeholder="Label" className="flex-1" onKeyDown={e => e.key === "Enter" && addOption()} />
-                <Input value={newOptValue} onChange={e => setNewOptValue(e.target.value)} placeholder="value (optional)" className="w-36 font-mono text-xs" />
+                <Input
+                  value={newOptValue}
+                  onChange={e => setNewOptValue(e.target.value)}
+                  placeholder={type === "intake_field" ? "fieldname:optionvalue" : "value (optional)"}
+                  className="w-36 font-mono text-xs"
+                />
                 <Button size="sm" variant="outline" onClick={addOption} type="button"><Plus className="h-3.5 w-3.5" /></Button>
               </div>
-              <p className="text-xs text-slate-400">Press Enter or + to add. Value auto-generated from label if empty.</p>
+              <p className="text-xs text-slate-400">
+                {type === "intake_field"
+                  ? "Value must be fieldname:optionvalue (e.g. service_region:australia)"
+                  : "Press Enter or + to add. Value auto-generated from label if empty."}
+              </p>
             </div>
           )}
 
