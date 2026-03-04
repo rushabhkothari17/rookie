@@ -5,7 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (March 4, 2026) — Required Field Asterisk Indicators
+## Latest Updates (Feb 2026) — Asterisk Styling Consistency Fix
+
+### Completed: Uniform Red Asterisk Styling Across All Forms ✅
+Fixed inconsistent asterisk (`*`) styling on all mandatory field labels. All instances now use `<span className="text-red-500">*</span>` instead of plain-text `*` (which inherited default label color).
+- Fixed in 10 files: ResourcesTab, AdminDocumentsTab, ArticlesTab, IntakeSchemaBuilder, ApiTab, PartnerOrgForm, CustomerSignupFields, Cart, ProductDetail (×2)
+- All dynamic conditional patterns `{req ? " *" : ""}` updated to `{req ? <span className="text-red-500"> *</span> : ""}`
+- Verified red `rgb(239,68,68)` asterisks on all admin forms via frontend testing agent
+
+---
+
+## Previous Updates (March 4, 2026) — Required Field Asterisk Indicators
 
 ### Completed: Visual * Asterisk on All Required Fields ✅
 Added red `*` indicators to all required field labels across all 13 forms:

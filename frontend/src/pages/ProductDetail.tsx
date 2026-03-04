@@ -440,7 +440,7 @@ export default function ProductDetail() {
                 return schema.map(field => (
                   <div key={field.id} className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">
-                      {field.label}{field.required && " *"}
+                      {field.label}{field.required && <span className="text-red-500"> *</span>}
                     </label>
                     <DynamicField
                       field={field}
@@ -498,7 +498,7 @@ export default function ProductDetail() {
                 return schema.map(field => (
                   <div key={field.id} className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">
-                      {field.label}{field.required && " *"}
+                      {field.label}{field.required && <span className="text-red-500"> *</span>}
                     </label>
                     <DynamicField
                       field={field}
