@@ -4,7 +4,7 @@ import api from "@/lib/api";
 import AppShell from "@/components/AppShell";
 import OfferingCard from "@/components/OfferingCard";
 import { categoryFromSlug, displayCategory } from "@/lib/categories";
-import { useWebsite } from "@/contexts/WebsiteContext";
+import { useWebsite, usePartnerCode } from "@/contexts/WebsiteContext";
 
 type StoreFilterOpt = { label: string; value: string };
 type StoreFilter = {
@@ -43,10 +43,10 @@ export default function Store() {
   const [configuredFilters, setConfiguredFilters] = useState<StoreFilter[]>([]);
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({});
   const ws = useWebsite();
+  const partnerCode = usePartnerCode();
 
   useEffect(() => {
     const load = async () => {
-      const partnerCode = localStorage.getItem("aa_partner_code") || "";
       const filterUrl = partnerCode
         ? `/store/filters?tenant_code=${encodeURIComponent(partnerCode)}`
         : "/store/filters";
@@ -81,7 +81,7 @@ export default function Store() {
       setActiveCategory(fromUrl || (apiCats[0]?.name ?? null));
     };
     load();
-  }, []);
+  }, [partnerCode]);
 
   const filteredProducts = useMemo(() => {
     let result = activeCategory

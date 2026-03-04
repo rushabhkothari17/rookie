@@ -1,6 +1,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import api from "@/lib/api";
 
+// ─── Partner Code Context ──────────────────────────────────────────────────
+const PartnerCodeContext = createContext<string>("");
+
+export function usePartnerCode(): string {
+  return useContext(PartnerCodeContext);
+}
+
 export interface WebsiteSettings {
   // Branding
   store_name: string;
@@ -419,11 +426,13 @@ export function applyBrandingFromSettings(s: Record<string, any>) {
 
 export function WebsiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<WebsiteSettings>(DEFAULT_SETTINGS);
+  const [partnerCode, setPartnerCode] = useState<string>(
+    () => localStorage.getItem("aa_partner_code") || ""
+  );
 
   useEffect(() => {
-    const storedCode = localStorage.getItem("aa_partner_code") || "";
-    const url = storedCode
-      ? `/website-settings?partner_code=${encodeURIComponent(storedCode)}`
+    const url = partnerCode
+      ? `/website-settings?partner_code=${encodeURIComponent(partnerCode)}`
       : "/website-settings";
     api.get(url)
       .then(res => {
@@ -432,12 +441,25 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
         _applyBrandingToDOM(s);
       })
       .catch(() => {});
+  }, [partnerCode]);
+
+  // Keep partnerCode in sync if it changes in localStorage (e.g. partner login)
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "aa_partner_code") {
+        setPartnerCode(e.newValue || "");
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   return (
-    <WebsiteContext.Provider value={settings}>
-      {children}
-    </WebsiteContext.Provider>
+    <PartnerCodeContext.Provider value={partnerCode}>
+      <WebsiteContext.Provider value={settings}>
+        {children}
+      </WebsiteContext.Provider>
+    </PartnerCodeContext.Provider>
   );
 }
 
