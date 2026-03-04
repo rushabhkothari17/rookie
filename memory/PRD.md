@@ -5,9 +5,19 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (March 4, 2026)
+## Latest Updates (March 4, 2026) — Bug Fixes
 
-### Completed: Currency Dropdown in All Price/Amount Filters ✅
+### Completed: Footer Full-Width Fix ✅
+- **Problem**: Admin panel footer was constrained inside `aa-container` (max-width + padding), not spanning full viewport width.
+- **Fix**: Moved `AppFooter` from `Admin.tsx` into `BaseLayout` in `App.tsx` (placed after `</main>`, outside `aa-container`), matching the pattern used in `AppShell.tsx` for public pages.
+- **Verified**: Footer is now 1920px wide matching full viewport on both admin and store pages (iteration_176.json).
+
+### Completed: Resources Price/Currency Filter Fix ✅
+- **Problem**: The price min/max and currency filter on the Resources tab did nothing — frontend sent params to backend but wrong file (`articles.py`) was updated; actual resources use `resources.py`.
+- **Fix**: Updated `/resources/admin/list` in `resources.py` to handle `price_min`, `price_max`, `price_currency`, `modified_from`, `modified_to`, and `partner` query params with proper MongoDB `$gte`/`$lte` comparisons.
+- **Verified**: price_min=50 → 1 result; price_min=200 → 0 results; price_currency=USD → 1 result; price_currency=GBP → 0 results (iteration_176.json).
+
+
 - **Problem**: Price/Amount filter popovers only had Min/Max range inputs, no way to filter by currency alongside a value range.
 - **Fix**: Added optional `currencyOptions?: [string, string][]` prop to `ColHeader` component. When provided with `filterType="number-range"`, a currency `<select>` appears above the Min/Max inputs.
 - **Scope**: Applied to 6 columns across 5 tabs: Products (Price), Subscriptions (Amount + Tax), Partner Subscriptions (Amount), Partner Orders (Amount), Resources (Price).
