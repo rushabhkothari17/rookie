@@ -37,7 +37,7 @@ async def update_base_currency(
     currency = payload.get("base_currency", "").strip().upper()
     if currency not in VALID_CURRENCIES:
         raise HTTPException(status_code=400, detail=f"Invalid currency. Must be one of: {', '.join(VALID_CURRENCIES)}")
-    await db.tenants.update_one({"id": tid}, {"$set": {"base_currency": currency, "updated_at": now_iso()}})
+    await db.tenants.update_one({"id": tid}, {"$set": {"base_currency": currency, "updated_at": now_iso()}}, upsert=True)
     await create_audit_log(
         entity_type="tenant", entity_id=tid,
         action="base_currency_updated", actor=f"admin:{admin.get('email', admin['id'])}",

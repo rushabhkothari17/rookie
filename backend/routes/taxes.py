@@ -41,7 +41,7 @@ async def update_tax_settings(
     tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "tax_settings": 1})
     existing = ((tenant or {}).get("tax_settings") or {})
     merged = {**existing, **update}
-    await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": merged}})
+    await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": merged}}, upsert=True)
     await create_audit_log(
         entity_type="tax_settings", entity_id=tid, action="updated",
         actor=admin.get("email", "admin"), details={"updated_fields": list(update.keys())}, tenant_id=tid,
@@ -241,7 +241,7 @@ async def update_invoice_settings(
     existing_inv = ts.get("invoice_settings") or {}
     merged = {**existing_inv, **payload}
     ts["invoice_settings"] = merged
-    await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": ts}})
+    await db.tenants.update_one({"id": tid}, {"$set": {"tax_settings": ts}}, upsert=True)
     await create_audit_log(
         entity_type="invoice_settings", entity_id=tid, action="updated",
         actor=admin.get("email", "admin"), details={"updated_fields": list(payload.keys())}, tenant_id=tid,
