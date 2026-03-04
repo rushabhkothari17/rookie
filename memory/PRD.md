@@ -5,7 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Feb 2026) — Enquiry Product Required, Tax Province Dropdown, Auth & Pages Subtabs
+## Latest Updates (Feb 2026) — Store Filters Tenant Isolation Bug Fix
+
+### Fixed: Store Filters Leaking Across Tenants ✅
+**Root cause**: `GET /store/filters` had no `tenant_id` scoping when `tenant_code` query param was absent — returned all active filters from all tenants. `Store.tsx` never passed `tenant_code`.
+- **Backend** (`store_filters.py`): No `tenant_code` now defaults to `DEFAULT_TENANT_ID`; unknown `tenant_code` returns empty array (not other tenants' data)
+- **Frontend** (`Store.tsx`): Now reads `aa_partner_code` from `localStorage` and passes it as `?tenant_code=` to `/store/filters`
+- Test filter "Price Range" created for apex-holding tenant; verified correct scoping via curl
+
+---
+
+## Previous Updates (Feb 2026) — Enquiry Product Required, Tax Province Dropdown, Auth & Pages Subtabs
 
 ### Completed: Manual Enquiry Product Field Required ✅
 - `EnquiriesTab.tsx`: Product selection is now required (validation before submit). Label updated to RequiredLabel. Placeholder changed from "Select product (optional)" → "Select product".

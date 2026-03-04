@@ -46,10 +46,14 @@ export default function Store() {
 
   useEffect(() => {
     const load = async () => {
+      const partnerCode = localStorage.getItem("aa_partner_code") || "";
+      const filterUrl = partnerCode
+        ? `/store/filters?tenant_code=${encodeURIComponent(partnerCode)}`
+        : "/store/filters";
       const [prodRes, catRes, filterRes] = await Promise.all([
         api.get("/products"),
         api.get("/categories"),
-        api.get("/store/filters").catch(() => ({ data: { filters: [] } })),
+        api.get(filterUrl).catch(() => ({ data: { filters: [] } })),
       ]);
       const prods: any[] = prodRes.data.products || [];
       setProducts(prods);

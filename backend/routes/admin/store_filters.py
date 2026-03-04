@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from core.helpers import make_id, now_iso
-from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
+from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID
 from db.session import db
 from services.audit_service import create_audit_log
 
@@ -151,14 +151,19 @@ async def reorder_store_filters(
 
 @router.get("/store/filters")
 async def public_store_filters(tenant_code: Optional[str] = None):
-    """Public endpoint: returns active filters for the storefront.
-    Optionally filtered by tenant_code (resolved via partner code).
-    """
+    """Public endpoint: returns active filters for the storefront, scoped to a tenant."""
     query: Dict[str, Any] = {"is_active": True}
+
     if tenant_code:
         tenant = await db.tenants.find_one({"code": tenant_code.lower()}, {"_id": 0, "id": 1})
         if tenant:
             query["tenant_id"] = tenant["id"]
+        else:
+            # Unknown partner code — return empty rather than leaking other tenants' filters
+            return {"filters": []}
+    else:
+        # No partner code — scope to default tenant only
+        query["tenant_id"] = DEFAULT_TENANT_ID
 
     filters = await db.store_filters.find(query, {"_id": 0}).sort("sort_order", 1).to_list(50)
     return {"filters": filters}
