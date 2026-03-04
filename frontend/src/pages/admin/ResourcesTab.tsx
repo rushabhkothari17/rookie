@@ -694,7 +694,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Content</label>
+              <label className="text-xs font-medium text-slate-700">Content <span className="text-red-400">*</span></label>
               <ArticleEditor key={`editor-${editorKey}`} value={form.content} onChange={(v) => setForm({ ...form, content: v })} />
             </div>
 

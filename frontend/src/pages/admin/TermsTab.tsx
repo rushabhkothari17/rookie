@@ -213,9 +213,9 @@ export function TermsTab() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="admin-terms-dialog">
           <DialogHeader><DialogTitle>Create Terms & Conditions</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1"><label className="text-xs text-slate-500">Title</label><Input value={createForm.title} onChange={e => setCreateForm({ ...createForm, title: e.target.value })} data-testid="admin-terms-title-input" /></div>
+            <div className="space-y-1"><label className="text-xs text-slate-500">Title <span className="text-red-400">*</span></label><Input value={createForm.title} onChange={e => setCreateForm({ ...createForm, title: e.target.value })} data-testid="admin-terms-title-input" /></div>
             <div className="space-y-1">
-              <label className="text-xs text-slate-500">Content (supports tags)</label>
+              <label className="text-xs text-slate-500">Content (supports tags) <span className="text-red-400">*</span></label>
               <RichHtmlEditor value={createForm.content} onChange={(v) => setCreateForm({ ...createForm, content: v })} minHeight="200px" placeholder="Enter terms content… Tags: {product_name}, {user_name}, {company_name}" />
               <p className="text-xs text-slate-400">Tags: {'{product_name}'}, {'{user_name}'}, {'{company_name}'}, {'{user_email}'}, {'{user_address_line1}'}</p>
             </div>
@@ -230,8 +230,8 @@ export function TermsTab() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="admin-terms-edit-dialog">
           <DialogHeader><DialogTitle>Edit Terms: {editTerm?.title}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1"><label className="text-xs text-slate-500">Title</label><Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} data-testid="admin-terms-edit-title" /></div>
-            <div className="space-y-1"><label className="text-xs text-slate-500">Content</label><RichHtmlEditor value={editForm.content} onChange={(v) => setEditForm({ ...editForm, content: v })} minHeight="200px" placeholder="Enter terms content…" /></div>
+            <div className="space-y-1"><label className="text-xs text-slate-500">Title <span className="text-red-400">*</span></label><Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} data-testid="admin-terms-edit-title" /></div>
+            <div className="space-y-1"><label className="text-xs text-slate-500">Content <span className="text-red-400">*</span></label><RichHtmlEditor value={editForm.content} onChange={(v) => setEditForm({ ...editForm, content: v })} minHeight="200px" placeholder="Enter terms content…" /></div>
             <div className="space-y-1">
               <label className="text-xs text-slate-500">Status</label>
               <Select value={editForm.status} onValueChange={v => setEditForm({ ...editForm, status: v })}>

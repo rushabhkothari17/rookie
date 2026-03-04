@@ -508,7 +508,7 @@ export function UsersTab() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Full Name</label>
+                <label className="text-xs text-slate-500">Full Name <span className="text-red-400">*</span></label>
                 <Input value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} placeholder="Jane Smith" data-testid="new-user-name" />
               </div>
               <div className="space-y-1">
@@ -590,7 +590,7 @@ export function UsersTab() {
           {editUser && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Full Name</label>
+                <label className="text-xs text-slate-500">Full Name <span className="text-red-400">*</span></label>
                 <Input value={editForm.full_name} onChange={e => setEditForm(p => ({ ...p, full_name: e.target.value }))} data-testid="admin-edit-user-name" />
               </div>
 

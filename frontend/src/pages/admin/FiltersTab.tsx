@@ -96,7 +96,7 @@ function FilterFormModal({
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Service Type, Price Range" data-testid="filter-name-input" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Filter Type</label>
+            <label className="text-xs font-medium text-slate-600">Filter Type <span className="text-red-400">*</span></label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger data-testid="filter-type-select"><SelectValue /></SelectTrigger>
               <SelectContent>

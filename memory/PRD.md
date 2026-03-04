@@ -5,7 +5,25 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (March 4, 2026) — Form Validation & Enquiry Creation
+## Latest Updates (March 4, 2026) — Required Field Asterisk Indicators
+
+### Completed: Visual * Asterisk on All Required Fields ✅
+Added red `*` indicators to all required field labels across all 13 forms:
+- Users (new/edit): Full Name `*`
+- Promo Codes: Code `*`, Discount Type `*`, Value `*`, Applies To `*`, Product Eligibility `*`, Expiry Date `*`  
+- ProductForm: Category `*`, Page layout `*`, Checkout type `*`, Billing type `*`, Price rounding `*`, Show price breakdown `*`, Terms & Conditions `*`, Customer visibility `*`
+- Terms (new/edit): Title `*`, Content `*`
+- Filters: Filter Type `*`
+- Manual Subscription: 7 fields with `*`
+- Manual Order: 5 fields with `*`
+- Enquiry Create dialog: Customer Email `*`
+- Resources: Content `*`
+- Templates: Default Category `*`, Description `*`, Content `*`
+- Email Templates: Description `*`, Email Body `*`
+- Resource Categories: Description `*`
+- References: Label `*`, Key `*`, Value `*`
+
+
 
 ### Completed: Mandatory Field Validation Across All Admin Forms ✅
 Added validation (toast.error + early return) to:

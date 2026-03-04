@@ -212,7 +212,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
   return (
     <div className="grid grid-cols-2 gap-3">
       <div>
-        <label className="text-xs text-slate-600 font-medium">Label</label>
+        <label className="text-xs text-slate-600 font-medium">Label <span className="text-red-400">*</span></label>
         <Input value={draft.label || ""} onChange={(e) => {
           setDraft({ ...draft, label: e.target.value });
         }} onBlur={(e) => {
@@ -222,7 +222,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
         }} placeholder="Contact Email" className="mt-0.5 h-8 text-sm" data-testid="ref-label-input" />
       </div>
       <div>
-        <label className="text-xs text-slate-600 font-medium">Key {lockKey && <span className="text-amber-500">(locked)</span>}</label>
+        <label className="text-xs text-slate-600 font-medium">Key <span className="text-red-400">*</span> {lockKey && <span className="text-amber-500">(locked)</span>}</label>
         <Input value={draft.key || ""} onChange={(e) => set("key", e.target.value)}
           placeholder="contact_email" disabled={lockKey}
           className="mt-0.5 h-8 text-sm font-mono" data-testid="ref-key-input" />
@@ -237,7 +237,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
         </Select>
       </div>
       <div>
-        <label className="text-xs text-slate-600 font-medium">Value</label>
+        <label className="text-xs text-slate-600 font-medium">Value <span className="text-red-400">*</span></label>
         <Input value={draft.value || ""} onChange={(e) => set("value", e.target.value)}
           placeholder={draft.type === "email" ? "support@co.com" : draft.type === "url" ? "https://..." : draft.type === "phone" ? "+1 555 000 0000" : "Value"}
           type={draft.type === "email" ? "email" : draft.type === "url" ? "url" : "text"}
