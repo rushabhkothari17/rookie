@@ -18,6 +18,7 @@ import { ArticleTemplatesTab } from "./ResourceTemplatesTab";
 import { ArticleEmailTemplatesTab } from "./ResourceEmailTemplatesTab";
 import { ArticleCategoriesTab } from "./ResourceCategoriesTab";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
+import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
 const HARDCODED_CATEGORIES = [
   "Scope - Draft",
@@ -72,6 +73,7 @@ interface ResourcesTabProps {
 export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const { user: authUser } = useAuth();
   const isPlatformAdmin = authUser?.role === "platform_admin";
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [showImportResources, setShowImportResources] = useState(false);
   const [subTab, setSubTab] = useState<"resources" | "templates" | "email-templates" | "categories">("resources");
   const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
@@ -138,7 +140,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [partnerFilter, setPartnerFilter] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<{ min?: string; max?: string }>({});
+  const [priceRange, setPriceRange] = useState<{ min?: string; max?: string; currency?: string }>({});
   const [searchFilter, setSearchFilter] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -174,6 +176,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
       if (modifiedTo) params.append("modified_to", modifiedTo);
       if (priceRange.min) params.append("price_min", priceRange.min);
       if (priceRange.max) params.append("price_max", priceRange.max);
+      if (priceRange.currency) params.append("price_currency", priceRange.currency);
       if (partnerFilter.length > 0) params.append("partner", partnerFilter.join(","));
       const res = await api.get(`/resources/admin/list?${params}`);
       setResources(res.data.resources || []);
@@ -477,7 +480,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
               <ColHeader label="Created" colKey="created" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: startDate, to: endDate }} onFilter={v => { setStartDate(v.from || ""); setEndDate(v.to || ""); setPage(1); }} onClearFilter={() => { setStartDate(""); setEndDate(""); setPage(1); }} />
               <ColHeader label="Modified" colKey="modified" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: modifiedFrom, to: modifiedTo }} onFilter={v => { setModifiedFrom(v.from || ""); setModifiedTo(v.to || ""); setPage(1); }} onClearFilter={() => { setModifiedFrom(""); setModifiedTo(""); setPage(1); }} />
               <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter([]); setPage(1); }} statusOptions={(dynamicCategories.length > 0 ? dynamicCategories : HARDCODED_CATEGORIES.map(c => ({ name: c }))).map((c: any) => [c.name, c.name] as [string, string])} />
-              <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} />
+              <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
               <ColHeader label="Title / Visible" colKey="title" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={searchFilter} onFilter={v => { setSearchFilter(v); setPage(1); }} onClearFilter={() => { setSearchFilter(""); setPage(1); }} />
               {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerFilter} onFilter={v => { setPartnerFilter(v); setPage(1); }} onClearFilter={() => { setPartnerFilter([]); setPage(1); }} statusOptions={uniquePartners.map(p => [p, p] as [string, string])} />}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>

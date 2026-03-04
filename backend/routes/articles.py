@@ -66,12 +66,19 @@ async def list_articles_admin(
     search: Optional[str] = None,
     created_from: Optional[str] = None,
     created_to: Optional[str] = None,
+    modified_from: Optional[str] = None,
+    modified_to: Optional[str] = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
+    price_currency: Optional[str] = None,
+    partner: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf, "deleted_at": {"$exists": False}}
     if category:
-        query["category"] = category
+        cats = [c.strip() for c in category.split(",") if c.strip()]
+        query["category"] = {"$in": cats} if len(cats) > 1 else cats[0]
     if search:
         query["$or"] = [
             {"title": {"$regex": _re.escape(search), "$options": "i"}},
@@ -81,6 +88,19 @@ async def list_articles_admin(
         query.setdefault("created_at", {})["$gte"] = created_from
     if created_to:
         query.setdefault("created_at", {})["$lte"] = created_to + "T23:59:59"
+    if modified_from:
+        query.setdefault("updated_at", {})["$gte"] = modified_from
+    if modified_to:
+        query.setdefault("updated_at", {})["$lte"] = modified_to + "T23:59:59"
+    if price_min is not None:
+        query.setdefault("price", {})["$gte"] = str(price_min)
+    if price_max is not None:
+        query.setdefault("price", {})["$lte"] = str(price_max)
+    if price_currency:
+        query["currency"] = price_currency
+    if partner:
+        partners = [p.strip() for p in partner.split(",") if p.strip()]
+        query["partner_code"] = {"$in": partners} if len(partners) > 1 else partners[0]
 
     total = await db.articles.count_documents(query)
     skip = (page - 1) * per_page

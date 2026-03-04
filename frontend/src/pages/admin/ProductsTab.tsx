@@ -17,10 +17,12 @@ import { TermsTab } from "./TermsTab";
 import { Download, Upload, ExternalLink, Package, FolderTree, Tag, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ColHeader } from "@/components/shared/ColHeader";
+import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
 export function ProductsTab() {
   const { user: authUser } = useAuth();
   const isPlatformAdmin = authUser?.role === "platform_admin";
+  const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [activeSubTab, setActiveSubTab] = useState("products");
   const navigate = useNavigate();
   const [showImport, setShowImport] = useState(false);
@@ -31,7 +33,7 @@ export function ProductsTab() {
   const [billingFilter, setBillingFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [nameFilter, setNameFilter] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<{ min?: string; max?: string }>({});
+  const [priceRange, setPriceRange] = useState<{ min?: string; max?: string; currency?: string }>({});
   const [page, setPage] = useState(1);
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
@@ -119,7 +121,8 @@ export function ProductsTab() {
       return true;
     });
     // Price range filter
-    const matchPrice = (!priceRange.min || (p.base_price && p.base_price >= parseFloat(priceRange.min))) &&
+    const matchPrice = (!priceRange.currency || (p.currency || "USD") === priceRange.currency) &&
+                       (!priceRange.min || (p.base_price && p.base_price >= parseFloat(priceRange.min))) &&
                        (!priceRange.max || (p.base_price && p.base_price <= parseFloat(priceRange.max)));
     return matchName && matchCategory && matchBilling && matchStatus && matchPrice;
   });
@@ -184,7 +187,7 @@ export function ProductsTab() {
                     <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => { setNameFilter(v); setPage(1); }} onClearFilter={() => { setNameFilter([]); setPage(1); }} statusOptions={uniqueNames} />
                     <ColHeader label="Category" colKey="category" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={categoryFilter} onFilter={v => { setCategoryFilter(v); setPage(1); }} onClearFilter={() => { setCategoryFilter([]); setPage(1); }} statusOptions={uniqueCategories} />
                     <ColHeader label="Billing" colKey="billing" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={billingFilter} onFilter={v => { setBillingFilter(v); setPage(1); }} onClearFilter={() => { setBillingFilter([]); setPage(1); }} statusOptions={[["subscription", "Subscription"], ["one-time", "One-time"]]} />
-                    <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} />
+                    <ColHeader label="Price" colKey="price" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={priceRange} onFilter={v => { setPriceRange(v); setPage(1); }} onClearFilter={() => { setPriceRange({}); setPage(1); }} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
                     <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => { setStatusFilter(v); setPage(1); }} onClearFilter={() => { setStatusFilter([]); setPage(1); }} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />
                     {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner</th>}
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>

@@ -123,6 +123,13 @@ async def admin_subscriptions(
     sub_number: Optional[str] = None,
     processor_id_filter: Optional[str] = None,
     plan_name_filter: Optional[str] = None,
+    currency: Optional[str] = None,
+    amount_min: Optional[float] = None,
+    amount_max: Optional[float] = None,
+    amount_currency: Optional[str] = None,
+    tax_min: Optional[float] = None,
+    tax_max: Optional[float] = None,
+    tax_currency: Optional[str] = None,
     renewal_from: Optional[str] = None,
     renewal_to: Optional[str] = None,
     created_from: Optional[str] = None,
@@ -137,15 +144,35 @@ async def admin_subscriptions(
     await _check(admin, "view")
     query: Dict[str, Any] = {**tf}
     if status:
-        query["status"] = status
+        statuses = [s.strip() for s in status.split(",") if s.strip()]
+        query["status"] = {"$in": statuses} if len(statuses) > 1 else statuses[0]
     if payment:
-        query["payment_method"] = payment
+        payments = [p.strip() for p in payment.split(",") if p.strip()]
+        query["payment_method"] = {"$in": payments} if len(payments) > 1 else payments[0]
     if sub_number:
-        query["subscription_number"] = {"$regex": _re.escape(sub_number), "$options": "i"}
+        sub_numbers = [s.strip() for s in sub_number.split(",") if s.strip()]
+        query["subscription_number"] = {"$in": sub_numbers} if len(sub_numbers) > 1 else {"$regex": _re.escape(sub_numbers[0]), "$options": "i"}
     if processor_id_filter:
-        query["processor_id"] = {"$regex": _re.escape(processor_id_filter), "$options": "i"}
+        pids = [p.strip() for p in processor_id_filter.split(",") if p.strip()]
+        query["processor_id"] = {"$in": pids} if len(pids) > 1 else {"$regex": _re.escape(pids[0]), "$options": "i"}
     if plan_name_filter:
-        query["plan_name"] = {"$regex": _re.escape(plan_name_filter), "$options": "i"}
+        plans = [p.strip() for p in plan_name_filter.split(",") if p.strip()]
+        query["plan_name"] = {"$in": plans} if len(plans) > 1 else {"$regex": _re.escape(plans[0]), "$options": "i"}
+    if currency:
+        currencies_list = [c.strip() for c in currency.split(",") if c.strip()]
+        query["currency"] = {"$in": currencies_list} if len(currencies_list) > 1 else currencies_list[0]
+    if amount_min is not None:
+        query.setdefault("amount", {})["$gte"] = amount_min
+    if amount_max is not None:
+        query.setdefault("amount", {})["$lte"] = amount_max
+    if amount_currency:
+        query["currency"] = amount_currency
+    if tax_min is not None:
+        query.setdefault("tax_amount", {})["$gte"] = tax_min
+    if tax_max is not None:
+        query.setdefault("tax_amount", {})["$lte"] = tax_max
+    if tax_currency:
+        query["currency"] = tax_currency
     if renewal_from:
         query.setdefault("renewal_date", {})["$gte"] = renewal_from
     if renewal_to:

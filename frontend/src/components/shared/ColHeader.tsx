@@ -19,6 +19,8 @@ export type ColHeaderProps = {
   align?: "left" | "right";
   /** For filterType="status": override the radio options. Defaults to [[all,All],[active,Active],[inactive,Inactive]] */
   statusOptions?: [string, string][];
+  /** For filterType="number-range": show a currency selector above the min/max inputs */
+  currencyOptions?: [string, string][];
 };
 
 function sortLabel(dir: SortDirection, filterType: string) {
@@ -32,6 +34,7 @@ export function ColHeader({
   filterType, filterValue, onFilter, onClearFilter,
   align = "left",
   statusOptions,
+  currencyOptions,
 }: ColHeaderProps) {
   const isActive = sortCol === colKey;
   const [dropdownSearch, setDropdownSearch] = useState("");
@@ -47,7 +50,7 @@ export function ColHeader({
     : filterType === "text" ? !!filterValue
     : filterType === "status" ? filterValue !== "all" && !!filterValue
     : filterType === "dropdown" ? Array.isArray(filterValue) && filterValue.length > 0
-    : filterType === "number-range" ? !!(filterValue?.min || filterValue?.max)
+    : filterType === "number-range" ? !!(filterValue?.min || filterValue?.max || filterValue?.currency)
     : !!(filterValue?.from || filterValue?.to);
 
   const SortIcon = isActive ? (sortDir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
@@ -147,6 +150,21 @@ export function ColHeader({
                 )}
                 {filterType === "number-range" && (
                   <div className="space-y-1.5">
+                    {currencyOptions && currencyOptions.length > 0 && (
+                      <div>
+                        <p className="text-[10px] text-slate-400 mb-0.5">Currency</p>
+                        <select
+                          className="w-full h-7 text-xs rounded border border-slate-200 px-2 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          value={filterValue?.currency || ""}
+                          onChange={e => onFilter && onFilter({ ...filterValue, currency: e.target.value || undefined })}
+                        >
+                          <option value="">Any currency</option>
+                          {currencyOptions.map(([val, lbl]) => (
+                            <option key={val} value={val}>{lbl}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <Input className="h-7 text-xs" type="number" placeholder="Min" value={filterValue?.min || ""} onChange={e => onFilter && onFilter({ ...filterValue, min: e.target.value })} />
                     <Input className="h-7 text-xs" type="number" placeholder="Max" value={filterValue?.max || ""} onChange={e => onFilter && onFilter({ ...filterValue, max: e.target.value })} />
                   </div>

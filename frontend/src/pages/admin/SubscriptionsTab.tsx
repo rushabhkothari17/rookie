@@ -108,8 +108,8 @@ export function SubscriptionsTab() {
   const [processorIdFilter, setProcessorIdFilter] = useState<string[]>([]);
   const [planFilter, setPlanFilter] = useState<string[]>([]);
   const [currencyFilter, setCurrencyFilter] = useState<string[]>([]);
-  const [amountRange, setAmountRange] = useState<{ min?: string; max?: string }>({});
-  const [taxRange, setTaxRange] = useState<{ min?: string; max?: string }>({});
+  const [amountRange, setAmountRange] = useState<{ min?: string; max?: string; currency?: string }>({});
+  const [taxRange, setTaxRange] = useState<{ min?: string; max?: string; currency?: string }>({});
   const [renewalFrom, setRenewalFrom] = useState("");
   const [renewalTo, setRenewalTo] = useState("");
   const [createdFrom, setCreatedFrom] = useState("");
@@ -176,8 +176,10 @@ export function SubscriptionsTab() {
       if (currencyFilter.length > 0) params.append("currency", currencyFilter.join(","));
       if (amountRange.min) params.append("amount_min", amountRange.min);
       if (amountRange.max) params.append("amount_max", amountRange.max);
+      if (amountRange.currency) params.append("amount_currency", amountRange.currency);
       if (taxRange.min) params.append("tax_min", taxRange.min);
       if (taxRange.max) params.append("tax_max", taxRange.max);
+      if (taxRange.currency) params.append("tax_currency", taxRange.currency);
       if (renewalFrom) params.append("renewal_from", renewalFrom);
       if (renewalTo) params.append("renewal_to", renewalTo);
       if (createdFrom) params.append("created_from", createdFrom);
@@ -323,8 +325,8 @@ export function SubscriptionsTab() {
               <ColHeader label="Processor ID" colKey="processor_id" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={processorIdFilter} onFilter={setProcessorIdFilter} onClearFilter={() => setProcessorIdFilter([])} statusOptions={uniqueProcessorIds.map(s => [s, s.slice(0, 14) + "…"] as [string, string])} />
               <ColHeader label="Customer Email" colKey="email" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={emailFilter} onFilter={setEmailFilter} onClearFilter={() => setEmailFilter([])} statusOptions={uniqueEmails.map(e => [e, e] as [string, string])} />
               <ColHeader label="Plan" colKey="plan" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={planFilter} onFilter={setPlanFilter} onClearFilter={() => setPlanFilter([])} statusOptions={uniquePlans.map(p => [p, p] as [string, string])} />
-              <ColHeader label="Amount" colKey="amount" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={amountRange} onFilter={setAmountRange} onClearFilter={() => setAmountRange({})} />
-              <ColHeader label="Tax" colKey="tax" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={taxRange} onFilter={setTaxRange} onClearFilter={() => setTaxRange({})} />
+              <ColHeader label="Amount" colKey="amount" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={amountRange} onFilter={setAmountRange} onClearFilter={() => setAmountRange({})} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
+              <ColHeader label="Tax" colKey="tax" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="number-range" filterValue={taxRange} onFilter={setTaxRange} onClearFilter={() => setTaxRange({})} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
               <ColHeader label="Currency" colKey="currency" sortCol={sortField} sortDir={sortOrder} onSort={(c, d) => { setSortField(c); setSortOrder(d); }} onClearSort={() => { setSortField("created_at"); setSortOrder("desc"); }} filterType="dropdown" filterValue={currencyFilter} onFilter={setCurrencyFilter} onClearFilter={() => setCurrencyFilter([])} statusOptions={uniqueCurrencies.map(c => [c, c] as [string, string])} />
               {sortColHeader("renewal_date", "Renewal", "date-range", { filterValue: { from: renewalFrom, to: renewalTo }, onFilter: (v: any) => { setRenewalFrom(v.from || ""); setRenewalTo(v.to || ""); }, onClearFilter: () => { setRenewalFrom(""); setRenewalTo(""); } })}
               {sortColHeader("start_date", "Start", "date-range", { filterValue: { from: startFrom, to: startTo }, onFilter: (v: any) => { setStartFrom(v.from || ""); setStartTo(v.to || ""); }, onClearFilter: () => { setStartFrom(""); setStartTo(""); } })}

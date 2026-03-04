@@ -312,7 +312,7 @@ export function PartnerOrdersTab() {
   const [colFilters, setColFilters] = useState({
     orderNumbers: [] as string[], partnerNames: [] as string[],
     methods: [] as string[], statuses: [] as string[],
-    description: "", amount: { min: "", max: "" }, date: { from: "", to: "" },
+    description: "", amount: { min: "", max: "", currency: "" }, date: { from: "", to: "" },
   });
   const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
 
@@ -325,6 +325,7 @@ export function PartnerOrdersTab() {
     if (colFilters.description) r = r.filter(o => o.description?.toLowerCase().includes(colFilters.description.toLowerCase()));
     if (colFilters.amount.min) r = r.filter(o => o.amount >= parseFloat(colFilters.amount.min));
     if (colFilters.amount.max) r = r.filter(o => o.amount <= parseFloat(colFilters.amount.max));
+    if (colFilters.amount.currency) r = r.filter(o => o.currency === colFilters.amount.currency);
     if (colFilters.date.from) r = r.filter(o => o.invoice_date && o.invoice_date >= colFilters.date.from);
     if (colFilters.date.to) r = r.filter(o => o.invoice_date && o.invoice_date <= colFilters.date.to);
     if (colSort) {
@@ -434,7 +435,7 @@ export function PartnerOrdersTab() {
               <ColHeader label="Order #" colKey="order_number" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.orderNumbers} onFilter={v => setCF("orderNumbers", v)} onClearFilter={() => setCF("orderNumbers", [])} statusOptions={orderNumOpts} />
               <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerNames} onFilter={v => setCF("partnerNames", v)} onClearFilter={() => setCF("partnerNames", [])} statusOptions={orderPartnerOpts} />
               <ColHeader label="Description" colKey="description" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={colFilters.description} onFilter={v => setCF("description", v)} onClearFilter={() => setCF("description", "")} />
-              <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "" })} />
+              <ColHeader label="Amount" colKey="amount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="number-range" filterValue={colFilters.amount} onFilter={v => setCF("amount", v)} onClearFilter={() => setCF("amount", { min: "", max: "", currency: "" })} currencyOptions={supportedCurrencies.map(c => [c, c] as [string, string])} />
               <ColHeader label="Method" colKey="method" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.methods} onFilter={v => setCF("methods", v)} onClearFilter={() => setCF("methods", [])} statusOptions={[["manual", "Manual"], ["offline", "Offline"], ["bank_transfer", "Bank Transfer"], ["card", "Card"]]} />
               <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["pending", "Pending"], ["unpaid", "Unpaid"], ["paid", "Paid"], ["cancelled", "Cancelled"], ["refunded", "Refunded"]]} />
               <ColHeader label="Date" colKey="date" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={colFilters.date} onFilter={v => setCF("date", v)} onClearFilter={() => setCF("date", { from: "", to: "" })} />
