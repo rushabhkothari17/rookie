@@ -54,23 +54,21 @@ function matchesFilter(product: any, filterType: string, value: string): boolean
     return false;
   }
   if (filterType === "intake_field") {
-    // value format: "fieldname:optionvalue"
+    // value format: "fieldkey:optionvalue"
     const colonIdx = value.indexOf(":");
     if (colonIdx === -1) return false;
-    const fieldName = value.slice(0, colonIdx).toLowerCase();
+    const fieldKey = value.slice(0, colonIdx).toLowerCase();
     const optionVal = value.slice(colonIdx + 1).toLowerCase();
-    const schema = product.intake_schema_json;
-    if (!schema?.groups) return false;
-    for (const group of schema.groups) {
-      for (const field of group.fields || []) {
-        const fName = (field.name || field.label || "").toLowerCase();
-        if (fName === fieldName || field.name?.toLowerCase() === fieldName) {
-          const opts: any[] = field.options || [];
-          return opts.some((o: any) => {
-            const v = typeof o === "string" ? o : (o.value ?? o.label ?? o);
-            return String(v).toLowerCase() === optionVal;
-          });
-        }
+    // Intake schema uses schema.questions[].key (not schema.groups[].fields[])
+    const questions: any[] = product.intake_schema_json?.questions || [];
+    for (const q of questions) {
+      const qKey = (q.key || q.label || "").toLowerCase();
+      if (qKey === fieldKey) {
+        const opts: any[] = q.options || [];
+        return opts.some((o: any) => {
+          const v = typeof o === "string" ? o : (o.value ?? o.label ?? "");
+          return String(v).toLowerCase() === optionVal;
+        });
       }
     }
     return false;
@@ -118,8 +116,11 @@ export default function Store() {
       const filterUrl = partnerCode
         ? `/store/filters?tenant_code=${encodeURIComponent(partnerCode)}`
         : "/store/filters";
+      const productsUrl = partnerCode
+        ? `/products?partner_code=${encodeURIComponent(partnerCode)}`
+        : "/products";
       const [prodRes, catRes, filterRes, fxRes] = await Promise.all([
-        api.get("/products"),
+        api.get(productsUrl),
         api.get("/categories"),
         api.get(filterUrl).catch(() => ({ data: { filters: [] } })),
         api.get("/store/fx-rates?base=USD").catch(() => ({ data: { rates: {} } })),
@@ -234,6 +235,33 @@ export default function Store() {
     return Array.from(seen).sort();
   }, [products]);
 
+  // Auto-discover intake field options from products when filter has no manual options
+  const derivedFilterOptions = useMemo(() => {
+    const result: Record<string, { label: string; value: string }[]> = {};
+    configuredFilters.forEach(filter => {
+      if (filter.filter_type !== "intake_field" || filter.options.length > 0) return;
+      const filterKey = filter.name.toLowerCase().replace(/\s+/g, "_");
+      const seen = new Map<string, string>(); // encoded-value → display label
+      products.forEach(product => {
+        const questions: any[] = product.intake_schema_json?.questions || [];
+        questions.forEach(q => {
+          const qKey = (q.key || "").toLowerCase();
+          const qLabel = (q.label || "").toLowerCase();
+          if (qKey === filterKey || qLabel === filterKey || qKey === filter.name.toLowerCase()) {
+            (q.options || []).forEach((opt: any) => {
+              const v = typeof opt === "string" ? opt : (opt.value ?? opt.label ?? "");
+              const l = typeof opt === "string" ? opt : (opt.label ?? opt.value ?? "");
+              const encodedValue = `${qKey}:${String(v).toLowerCase()}`;
+              if (!seen.has(encodedValue)) seen.set(encodedValue, l);
+            });
+          }
+        });
+      });
+      result[filter.id] = Array.from(seen.entries()).map(([value, label]) => ({ label, value }));
+    });
+    return result;
+  }, [configuredFilters, products]);
+
   const hasActiveFilters = Object.values(activeFilters).some(Boolean) || activeCategory !== null || searchQuery.trim() !== "";
   const countFor = (name: string) => products.filter(p => displayCategory(p.category) === name).length;
   const countForOpt = (filter: StoreFilter, value: string) =>
@@ -259,8 +287,10 @@ export default function Store() {
     } else {
       // For auto-option types, look up label from AUTO_OPTIONS first
       const autoOpts = AUTO_OPTIONS[f.filter_type] || [];
+      const derivedOpts = derivedFilterOptions[f.id] || [];
       const optLabel =
         autoOpts.find(o => o.value === val)?.label ||
+        derivedOpts.find(o => o.value === val)?.label ||
         f.options.find(o => o.value === val)?.label ||
         val;
       activeFilterPills.push({ label: `${f.name}: ${optLabel}`, onRemove: () => toggleFilter(f.id, val) });
@@ -482,7 +512,7 @@ export default function Store() {
                   ) : (
                     /* Custom / Tag / Intake / Checkout / Billing filter options */
                     <div className="space-y-0.5">
-                      {(AUTO_OPTIONS[filter.filter_type] || filter.options).map(opt => (
+                      {(AUTO_OPTIONS[filter.filter_type] || derivedFilterOptions[filter.id] || filter.options).map(opt => (
                         <FilterOptionButton
                           key={opt.value}
                           label={opt.label}
