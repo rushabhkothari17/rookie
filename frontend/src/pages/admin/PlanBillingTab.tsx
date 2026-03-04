@@ -492,6 +492,7 @@ export function PlanBillingTab() {
   const [selectedDowngradePlan, setSelectedDowngradePlan] = useState("");
   const [downgradeMessage, setDowngradeMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async () => {
@@ -601,6 +602,17 @@ export function PlanBillingTab() {
       toast.error(e.response?.data?.detail || "Failed to submit request");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const r = await api.post("/partner/billing-portal");
+      window.location.href = r.data.portal_url;
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Failed to open Stripe billing portal");
+      setPortalLoading(false);
     }
   };
 
@@ -717,39 +729,48 @@ export function PlanBillingTab() {
       </div>
 
       {/* Action Buttons */}
-      {(upgrades.length > 0 || rates.length > 0 || downgrades.length > 0) && (
-        <div className="flex flex-wrap gap-3" data-testid="plan-action-buttons">
-          {upgrades.length > 0 && (
-            <Button
-              onClick={() => setShowUpgradeModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-700"
-              data-testid="open-upgrade-plan-btn"
-            >
-              <ArrowUp size={14} className="mr-1.5" />Upgrade Plan
-            </Button>
-          )}
-          {rates.length > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => setShowOneTimeModal(true)}
-              className="border-amber-300 text-amber-700 hover:bg-amber-50"
-              data-testid="open-one-time-modal-btn"
-            >
-              <Zap size={14} className="mr-1.5" />Buy Extra Limits
-            </Button>
-          )}
-          {downgrades.length > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => setShowDowngradeDialog(true)}
-              className="text-slate-500 border-slate-200"
-              data-testid="request-downgrade-btn"
-            >
-              <ArrowDown size={13} className="mr-1.5" />Request Downgrade
-            </Button>
-          )}
-        </div>
-      )}
+      <div className="flex flex-wrap gap-3" data-testid="plan-action-buttons">
+        {upgrades.length > 0 && (
+          <Button
+            onClick={() => setShowUpgradeModal(true)}
+            className="bg-emerald-600 hover:bg-emerald-700"
+            data-testid="open-upgrade-plan-btn"
+          >
+            <ArrowUp size={14} className="mr-1.5" />Upgrade Plan
+          </Button>
+        )}
+        {rates.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={() => setShowOneTimeModal(true)}
+            className="border-amber-300 text-amber-700 hover:bg-amber-50"
+            data-testid="open-one-time-modal-btn"
+          >
+            <Zap size={14} className="mr-1.5" />Buy Extra Limits
+          </Button>
+        )}
+        {downgrades.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={() => setShowDowngradeDialog(true)}
+            className="text-slate-500 border-slate-200"
+            data-testid="request-downgrade-btn"
+          >
+            <ArrowDown size={13} className="mr-1.5" />Request Downgrade
+          </Button>
+        )}
+        <Button
+          onClick={handleBillingPortal}
+          disabled={portalLoading}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          data-testid="open-billing-portal-btn"
+        >
+          {portalLoading ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
+          Manage Payment Method
+        </Button>
+      </div>
 
       {/* Pending upgrade banner — Resume or Dismiss */}
       {data?.pending_upgrade_order && (

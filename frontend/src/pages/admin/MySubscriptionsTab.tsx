@@ -10,7 +10,7 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { RefreshCw, XCircle, CreditCard, Loader2 } from "lucide-react";
+import { RefreshCw, XCircle, Loader2 } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700",
@@ -61,7 +61,6 @@ export function MySubscriptionsTab() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [cancelSub, setCancelSub] = useState<PartnerSub | null>(null);
-  const [portalLoading, setPortalLoading] = useState(false);
   const LIMIT = 20;
 
   const load = useCallback(async () => {
@@ -78,17 +77,6 @@ export function MySubscriptionsTab() {
   }, [page, search, status]);
 
   useEffect(() => { load(); }, [load]);
-
-  const handleBillingPortal = async () => {
-    setPortalLoading(true);
-    try {
-      const r = await api.post("/partner/billing-portal");
-      window.location.href = r.data.portal_url;
-    } catch (e: any) {
-      toast.error(e.response?.data?.detail || "Failed to open Stripe billing portal");
-      setPortalLoading(false);
-    }
-  };
 
   const handleCancel = async () => {
     if (!cancelSub) return;
@@ -113,17 +101,6 @@ export function MySubscriptionsTab() {
           <h2 className="text-lg font-semibold text-slate-900">My Subscriptions</h2>
           <p className="text-sm text-slate-500">Your active platform subscriptions.</p>
         </div>
-        <Button
-          onClick={handleBillingPortal}
-          disabled={portalLoading}
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          data-testid="open-billing-portal-btn"
-        >
-          {portalLoading ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
-          Manage Payment Method
-        </Button>
       </div>
 
       <div className="flex gap-2 flex-wrap">

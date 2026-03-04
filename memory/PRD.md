@@ -5,7 +5,22 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Feb 2026) — Asterisk Styling Consistency Fix
+## Latest Updates (Feb 2026) — RequiredLabel Component + Payment Method Move
+
+### Completed: Global RequiredLabel Component ✅
+Created `/app/frontend/src/components/shared/RequiredLabel.tsx`:
+- `<RequiredLabel>Field Name</RequiredLabel>` renders label with consistent `<span className="text-red-500">*</span>`
+- Supports `hint` prop for inline hints: `<RequiredLabel hint="required for Scope - Final">Price</RequiredLabel>`
+- Supports `className` override
+- Import path: `import { RequiredLabel } from "@/components/shared/RequiredLabel"`
+
+### Completed: Manage Payment Method Button Moved ✅
+- Removed "Manage Payment Method" (Stripe billing portal button) from `MySubscriptionsTab.tsx`
+- Added to `PlanBillingTab.tsx` — now always visible alongside Upgrade/Downgrade/Buy buttons
+
+---
+
+## Previous Updates (Feb 2026) — Asterisk Styling Consistency Fix
 
 ### Completed: Uniform Red Asterisk Styling Across All Forms ✅
 Fixed inconsistent asterisk (`*`) styling on all mandatory field labels. All instances now use `<span className="text-red-500">*</span>` instead of plain-text `*` (which inherited default label color).
