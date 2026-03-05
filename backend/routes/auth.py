@@ -1071,7 +1071,7 @@ async def resend_verification_email(payload: ResendVerificationRequest):
         {"$set": {"verification_code": verification_code}},
     )
     from services.email_service import EmailService
-    await EmailService.send(
+    email_result = await EmailService.send(
         trigger="verification",
         recipient=user["email"],
         variables={
@@ -1086,7 +1086,12 @@ async def resend_verification_email(payload: ResendVerificationRequest):
         entity_type="user", entity_id=user["id"],
         action="verification_resent", actor=user["email"], details={},
     )
-    return {"message": "Verification email resent", "verification_code": verification_code}
+    if email_result.get("status") == "mocked":
+        import logging
+        logging.getLogger("auth").warning(
+            "[DEV] Email mocked for %s — OTP: %s", user["email"], verification_code
+        )
+    return {"message": "Verification email resent"}
 
 
 @router.post("/auth/verify-email")
