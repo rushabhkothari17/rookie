@@ -5,6 +5,20 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Deferred Customer Creation (Security Fix)
+
+### Fixed: Customer record created before email verification ✅
+- **Root cause**: `register` endpoint was immediately inserting customer + address into DB AND returning the OTP code in the API response — meaning a customer was created even if the user never verified, and OTP could be read from network response without needing email access.
+- **Fix**:
+  - `register` endpoint now only creates the user record (`is_verified: False`) with `pending_address` stored on user doc. No customer/address in DB until verified.
+  - `verify-email` endpoint now creates customer + address records (from `pending_address`) after OTP is confirmed. Also fires `customer.registered` webhook here.
+  - `pending_address` field is cleared (`$unset`) from user doc after verification.
+  - OTP code removed from `register` API response — backend logs it to console when email is mocked.
+  - `resend-verification-email` now correctly passes `tenant_id` to `EmailService.send()`.
+- **Verified** (curl + mongosh): invalid OTP → no customer. valid OTP → customer + address created correctly.
+
+---
+
 ## Latest Updates (Feb 2026) — OTP Resend Countdown Timer
 
 ### Feature: 60-second countdown timer on OTP "Resend code" button ✅

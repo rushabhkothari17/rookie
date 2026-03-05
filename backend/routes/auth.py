@@ -960,38 +960,22 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         "tenant_id": tenant_id,
         "verification_code": verification_code,
         "created_at": now_iso(),
+        # Store address + profile_meta until email is verified; moved to customers/addresses on verify
+        "pending_address": {
+            "line1": payload.address.line1,
+            "line2": payload.address.line2 or "",
+            "city": payload.address.city,
+            "region": payload.address.region,
+            "postal": payload.address.postal,
+            "country": payload.address.country,
+        },
     }
     if payload.profile_meta:
         user_doc["profile_meta"] = payload.profile_meta
     await db.users.insert_one(user_doc)
 
-    customer_id = make_id()
-    await db.customers.insert_one({
-        "id": customer_id,
-        "user_id": user_id,
-        "tenant_id": tenant_id,
-        "company_name": payload.company_name,
-        "phone": payload.phone,
-        "allow_bank_transfer": True,
-        "allow_card_payment": False,
-        "stripe_customer_id": None,
-        "zoho_crm_contact_id": None,
-        "zoho_books_contact_id": None,
-        "created_at": now_iso(),
-    })
-    await db.addresses.insert_one({
-        "id": make_id(),
-        "customer_id": customer_id,
-        "tenant_id": tenant_id,
-        "line1": payload.address.line1,
-        "line2": payload.address.line2 or "",
-        "city": payload.address.city,
-        "region": payload.address.region,
-        "postal": payload.address.postal,
-        "country": payload.address.country,
-    })
     from services.email_service import EmailService
-    await EmailService.send(
+    email_result = await EmailService.send(
         trigger="verification",
         recipient=payload.email.lower(),
         variables={
@@ -1002,9 +986,16 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         db=db,
         tenant_id=tenant_id,
     )
+    # Log OTP to server console when email is mocked (no Resend key configured)
+    if email_result.get("status") == "mocked":
+        import logging
+        logging.getLogger("auth").warning(
+            "[DEV] Email mocked for %s — OTP: %s", payload.email.lower(), verification_code
+        )
+
     await AuditService.log(
         action="USER_REGISTERED",
-        description=f"New user registered: {payload.email}",
+        description=f"New user registered (pending verification): {payload.email}",
         entity_type="User",
         entity_id=user_id,
         actor_type="user",
@@ -1012,22 +1003,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         source="customer_ui",
         meta_json={"company_name": payload.company_name, "tenant_id": tenant_id},
     )
-    # Webhook: customer.registered
-    from services.webhook_service import dispatch_event as _wh_dispatch
-    await _wh_dispatch("customer.registered", {
-        "id": customer_id,
-        "email": payload.email.lower(),
-        "full_name": payload.full_name,
-        "company": payload.company_name or "",
-        "phone": payload.phone or "",
-        "country": getattr(payload.address, "country", ""),
-        "created_at": now_iso(),
-    }, tenant_id)
-    return {
-        "message": "Verification required",
-        "verification_code": verification_code,
-        "email_delivery": "MOCKED",
-    }
+    return {"message": "Verification required"}
 
 
 @router.post("/auth/resend-verification-email")
@@ -1060,6 +1036,7 @@ async def resend_verification_email(payload: ResendVerificationRequest):
             "verification_code": verification_code,
         },
         db=db,
+        tenant_id=user.get("tenant_id"),
     )
     await create_audit_log(
         entity_type="user", entity_id=user["id"],
@@ -1112,11 +1089,55 @@ async def verify_email(payload: VerifyEmailRequest):
         await db.users.update_one({"id": user["id"]}, update)
         raise HTTPException(status_code=400, detail="Invalid code")
     
-    # Valid code - clear verification state
+    # Valid code - clear verification state and create customer records
     await db.users.update_one(
         {"id": user["id"]},
-        {"$set": {"is_verified": True, "verification_code": None, "verification_attempts": 0, "verification_locked_until": None}},
+        {"$set": {"is_verified": True, "verification_code": None, "verification_attempts": 0, "verification_locked_until": None},
+         "$unset": {"pending_address": ""}},
     )
+
+    # Create customer + address records now that email is verified
+    existing_customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0, "id": 1})
+    if not existing_customer:
+        customer_id = make_id()
+        await db.customers.insert_one({
+            "id": customer_id,
+            "user_id": user["id"],
+            "tenant_id": user.get("tenant_id"),
+            "company_name": user.get("company_name", ""),
+            "phone": user.get("phone", ""),
+            "allow_bank_transfer": True,
+            "allow_card_payment": False,
+            "stripe_customer_id": None,
+            "zoho_crm_contact_id": None,
+            "zoho_books_contact_id": None,
+            "created_at": now_iso(),
+        })
+        pending_address = user.get("pending_address") or {}
+        if pending_address:
+            await db.addresses.insert_one({
+                "id": make_id(),
+                "customer_id": customer_id,
+                "tenant_id": user.get("tenant_id"),
+                "line1": pending_address.get("line1", ""),
+                "line2": pending_address.get("line2", ""),
+                "city": pending_address.get("city", ""),
+                "region": pending_address.get("region", ""),
+                "postal": pending_address.get("postal", ""),
+                "country": pending_address.get("country", ""),
+            })
+        # Webhook: customer.registered (fired here, after verified)
+        from services.webhook_service import dispatch_event as _wh_dispatch
+        await _wh_dispatch("customer.registered", {
+            "id": customer_id,
+            "email": user["email"],
+            "full_name": user.get("full_name", ""),
+            "company": user.get("company_name", ""),
+            "phone": user.get("phone", ""),
+            "country": pending_address.get("country", ""),
+            "created_at": now_iso(),
+        }, user.get("tenant_id"))
+
     await db.email_outbox.insert_one({
         "id": make_id(),
         "to": payload.email.lower(),
