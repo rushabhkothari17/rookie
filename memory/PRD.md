@@ -5,6 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — OTP Resend Countdown Timer
+
+### Feature: 60-second countdown timer on OTP "Resend code" button ✅
+- After OTP is sent (first submit OR resend), the "Resend code" button is disabled and shows "Resend in Xs" counting down from 60
+- When timer reaches 0, button becomes "Resend code" and is clickable again
+- Timer implemented with `useEffect` + `setTimeout` chaining (self-cleaning via `clearTimeout`)
+- Prevents OTP spam; `disabled={resendingOtp || resendCountdown > 0}`
+- **Verified** (iteration_186.json): 100% — 7/7 frontend tests pass
+
+---
+
 ## Latest Updates (Feb 2026) — Inline Email Verification OTP + 50-char full_name
 
 ### Feature: Inline OTP verification on signup (Option A) ✅
