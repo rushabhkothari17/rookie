@@ -1,0 +1,56 @@
+{
+  "summary": "Iteration 185: Tested all 11 inline email verification (OTP) features. ALL 11 TESTS PASSED. Frontend-only testing via Playwright. Used 'apex-holding' partner code (main agent specified 'automate' does not exist in DB).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Apex Holding signup left branding panel",
+        "issues": ["Left branding panel shows test/placeholder values: 'Create your account1', 'Create your account2', bullet items '1','2','3', CTA '4' — these are Apex Holding portal config values, not a signup flow bug but worth noting"]
+      }
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Partner code 'automate' specified in review_request does not exist in the database. Only valid partner codes are 'apex-holding' and 'automate-accounts'. Tests were run with 'apex-holding'."
+  ],
+  "critical_code_review_comments": [
+    "All OTP functionality implemented correctly with proper data-testid attributes.",
+    "full_name maxLength=50 enforced via HTML attribute on input (FIELD_MAX map in CustomerSignupFields.tsx line 214) — prevents input at browser level AND the JS validateSignupForm also checks it as secondary layer.",
+    "The /verify backward-compat page (VerifyEmail.tsx) uses simple text inputs, not the new 6-box design. This is intentional for backward compat but the two pages now have divergent UX.",
+    "Resend OTP endpoint is /api/auth/resend-verification-email and works correctly.",
+    "User records stored in 'users' collection (not 'customers') with is_verified=False until email verified."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (11/11 tests passed)"
+  },
+  "test_credentials": {
+    "partner_code_used": "apex-holding",
+    "partner_code_requested": "automate (does not exist in DB)"
+  },
+  "seed_data_creation": "Created 4 test users (testuser_otp_185@mailtest.com, testuser_otp_185b, testuser_otp_185c, testuser_otp_185d, testuser_otp_185e) — ALL DELETED after testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Inline OTP verification on /signup is fully working. Key data-testids: verify-step (container), otp-digit-0..5 (6 boxes), verify-submit-button, resend-otp-btn, otp-back-to-form. Form fields: signup-field-full_name, signup-email-input, signup-password-input, signup-field-company_name, signup-field-job_title, signup-field-phone, signup-field-line1, signup-field-city, signup-field-postal, signup-field-country (select), signup-field-region-select (province select when Canada chosen). Partner code 'apex-holding' is the valid customer-facing partner code. Need to set localStorage('aa_partner_code', 'apex-holding') before navigating to /signup.",
+  "test_results_detail": {
+    "T1_full_name_50chars": "PASSED - maxLength=50 applied to input field preventing >50 char input at browser level",
+    "T2_phone_a_validation": "PASSED - Toast: 'Phone (invalid format — digits, spaces, +, - only)'",
+    "T3_6_otp_boxes": "PASSED - 6 boxes with data-testid otp-digit-0..5 visible",
+    "T4_email_shown": "PASSED - Email address shown in OTP step text",
+    "T5_autofocus_next": "PASSED - Focus moves to otp-digit-1 after typing in otp-digit-0",
+    "T6_backspace_prev": "PASSED - Focus moves to otp-digit-0 after backspace on empty otp-digit-1",
+    "T7_back_to_form": "PASSED - Back to form button returns to signup form with form state preserved",
+    "T8_resend_code": "PASSED - Resend button works, shows 'New code sent — check your inbox.' toast",
+    "T9a_wrong_otp_toast": "PASSED - Invalid code toast shown for wrong OTP",
+    "T9b_boxes_cleared": "PASSED - All 6 OTP boxes cleared after wrong code submission",
+    "T10_no_verify_navigation": "PASSED - URL stays at /signup throughout OTP step (no navigation to /verify)",
+    "T11_is_verified_false": "PASSED - All test users created with is_verified=False in DB (users collection)",
+    "T12_verify_backward_compat": "PASSED - /verify page still accessible at https://...emergentagent.com/verify"
+  }
+}

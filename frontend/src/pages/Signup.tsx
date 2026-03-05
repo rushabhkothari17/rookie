@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -11,13 +11,13 @@ import { useCountries } from "@/hooks/useCountries";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { PartnerOrgForm, PartnerOrgFormValue, EMPTY_PARTNER_ORG } from "@/components/admin/PartnerOrgForm";
 import api from "@/lib/api";
-import { ChevronRight, CheckCircle2, ChevronLeft, Copy, Check, DollarSign } from "lucide-react";
+import { ChevronRight, CheckCircle2, ChevronLeft, Copy, Check, DollarSign, Mail } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isPartnerMode = searchParams.get("type") === "partner";
-  const { register } = useAuth();
+  const { register, verifyEmail } = useAuth();
   const ws = useWebsite();
 
   const [partnerCode, setPartnerCode] = useState<string>(() => localStorage.getItem("aa_partner_code") || "");
@@ -42,7 +42,13 @@ export default function Signup() {
   });
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
+
+  // Inline verification step
+  const [step, setStep] = useState<"form" | "verify">("form");
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [verifying, setVerifying] = useState(false);
+  const [resendingOtp, setResendingOtp] = useState(false);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // On mount: require partner code for customer signup
   useEffect(() => {
@@ -162,14 +168,46 @@ export default function Signup() {
         address: { line1: form.line1, line2: form.line2, city: form.city, region: form.region, postal: form.postal, country: form.country },
         ...(profile_meta ? { profile_meta } : {}),
       }, partnerCode || undefined);
-      setVerificationCode(response.verification_code || "");
       localStorage.setItem("aa_signup_email", form.email);
-      toast.success("Verification email sent! Please check your inbox.");
-      navigate("/verify");
+      setStep("verify");
+      setOtpDigits(["", "", "", "", "", ""]);
+      toast.success("Verification code sent — check your inbox.");
+      setTimeout(() => otpRefs.current[0]?.focus(), 150);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Signup failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    const code = otpDigits.join("");
+    if (code.length < 6) { toast.error("Please enter all 6 digits"); return; }
+    setVerifying(true);
+    try {
+      await verifyEmail(form.email, code, partnerCode || undefined);
+      toast.success("Email verified! You can now sign in.");
+      navigate("/login");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Invalid code — please try again");
+      setOtpDigits(["", "", "", "", "", ""]);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendingOtp(true);
+    try {
+      await api.post("/auth/resend-verification-email", { email: form.email, partner_code: partnerCode || undefined });
+      toast.success("New code sent — check your inbox.");
+      setOtpDigits(["", "", "", "", "", ""]);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to resend code");
+    } finally {
+      setResendingOtp(false);
     }
   };
 
@@ -363,64 +401,133 @@ export default function Signup() {
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-8">
-            {/* Back to sign in */}
-            <div className="mb-4">
-              <Link to="/login" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors" data-testid="signup-back-link">
-                <ChevronLeft size={13} /> Back to sign in
-              </Link>
-            </div>
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-slate-900">{ws.signup_form_title || "Create an account"}</h2>
-              {ws.signup_form_subtitle && (
-                <p className="text-sm text-slate-500 mt-1">{ws.signup_form_subtitle}</p>
-              )}
-              <p className="text-sm text-slate-500 mt-1">Already have access?{" "}
-                <Link to="/login" className="font-semibold hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="signup-login-link">Sign in</Link>
-              </p>
-              {/* Partner badge */}
-              {partnerCode && (
-                <div className="mt-3 flex items-center justify-between rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">
-                  <span className="text-xs text-slate-500">
-                    Partner: <span className="font-semibold text-slate-700">{partnerName || partnerCode}</span>
-                  </span>
-                  <Link
-                    to="/login"
-                    onClick={() => localStorage.removeItem("aa_partner_code")}
-                    className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
-                    data-testid="change-partner-from-signup"
-                  >
-                    <ChevronLeft size={11} /> Change
+            {step === "verify" ? (
+              /* ── Inline OTP verification ──────────────────────────────── */
+              <div className="flex flex-col items-center text-center space-y-6 py-4" data-testid="verify-step">
+                <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Mail size={28} className="text-slate-600" />
+                </div>
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold text-slate-900">{ws.verify_email_title || "Check your inbox"}</h2>
+                  <p className="text-sm text-slate-500 max-w-sm">
+                    {ws.verify_email_subtitle || "We sent a 6-digit code to"}{" "}
+                    <span className="font-semibold text-slate-800">{form.email}</span>
+                  </p>
+                </div>
+                {/* 6-digit OTP boxes */}
+                <div className="flex gap-2.5" data-testid="otp-boxes">
+                  {otpDigits.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={el => { otpRefs.current[i] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      className="w-11 h-14 border-2 rounded-xl text-center text-xl font-bold text-slate-900 border-slate-300 focus:border-slate-900 focus:outline-none transition-colors"
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, "");
+                        if (!val) return;
+                        const next = [...otpDigits]; next[i] = val[val.length - 1]; setOtpDigits(next);
+                        if (i < 5) otpRefs.current[i + 1]?.focus();
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === "Backspace") {
+                          if (otpDigits[i]) { const next = [...otpDigits]; next[i] = ""; setOtpDigits(next); }
+                          else if (i > 0) otpRefs.current[i - 1]?.focus();
+                        }
+                      }}
+                      onPaste={e => {
+                        e.preventDefault();
+                        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+                        if (!pasted) return;
+                        const next = [...otpDigits];
+                        pasted.split("").forEach((c, idx) => { if (idx < 6) next[idx] = c; });
+                        setOtpDigits(next);
+                        otpRefs.current[Math.min(pasted.length, 5)]?.focus();
+                      }}
+                      data-testid={`otp-digit-${i}`}
+                    />
+                  ))}
+                </div>
+                <Button
+                  className="w-full h-11 font-semibold text-white text-sm rounded-xl transition-all hover:opacity-90"
+                  onClick={handleVerify}
+                  disabled={verifying || otpDigits.join("").length < 6}
+                  data-testid="verify-submit-button"
+                  style={{ backgroundColor: "var(--aa-primary)" }}
+                >
+                  {verifying ? "Verifying…" : "Verify email"}
+                </Button>
+                <div className="space-y-2 text-center">
+                  <p className="text-xs text-slate-400">Didn't receive the code?</p>
+                  <button type="button" onClick={handleResendOtp} disabled={resendingOtp}
+                    className="text-sm font-semibold text-slate-700 hover:underline disabled:opacity-50"
+                    data-testid="resend-otp-btn">
+                    {resendingOtp ? "Sending…" : "Resend code"}
+                  </button>
+                </div>
+                <button type="button" onClick={() => setStep("form")}
+                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                  data-testid="otp-back-to-form">
+                  <ChevronLeft size={12} /> Back to form
+                </button>
+              </div>
+            ) : (
+              /* ── Signup form ──────────────────────────────────────────── */
+              <>
+                <div className="mb-4">
+                  <Link to="/login" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors" data-testid="signup-back-link">
+                    <ChevronLeft size={13} /> Back to sign in
                   </Link>
                 </div>
-              )}
-            </div>
-
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <CustomerSignupFields
-                schema={schema}
-                values={allValues}
-                onChange={handleFieldChange}
-                provinces={provinces}
-                countries={countries}
-                showPassword={true}
-                compact={false}
-              />
-
-              <Button
-                type="submit"
-                className="w-full h-11 font-semibold text-white text-sm rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
-                disabled={loading}
-                data-testid="signup-submit-button"
-                style={{ backgroundColor: "var(--aa-primary)" }}
-              >
-                {loading ? "Creating account…" : "Create account"}
-              </Button>
-
-              <p className="text-center text-xs text-slate-400">
-                Registering a new organization?{" "}
-                <Link to="/signup?type=partner" className="font-semibold hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="partner-signup-link">Sign up as a partner</Link>
-              </p>
-            </form>
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-slate-900">{ws.signup_form_title || "Create an account"}</h2>
+                  {ws.signup_form_subtitle && (
+                    <p className="text-sm text-slate-500 mt-1">{ws.signup_form_subtitle}</p>
+                  )}
+                  <p className="text-sm text-slate-500 mt-1">Already have access?{" "}
+                    <Link to="/login" className="font-semibold hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="signup-login-link">Sign in</Link>
+                  </p>
+                  {partnerCode && (
+                    <div className="mt-3 flex items-center justify-between rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">
+                      <span className="text-xs text-slate-500">
+                        Partner: <span className="font-semibold text-slate-700">{partnerName || partnerCode}</span>
+                      </span>
+                      <Link to="/login" onClick={() => localStorage.removeItem("aa_partner_code")}
+                        className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
+                        data-testid="change-partner-from-signup">
+                        <ChevronLeft size={11} /> Change
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <CustomerSignupFields
+                    schema={schema}
+                    values={allValues}
+                    onChange={handleFieldChange}
+                    provinces={provinces}
+                    countries={countries}
+                    showPassword={true}
+                    compact={false}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full h-11 font-semibold text-white text-sm rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
+                    disabled={loading}
+                    data-testid="signup-submit-button"
+                    style={{ backgroundColor: "var(--aa-primary)" }}
+                  >
+                    {loading ? "Creating account…" : "Create account"}
+                  </Button>
+                  <p className="text-center text-xs text-slate-400">
+                    Registering a new organization?{" "}
+                    <Link to="/signup?type=partner" className="font-semibold hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="partner-signup-link">Sign up as a partner</Link>
+                  </p>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </div>
