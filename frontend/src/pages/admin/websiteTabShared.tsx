@@ -48,10 +48,6 @@ export interface WebsiteData {
   msg_currency_unsupported: string; msg_no_payment_methods: string;
   payment_gocardless_label: string; payment_gocardless_description: string;
   payment_stripe_label: string; payment_stripe_description: string;
-  checkout_zoho_enabled: boolean; checkout_zoho_title: string;
-  checkout_zoho_subscription_options: string; checkout_zoho_product_options: string;
-  checkout_zoho_signup_note: string; checkout_zoho_access_note: string;
-  checkout_zoho_access_delay_warning: string;
   checkout_partner_enabled: boolean; checkout_partner_title: string;
   checkout_partner_description: string; checkout_partner_options: string;
   checkout_partner_misrep_warning: string; checkout_extra_schema: string;
@@ -114,10 +110,6 @@ export const WEB_DEFAULTS: WebsiteData = {
   msg_currency_unsupported: "", msg_no_payment_methods: "",
   payment_gocardless_label: "", payment_gocardless_description: "",
   payment_stripe_label: "", payment_stripe_description: "",
-  checkout_zoho_enabled: true, checkout_zoho_title: "",
-  checkout_zoho_subscription_options: "", checkout_zoho_product_options: "",
-  checkout_zoho_signup_note: "", checkout_zoho_access_note: "",
-  checkout_zoho_access_delay_warning: "",
   checkout_partner_enabled: true, checkout_partner_title: "",
   checkout_partner_description: "", checkout_partner_options: "",
   checkout_partner_misrep_warning: "", checkout_extra_schema: "[]",

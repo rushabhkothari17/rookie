@@ -188,14 +188,6 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "payment_gocardless_description": "No processing fee. We'll set up a direct debit from your account.",
     "payment_stripe_label": "Card Payment",
     "payment_stripe_description": "Pay securely by credit or debit card. A processing fee applies.",
-    # Checkout page — legacy sections disabled by default
-    "checkout_zoho_enabled": False,
-    "checkout_zoho_title": "Account Details",
-    "checkout_zoho_subscription_options": "",
-    "checkout_zoho_product_options": "",
-    "checkout_zoho_signup_note": "",
-    "checkout_zoho_access_note": "",
-    "checkout_zoho_access_delay_warning": "",
     # Checkout page — partner tagging disabled by default
     "checkout_partner_enabled": False,
     "checkout_partner_title": "Partner Confirmation",

@@ -748,9 +748,6 @@ class TestPriceTamperingPrevention:
                 "origin_url": "https://bug-fix-sprint-11.preview.emergentagent.com",
                 "terms_accepted": True,
                 "partner_tag_response": "Yes",
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books",
-                "zoho_account_access": "New Customer"
             }
         )
         # If returns 400 (stripe not enabled / card not enabled), that's still OK
@@ -993,9 +990,6 @@ class TestCheckoutAPIValidations:
                 "origin_url": "https://bug-fix-sprint-11.preview.emergentagent.com",
                 "terms_accepted": False,  # <-- Must be rejected
                 "partner_tag_response": "Yes",
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books",
-                "zoho_account_access": "New Customer"
             }
         )
         assert r.status_code == 400
@@ -1017,9 +1011,6 @@ class TestCheckoutAPIValidations:
                 "origin_url": "https://bug-fix-sprint-11.preview.emergentagent.com",
                 "terms_accepted": True,
                 "partner_tag_response": None,  # <-- Missing
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books",
-                "zoho_account_access": "New Customer"
             }
         )
         # Should either be rejected with 400 (partner tag required) or fail with another validation
@@ -1044,9 +1035,6 @@ class TestCheckoutAPIValidations:
                 "terms_accepted": True,
                 "partner_tag_response": "Not yet",
                 "override_code": "",  # Empty - should be rejected
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books",
-                "zoho_account_access": "New Customer"
             }
         )
         assert r.status_code == 400
@@ -1137,9 +1125,6 @@ class TestGoCardlessCheckout:
                 "checkout_type": "one_time",
                 "terms_accepted": True,
                 "partner_tag_response": "Yes",
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books",
-                "zoho_account_access": "New Customer"
             }
         )
         # Should either:
@@ -1177,9 +1162,6 @@ class TestPaymentMethodDisable:
                 "origin_url": "https://bug-fix-sprint-11.preview.emergentagent.com",
                 "terms_accepted": True,
                 "partner_tag_response": "Yes",
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books",
-                "zoho_account_access": "New Customer"
             }
         )
         # The test customer has allow_card_payment=False (from our inspection)

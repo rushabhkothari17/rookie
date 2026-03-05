@@ -116,9 +116,6 @@ class CheckoutSessionRequestBody(BaseModel):
     terms_accepted: bool = False
     terms_id: Optional[str] = None
     start_date: Optional[str] = None
-    zoho_subscription_type: Optional[str] = None
-    current_zoho_product: Optional[str] = None
-    zoho_account_access: Optional[str] = None
     extra_fields: Optional[Dict[str, Any]] = None
 
 
@@ -129,9 +126,6 @@ class BankTransferCheckoutRequest(BaseModel):
     terms_accepted: bool = False
     terms_id: Optional[str] = None
     start_date: Optional[str] = None
-    zoho_subscription_type: Optional[str] = None
-    current_zoho_product: Optional[str] = None
-    zoho_account_access: Optional[str] = None
     extra_fields: Optional[Dict[str, Any]] = None
 
 
@@ -588,13 +582,6 @@ class WebsiteSettingsUpdate(BaseModel):
     articles_hero_title: Optional[str] = None
     articles_hero_subtitle: Optional[str] = None
     # Checkout page configuration
-    checkout_zoho_enabled: Optional[bool] = None
-    checkout_zoho_title: Optional[str] = None
-    checkout_zoho_subscription_options: Optional[str] = None
-    checkout_zoho_product_options: Optional[str] = None
-    checkout_zoho_signup_note: Optional[str] = None
-    checkout_zoho_access_note: Optional[str] = None
-    checkout_zoho_access_delay_warning: Optional[str] = None
     checkout_partner_enabled: Optional[bool] = None
     checkout_partner_title: Optional[str] = None
     checkout_partner_description: Optional[str] = None

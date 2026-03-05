@@ -220,9 +220,6 @@ class TestCheckoutZohoFields:
                 "promo_code": None,
                 "terms_accepted": True,
                 "partner_tag_response": "Yes",
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books (Standard)",
-                "zoho_account_access": "Yes",
             },
             headers=auth_headers,
         )
@@ -282,9 +279,6 @@ class TestCheckoutZohoFields:
                 "checkout_type": "one_time",
                 "terms_accepted": True,
                 "partner_tag_response": "Yes",
-                "zoho_subscription_type": "Paid - Monthly",
-                "current_zoho_product": "Zoho Books (Professional)",
-                "zoho_account_access": "Not yet",
             },
             headers=auth_headers,
         )
@@ -316,9 +310,6 @@ class TestCheckoutZohoFields:
                 assert "system_metadata" in notes_json, "notes_json missing system_metadata"
                 
                 checkout_intake = notes_json["checkout_intake"]
-                assert checkout_intake.get("zoho_subscription_type") == "Paid - Monthly"
-                assert checkout_intake.get("current_zoho_product") == "Zoho Books (Professional)"
-                assert checkout_intake.get("zoho_account_access") == "Not yet"
                 print(f"PASS: notes_json has all required keys and correct values")
             else:
                 print("INFO: notes_json not in admin orders response (may require different endpoint)")
@@ -371,9 +362,6 @@ class TestCheckoutValidation:
                 "checkout_type": "one_time",
                 "terms_accepted": False,
                 "partner_tag_response": "Yes",
-                "zoho_subscription_type": "Paid - Annual",
-                "current_zoho_product": "Zoho Books (Standard)",
-                "zoho_account_access": "Yes",
             },
             headers=auth_headers,
         )

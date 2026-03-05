@@ -27,8 +27,6 @@ export default function Cart() {
   const [termsContent, setTermsContent] = useState<any>(null);
   const [subscriptionStartDate, setSubscriptionStartDate] = useState("");
   const [futureStartEnabled, setFutureStartEnabled] = useState(false);
-  const [zohoSubscriptionType, setZohoSubscriptionType] = useState("");  const [currentZohoProduct, setCurrentZohoProduct] = useState("");
-  const [zohoAccountAccess, setZohoAccountAccess] = useState("");
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
   
   // Scope ID state
@@ -310,10 +308,6 @@ export default function Cart() {
       return;
     }
 
-    const zohoSubType = checkoutSections ? (extraFields['zoho_subscription_type'] || null) : zohoSubscriptionType;
-    const zohoProduct = checkoutSections ? (extraFields['current_zoho_product'] || null) : currentZohoProduct;
-    const zohoAccess = checkoutSections ? (extraFields['zoho_account_access'] || null) : zohoAccountAccess;
-
     const groupSubtotal = groupItems.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
     let groupDiscount = 0;
     if (promoApplied) {
@@ -339,9 +333,6 @@ export default function Cart() {
         terms_accepted: termsAccepted,
         terms_id: termsContent?.id || null,
         start_date: checkoutType === "subscription" && futureStartEnabled && subscriptionStartDate ? subscriptionStartDate : null,
-        zoho_subscription_type: zohoSubType,
-        current_zoho_product: zohoProduct,
-        zoho_account_access: zohoAccess,
         extra_fields: Object.keys(extraFields).length ? extraFields : undefined,
       };
 
@@ -630,33 +621,6 @@ export default function Cart() {
               })
             ) : (
               <>
-                {/* Legacy Zoho Section */}
-                {ws.checkout_zoho_enabled !== false && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5" data-testid="zoho-checkout-section">
-                    <h3 className="font-semibold text-slate-900 mb-1">{ws.checkout_zoho_title || "Zoho Account Details"}</h3>
-                    {ws.checkout_zoho_description && <p className="text-sm text-slate-500 mb-4">{ws.checkout_zoho_description}</p>}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1.5">{ws.checkout_zoho_subscription_type_label || "Zoho subscription type?"}<span className="text-red-500 ml-1">*</span></label>
-                        <Select value={zohoSubscriptionType || undefined} onValueChange={setZohoSubscriptionType}>
-                          <SelectTrigger className="w-full bg-white" data-testid="zoho-subscription-type"><SelectValue placeholder="Select..." /></SelectTrigger>
-                          <SelectContent>
-                            {(ws.checkout_zoho_subscription_options?.split('\n').filter(Boolean) || ["Paid - Annual", "Paid - Monthly", "Free / Not on Zoho"]).map((o: string) => { const {label, value} = parseOptionItem(o); return <SelectItem key={value} value={value}>{label}</SelectItem>; })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-slate-700 block mb-1.5">{ws.checkout_zoho_access_label || "Zoho account access?"}<span className="text-red-500 ml-1">*</span></label>
-                        <Select value={zohoAccountAccess || undefined} onValueChange={setZohoAccountAccess}>
-                          <SelectTrigger className="w-full bg-white" data-testid="zoho-account-access"><SelectValue placeholder="Select..." /></SelectTrigger>
-                          <SelectContent>
-                            {(ws.checkout_zoho_access_options?.split('\n').filter(Boolean) || ["New Customer", "Pre-existing Customer"]).map((o: string) => { const {label, value} = parseOptionItem(o); return <SelectItem key={value} value={value}>{label}</SelectItem>; })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </>
             )}
 
@@ -881,7 +845,7 @@ export default function Cart() {
                   className="w-full h-12 text-base text-white transition-all hover:opacity-90 shadow-lg" 
                   style={{ backgroundColor: "var(--aa-primary)" }}
                   onClick={() => handleCheckout(grouped.oneTime, "one_time")} 
-                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || (!isFreeCheckout && !allowBankTransfer && !allowCardPayment)} 
+                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : false) || (!isFreeCheckout && !allowBankTransfer && !allowCardPayment)} 
                   data-testid="cart-checkout-one_time"
                 >
                   {loading ? "Processing..." : isFreeCheckout ? "Complete Free Order" : paymentMethod === "bank_transfer" ? "Create Order" : "Proceed to Checkout"}
@@ -893,7 +857,7 @@ export default function Cart() {
                   className="w-full h-12 text-base text-white transition-all hover:opacity-90 shadow-lg" 
                   style={{ backgroundColor: "var(--aa-accent)" }}
                   onClick={() => handleCheckout(grouped.subscriptions, "subscription")} 
-                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : ((ws.checkout_zoho_enabled !== false && !zohoSubscriptionType) || (ws.checkout_zoho_enabled !== false && !zohoAccountAccess))) || (!allowBankTransfer && !allowCardPayment) || (subscriptionMissingPrice && paymentMethod === "card")} 
+                  disabled={loading || !termsAccepted || (checkoutSections !== null ? sectionRequiredFieldsMissing : false) || (!allowBankTransfer && !allowCardPayment) || (subscriptionMissingPrice && paymentMethod === "card")} 
                   data-testid="cart-checkout-subscription"
                 >
                   {loading ? "Processing..." : "Subscribe Now"}

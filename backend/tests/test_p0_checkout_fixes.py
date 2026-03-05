@@ -279,9 +279,6 @@ class TestStripeCheckout:
             "origin_url": "https://bug-fix-sprint-11.preview.emergentagent.com",
             "terms_accepted": True,
             "partner_tag_response": "Yes",
-            "zoho_subscription_type": "Free",
-            "current_zoho_product": "None",
-            "zoho_account_access": "Yes, I have provided access"
         }
         resp = requests.post(f"{BASE_URL}/api/checkout/session", json=payload)
         assert resp.status_code in [401, 403], f"Expected 401/403, got {resp.status_code}"
@@ -295,9 +292,6 @@ class TestStripeCheckout:
             "origin_url": "https://bug-fix-sprint-11.preview.emergentagent.com",
             "terms_accepted": False,
             "partner_tag_response": "Yes",
-            "zoho_subscription_type": "Free",
-            "current_zoho_product": "None",
-            "zoho_account_access": "Yes"
         }
         resp = customer_client.post(f"{BASE_URL}/api/checkout/session", json=payload)
         assert resp.status_code == 400, f"Expected 400 for terms not accepted, got {resp.status_code}: {resp.text}"
@@ -325,9 +319,6 @@ class TestStripeCheckout:
             "origin_url": "https://bug-fix-sprint-11.preview.emergentagent.com",
             "terms_accepted": True,
             "partner_tag_response": "Yes",
-            "zoho_subscription_type": "Free",
-            "current_zoho_product": "None",
-            "zoho_account_access": "Yes, I have provided Zoho account access"
         }
         resp = customer_client.post(f"{BASE_URL}/api/checkout/session", json=payload)
         assert resp.status_code == 200, \
@@ -365,9 +356,6 @@ class TestGoCardlessCheckout:
             "checkout_type": "one_time",
             "terms_accepted": True,
             "partner_tag_response": "Yes",
-            "zoho_subscription_type": "Free",
-            "current_zoho_product": "None",
-            "zoho_account_access": "Yes"
         }
         resp = requests.post(f"{BASE_URL}/api/checkout/bank-transfer", json=payload)
         assert resp.status_code in [401, 403], f"Expected 401/403, got {resp.status_code}"
@@ -380,9 +368,6 @@ class TestGoCardlessCheckout:
             "checkout_type": "one_time",
             "terms_accepted": False,
             "partner_tag_response": "Yes",
-            "zoho_subscription_type": "Free",
-            "current_zoho_product": "None",
-            "zoho_account_access": "Yes"
         }
         resp = customer_client.post(f"{BASE_URL}/api/checkout/bank-transfer", json=payload)
         assert resp.status_code == 400, f"Expected 400 for terms not accepted, got {resp.status_code}: {resp.text}"
@@ -395,9 +380,6 @@ class TestGoCardlessCheckout:
             "checkout_type": "one_time",
             "terms_accepted": True,
             "partner_tag_response": "Yes",
-            "zoho_subscription_type": "Free",
-            "current_zoho_product": "None",
-            "zoho_account_access": "Yes, I have provided Zoho account access"
         }
         resp = customer_client.post(f"{BASE_URL}/api/checkout/bank-transfer", json=payload)
         assert resp.status_code == 200, \

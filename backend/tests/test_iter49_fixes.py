@@ -218,9 +218,6 @@ class TestPaymentProviderBypass:
             "extra_fields": {},
             "partner_tag_response": None,
             "override_code": None,
-            "zoho_subscription_type": "Standard",
-            "current_zoho_product": "CRM",
-            "zoho_account_access": True,
         }
         
         if one_time_products:
@@ -291,9 +288,6 @@ class TestPaymentProviderBypass:
             "extra_fields": {},
             "partner_tag_response": None,
             "override_code": None,
-            "zoho_subscription_type": "Standard",
-            "current_zoho_product": "CRM",
-            "zoho_account_access": True,
         }
         
         products_r = requests.get(f"{BASE_URL}/api/products")

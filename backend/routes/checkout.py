@@ -484,17 +484,6 @@ async def create_checkout_session(
         raise HTTPException(status_code=404, detail="Customer not found")
     tenant_id = customer.get("tenant_id", "")
 
-    # Only enforce Zoho fields when the tenant has Zoho checkout explicitly enabled
-    ws = await db.website_settings.find_one({"tenant_id": tenant_id}, {"_id": 0, "checkout_zoho_enabled": 1}) or {}
-    zoho_checkout_enabled = ws.get("checkout_zoho_enabled", False)
-    if zoho_checkout_enabled:
-        if not payload.zoho_subscription_type:
-            raise HTTPException(status_code=400, detail="Please select your current Zoho subscription type.")
-        if not payload.current_zoho_product:
-            raise HTTPException(status_code=400, detail="Please select your current Zoho product.")
-        if not payload.zoho_account_access:
-            raise HTTPException(status_code=400, detail="Please indicate whether you have provided Zoho account access.")
-
     order_items = await build_order_items(payload.items, tenant_id)
     base_currency = await get_tenant_base_currency(tenant_id)
 

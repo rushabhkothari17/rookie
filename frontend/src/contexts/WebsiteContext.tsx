@@ -82,19 +82,6 @@ export interface WebsiteSettings {
   articles_hero_label: string;
   articles_hero_title: string;
   articles_hero_subtitle: string;
-  // Checkout page configuration (legacy)
-  checkout_zoho_enabled: boolean;
-  checkout_zoho_title: string;
-  checkout_zoho_description: string;
-  checkout_zoho_subscription_options: string;
-  checkout_zoho_subscription_type_label: string;
-  checkout_zoho_product_options: string;
-  checkout_zoho_product_label: string;
-  checkout_zoho_access_options: string;
-  checkout_zoho_access_label: string;
-  checkout_zoho_signup_note: string;
-  checkout_zoho_access_note: string;
-  checkout_zoho_access_delay_warning: string;
   checkout_partner_enabled: boolean;
   checkout_partner_title: string;
   checkout_partner_description: string;
@@ -244,18 +231,6 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   articles_hero_label: "Resources",
   articles_hero_title: "Articles & Guides",
   articles_hero_subtitle: "",
-  checkout_zoho_enabled: true,
-  checkout_zoho_title: "Zoho Account Details",
-  checkout_zoho_description: "",
-  checkout_zoho_subscription_options: "Paid - Annual\nPaid - Monthly\nFree / Not on Zoho",
-  checkout_zoho_subscription_type_label: "Current Zoho subscription type?",
-  checkout_zoho_product_options: "",
-  checkout_zoho_product_label: "Which Zoho products?",
-  checkout_zoho_access_options: "New Customer\nPre-existing Customer",
-  checkout_zoho_access_label: "Zoho account access?",
-  checkout_zoho_signup_note: "for a free 1 hour Welcome to Zoho and a 30-day trial",
-  checkout_zoho_access_note: "to understand how to provide us access to your Zoho account",
-  checkout_zoho_access_delay_warning: "Please note service delays can happen if you complete purchase without providing us the access.",
   checkout_partner_enabled: true,
   checkout_partner_title: "Have you tagged us as your Zoho Partner?",
   checkout_partner_description: "You can tag us as your Zoho Partner by clicking the links below.",

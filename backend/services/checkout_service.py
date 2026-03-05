@@ -109,9 +109,6 @@ def build_checkout_notes_json(
     blob: dict = {
         "product_intake": product_intake,
         "checkout_intake": {
-            "zoho_subscription_type": getattr(payload, "zoho_subscription_type", None),
-            "current_zoho_product": getattr(payload, "current_zoho_product", None),
-            "zoho_account_access": getattr(payload, "zoho_account_access", None),
             "promo_code": promo_code_str or None,
             "promo_note": promo_note,
             "terms_accepted": getattr(payload, "terms_accepted", False),

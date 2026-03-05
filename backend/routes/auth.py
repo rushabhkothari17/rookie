@@ -660,7 +660,6 @@ async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str) -> None:
         "articles_hero_label": "Resources",
         "articles_hero_title": "Articles & Guides",
         "articles_hero_subtitle": "Tips, guides, and updates from our team.",
-        "checkout_zoho_enabled": False,
         "checkout_partner_enabled": False,
         "checkout_extra_schema": "[]",
         "checkout_sections": "[]",
