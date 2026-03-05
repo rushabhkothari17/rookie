@@ -95,9 +95,14 @@ export default function Signup() {
   // Combined values for the shared field component
   const allValues: Record<string, string> = { ...form, ...extraFields };
 
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const FIELD_MAX: Record<string, number> = { email: 50, company_name: 50, job_title: 50, phone: 50 };
+
   const validateSignupForm = (): string[] => {
     const errors: string[] = [];
     if (!form.email.trim()) errors.push("Email");
+    else if (!EMAIL_REGEX.test(form.email.trim())) errors.push("Email (invalid format)");
+    else if (form.email.trim().length > 50) errors.push("Email (max 50 characters)");
     if (!form.password.trim()) errors.push("Password");
     for (const field of schema.filter(f => f.enabled !== false)) {
       if (field.type === "address") {
@@ -117,6 +122,7 @@ export default function Signup() {
         if (STD_KEYS.includes(field.key)) {
           const val = form[field.key as keyof typeof form];
           if (!val || !val.trim()) errors.push(field.label || field.key);
+          else if (FIELD_MAX[field.key] && val.trim().length > FIELD_MAX[field.key]) errors.push(`${field.label || field.key} (max ${FIELD_MAX[field.key]} characters)`);
         } else {
           if (!extraFields[field.key]?.trim()) errors.push(field.label || field.key);
         }

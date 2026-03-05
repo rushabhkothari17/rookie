@@ -117,13 +117,14 @@ export function CustomersTab() {
 
   useEffect(() => { load(1); }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter]);
 
-  // Fetch signup form schema to drive the Create Customer form
+  // Fetch signup form schema whenever Create dialog opens (ensures fresh schema)
   useEffect(() => {
+    if (!showCreateDialog) return;
     api.get("/admin/website-settings").then(r => {
       try { setSignupSchema(JSON.parse(r.data.settings?.signup_form_schema || "[]")); }
       catch { setSignupSchema([]); }
     }).catch(() => {});
-  }, []);
+  }, [showCreateDialog]);
 
   // Fetch provinces when country changes in create form
   useEffect(() => {
@@ -176,11 +177,18 @@ export function CustomersTab() {
 
   const handleCreateCustomer = async () => {
     // Validate required fields from schema
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     const schemaField = (key: string) => signupSchema.find((f: any) => f.key === key);
     const errors: string[] = [];
     if (!newCustomer.full_name.trim()) errors.push("Full Name");
     if (!newCustomer.email.trim()) errors.push("Email");
+    else if (!EMAIL_REGEX.test(newCustomer.email.trim())) errors.push("Email (invalid format)");
+    else if (newCustomer.email.trim().length > 50) errors.push("Email (max 50 characters)");
     if (!newCustomer.password.trim()) errors.push("Password");
+    // Field length limits
+    if (newCustomer.company_name && newCustomer.company_name.length > 50) errors.push("Company Name (max 50 characters)");
+    if (newCustomer.job_title && newCustomer.job_title.length > 50) errors.push("Job Title (max 50 characters)");
+    if (newCustomer.phone && newCustomer.phone.length > 50) errors.push("Phone (max 50 characters)");
     const addrField = schemaField("address");
     const addrEnabled = !addrField || addrField.enabled !== false;
     if (addrEnabled && addrField) {

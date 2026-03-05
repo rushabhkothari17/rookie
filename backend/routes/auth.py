@@ -892,6 +892,10 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
 
 @router.post("/auth/register")
 async def register(payload: RegisterRequest, partner_code: Optional[str] = None):
+    # Email format validation
+    import re as _re
+    if not _re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', payload.email.strip()):
+        raise HTTPException(status_code=400, detail="Invalid email address format")
     # Password complexity check
     pw_error = _validate_password_complexity(payload.password)
     if pw_error:

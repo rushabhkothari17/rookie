@@ -357,6 +357,11 @@ async def admin_create_customer(
 ):
     tid = tenant_id_of(admin)
     await _check(admin, "create")
+    # Email format validation
+    import re as _re
+    if not _re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', payload.email.strip()):
+        raise HTTPException(status_code=400, detail="Invalid email address format")
+
     existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tid}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")

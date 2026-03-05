@@ -48,6 +48,11 @@ type AugmentedField = FormField | {
   enabled: boolean; options: string[]; order: number;
 };
 
+// Per-field character limits enforced on all signup/create-customer forms
+const FIELD_MAX: Record<string, number> = {
+  email: 50, company_name: 50, job_title: 50, phone: 50, full_name: 100,
+};
+
 function buildFields(schema: FormField[], showPassword: boolean): AugmentedField[] {
   const sorted = [...schema]
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
@@ -111,19 +116,19 @@ export function CustomerSignupFields({
             {cfg.line1.enabled && (
               <div className={compact ? "space-y-1" : `space-y-1.5 sm:col-span-2`}>
                 {!compact && <Label compact={compact}>Street address{cfg.line1.required ? <span className="text-red-500"> *</span> : ""}</Label>}
-                <Input value={values.line1 || ""} onChange={e => onChange("line1", e.target.value)} placeholder={compact ? `Line 1${cfg.line1.required ? " *" : ""}` : ""} data-testid="signup-field-line1" />
+                <Input value={values.line1 || ""} onChange={e => onChange("line1", e.target.value)} placeholder={compact ? `Line 1${cfg.line1.required ? " *" : ""}` : ""} maxLength={100} data-testid="signup-field-line1" />
               </div>
             )}
             {cfg.line2.enabled && (
               <div className={compact ? "space-y-1" : `space-y-1.5 sm:col-span-2`}>
                 {!compact && <Label compact={compact}>Address line 2{!cfg.line2.required ? " (optional)" : <span className="text-red-500"> *</span>}</Label>}
-                <Input value={values.line2 || ""} onChange={e => onChange("line2", e.target.value)} placeholder={compact ? `Line 2${cfg.line2.required ? " *" : " (optional)"}` : ""} data-testid="signup-field-line2" />
+                <Input value={values.line2 || ""} onChange={e => onChange("line2", e.target.value)} placeholder={compact ? `Line 2${cfg.line2.required ? " *" : " (optional)"}` : ""} maxLength={100} data-testid="signup-field-line2" />
               </div>
             )}
             {cfg.city.enabled && (
               <div className="space-y-1">
                 {!compact && <Label compact={compact}>City{cfg.city.required ? <span className="text-red-500"> *</span> : ""}</Label>}
-                <Input value={values.city || ""} onChange={e => onChange("city", e.target.value)} placeholder={compact ? `City${cfg.city.required ? " *" : ""}` : ""} data-testid="signup-field-city" />
+                <Input value={values.city || ""} onChange={e => onChange("city", e.target.value)} placeholder={compact ? `City${cfg.city.required ? " *" : ""}` : ""} maxLength={50} data-testid="signup-field-city" />
               </div>
             )}
             {cfg.state.enabled && (
@@ -135,14 +140,14 @@ export function CustomerSignupFields({
                     <SelectContent>{provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
                   </Select>
                 ) : (
-                  <Input value={values.region || ""} onChange={e => onChange("region", e.target.value)} placeholder={compact ? `State / Province${cfg.state.required ? " *" : ""}` : ""} data-testid="signup-field-region-input" />
+                  <Input value={values.region || ""} onChange={e => onChange("region", e.target.value)} placeholder={compact ? `State / Province${cfg.state.required ? " *" : ""}` : ""} maxLength={50} data-testid="signup-field-region-input" />
                 )}
               </div>
             )}
             {cfg.postal.enabled && (
               <div className="space-y-1">
                 {!compact && <Label compact={compact}>Postal / ZIP{cfg.postal.required ? <span className="text-red-500"> *</span> : ""}</Label>}
-                <Input value={values.postal || ""} onChange={e => onChange("postal", e.target.value)} placeholder={compact ? `Postal${cfg.postal.required ? " *" : ""}` : ""} data-testid="signup-field-postal" />
+                <Input value={values.postal || ""} onChange={e => onChange("postal", e.target.value)} placeholder={compact ? `Postal${cfg.postal.required ? " *" : ""}` : ""} maxLength={20} data-testid="signup-field-postal" />
               </div>
             )}
             {cfg.country.enabled && (
@@ -207,6 +212,7 @@ export function CustomerSignupFields({
           value={values[field.key] || ""}
           onChange={e => onChange(field.key, e.target.value)}
           placeholder={field.placeholder || undefined}
+          maxLength={FIELD_MAX[field.key]}
           data-testid={field.key === "email" ? "signup-email-input" : field.key === "password" ? "signup-password-input" : `signup-field-${field.key}`}
         />
       );
