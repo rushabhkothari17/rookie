@@ -5,6 +5,20 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Partner Signup OTP & Security Parity
+
+### Feature: Full OTP verification + security parity for partner signup ✅
+- **Backend**: `register-partner` now creates tenant as `pending_verification` + user as `is_verified:False`. Returns `{"message":"Verification required"}` — no OTP or partner_code in response.
+- **Backend**: `verify-email` activates tenant (`status:"active"`), assigns free trial plan, returns `{partner_code}` when user role is `partner_super_admin`.
+- **Backend**: Handles re-registration — if same unverified email re-submits, updates data and resends OTP.
+- **Validation**: org name ≤100 chars, admin name ≤50 chars, admin email ≤50 chars + format check.
+- **Frontend**: Partner signup shows inline OTP step after form submit. 60-second countdown on resend button. Back-to-form link.
+- **Frontend**: Login gateway shows "Complete signup to activate →" link when org is pending verification.
+- **Security**: No OTP or partner_code in any API response. OTP logged to server console only when email is mocked.
+- **Verified** (iteration_187.json): 100% — 18/18 backend + all frontend flows pass.
+
+---
+
 ## Latest Updates (Feb 2026) — Deferred Customer Creation (Security Fix)
 
 ### Fixed: Customer record created before email verification ✅
