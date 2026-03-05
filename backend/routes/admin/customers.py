@@ -366,8 +366,8 @@ async def admin_create_customer(
         raise HTTPException(status_code=400, detail="Email must be 50 characters or fewer")
 
     # Field length limits
-    if len(payload.full_name or "") > 100:
-        raise HTTPException(status_code=400, detail="Full name must be 100 characters or fewer")
+    if len(payload.full_name or "") > 50:
+        raise HTTPException(status_code=400, detail="Full name must be 50 characters or fewer")
     if len(payload.company_name or "") > 50:
         raise HTTPException(status_code=400, detail="Company name must be 50 characters or fewer")
     if len(payload.job_title or "") > 50:

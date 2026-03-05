@@ -48,9 +48,8 @@ type AugmentedField = FormField | {
   enabled: boolean; options: string[]; order: number;
 };
 
-// Per-field character limits enforced on all signup/create-customer forms
 const FIELD_MAX: Record<string, number> = {
-  email: 50, company_name: 50, job_title: 50, phone: 50, full_name: 100,
+  email: 50, company_name: 50, job_title: 50, phone: 50, full_name: 50,
 };
 
 function buildFields(schema: FormField[], showPassword: boolean): AugmentedField[] {

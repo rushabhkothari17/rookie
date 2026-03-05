@@ -181,7 +181,7 @@ export function CustomersTab() {
     const schemaField = (key: string) => signupSchema.find((f: any) => f.key === key);
     const errors: string[] = [];
     if (!newCustomer.full_name.trim()) errors.push("Full Name");
-    else if (newCustomer.full_name.trim().length > 100) errors.push("Full Name (max 100 characters)");
+    else if (newCustomer.full_name.trim().length > 50) errors.push("Full Name (max 50 characters)");
     if (!newCustomer.email.trim()) errors.push("Email");
     else if (!EMAIL_REGEX.test(newCustomer.email.trim())) errors.push("Email (invalid format)");
     else if (newCustomer.email.trim().length > 50) errors.push("Email (max 50 characters)");

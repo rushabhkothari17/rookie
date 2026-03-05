@@ -97,7 +97,7 @@ export default function Signup() {
 
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const PHONE_REGEX = /^[+\d][\d\s\-(). ]{3,49}$/;
-  const FIELD_MAX: Record<string, number> = { email: 50, company_name: 50, job_title: 50, phone: 50 };
+  const FIELD_MAX: Record<string, number> = { email: 50, company_name: 50, job_title: 50, phone: 50, full_name: 50 };
 
   const validateSignupForm = (): string[] => {
     const errors: string[] = [];
