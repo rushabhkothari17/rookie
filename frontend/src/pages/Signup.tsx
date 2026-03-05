@@ -73,7 +73,16 @@ export default function Signup() {
       setPartnerLogoUrl(s.logo_url || "");
       setPartnerPrimaryColor(s.primary_color || "");
     }).catch(() => {});
-  }, [isPartnerMode, navigate]);
+
+    // If redirected from login with ?verify=1&email=..., jump straight to OTP step
+    const verifyParam = searchParams.get("verify");
+    const emailParam = searchParams.get("email");
+    if (verifyParam === "1" && emailParam) {
+      setForm(prev => ({ ...prev, email: decodeURIComponent(emailParam) }));
+      setStep("verify");
+      setResendCountdown(60);
+    }
+  }, [isPartnerMode, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch provinces/states when country changes (customer signup)
   useEffect(() => {

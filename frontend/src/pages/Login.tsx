@@ -95,6 +95,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
 
   useEffect(() => {
     // Priority: ?tenant= URL param > localStorage stored code
@@ -351,12 +353,42 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Error */}
-            {loginError && (
+            {/* Error / Verification prompt */}
+            {needsVerification ? (
+              <div className="anim-scale-in rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3" data-testid="verify-prompt-banner">
+                <p className="text-sm font-semibold text-amber-800">Email not verified</p>
+                <p className="text-xs text-amber-700">
+                  Your account exists but the email address hasn't been verified yet. Send a new code to complete sign-up.
+                </p>
+                <button
+                  type="button"
+                  data-testid="send-verification-from-login"
+                  disabled={sendingVerification}
+                  onClick={async () => {
+                    setSendingVerification(true);
+                    try {
+                      await api.post("/auth/resend-verification-email", {
+                        email,
+                        partner_code: partnerInfo?.code,
+                      });
+                      navigate(`/signup?verify=1&email=${encodeURIComponent(email)}`);
+                    } catch {
+                      // Navigate anyway — Signup page will handle it
+                      navigate(`/signup?verify=1&email=${encodeURIComponent(email)}`);
+                    } finally {
+                      setSendingVerification(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-900 hover:underline disabled:opacity-50"
+                >
+                  {sendingVerification ? "Sending…" : "Send verification code →"}
+                </button>
+              </div>
+            ) : loginError ? (
               <p className="anim-scale-in flex items-center gap-1.5 text-xs text-red-500" data-testid="login-error">
                 <AlertCircle size={12} strokeWidth={2.5} /> {loginError}
               </p>
-            )}
+            ) : null}
 
             {/* Form */}
             <form
@@ -373,7 +405,14 @@ export default function Login() {
                   const isAdminRedirect = result?.is_admin && (!redirect || redirect === "/store" || redirect === "/");
                   navigate(isAdminRedirect ? "/admin" : (redirect || (result?.is_admin ? "/admin" : "/portal")));
                 } catch (err: any) {
-                  setLoginError(err.response?.data?.detail || err.message || "Invalid email or password.");
+                  const detail = err.response?.data?.detail || err.message || "Invalid email or password.";
+                  if (detail.toLowerCase().includes("verification")) {
+                    setNeedsVerification(true);
+                    setLoginError("");
+                  } else {
+                    setNeedsVerification(false);
+                    setLoginError(detail);
+                  }
                 } finally {
                   setLoginLoading(false);
                 }
@@ -390,7 +429,7 @@ export default function Login() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={e => { setEmail(e.target.value); setNeedsVerification(false); setLoginError(""); }}
                   required
                   autoFocus
                   className="auth-input w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder:text-slate-300 bg-white"
