@@ -5,6 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Signup Form Required Field Validation Fix
+
+### Fixed: Customer Signup Form Not Enforcing Required Address Fields ✅
+**Root cause**: `Signup.tsx` `handleSubmit` called `event.preventDefault()` (disabling browser native validation) but had zero JS-level validation before calling `register()`. Custom React components (`SearchableSelect` for country, `Select` for region) don't support native HTML `required` validation.
+- **`Signup.tsx`**: Added `validateSignupForm()` function that iterates all enabled schema fields. Address fields (which have `required:false` at the schema root but have required sub-fields in `address_config`) are always checked via their `address_config.*.required` flags. Non-address fields only checked if `field.required` is true. Whitespace-only inputs trigger "Please fill in: [field names]" toast.
+- **`ProductDetail.tsx`**: Intake form required field validation now trims whitespace before the empty check.
+- **`Cart.tsx`**: `sectionRequiredFieldsMissing` now trims whitespace in required text fields before checking emptiness.
+- **Verified** (iteration_182.json): 100% — Country empty, whitespace-only Full Name/City/Postal all show correct toast. Form stays on /signup page on validation failure.
+
+---
+
 ## Latest Updates (Feb 2026) — Store Filter Race Condition Fix
 
 ### Fixed: Store Filter Race Condition on Initial Load ✅
