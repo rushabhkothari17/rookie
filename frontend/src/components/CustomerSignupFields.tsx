@@ -48,9 +48,6 @@ type AugmentedField = FormField | {
   enabled: boolean; options: string[]; order: number;
 };
 
-const FIELD_MAX: Record<string, number> = {
-  email: 50, company_name: 50, job_title: 50, phone: 50, full_name: 50,
-};
 
 function buildFields(schema: FormField[], showPassword: boolean): AugmentedField[] {
   const sorted = [...schema]
@@ -211,7 +208,6 @@ export function CustomerSignupFields({
           value={values[field.key] || ""}
           onChange={e => onChange(field.key, e.target.value)}
           placeholder={field.placeholder || undefined}
-          maxLength={FIELD_MAX[field.key]}
           data-testid={field.key === "email" ? "signup-email-input" : field.key === "password" ? "signup-password-input" : `signup-field-${field.key}`}
         />
       );

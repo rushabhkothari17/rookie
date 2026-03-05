@@ -133,14 +133,20 @@ export default function Signup() {
         for (const { cfgKey, formKey, label } of checks) {
           if (cfg[cfgKey].required && !form[formKey]?.trim()) errors.push(label);
         }
-      } else if (field.required) {
+      } else {
+        // Check length limits for ALL enabled fields (required or not)
         if (STD_KEYS.includes(field.key)) {
           const val = form[field.key as keyof typeof form];
-          if (!val || !val.trim()) errors.push(field.label || field.key);
-          else if (FIELD_MAX[field.key] && val.trim().length > FIELD_MAX[field.key]) errors.push(`${field.label || field.key} (max ${FIELD_MAX[field.key]} characters)`);
-          else if (field.key === "phone" && val.trim() && !PHONE_REGEX.test(val.trim())) errors.push("Phone (invalid format — digits, spaces, +, - only)");
+          if (field.required && (!val || !val.trim())) {
+            errors.push(field.label || field.key);
+          } else if (val?.trim()) {
+            if (FIELD_MAX[field.key] && val.trim().length > FIELD_MAX[field.key])
+              errors.push(`${field.label || field.key} (max ${FIELD_MAX[field.key]} characters)`);
+            if (field.key === "phone" && !PHONE_REGEX.test(val.trim()))
+              errors.push("Phone (invalid format — digits, spaces, +, - only)");
+          }
         } else {
-          if (!extraFields[field.key]?.trim()) errors.push(field.label || field.key);
+          if (field.required && !extraFields[field.key]?.trim()) errors.push(field.label || field.key);
         }
       }
     }
