@@ -5,6 +5,18 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Email Validation, maxLength & Schema Refresh
+
+### Fixed: Customer created with invalid email / no length limits ✅
+- **Root cause**: `handleCreateCustomer()` and `validateSignupForm()` only checked for empty email, not format. Browser's `type="email"` validation never fires because button is `onClick` (not form submit). No backend format check either.
+- **Frontend**: Added `EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/` to both `Signup.tsx` `validateSignupForm()` and `CustomersTab.tsx` `handleCreateCustomer()`. Added length checks for email (50), company (50), job_title (50), phone (50).
+- **Backend**: Added email regex check in `routes/auth.py:register` and `routes/admin/customers.py:admin_create_customer`.
+- **`CustomerSignupFields.tsx`**: Added `FIELD_MAX` map with `maxLength` on all relevant inputs (email/company/job_title/phone=50, full_name=100, address line1/2=100, city/state=50, postal=20).
+- **Schema refresh fix**: `signupSchema` in `CustomersTab.tsx` now reloads on every Create Customer dialog open (was static — caused stale asterisk/required state when admin changed form schema).
+- **Verified** (iteration_184.json): 100% — 8/8 backend + 6/6 frontend tests pass.
+
+---
+
 ## Latest Updates (Feb 2026) — Multi-Bug Fix Batch (Customers, Signup, Partner Map)
 
 ### Fixed: 'Failed to load customers' for Platform Admin ✅
