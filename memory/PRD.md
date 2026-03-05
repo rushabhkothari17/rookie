@@ -5,6 +5,37 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Multi-Bug Fix Batch (Customers, Signup, Partner Map)
+
+### Fixed: 'Failed to load customers' for Platform Admin ✅
+- **Root cause**: `enrich_partner_codes()` in `tenant.py` used `t["code"]` (KeyError) — the automate-accounts tenant was created via upsert without a `code` field. Fixed with `t.get("code", "—")` + DB migration to add `code: "automate-accounts"` to the tenant document.
+
+### Fixed: Partner Map completely removed ✅
+- Removed from frontend (`CustomersTab.tsx`): column header, cell UI, filter state, `PARTNER_MAP_OPTIONS`, `pmColor` helper, `uniquePartnerMaps`
+- Removed from backend: `PUT /admin/customers/{id}/partner-map` endpoint, `partner_map` query param + filter in `customers.py`, `CustomerPartnerMapUpdate` model
+- DB migration: `partner_map` and `partner_map_id` unset from all 7 customer documents
+- Fixed `isPlatformAdmin` role check to include `platform_super_admin` (previously only checked `platform_admin`)
+
+### Fixed: Signup Form CMS Fields Not Connected ✅
+- `ws.signup_form_title` and `ws.signup_form_subtitle` now rendered in the form header (was hardcoded "Create an account")
+
+### Fixed: Signup Validation — All Address Sub-fields Dynamic + Consistent ✅
+- `validateSignupForm()` now loops through all 6 address sub-fields (line1, **line2**, city, state, postal, country) from config — line2 was previously missing
+- All `required` HTML attributes removed from `CustomerSignupFields.tsx` inputs — browser inline popups eliminated, all validation goes through toast
+- `validatePartnerForm()` added to partner signup flow
+
+### Fixed: Company Name Position ✅
+- `buildFields()` in `CustomerSignupFields.tsx` now injects email/password after `company_name` (if it immediately follows `full_name`), putting Full Name and Company Name side-by-side in the 2-column grid
+
+### Feature: FormSchemaBuilder Enhancements ✅
+- 50-char `maxLength` on Label input
+- Hide/Show toggle suppressed for `ALWAYS_VISIBLE_KEYS` (org_name, email, admin_email, password, admin_password, full_name, admin_name)
+- `base_currency` label is non-editable (readOnly input with grey styling)
+- Email/Tel field types show "Auto-validates format on submit" badge in edit panel
+- **Verified** (iteration_183.json): 100% — 11/11 features pass, 12/12 backend tests pass
+
+---
+
 ## Latest Updates (Feb 2026) — Signup Form Required Field Validation Fix
 
 ### Fixed: Customer Signup Form Not Enforcing Required Address Fields ✅

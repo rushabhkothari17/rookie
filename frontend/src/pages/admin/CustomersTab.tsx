@@ -26,7 +26,7 @@ import { useCountries } from "@/hooks/useCountries";
 
 export function CustomersTab() {
   const { user: authUser } = useAuth();
-  const isPlatformAdmin = authUser?.role === "platform_admin";
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
   const [customers, setCustomers] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
