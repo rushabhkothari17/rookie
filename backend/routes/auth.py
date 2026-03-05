@@ -940,7 +940,51 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         {"_id": 0},
     )
     if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        if existing.get("is_verified"):
+            raise HTTPException(status_code=400, detail="Email already registered")
+        # Unverified account — update with fresh data and resend OTP
+        verification_code = f"{secrets.randbelow(999999):06d}"
+        hashed = pwd_context.hash(payload.password)
+        await db.users.update_one(
+            {"id": existing["id"]},
+            {"$set": {
+                "password_hash": hashed,
+                "full_name": payload.full_name,
+                "job_title": payload.job_title,
+                "company_name": payload.company_name,
+                "phone": payload.phone,
+                "verification_code": verification_code,
+                "verification_attempts": 0,
+                "verification_locked_until": None,
+                "pending_address": {
+                    "line1": payload.address.line1,
+                    "line2": payload.address.line2 or "",
+                    "city": payload.address.city,
+                    "region": payload.address.region,
+                    "postal": payload.address.postal,
+                    "country": payload.address.country,
+                },
+                **({"profile_meta": payload.profile_meta} if payload.profile_meta else {}),
+            }},
+        )
+        from services.email_service import EmailService
+        email_result = await EmailService.send(
+            trigger="verification",
+            recipient=payload.email.lower(),
+            variables={
+                "customer_name": payload.full_name,
+                "customer_email": payload.email.lower(),
+                "verification_code": verification_code,
+            },
+            db=db,
+            tenant_id=tenant_id,
+        )
+        if email_result.get("status") == "mocked":
+            import logging
+            logging.getLogger("auth").warning(
+                "[DEV] Email mocked for %s — OTP: %s", payload.email.lower(), verification_code
+            )
+        return {"message": "Verification required"}
 
     user_id = make_id()
     verification_code = f"{secrets.randbelow(999999):06d}"
