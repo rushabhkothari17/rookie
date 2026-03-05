@@ -304,10 +304,6 @@ class PromoCodeUpdate(BaseModel):
     promo_note: Optional[str] = None
 
 
-class CustomerPartnerMapUpdate(BaseModel):
-    partner_map: str
-
-
 class TermsCreate(BaseModel):
     title: str
     content: str

@@ -58,6 +58,9 @@ export interface FormField {
 
 export type FieldType = "text" | "email" | "tel" | "number" | "date" | "textarea" | "select" | "checkbox" | "file" | "password" | "address";
 
+// Fields that must always be visible — hide/show toggle is suppressed for these
+const ALWAYS_VISIBLE_KEYS = new Set(["org_name", "email", "admin_email", "password", "admin_password", "full_name", "admin_name"]);
+
 const FIELD_TYPES: { value: FieldType; label: string }[] = [
   { value: "text",     label: "Text" },
   { value: "email",    label: "Email" },
@@ -199,7 +202,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                 <p className="text-[11px] text-slate-400 font-mono">{field.key}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                {field.locked && (
+                {field.locked && !ALWAYS_VISIBLE_KEYS.has(field.key) && (
                   <button
                     type="button"
                     onClick={() => toggle(field.id, "enabled", !field.enabled)}
@@ -231,8 +234,16 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
               <div className="border-t border-slate-100 bg-slate-50 p-3 grid grid-cols-2 gap-3">
                 {/* Label + Type */}
                 <div>
-                  <label className="text-[11px] text-slate-500 font-medium">Label</label>
-                  <Input value={field.label} onChange={e => updateField(field.id, { label: e.target.value })} className="mt-0.5 h-7 text-xs" />
+                  <label className="text-[11px] text-slate-500 font-medium">
+                    Label{field.key === "base_currency" && <span className="ml-1 text-[10px] text-slate-400">(non-editable)</span>}
+                  </label>
+                  <Input
+                    value={field.label}
+                    onChange={e => updateField(field.id, { label: e.target.value })}
+                    className={`mt-0.5 h-7 text-xs ${field.key === "base_currency" ? "bg-slate-100 cursor-not-allowed text-slate-400" : ""}`}
+                    maxLength={50}
+                    readOnly={field.key === "base_currency"}
+                  />
                 </div>
                 <div>
                   <label className="text-[11px] text-slate-500 font-medium">Field type</label>
@@ -242,6 +253,11 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                       {FIELD_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {(field.type === "email" || field.type === "tel") && (
+                    <p className="mt-1 text-[10px] text-blue-600 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5">
+                      Auto-validates format on submit
+                    </p>
+                  )}
                 </div>
 
                 {/* Address sub-field config (only for address type) */}

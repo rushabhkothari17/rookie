@@ -1,0 +1,54 @@
+{
+  "summary": "Iteration 183: Tested 11 features/bug fixes. All backend tests pass (12/12). All frontend tests pass including customers tab load, partner_map column removal, signup form CMS title, form validation without browser popup, line2 validation when required, company_name layout, Auth & Pages form_title/subtitle fields, FormSchemaBuilder label maxLength/readOnly/hide-toggle-suppression/auto-validate badge.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "CustomersTab.tsx",
+        "issue": "isPlatformAdmin check at line 29 uses `authUser?.role === 'platform_admin'` but platform super admin has role `platform_super_admin` (not matched). Partner column never shows for admin@automateaccounts.local. Fix: `authUser?.role === 'platform_admin' || authUser?.role === 'platform_super_admin'`",
+        "selector": "line 29 of CustomersTab.tsx",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter183_partner_map_customers.py",
+    "/app/test_reports/pytest/pytest_iter183.xml"
+  ],
+  "action_items": [
+    "Fix isPlatformAdmin in CustomersTab.tsx line 29 to include platform_super_admin: `const isPlatformAdmin = authUser?.role === 'platform_admin' || authUser?.role === 'platform_super_admin';` - this is the same pattern used in UsersTab.tsx line 185"
+  ],
+  "critical_code_review_comments": [
+    "CustomersTab.tsx line 29: isPlatformAdmin check misses 'platform_super_admin' role — Partner column (showing partner_code) is never visible for the platform super admin (admin@automateaccounts.local). UsersTab.tsx at line 185 correctly handles both roles.",
+    "ALWAYS_VISIBLE_KEYS fix confirmed working: org_name, admin_name, admin_email, admin_password, full_name — none show Hide/Show toggle",
+    "base_currency label is correctly readOnly in FormSchemaBuilder edit panel",
+    "auto-validate badge correctly shows for email/tel field types",
+    "Label maxLength=50 correctly applied in FormSchemaBuilder edit panel"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter183_partner_map_customers.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 tests passed)",
+    "frontend": "100% (all 11 feature tests passed, 1 low-priority code review finding)"
+  },
+  "test_credentials": {
+    "platform_admin": "admin@automateaccounts.local / ChangeMe123!",
+    "login_code": "automate-accounts"
+  },
+  "seed_data_creation": "Temporarily set line2.required=True for signup validation test, restored to False after test. Temporarily changed signup_form_title via API for title save test, restored after.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Platform admin (admin@automateaccounts.local) has role=platform_super_admin. Backend login: POST /api/auth/login with email+password only (NO partner_code). Frontend login: Enter 'automate-accounts' as code at gateway, then admin credentials. All partner_map references are confirmed removed from backend and frontend. FormSchemaBuilder tests use Auth & Pages > Partner Sign-Up Page in admin panel. Signup form at /signup requires localStorage key 'aa_partner_code'='automate-accounts' to load with automate-accounts tenant settings.",
+  "rca_of_issue": {
+    "description": "isPlatformAdmin role mismatch in CustomersTab.tsx",
+    "root_cause": "CustomersTab.tsx checks `authUser?.role === 'platform_admin'` but the platform super admin user has role `platform_super_admin`. This was already fixed in UsersTab.tsx (line 185: includes both roles) but not copied to CustomersTab.tsx",
+    "reproduction": "Login as admin@automateaccounts.local, navigate to /admin > Customers - Partner column not visible even though user is the platform admin",
+    "mitigation": "Change line 29: `const isPlatformAdmin = authUser?.role === 'platform_admin' || authUser?.role === 'platform_super_admin';`"
+  }
+}

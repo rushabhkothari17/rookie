@@ -57,7 +57,10 @@ function buildFields(schema: FormField[], showPassword: boolean): AugmentedField
   const pass:  AugmentedField = { id: "builtin_password", key: "password", label: "Password",        type: "password", required: true,  placeholder: "", locked: true, enabled: true, options: [], order: -1 };
 
   const fnIdx = sorted.findIndex(f => f.key === "full_name");
-  const insertAt = fnIdx >= 0 ? fnIdx + 1 : 0;
+  const cnIdx = sorted.findIndex(f => f.key === "company_name");
+  // Inject after company_name if it immediately follows full_name, else after full_name
+  const insertAfterIdx = (cnIdx >= 0 && fnIdx >= 0 && cnIdx === fnIdx + 1) ? cnIdx : fnIdx;
+  const insertAt = insertAfterIdx >= 0 ? insertAfterIdx + 1 : 0;
 
   const builtins: AugmentedField[] = showPassword ? [email, pass] : [email];
   return [...sorted.slice(0, insertAt), ...builtins, ...sorted.slice(insertAt)];
@@ -108,19 +111,19 @@ export function CustomerSignupFields({
             {cfg.line1.enabled && (
               <div className={compact ? "space-y-1" : `space-y-1.5 sm:col-span-2`}>
                 {!compact && <Label compact={compact}>Street address{cfg.line1.required ? <span className="text-red-500"> *</span> : ""}</Label>}
-                <Input value={values.line1 || ""} onChange={e => onChange("line1", e.target.value)} placeholder={compact ? `Line 1${cfg.line1.required ? " *" : ""}` : ""} required={cfg.line1.required} data-testid="signup-field-line1" />
+                <Input value={values.line1 || ""} onChange={e => onChange("line1", e.target.value)} placeholder={compact ? `Line 1${cfg.line1.required ? " *" : ""}` : ""} data-testid="signup-field-line1" />
               </div>
             )}
             {cfg.line2.enabled && (
               <div className={compact ? "space-y-1" : `space-y-1.5 sm:col-span-2`}>
                 {!compact && <Label compact={compact}>Address line 2{!cfg.line2.required ? " (optional)" : <span className="text-red-500"> *</span>}</Label>}
-                <Input value={values.line2 || ""} onChange={e => onChange("line2", e.target.value)} placeholder={compact ? `Line 2${cfg.line2.required ? " *" : " (optional)"}` : ""} required={cfg.line2.required} data-testid="signup-field-line2" />
+                <Input value={values.line2 || ""} onChange={e => onChange("line2", e.target.value)} placeholder={compact ? `Line 2${cfg.line2.required ? " *" : " (optional)"}` : ""} data-testid="signup-field-line2" />
               </div>
             )}
             {cfg.city.enabled && (
               <div className="space-y-1">
                 {!compact && <Label compact={compact}>City{cfg.city.required ? <span className="text-red-500"> *</span> : ""}</Label>}
-                <Input value={values.city || ""} onChange={e => onChange("city", e.target.value)} placeholder={compact ? `City${cfg.city.required ? " *" : ""}` : ""} required={cfg.city.required} data-testid="signup-field-city" />
+                <Input value={values.city || ""} onChange={e => onChange("city", e.target.value)} placeholder={compact ? `City${cfg.city.required ? " *" : ""}` : ""} data-testid="signup-field-city" />
               </div>
             )}
             {cfg.state.enabled && (
@@ -132,14 +135,14 @@ export function CustomerSignupFields({
                     <SelectContent>{provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
                   </Select>
                 ) : (
-                  <Input value={values.region || ""} onChange={e => onChange("region", e.target.value)} placeholder={compact ? `State / Province${cfg.state.required ? " *" : ""}` : ""} required={cfg.state.required} data-testid="signup-field-region-input" />
+                  <Input value={values.region || ""} onChange={e => onChange("region", e.target.value)} placeholder={compact ? `State / Province${cfg.state.required ? " *" : ""}` : ""} data-testid="signup-field-region-input" />
                 )}
               </div>
             )}
             {cfg.postal.enabled && (
               <div className="space-y-1">
                 {!compact && <Label compact={compact}>Postal / ZIP{cfg.postal.required ? <span className="text-red-500"> *</span> : ""}</Label>}
-                <Input value={values.postal || ""} onChange={e => onChange("postal", e.target.value)} placeholder={compact ? `Postal${cfg.postal.required ? " *" : ""}` : ""} required={cfg.postal.required} data-testid="signup-field-postal" />
+                <Input value={values.postal || ""} onChange={e => onChange("postal", e.target.value)} placeholder={compact ? `Postal${cfg.postal.required ? " *" : ""}` : ""} data-testid="signup-field-postal" />
               </div>
             )}
             {cfg.country.enabled && (
@@ -177,7 +180,6 @@ export function CustomerSignupFields({
             value={values[field.key] || ""}
             onChange={e => onChange(field.key, e.target.value)}
             placeholder={field.placeholder}
-            required={field.required}
             rows={2}
             className="text-sm resize-none"
             data-testid={`signup-field-${field.key}`}
@@ -205,7 +207,6 @@ export function CustomerSignupFields({
           value={values[field.key] || ""}
           onChange={e => onChange(field.key, e.target.value)}
           placeholder={field.placeholder || undefined}
-          required={field.required}
           data-testid={field.key === "email" ? "signup-email-input" : field.key === "password" ? "signup-password-input" : `signup-field-${field.key}`}
         />
       );

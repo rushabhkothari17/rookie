@@ -23,21 +23,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { CustomerSignupFields } from "@/components/CustomerSignupFields";
 import { useCountries } from "@/hooks/useCountries";
 
-const PARTNER_MAP_OPTIONS = [
-  { value: "", label: "Not set" },
-  { value: "Yes - Pending Verification", label: "Yes - Pending Verification" },
-  { value: "Pre-existing Customer - Pending Verification", label: "Pre-existing - Pending" },
-  { value: "Not yet - Pending Verification", label: "Not yet - Pending" },
-  { value: "Yes", label: "Yes (Verified)" },
-  { value: "Pre-existing Customer", label: "Pre-existing (Verified)" },
-  { value: "Not yet", label: "Not yet (Verified)" },
-];
-
-const pmColor = (pm: string | undefined) =>
-  !pm ? "bg-slate-100 text-slate-500"
-  : pm.includes("Pending") ? "bg-amber-100 text-amber-700"
-  : pm === "Yes" || pm === "Pre-existing Customer" ? "bg-green-100 text-green-700"
-  : "bg-red-100 text-red-700";
 
 export function CustomersTab() {
   const { user: authUser } = useAuth();
@@ -68,14 +53,12 @@ export function CustomersTab() {
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [paymentModeFilter, setPaymentModeFilter] = useState<string[]>([]);
-  const [partnerMapFilter, setPartnerMapFilter] = useState<string[]>([]);
   const [partnerFilter, setPartnerFilter] = useState<string[]>([]);
 
   // Dialogs
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [viewNotesCustomer, setViewNotesCustomer] = useState<any>(null);
   const [customerNotes, setCustomerNotes] = useState<any[]>([]);
-  const [editingPartnerMap, setEditingPartnerMap] = useState<{ customerId: string; value: string } | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
   const [signupSchema, setSignupSchema] = useState<any[]>([]);
@@ -120,7 +103,6 @@ export function CustomersTab() {
       if (countryFilter.length > 0) params.append("country", countryFilter.join(","));
       if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
       if (paymentModeFilter.length > 0) params.append("payment_mode", paymentModeFilter.join(","));
-      if (partnerMapFilter.length > 0) params.append("partner_map", partnerMapFilter.join(","));
       if (partnerFilter.length > 0) params.append("partner", partnerFilter.join(","));
       const res = await api.get(`/admin/customers?${params}`);
       let custs = res.data.customers || [];
@@ -131,9 +113,9 @@ export function CustomersTab() {
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load customers"); }
-  }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, partnerFilter, page]);
+  }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter, page]);
 
-  useEffect(() => { load(1); }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerMapFilter, partnerFilter]);
+  useEffect(() => { load(1); }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter]);
 
   // Fetch signup form schema to drive the Create Customer form
   useEffect(() => {
@@ -243,10 +225,6 @@ export function CustomersTab() {
     return Array.from(states).sort().map(s => [s, s] as [string, string]);
   }, [addresses]);
 
-  const uniquePartnerMaps = useMemo(() => {
-    return PARTNER_MAP_OPTIONS.filter(o => o.value).map(o => [o.value, o.label] as [string, string]);
-  }, []);
-
   const uniquePartners = useMemo(() => {
     const partners = new Set<string>();
     customers.forEach(c => { if (c.partner_code) partners.add(c.partner_code); });
@@ -302,7 +280,6 @@ export function CustomersTab() {
               <ColHeader label="Country" colKey="country" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={countryFilter} onFilter={v => setCountryFilter(v)} onClearFilter={() => setCountryFilter([])} statusOptions={countries.map(c => [c.value, c.label] as [string, string])} />
               <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => setStatusFilter(v)} onClearFilter={() => setStatusFilter([])} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />
               <ColHeader label="Payment Methods" colKey="payment" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={paymentModeFilter} onFilter={v => setPaymentModeFilter(v)} onClearFilter={() => setPaymentModeFilter([])} statusOptions={paymentFilterOptions.filter(o => o.value && o.value !== "all_modes").map(o => [o.value, o.label] as [string, string])} />
-              <ColHeader label="Partner Map" colKey="partner_map" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerMapFilter} onFilter={v => setPartnerMapFilter(v)} onClearFilter={() => setPartnerMapFilter([])} statusOptions={uniquePartnerMaps} />
               {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerFilter} onFilter={v => setPartnerFilter(v)} onClearFilter={() => setPartnerFilter([])} statusOptions={uniquePartners} />}
               <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
             </TableRow>
@@ -312,7 +289,6 @@ export function CustomersTab() {
               const user = userMap[customer.user_id] || {};
               const address = addrMap[customer.id] || {};
               const isActive = user.is_active !== false;
-              const pm = customer.partner_map;
               const modes: string[] | undefined = customer.allowed_payment_modes;
               const hasGC = modes ? modes.includes("gocardless") : (customer.allow_bank_transfer ?? true);
               const hasStripe = modes ? modes.includes("stripe") : (customer.allow_card_payment ?? false);
@@ -331,30 +307,6 @@ export function CustomersTab() {
                       {hasStripe && <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-50 text-purple-700">Stripe</span>}
                       {!hasGC && !hasStripe && <span className="text-[10px] text-slate-400 italic">None</span>}
                     </div>
-                  </TableCell>
-                  <TableCell data-testid={`admin-customer-partner-map-${customer.id}`}>
-                    {editingPartnerMap?.customerId === customer.id ? (
-                      <div className="flex gap-1 items-center">
-                        <Select value={editingPartnerMap.value || "__none__"} onValueChange={v => setEditingPartnerMap({ customerId: customer.id, value: v === "__none__" ? "" : v })}>
-                          <SelectTrigger className="h-7 text-xs w-36 bg-white"><SelectValue /></SelectTrigger>
-                          <SelectContent>{PARTNER_MAP_OPTIONS.map(o => <SelectItem key={o.value || "__none__"} value={o.value || "__none__"}>{o.label}</SelectItem>)}</SelectContent>
-                        </Select>
-                        <button onClick={async () => {
-                          try {
-                            await api.put(`/admin/customers/${customer.id}/partner-map`, { partner_map: editingPartnerMap.value });
-                            setCustomers(prev => prev.map(c => c.id === customer.id ? { ...c, partner_map: editingPartnerMap.value } : c));
-                            toast.success("Partner Map updated");
-                          } catch (e: any) { toast.error(e?.response?.data?.detail || "Failed"); }
-                          setEditingPartnerMap(null);
-                        }} className="text-green-600 text-xs font-medium hover:text-green-800" data-testid={`admin-partner-map-save-${customer.id}`}>Save</button>
-                        <button onClick={() => setEditingPartnerMap(null)} className="text-slate-400 text-xs hover:text-slate-600">✕</button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-1 items-center">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${pmColor(pm)}`}>{pm || "Not set"}</span>
-                        <button onClick={() => setEditingPartnerMap({ customerId: customer.id, value: pm || "" })} className="text-[10px] text-slate-400 hover:text-slate-700 underline" data-testid={`admin-partner-map-edit-${customer.id}`}>edit</button>
-                      </div>
-                    )}
                   </TableCell>
                   {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-customer-partner-${customer.id}`}>{customer.partner_code || "—"}</TableCell>}
                   <TableCell>

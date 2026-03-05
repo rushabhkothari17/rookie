@@ -217,7 +217,7 @@ async def enrich_partner_codes(records: list, is_platform: bool) -> list:
         {"id": {"$in": list(tenant_ids)}},
         {"_id": 0, "id": 1, "code": 1}
     ).to_list(500)
-    code_map = {t["id"]: t["code"] for t in tenants}
+    code_map = {t["id"]: t.get("code", "—") for t in tenants}
     for r in records:
         r["partner_code"] = code_map.get(r.get("tenant_id"), "—")
     return records

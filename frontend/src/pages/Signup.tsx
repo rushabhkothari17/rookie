@@ -97,21 +97,22 @@ export default function Signup() {
 
   const validateSignupForm = (): string[] => {
     const errors: string[] = [];
-    // Auth fields always required
     if (!form.email.trim()) errors.push("Email");
     if (!form.password.trim()) errors.push("Password");
-    // Schema-driven fields
-    // Note: address blocks have required:false at top level but sub-fields have their own required flags
-    // So we iterate all enabled fields, not just required ones, for address type
     for (const field of schema.filter(f => f.enabled !== false)) {
       if (field.type === "address") {
-        // Always validate address sub-fields based on their own required flags
         const cfg = getAddressConfig(field);
-        if (cfg.line1.required && !form.line1.trim()) errors.push("Address Line 1");
-        if (cfg.city.required && !form.city.trim()) errors.push("City");
-        if (cfg.postal.required && !form.postal.trim()) errors.push("Postal Code");
-        if (cfg.country.required && !form.country) errors.push("Country");
-        if (cfg.state.required && !form.region) errors.push("State / Province");
+        const checks: Array<{ cfgKey: "line1"|"line2"|"city"|"state"|"postal"|"country"; formKey: keyof typeof form; label: string }> = [
+          { cfgKey: "line1",   formKey: "line1",    label: "Address Line 1"   },
+          { cfgKey: "line2",   formKey: "line2",    label: "Address Line 2"   },
+          { cfgKey: "city",    formKey: "city",     label: "City"             },
+          { cfgKey: "state",   formKey: "region",   label: "State / Province" },
+          { cfgKey: "postal",  formKey: "postal",   label: "Postal Code"      },
+          { cfgKey: "country", formKey: "country",  label: "Country"          },
+        ];
+        for (const { cfgKey, formKey, label } of checks) {
+          if (cfg[cfgKey].required && !form[formKey]?.trim()) errors.push(label);
+        }
       } else if (field.required) {
         if (STD_KEYS.includes(field.key)) {
           const val = form[field.key as keyof typeof form];
@@ -121,6 +122,15 @@ export default function Signup() {
         }
       }
     }
+    return errors;
+  };
+
+  const validatePartnerForm = (): string[] => {
+    const errors: string[] = [];
+    if (!partnerOrg.name.trim()) errors.push("Organization Name");
+    if (!partnerOrg.admin_name.trim()) errors.push("Admin Full Name");
+    if (!partnerOrg.admin_email.trim()) errors.push("Admin Email");
+    if (!partnerOrg.admin_password.trim()) errors.push("Password");
     return errors;
   };
 
@@ -157,6 +167,11 @@ export default function Signup() {
 
   const handlePartnerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors = validatePartnerForm();
+    if (errors.length > 0) {
+      toast.error(`Please fill in: ${errors.join(", ")}`);
+      return;
+    }
     setPartnerLoading(true);
     try {
       const res = await api.post("/auth/register-partner", partnerOrg);
@@ -347,7 +362,10 @@ export default function Signup() {
               </Link>
             </div>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Create an account</h2>
+              <h2 className="text-xl font-bold text-slate-900">{ws.signup_form_title || "Create an account"}</h2>
+              {ws.signup_form_subtitle && (
+                <p className="text-sm text-slate-500 mt-1">{ws.signup_form_subtitle}</p>
+              )}
               <p className="text-sm text-slate-500 mt-1">Already have access?{" "}
                 <Link to="/login" className="font-semibold hover:underline" style={{ color: "var(--aa-accent)" }} data-testid="signup-login-link">Sign in</Link>
               </p>

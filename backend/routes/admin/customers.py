@@ -94,7 +94,6 @@ async def admin_customers(
     status: Optional[str] = None,
     payment_mode: Optional[str] = None,
     email: Optional[str] = None,
-    partner_map: Optional[str] = None,
     partner: Optional[str] = None,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
@@ -132,29 +131,6 @@ async def admin_customers(
                     or_conditions.append({"allow_bank_transfer": False, "allow_card_payment": False})
             if or_conditions:
                 query["$or"] = or_conditions
-    
-    # Handle partner_map filter (can be comma-separated multi-select)
-    if partner_map:
-        map_list = [m.strip() for m in partner_map.split(",") if m.strip()]
-        if len(map_list) == 1:
-            if map_list[0] == "none":
-                query["$or"] = [{"partner_map_id": None}, {"partner_map_id": {"$exists": False}}]
-            else:
-                query["partner_map_id"] = map_list[0]
-        else:
-            # Multi-select
-            or_conditions = []
-            for m in map_list:
-                if m == "none":
-                    or_conditions.append({"partner_map_id": None})
-                    or_conditions.append({"partner_map_id": {"$exists": False}})
-                else:
-                    or_conditions.append({"partner_map_id": m})
-            if or_conditions:
-                if "$or" in query:
-                    query["$and"] = [{"$or": query.pop("$or")}, {"$or": or_conditions}]
-                else:
-                    query["$or"] = or_conditions
     
     # Use aggregation pipeline for efficient querying
     pipeline: list = [
@@ -273,7 +249,6 @@ async def admin_customers(
                     "id": "$id",
                     "user_id": "$user_id",
                     "company_name": "$company_name",
-                    "partner_map_id": "$partner_map_id",
                     "allow_card_payment": "$allow_card_payment",
                     "allow_bank_transfer": "$allow_bank_transfer",
                     "stripe_customer_id": "$stripe_customer_id",
