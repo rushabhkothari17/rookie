@@ -96,6 +96,7 @@ export default function Signup() {
   const allValues: Record<string, string> = { ...form, ...extraFields };
 
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const PHONE_REGEX = /^[+\d][\d\s\-(). ]{3,49}$/;
   const FIELD_MAX: Record<string, number> = { email: 50, company_name: 50, job_title: 50, phone: 50 };
 
   const validateSignupForm = (): string[] => {
@@ -123,6 +124,7 @@ export default function Signup() {
           const val = form[field.key as keyof typeof form];
           if (!val || !val.trim()) errors.push(field.label || field.key);
           else if (FIELD_MAX[field.key] && val.trim().length > FIELD_MAX[field.key]) errors.push(`${field.label || field.key} (max ${FIELD_MAX[field.key]} characters)`);
+          else if (field.key === "phone" && val.trim() && !PHONE_REGEX.test(val.trim())) errors.push("Phone (invalid format — digits, spaces, +, - only)");
         } else {
           if (!extraFields[field.key]?.trim()) errors.push(field.label || field.key);
         }

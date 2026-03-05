@@ -176,19 +176,22 @@ export function CustomersTab() {
   };
 
   const handleCreateCustomer = async () => {
-    // Validate required fields from schema
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const PHONE_REGEX = /^[+\d][\d\s\-(). ]{3,49}$/;
     const schemaField = (key: string) => signupSchema.find((f: any) => f.key === key);
     const errors: string[] = [];
     if (!newCustomer.full_name.trim()) errors.push("Full Name");
+    else if (newCustomer.full_name.trim().length > 100) errors.push("Full Name (max 100 characters)");
     if (!newCustomer.email.trim()) errors.push("Email");
     else if (!EMAIL_REGEX.test(newCustomer.email.trim())) errors.push("Email (invalid format)");
     else if (newCustomer.email.trim().length > 50) errors.push("Email (max 50 characters)");
     if (!newCustomer.password.trim()) errors.push("Password");
-    // Field length limits
     if (newCustomer.company_name && newCustomer.company_name.length > 50) errors.push("Company Name (max 50 characters)");
     if (newCustomer.job_title && newCustomer.job_title.length > 50) errors.push("Job Title (max 50 characters)");
-    if (newCustomer.phone && newCustomer.phone.length > 50) errors.push("Phone (max 50 characters)");
+    if (newCustomer.phone) {
+      if (newCustomer.phone.length > 50) errors.push("Phone (max 50 characters)");
+      else if (!PHONE_REGEX.test(newCustomer.phone.trim())) errors.push("Phone (invalid format — digits, +, -, spaces only)");
+    }
     const addrField = schemaField("address");
     const addrEnabled = !addrField || addrField.enabled !== false;
     if (addrEnabled && addrField) {

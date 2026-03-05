@@ -357,10 +357,29 @@ async def admin_create_customer(
 ):
     tid = tenant_id_of(admin)
     await _check(admin, "create")
-    # Email format validation
+
     import re as _re
+    # Email format + length
     if not _re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', payload.email.strip()):
         raise HTTPException(status_code=400, detail="Invalid email address format")
+    if len(payload.email.strip()) > 50:
+        raise HTTPException(status_code=400, detail="Email must be 50 characters or fewer")
+
+    # Field length limits
+    if len(payload.full_name or "") > 100:
+        raise HTTPException(status_code=400, detail="Full name must be 100 characters or fewer")
+    if len(payload.company_name or "") > 50:
+        raise HTTPException(status_code=400, detail="Company name must be 50 characters or fewer")
+    if len(payload.job_title or "") > 50:
+        raise HTTPException(status_code=400, detail="Job title must be 50 characters or fewer")
+
+    # Phone format (digits, spaces, +, -, (, ) only)
+    phone = (payload.phone or "").strip()
+    if phone:
+        if not _re.match(r'^[+\d][\d\s\-().]{3,49}$', phone):
+            raise HTTPException(status_code=400, detail="Invalid phone number format")
+        if len(phone) > 50:
+            raise HTTPException(status_code=400, detail="Phone must be 50 characters or fewer")
 
     existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tid}, {"_id": 0})
     if existing:
