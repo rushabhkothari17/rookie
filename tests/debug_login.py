@@ -4,7 +4,7 @@ Debug navigation for failing tabs
 import asyncio
 from playwright.async_api import async_playwright
 
-BASE_URL = "https://form-builder-upgrade.preview.emergentagent.com"
+BASE_URL = "https://otp-timer-feature.preview.emergentagent.com"
 PARTNER_CODE = "automate-accounts"
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"

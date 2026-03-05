@@ -48,7 +48,15 @@ export default function Signup() {
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [verifying, setVerifying] = useState(false);
   const [resendingOtp, setResendingOtp] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Countdown timer — ticks every second when > 0
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setTimeout(() => setResendCountdown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
 
   // On mount: require partner code for customer signup
   useEffect(() => {
@@ -171,6 +179,7 @@ export default function Signup() {
       localStorage.setItem("aa_signup_email", form.email);
       setStep("verify");
       setOtpDigits(["", "", "", "", "", ""]);
+      setResendCountdown(60);
       toast.success("Verification code sent — check your inbox.");
       setTimeout(() => otpRefs.current[0]?.focus(), 150);
     } catch (err: any) {
@@ -203,6 +212,7 @@ export default function Signup() {
       await api.post("/auth/resend-verification-email", { email: form.email, partner_code: partnerCode || undefined });
       toast.success("New code sent — check your inbox.");
       setOtpDigits(["", "", "", "", "", ""]);
+      setResendCountdown(60);
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to resend code");
@@ -461,10 +471,11 @@ export default function Signup() {
                 </Button>
                 <div className="space-y-2 text-center">
                   <p className="text-xs text-slate-400">Didn't receive the code?</p>
-                  <button type="button" onClick={handleResendOtp} disabled={resendingOtp}
-                    className="text-sm font-semibold text-slate-700 hover:underline disabled:opacity-50"
+                  <button type="button" onClick={handleResendOtp}
+                    disabled={resendingOtp || resendCountdown > 0}
+                    className="text-sm font-semibold text-slate-700 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="resend-otp-btn">
-                    {resendingOtp ? "Sending…" : "Resend code"}
+                    {resendingOtp ? "Sending…" : resendCountdown > 0 ? `Resend in ${resendCountdown}s` : "Resend code"}
                   </button>
                 </div>
                 <button type="button" onClick={() => setStep("form")}
