@@ -283,8 +283,11 @@ export default function Signup() {
     if (code.length < 6) { toast.error("Please enter all 6 digits"); return; }
     setPartnerVerifying(true);
     try {
-      const res = await verifyEmail(partnerOrg.admin_email, code, undefined);
-      setGeneratedCode(res.partner_code || "");
+      const res = await api.post("/auth/verify-partner-email", {
+        email: partnerOrg.admin_email,
+        code,
+      });
+      setGeneratedCode(res.data.partner_code || "");
       setPartnerStep("form"); // exit verify step so success screen renders
       toast.success("Email verified! Your organization is ready.");
     } catch (err: any) {

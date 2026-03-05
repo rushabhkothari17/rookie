@@ -5,6 +5,18 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — True Pending Partner Registration (No DB until verified)
+
+### Feature: Zero DB footprint for partner signup until OTP confirmed ✅
+- **New collection** `pending_partner_registrations`: All partner signup data (org name, admin name, password_hash, OTP) stored here ONLY until email is verified.
+- **`register-partner`**: No longer creates any user or tenant record. Returns `{"message":"Verification required"}`.
+- **New endpoint `POST /auth/verify-partner-email`**: Validates OTP against pending collection, then creates tenant (active) + user (is_verified:true) + seeds + assigns free trial plan. Deletes pending record. Returns `{partner_code}`.
+- **`resend-verification-email`**: Checks `pending_partner_registrations` first (for partners), falls back to `db.users` (for customers).
+- **Users table**: Added Partner Code column showing the tenant's `code` field for each user.
+- **Verified** (curl + mongosh): No user/tenant in DB before OTP; both created correctly after verify; pending record cleared; tenant_code returned in users API.
+
+---
+
 ## Latest Updates (Feb 2026) — Partner Signup OTP & Security Parity
 
 ### Feature: Full OTP verification + security parity for partner signup ✅

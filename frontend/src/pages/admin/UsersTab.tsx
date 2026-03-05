@@ -433,6 +433,7 @@ export function UsersTab() {
                   <ColHeader label="Name / Email" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.names} onFilter={v => setCF("names", v)} onClearFilter={() => setCF("names", [])} statusOptions={nameOpts} />
                   <ColHeader label="Role" colKey="role" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.roles} onFilter={v => setCF("roles", v)} onClearFilter={() => setCF("roles", [])} statusOptions={roleOpts} />
                   {isPlatformAdmin && <ColHeader label="Partner Org" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.orgNames} onFilter={v => setCF("orgNames", v)} onClearFilter={() => setCF("orgNames", [])} statusOptions={orgOpts} />}
+                  {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner Code</th>}
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Modules</th>
                   <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
                   <th className="px-4 py-3 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
@@ -458,6 +459,15 @@ export function UsersTab() {
                       {isPlatformAdmin && (
                         <TableCell>
                           <span className="text-xs text-slate-500">{u.tenant_name || (u.tenant_id === "automate-accounts" || !u.tenant_id ? "Platform" : u.tenant_id?.slice(0, 8))}</span>
+                        </TableCell>
+                      )}
+                      {isPlatformAdmin && (
+                        <TableCell>
+                          {u.tenant_code ? (
+                            <code className="text-xs bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded">{u.tenant_code}</code>
+                          ) : (
+                            <span className="text-xs text-slate-300">—</span>
+                          )}
                         </TableCell>
                       )}
                       <TableCell>
