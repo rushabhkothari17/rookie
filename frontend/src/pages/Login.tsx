@@ -204,12 +204,19 @@ export default function Login() {
                   data-testid="partner-code-input"
                 />
                 {codeError && (
-                  <p
-                    className="flex items-center gap-1.5 mt-2 text-xs text-red-500 pl-1"
-                    data-testid="gateway-error"
-                  >
-                    <AlertCircle size={11} strokeWidth={2.5} /> {codeError}
-                  </p>
+                  <div className="mt-2 pl-1" data-testid="gateway-error">
+                    <p className="flex items-center gap-1.5 text-xs text-red-500">
+                      <AlertCircle size={11} strokeWidth={2.5} /> {codeError}
+                    </p>
+                    {codeError.toLowerCase().includes("inactive") && (
+                      <p className="mt-1.5 text-xs text-amber-700">
+                        This organization is pending email verification.{" "}
+                        <Link to="/signup?type=partner" className="font-semibold underline">
+                          Complete signup to activate →
+                        </Link>
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 

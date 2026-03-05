@@ -1,0 +1,96 @@
+{
+  "summary": "Iteration 187: Full partner signup OTP testing. Found and fixed 2 critical bugs. All 18 backend tests pass. All UI flows pass including full end-to-end: form → OTP step → verify → success screen with partner code.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Partner OTP verification success screen",
+        "issue": "FIXED: After successful OTP verification, generatedCode was set but partnerStep was still 'verify', causing success screen to never render (partnerStep check ran before generatedCode check). Fixed by adding setPartnerStep('form') in handlePartnerVerify after verification success.",
+        "affected_selectors": ["[data-testid='partner-signup-success']", "[data-testid='generated-partner-code']"]
+      },
+      {
+        "flow": "AuthContext verifyEmail TypeScript type",
+        "issue": "FIXED: verifyEmail returned Promise<void> but handlePartnerVerify called res.partner_code on the return value causing TS2339 TypeScript compile error and breaking the partner signup page. Fixed by returning response.data from verifyEmail.",
+        "affected_selectors": []
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Partner signup form",
+        "issues": [
+          "Address fields (Line 1*, City*, Postal Code*, Country*) show asterisk and have HTML required attributes, but validatePartnerForm() does NOT validate them. Backend only enforces address if partial address provided. This inconsistency may confuse users. Browser shows native 'Please fill out this field' tooltip when submitting with empty required address fields."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter187_partner_signup_otp.py",
+    "/app/test_reports/pytest/pytest_iter187_partner_otp.xml"
+  ],
+  "action_items": [
+    "Consider aligning address field required state with actual validation logic in PartnerOrgForm: either make address fields non-required (no HTML required attr) unless explicitly configured, or add address validation to validatePartnerForm(). Currently browser blocks submission with native tooltip when address fields are empty but required=true."
+  ],
+  "critical_code_review_comments": [
+    "FIXED (AuthContext.tsx): verifyEmail was Promise<void> — should return response.data for partner_code access in Signup.tsx handlePartnerVerify",
+    "FIXED (Signup.tsx): handlePartnerVerify did not call setPartnerStep('form') after success, so success screen (if generatedCode) was unreachable since partnerStep==='verify' check rendered OTP step first",
+    "partnerOtpDigits is an alias to otpDigits (line 59: const partnerOtpDigits = otpDigits) — reuses same state as customer signup. Code comment says 'customer and partner flows never concurrent' which is correct since they are separate pages. No issue but slightly confusing."
+  ],
+  "updated_files": [
+    "/app/frontend/src/contexts/AuthContext.tsx",
+    "/app/frontend/src/pages/Signup.tsx"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (all flows pass after fixes)"
+  },
+  "test_credentials": {
+    "test_emails_created": "Multiple test@uitest.com and @testdomain.com emails for testing — all disposable",
+    "pending_org_code_for_gateway_test": "gateway-test-org-1772683578 (pending_verification status)"
+  },
+  "seed_data_creation": "Created ~10 test partner orgs for testing, all with timestamp-based unique names. Activated org: final-test-org-1772684071",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Both critical bugs have been fixed. AuthContext.verifyEmail now returns response.data (not void). handlePartnerVerify calls setPartnerStep('form') after successful verification. Full flow: /signup?type=partner → fill form → OTP step (partnerResendCountdown=60, resend disabled) → enter correct OTP from MongoDB → success screen with generated partner_code. Login gateway shows 'inactive' + 'Complete signup to activate' link for pending tenants. OTP is MOCKED — email not sent, stored in DB only. Email delivery via Resend is MOCKED.",
+  "mocked_apis": {
+    "email_delivery": "MOCKED - Resend email service mocked, OTP stored in DB only. Use: mongosh mongodb://localhost:27017/test_database --quiet --eval \"db.users.findOne({email:'EMAIL'})?.verification_code\"",
+    "affected_endpoints": ["/api/auth/register-partner", "/api/auth/resend-verification-email"]
+  },
+  "test_results_detail": {
+    "T1_partner_signup_page_loads": "PASS",
+    "T2_name_over_100_chars_rejected": "PASS",
+    "T3_invalid_email_format_rejected": "PASS",
+    "T4_valid_form_transitions_to_otp_not_success": "PASS",
+    "T5a_resend_btn_disabled_immediately": "PASS - 'Resend in 58s'",
+    "T5b_countdown_text_correct": "PASS",
+    "T6_back_to_form_button": "PASS",
+    "T8a_verify_btn_disabled_0_digits": "PASS",
+    "T8b_verify_btn_disabled_3_of_6": "PASS",
+    "T8c_verify_btn_enabled_6_of_6": "PASS",
+    "T9a_gateway_shows_inactive_error": "PASS",
+    "T9b_complete_signup_activate_link": "PASS",
+    "T9c_link_points_to_partner_signup": "PASS",
+    "T_FULL_end_to_end_success_screen": "PASS - partner code 'final-test-org-1772684071' displayed",
+    "BACKEND_no_otp_in_register_response": "PASS (18/18 tests)",
+    "BACKEND_no_partner_code_in_register_response": "PASS",
+    "BACKEND_name_100_char_limit": "PASS",
+    "BACKEND_pending_tenant_returns_403_inactive": "PASS"
+  },
+  "rca_of_issues": {
+    "bug1": {
+      "title": "TypeScript compile error: partner_code does not exist on type void",
+      "root_cause": "AuthContext.tsx: verifyEmail function returned Promise<void> (discarded api response). Signup.tsx handlePartnerVerify called const res = await verifyEmail(...); setGeneratedCode(res.partner_code || '') which fails since res is void.",
+      "fix": "AuthContext.tsx verifyEmail now returns response.data instead of void. Type signature changed from Promise<void> to Promise<any>.",
+      "file": "/app/frontend/src/contexts/AuthContext.tsx line 139-141"
+    },
+    "bug2": {
+      "title": "Partner OTP success screen never shown after correct OTP entry",
+      "root_cause": "Signup.tsx render logic: if (partnerStep === 'verify') rendered OTP step FIRST, then if (generatedCode) checked for success screen. After setGeneratedCode(res.partner_code), partnerStep was never changed from 'verify', so success screen was unreachable.",
+      "fix": "handlePartnerVerify now calls setPartnerStep('form') after setGeneratedCode(). When partnerStep reverts to 'form', the generatedCode check runs and shows the success screen.",
+      "file": "/app/frontend/src/pages/Signup.tsx line 286"
+    }
+  }
+}

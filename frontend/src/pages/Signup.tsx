@@ -51,7 +51,22 @@ export default function Signup() {
   const [resendCountdown, setResendCountdown] = useState(0);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Countdown timer — ticks every second when > 0
+  // Partner OTP step state
+  const [partnerStep, setPartnerStep] = useState<"form" | "verify">("form");
+  const [partnerResendCountdown, setPartnerResendCountdown] = useState(0);
+  const [partnerVerifying, setPartnerVerifying] = useState(false);
+  const [partnerResendingOtp, setPartnerResendingOtp] = useState(false);
+  const partnerOtpDigits = otpDigits;   // reuse — customer and partner flows never concurrent
+  const partnerOtpRefs = otpRefs;
+
+  // Countdown for partner resend button
+  useEffect(() => {
+    if (partnerResendCountdown <= 0) return;
+    const t = setTimeout(() => setPartnerResendCountdown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [partnerResendCountdown]);
+
+  // Countdown timer for customer resend — ticks every second when > 0
   useEffect(() => {
     if (resendCountdown <= 0) return;
     const timer = setTimeout(() => setResendCountdown(c => c - 1), 1000);
@@ -162,11 +177,16 @@ export default function Signup() {
     return errors;
   };
 
+  const EMAIL_REGEX_P = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const validatePartnerForm = (): string[] => {
     const errors: string[] = [];
     if (!partnerOrg.name.trim()) errors.push("Organization Name");
+    else if (partnerOrg.name.trim().length > 100) errors.push("Organization Name (max 100 characters)");
     if (!partnerOrg.admin_name.trim()) errors.push("Admin Full Name");
+    else if (partnerOrg.admin_name.trim().length > 50) errors.push("Admin Full Name (max 50 characters)");
     if (!partnerOrg.admin_email.trim()) errors.push("Admin Email");
+    else if (!EMAIL_REGEX_P.test(partnerOrg.admin_email.trim())) errors.push("Admin Email (invalid format)");
+    else if (partnerOrg.admin_email.trim().length > 50) errors.push("Admin Email (max 50 characters)");
     if (!partnerOrg.admin_password.trim()) errors.push("Password");
     return errors;
   };
@@ -240,17 +260,54 @@ export default function Signup() {
     e.preventDefault();
     const errors = validatePartnerForm();
     if (errors.length > 0) {
-      toast.error(`Please fill in: ${errors.join(", ")}`);
+      toast.error(`Please fix: ${errors.join(", ")}`);
       return;
     }
     setPartnerLoading(true);
     try {
-      const res = await api.post("/auth/register-partner", partnerOrg);
-      setGeneratedCode(res.data.partner_code || "");
+      await api.post("/auth/register-partner", partnerOrg);
+      setOtpDigits(["", "", "", "", "", ""]);
+      setPartnerResendCountdown(60);
+      setPartnerStep("verify");
+      toast.success("Verification code sent — check your inbox.");
+      setTimeout(() => partnerOtpRefs.current[0]?.focus(), 150);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Registration failed");
     } finally {
       setPartnerLoading(false);
+    }
+  };
+
+  const handlePartnerVerify = async () => {
+    const code = otpDigits.join("");
+    if (code.length < 6) { toast.error("Please enter all 6 digits"); return; }
+    setPartnerVerifying(true);
+    try {
+      const res = await verifyEmail(partnerOrg.admin_email, code, undefined);
+      setGeneratedCode(res.partner_code || "");
+      setPartnerStep("form"); // exit verify step so success screen renders
+      toast.success("Email verified! Your organization is ready.");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Invalid code — please try again");
+      setOtpDigits(["", "", "", "", "", ""]);
+      setTimeout(() => partnerOtpRefs.current[0]?.focus(), 100);
+    } finally {
+      setPartnerVerifying(false);
+    }
+  };
+
+  const handlePartnerResendOtp = async () => {
+    setPartnerResendingOtp(true);
+    try {
+      await api.post("/auth/resend-verification-email", { email: partnerOrg.admin_email });
+      toast.success("New code sent — check your inbox.");
+      setOtpDigits(["", "", "", "", "", ""]);
+      setPartnerResendCountdown(60);
+      setTimeout(() => partnerOtpRefs.current[0]?.focus(), 100);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to resend code");
+    } finally {
+      setPartnerResendingOtp(false);
     }
   };
 
@@ -264,6 +321,88 @@ export default function Signup() {
 
   // Partner mode
   if (isPartnerMode) {
+    // ── OTP verification step ─────────────────────────────────────────────────
+    if (partnerStep === "verify") {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center p-4" data-testid="partner-verify-step">
+          <div className="w-full max-w-sm space-y-6 text-center">
+            <button type="button" onClick={() => setPartnerStep("form")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+              <ChevronLeft size={12} /> Back to form
+            </button>
+
+            <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto">
+              <Mail size={28} className="text-slate-600" />
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-slate-900">Check your inbox</h2>
+              <p className="text-sm text-slate-500">
+                We sent a 6-digit code to{" "}
+                <span className="font-semibold text-slate-800">{partnerOrg.admin_email}</span>
+              </p>
+            </div>
+
+            {/* OTP boxes */}
+            <div className="flex gap-2 justify-center" data-testid="partner-otp-inputs">
+              {otpDigits.map((d, i) => (
+                <input
+                  key={i}
+                  ref={el => { partnerOtpRefs.current[i] = el; }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={d}
+                  data-testid={`partner-otp-digit-${i}`}
+                  onChange={e => {
+                    const v = e.target.value.replace(/\D/, "");
+                    const next = [...otpDigits]; next[i] = v;
+                    setOtpDigits(next);
+                    if (v && i < 5) partnerOtpRefs.current[i + 1]?.focus();
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === "Backspace" && !d && i > 0) partnerOtpRefs.current[i - 1]?.focus();
+                  }}
+                  onPaste={i === 0 ? e => {
+                    e.preventDefault();
+                    const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6).split("");
+                    if (digits.length) {
+                      const next = ["", "", "", "", "", ""];
+                      digits.forEach((d, idx) => { if (idx < 6) next[idx] = d; });
+                      setOtpDigits(next);
+                      setTimeout(() => partnerOtpRefs.current[Math.min(digits.length, 5)]?.focus(), 0);
+                    }
+                  } : undefined}
+                  className="h-12 w-10 rounded-lg border border-slate-300 text-center text-lg font-semibold focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-colors"
+                />
+              ))}
+            </div>
+
+            <Button
+              onClick={handlePartnerVerify}
+              disabled={partnerVerifying || otpDigits.join("").length < 6}
+              className="w-full h-11 font-semibold bg-slate-900 hover:bg-slate-700 text-white"
+              data-testid="partner-verify-btn"
+            >
+              {partnerVerifying ? "Verifying…" : "Verify email"}
+            </Button>
+
+            <div className="space-y-1 text-center">
+              <p className="text-xs text-slate-400">Didn't receive the code?</p>
+              <button
+                type="button"
+                onClick={handlePartnerResendOtp}
+                disabled={partnerResendingOtp || partnerResendCountdown > 0}
+                className="text-sm font-semibold text-slate-700 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="partner-resend-otp-btn"
+              >
+                {partnerResendingOtp ? "Sending…" : partnerResendCountdown > 0 ? `Resend in ${partnerResendCountdown}s` : "Resend code"}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // ── Success screen ────────────────────────────────────────────────────────
     if (generatedCode) {
       return (
