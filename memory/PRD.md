@@ -5,7 +5,24 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Feb 2026) — True Pending Partner Registration (No DB until verified)
+## Latest Updates (Mar 2026) — 10 Bug Fixes Sprint ✅
+
+### All 10 critical bugs resolved (100% pass — iteration_243.json)
+
+1. **Store "All" default**: `categoryFromSlug()` in `categories.ts` now returns `null` (not `available[0]`) when slug is absent → "All" is correctly highlighted on initial load.
+2. **Cart quantity blank**: `orders/preview` backend response now includes `quantity` field per item.
+3. **T&C HTML rendering**: Cart T&C modal replaced `<pre>` with `dangerouslySetInnerHTML` — HTML renders as formatted content.
+4. **T&C `{product_name}` variable**: Cart T&C modal now replaces `{product_name}`, `{user_name}`, `{company_name}`, `{user_email}` using `preview.items` and customer data.
+5. **Profile greeting whitespace**: `TopNav.tsx` and `Portal.tsx` now use `.trim()` before displaying user name.
+6. **Profile update 403 / address not saved**: `UpdateProfileRequest` model now includes `address: Optional[AddressInput]`; `/me` PUT endpoint upserts address to `addresses` collection.
+7. **Profile toast on failure**: Already correct in code; resolved by fixing Issue 6 (API now returns real success/fail status).
+8. **GDPR export missing data**: `gdpr_service.py` now fetches and attaches `order_items` to each order in the export.
+9. **T&C editor one character at a time**: `RichHtmlEditor.tsx` uses `lastOnChangeRef` to track last emitted value — prevents editor re-init on parent echo, fixing focus loss.
+10. **Product detail back button**: Back button added at top of `ProductDetail.tsx` with `navigate(-1)`.
+
+---
+
+
 
 ### Feature: Zero DB footprint for partner signup until OTP confirmed ✅
 - **New collection** `pending_partner_registrations`: All partner signup data (org name, admin name, password_hash, OTP) stored here ONLY until email is verified.
