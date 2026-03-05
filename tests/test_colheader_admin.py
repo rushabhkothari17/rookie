@@ -13,7 +13,7 @@ import asyncio
 import json
 from playwright.async_api import async_playwright
 
-BASE_URL = "https://otp-timer-feature.preview.emergentagent.com"
+BASE_URL = "https://bug-fix-sprint-11.preview.emergentagent.com"
 PARTNER_CODE = "automate-accounts"
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"

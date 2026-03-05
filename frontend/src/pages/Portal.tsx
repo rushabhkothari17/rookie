@@ -356,7 +356,7 @@ export default function Portal() {
     <div className="space-y-10 max-w-6xl mx-auto" data-testid="portal-page">
       {/* Header */}
       <div>
-        <p className="text-sm text-slate-500" data-testid="portal-welcome">Welcome, {user?.full_name || "Customer"}</p>
+        <p className="text-sm text-slate-500" data-testid="portal-welcome">Welcome, {user?.full_name?.trim() || "Customer"}</p>
         <h1 className="text-2xl font-semibold text-slate-900">{ws.portal_title}</h1>
         <p className="text-sm text-slate-400">{ws.portal_subtitle}</p>
       </div>

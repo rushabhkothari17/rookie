@@ -89,6 +89,7 @@ class UpdateProfileRequest(BaseModel):
     job_title: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    address: Optional[AddressInput] = None
 
 
 class PricingCalcRequest(BaseModel):

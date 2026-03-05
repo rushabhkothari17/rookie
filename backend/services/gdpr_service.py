@@ -47,11 +47,18 @@ async def export_customer_data(customer_id: str, tenant_id: str) -> Dict[str, An
     if address:
         export_data["data"]["address"] = address
     
-    # 4. Orders
+    # 4. Orders with line items
     orders = await db.orders.find(
         {"customer_id": customer_id, "tenant_id": tenant_id},
         {"_id": 0}
     ).to_list(1000)
+    # Attach order items to each order
+    for order in orders:
+        order_items = await db.order_items.find(
+            {"order_id": order["id"]},
+            {"_id": 0}
+        ).to_list(100)
+        order["items"] = order_items
     export_data["data"]["orders"] = orders
     
     # 5. Subscriptions

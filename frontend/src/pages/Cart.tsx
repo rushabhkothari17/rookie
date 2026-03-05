@@ -951,9 +951,16 @@ export default function Cart() {
             </div>
             <div className="p-6 overflow-y-auto flex-1">
               {termsContent?.content ? (
-                <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans">{termsContent.content}</pre>
-                </div>
+                <div
+                  className="prose prose-sm max-w-none text-slate-700 [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                  dangerouslySetInnerHTML={{
+                    __html: termsContent.content
+                      .replace(/\{product_name\}/g, (preview?.items || []).map((i: any) => i.product_name || i.product_id).join(", ") || "")
+                      .replace(/\{user_name\}/g, customer?.full_name || "")
+                      .replace(/\{company_name\}/g, customer?.company_name || "")
+                      .replace(/\{user_email\}/g, customer?.email || "")
+                  }}
+                />
               ) : (
                 <div className="text-center py-8">
                   <p className="text-slate-500">No terms and conditions have been configured yet.</p>

@@ -54,12 +54,17 @@ export function RichHtmlEditor({
   const [richKey, setRichKey] = useState(0);
   const previewRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
+  // Track the last HTML we emitted so we don't re-init the editor on echo
+  const lastOnChangeRef = useRef(value);
 
   // Sync external value changes (e.g. template applied) into local state
+  // Only re-init when the value is a truly external change (not our own echo)
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return; }
-    setLocalHtml(value);
-    setRichKey(k => k + 1);
+    if (value !== lastOnChangeRef.current) {
+      setLocalHtml(value);
+      setRichKey(k => k + 1);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
@@ -76,6 +81,7 @@ export function RichHtmlEditor({
     onUpdate({ editor }) {
       const html = editor.getHTML();
       setLocalHtml(html);
+      lastOnChangeRef.current = html; // track what we emitted to avoid echo re-init
       onChange(html);
     },
   });

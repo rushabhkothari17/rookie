@@ -1644,6 +1644,16 @@ async def update_me(
             action="profile_updated", actor=user["email"],
             details={k: v for k, v in {**update_user, **update_cust}.items()},
         )
+
+    # Update address if provided
+    if payload.address is not None:
+        addr_data = payload.address.model_dump()
+        await db.addresses.update_one(
+            {"customer_id": customer["id"]},
+            {"$set": {**addr_data, "customer_id": customer["id"]}},
+            upsert=True,
+        )
+
     return {"message": "Profile updated"}
 
 

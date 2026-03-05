@@ -69,9 +69,9 @@ export default function TopNav() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          {user?.full_name && (
+          {user?.full_name?.trim() && (
             <span className="text-sm text-slate-500 hidden md:inline" data-testid="nav-welcome">
-              Hi, {user.full_name.split(" ")[0]}
+              Hi, {user.full_name.trim().split(" ")[0]}
             </span>
           )}
           {user?.role === "platform_admin" && (
@@ -102,7 +102,7 @@ export default function TopNav() {
                 data-testid="nav-user-trigger"
               >
                 <User size={16} />
-                {user?.full_name?.split(" ")[0] || "Account"}
+                {user?.full_name?.trim().split(" ")[0] || "Account"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56" data-testid="nav-user-menu">

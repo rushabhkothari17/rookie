@@ -14,9 +14,9 @@ export function slugFromCategory(name: string): string {
 
 /** Find a category name that matches a URL slug from the available list */
 export function categoryFromSlug(slug: string | null, available: string[]): string | null {
-  if (!slug) return available[0] || null;
+  if (!slug) return null; // null = "All" category selected by default
   const normalized = slug.toLowerCase();
-  return available.find((c) => slugFromCategory(c) === normalized) || available[0] || null;
+  return available.find((c) => slugFromCategory(c) === normalized) || null;
 }
 
 /** Return category name as-is — no hardcoded remapping */

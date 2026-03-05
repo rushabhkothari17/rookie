@@ -405,6 +405,7 @@ async def orders_preview(
         results.append({
             "product_id": item.product_id,
             "product_name": product["name"],
+            "quantity": item.quantity,
             "product": product,
             "pricing": pricing,
             **pricing,  # keep flat keys for backward compatibility
