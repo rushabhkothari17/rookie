@@ -1,0 +1,65 @@
+{
+  "summary": "Tested signup form validation fixes. Found and fixed a critical bug: validateSignupForm() was filtering schema fields with f.required, which excluded the address block (address has required:false at top-level even though sub-fields like country/city/postal are required). Fixed by iterating all enabled fields and handling address blocks with their own required flags. After fix, all validation scenarios pass correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Signup: Country empty → 'Please fill in: Country' toast appears (PASS after fix)",
+    "Signup: Full Name whitespace-only → 'Please fill in: Full Name' toast appears (PASS)",
+    "Signup: City whitespace-only → 'Please fill in: City' toast appears (PASS)",
+    "Signup: Postal whitespace-only → 'Please fill in: Postal Code' toast appears (PASS)",
+    "Signup: Form correctly stays on /signup page when validation fails (PASS)",
+    "Code review: ProductDetail.tsx intake form whitespace trim is in place at lines 218-222 (trimmedVal = val.trim())",
+    "Code review: Cart.tsx sectionRequiredFieldsMissing whitespace trim is in place at lines 83-95 (val.trim() === '')"
+  ],
+  "failed_tests": [
+    "Intake form end-to-end test: No products have intake_schema configured in this environment - cannot test. Verified via code review only."
+  ],
+  "test_report_links": [
+    "/app/frontend/src/pages/Signup.tsx"
+  ],
+  "action_items": [
+    "CRITICAL BUG FIXED by tester: validateSignupForm() in Signup.tsx was iterating schema fields with filter 'f.required', but the address field in the schema has required:false at top level even though sub-fields (country, city, postal) have required:true in address_config. Fixed filter to iterate all enabled fields and check address sub-fields separately."
+  ],
+  "critical_code_review_comments": [
+    "BUG FIXED: Signup.tsx validateSignupForm() previously used schema.filter(f => f.enabled !== false && f.required) - this excluded the address block because it has required:false. Fixed to iterate all enabled fields and handle address type separately from regular field required check.",
+    "Verified fix: The address block in automate-accounts tenant schema has {required: false, type: 'address', address_config: {country: {required: true}, city: {required: true}, postal: {required: true}, line1: {required: true}}}",
+    "NOTE: The test partner code 'AUTOMATE' provided in requirements does NOT exist - only 'automate-accounts' is valid. The 'automate-accounts' code is reserved for platform admin; customer registration via signup returns 403. For real end-to-end customer signup tests, a dedicated customer tenant code is needed.",
+    "ProductDetail.tsx whitespace trim: Uses trimmedVal = typeof val === 'string' ? val.trim() : val - correct",
+    "Cart.tsx sectionRequiredFieldsMissing: Returns true when val.trim() === '' - correct"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/Signup.tsx (validateSignupForm fix - lines 98-125)"
+  ],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (4/4 signup validation scenarios pass after fix, intake form not testable in this environment)"
+  },
+  "test_credentials": {
+    "partner_code_for_signup_test": "automate-accounts (NOT 'AUTOMATE' - that code doesn't exist)",
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Key finding: The signup form validation fix in validateSignupForm() had a bug where the address schema block was excluded because it has required:false at the top level. The fix changes the filter from 'f.required' to handle address type separately. This fix was applied. All signup form validation tests pass after the fix: Country empty, whitespace-only full_name/city/postal all correctly show 'Please fill in: ...' toast. Note: 'AUTOMATE' partner code doesn't exist in this environment - use 'automate-accounts' to access signup form. For end-to-end signup test with actual registration, use 'apex-holding' tenant code (real customer tenant). The automate-accounts code is platform admin reserved and returns 403 on registration attempt.",
+  "rca_of_the_issue": {
+    "root_cause": "validateSignupForm() in Signup.tsx filtered schema fields with `schema.filter(f => f.enabled !== false && f.required)`. The address block in the tenant's signup_form_schema has `required: false` at the top level (while individual sub-fields like country, city, postal have `required: true` in address_config). Because the address field was filtered out, none of the address sub-field validations ever ran - meaning Country, City, Postal could all be empty and the form would submit.",
+    "fix_applied": "Changed filter to iterate all enabled fields: `schema.filter(f => f.enabled !== false)`. Address blocks are always checked via address_config.*.required. Non-address fields are only checked if field.required is true.",
+    "reproduction_steps": [
+      "1. Navigate to /signup with aa_partner_code=automate-accounts in localStorage",
+      "2. Fill all text fields (full_name, email, password, company_name, job_title, phone, line1, city, postal)",
+      "3. Leave Country empty",
+      "4. Click Create account",
+      "BEFORE FIX: Form submits to API, gets 403 (no JS validation error)",
+      "AFTER FIX: Toast shows 'Please fill in: Country' and form stays on /signup"
+    ]
+  }
+}

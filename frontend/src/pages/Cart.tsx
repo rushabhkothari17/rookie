@@ -84,7 +84,13 @@ export default function Cart() {
     if (!checkoutSections) return false;
     return checkoutSections.some((section: any) => {
       const fields = parseSectionFields(section.fields_schema);
-      return fields.some((f: any) => f.required && !extraFields[f.id || f.key || f.name]);
+      return fields.some((f: any) => {
+        if (!f.required) return false;
+        const key = f.id || f.key || f.name;
+        const val = extraFields[key];
+        if (!val) return true;
+        return typeof val === "string" && val.trim() === "";
+      });
     });
   }, [checkoutSections, extraFields]);
 

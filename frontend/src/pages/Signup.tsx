@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite, applyPartnerBranding } from "@/contexts/WebsiteContext";
-import { parseSchema, type FormField } from "@/components/FormSchemaBuilder";
+import { parseSchema, getAddressConfig, type FormField } from "@/components/FormSchemaBuilder";
 import { CustomerSignupFields } from "@/components/CustomerSignupFields";
 import { useCountries } from "@/hooks/useCountries";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
@@ -95,8 +95,42 @@ export default function Signup() {
   // Combined values for the shared field component
   const allValues: Record<string, string> = { ...form, ...extraFields };
 
+  const validateSignupForm = (): string[] => {
+    const errors: string[] = [];
+    // Auth fields always required
+    if (!form.email.trim()) errors.push("Email");
+    if (!form.password.trim()) errors.push("Password");
+    // Schema-driven fields
+    // Note: address blocks have required:false at top level but sub-fields have their own required flags
+    // So we iterate all enabled fields, not just required ones, for address type
+    for (const field of schema.filter(f => f.enabled !== false)) {
+      if (field.type === "address") {
+        // Always validate address sub-fields based on their own required flags
+        const cfg = getAddressConfig(field);
+        if (cfg.line1.required && !form.line1.trim()) errors.push("Address Line 1");
+        if (cfg.city.required && !form.city.trim()) errors.push("City");
+        if (cfg.postal.required && !form.postal.trim()) errors.push("Postal Code");
+        if (cfg.country.required && !form.country) errors.push("Country");
+        if (cfg.state.required && !form.region) errors.push("State / Province");
+      } else if (field.required) {
+        if (STD_KEYS.includes(field.key)) {
+          const val = form[field.key as keyof typeof form];
+          if (!val || !val.trim()) errors.push(field.label || field.key);
+        } else {
+          if (!extraFields[field.key]?.trim()) errors.push(field.label || field.key);
+        }
+      }
+    }
+    return errors;
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const errors = validateSignupForm();
+    if (errors.length > 0) {
+      toast.error(`Please fill in: ${errors.join(", ")}`);
+      return;
+    }
     setLoading(true);
     try {
       const profile_meta = Object.keys(extraFields).length ? extraFields : undefined;

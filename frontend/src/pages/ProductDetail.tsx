@@ -218,7 +218,8 @@ export default function ProductDetail() {
     for (const q of visibleIntakeQuestions) {
       if (!q.required) continue;
       const val = intakeAnswers[q.key];
-      const empty = q.type === "multiselect" ? !val || val.length === 0 : !val || val === "";
+      const trimmedVal = typeof val === "string" ? val.trim() : val;
+      const empty = q.type === "multiselect" ? !trimmedVal || trimmedVal.length === 0 : !trimmedVal || trimmedVal === "";
       if (empty) { toast.error(`"${q.label}" is required`); return; }
     }
 
