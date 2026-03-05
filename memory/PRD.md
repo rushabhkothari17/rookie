@@ -5,6 +5,25 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Inline Email Verification OTP + 50-char full_name
+
+### Feature: Inline OTP verification on signup (Option A) ✅
+- After submitting the signup form, the card **stays on /signup** and swaps to an inline verification step — no redirect to /verify
+- 6 individual digit boxes with auto-focus-next, backspace-to-prev, and paste support
+- Shows the email address the code was sent to
+- Resend code button and Back to form button
+- On success, navigates to /login
+- `is_verified=False` until code entered — customer cannot log in without verifying
+- `/verify` page kept for backward compatibility
+
+### Fixed: full_name 50-char limit (was incorrectly set to 100) ✅
+- Backend (`auth.py` + `customers.py`): 50-char limit enforced server-side
+- Frontend (`CustomerSignupFields.tsx` `FIELD_MAX`): maxLength=50 on input
+- Frontend (`Signup.tsx`, `CustomersTab.tsx`): validateSignupForm + handleCreateCustomer check
+- **Verified** (iteration_185.json): 100% — 11/11 tests pass
+
+---
+
 ## Latest Updates (Feb 2026) — Email Validation, maxLength & Schema Refresh
 
 ### Fixed: Customer created with invalid email / no length limits ✅
