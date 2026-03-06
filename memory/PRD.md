@@ -5,7 +5,26 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Mar 2026) — 10 Bug Fixes Sprint ✅
+## Latest Updates (Mar 2026) — Products/Store 13-Bug Sprint ✅
+
+### All 13 bugs resolved + 2 bonus bugs fixed by testing agent (iteration_244)
+
+1. **Name 100-char limit**: `ProductForm.tsx` — `maxLength={100}` + real-time counter that turns amber at 90 chars
+2. **Name overflow on card**: `OfferingCard.tsx` — `line-clamp-2 break-words` on h3
+3. **Default T&C blocking save**: `ProductEditor.tsx` — removed mandatory `terms_id` validation (terms are optional)
+4+5. **Inactive categories in dropdown**: `ProductForm.tsx` — filters `c.is_active !== false`; `CategoryTabs.tsx` fixed for object format (testing agent fix)
+6+7. **Categories endpoint / only 2 showing**: `store.py` — `/categories` now returns `[{name, is_active, blurb}]` objects instead of plain strings; `CategoryTabs.tsx` updated to handle objects
+8. **Card Tag on store front**: Data path confirmed correct; `card_tag` saved and returned; OfferingCard `formatTag` works
+9. **Country visibility (India)**: `store.py` + `ProductForm.tsx` — `if not actual:` (was `if actual is None:`) so empty-string country falls through to `address.country`
+10. **Currency symbols**: `Cart.tsx` — `fmtMoney()` helper using `Intl.NumberFormat` replaces raw `"GBP 100.00"` with `"£100.00"`
+11. **Price breakdown in cart**: `Cart.tsx` — shows `line_items` breakdown when `product.show_price_breakdown` is enabled
+12. **not_equals shows before typing**: `utils.tsx` — only evaluates to true when answer is non-empty
+13. **less_than premature trigger**: `utils.tsx` — `DebouncedNumberInput` component delays `onChange` by 400ms
+- **Bonus**: `pricing_service.py` `float(None)` crash fixed for max/min fields (testing agent)
+
+---
+
+
 
 ### All 10 critical bugs resolved (100% pass — iteration_243.json)
 
