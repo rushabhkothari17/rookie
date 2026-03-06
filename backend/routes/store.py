@@ -270,10 +270,11 @@ async def get_product(
 @router.post("/pricing/calc")
 async def pricing_calc(
     payload: PricingCalcRequest,
-    user: Dict[str, Any] = Depends(get_current_user),
+    user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
+    api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_store_tenant_id(user, None)
+    tid = await _resolve_store_tenant_id(user, payload.partner_code, api_key_tid)
     tf: Dict[str, Any] = {"tenant_id": tid} if tid else {}
     product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0})
     if not product:

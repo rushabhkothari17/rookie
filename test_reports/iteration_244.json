@@ -1,0 +1,77 @@
+{
+  "summary": "Iteration 244: Full E2E testing of intake question real-time pricing on product detail page. Created TEST product with all 6 question types (dropdown, multiselect, boolean, number, formula, single_line). All pricing question types verified working correctly both via backend API (23/23 tests pass) and via UI interactions. Add to Cart flow confirmed with correct final price. Identified 2 minor issues: (1) product detail page requires auth (ProtectedRoute wraps /product/:productId), (2) initial price shows $510 instead of $500 due to number question min=1 clamping when empty.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "N/A - Frontend /product/:productId route",
+        "issue": "Product detail page is behind ProtectedRoute - unauthenticated users get redirected to /login. TEST 2 requirement of 'public product detail page as unauthenticated user' FAILS because the route is protected in App.tsx line 113.",
+        "priority": "MEDIUM"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ProductDetail - Number input initial state",
+        "issue": "Initial page load shows $510 instead of $500 base price. This is because number question 'users' with min=1, when empty string (''), the backend clamps to min=1 giving 1*$10=$10 added. The formula context treats empty as 0 so formula=0. UX inconsistency: number field shows placeholder 'Enter a number' but min=1 is applied to calc.",
+        "selector": "[data-testid='intake-users']",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "pricing_test_results": {
+    "TEST1_pricing_api_public_access": "PASS - /api/pricing/calc returns HTTP 200 without any auth token",
+    "TEST2_unauthenticated_product_page": "FAIL - /product/:productId is behind ProtectedRoute, redirects to /login for unauthenticated users. Backend supports unauthenticated pricing calc but frontend route is protected.",
+    "TEST3_dropdown_realtime_pricing": "PASS - Select Premium ($200) -> price updates to $710 in real-time. Line items: +$500 +$200 +$10",
+    "TEST4_multiselect_realtime_pricing": "PASS - Select Reports ($50) -> price updates to $760. Multiple selections stack correctly.",
+    "TEST5_boolean_realtime_pricing": "PASS - Rush Yes (+$150) -> $660. Rush No ($0) -> back to $510. Toggle works correctly.",
+    "TEST6_number_debounced_pricing": "PASS - 5 users -> $575 (500+50+25), 10 users -> $650 (500+100+50). 400ms debounce works.",
+    "TEST7_formula_pricing": "PASS - 'Calculated fee' line item appears. users*5 formula: 5 users=$25, 10 users=$50 correctly calculated.",
+    "TEST8_visibility_rules": "PASS (code verified) - ProductDetail.tsx lines 181-188 correctly filters visibleIntakeQuestions before sending to /pricing/calc. Hidden questions excluded from price calculation.",
+    "TEST9_add_to_cart": "PASS - Cart receives $945.00 correctly (500+200+50+150+30+15 with premium+reports+rush+3users). Cart page shows correct total.",
+    "TEST10_all_question_types_render": "PASS - All 6 question types render correctly: dropdown (Select component), multiselect (checkboxes), boolean (radio Yes/No), number (spinner input), formula (readonly 'Automatically calculated'), single_line (text input)."
+  },
+
+  "test_data_created": {
+    "product_id": "70376638-364c-49c9-b34d-708e710c0f06",
+    "product_name": "TEST Pricing Demo Product",
+    "base_price": 500,
+    "tenant": "automate-accounts",
+    "questions": ["plan_type (dropdown)", "addons (multiselect)", "rush_delivery (boolean)", "users (number)", "calculated_fee (formula)", "company_name (single_line)"]
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_iter188_intake_pricing.py",
+    "/app/test_reports/pytest/pytest_iter188_intake_pricing.xml"
+  ],
+
+  "action_items": [
+    "MEDIUM: Frontend /product/:productId is inside ProtectedRoute - if the intent is to allow unauthenticated users to view product pages, the route needs to be moved outside the ProtectedRoute wrapper in App.tsx. Currently the backend /api/store/products/{id} and /api/pricing/calc are public, but the frontend route forces login first.",
+    "LOW: Number question with min=1 causes initial price to show $510 instead of $500. Consider not clamping to min when value is empty string (treat empty as no answer, not min). Fix: in pricing_service.py, if raw is empty string, treat as None (skip calculation)."
+  ],
+
+  "critical_code_review_comments": [
+    "ProductDetail.tsx line 187: inputs passed to /pricing/calc includes BOTH nextInputs (dynamic form fields) AND visibleAnswers (intake answers). The spread order is { ...nextInputs, ...visibleAnswers } - if there's key collision, visibleAnswers wins. This is correct.",
+    "pricing_service.py: number type uses 'float(raw or min_v)' where raw is empty string -> evaluates to min_v. This means an untouched number field still contributes to price at min value. Frontend shows placeholder 'Enter a number' suggesting no value, but backend calculates at min=1.",
+    "The formula question uses ctx[k] = float(v or 0) for all inputs - so empty string -> 0 in formula context. But number type uses float(raw or min_v). This inconsistency means formula referencing a number key may get 0 when user hasn't entered anything, while the number question itself computes at min. This can cause confusing breakdowns."
+  ],
+
+  "updated_files": ["/app/backend/tests/test_iter188_intake_pricing.py"],
+
+  "success_rate": {
+    "backend": "100% (23/23 tests pass)",
+    "frontend": "90% (9/10 tests pass - TEST2 fails due to ProtectedRoute)"
+  },
+
+  "seed_data_creation": "Created TEST product 'TEST Pricing Demo Product' (id: 70376638-364c-49c9-b34d-708e710c0f06) in automate-accounts tenant with all pricing question types for testing.",
+
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Test product created: id=70376638-364c-49c9-b34d-708e710c0f06, name='TEST Pricing Demo Product'. All intake pricing question types verified working. Main pending issue: /product/:productId route is behind ProtectedRoute - unauthenticated access impossible from frontend even though backend endpoints are public. Backend tests in /app/backend/tests/test_iter188_intake_pricing.py."
+}

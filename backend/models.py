@@ -95,6 +95,7 @@ class UpdateProfileRequest(BaseModel):
 class PricingCalcRequest(BaseModel):
     product_id: str
     inputs: Dict[str, Any] = Field(default_factory=dict)
+    partner_code: Optional[str] = None
 
 
 class CartItemInput(BaseModel):

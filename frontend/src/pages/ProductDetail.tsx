@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWebsite } from "@/contexts/WebsiteContext";
+import { useWebsite, usePartnerCode } from "@/contexts/WebsiteContext";
 import AppShell from "@/components/AppShell";
 import { displayCategory } from "@/lib/categories";
 import { parseSchema, getAddressConfig, type FormField } from "@/components/FormSchemaBuilder";
@@ -72,6 +72,7 @@ export default function ProductDetail() {
   const { addItem } = useCart();
   const { customer } = useAuth();
   const ws = useWebsite();
+  const partnerCode = usePartnerCode();
 
   const [product, setProduct] = useState<any>(null);
   const [inputs, setInputs] = useState<Record<string, any>>({});
@@ -184,6 +185,7 @@ export default function ProductDetail() {
     const response = await api.post("/pricing/calc", {
       product_id: product.id,
       inputs: { ...nextInputs, ...visibleAnswers },
+      partner_code: partnerCode || undefined,
     });
     setPricing(response.data);
   };
