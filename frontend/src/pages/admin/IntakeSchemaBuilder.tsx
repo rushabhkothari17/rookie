@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   X, Plus, ChevronUp, ChevronDown, ChevronRight,
   Hash, AlignLeft, AlignJustify, List, CheckSquare, GripVertical, ToggleLeft,
-  Layers, Eye, AlertCircle, Calendar, Paperclip, Zap, FileText, Info,
+  Layers, Eye, AlertCircle, Calendar, Paperclip, Zap, FileText, Info, Lock,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -181,23 +181,51 @@ function OptionsEditor({ options, onChange, affects_price }: {
   );
 }
 
-function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: PricingTier[]) => void }) {
+function TierEditor({
+  tiers,
+  onChange,
+  overallMax,
+}: {
+  tiers: PricingTier[];
+  onChange: (t: PricingTier[]) => void;
+  overallMax?: number;
+}) {
+  // Recompute all `from` values so they're always continuous:
+  // tier[0].from = 0, tier[i].from = tier[i-1].to + 1
+  const normalizeFroms = (t: PricingTier[]): PricingTier[] =>
+    t.map((tier, i) => ({
+      ...tier,
+      from: i === 0 ? 0 : (t[i - 1].to !== null ? (t[i - 1].to as number) + 1 : tier.from),
+    }));
+
   const addTier = () => {
-    const lastTo = tiers.length > 0 ? (tiers[tiers.length - 1].to ?? 0) : 0;
-    onChange([...tiers, { from: lastTo, to: null, price_per_unit: 0 }]);
+    const last = tiers[tiers.length - 1];
+    const newFrom = tiers.length === 0 ? 0 : (last?.to !== null ? (last.to as number) + 1 : 0);
+    onChange(normalizeFroms([...tiers, { from: newFrom, to: null, price_per_unit: 0 }]));
   };
 
-  // Validate tiers: within-tier from<to, and tiers must be strictly continuous (next.from == prev.to)
+  const handleToChange = (i: number, newTo: number | null) => {
+    const updated = [...tiers];
+    updated[i] = { ...updated[i], to: newTo };
+    onChange(normalizeFroms(updated));  // cascade all from values
+  };
+
+  const handlePriceChange = (i: number, val: number) => {
+    const updated = [...tiers];
+    updated[i] = { ...updated[i], price_per_unit: val };
+    onChange(updated);
+  };
+
+  const handleRemove = (i: number) => {
+    onChange(normalizeFroms(tiers.filter((_, j) => j !== i)));
+  };
+
+  // Validation
   const tierErrors: (string | null)[] = tiers.map((tier, i) => {
-    if (tier.to !== null && tier.from >= tier.to)
-      return `"From" (${tier.from}) must be less than "To" (${tier.to})`;
-    if (i > 0 && tiers[i - 1].to !== null) {
-      const prevTo = tiers[i - 1].to as number;
-      if (tier.from < prevTo)
-        return `Overlap: Tier ${i + 1} starts at ${tier.from} but previous tier ends at ${prevTo}`;
-      if (tier.from > prevTo)
-        return `Gap: Tier ${i + 1} must start at ${prevTo} to be continuous (currently ${tier.from})`;
-    }
+    if (tier.to !== null && (tier.from ?? 0) >= tier.to)
+      return `"To" must be greater than ${tier.from}`;
+    if (i === tiers.length - 1 && tier.to !== null && overallMax !== undefined && tier.to > overallMax)
+      return `End (${tier.to}) exceeds the question's Max (${overallMax})`;
     return null;
   });
   const hasErrors = tierErrors.some(Boolean);
@@ -211,33 +239,54 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
           <Plus size={11} /> Add tier
         </button>
       </div>
-      {tiers.length === 0 && <p className="text-xs text-slate-400 italic">No tiers yet</p>}
+      {tiers.length === 0 && <p className="text-xs text-slate-400 italic">No tiers yet. Click "Add tier" to start.</p>}
       {tiers.length > 0 && (
         <>
           <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            <span>From</span><span>To (∞=blank)</span><span>Price/unit</span><span />
+            <span>From (auto)</span><span>To{overallMax !== undefined ? ` (≤ ${overallMax})` : ""}</span><span>Price/unit</span><span />
           </div>
           {tiers.map((tier, i) => (
             <div key={i} className="space-y-1">
-              <div className={`grid grid-cols-[1fr_1fr_1fr_24px] gap-2 items-center`}>
-                <Input type="number" value={tier.from ?? 0} onChange={e => {
-                  const n = [...tiers]; n[i] = { ...n[i], from: parseFloat(e.target.value) || 0 }; onChange(n);
-                }} className={`h-8 text-xs font-mono ${tierErrors[i] ? "border-red-400 focus-visible:ring-red-300" : ""}`} />
-                <Input type="number" value={tier.to ?? ""} onChange={e => {
-                  const n = [...tiers]; n[i] = { ...n[i], to: e.target.value === "" ? null : parseFloat(e.target.value) }; onChange(n);
-                }} className={`h-8 text-xs font-mono ${tierErrors[i] ? "border-red-400 focus-visible:ring-red-300" : ""}`} placeholder="∞" />
-                <Input type="number" value={tier.price_per_unit ?? 0} onChange={e => {
-                  const n = [...tiers]; n[i] = { ...n[i], price_per_unit: parseFloat(e.target.value) || 0 }; onChange(n);
-                }} className="h-8 text-xs font-mono" />
-                <button type="button" onClick={() => onChange(tiers.filter((_, j) => j !== i))}
-                  className="text-slate-400 hover:text-red-500 transition-colors"><X size={12} /></button>
+              <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 items-center">
+                {/* FROM — read-only, auto-computed */}
+                <div className="h-8 flex items-center gap-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs font-mono text-slate-500 select-none">
+                  <Lock size={10} className="shrink-0 text-slate-400" />
+                  {tier.from ?? 0}
+                </div>
+                {/* TO — user editable */}
+                <Input
+                  type="number"
+                  value={tier.to ?? ""}
+                  onChange={e => handleToChange(i, e.target.value === "" ? null : parseFloat(e.target.value))}
+                  className={`h-8 text-xs font-mono ${tierErrors[i] ? "border-red-400 focus-visible:ring-red-300" : ""}`}
+                  placeholder={i === tiers.length - 1 ? "∞" : "required"}
+                  min={(tier.from ?? 0) + 1}
+                  max={i === tiers.length - 1 && overallMax !== undefined ? overallMax : undefined}
+                />
+                {/* PRICE/UNIT */}
+                <Input
+                  type="number"
+                  value={tier.price_per_unit ?? 0}
+                  onChange={e => handlePriceChange(i, parseFloat(e.target.value) || 0)}
+                  className="h-8 text-xs font-mono"
+                  min={0}
+                />
+                <button type="button" onClick={() => handleRemove(i)}
+                  className="text-slate-400 hover:text-red-500 transition-colors">
+                  <X size={12} />
+                </button>
               </div>
               {tierErrors[i] && (
                 <p className="text-[10px] text-red-500 pl-0.5">{tierErrors[i]}</p>
               )}
             </div>
           ))}
-          {!hasErrors && <p className="text-[10px] text-slate-400">Progressive pricing: first N units at rate 1, next N at rate 2, etc.</p>}
+          {!hasErrors && (
+            <p className="text-[10px] text-slate-400">
+              "From" is auto-set. Edit "To" to define each range.
+              {overallMax !== undefined ? ` Last tier's end must be ≤ ${overallMax}.` : ""}
+            </p>
+          )}
         </>
       )}
     </div>
@@ -640,7 +689,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                             <p className="text-[10px] text-red-500">Min ({q.min}) must be ≤ Max ({q.max})</p>
                           )}
                         </div>
-                        <TierEditor tiers={q.tiers || []} onChange={tiers => onChange({ ...q, tiers })} />
+                        <TierEditor tiers={q.tiers || []} onChange={tiers => onChange({ ...q, tiers })} overallMax={q.max} />
                       </>
                     )}
                   </>

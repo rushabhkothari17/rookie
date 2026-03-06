@@ -883,15 +883,17 @@ export function ProductForm({
 
               <div className="rounded-lg border border-slate-200 bg-white p-4">
                 {(() => {
-                  // Validate all number questions: min<=max and tier continuity
+                  // Validate all number questions: min<=max and tier continuity + last tier max
                   const schemaErrors = (form.intake_schema_json?.questions || []).some(q => {
                     if (q.type !== "number") return false;
                     if ((q.min ?? 0) > (q.max ?? 0)) return true;
                     if ((q.pricing_mode || "flat") !== "tiered") return false;
                     const tiers = (q as any).tiers || [];
                     return tiers.some((t: any, i: number) => {
-                      if (t.to !== null && t.from >= t.to) return true;
-                      if (i > 0 && tiers[i-1].to !== null && t.from !== tiers[i-1].to) return true;
+                      // from >= to within a tier
+                      if (t.to !== null && (t.from ?? 0) >= t.to) return true;
+                      // last tier's to exceeds question max
+                      if (i === tiers.length - 1 && t.to !== null && q.max !== undefined && t.to > (q.max as number)) return true;
                       return false;
                     });
                   });
