@@ -73,5 +73,5 @@
 
   "retest_needed": false,
   "main_agent_can_self_test": true,
-  "context_for_next_testing_agent": "Test product created: id=70376638-364c-49c9-b34d-708e710c0f06, name='TEST Pricing Demo Product'. All intake pricing question types verified working. Main pending issue: /product/:productId route is behind ProtectedRoute - unauthenticated access impossible from frontend even though backend endpoints are public. Backend tests in /app/backend/tests/test_iter188_intake_pricing.py."
+  "context_for_next_testing_agent": "Test product created: id=currency-fee-fix, name='TEST Pricing Demo Product'. All intake pricing question types verified working. Main pending issue: /product/:productId route is behind ProtectedRoute - unauthenticated access impossible from frontend even though backend endpoints are public. Backend tests in /app/backend/tests/test_iter188_intake_pricing.py."
 }

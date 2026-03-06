@@ -1,0 +1,65 @@
+{
+  "summary": "Tested the currency fee fix in Cart.tsx (commit ccf0032d). Verified that the card payment processing fee correctly uses the product's currency symbol (CA$ for CAD products, $ for USD products) instead of the previously hardcoded '$' USD symbol. Both the cart item fee line ('incl. CA$X.XX fee') and the Order Summary processing fee line ('Processing fee (5%) CA$X.XX') show the correct currency.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iter_currency_13_cart_loaded.jpeg",
+    "/app/test_reports/iter_currency_14_card_selected.jpeg",
+    "/app/test_reports/iter_currency_17_usd_cart.jpeg",
+    "/app/test_reports/iter_currency_18_usd_card.jpeg"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Line 187 of Cart.tsx: displayCurrency correctly derived from first product's currency field (|| 'USD' fallback is correct)",
+    "Line 486: fee display uses fmtMoney(item.pricing.fee, item.product.currency || displayCurrency) - FIX correctly applied",
+    "Lines 808-830: Order Summary section all uses displayCurrency consistently",
+    "Line 494: Line items in price breakdown also use item.product.currency || displayCurrency - correct"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "customer_email": "test_bugfix242_customer@example.com",
+    "customer_password": "TestCustomer123! (reset by testing agent)",
+    "partner_code": "testpartner242",
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_admin_email": "partneradmin@testpartner242.local",
+    "partner_admin_password": "ChangeMe123! (reset by testing agent)"
+  },
+  "seed_data_creation": "Created: 1 CAD product 'TEST_CAD_Service' (id=97d5e387-caa0-4c07-a29c-049166561fe1, price=CA$200) in testpartner242 tenant. Created mock Stripe and GoCardless oauth_connections for testpartner242 to enable payment methods. Reset customer user password to 'TestCustomer123!'. Reset partner admin password to 'ChangeMe123!'.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Currency fix verified. Test infra setup: tenant=testpartner242, customer email=test_bugfix242_customer@example.com (password=TestCustomer123!), CAD product id=97d5e387-caa0-4c07-a29c-049166561fe1. Mock Stripe/GoCardless connections added to enable payment method display. The cart item 'Add to Cart' flow requires navigating to the product page through the store (direct URL /product/{id} works after login). localStorage key for cart is 'aa_cart_items'.",
+  "test_results": {
+    "test_1_cad_product_fee_currency": {
+      "status": "PASSED",
+      "description": "CAD product (CA$200) in cart with card payment selected",
+      "cart_item_fee": "incl. CA$10.00 fee",
+      "order_summary_fee": "Processing fee (5%) CA$10.00",
+      "total": "CA$210.00",
+      "expected_symbol": "CA$",
+      "actual_symbol": "CA$",
+      "result": "CORRECT - CA$ shown, not $"
+    },
+    "test_2_usd_regression": {
+      "status": "PASSED",
+      "description": "USD product ($100) in cart with card payment selected",
+      "cart_item_fee": "incl. $5.00 fee",
+      "order_summary_fee": "Processing fee (5%) $5.00",
+      "total": "$105.00",
+      "expected_symbol": "$",
+      "actual_symbol": "$",
+      "result": "CORRECT - $ shown for USD product"
+    }
+  }
+}
