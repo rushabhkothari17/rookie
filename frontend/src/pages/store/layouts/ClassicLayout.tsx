@@ -132,6 +132,7 @@ export default function ClassicLayout({
               currency={currency}
               isRFQ={isEnquiry}
               disabled={false}
+              showBreakdown={product.show_price_breakdown ?? true}
             />
 
             {/* Scope ID Override (for enquiry/scope products) */}

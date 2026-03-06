@@ -8,6 +8,7 @@ export default function StickyPurchaseSummary({
   warning,
   currency,
   isRFQ,
+  showBreakdown = true,
 }: {
   pricing: { subtotal: number; fee: number; total: number; line_items?: { label: string; amount: number }[] };
   cta: { label: string; onClick?: () => void; href?: string };
@@ -15,9 +16,10 @@ export default function StickyPurchaseSummary({
   warning?: string;
   currency?: string;
   isRFQ?: boolean;
+  showBreakdown?: boolean;
 }) {
   const lineItems = pricing?.line_items;
-  const hasBreakdown = !isRFQ && lineItems && lineItems.length > 1;
+  const hasBreakdown = !isRFQ && showBreakdown && lineItems && lineItems.length > 1;
   const cur = currency || "USD";
   const fmtAmt = (n: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
