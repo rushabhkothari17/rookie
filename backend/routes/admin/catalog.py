@@ -47,11 +47,8 @@ def _normalize_schema_dict(schema_dict: dict) -> None:
 
 
 def _validate_intake_schema(schema: IntakeSchemaJson) -> None:
-    """Validate intake schema: key uniqueness, option arrays, max 50 questions.
-
-    Works with the new flat array format (questions: List[IntakeQuestion]).
-    """
-    questions = schema.questions  # List[IntakeQuestion]
+    """Validate intake schema: key uniqueness, option arrays, max 50 questions, tier rules."""
+    questions = schema.questions
     if len(questions) > 50:
         raise HTTPException(status_code=400, detail="Max 50 intake questions allowed")
     all_keys: list = []
@@ -69,6 +66,31 @@ def _validate_intake_schema(schema: IntakeSchemaJson) -> None:
                         status_code=400,
                         detail=f"Option in '{q.key or q.label}' must have a label",
                     )
+        if q_type == "number":
+            q_min = float(q.min or 0)
+            q_max = q.max
+            if q_max is not None and q_min > float(q_max):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Question '{q.key or q.label}': Min ({q_min}) must be ≤ Max ({q_max})",
+                )
+            if getattr(q, "pricing_mode", "flat") == "tiered":
+                tiers = getattr(q, "tiers", None) or []
+                for i, tier in enumerate(tiers):
+                    t_from = float(tier.get("from") or 0)
+                    t_to = tier.get("to")
+                    # within-tier: from < to
+                    if t_to is not None and t_from >= float(t_to):
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Question '{q.key or q.label}' tier {i+1}: 'To' ({t_to}) must be greater than 'From' ({t_from})",
+                        )
+                    # last tier: to must not exceed question max
+                    if i == len(tiers) - 1 and t_to is not None and q_max is not None and float(t_to) > float(q_max):
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Question '{q.key or q.label}' last tier end ({t_to}) exceeds question Max ({q_max})",
+                        )
         if q.key:
             all_keys.append(q.key)
     seen: set = set()

@@ -120,6 +120,19 @@ export default function ProductEditor() {
     };
   };
 
+  // Compute tier/schema errors to block saving — mirrors ProductForm validation
+  const schemaHasErrors = (form.intake_schema_json?.questions || []).some((q: any) => {
+    if (q.type !== "number") return false;
+    if ((q.min ?? 0) > (q.max ?? 0)) return true;
+    if ((q.pricing_mode || "flat") !== "tiered") return false;
+    const tiers = q.tiers || [];
+    return tiers.some((t: any, i: number) => {
+      if (t.to !== null && (t.from ?? 0) >= t.to) return true;
+      if (i === tiers.length - 1 && t.to !== null && q.max !== undefined && t.to > q.max) return true;
+      return false;
+    });
+  });
+
   const handleSave = async () => {
     if (!form.name.trim()) {
       toast.error("Product name is required");
@@ -131,6 +144,10 @@ export default function ProductEditor() {
     }
     if (!form.pricing_type) {
       toast.error("Checkout type (internal checkout / external link / enquiry only) is required");
+      return;
+    }
+    if (schemaHasErrors) {
+      toast.error("Fix intake question errors before saving (check Pricing tab → Intake Questions)");
       return;
     }
     setSaving(true);
@@ -229,9 +246,10 @@ export default function ProductEditor() {
             </Button>
             <Button
               onClick={handleSave}
-              disabled={saving}
-              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              disabled={saving || schemaHasErrors}
+              className="gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
               data-testid="product-editor-save"
+              title={schemaHasErrors ? "Fix intake question errors before saving" : undefined}
             >
               {saving ? (
                 <>
