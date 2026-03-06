@@ -67,16 +67,16 @@ function evaluateSingleRule(rule: any, answers: Record<string, any>): boolean {
   const { depends_on, operator, value } = rule;
   const answer = answers[depends_on];
   switch (operator) {
-    case "equals": return String(answer ?? "") === String(value ?? "");
+    case "equals": return String(answer ?? "").toLowerCase() === String(value ?? "").toLowerCase();
     case "not_equals": {
       // Only show when the dependent question has been answered AND it doesn't equal the target
       if (answer === undefined || answer === null || answer === "") return false;
-      return String(answer) !== String(value ?? "");
+      return String(answer).toLowerCase() !== String(value ?? "").toLowerCase();
     }
     case "greater_than": return parseFloat(answer) > parseFloat(value);
     case "less_than": return parseFloat(answer) < parseFloat(value);
-    case "contains": return Array.isArray(answer) ? answer.includes(value) : String(answer ?? "").includes(value);
-    case "not_contains": return Array.isArray(answer) ? !answer.includes(value) : !String(answer ?? "").includes(value);
+    case "contains": return Array.isArray(answer) ? answer.some(a => String(a).toLowerCase().includes(String(value ?? "").toLowerCase())) : String(answer ?? "").toLowerCase().includes(String(value ?? "").toLowerCase());
+    case "not_contains": return Array.isArray(answer) ? !answer.some(a => String(a).toLowerCase().includes(String(value ?? "").toLowerCase())) : !String(answer ?? "").toLowerCase().includes(String(value ?? "").toLowerCase());
     case "not_empty": return !!answer && answer !== "" && !(Array.isArray(answer) && answer.length === 0);
     case "empty": return !answer || answer === "" || (Array.isArray(answer) && answer.length === 0);
     default: return true;
@@ -204,12 +204,12 @@ export function renderIntakeField(
   if (qtype === "boolean") {
     return (
       <div className="flex gap-4" data-testid={`intake-${q.key}`}>
-        {[{ label: "Yes", value: "yes" }, { label: "No", value: "no" }].map(opt => (
+        {[{ label: "Yes", value: "Yes" }, { label: "No", value: "No" }].map(opt => (
           <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer select-none">
             <input
               type="radio"
               name={`boolean-${q.key}`}
-              checked={String(value ?? "") === opt.value}
+              checked={String(value ?? "").toLowerCase() === opt.value.toLowerCase()}
               onChange={() => onChange(opt.value)}
               className="accent-[#0f172a]"
             />
