@@ -114,14 +114,12 @@ export function ColHeader({
                     {(Array.isArray(filterValue) && filterValue.length > 0) && (
                       <p className="text-[10px] text-blue-500 font-medium mb-1">{filterValue.length} selected</p>
                     )}
-                    {effectiveOptions.length > 6 && (
-                      <Input
-                        className="h-6 text-xs mb-1.5"
-                        placeholder="Search…"
-                        value={dropdownSearch}
-                        onChange={e => setDropdownSearch(e.target.value)}
-                      />
-                    )}
+                    <Input
+                      className="h-6 text-xs mb-1.5"
+                      placeholder="Search…"
+                      value={dropdownSearch}
+                      onChange={e => setDropdownSearch(e.target.value)}
+                    />
                     <div className="max-h-44 overflow-y-auto space-y-0.5 pr-0.5">
                       {filteredDropdownOptions.map(([val, lbl]) => {
                         const selected = Array.isArray(filterValue) && filterValue.includes(val);

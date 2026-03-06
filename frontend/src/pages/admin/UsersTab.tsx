@@ -195,6 +195,7 @@ export function UsersTab() {
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
   const [colFilters, setColFilters] = useState({
     names: [] as string[], roles: [] as string[], orgNames: [] as string[], statuses: [] as string[],
+    partnerCodes: [] as string[], modules: [] as string[],
   });
   const setCF = (key: keyof typeof colFilters, val: any) => setColFilters(f => ({ ...f, [key]: val }));
 
@@ -204,12 +205,19 @@ export function UsersTab() {
     if (colFilters.roles.length) r = r.filter(u => colFilters.roles.includes(u.role));
     if (colFilters.orgNames.length) r = r.filter(u => colFilters.orgNames.includes(u.org_name || u.partner_name || ""));
     if (colFilters.statuses.length) r = r.filter(u => colFilters.statuses.includes(u.is_active !== false ? "active" : "inactive"));
+    if (colFilters.partnerCodes.length) r = r.filter(u => colFilters.partnerCodes.includes(u.tenant_code || ""));
+    if (colFilters.modules.length) r = r.filter(u => {
+      const mp = u.module_permissions || {};
+      return colFilters.modules.some(mod => mp[mod] && mp[mod] !== "none");
+    });
     if (colSort) {
       r.sort((a, b) => {
         let av: any = "", bv: any = "";
         if (colSort.col === "name") { av = (a.full_name || a.email || "").toLowerCase(); bv = (b.full_name || b.email || "").toLowerCase(); }
         else if (colSort.col === "role") { av = a.role; bv = b.role; }
         else if (colSort.col === "partner") { av = a.org_name || ""; bv = b.org_name || ""; }
+        else if (colSort.col === "partnerCode") { av = a.tenant_code || ""; bv = b.tenant_code || ""; }
+        else if (colSort.col === "modules") { av = Object.keys(a.module_permissions || {}).filter(k => a.module_permissions[k] !== "none").length; bv = Object.keys(b.module_permissions || {}).filter(k => b.module_permissions[k] !== "none").length; }
         else if (colSort.col === "status") { av = a.is_active ? 1 : 0; bv = b.is_active ? 1 : 0; }
         if (av < bv) return colSort.dir === "asc" ? -1 : 1;
         if (av > bv) return colSort.dir === "asc" ? 1 : -1;
@@ -221,11 +229,17 @@ export function UsersTab() {
   const nameOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.full_name || u.email).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
   const roleOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.role).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
   const orgOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.org_name || u.partner_name || "").filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
+  const partnerCodeOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.tenant_code).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
 
   // All modules and partner module keys (for role-scoped filtering)
   const [allModules, setAllModules] = useState<ModuleInfo[]>([]);
   const [partnerModuleKeys, setPartnerModuleKeys] = useState<string[]>([]);
   const [presetRoles, setPresetRoles] = useState<PresetRole[]>([]);
+
+  const moduleOpts = useMemo(() => Array.from(new Set(adminUsers.flatMap(u => Object.keys(u.module_permissions || {}).filter(k => u.module_permissions[k] !== "none")))).sort().map(k => {
+    const mod = allModules.find(m => m.key === k);
+    return [k, mod?.name || k] as [string, string];
+  }), [adminUsers, allModules]);
 
   // Create dialog
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -433,8 +447,8 @@ export function UsersTab() {
                   <ColHeader label="Name / Email" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.names} onFilter={v => setCF("names", v)} onClearFilter={() => setCF("names", [])} statusOptions={nameOpts} />
                   <ColHeader label="Role" colKey="role" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.roles} onFilter={v => setCF("roles", v)} onClearFilter={() => setCF("roles", [])} statusOptions={roleOpts} />
                   {isPlatformAdmin && <ColHeader label="Partner Org" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.orgNames} onFilter={v => setCF("orgNames", v)} onClearFilter={() => setCF("orgNames", [])} statusOptions={orgOpts} />}
-                  {isPlatformAdmin && <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Partner Code</th>}
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Modules</th>
+                  {isPlatformAdmin && <ColHeader label="Partner Code" colKey="partnerCode" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.partnerCodes} onFilter={v => setCF("partnerCodes", v)} onClearFilter={() => setCF("partnerCodes", [])} statusOptions={partnerCodeOpts} />}
+                  <ColHeader label="Modules" colKey="modules" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.modules} onFilter={v => setCF("modules", v)} onClearFilter={() => setCF("modules", [])} statusOptions={moduleOpts} />
                   <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={colFilters.statuses} onFilter={v => setCF("statuses", v)} onClearFilter={() => setCF("statuses", [])} statusOptions={[["active","Active"],["inactive","Inactive"]]} />
                   <th className="px-4 py-3 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
                 </TableRow>

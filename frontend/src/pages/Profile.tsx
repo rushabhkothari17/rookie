@@ -162,7 +162,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="space-y-8" data-testid="profile-page">
+    <div className="space-y-6" data-testid="profile-page">
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{ws.profile_label}</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">{ws.profile_title}</h1>
@@ -174,7 +174,7 @@ export default function Profile() {
         className="rounded-3xl bg-white/80 p-8 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur"
         data-testid="profile-form"
       >
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm text-slate-600">Full name</label>
             <Input
@@ -353,7 +353,7 @@ export default function Profile() {
             </>
           )}
         </div>
-        <div className="mt-8 flex items-center justify-end">
+        <div className="mt-6 flex items-center justify-end">
           <Button
             type="submit"
             className="rounded-full bg-slate-900 text-white hover:bg-slate-800"

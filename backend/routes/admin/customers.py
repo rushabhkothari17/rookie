@@ -225,7 +225,11 @@ async def admin_customers(
             ]
         })
     if email:
-        match_filters.append({"user_data.email": {"$regex": email, "$options": "i"}})
+        email_list = [e.strip() for e in email.split(",") if e.strip()]
+        if len(email_list) == 1:
+            match_filters.append({"user_data.email": {"$regex": email_list[0], "$options": "i"}})
+        else:
+            match_filters.append({"user_data.email": {"$in": email_list}})
     
     if match_filters:
         pipeline.append({"$match": {"$and": match_filters}})

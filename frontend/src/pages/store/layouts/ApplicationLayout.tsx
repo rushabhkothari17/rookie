@@ -115,10 +115,10 @@ export default function ApplicationLayout({
       </div>
 
       {/* Main Content Area */}
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Overview Section */}
         {activeSection === "overview" && (
-          <div className="space-y-8" data-testid="section-overview">
+          <div className="space-y-6" data-testid="section-overview">
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
               <h1 className="text-2xl font-bold text-slate-900 mb-2">{product.name}</h1>
               {product.card_description && (
@@ -176,7 +176,7 @@ export default function ApplicationLayout({
 
             <div className="space-y-5">
               {visibleIntakeQuestions.map(q => (
-            <div className="space-y-2" data-testid={`intake-field-${q.key}`}>
+                <div key={q.key} className="space-y-1.5" data-testid={`intake-field-${q.key}`}>
                   {q.type !== "html_block" && <QuestionLabel q={q} />}
                   {q.helper_text && q.type !== "html_block" && (
                     <p className="text-xs text-slate-400">{q.helper_text}</p>
@@ -210,7 +210,7 @@ export default function ApplicationLayout({
 
         {/* Pricing Section */}
         {activeSection === "pricing" && (
-          <div className="space-y-8" data-testid="section-pricing">
+          <div className="space-y-6" data-testid="section-pricing">
             {/* Scope ID Entry (replaces old static notice) */}
             {(isRFQ || pricing?.is_enquiry) && setScopeId && handleValidateScopeId && (
               <ScopeIdBlock

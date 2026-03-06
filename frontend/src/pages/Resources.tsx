@@ -58,7 +58,7 @@ export default function Resources() {
         >
           <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
           <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
-          <div className="relative space-y-6">
+          <div className="relative space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
@@ -77,11 +77,11 @@ export default function Resources() {
         </section>
       </div>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-10" data-testid="resources-page">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8" data-testid="resources-page">
         <div className="flex gap-8">
           {/* Left Sidebar */}
           <aside className="w-52 shrink-0">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">BROWSE</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">BROWSE</p>
             <ul className="space-y-1">
               <li>
                 <button
@@ -123,14 +123,14 @@ export default function Resources() {
           {/* Resources Grid */}
           <div className="flex-1 min-w-0">
             {selectedCategory && (
-              <div className="mb-6">
+              <div className="mb-5">
                 <h2 className="text-xl font-bold text-slate-900">{selectedCategory}</h2>
-                <p className="text-sm text-slate-400 mt-1">{filtered.length} resource{filtered.length !== 1 ? "s" : ""}</p>
+                <p className="text-sm text-slate-400">{filtered.length} resource{filtered.length !== 1 ? "s" : ""}</p>
               </div>
             )}
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="rounded-xl border border-slate-200 bg-white h-48 animate-pulse" />
                 ))}
@@ -143,7 +143,7 @@ export default function Resources() {
                 <p className="text-slate-400 text-sm">No resources available yet.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="resources-grid">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="resources-grid">
                 {paginated.map((resource) => (
                   <button
                     key={resource.id}
@@ -154,7 +154,7 @@ export default function Resources() {
                     {/* Card top accent */}
                     <div className="h-1 transition-colors" style={{ backgroundColor: "var(--aa-primary)" }} />
 
-                    <div className="p-6 flex flex-col flex-1">
+                    <div className="p-5 flex flex-col flex-1">
                       {resource.category && (
                         <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
                           {resource.category}

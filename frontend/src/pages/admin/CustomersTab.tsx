@@ -48,7 +48,7 @@ export function CustomersTab() {
     return opts;
   }, [ws.gocardless_enabled, ws.stripe_enabled]);
   const [nameFilter, setNameFilter] = useState<string[]>([]);
-  const [emailSearch, setEmailSearch] = useState("");
+  const [emailFilter, setEmailFilter] = useState<string[]>([]);
   const [stateFilter, setStateFilter] = useState<string[]>([]);
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -98,7 +98,7 @@ export function CustomersTab() {
     try {
       const params = new URLSearchParams({ page: String(p), per_page: String(PER_PAGE) });
       if (nameFilter.length > 0) params.append("name", nameFilter.join(","));
-      if (emailSearch) params.append("email", emailSearch);
+      if (emailFilter.length > 0) params.append("email", emailFilter.join(","));
       if (stateFilter.length > 0) params.append("state", stateFilter.join(","));
       if (countryFilter.length > 0) params.append("country", countryFilter.join(","));
       if (statusFilter.length > 0) params.append("status", statusFilter.join(","));
@@ -113,9 +113,9 @@ export function CustomersTab() {
       setTotal(res.data.total || 0);
       setPage(p);
     } catch { toast.error("Failed to load customers"); }
-  }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter, page]);
+  }, [nameFilter, emailFilter, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter, page]);
 
-  useEffect(() => { load(1); }, [nameFilter, emailSearch, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter]);
+  useEffect(() => { load(1); }, [nameFilter, emailFilter, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter]);
 
   // Fetch signup form schema whenever Create dialog opens (ensures fresh schema)
   useEffect(() => {
@@ -220,6 +220,12 @@ export function CustomersTab() {
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
 
   // Build unique option lists for filters
+  const uniqueEmails = useMemo(() => {
+    const emails = new Set<string>();
+    users.forEach(u => { if (u?.email) emails.add(u.email); });
+    return Array.from(emails).sort().map(e => [e, e] as [string, string]);
+  }, [users]);
+
   const uniqueNames = useMemo(() => {
     const names = new Set<string>();
     customers.forEach(c => {
@@ -286,7 +292,7 @@ export function CustomersTab() {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <ColHeader label="Name" colKey="name" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={nameFilter} onFilter={v => setNameFilter(v)} onClearFilter={() => setNameFilter([])} statusOptions={uniqueNames} />
-              <ColHeader label="Email" colKey="email" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="text" filterValue={emailSearch} onFilter={v => setEmailSearch(v)} onClearFilter={() => setEmailSearch("")} />
+              <ColHeader label="Email" colKey="email" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={emailFilter} onFilter={v => setEmailFilter(v)} onClearFilter={() => setEmailFilter([])} statusOptions={uniqueEmails} />
               <ColHeader label="State/Province" colKey="state" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={stateFilter} onFilter={v => setStateFilter(v)} onClearFilter={() => setStateFilter([])} statusOptions={uniqueStates} />
               <ColHeader label="Country" colKey="country" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={countryFilter} onFilter={v => setCountryFilter(v)} onClearFilter={() => setCountryFilter([])} statusOptions={countries.map(c => [c.value, c.label] as [string, string])} />
               <ColHeader label="Status" colKey="status" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={statusFilter} onFilter={v => setStatusFilter(v)} onClearFilter={() => setStatusFilter([])} statusOptions={[["active", "Active"], ["inactive", "Inactive"]]} />

@@ -50,15 +50,15 @@ export default function ClassicLayout({
   return (
     <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]" data-testid="classic-layout">
       {/* Left Column */}
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         <ProductHero product={product} />
 
         {/* Intake Questions */}
         {visibleIntakeQuestions.length > 0 && (
           <SectionCard title="Tell us about your project" testId="product-intake-section">
-            <div className="space-y-5">
+            <div className="space-y-4">
               {visibleIntakeQuestions.map(q => (
-                <div key={q.key} className="space-y-2" data-testid={`intake-field-${q.key}`}>
+                <div key={q.key} className="space-y-1.5" data-testid={`intake-field-${q.key}`}>
                   {q.type !== "html_block" && <QuestionLabel q={q} />}
                   {q.helper_text && q.type !== "html_block" && (
                     <p className="text-xs text-slate-400">{q.helper_text}</p>
@@ -120,7 +120,7 @@ export default function ClassicLayout({
       {/* Right Column - Sticky Summary */}
       <div>
         {pricing ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <StickyPurchaseSummary
               pricing={{
                 subtotal: pricing.subtotal,
