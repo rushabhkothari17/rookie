@@ -50,6 +50,14 @@ export default function ProductEditor() {
         setCustomers(enriched);
         setTerms(termsRes.data.terms || []);
 
+        // For new products: pre-fill terms_id with the active default term
+        if (!id) {
+          const defaultTerm = (termsRes.data.terms || []).find((t: any) => t.is_default && t.status === "active");
+          if (defaultTerm) {
+            setForm(prev => ({ ...prev, terms_id: defaultTerm.id }));
+          }
+        }
+
         if (id) {
           const prodRes = await api.get("/admin/products-all?per_page=500");
           const product = prodRes.data.products?.find((p: any) => p.id === id);

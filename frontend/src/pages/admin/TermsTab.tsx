@@ -80,7 +80,7 @@ export function TermsTab() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editTerm, setEditTerm] = useState<any>(null);
   const [createForm, setCreateForm] = useState({ title: "", content: "", is_default: false, status: "active" });
-  const [editForm, setEditForm] = useState({ title: "", content: "", status: "active" });
+  const [editForm, setEditForm] = useState({ title: "", content: "", status: "active", is_default: false });
   const [logsUrl, setLogsUrl] = useState("");
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [confirmDeleteTerm, setConfirmDeleteTerm] = useState<any>(null);
@@ -116,7 +116,7 @@ export function TermsTab() {
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create terms"); }
   };
 
-  const openEdit = (t: any) => { setEditTerm(t); setEditForm({ title: t.title, content: t.content, status: t.status }); setShowEditDialog(true); };
+  const openEdit = (t: any) => { setEditTerm(t); setEditForm({ title: t.title, content: t.content, status: t.status, is_default: !!t.is_default }); setShowEditDialog(true); };
 
   const handleEdit = async () => {
     if (!editTerm) return;
@@ -239,6 +239,10 @@ export function TermsTab() {
                 <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
                 <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
               </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="edit-terms-default" checked={editForm.is_default} onChange={e => setEditForm({ ...editForm, is_default: e.target.checked })} className="h-4 w-4" />
+              <label htmlFor="edit-terms-default" className="text-sm text-slate-700">Set as default T&C</label>
             </div>
             <Button onClick={handleEdit} className="w-full" data-testid="admin-terms-edit-save">Save Changes</Button>
           </div>

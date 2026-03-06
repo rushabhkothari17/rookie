@@ -310,6 +310,7 @@ class TermsUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     status: Optional[str] = None
+    is_default: Optional[bool] = None
 
 
 class ManualOrderCreate(BaseModel):

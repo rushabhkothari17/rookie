@@ -157,6 +157,12 @@ async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any
         update_data["content"] = _sanitize_html(payload.content)
     if payload.status is not None:
         update_data["status"] = payload.status
+    if payload.is_default is True:
+        # Unset every other default before marking this one
+        await db.terms_and_conditions.update_many({**tf, "is_default": True}, {"$set": {"is_default": False}})
+        update_data["is_default"] = True
+    elif payload.is_default is False:
+        update_data["is_default"] = False
     if update_data:
         await db.terms_and_conditions.update_one({"id": terms_id}, {"$set": update_data})
     await create_audit_log(
