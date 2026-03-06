@@ -5,14 +5,19 @@ const API_BASE = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Track if we're currently refreshing to prevent multiple refresh calls
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshSubscribers: ((token: string | null) => void)[] = [];
 
-const subscribeTokenRefresh = (cb: (token: string) => void) => {
+const subscribeTokenRefresh = (cb: (token: string | null) => void) => {
   refreshSubscribers.push(cb);
 };
 
 const onTokenRefreshed = (token: string) => {
   refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+};
+
+const onRefreshFailed = () => {
+  refreshSubscribers.forEach((cb) => cb(null));
   refreshSubscribers = [];
 };
 
@@ -87,15 +92,19 @@ api.interceptors.response.use(
             return api(originalRequest);
           } catch (refreshError) {
             isRefreshing = false;
-            // Refresh failed - user needs to login again
+            // Refresh failed - reject all queued subscribers and remove stale token
+            onRefreshFailed();
             localStorage.removeItem("aa_token");
             // Don't redirect here - let the AuthContext handle it
             return Promise.reject(error);
           }
         } else {
           // Wait for the refresh to complete
-          return new Promise((resolve) => {
-            subscribeTokenRefresh((token: string) => {
+          return new Promise((resolve, reject) => {
+            subscribeTokenRefresh((token: string | null) => {
+              if (!token) {
+                return reject(error);
+              }
               originalRequest._retry = true;
               originalRequest.headers.Authorization = `Bearer ${token}`;
               resolve(api(originalRequest));

@@ -16,6 +16,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Clean Logout (No State-Management Warnings) ✅
+
+### Fixed async logout causing React 19 state-management warnings:
+- **Root cause**: `logout` was `async` with `await api.post("/auth/logout")`. In React 19, returning a Promise from an event handler triggers special "Action" tracking, and state updates after the `await` (outside the sync event context) can generate warnings.
+- **Fix 1 (AuthContext)**: Logout is now synchronous — auth state cleared immediately via `setUser(null)` etc., backend `/auth/logout` called fire-and-forget in background.
+- **Fix 2 (api.ts)**: When token refresh fails, `refreshSubscribers` queue is now properly rejected (`onRefreshFailed()`) instead of being silently dropped as hanging Promises.
+- **Fix 3 (AuthContext)**: Cross-tab logout handler now also clears `permissions` (was missing `setPermissions(null)`).
+- **Verified**: Zero console errors or warnings captured during logout via Playwright.
+
+---
+
 ## Latest Updates (Feb 2026) — Spacing Fix: Grey Card Borders (Cart + Service Detail) ✅
 
 ### Root cause identified and fixed:

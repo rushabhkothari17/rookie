@@ -115,19 +115,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   };
 
-  const logout = async () => {
-    try {
-      // Call backend to clear HttpOnly cookie
-      await api.post("/auth/logout");
-    } catch {
-      // Ignore errors - proceed with local cleanup
-    }
+  const logout = () => {
+    // Clear local auth state synchronously — user is logged out immediately
     setAuthToken(undefined);
     localStorage.removeItem("aa_partner_code");
     setUser(null);
     setCustomer(null);
     setAddress(null);
     setPermissions(null);
+    // Fire-and-forget: clear HttpOnly cookie on the backend
+    api.post("/auth/logout").catch(() => {});
   };
 
   const register = async (payload: any, partner_code?: string) => {
@@ -161,6 +158,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setCustomer(null);
           setAddress(null);
+          setPermissions(null);
         }
       }
     };
