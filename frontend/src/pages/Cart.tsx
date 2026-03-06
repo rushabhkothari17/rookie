@@ -11,6 +11,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { ShoppingCart, Trash2, Tag, CreditCard, Building2, ChevronDown, ChevronUp, X, Check, AlertCircle, FileText, Clock, ExternalLink, HelpCircle } from "lucide-react";
 
+const fmtMoney = (amount: number, currency = "USD") =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+
 export default function Cart() {
   const navigate = useNavigate();
   const { items, removeItem, clear, updateItem } = useCart();
@@ -477,10 +480,25 @@ export default function Cart() {
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-slate-900" data-testid={`cart-item-total-${item.product.id}`}>
-                              {item.product.currency || displayCurrency} {(showFee ? item.pricing.total : item.pricing.subtotal).toFixed(2)}
+                              {fmtMoney(showFee ? item.pricing.total : item.pricing.subtotal, item.product.currency || displayCurrency)}
                             </p>
                             {showFee && item.pricing.fee > 0 && (
-                              <p className="text-xs text-slate-500">incl. ${item.pricing.fee.toFixed(2)} fee</p>
+                              <p className="text-xs text-slate-500">incl. {fmtMoney(item.pricing.fee, item.product.currency || displayCurrency)} fee</p>
+                            )}
+                            {/* Price breakdown (shown when enabled on the product) */}
+                            {item.product.show_price_breakdown && item.pricing?.line_items?.length > 0 && (
+                              <div className="mt-2 space-y-0.5 text-xs text-slate-500 text-right">
+                                {item.pricing.line_items.map((li: any, idx: number) => (
+                                  <div key={idx} className="flex justify-end gap-2">
+                                    <span>{li.label}</span>
+                                    <span>{fmtMoney(li.amount, item.product.currency || displayCurrency)}</span>
+                                  </div>
+                                ))}
+                                <div className="flex justify-end gap-2 font-medium text-slate-700 border-t border-slate-200 pt-0.5 mt-0.5">
+                                  <span>Total</span>
+                                  <span>{fmtMoney(item.pricing.subtotal, item.product.currency || displayCurrency)}</span>
+                                </div>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -787,29 +805,29 @@ export default function Cart() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Subtotal</span>
-                    <span className="text-slate-900">{displayCurrency} {totalSubtotal.toFixed(2)}</span>
+                    <span className="text-slate-900">{fmtMoney(totalSubtotal, displayCurrency)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between" style={{ color: "var(--aa-accent)" }}>
                       <span>Discount ({promoApplied?.code})</span>
-                      <span>-{displayCurrency} {discountAmount.toFixed(2)}</span>
+                      <span>-{fmtMoney(discountAmount, displayCurrency)}</span>
                     </div>
                   )}
                   {showFee && fee > 0 && (
                     <div className="flex justify-between">
                       <span className="text-slate-500">Processing fee ({stripeFeePercent}%)</span>
-                      <span className="text-slate-900">{displayCurrency} {fee.toFixed(2)}</span>
+                      <span className="text-slate-900">{fmtMoney(fee, displayCurrency)}</span>
                     </div>
                   )}
                   {taxInfo && taxInfo.tax_amount > 0 && (
                     <div className="flex justify-between" data-testid="cart-tax-line">
                       <span className="text-slate-500">{taxInfo.tax_name || "Tax"} ({(taxInfo.tax_rate * 100).toFixed(2)}%)</span>
-                      <span className="text-slate-900">{displayCurrency} {taxInfo.tax_amount.toFixed(2)}</span>
+                      <span className="text-slate-900">{fmtMoney(taxInfo.tax_amount, displayCurrency)}</span>
                     </div>
                   )}
                   <div className="pt-3 border-t border-slate-200 flex justify-between">
                     <span className="font-semibold text-slate-900">Total</span>
-                    <span className="font-bold text-lg" style={{ color: "var(--aa-primary)" }}>{displayCurrency} {total.toFixed(2)}</span>
+                    <span className="font-bold text-lg" style={{ color: "var(--aa-primary)" }}>{fmtMoney(total, displayCurrency)}</span>
                   </div>
                 </div>
                 {isFreeCheckout && (

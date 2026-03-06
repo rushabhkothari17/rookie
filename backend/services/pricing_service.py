@@ -167,8 +167,8 @@ def calculate_price(
             raw = inputs.get(key)
             if raw is None:
                 continue
-            min_v = float(q.get("min", 0))
-            max_v = float(q.get("max", 9_999_999))
+            min_v = float(q.get("min") or 0)
+            max_v = float(q.get("max") or 9_999_999)
             val = max(min_v, min(max_v, float(raw or min_v)))
 
             pricing_mode = q.get("pricing_mode", "flat")

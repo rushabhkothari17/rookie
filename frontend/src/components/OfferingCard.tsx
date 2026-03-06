@@ -106,7 +106,7 @@ export default function OfferingCard({ product }: { product: any }) {
         <div className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400" data-testid={`offering-category-${product.id}`}>
           {displayCategory(product.category)}
         </div>
-        <h3 className="mt-2 text-lg font-bold text-slate-900" data-testid={`offering-name-${product.id}`}>
+        <h3 className="mt-2 text-lg font-bold text-slate-900 line-clamp-2 break-words" data-testid={`offering-name-${product.id}`}>
           {product.name}
         </h3>
         {description && (

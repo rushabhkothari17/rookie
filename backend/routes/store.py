@@ -104,7 +104,8 @@ async def get_categories(
         if p.get("category") and p["category"] not in inactive_names
     })
     blurbs = {name: cat_map.get(name, "") for name in categories}
-    return {"categories": categories, "category_blurbs": blurbs}
+    cat_objects = [{"name": name, "is_active": True, "blurb": blurbs.get(name, "")} for name in categories]
+    return {"categories": cat_objects, "category_blurbs": blurbs}
 
 
 def _eval_single_vis_cond(cond: dict, customer: dict) -> bool:
@@ -112,8 +113,8 @@ def _eval_single_vis_cond(cond: dict, customer: dict) -> bool:
     operator = cond.get("operator", "equals")
     expected = str(cond.get("value", "") or "")
     actual = (customer or {}).get(field)
-    # Resolve nested address fields for country / state_province / city / postal_code
-    if actual is None:
+    # Resolve nested address fields — also fall through on empty string (treat as missing)
+    if not actual:
         addr = (customer or {}).get("address") or {}
         if field == "country":
             actual = addr.get("country")

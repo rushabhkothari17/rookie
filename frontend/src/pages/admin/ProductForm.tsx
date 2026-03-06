@@ -278,7 +278,8 @@ function PricingTypeSelector({ value, onChange }: { value: string; onChange: (v:
 function evalCustomerVis(customer: any, ruleSet: ProductVisRuleSet): boolean {
   const getF = (c: any, field: string): string => {
     const d = c[field];
-    if (d !== undefined && d !== null) return String(d).toLowerCase();
+    // Fall through to address lookup if field is missing OR is an empty string
+    if (d !== undefined && d !== null && d !== "") return String(d).toLowerCase();
     if (field === "state_province") return String(c.address?.region ?? "").toLowerCase();
     if (field === "country") return String(c.address?.country ?? "").toLowerCase();
     return "";
@@ -643,7 +644,16 @@ export function ProductForm({
           <div className={cardCls}>
             <div>
               <RequiredLabel className={labelCls}>Product Name</RequiredLabel>
-              <Input value={form.name} onChange={e => s("name")(e.target.value)} placeholder="Product name" data-testid="pf-name" />
+              <Input
+                value={form.name}
+                onChange={e => s("name")(e.target.value.slice(0, 100))}
+                placeholder="Product name"
+                maxLength={100}
+                data-testid="pf-name"
+              />
+              <p className={`text-xs mt-0.5 text-right ${form.name.length >= 90 ? "text-amber-500 font-medium" : "text-slate-400"}`}>
+                {form.name.length}/100
+              </p>
             </div>
 
             <div>
@@ -651,7 +661,7 @@ export function ProductForm({
               <Select value={form.category || undefined} onValueChange={s("category")}>
                 <SelectTrigger data-testid="pf-category"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
-                  {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                  {categories.filter(c => c.is_active !== false).map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

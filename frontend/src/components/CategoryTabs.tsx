@@ -13,8 +13,11 @@ export default function CategoryTabs({
 
   useEffect(() => {
     api.get("/categories").then((res) => {
-      // Use the order returned by the API (admin-defined order)
-      const apiCats: string[] = res.data.categories || [];
+      // API returns category objects with {name, is_active, blurb} — extract names
+      const raw = res.data.categories || [];
+      const apiCats: string[] = raw.map((c: any) =>
+        typeof c === "string" ? c : c.name
+      );
       setCategories(apiCats);
     }).catch(() => {});
   }, []);
