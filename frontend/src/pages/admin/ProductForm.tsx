@@ -883,7 +883,7 @@ export function ProductForm({
 
               <div className="rounded-lg border border-slate-200 bg-white p-4">
                 {(() => {
-                  // Validate all number questions: min<=max and tier ordering
+                  // Validate all number questions: min<=max and tier continuity
                   const schemaErrors = (form.intake_schema_json?.questions || []).some(q => {
                     if (q.type !== "number") return false;
                     if ((q.min ?? 0) > (q.max ?? 0)) return true;
@@ -891,7 +891,7 @@ export function ProductForm({
                     const tiers = (q as any).tiers || [];
                     return tiers.some((t: any, i: number) => {
                       if (t.to !== null && t.from >= t.to) return true;
-                      if (i > 0 && tiers[i-1].to !== null && t.from <= tiers[i-1].to) return true;
+                      if (i > 0 && tiers[i-1].to !== null && t.from !== tiers[i-1].to) return true;
                       return false;
                     });
                   });

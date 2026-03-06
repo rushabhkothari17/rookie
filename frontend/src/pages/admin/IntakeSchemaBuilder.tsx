@@ -187,12 +187,17 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
     onChange([...tiers, { from: lastTo, to: null, price_per_unit: 0 }]);
   };
 
-  // Validate tiers: within-tier from<to, and next.from > prev.to
+  // Validate tiers: within-tier from<to, and tiers must be strictly continuous (next.from == prev.to)
   const tierErrors: (string | null)[] = tiers.map((tier, i) => {
     if (tier.to !== null && tier.from >= tier.to)
       return `"From" (${tier.from}) must be less than "To" (${tier.to})`;
-    if (i > 0 && tiers[i - 1].to !== null && tier.from <= (tiers[i - 1].to as number))
-      return `Start (${tier.from}) must be greater than previous tier's end (${tiers[i - 1].to})`;
+    if (i > 0 && tiers[i - 1].to !== null) {
+      const prevTo = tiers[i - 1].to as number;
+      if (tier.from < prevTo)
+        return `Overlap: Tier ${i + 1} starts at ${tier.from} but previous tier ends at ${prevTo}`;
+      if (tier.from > prevTo)
+        return `Gap: Tier ${i + 1} must start at ${prevTo} to be continuous (currently ${tier.from})`;
+    }
     return null;
   });
   const hasErrors = tierErrors.some(Boolean);

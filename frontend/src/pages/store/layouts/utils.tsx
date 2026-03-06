@@ -8,24 +8,42 @@ import api from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import type { IntakeQuestion } from "./types";
 
-/** Debounced number input — prevents visibility rules from triggering mid-keystroke */
+/** Debounced number input — clamps to [min, max] on debounce and on blur */
 function DebouncedNumberInput({
   q, value, onChange
 }: { q: IntakeQuestion; value: any; onChange: (v: number) => void }) {
-  const [local, setLocal] = useState<string>(String(value ?? q.default_value ?? q.min ?? 0));
+  const [local, setLocal] = useState<string>(String(value ?? q.default_value ?? q.min ?? ""));
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep local in sync if parent changes value externally
   useEffect(() => {
-    setLocal(String(value ?? q.default_value ?? q.min ?? 0));
+    setLocal(String(value ?? q.default_value ?? q.min ?? ""));
   }, [value]);
+
+  const clamp = (raw: string): number => {
+    const val = parseFloat(raw);
+    if (isNaN(val)) return q.min ?? 0;
+    const min_v = q.min ?? 0;
+    const max_v = q.max ?? Infinity;
+    return Math.max(min_v, Math.min(max_v, val));
+  };
 
   const handle = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocal(e.target.value);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      onChange(parseFloat(e.target.value) || 0);
+      const clamped = clamp(e.target.value);
+      setLocal(String(clamped));   // snap display back to valid range
+      onChange(clamped);
     }, 400);
+  };
+
+  const handleBlur = () => {
+    if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+    if (local === "" || local === "-") return;
+    const clamped = clamp(local);
+    setLocal(String(clamped));
+    onChange(clamped);
   };
 
   return (
@@ -36,6 +54,7 @@ function DebouncedNumberInput({
       step={q.step ?? 1}
       value={local}
       onChange={handle}
+      onBlur={handleBlur}
       placeholder={q.helper_text || "Enter a number"}
       data-testid={`intake-${q.key}`}
     />
