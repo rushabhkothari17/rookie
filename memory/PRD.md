@@ -16,6 +16,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Multi-Select Dropdown Filters (Users + Customers Admin Tables) ✅
+
+### Added multi-select dropdown filters with always-visible search bar:
+- **Users table**: Partner Code & Modules columns upgraded from plain `<th>` to full `ColHeader` with multi-select dropdown + search. Sort (A→Z/Z→A) also added to both columns. `orgOpts` field name fixed (`tenant_name` was the correct field).
+- **Customers table**: Email column changed from simple text filter to multi-select dropdown filter with search bar. Backend updated to support comma-separated email list in `/api/admin/customers`.
+- **ColHeader component**: Search bar in dropdown changed from conditional (`> 6 options`) to always visible for consistent UX across all dropdown filters.
+- **Reverted**: Spacing changes to Cart.tsx, Profile.tsx, Resources.tsx, ClassicLayout.tsx, ApplicationLayout.tsx reverted to prior state.
+- **Tested** (iteration_246): 9/9 new feature tests passed (95%), Partner Org field name mismatch fixed post-test.
+
+---
+
 ## Latest Updates (Feb 2026) — Currency Symbol Bug Fix (Cart Page Fee) ✅
 
 ### Card payment fee on cart page now shows correct currency symbol

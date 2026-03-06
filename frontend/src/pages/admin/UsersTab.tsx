@@ -203,7 +203,7 @@ export function UsersTab() {
     let r = [...adminUsers];
     if (colFilters.names.length) r = r.filter(u => colFilters.names.includes(u.full_name || u.email));
     if (colFilters.roles.length) r = r.filter(u => colFilters.roles.includes(u.role));
-    if (colFilters.orgNames.length) r = r.filter(u => colFilters.orgNames.includes(u.org_name || u.partner_name || ""));
+    if (colFilters.orgNames.length) r = r.filter(u => colFilters.orgNames.includes(u.tenant_name || u.org_name || u.partner_name || ""));
     if (colFilters.statuses.length) r = r.filter(u => colFilters.statuses.includes(u.is_active !== false ? "active" : "inactive"));
     if (colFilters.partnerCodes.length) r = r.filter(u => colFilters.partnerCodes.includes(u.tenant_code || ""));
     if (colFilters.modules.length) r = r.filter(u => {
@@ -228,7 +228,7 @@ export function UsersTab() {
   }, [adminUsers, colFilters, colSort]);
   const nameOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.full_name || u.email).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
   const roleOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.role).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
-  const orgOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.org_name || u.partner_name || "").filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
+  const orgOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.tenant_name || u.org_name || u.partner_name || "").filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
   const partnerCodeOpts = useMemo(() => Array.from(new Set(adminUsers.map(u => u.tenant_code).filter((v): v is string => !!v))).sort().map(v => [v, v] as [string, string]), [adminUsers]);
 
   // All modules and partner module keys (for role-scoped filtering)
