@@ -16,6 +16,16 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Spacing Fix: Grey Card Borders (Cart + Service Detail) ✅
+
+### Root cause identified and fixed:
+- The 24px `space-y-6` gap was **visually invisible** because `border-slate-100` (#f1f5f9) ≈ `--aa-bg` (#f8fafc) — near-identical near-white shades
+- **Two-part fix**: (1) `SectionCard` border `slate-100` → `slate-200` (darker, clearly defined edge); (2) All section gaps `space-y-6`/`gap-6` → `space-y-8`/`gap-8` (32px — clearly distinguishable)
+- Files changed: `SectionCard.tsx`, `Cart.tsx` (main + sidebar), `ClassicLayout.tsx`, `ApplicationLayout.tsx`, `WizardLayout.tsx`
+- Gap confirmed via Playwright computed styles: 32px with `rgb(226,232,240)` borders
+
+---
+
 ## Latest Updates (Feb 2026) — Multi-Select Dropdown Filters (Users + Customers Admin Tables) ✅
 
 ### Added multi-select dropdown filters with always-visible search bar:

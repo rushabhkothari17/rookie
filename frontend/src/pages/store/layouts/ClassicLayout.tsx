@@ -50,7 +50,7 @@ export default function ClassicLayout({
   return (
     <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]" data-testid="classic-layout">
       {/* Left Column */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         <ProductHero product={product} />
 
         {/* Intake Questions */}

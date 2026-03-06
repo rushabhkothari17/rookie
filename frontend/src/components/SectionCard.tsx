@@ -28,7 +28,7 @@ export default function SectionCard({
 
   return (
     <div
-      className="rounded-2xl border border-slate-100 bg-white px-6 pt-6 pb-8 shadow-sm"
+      className="rounded-2xl border border-slate-200 bg-white px-6 pt-6 pb-8 shadow-sm"
       data-testid={testId}
     >
       <div className="mb-5 flex items-center gap-3">

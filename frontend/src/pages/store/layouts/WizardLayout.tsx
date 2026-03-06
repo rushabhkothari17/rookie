@@ -146,7 +146,7 @@ export default function WizardLayout({
       {/* Step Content */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 min-h-[300px]">
         {isReviewStep ? (
-          <div className="space-y-6" data-testid="wizard-review-step">
+          <div className="space-y-8" data-testid="wizard-review-step">
             <div>
               <h2 className="text-lg font-semibold text-slate-900 mb-1">Review Your Selections</h2>
               <p className="text-sm text-slate-500">Please confirm your choices before proceeding</p>
@@ -210,7 +210,7 @@ export default function WizardLayout({
             )}
           </div>
         ) : (
-          <div className="space-y-6" data-testid={`wizard-step-${currentStep}-content`}>
+          <div className="space-y-8" data-testid={`wizard-step-${currentStep}-content`}>
             <div>
               <h2 className="text-lg font-semibold text-slate-900 mb-1">
                 {currentStep === 0 ? "Let's get started" : `Step ${currentStep + 1}`}

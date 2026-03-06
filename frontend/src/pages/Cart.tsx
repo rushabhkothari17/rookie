@@ -452,7 +452,7 @@ export default function Cart() {
       {preview && (
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           {/* Main Content */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Cart Items */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-100 bg-slate-50/50">
@@ -754,7 +754,7 @@ export default function Cart() {
           </div>
 
           {/* Sidebar - Order Summary */}
-          <div className="lg:sticky lg:top-6 space-y-6 h-fit">
+          <div className="lg:sticky lg:top-6 space-y-8 h-fit">
             {/* Promo Code */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden" data-testid="cart-promo-section">
               <button onClick={() => setShowPromoSection(!showPromoSection)} className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50/50 transition-colors">
