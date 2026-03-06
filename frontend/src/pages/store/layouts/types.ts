@@ -94,7 +94,7 @@ export interface LayoutProps {
   product: Product;
   pricing: PricingResult | null;
   intakeAnswers: Record<string, any>;
-  setIntakeAnswers: (fn: (prev: Record<string, any>) => Record<string, any>) => void;
+  onIntakeChange: (key: string, value: any) => void;
   visibleIntakeQuestions: IntakeQuestion[];
   handleAddToCart: () => void;
   isRFQ: boolean;

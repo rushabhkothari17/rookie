@@ -170,6 +170,22 @@ export default function ProductDetail() {
     setIntakeAnswers(defaults);
   }, [product]);
 
+  // Handle intake question change: update answer + clear all questions below (by order)
+  const handleIntakeChange = (key: string, value: any) => {
+    setIntakeAnswers(prev => {
+      const changedQ = enabledIntakeQuestions.find(q => q.key === key);
+      const changedOrder = changedQ?.order ?? -1;
+      const newAnswers: Record<string, any> = { ...prev, [key]: value };
+      // Clear every question that comes after the changed one (by display order)
+      for (const q of enabledIntakeQuestions) {
+        if ((q.order ?? 0) > changedOrder) {
+          newAnswers[q.key] = q.type === "multiselect" ? [] : "";
+        }
+      }
+      return newAnswers;
+    });
+  };
+
   const fetchPricing = async (nextInputs: Record<string, any>) => {
     if (!product) return;
     if (product.pricing_type === "enquiry") {
@@ -422,7 +438,7 @@ export default function ProductDetail() {
           product={product}
           pricing={pricing}
           intakeAnswers={intakeAnswers}
-          setIntakeAnswers={setIntakeAnswers}
+          onIntakeChange={handleIntakeChange}
           visibleIntakeQuestions={visibleIntakeQuestions}
           handleAddToCart={handleAddToCart}
           isRFQ={isRFQ}

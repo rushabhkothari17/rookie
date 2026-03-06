@@ -19,7 +19,7 @@ export default function ShowcaseLayout({
   product,
   pricing,
   intakeAnswers,
-  setIntakeAnswers,
+  onIntakeChange,
   visibleIntakeQuestions,
   handleAddToCart,
   isRFQ,
@@ -127,7 +127,7 @@ export default function ShowcaseLayout({
                     {renderIntakeField(
                       q,
                       intakeAnswers[q.key],
-                      v => setIntakeAnswers(prev => ({ ...prev, [q.key]: v }))
+                      v => onIntakeChange(q.key, v)
                     )}
                   </div>
                 ))}
@@ -183,7 +183,7 @@ export default function ShowcaseLayout({
                   {renderIntakeField(
                     q,
                     intakeAnswers[q.key],
-                    v => setIntakeAnswers(prev => ({ ...prev, [q.key]: v }))
+                    v => onIntakeChange(q.key, v)
                   )}
                 </div>
               ))}

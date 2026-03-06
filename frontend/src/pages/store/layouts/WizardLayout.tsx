@@ -12,7 +12,7 @@ export default function WizardLayout({
   product,
   pricing,
   intakeAnswers,
-  setIntakeAnswers,
+  onIntakeChange,
   visibleIntakeQuestions,
   handleAddToCart,
   isRFQ,
@@ -232,7 +232,7 @@ export default function WizardLayout({
                   {renderIntakeField(
                     q,
                     intakeAnswers[q.key],
-                    v => setIntakeAnswers(prev => ({ ...prev, [q.key]: v }))
+                    v => onIntakeChange(q.key, v)
                   )}
                 </div>
               ))}

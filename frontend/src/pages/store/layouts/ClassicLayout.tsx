@@ -15,7 +15,7 @@ export default function ClassicLayout({
   product,
   pricing,
   intakeAnswers,
-  setIntakeAnswers,
+  onIntakeChange,
   visibleIntakeQuestions,
   handleAddToCart,
   isRFQ,
@@ -66,7 +66,7 @@ export default function ClassicLayout({
                   {renderIntakeField(
                     q,
                     intakeAnswers[q.key],
-                    v => setIntakeAnswers(prev => ({ ...prev, [q.key]: v }))
+                    v => onIntakeChange(q.key, v)
                   )}
                 </div>
               ))}

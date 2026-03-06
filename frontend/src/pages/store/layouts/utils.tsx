@@ -95,6 +95,9 @@ function evalGroup(group: any, answers: Record<string, any>): boolean {
  *   1. Grouped: { top_logic, groups: [{ logic, conditions }] }
  *   2. Flat multi: { logic, conditions }  (legacy from previous version)
  *   3. Single rule: { depends_on, operator, value }  (oldest legacy)
+ *
+ * Cascading: if a dependency question is itself not visible (has its own rule
+ * that evaluates to false), this rule also returns false — regardless of format.
  */
 export function evaluateVisibilityRule(
   rule: any,
@@ -103,6 +106,34 @@ export function evaluateVisibilityRule(
   visited: Set<string> = new Set()
 ): boolean {
   if (!rule) return true;
+
+  // Collect all depends_on keys referenced by this rule (any format)
+  const depKeys: string[] = [];
+  if (rule.groups) {
+    rule.groups.forEach((g: any) =>
+      (g.conditions || []).forEach((c: any) => { if (c.depends_on) depKeys.push(c.depends_on); })
+    );
+  } else if (rule.conditions) {
+    (rule.conditions || []).forEach((c: any) => { if (c.depends_on) depKeys.push(c.depends_on); });
+  } else if (rule.depends_on) {
+    depKeys.push(rule.depends_on);
+  }
+
+  // Cascading check: if any dependency is itself hidden, this rule also fails
+  if (allQuestions && depKeys.length > 0) {
+    const uniqueDepKeys = depKeys.filter((k, i, a) => a.indexOf(k) === i);
+    for (const depKey of uniqueDepKeys) {
+      if (visited.has(depKey)) continue;
+      const depQ = allQuestions.find(q => q.key === depKey);
+      if (depQ?.visibility_rule) {
+        const nextVisited = new Set(visited);
+        nextVisited.add(depKey);
+        if (!evaluateVisibilityRule(depQ.visibility_rule, answers, allQuestions, nextVisited)) {
+          return false;
+        }
+      }
+    }
+  }
 
   // ── Format 1: Grouped { top_logic, groups } ────────────────────────────
   if (rule.groups && Array.isArray(rule.groups)) {
