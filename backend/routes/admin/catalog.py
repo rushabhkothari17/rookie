@@ -85,12 +85,13 @@ def _validate_intake_schema(schema: IntakeSchemaJson) -> None:
                             status_code=400,
                             detail=f"Question '{q.key or q.label}' tier {i+1}: 'To' ({t_to}) must be greater than 'From' ({t_from})",
                         )
-                    # last tier: to must not exceed question max
-                    if i == len(tiers) - 1 and t_to is not None and q_max is not None and float(t_to) > float(q_max):
-                        raise HTTPException(
-                            status_code=400,
-                            detail=f"Question '{q.key or q.label}' last tier end ({t_to}) exceeds question Max ({q_max})",
-                        )
+                    # last tier: to must equal question max exactly
+                    if i == len(tiers) - 1 and q_max is not None:
+                        if t_to is None or float(t_to) != float(q_max):
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"Question '{q.key or q.label}' last tier end must equal question Max ({q_max}), got {t_to if t_to is not None else 'blank'}",
+                            )
         if q.key:
             all_keys.append(q.key)
     seen: set = set()

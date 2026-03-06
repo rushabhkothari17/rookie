@@ -224,8 +224,10 @@ function TierEditor({
   const tierErrors: (string | null)[] = tiers.map((tier, i) => {
     if (tier.to !== null && (tier.from ?? 0) >= tier.to)
       return `"To" must be greater than ${tier.from}`;
-    if (i === tiers.length - 1 && tier.to !== null && overallMax !== undefined && tier.to > overallMax)
-      return `End (${tier.to}) exceeds the question's Max (${overallMax})`;
+    if (i === tiers.length - 1 && overallMax !== undefined) {
+      if (tier.to === null || tier.to !== overallMax)
+        return `Last tier's end must equal the question's Max (${overallMax}) — currently ${tier.to ?? "blank"}`;
+    }
     return null;
   });
   const hasErrors = tierErrors.some(Boolean);
@@ -243,7 +245,7 @@ function TierEditor({
       {tiers.length > 0 && (
         <>
           <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            <span>From (auto)</span><span>To{overallMax !== undefined ? ` (≤ ${overallMax})` : ""}</span><span>Price/unit</span><span />
+            <span>From (auto)</span><span>To{overallMax !== undefined ? ` (last = ${overallMax})` : ""}</span><span>Price/unit</span><span />
           </div>
           {tiers.map((tier, i) => (
             <div key={i} className="space-y-1">
@@ -283,8 +285,7 @@ function TierEditor({
           ))}
           {!hasErrors && (
             <p className="text-[10px] text-slate-400">
-              "From" is auto-set. Edit "To" to define each range.
-              {overallMax !== undefined ? ` Last tier's end must be ≤ ${overallMax}.` : ""}
+              "From" is auto-set. Last tier's "To" must equal the question's Max{overallMax !== undefined ? ` (${overallMax})` : ""}.
             </p>
           )}
         </>

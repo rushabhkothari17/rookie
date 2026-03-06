@@ -128,7 +128,7 @@ export default function ProductEditor() {
     const tiers = q.tiers || [];
     return tiers.some((t: any, i: number) => {
       if (t.to !== null && (t.from ?? 0) >= t.to) return true;
-      if (i === tiers.length - 1 && t.to !== null && q.max !== undefined && t.to > q.max) return true;
+      if (i === tiers.length - 1 && q.max !== undefined && t.to !== q.max) return true;
       return false;
     });
   });
