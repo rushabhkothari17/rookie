@@ -5,6 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Dynamic Pricing E2E Fix ✅
+
+### All intake question types verified working for public (unauthenticated) users
+
+1. **Public product detail page**: Moved `/product/:productId` route outside ProtectedRoute in `App.tsx` — product pages now accessible without login
+2. **Number input initial price fix**: `pricing_service.py` — empty string now treated as "no answer" (skipped), not clamped to min value. Initial price correctly shows base price only
+3. **Dynamic pricing E2E verified**: All question types tested end-to-end: dropdown, multiselect, boolean (yes/no), number (flat/tiered), formula — all update price in real-time via `/api/pricing/calc` public endpoint
+4. **Backend pricing endpoint**: `/api/pricing/calc` uses `optional_get_current_user` — no auth required, supports `partner_code` for multi-tenancy
+
+---
+
 ## Latest Updates (Mar 2026) — Products/Store 13-Bug Sprint ✅
 
 ### All 13 bugs resolved + 2 bonus bugs fixed by testing agent (iteration_244)

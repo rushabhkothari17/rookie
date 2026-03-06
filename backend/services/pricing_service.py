@@ -165,11 +165,12 @@ def calculate_price(
         # ── Number question — flat rate or tiered pricing ────────────────
         if q_type == "number":
             raw = inputs.get(key)
-            if raw is None:
+            # Treat None or empty string as "no answer" — don't apply min clamping
+            if raw is None or raw == "":
                 continue
             min_v = float(q.get("min") or 0)
             max_v = float(q.get("max") or 9_999_999)
-            val = max(min_v, min(max_v, float(raw or min_v)))
+            val = max(min_v, min(max_v, float(raw)))
 
             pricing_mode = q.get("pricing_mode", "flat")
             if pricing_mode == "tiered":

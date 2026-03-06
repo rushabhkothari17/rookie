@@ -110,9 +110,11 @@ export default function App() {
               }
             />
             
+            {/* Public product detail — accessible without login so unauthenticated visitors can browse and see dynamic pricing */}
+            <Route path="/product/:productId" element={<ProductDetail />} />
+
             <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
               <Route path="/store" element={<Store />} />
-              <Route path="/product/:productId" element={<ProductDetail />} />
               <Route path="/articles" element={<Articles />} />
               <Route path="/articles/:articleId" element={<ArticleView />} />
               <Route path="/documents" element={<Documents />} />
