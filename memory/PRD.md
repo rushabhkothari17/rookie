@@ -5,6 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Currency Symbol Bug Fix (Cart Page Fee) ✅
+
+### Card payment fee on cart page now shows correct currency symbol
+- **Root cause**: Cart item fee display had a hardcoded `$` symbol: `incl. $${item.pricing.fee.toFixed(2)} fee`
+- **Fix**: Replaced with `fmtMoney(item.pricing.fee, item.product.currency || displayCurrency)` in `Cart.tsx`
+- **`displayCurrency`**: Correctly derived from `[...grouped.oneTime, ...grouped.subscriptions][0]?.product?.currency || "USD"`
+- **Backend**: `/api/orders/preview` returns full `product` object including `currency` field — no backend change needed
+- **Tested** (iteration_245): CAD product → `CA$10.00` fee ✅, USD product → `$5.00` fee ✅
+
+---
+
 ## Latest Updates (Feb 2026) — Dynamic Pricing E2E Fix ✅
 
 ### All intake question types verified working for public (unauthenticated) users
