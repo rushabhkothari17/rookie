@@ -452,15 +452,15 @@ export default function Cart() {
       {preview && (
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           {/* Main Content */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Cart Items */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-              <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+              <div className="p-5 border-b border-slate-100 bg-slate-50/50">
                 <h2 className="font-semibold text-slate-900">Cart Items</h2>
               </div>
               <div className="divide-y divide-slate-100">
                 {[...grouped.oneTime, ...grouped.subscriptions].map((item: any) => (
-                  <div key={item.product.id} className="p-4 hover:bg-slate-50/50 transition-colors" data-testid={`cart-item-${item.product.id}`}>
+                  <div key={item.product.id} className="p-5 hover:bg-slate-50/50 transition-colors" data-testid={`cart-item-${item.product.id}`}>
                     <div className="flex gap-4">
                       {item.product.image_url && (
                         <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 shadow-sm">
@@ -502,7 +502,7 @@ export default function Cart() {
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center justify-between mt-4">
                           <span className="text-sm text-slate-500">Qty: {item.quantity}</span>
                           <button onClick={() => removeItem(item.product.id)} className="text-sm text-red-500 hover:text-red-700 transition-colors" data-testid={`cart-remove-${item.product.id}`}>
                             Remove
@@ -524,7 +524,7 @@ export default function Cart() {
 
             {/* Subscription Start Date */}
             {grouped.subscriptions.length > 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5" data-testid="cart-subscription-start-date">
+              <div className="rounded-2xl border border-slate-200 bg-white p-6" data-testid="cart-subscription-start-date">
                 <h3 className="font-semibold text-slate-900 mb-4">Subscription Start Date</h3>
                 <div className="flex flex-wrap gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -547,7 +547,7 @@ export default function Cart() {
 
             {/* Payment Method */}
             {!isFreeCheckout && (grouped.oneTime.length > 0 || grouped.subscriptions.length > 0) && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5" data-testid="cart-payment-method">
+              <div className="rounded-2xl border border-slate-200 bg-white p-6" data-testid="cart-payment-method">
                 <h3 className="font-semibold text-slate-900 mb-4">Payment Method</h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {/* Bank Transfer / GoCardless */}
@@ -604,7 +604,7 @@ export default function Cart() {
               checkoutSections.map((csection: any) => {
                 const sectionFields = parseSectionFields(csection.fields_schema);
                 return (
-                  <div key={csection.id} className="rounded-2xl border border-slate-200 bg-white p-5" data-testid={`checkout-section-${csection.id}`}>
+                  <div key={csection.id} className="rounded-2xl border border-slate-200 bg-white p-6" data-testid={`checkout-section-${csection.id}`}>
                     <h3 className="font-semibold text-slate-900 mb-1">{csection.title}</h3>
                     {csection.description && <p className="text-sm text-slate-500 mb-4">{csection.description}</p>}
                     <div className="space-y-4">
@@ -710,13 +710,13 @@ export default function Cart() {
             {/* RFQ Section */}
             {grouped.rfq.length > 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden" data-testid="cart-rfq-section">
-                <div className="p-4 border-b border-slate-100 bg-slate-50">
+                <div className="p-5 border-b border-slate-100 bg-slate-50">
                   <h2 className="font-semibold text-slate-900">Enquiries</h2>
-                  <p className="text-sm text-slate-500">Submit an enquiry to get pricing for these items</p>
+                  <p className="text-sm text-slate-500 mt-1">Submit an enquiry to get pricing for these items</p>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {grouped.rfq.map((item: any) => (
-                    <div key={item.product.id} className="p-4" data-testid={`cart-rfq-item-${item.product.id}`}>
+                    <div key={item.product.id} className="p-5" data-testid={`cart-rfq-item-${item.product.id}`}>
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <p className="font-medium text-slate-900">{item.product.name}</p>
@@ -736,12 +736,12 @@ export default function Cart() {
             {/* External Checkouts */}
             {grouped.external.length > 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-                <div className="p-4 border-b border-slate-100 bg-slate-50">
+                <div className="p-5 border-b border-slate-100 bg-slate-50">
                   <h2 className="font-semibold text-slate-900">External Services</h2>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {grouped.external.map((item: any) => (
-                    <div key={item.product.id} className="p-4 flex items-center justify-between" data-testid={`cart-external-item-${item.product.id}`}>
+                    <div key={item.product.id} className="p-5 flex items-center justify-between" data-testid={`cart-external-item-${item.product.id}`}>
                       <p className="font-medium text-slate-900">{item.product.name}</p>
                       <a href={item.pricing.external_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
                         Continue <ExternalLink size={14} />
@@ -754,10 +754,10 @@ export default function Cart() {
           </div>
 
           {/* Sidebar - Order Summary */}
-          <div className="lg:sticky lg:top-6 space-y-6 h-fit">
+          <div className="lg:sticky lg:top-6 space-y-8 h-fit">
             {/* Promo Code */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden" data-testid="cart-promo-section">
-              <button onClick={() => setShowPromoSection(!showPromoSection)} className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50/50 transition-colors">
+              <button onClick={() => setShowPromoSection(!showPromoSection)} className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <Tag size={18} style={{ color: "var(--aa-accent)" }} />
                   <span className="font-medium text-slate-900">Promo Code</span>
@@ -765,7 +765,7 @@ export default function Cart() {
                 {showPromoSection ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
               </button>
               {showPromoSection && (
-                <div className="px-4 pb-4">
+                <div className="px-5 pb-5">
                   {promoApplied ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)", borderColor: "var(--aa-accent)" }}>
@@ -798,10 +798,10 @@ export default function Cart() {
 
             {/* Order Summary */}
             <div className="rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(15,23,42,0.1)]" data-testid="cart-price-summary">
-              <div className="p-4" style={{ backgroundColor: "var(--aa-primary)" }}>
+              <div className="p-5" style={{ backgroundColor: "var(--aa-primary)" }}>
                 <h3 className="font-semibold text-white">Order Summary</h3>
               </div>
-              <div className="p-5 bg-white">
+              <div className="p-6 bg-white">
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Subtotal</span>
@@ -839,7 +839,7 @@ export default function Cart() {
             </div>
 
             {/* Terms & Checkout */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5 shadow-sm">
               {ws.checkout_terms_enabled !== false && (
                 <label className="flex items-start gap-3 cursor-pointer" data-testid="cart-terms-section">
                   <input 

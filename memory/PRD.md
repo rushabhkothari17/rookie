@@ -5,6 +5,17 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Feb 2026) — Spacing Improvements (Cart, Profile, Resources, Product Detail) ✅
+
+### Applied consistent spacing improvements across 5 key pages/components:
+- **Cart.tsx**: `space-y-6` → `space-y-8` between card sections; cart item padding `p-4` → `p-5`; qty/remove row `mt-3` → `mt-4`; Terms section `p-5/space-y-4` → `p-6/space-y-5`; Order Summary header `p-4` → `p-5`, body `p-5` → `p-6`; all card headers upgraded to `p-5`
+- **Profile.tsx**: outer container `space-y-6` → `space-y-8`; form grid `gap-4` → `gap-6`; save button `mt-6` → `mt-8`
+- **Resources.tsx**: main `py-8` → `py-10`; outer `space-y-4` → `space-y-6`; grids `gap-4` → `gap-6`; resource card `p-5` → `p-6`
+- **ClassicLayout.tsx**: left column `gap-6` → `gap-8`; intake questions `space-y-4` → `space-y-5`, fields `space-y-1.5` → `space-y-2`; right column `space-y-4` → `space-y-6`
+- **ApplicationLayout.tsx**: main/section areas `space-y-6` → `space-y-8`; intake fields `space-y-1.5` → `space-y-2`
+
+---
+
 ## Latest Updates (Feb 2026) — Currency Symbol Bug Fix (Cart Page Fee) ✅
 
 ### Card payment fee on cart page now shows correct currency symbol
