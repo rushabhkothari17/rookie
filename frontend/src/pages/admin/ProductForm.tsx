@@ -882,19 +882,40 @@ export function ProductForm({
               </div>
 
               <div className="rounded-lg border border-slate-200 bg-white p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <h4 className="text-sm font-semibold text-slate-900">Intake questions</h4>
-                    <span className="text-[11px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
-                      {form.intake_schema_json?.questions?.length ?? 0} questions
-                    </span>
-                  </div>
-                  {onSave && (
-                    <Button type="button" size="sm" variant="outline" onClick={onSave} className="h-7 text-xs px-3">
-                      Save questions
-                    </Button>
-                  )}
-                </div>
+                {(() => {
+                  // Validate all number questions: min<=max and tier ordering
+                  const schemaErrors = (form.intake_schema_json?.questions || []).some(q => {
+                    if (q.type !== "number") return false;
+                    if ((q.min ?? 0) > (q.max ?? 0)) return true;
+                    if ((q.pricing_mode || "flat") !== "tiered") return false;
+                    const tiers = (q as any).tiers || [];
+                    return tiers.some((t: any, i: number) => {
+                      if (t.to !== null && t.from >= t.to) return true;
+                      if (i > 0 && tiers[i-1].to !== null && t.from <= tiers[i-1].to) return true;
+                      return false;
+                    });
+                  });
+                  return (
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <h4 className="text-sm font-semibold text-slate-900">Intake questions</h4>
+                        <span className="text-[11px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+                          {form.intake_schema_json?.questions?.length ?? 0} questions
+                        </span>
+                        {schemaErrors && (
+                          <span className="text-[11px] text-red-500 font-medium">Fix errors before saving</span>
+                        )}
+                      </div>
+                      {onSave && (
+                        <Button type="button" size="sm" variant="outline" onClick={onSave}
+                          className="h-7 text-xs px-3" disabled={schemaErrors}
+                          title={schemaErrors ? "Fix validation errors before saving" : undefined}>
+                          Save questions
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })()}
                 <p className="text-xs text-slate-500 mb-4">
                   Questions shown to the customer before checkout. Number and dropdown questions can add to or multiply the total price.
                 </p>
