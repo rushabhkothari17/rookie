@@ -186,6 +186,17 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
     const lastTo = tiers.length > 0 ? (tiers[tiers.length - 1].to ?? 0) : 0;
     onChange([...tiers, { from: lastTo, to: null, price_per_unit: 0 }]);
   };
+
+  // Validate tiers: within-tier from<to, and next.from > prev.to
+  const tierErrors: (string | null)[] = tiers.map((tier, i) => {
+    if (tier.to !== null && tier.from >= tier.to)
+      return `"From" (${tier.from}) must be less than "To" (${tier.to})`;
+    if (i > 0 && tiers[i - 1].to !== null && tier.from <= (tiers[i - 1].to as number))
+      return `Start (${tier.from}) must be greater than previous tier's end (${tiers[i - 1].to})`;
+    return null;
+  });
+  const hasErrors = tierErrors.some(Boolean);
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -202,21 +213,26 @@ function TierEditor({ tiers, onChange }: { tiers: PricingTier[]; onChange: (t: P
             <span>From</span><span>To (∞=blank)</span><span>Price/unit</span><span />
           </div>
           {tiers.map((tier, i) => (
-            <div key={i} className="grid grid-cols-[1fr_1fr_1fr_24px] gap-2 items-center">
-              <Input type="number" value={tier.from ?? 0} onChange={e => {
-                const n = [...tiers]; n[i] = { ...n[i], from: parseFloat(e.target.value) || 0 }; onChange(n);
-              }} className="h-8 text-xs font-mono" />
-              <Input type="number" value={tier.to ?? ""} onChange={e => {
-                const n = [...tiers]; n[i] = { ...n[i], to: e.target.value === "" ? null : parseFloat(e.target.value) }; onChange(n);
-              }} className="h-8 text-xs font-mono" placeholder="∞" />
-              <Input type="number" value={tier.price_per_unit ?? 0} onChange={e => {
-                const n = [...tiers]; n[i] = { ...n[i], price_per_unit: parseFloat(e.target.value) || 0 }; onChange(n);
-              }} className="h-8 text-xs font-mono" />
-              <button type="button" onClick={() => onChange(tiers.filter((_, j) => j !== i))}
-                className="text-slate-400 hover:text-red-500 transition-colors"><X size={12} /></button>
+            <div key={i} className="space-y-1">
+              <div className={`grid grid-cols-[1fr_1fr_1fr_24px] gap-2 items-center`}>
+                <Input type="number" value={tier.from ?? 0} onChange={e => {
+                  const n = [...tiers]; n[i] = { ...n[i], from: parseFloat(e.target.value) || 0 }; onChange(n);
+                }} className={`h-8 text-xs font-mono ${tierErrors[i] ? "border-red-400 focus-visible:ring-red-300" : ""}`} />
+                <Input type="number" value={tier.to ?? ""} onChange={e => {
+                  const n = [...tiers]; n[i] = { ...n[i], to: e.target.value === "" ? null : parseFloat(e.target.value) }; onChange(n);
+                }} className={`h-8 text-xs font-mono ${tierErrors[i] ? "border-red-400 focus-visible:ring-red-300" : ""}`} placeholder="∞" />
+                <Input type="number" value={tier.price_per_unit ?? 0} onChange={e => {
+                  const n = [...tiers]; n[i] = { ...n[i], price_per_unit: parseFloat(e.target.value) || 0 }; onChange(n);
+                }} className="h-8 text-xs font-mono" />
+                <button type="button" onClick={() => onChange(tiers.filter((_, j) => j !== i))}
+                  className="text-slate-400 hover:text-red-500 transition-colors"><X size={12} /></button>
+              </div>
+              {tierErrors[i] && (
+                <p className="text-[10px] text-red-500 pl-0.5">{tierErrors[i]}</p>
+              )}
             </div>
           ))}
-          <p className="text-[10px] text-slate-400">Progressive pricing: first N units at rate 1, next N at rate 2, etc.</p>
+          {!hasErrors && <p className="text-[10px] text-slate-400">Progressive pricing: first N units at rate 1, next N at rate 2, etc.</p>}
         </>
       )}
     </div>
@@ -586,28 +602,38 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                             onChange={e => onChange({ ...q, price_per_unit: parseFloat(e.target.value) || 0 })}
                             className="h-9 text-sm font-mono" />
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          {(["min", "max", "step"] as const).map(f => (
-                            <div key={f}>
-                              <label className="label-xs capitalize">{f}</label>
-                              <Input type="number" value={q[f] ?? 0}
-                                onChange={e => onChange({ ...q, [f]: parseFloat(e.target.value) || 0 })}
-                                className="h-9 text-sm font-mono" />
-                            </div>
-                          ))}
+                        <div className="space-y-1">
+                          <div className="grid grid-cols-3 gap-2">
+                            {(["min", "max", "step"] as const).map(f => (
+                              <div key={f}>
+                                <label className="label-xs capitalize">{f}</label>
+                                <Input type="number" value={q[f] ?? 0}
+                                  onChange={e => onChange({ ...q, [f]: parseFloat(e.target.value) || 0 })}
+                                  className={`h-9 text-sm font-mono ${f !== "step" && (q.min ?? 0) > (q.max ?? 0) ? "border-red-400" : ""}`} />
+                              </div>
+                            ))}
+                          </div>
+                          {(q.min ?? 0) > (q.max ?? 0) && (
+                            <p className="text-[10px] text-red-500">Min ({q.min}) must be ≤ Max ({q.max})</p>
+                          )}
                         </div>
                       </div>
                     ) : (
                       <>
-                        <div className="grid grid-cols-3 gap-2">
-                          {(["min", "max", "step"] as const).map(f => (
-                            <div key={f}>
-                              <label className="label-xs capitalize">{f}</label>
-                              <Input type="number" value={q[f] ?? 0}
-                                onChange={e => onChange({ ...q, [f]: parseFloat(e.target.value) || 0 })}
-                                className="h-9 text-sm font-mono" />
-                            </div>
-                          ))}
+                        <div className="space-y-1">
+                          <div className="grid grid-cols-3 gap-2">
+                            {(["min", "max", "step"] as const).map(f => (
+                              <div key={f}>
+                                <label className="label-xs capitalize">{f}</label>
+                                <Input type="number" value={q[f] ?? 0}
+                                  onChange={e => onChange({ ...q, [f]: parseFloat(e.target.value) || 0 })}
+                                  className={`h-9 text-sm font-mono ${f !== "step" && (q.min ?? 0) > (q.max ?? 0) ? "border-red-400" : ""}`} />
+                              </div>
+                            ))}
+                          </div>
+                          {(q.min ?? 0) > (q.max ?? 0) && (
+                            <p className="text-[10px] text-red-500">Min ({q.min}) must be ≤ Max ({q.max})</p>
+                          )}
                         </div>
                         <TierEditor tiers={q.tiers || []} onChange={tiers => onChange({ ...q, tiers })} />
                       </>
