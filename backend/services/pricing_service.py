@@ -189,7 +189,7 @@ def calculate_price(
         # ── Boolean question — affects_price like a dropdown ──────────────
         elif q_type == "boolean" and (q.get("affects_price") or q.get("affects_price_boolean")):
             raw = inputs.get(key)
-            if raw is None:
+            if raw is None or raw == "":   # unanswered — skip entirely
                 continue
             yes_val = float(q.get("price_for_yes") or 0.0)
             no_val = float(q.get("price_for_no") or 0.0)

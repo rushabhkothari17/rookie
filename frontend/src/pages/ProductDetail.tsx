@@ -194,9 +194,12 @@ export default function ProductDetail() {
       return;
     }
     // Only include visible questions' answers in the pricing calculation
+    // Skip booleans that haven't been explicitly selected (empty string = unanswered)
     const visibleAnswers: Record<string, any> = {};
     for (const q of visibleIntakeQuestions) {
-      if (intakeAnswers[q.key] !== undefined) visibleAnswers[q.key] = intakeAnswers[q.key];
+      const val = intakeAnswers[q.key];
+      if (q.type === "boolean" && (val === "" || val === null || val === undefined)) continue;
+      if (val !== undefined) visibleAnswers[q.key] = val;
     }
     const response = await api.post("/pricing/calc", {
       product_id: product.id,
