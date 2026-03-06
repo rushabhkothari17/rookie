@@ -156,6 +156,8 @@ async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any
     if payload.content is not None:
         update_data["content"] = _sanitize_html(payload.content)
     if payload.status is not None:
+        if payload.status == "inactive" and existing.get("is_default"):
+            raise HTTPException(status_code=400, detail="Cannot deactivate the default Terms & Conditions. Set another term as default first.")
         update_data["status"] = payload.status
     if payload.is_default is True:
         # Unset every other default before marking this one

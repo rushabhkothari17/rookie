@@ -237,7 +237,12 @@ export function TermsTab() {
               <label className="text-xs text-slate-500">Status</label>
               <Select value={editForm.status} onValueChange={v => setEditForm({ ...editForm, status: v })}>
                 <SelectTrigger className="w-full bg-white"><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive" disabled={editForm.is_default}>
+                    Inactive{editForm.is_default ? " (unset default first)" : ""}
+                  </SelectItem>
+                </SelectContent>
               </Select>
             </div>
             <div className="flex items-center gap-2">
