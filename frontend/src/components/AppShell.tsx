@@ -25,7 +25,7 @@ export default function AppShell({
           </div>
         </div>
       )}
-      <main className="aa-container py-10 flex-1" data-testid="app-shell-main">
+      <main className="aa-container py-10 flex-1 page-enter" data-testid="app-shell-main">
         {children}
       </main>
       <AppFooter />

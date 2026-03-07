@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import TopNav from "@/components/TopNav";
 import AppFooter from "@/components/AppFooter";
 import { useWebsite } from "@/contexts/WebsiteContext";
@@ -56,8 +57,8 @@ export default function Resources() {
           style={{ backgroundColor: "var(--aa-primary)" }}
           data-testid="resources-hero"
         >
-          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
-          <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
+          <div className="hero-blob-1 pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
+          <div className="hero-blob-2 pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
           <div className="relative space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
@@ -132,7 +133,7 @@ export default function Resources() {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-xl border border-slate-200 bg-white h-48 animate-pulse" />
+                  <div key={i} className="rounded-xl border border-slate-200 bg-white h-48 shimmer-bg" />
                 ))}
               </div>
             ) : paginated.length === 0 ? (
@@ -144,15 +145,20 @@ export default function Resources() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="resources-grid">
-                {paginated.map((resource) => (
-                  <button
+                {paginated.map((resource, i) => (
+                  <motion.button
                     key={resource.id}
                     onClick={() => navigate(`/resources/${resource.id}`)}
-                    className="rounded-xl border border-slate-200 bg-white hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col overflow-hidden group"
+                    className="rounded-xl border border-slate-200 bg-white text-left flex flex-col overflow-hidden group"
                     data-testid={`resource-card-${resource.id}`}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ y: -6, transition: { type: "spring", stiffness: 380, damping: 26 } }}
+                    transition={{ duration: 0.4, delay: Math.min(i * 0.06, 0.36), ease: [0.16, 1, 0.3, 1] }}
+                    style={{ boxShadow: "0 1px 3px rgba(15,23,42,0.06)" }}
                   >
                     {/* Card top accent */}
-                    <div className="h-1 transition-colors" style={{ backgroundColor: "var(--aa-primary)" }} />
+                    <div className="h-1 transition-all duration-300 group-hover:h-1.5" style={{ backgroundColor: "var(--aa-primary)" }} />
 
                     <div className="p-5 flex flex-col flex-1">
                       {resource.category && (
@@ -175,12 +181,12 @@ export default function Resources() {
                             {formatDate(resource.created_at)}
                           </span>
                         )}
-                        <span className="flex items-center gap-1 text-xs font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
-                          Read <ArrowRight size={11} />
+                        <span className="flex items-center gap-1 text-xs font-semibold text-slate-500 group-hover:text-slate-900 transition-colors">
+                          Read <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
                         </span>
                       </div>
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}

@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import * as icons from "lucide-react";
 
 const COLOR_HEX: Record<string, string> = {
@@ -23,11 +24,18 @@ export default function SectionCard({
   icon?: string;
   iconColor?: string;
 }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-60px 0px" });
+
   const IconComp = icon ? (icons as any)[icon] : null;
   const iconHex = iconColor ? (COLOR_HEX[iconColor] || "#3b82f6") : "#3b82f6";
 
   return (
-    <div
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 22 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
+      transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
       className="rounded-2xl border border-slate-200 bg-white px-6 pt-6 pb-8 shadow-sm"
       data-testid={testId}
     >
@@ -40,6 +48,6 @@ export default function SectionCard({
         <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">{title}</h3>
       </div>
       <div className="text-sm text-slate-600 leading-relaxed">{children}</div>
-    </div>
+    </motion.div>
   );
 }

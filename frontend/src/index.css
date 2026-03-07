@@ -99,3 +99,84 @@ h3,
   color: white !important;
 }
 
+/* ── Page entrance animation ─────────────────────────── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Hero animated blobs ─────────────────────────────── */
+@keyframes heroBlob1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-20px, 14px) scale(1.1); }
+  66%       { transform: translate(12px, -10px) scale(0.94); }
+}
+@keyframes heroBlob2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(16px, -22px) scale(1.07); }
+  66%       { transform: translate(-12px, 14px) scale(0.92); }
+}
+@keyframes heroBlob3 {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50%       { transform: scale(1.15) rotate(8deg); }
+}
+.hero-blob-1 { animation: heroBlob1 14s ease-in-out infinite; }
+.hero-blob-2 { animation: heroBlob2 18s ease-in-out infinite; }
+.hero-blob-3 { animation: heroBlob3 10s ease-in-out infinite; }
+
+/* ── Shimmer loading skeleton ────────────────────────── */
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+.shimmer-bg {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Micro-interaction: button press ─────────────────── */
+button:not([disabled]):not(.no-press):active {
+  transform: scale(0.97);
+}
+a[role="button"]:active {
+  transform: scale(0.97);
+}
+
+/* ── Smooth focus ring ───────────────────────────────── */
+input:not([readonly]):not([disabled]):focus,
+textarea:not([readonly]):not([disabled]):focus {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* ── Staggered card entrance (CSS fallback) ──────────── */
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Nav pill indicator ──────────────────────────────── */
+.nav-pill-active {
+  background: rgba(15, 23, 42, 0.07);
+  border-radius: 9999px;
+}
+
+/* ── Smooth dropdown open ────────────────────────────── */
+[data-radix-popper-content-wrapper] {
+  animation: pageFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Ticker / scroll reveal helper ──────────────────── */
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+

@@ -72,7 +72,7 @@ const BaseLayout = () => (
   <div className="min-h-screen aa-bg flex flex-col" data-testid="base-layout">
     <TopNav />
     <LimitBanner />
-    <main className="aa-container py-10 flex-1" data-testid="base-layout-main">
+    <main className="aa-container py-10 flex-1 page-enter" data-testid="base-layout-main">
       <Outlet />
     </main>
     <AppFooter />

@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { displayCategory } from "@/lib/categories";
@@ -38,7 +39,6 @@ const getStartingPrice = (product: any): number | null => {
       hasPricedRequired = true;
       minAdd += (parseFloat(q.min) || 0) * parseFloat(q.price_per_unit);
     } else if ((q.type === "dropdown" || q.type === "multiselect") && q.affects_price && q.required) {
-      // Only add to starting price for additive mode, not multiplier
       if ((q.price_mode || "add") !== "multiply") {
         const prices = (q.options || []).map((o: any) => parseFloat(o.price_value) || 0).filter((p: number) => p > 0);
         if (prices.length > 0) { hasPricedRequired = true; minAdd += Math.min(...prices); }
@@ -75,13 +75,12 @@ const formatPrice = (product: any): { label: string; prefix?: string } => {
   }
   if (starting === 0 && product.base_price === 0) return { label: "Free", prefix: "" };
 
-  // Legacy enquiry fallback
   if (type === "scope_request" || type === "inquiry") return { label: "Get in touch", prefix: "" };
 
   return { label: "Contact us", prefix: "" };
 };
 
-export default function OfferingCard({ product }: { product: any }) {
+export default function OfferingCard({ product, index = 0 }: { product: any; index?: number }) {
   const description = product.card_description;
   const bullets = product.card_bullets?.length > 0 ? product.card_bullets : [];
   const priceInfo = formatPrice(product);
@@ -91,14 +90,17 @@ export default function OfferingCard({ product }: { product: any }) {
     <>
       <div className="flex items-center justify-between">
         <span
-          className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+          className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 transition-colors group-hover:bg-slate-200"
           data-testid={`offering-tag-${product.id}`}
         >
           {formatTag(product)}
         </span>
         {isExternal
           ? <ExternalLink className="text-slate-300 group-hover:text-slate-600 transition-colors" size={16} />
-          : <ArrowUpRight className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-600" size={16} />
+          : <ArrowUpRight
+              className="text-slate-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-700"
+              size={16}
+            />
         }
       </div>
 
@@ -132,7 +134,7 @@ export default function OfferingCard({ product }: { product: any }) {
           {priceInfo.prefix && <span className="text-xs font-medium text-slate-400 mr-1">{priceInfo.prefix} </span>}
           <span className="text-lg font-bold text-slate-900">{priceInfo.label}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700" data-testid={`offering-cta-${product.id}`}>
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 group-hover:text-slate-900 transition-colors" data-testid={`offering-cta-${product.id}`}>
           {isExternal ? "Visit site" : "View details"}
           {isExternal ? <ExternalLink size={14} /> : <ArrowUpRight size={14} />}
         </div>
@@ -140,27 +142,38 @@ export default function OfferingCard({ product }: { product: any }) {
     </>
   );
 
-  if (isExternal && product.external_url) {
-    return (
-      <a
-        href={product.external_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-200"
-        data-testid={`offering-card-${product.id}`}
-      >
-        {content}
-      </a>
-    );
-  }
+  const cardClass = "flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-xl hover:border-slate-200 h-full";
 
   return (
-    <Link
-      to={`/product/${product.id}`}
-      className="group flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-slate-200"
+    <motion.div
+      className="group"
       data-testid={`offering-card-${product.id}`}
+      initial={{ opacity: 0, y: 28 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -7, transition: { type: "spring", stiffness: 380, damping: 26 } }}
+      transition={{
+        duration: 0.42,
+        delay: Math.min(index * 0.07, 0.42),
+        ease: [0.16, 1, 0.3, 1],
+      }}
     >
-      {content}
-    </Link>
+      {isExternal && product.external_url ? (
+        <a
+          href={product.external_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cardClass}
+        >
+          {content}
+        </a>
+      ) : (
+        <Link
+          to={`/product/${product.id}`}
+          className={cardClass}
+        >
+          {content}
+        </Link>
+      )}
+    </motion.div>
   );
 }

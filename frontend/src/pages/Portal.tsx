@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -355,14 +356,23 @@ export default function Portal() {
   return (
     <div className="space-y-10 max-w-6xl mx-auto" data-testid="portal-page">
       {/* Header */}
-      <div>
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      >
         <p className="text-sm text-slate-500" data-testid="portal-welcome">Welcome, {user?.full_name?.trim() || "Customer"}</p>
         <h1 className="text-2xl font-semibold text-slate-900">{ws.portal_title}</h1>
         <p className="text-sm text-slate-400">{ws.portal_subtitle}</p>
-      </div>
+      </motion.div>
 
       {/* ── One-time orders ──────────────────────────────── */}
-      <section className="space-y-3">
+      <motion.section
+        className="space-y-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      >
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
             <Package size={16} className="text-slate-400" /> One-time orders
@@ -487,10 +497,15 @@ export default function Portal() {
             <Paginator page={orderPage} total={filteredOrders.length} perPage={ORDERS_PER_PAGE} onChange={setOrderPage} />
           </>
         )}
-      </section>
+      </motion.section>
 
       {/* ── Subscriptions ────────────────────────────────── */}
-      <section className="space-y-3">
+      <motion.section
+        className="space-y-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      >
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
             <RefreshCw size={16} className="text-slate-400" /> Subscriptions
@@ -590,7 +605,7 @@ export default function Portal() {
             <Paginator page={subPage} total={filteredSubs.length} perPage={SUBS_PER_PAGE} onChange={setSubPage} />
           </>
         )}
-      </section>
+      </motion.section>
 
       {/* ── Renewal History ──────────────────────────────── */}
       <RenewalHistory orders={orders} subscriptions={subscriptions} navigate={navigate} />
