@@ -36,10 +36,10 @@
     "partner_admin_email": "partneradmin@testpartner242.local",
     "partner_admin_password": "ChangeMe123! (reset by testing agent)"
   },
-  "seed_data_creation": "Created: 1 CAD product 'TEST_CAD_Service' (id=97d5e387-caa0-4c07-a29c-049166561fe1, price=CA$200) in testpartner242 tenant. Created mock Stripe and GoCardless oauth_connections for testpartner242 to enable payment methods. Reset customer user password to 'TestCustomer123!'. Reset partner admin password to 'ChangeMe123!'.",
+  "seed_data_creation": "Created: 1 CAD product 'TEST_CAD_Service' (id=landing-page-build-10, price=CA$200) in testpartner242 tenant. Created mock Stripe and GoCardless oauth_connections for testpartner242 to enable payment methods. Reset customer user password to 'TestCustomer123!'. Reset partner admin password to 'ChangeMe123!'.",
   "retest_needed": false,
   "should_main_agent_self_test": false,
-  "context_for_next_testing_agent": "Currency fix verified. Test infra setup: tenant=testpartner242, customer email=test_bugfix242_customer@example.com (password=TestCustomer123!), CAD product id=97d5e387-caa0-4c07-a29c-049166561fe1. Mock Stripe/GoCardless connections added to enable payment method display. The cart item 'Add to Cart' flow requires navigating to the product page through the store (direct URL /product/{id} works after login). localStorage key for cart is 'aa_cart_items'.",
+  "context_for_next_testing_agent": "Currency fix verified. Test infra setup: tenant=testpartner242, customer email=test_bugfix242_customer@example.com (password=TestCustomer123!), CAD product id=landing-page-build-10. Mock Stripe/GoCardless connections added to enable payment method display. The cart item 'Add to Cart' flow requires navigating to the product page through the store (direct URL /product/{id} works after login). localStorage key for cart is 'aa_cart_items'.",
   "test_results": {
     "test_1_cad_product_fee_currency": {
       "status": "PASSED",
