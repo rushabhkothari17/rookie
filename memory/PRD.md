@@ -5,6 +5,25 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Full UI/UX Animation Overhaul ✅
+
+### Installed framer-motion v12.35.0 for spring animations
+### Modified files:
+- **TopNav.tsx**: Redesigned with pill-shaped nav links, framer-motion `layoutId="nav-active-pill"` sliding indicator, user initials avatar, animated cart badge (spring), backdrop blur glass header. Store nav stays active on `/product/*` routes.
+- **OfferingCard.tsx**: Motion wrapper with staggered entrance (opacity 0→1 + translateY, delay=index*0.07s), `whileHover={{ y: -7 }}` spring lift, enhanced shadow on hover.
+- **SectionCard.tsx**: `useInView` scroll-triggered reveal animation (opacity + translateY, once=true).
+- **Store.tsx**: Hero blobs get `hero-blob-1`/`hero-blob-2` CSS animation classes for subtle floating movement. `index={i}` added to OfferingCard for stagger.
+- **Resources.tsx**: Changed `animate-pulse` loading to `shimmer-bg`, replaced static `<button>` with `motion.button` cards with staggered entrance and spring hover lift.
+- **Portal.tsx**: Header and two main sections wrapped with `motion.div`/`motion.section` for staggered entrance.
+- **Cart.tsx**: Hero blobs upgraded with CSS animation classes.
+- **App.tsx (BaseLayout)**: `page-enter` class on `<main>` for fade-in page transitions.
+- **AppShell.tsx**: `page-enter` class on `<main>`.
+- **index.css**: New keyframes: `pageFadeIn`, `heroBlob1`, `heroBlob2`, `shimmer`, `cardSlideIn`. CSS utilities: `.shimmer-bg`, `.page-enter`, `.hero-blob-1/2`. Button press micro-interaction: `button:not([disabled]):not(.no-press):active { transform: scale(0.97) }`.
+
+### Test results (iteration_247): 95% pass, all animations confirmed working via Playwright.
+
+---
+
 ## Latest Updates (Feb 2026) — Spacing Improvements (Cart, Profile, Resources, Product Detail) ✅
 
 ### Applied consistent spacing improvements across 5 key pages/components:

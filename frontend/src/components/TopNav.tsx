@@ -25,13 +25,13 @@ export default function TopNav() {
   const logoUrl = ws.logo_url || null;
 
   const navItems = [
-    { to: "/store", label: ws.nav_store_label || "Store", testId: "nav-store" },
-    { to: "/articles", label: ws.nav_articles_label || "Articles", testId: "nav-articles" },
+    { to: "/store", label: ws.nav_store_label || "Store", testId: "nav-store", matchPaths: ["/store", "/product"] },
+    { to: "/articles", label: ws.nav_articles_label || "Articles", testId: "nav-articles", matchPaths: ["/articles"] },
     ...(ws.workdrive_enabled
-      ? [{ to: "/documents", label: ws.nav_documents_label || "Documents", testId: "nav-documents" }]
+      ? [{ to: "/documents", label: ws.nav_documents_label || "Documents", testId: "nav-documents", matchPaths: ["/documents"] }]
       : []),
-    { to: "/portal", label: ws.nav_portal_label || "Customer Portal", testId: "nav-portal" },
-    ...(user?.is_admin ? [{ to: "/admin", label: "Admin", testId: "nav-admin" }] : []),
+    { to: "/portal", label: ws.nav_portal_label || "Customer Portal", testId: "nav-portal", matchPaths: ["/portal"] },
+    ...(user?.is_admin ? [{ to: "/admin", label: "Admin", testId: "nav-admin", matchPaths: ["/admin"] }] : []),
   ];
 
   const firstInitial = user?.full_name?.trim()?.[0]?.toUpperCase() || "U";
@@ -60,7 +60,7 @@ export default function TopNav() {
         {/* Pill Nav Links */}
         <nav className="flex items-center gap-0.5 text-sm flex-1 min-w-0 overflow-hidden" data-testid="nav-links">
           {navItems.map((item) => {
-            const active = location.pathname.startsWith(item.to);
+            const active = item.matchPaths.some(p => location.pathname.startsWith(p));
             return (
               <Link
                 key={item.to}
