@@ -47,6 +47,16 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    // Normalize Pydantic 422 validation errors: detail is an array of objects
+    // e.g. [{type, loc, msg, input, ctx}] → "Input should be less than or equal to 300"
+    if (error.response?.status === 422) {
+      const det = (error.response.data as any)?.detail;
+      if (Array.isArray(det)) {
+        (error.response.data as any).detail = det
+          .map((e: any) => e.msg || String(e))
+          .join("; ");
+      }
+    }
     const originalRequest = error.config as any;
     
     // Don't retry if it's already a retry, or if it's the refresh endpoint, or logout

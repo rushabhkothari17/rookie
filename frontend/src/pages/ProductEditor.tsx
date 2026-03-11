@@ -150,6 +150,13 @@ export default function ProductEditor() {
       toast.error("Fix intake question errors before saving (check Pricing tab → Intake Questions)");
       return;
     }
+    if (form.default_term_months) {
+      const tv = parseInt(form.default_term_months);
+      if (isNaN(tv) || tv < 0 || tv > 300 || form.default_term_months.includes(".")) {
+        toast.error("Default contract term must be a whole number between 0 and 300");
+        return;
+      }
+    }
     setSaving(true);
     try {
       const payload = {
