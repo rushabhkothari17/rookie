@@ -295,6 +295,9 @@ async def create_manual_subscription(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer record not found")
 
+    if customer.get("deleted_at"):
+        raise HTTPException(status_code=400, detail="Cannot create a subscription for a deleted customer.")
+
     product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")

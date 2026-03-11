@@ -836,6 +836,8 @@ export function ProductForm({
                     <label className={labelCls}>Base price <FieldTip tip="The starting price before any intake question modifiers. Set to 0 if the final price is determined entirely by intake questions." /></label>
                     <Input
                       type="number"
+                      min="0"
+                      step="0.01"
                       value={form.base_price || ""}
                       onChange={e => s("base_price")(parseFloat(e.target.value) || 0)}
                       placeholder="0"

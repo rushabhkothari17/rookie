@@ -174,7 +174,7 @@
 
 ### ⚠️ UI RUNTIME TESTING BLOCKED:
 - **Issue:** External preview URL showing "Preview Unavailable"
-- **URL:** https://landing-page-build-10.preview.emergentagent.com
+- **URL:** https://resource-price-rules.preview.emergentagent.com
 - **Root Cause:** Preview infrastructure issue (not app bug)
 - **Services:** All running correctly on localhost (backend:8001, frontend:3000)
 - **Impact:** Cannot perform click-through UI testing, but code review validates implementations

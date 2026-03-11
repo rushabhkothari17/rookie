@@ -4,7 +4,7 @@ Debug navigation for failing tabs
 import asyncio
 from playwright.async_api import async_playwright
 
-BASE_URL = "https://landing-page-build-10.preview.emergentagent.com"
+BASE_URL = "https://resource-price-rules.preview.emergentagent.com"
 PARTNER_CODE = "automate-accounts"
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"

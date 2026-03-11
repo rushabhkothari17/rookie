@@ -261,8 +261,8 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
       toast.error("Content is required");
       return;
     }
-    if (SCOPE_FINAL.has(form.category) && !form.price) {
-      toast.error("Price is required for Scope - Final resources");
+    if (SCOPE_FINAL.has(form.category) && (!form.price || parseFloat(form.price) <= 0)) {
+      toast.error("Price must be greater than 0 for Scope - Final resources");
       return;
     }
     setSaving(true);
@@ -619,7 +619,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
                     <RequiredLabel hint="required for Scope - Final">Price</RequiredLabel>
                     <Input
                       type="number"
-                      min="0"
+                      min="0.01"
                       step="0.01"
                       value={form.price}
                       onChange={(e) => setForm({ ...form, price: e.target.value })}

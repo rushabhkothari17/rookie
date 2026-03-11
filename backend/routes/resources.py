@@ -312,8 +312,8 @@ async def create_article(
     tid = tenant_id_of(admin)
     if payload.category not in await _get_valid_categories(tid):
         raise HTTPException(status_code=400, detail="Invalid category")
-    if payload.category in SCOPE_FINAL_CATEGORIES and not payload.price:
-        raise HTTPException(status_code=400, detail="Price is required for Scope - Final articles")
+    if payload.category in SCOPE_FINAL_CATEGORIES and (payload.price is None or payload.price <= 0):
+        raise HTTPException(status_code=400, detail="Price must be greater than 0 for Scope - Final resources")
 
     slug = payload.slug or _slugify(payload.title)
     existing = await db.resources.find_one({**tf, "slug": slug, "deleted_at": {"$exists": False}})
@@ -404,6 +404,8 @@ async def update_article(
         changes["category"] = payload.category
 
     if payload.price is not None:
+        if effective_category in SCOPE_FINAL_CATEGORIES and payload.price <= 0:
+            raise HTTPException(status_code=400, detail="Price must be greater than 0 for Scope - Final resources")
         updates["price"] = payload.price
         changes["price"] = payload.price
     elif effective_category not in SCOPE_FINAL_CATEGORIES:

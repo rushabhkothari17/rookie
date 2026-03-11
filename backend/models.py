@@ -242,7 +242,7 @@ class AdminProductUpdate(BaseModel):
     category: Optional[str] = None
     faqs: Optional[List[Any]] = None
     terms_id: Optional[str] = None
-    base_price: Optional[float] = None
+    base_price: Optional[float] = Field(None, ge=0)
     is_subscription: Optional[bool] = None
     stripe_price_id: Optional[str] = None
     pricing_type: Optional[str] = "internal"
@@ -494,7 +494,7 @@ class AdminProductCreate(BaseModel):
     category: str = ""
     faqs: List[Dict[str, str]] = Field(default_factory=list)
     terms_id: Optional[str] = None
-    base_price: float = 0.0
+    base_price: float = Field(0.0, ge=0)
     is_subscription: bool = False
     stripe_price_id: Optional[str] = None
     pricing_type: str = "internal"

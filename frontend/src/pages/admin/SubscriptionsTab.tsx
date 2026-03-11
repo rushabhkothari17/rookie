@@ -560,9 +560,12 @@ export function SubscriptionsTab() {
                 data-testid="manual-sub-customer-email"
               />
               <datalist id="manual-sub-customers">
-                {custUsers.map((u: any) => (
-                  <option key={u.id} value={u.email}>{u.full_name ? `${u.full_name} (${u.email})` : u.email}</option>
-                ))}
+                {(() => {
+                  const activeUserIds = new Set(customers.filter((c: any) => !c.deleted_at).map((c: any) => c.user_id));
+                  return custUsers.filter((u: any) => activeUserIds.has(u.id)).map((u: any) => (
+                    <option key={u.id} value={u.email}>{u.full_name ? `${u.full_name} (${u.email})` : u.email}</option>
+                  ));
+                })()}
               </datalist>
             </div>
             <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Product</RequiredLabel>

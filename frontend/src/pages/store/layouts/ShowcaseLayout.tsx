@@ -37,6 +37,8 @@ export default function ShowcaseLayout({
     return `${symbol}${amount.toFixed(2)}`;
   };
 
+  const isEnquiry = (isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry") && product?.base_price == null;
+
   // Separate pricing questions from info questions
   const { pricingQuestions, infoQuestions } = useMemo(() => {
     const pricing: typeof visibleIntakeQuestions = [];
@@ -224,12 +226,12 @@ export default function ShowcaseLayout({
                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 font-semibold"
                 data-testid="showcase-cta"
               >
-                {scopeUnlock ? `Add to Cart — $${scopeUnlock.price}` : isRFQ ? "Request Quote" : "Add to Cart"}
+                {scopeUnlock ? `Add to Cart — $${scopeUnlock.price}` : isEnquiry ? "Request Quote" : "Add to Cart"}
                 <ArrowRight size={16} className="ml-2" />
               </Button>
 
               {/* Scope ID override for enquiry products */}
-              {isRFQ && setScopeId && handleValidateScopeId && (
+              {isEnquiry && setScopeId && handleValidateScopeId && (
                 <ScopeIdBlock
                   scopeId={scopeId}
                   setScopeId={setScopeId}
