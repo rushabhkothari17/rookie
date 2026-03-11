@@ -132,6 +132,7 @@ export function SubscriptionsTab() {
   const [subNotes, setSubNotes] = useState<any[]>([]);
   const [subNotesJson, setSubNotesJson] = useState<any>(null);
   const [showManualDialog, setShowManualDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const today = new Date().toISOString().slice(0, 10);
   const [manualSub, setManualSub] = useState({
@@ -284,6 +285,7 @@ export function SubscriptionsTab() {
       toast.error("Contract term must be a whole number between 0 and 300"); return;
     }
     try {
+      setCreating(true);
       const payload = {
         ...manualSub,
         term_months: manualSub.term_months ? parseInt(String(manualSub.term_months)) : null,
@@ -295,6 +297,7 @@ export function SubscriptionsTab() {
       load(1);
     }
     catch (e: any) { toast.error(e.response?.data?.detail || "Failed"); }
+    finally { setCreating(false); }
   };
 
   const clearFilters = () => {
@@ -653,7 +656,9 @@ export function SubscriptionsTab() {
                 <Input type="number" min={1} max={365} placeholder="blank = no reminders" value={manualSub.reminder_days as string} onChange={e => setManualSub({ ...manualSub, reminder_days: e.target.value })} data-testid="manual-sub-reminder-days" />
               </div>
             </div>
-            <Button onClick={handleCreateManual} className="w-full">Create Subscription</Button>
+            <Button onClick={handleCreateManual} disabled={creating} className="w-full">
+              {creating ? "Creating…" : "Create Subscription"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
