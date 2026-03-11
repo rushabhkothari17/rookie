@@ -665,6 +665,7 @@ function InvoiceSettingsPanel() {
 
   const saveTemplate = async () => {
     if (!tmplForm.name.trim()) return toast.error("Template name is required");
+    setSaving(true);
     try {
       if (editingTemplate) {
         await api.put(`/admin/taxes/invoice-templates/${editingTemplate.id}`, tmplForm);
@@ -678,6 +679,7 @@ function InvoiceSettingsPanel() {
       setTmplForm({ name: "", html_body: "" });
       loadCustomTemplates();
     } catch { toast.error("Failed to save template"); }
+    finally { setSaving(false); }
   };
 
   const deleteTemplate = async (id: string) => {
@@ -925,8 +927,8 @@ function InvoiceSettingsPanel() {
               />
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={saveTemplate} data-testid="custom-template-save-btn">
-                {editingTemplate ? "Update Template" : "Create Template"}
+              <Button size="sm" onClick={saveTemplate} disabled={saving} data-testid="custom-template-save-btn">
+                {saving ? "Saving…" : (editingTemplate ? "Update Template" : "Create Template")}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => { setShowNewTemplate(false); setEditingTemplate(null); }}>Cancel</Button>
             </div>

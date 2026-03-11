@@ -96,6 +96,8 @@ export function OrdersTab() {
   });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmChargeId, setConfirmChargeId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [creatingOrder, setCreatingOrder] = useState(false);
 
   // Build lookup maps
   const userMap: Record<string, any> = {};
@@ -189,6 +191,7 @@ export function OrdersTab() {
 
   const handleEdit = async () => {
     if (!selectedOrder) return;
+    setSaving(true);
     try {
       await api.put(`/admin/orders/${selectedOrder.id}`, {
         customer_id: selectedOrder.customer_id,
@@ -210,6 +213,7 @@ export function OrdersTab() {
       setSelectedOrder(null);
       load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update order"); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (orderId: string) => {
@@ -233,6 +237,7 @@ export function OrdersTab() {
     if (!manualOrder.product_id) { toast.error("Product is required"); return; }
     if (!manualOrder.currency) { toast.error("Currency is required"); return; }
     if (!manualOrder.status) { toast.error("Status is required"); return; }
+    setCreatingOrder(true);
     try {
       await api.post("/admin/orders/manual", manualOrder);
       toast.success("Manual order created");
@@ -240,6 +245,7 @@ export function OrdersTab() {
       setManualOrder({ customer_email: "", product_id: "", quantity: 1, subtotal: 0, discount: 0, fee: 0, status: "paid", currency: "USD", internal_note: "" });
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create order"); }
+    finally { setCreatingOrder(false); }
   };
 
   const clearFilters = () => {
@@ -517,7 +523,7 @@ export function OrdersTab() {
                 <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Add Note</label>
                 <Textarea placeholder="Add a note…" value={selectedOrder.new_note || ""} onChange={e => setSelectedOrder({ ...selectedOrder, new_note: e.target.value })} rows={2} data-testid="admin-order-note-input" />
               </div>
-              <Button onClick={handleEdit} className="w-full" data-testid="admin-order-save">Save Changes</Button>
+              <Button onClick={handleEdit} disabled={saving} className="w-full" data-testid="admin-order-save">{saving ? "Saving…" : "Save Changes"}</Button>
             </div>
           )}
         </DialogContent>
@@ -618,7 +624,7 @@ export function OrdersTab() {
               <label className="text-xs text-slate-500">Internal Note</label>
               <Textarea placeholder="Optional note" value={manualOrder.internal_note} onChange={e => setManualOrder({ ...manualOrder, internal_note: e.target.value })} rows={2} />
             </div>
-            <Button onClick={handleCreateManual} className="w-full">Create Order</Button>
+            <Button onClick={handleCreateManual} disabled={creatingOrder} className="w-full">{creatingOrder ? "Creating…" : "Create Order"}</Button>
           </div>
         </DialogContent>
       </Dialog>

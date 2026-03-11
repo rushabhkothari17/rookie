@@ -104,9 +104,12 @@ export function TermsTab() {
 
   useEffect(() => { load(1); }, [startDate, endDate]);
 
+  const [saving, setSaving] = useState(false);
+
   const handleCreate = async () => {
     if (!createForm.title.trim()) { toast.error("Title is required"); return; }
     if (!createForm.content.trim()) { toast.error("Content is required"); return; }
+    setSaving(true);
     try {
       await api.post("/admin/terms", createForm);
       toast.success("Terms created");
@@ -114,6 +117,7 @@ export function TermsTab() {
       setCreateForm({ title: "", content: "", is_default: false, status: "active" });
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create terms"); }
+    finally { setSaving(false); }
   };
 
   const openEdit = (t: any) => { setEditTerm(t); setEditForm({ title: t.title, content: t.content, status: t.status, is_default: !!t.is_default }); setShowEditDialog(true); };
@@ -122,6 +126,7 @@ export function TermsTab() {
     if (!editTerm) return;
     if (!editForm.title.trim()) { toast.error("Title is required"); return; }
     if (!editForm.content.trim()) { toast.error("Content is required"); return; }
+    setSaving(true);
     try {
       await api.put(`/admin/terms/${editTerm.id}`, editForm);
       toast.success("Terms updated");
@@ -129,6 +134,7 @@ export function TermsTab() {
       setEditTerm(null);
       load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update terms"); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (termId: string) => {
@@ -221,7 +227,7 @@ export function TermsTab() {
               <p className="text-xs text-slate-400">Tags: {'{product_name}'}, {'{user_name}'}, {'{company_name}'}, {'{user_email}'}, {'{user_address_line1}'}</p>
             </div>
             <div className="flex items-center gap-2"><input type="checkbox" checked={createForm.is_default} onChange={e => setCreateForm({ ...createForm, is_default: e.target.checked })} /><label className="text-sm">Set as default T&C</label></div>
-            <Button onClick={handleCreate} className="w-full" data-testid="admin-terms-submit">Create</Button>
+            <Button onClick={handleCreate} disabled={saving} className="w-full" data-testid="admin-terms-submit">{saving ? "Creating…" : "Create"}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -249,7 +255,7 @@ export function TermsTab() {
               <input type="checkbox" id="edit-terms-default" checked={editForm.is_default} onChange={e => setEditForm({ ...editForm, is_default: e.target.checked })} className="h-4 w-4" />
               <label htmlFor="edit-terms-default" className="text-sm text-slate-700">Set as default T&C</label>
             </div>
-            <Button onClick={handleEdit} className="w-full" data-testid="admin-terms-edit-save">Save Changes</Button>
+            <Button onClick={handleEdit} disabled={saving} className="w-full" data-testid="admin-terms-edit-save">{saving ? "Saving…" : "Save Changes"}</Button>
           </div>
         </DialogContent>
       </Dialog>

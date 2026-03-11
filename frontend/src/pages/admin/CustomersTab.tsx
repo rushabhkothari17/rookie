@@ -145,8 +145,11 @@ export function CustomersTab() {
   };
 
 
+  const [saving, setSaving] = useState(false);
+
   const handleCustomerEdit = async () => {
     if (!selectedCustomer) return;
+    setSaving(true);
     try {
       await api.put(`/admin/customers/${selectedCustomer.id}`, {
         customer_data: { full_name: selectedCustomer.full_name, company_name: selectedCustomer.company_name, job_title: selectedCustomer.job_title, phone: selectedCustomer.phone },
@@ -166,6 +169,7 @@ export function CustomersTab() {
       }
       toast.success("Customer updated"); setSelectedCustomer(null); load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
+    finally { setSaving(false); }
   };
 
   const handleToggleActive = async (customerId: string, currentActive: boolean) => {
@@ -207,6 +211,7 @@ export function CustomersTab() {
       if (f?.required && !(newCustomer as any)[key]?.trim()) errors.push(f.label || key);
     });
     if (errors.length) { toast.error(`Required: ${errors.join(", ")}`); return; }
+    setSaving(true);
     try {
       const profile_meta = Object.keys(newCustomerExtras).length ? newCustomerExtras : undefined;
       await api.post("/admin/customers/create", { ...newCustomer, ...(profile_meta ? { profile_meta } : {}) });
@@ -215,6 +220,7 @@ export function CustomersTab() {
       setNewCustomerExtras({});
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create customer"); }
+    finally { setSaving(false); }
   };
 
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
@@ -423,7 +429,7 @@ export function CustomersTab() {
                   data-testid="edit-customer-tax-exempt"
                 />
               </div>
-              <Button onClick={handleCustomerEdit} className="w-full" data-testid="admin-customer-save-btn">Save Changes</Button>
+              <Button onClick={handleCustomerEdit} disabled={saving} className="w-full" data-testid="admin-customer-save-btn">{saving ? "Saving…" : "Save Changes"}</Button>
             </div>
           )}
         </DialogContent>
@@ -454,7 +460,7 @@ export function CustomersTab() {
               showPassword={true}
               compact={true}
             />
-            <Button onClick={handleCreateCustomer} className="w-full" data-testid="admin-create-customer-save-btn">Create Customer</Button>
+            <Button onClick={handleCreateCustomer} disabled={saving} className="w-full" data-testid="admin-create-customer-save-btn">{saving ? "Creating…" : "Create Customer"}</Button>
           </div>
         </DialogContent>
       </Dialog>

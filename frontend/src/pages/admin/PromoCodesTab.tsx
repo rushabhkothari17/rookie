@@ -184,6 +184,8 @@ export function PromoCodesTab() {
 
   useEffect(() => { load(1); }, [startDate, endDate]);
 
+  const [saving, setSaving] = useState(false);
+
   const handleCreate = async () => {
     if (!newPromo.code.trim()) { toast.error("Promo code is required"); return; }
     if (!newPromo.discount_type) { toast.error("Discount type is required"); return; }
@@ -191,6 +193,7 @@ export function PromoCodesTab() {
     if (!newPromo.applies_to) { toast.error("Applies to is required"); return; }
     if (!newPromo.applies_to_products) { toast.error("Product eligibility is required"); return; }
     if (!newPromo.expiry_date) { toast.error("Expiry date is required"); return; }
+    setSaving(true);
     try {
       await api.post("/admin/promo-codes", { ...newPromo, expiry_date: newPromo.expiry_date || null, max_uses: newPromo.max_uses ? parseInt(newPromo.max_uses) : null });
       toast.success("Promo code created");
@@ -198,6 +201,7 @@ export function PromoCodesTab() {
       setNewPromo(INITIAL_PROMO);
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create promo code"); }
+    finally { setSaving(false); }
   };
 
   const openEdit = (p: any) => { setEditPromo(p); setEditForm({ code: p.code, discount_type: p.discount_type, discount_value: p.discount_value, applies_to: p.applies_to, applies_to_products: p.applies_to_products || "all", product_ids: p.product_ids || [], expiry_date: p.expiry_date?.slice(0, 10) || "", max_uses: p.max_uses ? String(p.max_uses) : "", one_time_code: p.one_time_code || false, enabled: p.enabled !== false, promo_note: p.promo_note || "" }); setShowEditDialog(true); };
@@ -206,6 +210,7 @@ export function PromoCodesTab() {
     if (!editPromo) return;
     if (!editForm.code?.trim()) { toast.error("Promo code is required"); return; }
     if (!editForm.expiry_date) { toast.error("Expiry date is required"); return; }
+    setSaving(true);
     try {
       await api.put(`/admin/promo-codes/${editPromo.id}`, { ...editForm, expiry_date: editForm.expiry_date || null, max_uses: editForm.max_uses ? parseInt(editForm.max_uses) : null });
       toast.success("Promo code updated");
@@ -213,6 +218,7 @@ export function PromoCodesTab() {
       setEditPromo(null);
       load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Update failed"); }
+    finally { setSaving(false); }
   };
 
   const handleToggle = async (promoId: string, enabled: boolean) => {
@@ -297,7 +303,7 @@ export function PromoCodesTab() {
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent data-testid="admin-promo-dialog"><DialogHeader><DialogTitle>Create Promo Code</DialogTitle></DialogHeader>
           <PromoForm form={newPromo} setF={setNewPromo} products={products} />
-          <Button onClick={handleCreate} className="w-full mt-4" data-testid="admin-promo-submit">Create</Button>
+          <Button onClick={handleCreate} disabled={saving} className="w-full mt-4" data-testid="admin-promo-submit">{saving ? "Creating…" : "Create"}</Button>
         </DialogContent>
       </Dialog>
 
@@ -305,7 +311,7 @@ export function PromoCodesTab() {
       <Dialog open={showEditDialog} onOpenChange={(open) => { setShowEditDialog(open); if (!open) setEditPromo(null); }}>
         <DialogContent data-testid="admin-promo-edit-dialog"><DialogHeader><DialogTitle>Edit Promo Code: {editPromo?.code}</DialogTitle></DialogHeader>
           <PromoForm form={editForm} setF={setEditForm} products={products} />
-          <Button onClick={handleEdit} className="w-full mt-4" data-testid="admin-promo-edit-save">Save Changes</Button>
+          <Button onClick={handleEdit} disabled={saving} className="w-full mt-4" data-testid="admin-promo-edit-save">{saving ? "Saving…" : "Save Changes"}</Button>
         </DialogContent>
       </Dialog>
 

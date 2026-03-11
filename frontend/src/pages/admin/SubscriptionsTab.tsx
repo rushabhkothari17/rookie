@@ -133,6 +133,7 @@ export function SubscriptionsTab() {
   const [subNotesJson, setSubNotesJson] = useState<any>(null);
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const today = new Date().toISOString().slice(0, 10);
   const [manualSub, setManualSub] = useState({
@@ -246,6 +247,7 @@ export function SubscriptionsTab() {
         toast.error("Contract term must be a whole number between 0 and 300"); return;
       }
     }
+    setSaving(true);
     try {
       await api.put(`/admin/subscriptions/${selectedSub.id}`, {
         renewal_date: selectedSub.renewal_date, start_date: selectedSub.start_date,
@@ -260,6 +262,7 @@ export function SubscriptionsTab() {
       });
       toast.success("Subscription updated"); setShowEditDialog(false); load(page);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to update"); }
+    finally { setSaving(false); }
   };
 
   const handleCancel = async (subId: string) => {
@@ -506,7 +509,7 @@ export function SubscriptionsTab() {
                 <Input type="number" min={1} max={365} placeholder="blank = no reminders" value={selectedSub.reminder_days ?? ""} onChange={e => setSelectedSub({ ...selectedSub, reminder_days: e.target.value })} data-testid="edit-sub-reminder-days" />
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleEdit} className="flex-1" data-testid="admin-sub-edit-save">Save Changes</Button>
+                <Button onClick={handleEdit} disabled={saving} className="flex-1" data-testid="admin-sub-edit-save">{saving ? "Saving…" : "Save Changes"}</Button>
                 <TestReminderButton subId={selectedSub.id} endpoint="subscriptions" />
               </div>
             </div>

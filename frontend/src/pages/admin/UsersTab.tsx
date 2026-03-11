@@ -322,11 +322,14 @@ export function UsersTab() {
 
   // ── Create ──────────────────────────────────────────────────────────────────
 
+  const [saving, setSaving] = useState(false);
+
   const handleCreate = async () => {
     if (!newUser.email || !newUser.password || !newUser.role || !newUser.full_name.trim()) { toast.error("Email, full name, password and role are required"); return; }
     if (PARTNER_ROLES.has(newUser.role) && isPlatformSuperAdmin && !newUser.target_tenant_id) {
       toast.error("Please select a partner org for this user"); return;
     }
+    setSaving(true);
     try {
       await api.post("/admin/users", {
         email: newUser.email,
@@ -344,7 +347,7 @@ export function UsersTab() {
       load(1);
     } catch (e: any) {
       toast.error(e.response?.data?.detail || "Failed to create user");
-    }
+    } finally { setSaving(false); }
   };
 
   const applyPreset = (presetKey: string, setPerms: (mp: ModulePerm) => void) => {
@@ -364,10 +367,10 @@ export function UsersTab() {
   const handleEdit = async () => {
     if (!editUser) return;
     if (!editForm.full_name.trim()) { toast.error("Full name is required"); return; }
+    setSaving(true);
     try {
       const body: any = { full_name: editForm.full_name };
       if (editForm.role && editForm.role !== editUser.role) body.role = editForm.role;
-      // Only send module_permissions for non-super-admin targets
       if (!["platform_super_admin", "partner_super_admin"].includes(editUser.role) && editForm.role !== "partner_super_admin") {
         body.module_permissions = toApiPerm(editPerms);
       }
@@ -378,7 +381,7 @@ export function UsersTab() {
       load(page);
     } catch (e: any) {
       toast.error(e.response?.data?.detail || "Failed to update user");
-    }
+    } finally { setSaving(false); }
   };
 
   // ── Deactivate ───────────────────────────────────────────────────────────────
@@ -603,7 +606,7 @@ export function UsersTab() {
               </div>
             )}
 
-            <Button onClick={handleCreate} className="w-full" data-testid="create-user-submit">Create User</Button>
+            <Button onClick={handleCreate} disabled={saving} className="w-full" data-testid="create-user-submit">{saving ? "Creating…" : "Create User"}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -661,7 +664,7 @@ export function UsersTab() {
                 </>
               )}
 
-              <Button onClick={handleEdit} className="w-full" data-testid="admin-edit-user-save">Save Changes</Button>
+              <Button onClick={handleEdit} disabled={saving} className="w-full" data-testid="admin-edit-user-save">{saving ? "Saving…" : "Save Changes"}</Button>
             </div>
           )}
         </DialogContent>
