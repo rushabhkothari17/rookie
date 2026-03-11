@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Download, Plus } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
@@ -157,26 +158,67 @@ export function EnquiriesTab() {
   // Manual create enquiry
   const [showCreate, setShowCreate] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
-  const [newEnquiry, setNewEnquiry] = useState({ customer_email: "", product_id: "", notes: "" });
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [forms, setForms] = useState<any[]>([]);
+  const [newEnquiry, setNewEnquiry] = useState({ customer_id: "", product_id: "", form_id: "", notes: "" });
+  const [formData, setFormData] = useState<Record<string, string>>({});
   const [creating, setCreating] = useState(false);
+
+  // Derived: selected form's schema fields
+  const selectedFormFields = useMemo(() => {
+    if (!newEnquiry.form_id) return [];
+    const f = forms.find((f: any) => f.id === newEnquiry.form_id);
+    if (!f?.schema) return [];
+    try {
+      const parsed = JSON.parse(f.schema);
+      if (Array.isArray(parsed)) return parsed.filter((field: any) => field.enabled !== false);
+    } catch {}
+    return [];
+  }, [newEnquiry.form_id, forms]);
 
   useEffect(() => {
     api.get("/admin/products-all?per_page=200").then(r => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/admin/customers?per_page=200").then(r => {
+      const custs = r.data.customers || [];
+      const users = r.data.users || [];
+      const userMap: Record<string, any> = {};
+      users.forEach((u: any) => { userMap[u.id] = u; });
+      const merged = custs.map((c: any) => ({
+        ...c,
+        email: userMap[c.user_id]?.email || "",
+        full_name: userMap[c.user_id]?.full_name || c.company_name || "",
+      }));
+      setCustomers(merged);
+    }).catch(() => {});
+    api.get("/admin/forms").then(r => setForms(r.data.forms || [])).catch(() => {});
   }, []);
 
+  const resetCreate = () => {
+    setNewEnquiry({ customer_id: "", product_id: "", form_id: "", notes: "" });
+    setFormData({});
+  };
+
   const handleCreateEnquiry = async () => {
-    if (!newEnquiry.customer_email.trim()) { toast.error("Customer email is required"); return; }
-    if (!newEnquiry.product_id) { toast.error("Product is required"); return; }
+    if (!newEnquiry.customer_id) { toast.error("Please select a customer"); return; }
+    // Validate required form fields
+    for (const field of selectedFormFields) {
+      if (field.required && !formData[field.key]?.trim()) {
+        toast.error(`"${field.label}" is required`);
+        return;
+      }
+    }
     setCreating(true);
     try {
       const res = await api.post("/admin/enquiries/manual", {
-        customer_email: newEnquiry.customer_email.trim(),
+        customer_id: newEnquiry.customer_id,
         product_id: newEnquiry.product_id || null,
+        form_id: newEnquiry.form_id || null,
+        form_data: Object.keys(formData).length > 0 ? formData : null,
         notes: newEnquiry.notes || null,
       });
       toast.success(`Enquiry ${res.data.order_number} created`);
       setShowCreate(false);
-      setNewEnquiry({ customer_email: "", product_id: "", notes: "" });
+      resetCreate();
       load(1);
     } catch (e: any) {
       toast.error(e?.response?.data?.detail || "Failed to create enquiry");
@@ -213,30 +255,112 @@ export function EnquiriesTab() {
       />
 
       {/* Create Enquiry Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) resetCreate(); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Create Manual Enquiry</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
+
+            {/* Customer select */}
             <div>
-              <RequiredLabel className="text-slate-600">Customer Email</RequiredLabel>
-              <Input className="mt-1" placeholder="customer@example.com" value={newEnquiry.customer_email} onChange={e => setNewEnquiry(p => ({ ...p, customer_email: e.target.value }))} data-testid="enquiry-customer-email" />
+              <RequiredLabel className="text-slate-600">Customer</RequiredLabel>
+              <Select value={newEnquiry.customer_id || "__none__"} onValueChange={v => setNewEnquiry(p => ({ ...p, customer_id: v === "__none__" ? "" : v }))}>
+                <SelectTrigger className="mt-1" data-testid="enquiry-customer-select">
+                  <SelectValue placeholder="Select customer" />
+                </SelectTrigger>
+                <SelectContent position="popper" className="max-h-60 overflow-y-auto">
+                  <SelectItem value="__none__">— Select customer —</SelectItem>
+                  {customers.map((c: any) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.full_name || c.company_name || c.email} {c.email ? `(${c.email})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Product select */}
             <div>
-              <RequiredLabel className="text-slate-600">Product</RequiredLabel>
+              <label className="text-xs font-medium text-slate-600">Product <span className="text-slate-400">(optional)</span></label>
               <Select value={newEnquiry.product_id || "__none__"} onValueChange={v => setNewEnquiry(p => ({ ...p, product_id: v === "__none__" ? "" : v }))}>
-                <SelectTrigger className="mt-1" data-testid="enquiry-product-select"><SelectValue placeholder="Select product" /></SelectTrigger>
-                <SelectContent>
+                <SelectTrigger className="mt-1" data-testid="enquiry-product-select">
+                  <SelectValue placeholder="Select product" />
+                </SelectTrigger>
+                <SelectContent position="popper" className="max-h-60 overflow-y-auto">
                   <SelectItem value="__none__">None</SelectItem>
                   {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Form select */}
             <div>
-              <label className="text-xs font-medium text-slate-600">Notes</label>
-              <textarea className="mt-1 w-full min-h-[80px] text-sm border border-input rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Additional notes or message…" value={newEnquiry.notes} onChange={e => setNewEnquiry(p => ({ ...p, notes: e.target.value }))} data-testid="enquiry-notes" />
+              <label className="text-xs font-medium text-slate-600">Form <span className="text-slate-400">(optional)</span></label>
+              <Select value={newEnquiry.form_id || "__none__"} onValueChange={v => {
+                setNewEnquiry(p => ({ ...p, form_id: v === "__none__" ? "" : v }));
+                setFormData({});
+              }}>
+                <SelectTrigger className="mt-1" data-testid="enquiry-form-select">
+                  <SelectValue placeholder="Select form" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="__none__">None</SelectItem>
+                  {forms.map((f: any) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Dynamic form fields */}
+            {selectedFormFields.length > 0 && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Form Fields</p>
+                {selectedFormFields.map((field: any) => (
+                  <div key={field.key}>
+                    <label className="text-xs font-medium text-slate-600">
+                      {field.label}{field.required && <span className="text-red-500 ml-0.5">*</span>}
+                    </label>
+                    {field.type === "textarea" ? (
+                      <Textarea
+                        className="mt-1 min-h-[70px] text-sm"
+                        placeholder={field.placeholder || ""}
+                        value={formData[field.key] || ""}
+                        onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                        data-testid={`enquiry-form-field-${field.key}`}
+                      />
+                    ) : field.type === "select" && field.options?.length > 0 ? (
+                      <Select value={formData[field.key] || "__none__"} onValueChange={v => setFormData(prev => ({ ...prev, [field.key]: v === "__none__" ? "" : v }))}>
+                        <SelectTrigger className="mt-1" data-testid={`enquiry-form-field-${field.key}`}>
+                          <SelectValue placeholder={field.placeholder || "Select…"} />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          <SelectItem value="__none__">— Select —</SelectItem>
+                          {field.options.map((opt: string) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        className="mt-1 text-sm"
+                        type={field.type === "email" ? "email" : field.type === "tel" ? "tel" : field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+                        placeholder={field.placeholder || ""}
+                        value={formData[field.key] || ""}
+                        onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                        data-testid={`enquiry-form-field-${field.key}`}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Notes */}
+            <div>
+              <label className="text-xs font-medium text-slate-600">Notes <span className="text-slate-400">(optional)</span></label>
+              <Textarea className="mt-1 min-h-[70px] text-sm" placeholder="Additional notes…" value={newEnquiry.notes} onChange={e => setNewEnquiry(p => ({ ...p, notes: e.target.value }))} data-testid="enquiry-notes" />
+            </div>
+
             <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setShowCreate(false); resetCreate(); }}>Cancel</Button>
               <Button onClick={handleCreateEnquiry} disabled={creating} data-testid="enquiry-submit-btn">
                 {creating ? "Creating…" : "Create Enquiry"}
               </Button>

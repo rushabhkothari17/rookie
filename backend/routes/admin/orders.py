@@ -960,8 +960,10 @@ async def delete_enquiry(order_id: str, admin: Dict[str, Any] = Depends(get_tena
 
 
 class ManualEnquiryCreate(BaseModel):
-    customer_email: str
+    customer_id: str
     product_id: Optional[str] = None
+    form_id: Optional[str] = None
+    form_data: Optional[Dict[str, Any]] = None
     notes: Optional[str] = None
 
 
@@ -971,21 +973,35 @@ async def create_manual_enquiry(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
-    # Resolve customer
-    customer = await db.users.find_one({**tf, "email": payload.customer_email.lower().strip()}, {"_id": 0})
+    # Resolve customer by id
+    customer = await db.customers.find_one({**tf, "id": payload.customer_id}, {"_id": 0})
     if not customer:
-        raise HTTPException(status_code=404, detail="Customer not found with that email")
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    # Resolve user for email/name
+    user = await db.users.find_one({"id": customer.get("user_id", "")}, {"_id": 0}) if customer.get("user_id") else None
+
+    customer_email = (user or {}).get("email") or customer.get("email", "")
+    customer_name = (user or {}).get("full_name") or customer.get("company_name", "")
 
     order_id = make_id()
-    # Build order number
     count = await db.orders.count_documents({**tf, "type": "scope_request"})
     order_number = f"ENQ-{(count + 1):04d}"
 
     product_name = None
+    product_names: list = []
     if payload.product_id:
         product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0, "name": 1})
         if product:
             product_name = product.get("name")
+            product_names = [product_name]
+
+    # Build scope_form_data from submitted form values
+    scope_form_data: Dict[str, Any] = {}
+    if payload.form_data:
+        scope_form_data.update(payload.form_data)
+    if payload.notes:
+        scope_form_data["notes"] = payload.notes
 
     doc = {
         "id": order_id,
@@ -993,12 +1009,14 @@ async def create_manual_enquiry(
         "type": "scope_request",
         "pricing_type": "enquiry",
         "customer_id": customer.get("id"),
-        "customer_email": customer.get("email"),
-        "customer_name": customer.get("full_name", ""),
+        "customer_email": customer_email,
+        "customer_name": customer_name,
         "product_id": payload.product_id,
         "product_name": product_name,
-        "status": "enquiry",
-        "scope_form_data": {"notes": payload.notes or ""},
+        "products": product_names,
+        "form_id": payload.form_id,
+        "status": "scope_pending",
+        "scope_form_data": scope_form_data,
         "notes": payload.notes or "",
         "created_at": now_iso(),
         "created_by": admin.get("email"),
@@ -1007,12 +1025,25 @@ async def create_manual_enquiry(
     set_tenant_id(doc, admin)
     await db.orders.insert_one(doc)
     doc.pop("_id", None)
+
+    # Create order items if a product is linked
+    if payload.product_id:
+        await db.order_items.insert_one({
+            "id": make_id(),
+            "order_id": order_id,
+            "product_id": payload.product_id,
+            "quantity": 1,
+            "unit_price": 0,
+            "line_total": 0,
+            "metadata_json": {},
+        })
+
     await create_audit_log(
         entity_type="order",
         entity_id=order_id,
         action="manual_enquiry_created",
         actor=admin.get("email", "admin"),
-        details={"order_number": order_number, "customer_email": payload.customer_email},
+        details={"order_number": order_number, "customer_id": payload.customer_id},
     )
     return {"message": "Enquiry created", "id": order_id, "order_number": order_number}
 

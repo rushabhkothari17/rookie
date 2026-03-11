@@ -153,7 +153,9 @@ export default function Cart() {
       if (p.pricing_type === "scope_request") groups.scope.push(item);
       else if (p.pricing_type === "external_checkout") groups.external.push(item);
       else if (p.pricing_type === "enquiry") groups.inquiry.push(item);
-      else if (item.pricing.subtotal === 0 && !item.inputs?._scope_unlock) groups.rfq.push(item);
+      // Only treat as RFQ if the product type is NOT "internal" — internal products with
+      // price = 0 are legitimately free and should flow through /checkout/free.
+      else if (item.pricing.subtotal === 0 && !item.inputs?._scope_unlock && p.pricing_type !== "internal") groups.rfq.push(item);
       else if (p.is_subscription) groups.subscriptions.push(item);
       else groups.oneTime.push(item);
     });

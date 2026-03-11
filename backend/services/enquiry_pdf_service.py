@@ -130,14 +130,27 @@ def generate_enquiry_pdf(
 
     fd = scope_form_data or {}
     rows: List[tuple] = []
+    # 1. Standard known fields
     for key, label in FIELD_LABELS.items():
         val = fd.get(key)
         if val:
             rows.append((label, str(val)))
+    # 2. Any unknown top-level keys (dynamic form fields stored flat, not in FIELD_LABELS)
+    _skip_keys = set(FIELD_LABELS.keys()) | {"extra_fields", "notes"}
+    for key, val in fd.items():
+        if key in _skip_keys:
+            continue
+        if val and not isinstance(val, dict):
+            label = key.replace("_", " ").title()
+            rows.append((label, str(val)))
+    # 3. Nested extra_fields dict
     for key, val in (fd.get("extra_fields") or {}).items():
         if val:
             label = key.replace("_", " ").title()
             rows.append((label, str(val)))
+    # 4. Append notes last if present
+    if fd.get("notes"):
+        rows.append(("Notes", str(fd["notes"])))
 
     if rows:
         for label, value in rows:
