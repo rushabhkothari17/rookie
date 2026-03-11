@@ -37,7 +37,7 @@ export default function ShowcaseLayout({
     return `${symbol}${amount.toFixed(2)}`;
   };
 
-  const isEnquiry = (isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry") && product?.base_price == null;
+  const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
 
   // Separate pricing questions from info questions
   const { pricingQuestions, infoQuestions } = useMemo(() => {
