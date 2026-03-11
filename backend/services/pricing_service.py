@@ -264,12 +264,23 @@ def calculate_price(
         if nearest:
             subtotal = round_nearest(subtotal, nearest)
 
-    # Price ceiling cap (optional schema-level config) — floor removed, base_price is the minimum
+    # Price ceiling cap (optional schema-level config)
     price_ceiling = float((schema or {}).get("price_ceiling") or 0)
     if price_ceiling > 0 and subtotal > price_ceiling:
         diff = subtotal - price_ceiling
         line_items.append({"label": "Maximum pricing cap applied", "amount": round_cents(-diff)})
         subtotal = price_ceiling
+
+    # Price floor (schema-level config, default 0) — final price must never be negative
+    price_floor_val = (schema or {}).get("price_floor")
+    floor = float(price_floor_val) if price_floor_val is not None else 0.0
+    if subtotal < floor:
+        diff = floor - subtotal
+        line_items.append({"label": "Minimum pricing floor applied", "amount": round_cents(diff)})
+        subtotal = floor
+
+    # Hard safety: price can never be negative
+    subtotal = max(0.0, subtotal)
 
     subtotal = round_cents(subtotal)
     requires_checkout = subtotal > 0
