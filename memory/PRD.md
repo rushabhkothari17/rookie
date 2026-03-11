@@ -5,6 +5,28 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Checkout & Enquiry Bug Fixes ✅
+
+### 4 issues fixed (test iteration_248: 19/19 tests pass):
+
+**1. Zero-price internal checkout (Cart.tsx)**
+- Root cause: The rfq-group condition caught ALL zero-subtotal items, including `pricing_type='internal'` products explicitly priced at $0.
+- Fix: Added `p.pricing_type !== 'internal'` guard so free internal products flow through `/checkout/free` instead of being shown "Contact Us."
+
+**2. Admin manual enquiry creation (EnquiriesTab.tsx + orders.py)**
+- Root cause: Create dialog only had a plain email text input, no customer/form selection.
+- Fix: Dialog now has (a) Customer dropdown (loads `/admin/customers`, merges with users for display), (b) Form dropdown (loads `/admin/forms`), (c) dynamic field rendering from selected form's schema (text/textarea/select inputs), (d) form_data submitted alongside enquiry. Backend `ManualEnquiryCreate` model updated to accept `customer_id`, `form_id`, `form_data`.
+
+**3. Enquiry PDF completeness (enquiry_pdf_service.py)**
+- Root cause: PDF builder only iterated `FIELD_LABELS` keys + nested `extra_fields`. Custom form fields stored flat in `scope_form_data` were omitted.
+- Fix: Added loop over all unknown top-level keys, then `extra_fields` dict, then notes last.
+
+**4. Product dropdown ResizeObserver error (EnquiriesTab.tsx)**
+- Root cause: Radix UI SelectContent with 200 items in default `item-aligned` mode triggers browser ResizeObserver loop.
+- Fix: Added `position="popper"` to all 3 SelectContent elements in the create dialog.
+
+---
+
 ## Latest Updates (Mar 2026) — Full UI/UX Animation Overhaul ✅
 
 ### Installed framer-motion v12.35.0 for spring animations
