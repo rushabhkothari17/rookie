@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 import { ColHeader } from "@/components/shared/ColHeader";
+import { ReminderNotificationSection } from "./SettingsTab";
 
 /** Small reusable button that sends a test renewal reminder for a subscription. */
 function TestReminderButton({ subId, endpoint }: { subId: string; endpoint: "subscriptions" | "partner-subscriptions" }) {
@@ -663,6 +664,11 @@ export function SubscriptionsTab() {
         onClose={() => setShowImport(false)}
         onSuccess={load}
       />
+
+      {/* Default renewal reminder setting for this org */}
+      <div className="mt-8 max-w-lg">
+        <ReminderNotificationSection />
+      </div>
     </div>
   );
 }

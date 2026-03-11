@@ -14,19 +14,21 @@ function OrgAddressSection() {
   const [tenantId, setTenantId] = useState("");
   const [addr, setAddr] = useState({ line1:"", line2:"", city:"", region:"", postal:"", country:"" });
   const [saving, setSaving] = useState(false);
-  const isPlatformAdmin = user?.role && ["platform_admin", "admin"].includes(user.role);
-  if (isPlatformAdmin) return null;
-
   const countries = useCountries();
   const provinces = useProvinces(addr.country);
 
+  const isPlatformAdmin = user?.role && ["platform_admin", "admin"].includes(user.role);
+
   useEffect(() => {
+    if (isPlatformAdmin) return;
     api.get("/admin/tenants/my").then(r => {
       setTenantId(r.data.tenant?.id || "");
       const a = r.data.tenant?.address || {};
       setAddr({ line1: a.line1||"", line2: a.line2||"", city: a.city||"", region: a.region||"", postal: a.postal||"", country: a.country||"" });
     }).catch(() => {});
-  }, []);
+  }, [isPlatformAdmin]);
+
+  if (isPlatformAdmin) return null;
 
   const save = async () => {
     if (!tenantId) return;
@@ -270,7 +272,7 @@ function SystemConfigSection() {
   );
 }
 
-function ReminderNotificationSection() {
+export function ReminderNotificationSection() {
   const [tenantId, setTenantId] = useState("");
   const [reminderDays, setReminderDays] = useState<string>("");
   const [saving, setSaving] = useState(false);
@@ -470,9 +472,6 @@ export function SettingsTab() {
 
       {/* Organization Address (partner admins only) */}
       <OrgAddressSection />
-
-      {/* Subscription Notification Settings */}
-      <ReminderNotificationSection />
 
       {/* System Configuration (DB-backed, categorized) */}
       <div className="border-t border-slate-200 pt-6">
