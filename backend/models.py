@@ -258,7 +258,7 @@ class AdminProductUpdate(BaseModel):
     display_layout: Optional[str] = "standard"
     currency: Optional[str] = None
     enquiry_form_id: Optional[str] = None
-    default_term_months: Optional[int] = None
+    default_term_months: Optional[int] = Field(None, ge=0, le=300)
     billing_type: Optional[str] = None  # "prorata" | "fixed"
     tags: Optional[List[str]] = None
 
@@ -338,7 +338,7 @@ class ManualSubscriptionCreate(BaseModel):
     start_date: Optional[str] = None
     status: str = "active"
     internal_note: Optional[str] = ""
-    term_months: Optional[int] = None  # None/0 = cancel anytime; 1-999 = locked term
+    term_months: Optional[int] = Field(None, ge=0, le=300)  # None/0 = cancel anytime; 1-300 = locked term
     auto_cancel_on_termination: bool = False
     reminder_days: Optional[int] = None  # None = use org default; explicit value overrides
 
@@ -390,7 +390,7 @@ class SubscriptionUpdate(BaseModel):
     payment_method: Optional[str] = None
     processor_id: Optional[str] = None
     new_note: Optional[str] = None
-    term_months: Optional[int] = None  # -1 sentinel to clear term
+    term_months: Optional[int] = Field(None, ge=-1, le=300)  # -1 sentinel to clear term
     auto_cancel_on_termination: Optional[bool] = None
     reminder_days: Optional[int] = None  # -1 sentinel to clear (set to null)
 
@@ -510,7 +510,7 @@ class AdminProductCreate(BaseModel):
     display_layout: Optional[str] = "standard"
     currency: str = "USD"
     enquiry_form_id: Optional[str] = None
-    default_term_months: Optional[int] = None
+    default_term_months: Optional[int] = Field(None, ge=0, le=300)
     billing_type: Optional[str] = "prorata"  # "prorata" | "fixed"
 
 

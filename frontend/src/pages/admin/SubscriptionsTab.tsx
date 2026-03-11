@@ -238,6 +238,12 @@ export function SubscriptionsTab() {
 
   const handleEdit = async () => {
     if (!selectedSub) return;
+    if (selectedSub.term_months !== undefined && selectedSub.term_months !== "" && selectedSub.term_months !== null) {
+      const tv = Number(selectedSub.term_months);
+      if (!Number.isInteger(tv) || tv < 0 || tv > 300) {
+        toast.error("Contract term must be a whole number between 0 and 300"); return;
+      }
+    }
     try {
       await api.put(`/admin/subscriptions/${selectedSub.id}`, {
         renewal_date: selectedSub.renewal_date, start_date: selectedSub.start_date,
@@ -272,6 +278,10 @@ export function SubscriptionsTab() {
     if (!manualSub.amount && manualSub.amount !== 0) { toast.error("Amount is required"); return; }
     if (!manualSub.currency) { toast.error("Currency is required"); return; }
     if (manualSub.term_months === "" || manualSub.term_months == null) { toast.error("Contract term is required"); return; }
+    const termVal = parseInt(String(manualSub.term_months));
+    if (isNaN(termVal) || termVal < 0 || termVal > 300 || String(manualSub.term_months).includes(".")) {
+      toast.error("Contract term must be a whole number between 0 and 300"); return;
+    }
     try {
       const payload = {
         ...manualSub,
@@ -471,7 +481,7 @@ export function SubscriptionsTab() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Contract Term (months)</label>
-                  <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={selectedSub.term_months ?? ""} onChange={e => setSelectedSub({ ...selectedSub, term_months: e.target.value })} data-testid="edit-sub-term-months" />
+                  <Input type="number" min={0} max={300} step={1} placeholder="0 = cancel anytime" value={selectedSub.term_months ?? ""} onChange={e => setSelectedSub({ ...selectedSub, term_months: e.target.value })} data-testid="edit-sub-term-months" />
                 </div>
                 <div className="flex items-center gap-2 pt-5">
                   <input type="checkbox" id="edit_auto_cancel" checked={!!selectedSub.auto_cancel_on_termination} onChange={e => setSelectedSub({ ...selectedSub, auto_cancel_on_termination: e.target.checked })} />
@@ -618,7 +628,7 @@ export function SubscriptionsTab() {
               </div>
               <div className="space-y-1">
                 <RequiredLabel className="text-slate-500 font-normal">Contract Term (months)</RequiredLabel>
-                <Input type="number" min={0} max={999} placeholder="0 = cancel anytime" value={manualSub.term_months as string}
+                <Input type="number" min={0} max={300} step={1} placeholder="0 = cancel anytime" value={manualSub.term_months as string}
                   onChange={e => setManualSub({ ...manualSub, term_months: e.target.value })}
                   data-testid="manual-sub-term-months" />
                 {computeExpiryDate(manualSub.start_date, manualSub.term_months) && (
