@@ -5,6 +5,35 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Enquiry Dialog + Product Detail Fixes ✅
+
+### 6 issues fixed (test iteration_249: 9/10 pass → 10/10 after ClassicLayout/QuickBuyLayout fix):
+
+**1. ResizeObserver + search in dropdowns (EnquiriesTab.tsx)**
+- Replaced all Radix `Select` components in New Enquiry dialog with `Popover + Command` comboboxes
+- Each has `CommandInput` search box at top, filtering items as you type
+- Completely eliminates ResizeObserver loop error
+
+**2. Partner dropdown for platform admins (EnquiriesTab.tsx)**
+- Platform admins (`platform_admin`, `platform_super_admin`) see a Partner combobox as first field
+- Selecting partner reloads customers/products/forms with `X-View-As-Tenant` header
+- Non-platform admins: no partner field shown, tenant auto-applied via JWT
+
+**3. Forms dropdown empty (EnquiriesTab.tsx)**
+- Now shows "No forms configured for this partner yet." when empty
+- Loads from correct partner context (tenant header applied)
+
+**4. Free product shows "Price on request" (ProductDetail.tsx + ClassicLayout.tsx + QuickBuyLayout.tsx)**
+- Root cause: `isRFQ` in ProductDetail used `!product?.base_price` (falsy for 0); ClassicLayout/QuickBuyLayout had own `isEnquiry` override ignoring `base_price=0`
+- Fix: `product?.base_price == null` check throughout; `isEnquiry` now requires `base_price == null`
+
+**5. Category tabs removed from product detail (ProductDetail.tsx + all layouts)**
+- `showCategoryTabs={false}` on AppShell in ProductDetail.tsx
+- Category text labels removed from ApplicationLayout, WizardLayout, ShowcaseLayout, QuickBuyLayout
+- Store grid and Store page category functionality unchanged
+
+---
+
 ## Latest Updates (Mar 2026) — Checkout & Enquiry Bug Fixes ✅
 
 ### 4 issues fixed (test iteration_248: 19/19 tests pass):

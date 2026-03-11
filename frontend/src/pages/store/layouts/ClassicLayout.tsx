@@ -29,9 +29,9 @@ export default function ClassicLayout({
   scopeValidating,
   scopeError,
 }: LayoutProps) {
-  // Determine if product is free (price=0) or enquiry
-  const isFree = !isRFQ && pricing && pricing.total === 0;
-  const isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry";
+  // base_price=0 → free product, never show "Price on request" even if pricing_type="enquiry"
+  const isEnquiry = (isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry") && product?.base_price == null;
+  const isFree = !isEnquiry && pricing && pricing.total === 0;
   
   // Build CTA config
   const ctaConfig = (() => {

@@ -31,8 +31,8 @@ export default function QuickBuyLayout({
   };
 
   const hasQuestions = visibleIntakeQuestions.length > 0;
-  const isFree = !isRFQ && pricing && pricing.total === 0;
-  const isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry";
+  const isEnquiry = (isRFQ || pricing?.is_enquiry || product.pricing_type === "enquiry") && product?.base_price == null;
+  const isFree = !isEnquiry && pricing && pricing.total === 0;
 
   // CTA label — update when scope unlocked
   const ctaLabel = scopeUnlock
