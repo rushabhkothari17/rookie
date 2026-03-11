@@ -10,7 +10,6 @@ import {
   FileText, 
   Star, 
   ArrowRight,
-  Sparkles
 } from "lucide-react";
 import type { LayoutProps } from "./types";
 import { QuestionLabel, renderIntakeField, ScopeIdBlock } from "./utils";
@@ -64,12 +63,6 @@ export default function ShowcaseLayout({
         </div>
         
         <div className="relative z-10 p-8 lg:p-12">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles size={16} className="text-yellow-400" />
-            <span className="text-xs font-medium text-yellow-400 uppercase tracking-wider">
-              {product.category}
-            </span>
-          </div>
           
           <h1 className="text-3xl lg:text-5xl font-bold text-white mb-4">
             {product.name}

@@ -308,9 +308,11 @@ export default function ProductDetail() {
     } finally { setSubmittingScope(false); }
   };
 
-  // isRFQ: product shows "price on request" when pricing returns 0 with no base price
+  // isRFQ: product shows "price on request" only when price is genuinely unknown
+  // base_price=0 means explicitly free — NOT RFQ; base_price=null/undefined = unknown price
   const isRFQ = !pricing?.is_enquiry && pricing !== null &&
-    (pricing?.total === 0 || (!product?.base_price && !pricing?.total));
+    product?.base_price == null &&
+    (pricing?.total === 0 || !pricing?.total);
 
   const handleSubmitQuote = async () => {
     // Validate required fields (if schema-driven)
@@ -426,7 +428,7 @@ export default function ProductDetail() {
   const layoutType = product.display_layout || "standard";
 
   return (
-    <AppShell activeCategory={categoryLabel}>
+    <AppShell activeCategory={categoryLabel} showCategoryTabs={false}>
       <div className="space-y-8" data-testid="product-detail">
         <button
           onClick={() => navigate(-1)}

@@ -71,9 +71,6 @@ export default function WizardLayout({
     <div className="max-w-3xl mx-auto" data-testid="wizard-layout">
       {/* Compact Header */}
       <div className="mb-6">
-        <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
-          {product.category}
-        </p>
         <h1 className="text-2xl font-bold text-slate-900">{product.name}</h1>
         {product.tagline && (
           <p className="text-slate-500 mt-1">{product.tagline}</p>

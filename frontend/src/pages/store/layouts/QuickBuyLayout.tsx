@@ -45,9 +45,6 @@ export default function QuickBuyLayout({
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white mb-6">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
-              {product.category}
-            </p>
             <h1 className="text-2xl font-bold">{product.name}</h1>
           </div>
           {isSubscription && (

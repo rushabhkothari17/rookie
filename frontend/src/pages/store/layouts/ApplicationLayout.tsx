@@ -64,9 +64,6 @@ export default function ApplicationLayout({
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           {/* Product header in sidebar */}
           <div className="p-5 border-b border-slate-100 bg-slate-50">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
-              {product.category}
-            </p>
             <h2 className="font-semibold text-slate-900">{product.name}</h2>
             {isSubscription && (
               <span className="inline-flex items-center gap-1 mt-2 text-xs text-blue-600">

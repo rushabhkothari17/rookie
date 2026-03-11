@@ -6,8 +6,11 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, Download, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
@@ -39,7 +42,7 @@ const statusBadge = (s: string) => {
 
 export function EnquiriesTab() {
   const { user: authUser } = useAuth();
-  const isPlatformAdmin = authUser?.role === "platform_admin";
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
 
   const [enquiries, setEnquiries] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -160,9 +163,14 @@ export function EnquiriesTab() {
   const [products, setProducts] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [forms, setForms] = useState<any[]>([]);
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [selectedTenantId, setSelectedTenantId] = useState("");
   const [newEnquiry, setNewEnquiry] = useState({ customer_id: "", product_id: "", form_id: "", notes: "" });
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [creating, setCreating] = useState(false);
+  const [customerComboOpen, setCustomerComboOpen] = useState(false);
+  const [productComboOpen, setProductComboOpen] = useState(false);
+  const [partnerComboOpen, setPartnerComboOpen] = useState(false);
 
   // Derived: selected form's schema fields
   const selectedFormFields = useMemo(() => {
@@ -176,9 +184,10 @@ export function EnquiriesTab() {
     return [];
   }, [newEnquiry.form_id, forms]);
 
-  useEffect(() => {
-    api.get("/admin/products-all?per_page=200").then(r => setProducts(r.data.products || [])).catch(() => {});
-    api.get("/admin/customers?per_page=200").then(r => {
+  const loadDropdownData = useCallback((tenantId?: string) => {
+    const cfg = tenantId ? { headers: { "X-View-As-Tenant": tenantId } } : {};
+    api.get("/admin/products-all?per_page=200", cfg).then(r => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/admin/customers?per_page=200", cfg).then(r => {
       const custs = r.data.customers || [];
       const users = r.data.users || [];
       const userMap: Record<string, any> = {};
@@ -190,17 +199,25 @@ export function EnquiriesTab() {
       }));
       setCustomers(merged);
     }).catch(() => {});
-    api.get("/admin/forms").then(r => setForms(r.data.forms || [])).catch(() => {});
+    api.get("/admin/forms", cfg).then(r => setForms(r.data.forms || [])).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadDropdownData();
+    if (isPlatformAdmin) {
+      api.get("/admin/tenants").then(r => setTenants(r.data.tenants || [])).catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const resetCreate = () => {
     setNewEnquiry({ customer_id: "", product_id: "", form_id: "", notes: "" });
     setFormData({});
+    if (isPlatformAdmin) { setSelectedTenantId(""); setCustomers([]); setProducts([]); setForms([]); }
   };
 
   const handleCreateEnquiry = async () => {
     if (!newEnquiry.customer_id) { toast.error("Please select a customer"); return; }
-    // Validate required form fields
     for (const field of selectedFormFields) {
       if (field.required && !formData[field.key]?.trim()) {
         toast.error(`"${field.label}" is required`);
@@ -209,13 +226,14 @@ export function EnquiriesTab() {
     }
     setCreating(true);
     try {
+      const cfg = (isPlatformAdmin && selectedTenantId) ? { headers: { "X-View-As-Tenant": selectedTenantId } } : {};
       const res = await api.post("/admin/enquiries/manual", {
         customer_id: newEnquiry.customer_id,
         product_id: newEnquiry.product_id || null,
         form_id: newEnquiry.form_id || null,
         form_data: Object.keys(formData).length > 0 ? formData : null,
         notes: newEnquiry.notes || null,
-      });
+      }, cfg);
       toast.success(`Enquiry ${res.data.order_number} created`);
       setShowCreate(false);
       resetCreate();
@@ -260,36 +278,117 @@ export function EnquiriesTab() {
           <DialogHeader><DialogTitle>Create Manual Enquiry</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
 
-            {/* Customer select */}
+            {/* Partner select — platform admins only */}
+            {isPlatformAdmin && (
+              <div>
+                <RequiredLabel className="text-slate-600">Partner</RequiredLabel>
+                <Popover open={partnerComboOpen} onOpenChange={setPartnerComboOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-partner-select">
+                      {selectedTenantId
+                        ? (tenants.find(t => t.id === selectedTenantId)?.name || selectedTenantId)
+                        : <span className="text-slate-400">Select partner...</span>}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0 z-[200]" style={{ width: "var(--radix-popover-trigger-width)" }} align="start">
+                    <Command>
+                      <CommandInput placeholder="Search partners..." />
+                      <CommandList className="max-h-48">
+                        <CommandEmpty>No partner found.</CommandEmpty>
+                        <CommandGroup>
+                          {tenants.map((t: any) => (
+                            <CommandItem key={t.id} value={t.name || t.id} onSelect={() => {
+                              const tid = t.id;
+                              setSelectedTenantId(tid);
+                              setNewEnquiry(p => ({ ...p, customer_id: "", product_id: "", form_id: "" }));
+                              setFormData({});
+                              loadDropdownData(tid);
+                              setPartnerComboOpen(false);
+                            }}>
+                              <Check className={cn("mr-2 h-4 w-4", selectedTenantId === t.id ? "opacity-100" : "opacity-0")} />
+                              {t.name || t.id}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {/* Customer combobox with search */}
             <div>
               <RequiredLabel className="text-slate-600">Customer</RequiredLabel>
-              <Select value={newEnquiry.customer_id || "__none__"} onValueChange={v => setNewEnquiry(p => ({ ...p, customer_id: v === "__none__" ? "" : v }))}>
-                <SelectTrigger className="mt-1" data-testid="enquiry-customer-select">
-                  <SelectValue placeholder="Select customer" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="max-h-60 overflow-y-auto">
-                  <SelectItem value="__none__">— Select customer —</SelectItem>
-                  {customers.map((c: any) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.full_name || c.company_name || c.email} {c.email ? `(${c.email})` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={customerComboOpen} onOpenChange={setCustomerComboOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-customer-select" disabled={isPlatformAdmin && !selectedTenantId}>
+                    {newEnquiry.customer_id
+                      ? (() => { const c = customers.find(x => x.id === newEnquiry.customer_id); return c ? `${c.full_name || c.company_name}${c.email ? ` (${c.email})` : ""}` : "Select customer"; })()
+                      : <span className="text-slate-400">{isPlatformAdmin && !selectedTenantId ? "Select partner first" : "Select customer..."}</span>}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 z-[200]" style={{ width: "var(--radix-popover-trigger-width)" }} align="start">
+                  <Command>
+                    <CommandInput placeholder="Search by name or email..." />
+                    <CommandList className="max-h-52">
+                      <CommandEmpty>No customer found.</CommandEmpty>
+                      <CommandGroup>
+                        {customers.map((c: any) => (
+                          <CommandItem key={c.id} value={`${c.full_name} ${c.email} ${c.company_name}`} onSelect={() => {
+                            setNewEnquiry(p => ({ ...p, customer_id: c.id }));
+                            setCustomerComboOpen(false);
+                          }}>
+                            <Check className={cn("mr-2 h-4 w-4", newEnquiry.customer_id === c.id ? "opacity-100" : "opacity-0")} />
+                            <span>{c.full_name || c.company_name}</span>
+                            {c.email && <span className="text-slate-400 text-xs ml-1.5">({c.email})</span>}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
-            {/* Product select */}
+            {/* Product combobox with search */}
             <div>
               <label className="text-xs font-medium text-slate-600">Product <span className="text-slate-400">(optional)</span></label>
-              <Select value={newEnquiry.product_id || "__none__"} onValueChange={v => setNewEnquiry(p => ({ ...p, product_id: v === "__none__" ? "" : v }))}>
-                <SelectTrigger className="mt-1" data-testid="enquiry-product-select">
-                  <SelectValue placeholder="Select product" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="max-h-60 overflow-y-auto">
-                  <SelectItem value="__none__">None</SelectItem>
-                  {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Popover open={productComboOpen} onOpenChange={setProductComboOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-product-select" disabled={isPlatformAdmin && !selectedTenantId}>
+                    {newEnquiry.product_id
+                      ? (products.find(p => p.id === newEnquiry.product_id)?.name || "Select product")
+                      : <span className="text-slate-400">None (optional)</span>}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 z-[200]" style={{ width: "var(--radix-popover-trigger-width)" }} align="start">
+                  <Command>
+                    <CommandInput placeholder="Search products..." />
+                    <CommandList className="max-h-52">
+                      <CommandEmpty>No product found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem value="__none__" onSelect={() => { setNewEnquiry(p => ({ ...p, product_id: "" })); setProductComboOpen(false); }}>
+                          <Check className={cn("mr-2 h-4 w-4", !newEnquiry.product_id ? "opacity-100" : "opacity-0")} />
+                          None
+                        </CommandItem>
+                        {products.map((prod: any) => (
+                          <CommandItem key={prod.id} value={prod.name} onSelect={() => {
+                            setNewEnquiry(p => ({ ...p, product_id: prod.id }));
+                            setProductComboOpen(false);
+                          }}>
+                            <Check className={cn("mr-2 h-4 w-4", newEnquiry.product_id === prod.id ? "opacity-100" : "opacity-0")} />
+                            {prod.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Form select */}
@@ -307,9 +406,10 @@ export function EnquiriesTab() {
                   {forms.map((f: any) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {forms.length === 0 && <p className="text-xs text-slate-400 mt-1">No forms configured for this partner yet.</p>}
             </div>
 
-            {/* Dynamic form fields */}
+            {/* Dynamic form fields from selected form's schema */}
             {selectedFormFields.length > 0 && (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Form Fields</p>

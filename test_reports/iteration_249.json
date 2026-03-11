@@ -1,0 +1,75 @@
+{
+  "summary": "Frontend testing of 6 fixes: Combobox dropdowns, Partner dropdown, ResizeObserver fix, Forms 'no configured' message, category tabs removal, and base_price=0 isRFQ fix. 9/10 features pass, 1 partial failure (free product price display).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "ProductDetail (ClassicLayout + QuickBuyLayout)",
+        "issue": "Product with base_price=0 still shows 'Price on request' instead of currency+$0. Root cause: ClassicLayout.tsx and QuickBuyLayout.tsx compute their own `isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === 'enquiry'`, which always evaluates to true for pricing_type='enquiry' products regardless of base_price. The fix in ProductDetail.tsx correctly sets isRFQ=false for base_price=0, but both ClassicLayout (via StickyPurchaseSummary isRFQ={isEnquiry}) and QuickBuyLayout (via its own isEnquiry variable) override this. ApplicationLayout, WizardLayout, and ShowcaseLayout use the isRFQ prop directly and would work correctly. StickyPurchaseSummary correctly shows both 'Price on request' AND 'Free - no payment required' indicator (contradictory UI). Only enquiry products with base_price=0 exist in DB: prod_dev_enterprise, prod_fixed_scope_dev.",
+        "selector": "[data-testid='sticky-purchase-summary'] [data-testid='summary-total']",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Product detail - Ongoing Zoho Development (prod_dev_enterprise)",
+        "issues": [
+          "Contradictory UI: Shows both 'Price on request' (in pricing header) AND 'Free - no payment required' (green banner below) simultaneously. The isFree=true is correctly computed but isEnquiry=true in ClassicLayout overrides main price display."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Fix ClassicLayout.tsx: Change `const isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === 'enquiry'` to also check `product?.base_price == null` so products with base_price=0 are treated as free (not RFQ) even if pricing_type=enquiry. Example: `const isEnquiry = (isRFQ || pricing?.is_enquiry || product.pricing_type === 'enquiry') && product?.base_price == null`",
+    "Fix QuickBuyLayout.tsx: Same fix as ClassicLayout - the local `const isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === 'enquiry'` needs to check base_price==null before treating product as enquiry/RFQ"
+  ],
+  "critical_code_review_comments": [
+    "PASS: EnquiriesTab.tsx - Partner/Customer/Product all use Popover+Command (combobox) with CommandInput search boxes - confirmed by code and UI testing",
+    "PASS: EnquiriesTab.tsx - isPlatformAdmin guard for Partner dropdown working (role=platform_super_admin)",
+    "PASS: EnquiriesTab.tsx - Customer disabled when no partner selected (isPlatformAdmin && !selectedTenantId)",
+    "PASS: EnquiriesTab.tsx - Forms 'No forms configured for this partner yet.' message displayed correctly",
+    "PASS: Zero ResizeObserver errors - Popover+Command completely eliminates the error",
+    "PASS: AppShell.tsx showCategoryTabs={false} on ProductDetail correctly removes CategoryTabs wrapper",
+    "PARTIAL FAIL: ProductDetail.tsx isRFQ fix (line 313-315) is correct BUT ClassicLayout.tsx and QuickBuyLayout.tsx have their own isEnquiry override that ignores the fix for pricing_type=enquiry products. Only ApplicationLayout, WizardLayout, ShowcaseLayout use the isRFQ prop directly and work correctly.",
+    "PASS: Store grid product cards still show category labels (ZOHO EXPRESS SETUP, AUDIT & OPTIMIZE, etc.)"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - Frontend only testing",
+    "frontend": "90% - 9/10 features pass; 1 partial fail (base_price=0 price display in ClassicLayout/QuickBuyLayout)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@automateaccounts.local",
+    "admin_password": "ChangeMe123!",
+    "partner_code": "automate-accounts"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 249 verifications: (1) All combobox fields in Create Enquiry dialog work correctly - Partner/Customer/Product use Popover+Command with search. (2) Zero ResizeObserver errors confirmed. (3) Forms 'No forms configured' message visible. (4) CategoryTabs correctly hidden on product detail pages. (5) Store grid category labels still visible. (6) PARTIAL FAIL: Products with base_price=0 (prod_dev_enterprise, prod_fixed_scope_dev, both pricing_type=enquiry) show 'Price on request' in ClassicLayout instead of $0. ClassicLayout.tsx line 34 and QuickBuyLayout.tsx line 35 have local isEnquiry variable that overrides the ProductDetail.tsx fix. Admin credentials unchanged. Customer 'Address Test User (test_bugfix242_customer@example.com)' exists under testpartner242.",
+  "rca_of_issue": {
+    "issue": "base_price=0 product shows 'Price on request' instead of '$0'",
+    "root_cause": "ClassicLayout.tsx line 34: `const isEnquiry = isRFQ || pricing?.is_enquiry || product.pricing_type === 'enquiry'` evaluates to TRUE for any pricing_type=enquiry product, regardless of base_price. This isEnquiry value is passed as isRFQ to StickyPurchaseSummary which then renders 'Price on request'. The fix in ProductDetail.tsx correctly sets isRFQ=false when base_price=0, but ClassicLayout overrides it. Same issue in QuickBuyLayout.tsx line 35.",
+    "affected_files": ["ClassicLayout.tsx", "QuickBuyLayout.tsx"],
+    "mitigation": "Update ClassicLayout and QuickBuyLayout: `const isEnquiry = (isRFQ || pricing?.is_enquiry || product.pricing_type === 'enquiry') && (product?.base_price == null);` - this ensures base_price=0 is treated as free, not RFQ"
+  },
+  "test_results_detail": {
+    "T1_partner_combobox_visible": "PASS - Partner dropdown is a Popover+Command combobox (button role=combobox, not native select), visible only for platform_super_admin",
+    "T2_partner_has_search": "PASS - Partner popover shows 'Search partners...' CommandInput, found 2 tenant options: Automate Accounts, Test Partner Org",
+    "T3_customer_disabled_no_partner": "PASS - Customer combobox disabled with 'Select partner first' text when no partner selected",
+    "T4_customer_enabled_after_partner": "PASS - Customer combobox enabled after selecting partner (Automate Accounts)",
+    "T5_customer_search_input": "PASS - Customer popover shows 'Search by name or email...' CommandInput",
+    "T6_product_combobox": "PASS - Product dropdown is Popover+Command with 'Search products...' input, lists products from selected partner",
+    "T7_forms_no_configured_msg": "PASS - 'No forms configured for this partner yet.' message visible below form select",
+    "T8_no_resize_observer_errors": "PASS - ZERO ResizeObserver errors across all combobox interactions (partner, customer, product)",
+    "T9_no_category_tabs_product_detail": "PASS - Category tabs wrapper NOT present on product detail page (showCategoryTabs=false confirmed)",
+    "T10_store_category_labels_visible": "PASS - Product cards in store grid show category labels (ZOHO EXPRESS SETUP, AUDIT & OPTIMIZE, etc.)",
+    "T11_free_product_price_display": "FAIL - prod_dev_enterprise (base_price=0, pricing_type=enquiry) shows 'Price on request' instead of '$0.00'. ClassicLayout.tsx overrides isRFQ via its own isEnquiry calculation. Note: 'Free - no payment required' indicator IS shown (isFree=true working), but main price display still wrong.",
+    "T12_no_inline_category_product_detail": "PASS - No category class elements found in product detail content; CategoryTabs component not rendered (ClassicLayout still shows category in ProductHero, which was not in fix scope for the 4 layouts)"
+  }
+}
