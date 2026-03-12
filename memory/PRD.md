@@ -738,3 +738,28 @@ Added validation (toast.error + early return) to:
 - One-time boosts reset on renewal cycle
 - isPlatformAdmin includes platform_super_admin role (Admin.tsx fix)
 - 41/41 backend tests passing, all frontend features verified
+
+### Admin Panel Batch Fix (March 2026) — 11 Issues
+**Status**: COMPLETED | **Tests**: 17/17 backend, 11/11 frontend
+
+#### Filters Tab (Issues 1–5)
+- Added `plan_name` filter type (dropdown in UI + backend validation)
+- Category filter blocked if no categories exist (disables Save with warning)
+- Filter Name limited to 100 chars (maxLength + backend Pydantic validator)
+- Duplicate filter name prevention (409 on create/update, client-side guard)
+- Fixed tag filter n-1 bug — pending input flushed before saving
+
+#### Resources Tab (Issues 9–11)
+- View button URL fixed — uses `window.location.origin` (no more regex transform)
+- Fixed `is_admin_user` check in resources.py to include `platform_super_admin`
+- Send Email dialog overflow fixed — `flex flex-col h-[90vh]` with scrollable body
+- Bullet point/list CSS added for Tiptap editor in index.css
+
+#### User Presets (Issues 6–8)
+- Dynamic `UserPreset` MongoDB collection + CRUD endpoints (`/api/admin/presets`)
+- PresetsSubTab redesigned: Built-in (system) + Custom presets with Create/Edit/Delete
+- Presets are tenant-specific (`tenant_id` scoped)
+- `/api/admin/permissions/modules` merges system + custom presets with `is_system` flag
+
+#### Technical
+- Fixed validation_exception_handler for Pydantic ValueError (was causing 500 errors)
