@@ -166,12 +166,15 @@ export default function TopNav() {
                   {user?.email}
                 </div>
               </div>
-              <DropdownMenuItem asChild data-testid="nav-user-profile" className="rounded-lg cursor-pointer">
-                <Link to="/profile">
-                  <User size={13} className="mr-2 text-slate-400" />
-                  My Profile
-                </Link>
-              </DropdownMenuItem>
+              {/* My Profile — only shown to customers, not to any admin role */}
+              {!user?.is_admin && user?.role === "customer" && (
+                <DropdownMenuItem asChild data-testid="nav-user-profile" className="rounded-lg cursor-pointer">
+                  <Link to="/profile">
+                    <User size={13} className="mr-2 text-slate-400" />
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 className="text-red-500 rounded-lg cursor-pointer focus:text-red-600 focus:bg-red-50"
                 onClick={logout}

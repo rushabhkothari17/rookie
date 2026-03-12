@@ -119,7 +119,7 @@ export default function Login() {
       const branding = await applyPartnerBranding(code.trim().toLowerCase());
       localStorage.setItem("aa_partner_code", code.trim().toLowerCase());
       setPartnerInfo({
-        name: tenant.name,
+        name: branding.store_name || tenant.name,
         code: tenant.code,
         logo_url: branding.logo_url,
         primary_color: branding.primary_color,

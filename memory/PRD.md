@@ -116,6 +116,9 @@ Build a white-label service commerce platform with:
 - Fixed Admin customers list MongoDB projection to include `job_title` and `phone`
 - Added `noValidate` to Profile form so address-required fields don't block other field saves
 - Fixed `Signup.tsx` to pass `partnerCode` to CustomerSignupFields for correct country/province lists
+- Fixed Admin "Add Customer" dialog to use `ws.signup_form_schema` (same source as signup page) — no more separate API fetch
+- Hidden "My Profile" from all admin roles (platform_admin, platform_super_admin, partner_admin, partner_super_admin) — only `role === "customer"` users see it
+- Fixed login page org name: now reads `branding.store_name` (from `app_settings`) instead of `tenant.name` so it refreshes when org name is saved in settings
 
 ## Prioritized Backlog
 
