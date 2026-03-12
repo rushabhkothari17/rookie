@@ -597,6 +597,17 @@ class EmailService:
             {"tenant_id": effective_tid, "provider": "zoho_mail", "is_validated": True},
             {"_id": 0}
         )
+
+        # If the tenant has no email provider, fall back to the platform's connection
+        if not resend_conn and not zoho_mail_conn and tenant_id and tenant_id != _PLATFORM_TENANT:
+            resend_conn = await db.oauth_connections.find_one(
+                {"tenant_id": _PLATFORM_TENANT, "provider": "resend", "is_validated": True},
+                {"_id": 0}
+            )
+            zoho_mail_conn = await db.oauth_connections.find_one(
+                {"tenant_id": _PLATFORM_TENANT, "provider": "zoho_mail", "is_validated": True},
+                {"_id": 0}
+            )
         
         # Try Resend first if connected
         if resend_conn:
