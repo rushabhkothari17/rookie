@@ -196,6 +196,13 @@ async def update_tenant(tenant_id: str, payload: TenantUpdate, admin: Dict[str, 
         updates["default_reminder_days"] = payload.default_reminder_days if payload.default_reminder_days > 0 else None
 
     await db.tenants.update_one({"id": tenant_id}, {"$set": updates})
+    # When name changes, also sync app_settings.store_name so Organization Info stays in sync
+    if payload.name is not None:
+        await db.app_settings.update_one(
+            {"tenant_id": tenant_id},
+            {"$set": {"store_name": payload.name, "updated_at": now_iso()}},
+            upsert=True,
+        )
     updated = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
     await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(updates.keys())})
     return {"tenant": updated}

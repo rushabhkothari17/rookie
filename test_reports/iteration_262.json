@@ -1,0 +1,68 @@
+{
+  "summary": "Tested two bugs: Bug 1 (platform admin tenant name update syncs app_settings.store_name) and Bug 2 (partner admin single save updates TopNav). Backend Bug 1 is FIXED (10/10 backend tests pass). Frontend Bug 1 is FIXED (TenantsTab shows updated store_name and partner Organization Info reflects platform admin's name change). Frontend Bug 2 is NOT FIXED — TopNav still shows stale 'website_settings.store_name' (\"Rookie\") instead of the saved value after ONE save from Organization Info.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "TopNav / WebsiteContext",
+        "issue": "BUG 2 NOT FIXED: After partner admin saves Store Name in Organization Info, TopNav shows stale 'website_settings.store_name' value ('Rookie') instead of the newly saved value ('BugFixTest 4935'). The refreshWebsite() call in save() re-fetches /website-settings which returns website_settings.store_name (stale override) instead of app_settings.store_name (newly saved). Before save: 'Rookie', New name: 'BugFixTest 4935', After ONE save: 'Test Partner Corp' (reverted to website_settings.store_name via refreshWebsite()).",
+        "selector": "[data-testid='nav-logo']",
+        "priority": "HIGH"
+      },
+      {
+        "component": "TopNav - initial page load",
+        "issue": "TopNav shows 'Rookie' (stale website_settings.store_name) on initial load even though app_settings.store_name = 'PlatformEdit Test 5218'. This is a persistent inconsistency — not just after save. The website_settings collection has a stale store_name field that always overrides app_settings.store_name in the /website-settings merge endpoint.",
+        "selector": "[data-testid='nav-logo']",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Organization Info Save -> TopNav update",
+        "issue": "refreshWebsite() in WebsiteTab.tsx save() defeats the updateWebsite() call. After save(): (1) updateWebsite({store_name: 'BugFixTest 4935'}) updates context immediately, (2) refreshWebsite() fetches /website-settings which returns 'Test Partner Corp' from website_settings.store_name override, reverting the TopNav. Result: TopNav never shows the newly saved value.",
+        "affected_selectors": ["[data-testid='nav-logo']", "[data-testid='ws-store-name']", "[data-testid='org-info-save-btn']"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter262_name_sync_bugs.py",
+    "/app/test_reports/pytest/pytest_iter262_name_sync_bugs.xml"
+  ],
+  "action_items": [
+    "Fix Bug 2: The /website-settings endpoint merge (website.py) overrides app_settings.store_name with a stale website_settings.store_name ('Rookie' for test-partner-corp). Fix options: (A) QUICKEST: In website.py GET /website-settings, exclude 'store_name' from the website_settings override dict so app_settings.store_name is always the authoritative source. Change line: **{k: v for k, v in web_s.items() if v is not None and k not in ('_id', 'tenant_id')} to **{k: v for k, v in web_s.items() if v is not None and k not in ('_id', 'tenant_id', 'store_name')}. (B) ALTERNATIVE: In PUT /admin/settings backend handler, also upsert website_settings.store_name = new_value so both collections stay in sync. (C) ALTERNATIVE FRONTEND: Remove refreshWebsite() from save() in WebsiteTab.tsx since updateWebsite() already provides correct immediate context update and refreshWebsite() is reverting to stale backend value.",
+    "Also consider: when platform admin updates tenant name via PUT /api/admin/tenants/{id}, the backend fix only updates app_settings.store_name but NOT website_settings.store_name. So even after Bug 1 is 'fixed', the TopNav still shows stale website_settings.store_name."
+  ],
+  "critical_code_review_comments": [
+    "Root cause: website_settings collection contains a stale 'store_name' field from an older code version that wrote store_name to both app_settings AND website_settings. Current code only writes to app_settings via PUT /admin/settings, but the GET /website-settings merge still uses website_settings.store_name as an override (line ~317 in website.py). This causes persistent inconsistency between TopNav (from website-settings) and Organization Info input (from admin/settings).",
+    "refreshWebsite() in WebsiteTab.tsx save() is counterproductive - it fetches back the stale website_settings.store_name and reverts the updateWebsite() local state update. Either remove it or fix the backend merge to not let website_settings.store_name override app_settings.store_name.",
+    "The edit dialog title in TenantsTab shows tenant.name (e.g., 'StatusTest Name 4290') while the card displays store_name (e.g., 'BugFixTest 4935') — minor inconsistency but not breaking."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter262_name_sync_bugs.py"
+  ],
+  "success_rate": {
+    "backend": "100% (10/10 tests pass)",
+    "frontend": "50% (Bug 1 fixed, Bug 2 still present)"
+  },
+  "seed_data_creation": "Backend tests renamed test-partner-corp tenant multiple times. Final tenant.name = 'PlatformEdit Test 5218', app_settings.store_name = 'PlatformEdit Test 5218'. website_settings.store_name = 'Rookie' (stale, never changed by tests).",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Bug 1 (platform admin tenant name syncs app_settings.store_name) is FIXED and verified both backend and frontend. Bug 2 (partner admin single save updates TopNav) is NOT FIXED - the root cause is stale website_settings.store_name ('Rookie') overriding app_settings.store_name in /website-settings endpoint. Current test-partner-corp state: tenant.name='PlatformEdit Test 5218', app_settings.store_name='PlatformEdit Test 5218', website_settings.store_name='Rookie' (stale override). Credentials: platform admin=admin@automateaccounts.local/ChangeMe123! (code: automate-accounts), partner admin=alice@testpartner.com/TestPass123! (code: test-partner-corp). Key data-testids: [data-testid='ws-store-name'] (store name input), [data-testid='org-info-save-btn'] (save button), [data-testid='nav-logo'] (TopNav store name).",
+  "rca_of_issue": {
+    "bug": "Bug 2 - TopNav not updating after single save",
+    "root_cause": "website_settings collection for test-partner-corp has a stale 'store_name' field set to 'Rookie' (from old code that wrote to both app_settings AND website_settings). The GET /website-settings merge endpoint at line ~317 in website.py applies website_settings fields as overrides AFTER setting store_name from app_settings. Since website_settings.store_name='Rookie' is not None, it always overrides app_settings.store_name. The refreshWebsite() call in save() fetches this merged result and sets context.store_name='Rookie', reverting the updateWebsite({store_name: newValue}) call made just before it.",
+    "reproduction_steps": [
+      "1. Login as alice@testpartner.com (partner code: test-partner-corp)",
+      "2. Navigate to Admin > Organization Info",
+      "3. Note TopNav shows 'Rookie' while Store Name input shows 'PlatformEdit Test 5218'",
+      "4. Change Store Name to 'TestValue123' and click Save Changes ONCE",
+      "5. Observe: Toast shows 'Settings saved' but TopNav shows 'Test Partner Corp' (not 'TestValue123')",
+      "6. The TopNav briefly shows 'TestValue123' (from updateWebsite) then reverts to 'Test Partner Corp' (from refreshWebsite fetching stale website_settings.store_name)"
+    ],
+    "mitigation": "In website.py GET /website-settings endpoint, exclude 'store_name' from website_settings override dict so app_settings.store_name is always used. Or remove refreshWebsite() from WebsiteTab.tsx save() function."
+  }
+}

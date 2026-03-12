@@ -10,11 +10,18 @@ export function usePartnerCode(): string {
 
 // ─── Website Settings Updater Context ─────────────────────────────────────
 type WebsiteUpdater = (partial: Partial<WebsiteSettings>) => void;
+type WebsiteRefresher = () => Promise<void>;
 const WebsiteSetterContext = createContext<WebsiteUpdater>(() => {});
+const WebsiteRefreshContext = createContext<WebsiteRefresher>(async () => {});
 
 /** Merge new values into WebsiteContext state (call after admin saves settings) */
 export function useWebsiteUpdate(): WebsiteUpdater {
   return useContext(WebsiteSetterContext);
+}
+
+/** Re-fetch website settings from API and update context (reliable sync after save) */
+export function useWebsiteRefresh(): WebsiteRefresher {
+  return useContext(WebsiteRefreshContext);
 }
 
 export interface WebsiteSettings {
@@ -418,6 +425,18 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
     setSettings(prev => ({ ...prev, ...partial }));
   }, []);
 
+  const refreshWebsite = useCallback(async () => {
+    const url = partnerCode
+      ? `/website-settings?partner_code=${encodeURIComponent(partnerCode)}`
+      : "/website-settings";
+    try {
+      const res = await api.get(url);
+      const s = res.data.settings || {};
+      setSettings(prev => ({ ...prev, ...s }));
+      _applyBrandingToDOM(s);
+    } catch {}
+  }, [partnerCode]);
+
   useEffect(() => {
     const url = partnerCode
       ? `/website-settings?partner_code=${encodeURIComponent(partnerCode)}`
@@ -446,7 +465,9 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
     <PartnerCodeContext.Provider value={partnerCode}>
       <WebsiteContext.Provider value={settings}>
         <WebsiteSetterContext.Provider value={updateWebsiteSettings}>
-          {children}
+          <WebsiteRefreshContext.Provider value={refreshWebsite}>
+            {children}
+          </WebsiteRefreshContext.Provider>
         </WebsiteSetterContext.Provider>
       </WebsiteContext.Provider>
     </PartnerCodeContext.Provider>
