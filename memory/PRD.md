@@ -5,6 +5,16 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Zoho WorkDrive Integration Fixes ✅
+
+**1. Platform super admin can now upload documents** — `documents.py`: `platform_super_admin` role was missing from `is_admin` check in all three document endpoints (list, upload, download). Added it to all three. For uploads, platform admins now correctly derive `tenant_id` from the customer record (not their own JWT which has `null` for `tenant_id`).
+
+**2. Customer file upload 405 error fixed** — `workdrive_service.py`: The upload endpoint was using `POST /workdrive/api/v1/files/{folder_id}/files` (a list-files endpoint) which returns 405. Changed to use the correct Zoho WorkDrive upload API: `POST {workdrive_domain}/api/v1/upload` with multipart form fields `content` (file) and `parent_id` (folder ID). Added `DATACENTER_UPLOAD_DOMAINS` mapping for all 6 datacenters (US/EU/AU/IN/JP/CA).
+
+**3. Download also fixed for platform admins** — `documents.py`: Platform admins can now download documents across all tenants. Uses the document's own `tenant_id` to resolve the correct WorkDrive credentials, rather than the admin's JWT tenant.
+
+---
+
 ## Latest Updates (Mar 2026) — 7 Backend Hardening Fixes ✅
 
 **1. Fix 500 on invalid checkout session** — `checkout.py`: `get_checkout_status` wrapped in try-except; returns 404 `{detail: "Session not found"}` for any invalid/missing Stripe session.
