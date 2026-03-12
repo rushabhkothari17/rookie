@@ -72,7 +72,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
   const ph = (label: string, required: boolean) => required ? `${label} *` : label;
 
   return (
-    <div className={cn("space-y-3", className)} data-testid={`address-field-${field.key}`}>
+    <div className={cn("flex flex-col gap-4", className)} data-testid={`address-field-${field.key}`}>
       {/* Section header */}
       {!compact ? (
         <div className="flex items-center gap-3 py-1">
