@@ -221,7 +221,7 @@ function TemplateEditor({ template, onSave, onClose }: {
 
 export default function EmailSection() {
   const { user: authUser } = useAuth();
-  const isPlatformAdmin = authUser?.role === "platform_admin";
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
@@ -365,6 +365,47 @@ export default function EmailSection() {
                   <div className="flex items-center gap-2 shrink-0">
                     <button onClick={() => setEditingTemplate(tmpl)}
                       className="text-xs text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded transition-colors"
+                      data-testid={`edit-template-${tmpl.trigger}`}>
+                      Edit
+                    </button>
+                    <button role="switch" aria-checked={tmpl.is_enabled} onClick={() => toggleTemplate(tmpl)}
+                      data-testid={`toggle-template-${tmpl.trigger}`}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full border-2 border-transparent transition-colors ${tmpl.is_enabled ? "bg-emerald-500" : "bg-slate-200"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${tmpl.is_enabled ? "translate-x-4" : "translate-x-0"}`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Platform Admin Only Templates (e.g. partner_verification) — Platform Admin Only */}
+      {isPlatformAdmin && templates.filter(t => t.category === "platform_admin_only").length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-slate-700 mb-1">Platform Admin Templates</h3>
+          <p className="text-xs text-slate-400 mb-3">Emails sent by the platform for partner onboarding and system events. Visible only to platform admins.</p>
+          <div className="space-y-2">
+            {templates.filter(t => t.category === "platform_admin_only").map(tmpl => (
+              <div key={tmpl.id} className={`rounded-xl border p-4 transition-colors ${tmpl.is_enabled ? "border-violet-200 bg-violet-50/30" : "border-slate-100 bg-slate-50"}`}>
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-2 rounded-lg bg-violet-100">
+                    <Mail size={14} className="text-violet-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-medium text-sm ${tmpl.is_enabled ? "text-slate-800" : "text-slate-400"}`}>{tmpl.label}</span>
+                      <span className="text-[10px] font-mono text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded">{tmpl.trigger}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">{tmpl.description}</p>
+                    {tmpl.is_enabled && (
+                      <p className="text-[11px] text-slate-500 mt-1 font-mono">Subject: {tmpl.subject}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => setEditingTemplate(tmpl)}
+                      className="text-xs text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100 px-2.5 py-1 rounded transition-colors"
                       data-testid={`edit-template-${tmpl.trigger}`}>
                       Edit
                     </button>
