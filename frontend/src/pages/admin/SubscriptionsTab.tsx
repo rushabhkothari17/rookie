@@ -136,7 +136,8 @@ export function SubscriptionsTab() {
   const [saving, setSaving] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const today = new Date().toISOString().slice(0, 10);
-  const [manualSub, setManualSub] = useState({
+
+  const EMPTY_MANUAL_SUB = {
     customer_email: "", product_id: "", quantity: 1, amount: 0, currency: "GBP",
     start_date: today,
     billing_interval: "monthly",
@@ -145,7 +146,9 @@ export function SubscriptionsTab() {
     term_months: "" as string | number,
     auto_cancel_on_termination: false,
     reminder_days: "" as string | number,
-  });
+  };
+
+  const [manualSub, setManualSub] = useState({ ...EMPTY_MANUAL_SUB });
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const [confirmRenewId, setConfirmRenewId] = useState<string | null>(null);
 
@@ -160,7 +163,9 @@ export function SubscriptionsTab() {
   const custUserMap: Record<string, any> = {};
   custUsers.forEach(u => { custUserMap[u.id] = u; });
   const filteredCusts = customers.filter(c => {
+    if (c.deleted_at) return false;
     const u = custUserMap[c.user_id];
+    if (!u || u.is_active === false) return false;
     const q = custSearch.toLowerCase();
     return !q || u?.email?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q);
   }).slice(0, 10);
@@ -224,7 +229,11 @@ export function SubscriptionsTab() {
       if (r.data.payment_methods) setPaymentMethods(r.data.payment_methods);
     }).catch(() => {});
     load(1);
-    api.get("/admin/products-all?per_page=500").then(r => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/admin/products-all?per_page=500").then(r => {
+      // Only show active, non-deleted subscription products
+      const allProds = r.data.products || [];
+      setProducts(allProds.filter((p: any) => !p.deleted_at && p.is_active !== false && p.pricing_type === "subscription"));
+    }).catch(() => {});
     api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
   }, [emailFilter, statusFilter, paymentFilter, subNumberFilter, processorIdFilter, planFilter, currencyFilter, amountRange, taxRange, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
 
@@ -241,10 +250,27 @@ export function SubscriptionsTab() {
 
   const handleEdit = async () => {
     if (!selectedSub) return;
+    // Fix 3: no negative amounts
+    if (selectedSub.amount < 0) { toast.error("Amount cannot be negative"); return; }
     if (selectedSub.term_months !== undefined && selectedSub.term_months !== "" && selectedSub.term_months !== null) {
       const tv = Number(selectedSub.term_months);
       if (!Number.isInteger(tv) || tv < 0 || tv > 300) {
         toast.error("Contract term must be a whole number between 0 and 300"); return;
+      }
+    }
+    // Fix 8: renewal date must be after start date
+    if (selectedSub.renewal_date && selectedSub.start_date && selectedSub.renewal_date <= selectedSub.start_date) {
+      toast.error("Renewal Date must be later than the Start Date"); return;
+    }
+    // Fix 7: contract end must be after start date
+    if (selectedSub.contract_end_date && selectedSub.start_date && selectedSub.contract_end_date <= selectedSub.start_date) {
+      toast.error("Contract End date must be later than the Start Date"); return;
+    }
+    // Fix 5: reminder days must be a positive integer if set
+    if (selectedSub.reminder_days !== undefined && selectedSub.reminder_days !== "" && selectedSub.reminder_days !== null) {
+      const rdVal = Number(selectedSub.reminder_days);
+      if (!Number.isInteger(rdVal) || rdVal < 1) {
+        toast.error("Renewal Reminder must be a positive whole number (no decimals or negatives)"); return;
       }
     }
     setSaving(true);
@@ -277,15 +303,42 @@ export function SubscriptionsTab() {
 
   const handleCreateManual = async () => {
     if (!manualSub.customer_email.trim()) { toast.error("Customer email is required"); return; }
+    // Fix 9: validate customer email is active and not deleted
+    const activeUserIds = new Set(
+      customers.filter((c: any) => !c.deleted_at).map((c: any) => c.user_id)
+    );
+    const matchedUser = custUsers.find((u: any) =>
+      activeUserIds.has(u.id) && u.email?.toLowerCase() === manualSub.customer_email.trim().toLowerCase() && u.is_active !== false
+    );
+    if (!matchedUser) { toast.error("Customer email not found or the customer is inactive/deleted"); return; }
     if (!manualSub.product_id) { toast.error("Product is required"); return; }
     if (!manualSub.start_date) { toast.error("Start date is required"); return; }
+    // Fix 4: no past start dates
+    if (manualSub.start_date < today) { toast.error("Start date cannot be in the past"); return; }
     if (!manualSub.billing_interval) { toast.error("Billing interval is required"); return; }
-    if (!manualSub.amount && manualSub.amount !== 0) { toast.error("Amount is required"); return; }
+    // Fix 3: no negative amounts
+    if (manualSub.amount < 0) { toast.error("Amount cannot be negative"); return; }
     if (!manualSub.currency) { toast.error("Currency is required"); return; }
     if (manualSub.term_months === "" || manualSub.term_months == null) { toast.error("Contract term is required"); return; }
     const termVal = parseInt(String(manualSub.term_months));
     if (isNaN(termVal) || termVal < 0 || termVal > 300 || String(manualSub.term_months).includes(".")) {
       toast.error("Contract term must be a whole number between 0 and 300"); return;
+    }
+    // Fix 8: renewal date must be after start date
+    if (manualSub.renewal_date && manualSub.renewal_date <= manualSub.start_date) {
+      toast.error("Renewal Date must be later than the Start Date"); return;
+    }
+    // Fix 7: contract end must be after start date (if provided)
+    const contractEnd = computeExpiryDate(manualSub.start_date, manualSub.term_months);
+    if (contractEnd && contractEnd <= manualSub.start_date) {
+      toast.error("Contract End date must be later than the Start Date"); return;
+    }
+    // Fix 5: reminder days must be a positive integer
+    if (manualSub.reminder_days !== "" && manualSub.reminder_days != null) {
+      const rdVal = Number(manualSub.reminder_days);
+      if (!Number.isInteger(rdVal) || rdVal < 1) {
+        toast.error("Renewal Reminder must be a positive whole number"); return;
+      }
     }
     try {
       setCreating(true);
@@ -297,6 +350,7 @@ export function SubscriptionsTab() {
       await api.post("/admin/subscriptions/manual", payload);
       toast.success("Subscription created");
       setShowManualDialog(false);
+      setManualSub({ ...EMPTY_MANUAL_SUB, start_date: new Date().toISOString().slice(0, 10), renewal_date: computeNextBillingDate(new Date().toISOString().slice(0, 10), "monthly") });
       load(1);
     }
     catch (e: any) { toast.error(e.response?.data?.detail || "Failed"); }
@@ -330,7 +384,11 @@ export function SubscriptionsTab() {
           <>
             <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-subs-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>
             <Button size="sm" variant="outline" onClick={() => setShowImport(true)} data-testid="admin-subs-import-csv"><Upload size={14} className="mr-1" />Import CSV</Button>
-            <Button size="sm" onClick={() => setShowManualDialog(true)} data-testid="admin-create-sub-btn">Create Manual</Button>
+            <Button size="sm" onClick={() => {
+              const freshToday = new Date().toISOString().slice(0, 10);
+              setManualSub({ ...EMPTY_MANUAL_SUB, start_date: freshToday, renewal_date: computeNextBillingDate(freshToday, "monthly") });
+              setShowManualDialog(true);
+            }} data-testid="admin-create-sub-btn">Create Manual</Button>
           </>
         }
       />
@@ -401,7 +459,7 @@ export function SubscriptionsTab() {
                 <TableCell>
                   <div className="flex gap-1 flex-nowrap">
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/subscriptions/${sub.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-subs-logs-${sub.id}`}>Logs</Button>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSubNotes(sub.notes || []); setSubNotesJson(sub.notes_json || null); setShowNotesDialog(true); }}>Notes</Button>
+                    <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setSubNotes(sub.notes || []); setSubNotesJson(sub.notes_json || null); setShowNotesDialog(true); }} data-testid={`admin-sub-notes-${sub.id}`}>Notes</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedSub(sub); setShowEditDialog(true); }} data-testid={`admin-sub-edit-${sub.id}`}>Edit</Button>
                     <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmRenewId(sub.id)}>Renew</Button>
                     {sub.status === "active" && <Button variant="destructive" size="sm" className="h-6 px-2 text-[11px]" onClick={() => setConfirmCancelId(sub.id)}>Cancel</Button>}
@@ -445,11 +503,14 @@ export function SubscriptionsTab() {
                 ))}
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Amount ($)</label>
-                  <Input type="number" step="0.01" value={selectedSub.amount ?? ""} onChange={e => setSelectedSub({ ...selectedSub, amount: parseFloat(e.target.value) || 0 })} />
+                  <Input type="number" min={0} step="0.01" value={selectedSub.amount ?? ""} onChange={e => setSelectedSub({ ...selectedSub, amount: parseFloat(e.target.value) || 0 })} />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Plan Name</label>
-                  <Input value={selectedSub.plan_name || ""} onChange={e => setSelectedSub({ ...selectedSub, plan_name: e.target.value })} />
+                  <div className="h-9 flex items-center px-3 bg-slate-50 border border-slate-200 rounded text-sm text-slate-700 select-none" data-testid="edit-sub-plan-name-readonly">
+                    {selectedSub.plan_name || "—"}
+                  </div>
+                  <p className="text-[10px] text-slate-400">Plan name is managed via the Products module</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -506,7 +567,7 @@ export function SubscriptionsTab() {
                     </span>
                   </span>
                 </div>
-                <Input type="number" min={1} max={365} placeholder="blank = no reminders" value={selectedSub.reminder_days ?? ""} onChange={e => setSelectedSub({ ...selectedSub, reminder_days: e.target.value })} data-testid="edit-sub-reminder-days" />
+                <Input type="number" min={1} max={365} step={1} placeholder="blank = no reminders" value={selectedSub.reminder_days ?? ""} onChange={e => setSelectedSub({ ...selectedSub, reminder_days: e.target.value })} data-testid="edit-sub-reminder-days" />
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleEdit} disabled={saving} className="flex-1" data-testid="admin-sub-edit-save">{saving ? "Saving…" : "Save Changes"}</Button>
@@ -556,8 +617,20 @@ export function SubscriptionsTab() {
       <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
         <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Subscription Notes</DialogTitle></DialogHeader>
           <div className="space-y-3 max-h-80 overflow-y-auto">
-            {subNotesJson && <div><p className="text-xs font-medium text-slate-600 mb-1">Intake Data</p><pre className="text-xs bg-slate-50 rounded p-2 overflow-x-auto">{JSON.stringify(subNotesJson, null, 2)}</pre></div>}
-            {subNotes.map((n: any, i: number) => <div key={i} className="text-xs bg-slate-50 rounded p-2">{n}</div>)}
+            {subNotesJson && (
+              <div>
+                <p className="text-xs font-medium text-slate-600 mb-1">Intake Data</p>
+                <pre className="text-xs bg-slate-50 rounded p-2 overflow-x-auto">{JSON.stringify(subNotesJson, null, 2)}</pre>
+              </div>
+            )}
+            {subNotes.length === 0 && !subNotesJson && (
+              <p className="text-xs text-slate-400 italic">No notes for this subscription.</p>
+            )}
+            {subNotes.map((n: any, i: number) => (
+              <div key={i} className="text-xs bg-slate-50 rounded p-2 whitespace-pre-wrap break-words">
+                {typeof n === "string" ? n : typeof n === "object" ? JSON.stringify(n, null, 2) : String(n)}
+              </div>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
@@ -567,23 +640,23 @@ export function SubscriptionsTab() {
         <DialogContent><DialogHeader><DialogTitle>Create Manual Subscription</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <RequiredLabel className="text-slate-500 font-normal">Customer Email</RequiredLabel>
-              <input
-                list="manual-sub-customers"
-                placeholder="customer@example.com"
-                value={manualSub.customer_email}
-                onChange={e => setManualSub({ ...manualSub, customer_email: e.target.value })}
-                className="w-full h-9 text-sm border border-slate-200 rounded px-3 bg-white"
+              <RequiredLabel className="text-slate-500 font-normal">Customer</RequiredLabel>
+              <SearchableSelect
+                value={manualSub.customer_email || undefined}
+                onValueChange={v => setManualSub({ ...manualSub, customer_email: v })}
+                options={(() => {
+                  const activeUserIds = new Set(customers.filter((c: any) => !c.deleted_at).map((c: any) => c.user_id));
+                  return custUsers
+                    .filter((u: any) => activeUserIds.has(u.id) && u.is_active !== false && u.email)
+                    .map((u: any) => ({
+                      value: u.email,
+                      label: u.full_name ? `${u.full_name} (${u.email})` : u.email,
+                    }));
+                })()}
+                placeholder="Select customer…"
+                searchPlaceholder="Search by email or name…"
                 data-testid="manual-sub-customer-email"
               />
-              <datalist id="manual-sub-customers">
-                {(() => {
-                  const activeUserIds = new Set(customers.filter((c: any) => !c.deleted_at).map((c: any) => c.user_id));
-                  return custUsers.filter((u: any) => activeUserIds.has(u.id)).map((u: any) => (
-                    <option key={u.id} value={u.email}>{u.full_name ? `${u.full_name} (${u.email})` : u.email}</option>
-                  ));
-                })()}
-              </datalist>
             </div>
             <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Product</RequiredLabel>
               <SearchableSelect
@@ -601,7 +674,7 @@ export function SubscriptionsTab() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <RequiredLabel className="text-slate-500 font-normal">Start Date</RequiredLabel>
-                <Input type="date" value={manualSub.start_date}
+                <Input type="date" value={manualSub.start_date} min={today}
                   onChange={e => setManualSub({ ...manualSub, start_date: e.target.value, renewal_date: computeNextBillingDate(e.target.value, manualSub.billing_interval) })}
                   data-testid="manual-sub-start-date" />
               </div>
@@ -616,7 +689,7 @@ export function SubscriptionsTab() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Amount</RequiredLabel><Input type="number" step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} /></div>
+              <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Amount</RequiredLabel><Input type="number" min={0} step="0.01" value={manualSub.amount} onChange={e => setManualSub({ ...manualSub, amount: parseFloat(e.target.value) || 0 })} data-testid="manual-sub-amount" /></div>
               <div className="space-y-1">
                 <RequiredLabel className="text-slate-500 font-normal">Currency</RequiredLabel>
                 <Select value={manualSub.currency} onValueChange={v => setManualSub({ ...manualSub, currency: v })}>
@@ -656,7 +729,7 @@ export function SubscriptionsTab() {
                     </span>
                   </span>
                 </div>
-                <Input type="number" min={1} max={365} placeholder="blank = no reminders" value={manualSub.reminder_days as string} onChange={e => setManualSub({ ...manualSub, reminder_days: e.target.value })} data-testid="manual-sub-reminder-days" />
+                <Input type="number" min={1} max={365} step={1} placeholder="blank = no reminders" value={manualSub.reminder_days as string} onChange={e => setManualSub({ ...manualSub, reminder_days: e.target.value })} data-testid="manual-sub-reminder-days" />
               </div>
             </div>
             <Button onClick={handleCreateManual} disabled={creating} className="w-full">

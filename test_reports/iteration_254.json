@@ -1,0 +1,73 @@
+{
+  "summary": "Tested all 11 Admin Subscriptions tab fixes. All 11 fixes verified PASS via UI automation + code review. Created test customer (testsub@validation.com) and subscription product (Test Sub Product) to enable end-to-end validation testing.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "fix_results": {
+    "Fix 1+9 - CustomerSearchableSelect": {
+      "status": "PASS",
+      "details": "Customer field uses SearchableSelect component (button tag, no datalist elements in DOM). Options filtered to active/non-deleted customers only. Verified via data-testid='manual-sub-customer-email' element check: tag=button, datalist_count=0."
+    },
+    "Fix 2 - ProductSearchableSelect": {
+      "status": "PASS",
+      "details": "Product field uses SearchableSelect component (button tag). Options filtered by !deleted_at && is_active !== false && pricing_type === 'subscription'. Verified via data-testid='manual-sub-product-select' element check: tag=button."
+    },
+    "Fix 3 - NegativeAmountValidation": {
+      "status": "PASS",
+      "details": "Amount input has min=0, step=0.01 (Create dialog). Verified 'Amount cannot be negative' toast error in Edit dialog via JS state override. Code review confirms same validation in handleCreateManual. Both dialogs have the validation."
+    },
+    "Fix 4 - StartDateMinToday": {
+      "status": "PASS",
+      "details": "Start Date input has min=2026-03-12 (today's date). Verified via data-testid='manual-sub-start-date' min attribute check."
+    },
+    "Fix 5 - ReminderDaysStep1": {
+      "status": "PASS",
+      "details": "Renewal Reminder input has step=1, min=1 (Create dialog). Verified 'Renewal Reminder must be a positive whole number (no decimals or negatives)' toast error in Edit dialog with value 1.5. Code review confirms same validation in both dialogs."
+    },
+    "Fix 6 - FreshStateOnReopen": {
+      "status": "PASS",
+      "details": "Opening Create dialog after close resets to EMPTY_MANUAL_SUB state. Verified: amount=0, customer='Select customer...' after close+reopen. Button onClick sets fresh state with freshToday dates."
+    },
+    "Fix 7 - ContractEndDateValidation": {
+      "status": "PASS",
+      "details": "Setting contract end date (2026-03-11) before start date (2026-03-12) in Edit dialog shows 'Contract End date must be later than the Start Date' toast error. Both Create and Edit dialogs have this validation in code."
+    },
+    "Fix 8 - RenewalDateValidation": {
+      "status": "PASS",
+      "details": "Setting renewal date = start date (2026-03-12) in Edit dialog shows 'Renewal Date must be later than the Start Date' toast error. Code review confirms same validation exists in handleCreateManual for Create dialog."
+    },
+    "Fix 10 - PlanNameReadonly": {
+      "status": "PASS",
+      "details": "Edit dialog Plan Name field is a readonly <div> (data-testid='edit-sub-plan-name-readonly'), not an input. Shows 'Plan name is managed via the Products module' hint text. Verified via tag=div check and hint text visibility."
+    },
+    "Fix 11 - NotesButtonDialog": {
+      "status": "PASS",
+      "details": "Notes button has type='button' and stopPropagation. Clicking Notes button opens a Dialog with title 'Subscription Notes' (URL unchanged - no navigation). Shows 'No notes for this subscription.' when empty. Verified via Notes dialog visible check."
+    }
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_254.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Fix 7 in Create dialog: The contract end date validation (computeExpiryDate) is checked against start_date but since term_months > 0 always adds positive months, this validation can only trigger for same-day edge case (e.g. start=today, 1 month term would give next month - always valid). This is fine by design.",
+    "Hydration warning in console: 'In HTML, <tr> cannot be a child of <span>' - this is a non-critical React hydration warning in PartnerSubscriptionsTab that should be investigated and fixed to prevent potential rendering issues.",
+    "Fix 3 in Create dialog: The HTML min=0 attribute on number inputs prevents negative values from even being entered/submitted via browser, making the JS validation a redundant belt-and-suspenders check. This is the correct approach."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (11/11 fixes verified)"
+  },
+  "seed_data_creation": "Created test customer testsub@validation.com (user_id: 3be864a1-7fbb-4711-bbb4-f8209e3c3365, customer_id: e34ed109-96ce-4692-8a8c-143235c8faf5) and subscription product 'Test Sub Product' (id: 55e23a3c-88c7-4076-a866-c4cbf1a0418a, pricing_type=subscription) in automate-accounts tenant. Also one test subscription was created during testing (SUB-674168F3).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 11 Subscriptions tab fixes are working. Admin login: no partner code needed for API login (POST /api/auth/login with email+password only). In UI, use partner code 'automate-accounts' then admin credentials. Subscriptions tab is index 11 in the tab list (button.aa-tab-trigger). Test data created: customer testsub@validation.com, product Test Sub Product (subscription type). One test subscription exists (SUB-674168F3). The platform_super_admin (admin@automateaccounts.local) cannot create customer-role users via admin API - use POST /api/admin/customers/create endpoint instead.",
+  "rca_of_issue": "N/A - All fixes verified working as expected."
+}
