@@ -649,6 +649,7 @@ async def validate_connection(
                         return (last_resp or None), dc_config["api_domain"]
 
                     # Test API access based on provider
+                    _from_email_error = None
                     if provider == "zoho_mail":
                         # Try each DC's mail_api — use matching accounts_url to get a valid token
                         all_mail_dcs = [(dc_config["accounts_url"], dc_config["mail_api"])] + [
@@ -687,41 +688,54 @@ async def validate_connection(
                                 accounts = r.json().get("data", [])
                                 if accounts:
                                     auto_account_id = str(accounts[0].get("accountId", ""))
+                                    primary_email = ""
+                                    for ea in accounts[0].get("emailAddress", []):
+                                        if ea.get("isPrimary") or not ea.get("isAlias"):
+                                            primary_email = ea.get("mailId", "")
+                                            break
+
                                     if auto_account_id:
                                         await db.oauth_connections.update_one(
                                             {"tenant_id": tid, "provider": "zoho_mail"},
                                             {"$set": {"credentials.account_id": auto_account_id}}
                                         )
 
-                                    # Validate from_email if already configured in settings
+                                    # Validate from_email via a test send — the only reliable way
+                                    # since Zoho Mail has no API to enumerate valid sender addresses.
                                     conn_settings = await db.oauth_connections.find_one(
                                         {"tenant_id": tid, "provider": "zoho_mail"},
                                         {"_id": 0, "settings": 1}
                                     )
                                     from_email = (conn_settings or {}).get("settings", {}).get("from_email", "").strip()
-                                    if from_email:
-                                        valid_emails = {
-                                            ea.get("mailId", "").lower()
-                                            for acc in accounts
-                                            for ea in acc.get("emailAddress", [])
-                                            if ea.get("mailId")
+                                    if from_email and auto_account_id and primary_email:
+                                        import json as _json
+                                        test_payload = {
+                                            "fromAddress": from_email,
+                                            "toAddress": primary_email,
+                                            "subject": "[Automate Accounts] From address validation",
+                                            "content": "This is an automated validation test to confirm the configured From address is valid. You can ignore this email.",
                                         }
-                                        # Note: only warn if not in account aliases.
-                                        # Custom "From Addresses" in Zoho Mail are valid senders
-                                        # but don't appear in the /accounts emailAddress list.
-                                        if from_email.lower() not in valid_emails:
-                                            import logging as _logging
-                                            _logging.getLogger("oauth").info(
-                                                "from_email '%s' not in account aliases — may be a custom From Address.",
-                                                from_email
-                                            )
+                                        send_r = await client.post(
+                                            f"{mail_api}/api/accounts/{auto_account_id}/messages",
+                                            headers={"Authorization": f"Zoho-oauthtoken {mail_token}", "Content-Type": "application/json"},
+                                            content=_json.dumps(test_payload),
+                                        )
+                                        if send_r.status_code not in (200, 201):
+                                            try:
+                                                send_err = send_r.json()
+                                                zoho_err = send_err.get("data", {}).get("moreInfo") or send_err.get("status", {}).get("description", "")
+                                            except Exception:
+                                                zoho_err = f"HTTP {send_r.status_code}"
+                                            _from_email_error = f"'From' email '{from_email}' was rejected by Zoho Mail: {zoho_err}"
                                 break
                     elif provider == "zoho_crm":
                         test_resp, _ = await _zoho_api_get("/crm/v3/Leads?per_page=1&fields=id")
                     else:  # zoho_books
                         test_resp, _ = await _zoho_api_get("/books/v3/organizations")
 
-                    if test_resp.status_code == 200:
+                    if _from_email_error:
+                        result = {"success": False, "message": _from_email_error}
+                    elif test_resp.status_code == 200:
                         result = {"success": True, "message": f"{config['name']} connection validated successfully"}
                     else:
                         # Expose the actual Zoho error for easier debugging
