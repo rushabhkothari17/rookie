@@ -703,9 +703,13 @@ async def create_scope_request_with_form(
 
 @router.get("/orders")
 async def get_orders(user: Dict[str, Any] = Depends(get_current_user)):
+    # Admin users don't have a customer record — return empty list
+    # (admins should use /api/admin/orders for tenant-level order access)
+    if user.get("is_admin"):
+        return {"orders": [], "items": []}
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     if not customer:
-        raise HTTPException(status_code=404, detail="Customer not found")
+        return {"orders": [], "items": []}
     orders = await db.orders.find({"customer_id": customer["id"]}, {"_id": 0}).to_list(500)
     order_ids = [o["id"] for o in orders]
     items = await db.order_items.find({"order_id": {"$in": order_ids}}, {"_id": 0}).to_list(1000)
@@ -744,9 +748,12 @@ async def get_order(order_id: str, user: Dict[str, Any] = Depends(get_current_us
 
 @router.get("/subscriptions")
 async def get_subscriptions(user: Dict[str, Any] = Depends(get_current_user)):
+    # Admin users don't have a customer record — return empty list
+    if user.get("is_admin"):
+        return {"subscriptions": []}
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     if not customer:
-        raise HTTPException(status_code=404, detail="Customer not found")
+        return {"subscriptions": []}
     subs = await db.subscriptions.find({"customer_id": customer["id"]}, {"_id": 0}).to_list(200)
     return {"subscriptions": subs}
 

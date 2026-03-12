@@ -280,17 +280,17 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
     # Lockout check
     await _check_lockout(user)
 
+    # Admin accounts must use partner login — check before password to surface clear guidance
+    if user.get("is_admin") or user.get("role") in ("partner_super_admin", "partner_admin", "partner_staff"):
+        raise HTTPException(status_code=403, detail="Admin accounts must use /api/auth/partner-login")
+
     if not pwd_context.verify(payload.password, user.get("password_hash", "")):
         await _check_and_record_failed_login(user["id"])
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.get("is_verified"):
-        raise HTTPException(status_code=403, detail="Email verification required")
+        raise HTTPException(status_code=403, detail="Email not verified")
     if not user.get("is_active", True):
         raise HTTPException(status_code=403, detail="Account is inactive. Contact your administrator.")
-
-    # Customers must not be admin users
-    if user.get("is_admin") or user.get("role") in ("partner_super_admin", "partner_admin", "partner_staff"):
-        raise HTTPException(status_code=403, detail="Please use Partner Login for admin accounts")
 
     await _reset_failed_login(user["id"])
     token = create_access_token({
@@ -1148,7 +1148,10 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         raise HTTPException(status_code=400, detail="Email must be 50 characters or fewer")
 
     # Field length limits
-    if len(payload.full_name or "") > 50:
+    full_name = payload.get_full_name()
+    if not full_name.strip():
+        raise HTTPException(status_code=400, detail="Name is required (provide full_name or first_name/last_name)")
+    if len(full_name) > 50:
         raise HTTPException(status_code=400, detail="Full name must be 50 characters or fewer")
     if len(payload.company_name or "") > 50:
         raise HTTPException(status_code=400, detail="Company name must be 50 characters or fewer")
@@ -1196,7 +1199,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
             {"id": existing["id"]},
             {"$set": {
                 "password_hash": hashed,
-                "full_name": payload.full_name,
+                "full_name": full_name,
                 "job_title": payload.job_title,
                 "company_name": payload.company_name,
                 "phone": payload.phone,
@@ -1214,12 +1217,11 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
                 **({"profile_meta": payload.profile_meta} if payload.profile_meta else {}),
             }},
         )
-        from services.email_service import EmailService
         email_result = await EmailService.send(
             trigger="verification",
             recipient=payload.email.lower(),
             variables={
-                "customer_name": payload.full_name,
+                "customer_name": full_name,
                 "customer_email": payload.email.lower(),
                 "verification_code": verification_code,
             },
@@ -1241,7 +1243,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         "id": user_id,
         "email": payload.email.lower(),
         "password_hash": hashed,
-        "full_name": payload.full_name,
+        "full_name": full_name,
         "job_title": payload.job_title,
         "company_name": payload.company_name,
         "phone": payload.phone,
@@ -1270,7 +1272,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         trigger="verification",
         recipient=payload.email.lower(),
         variables={
-            "customer_name": payload.full_name,
+            "customer_name": full_name,
             "customer_email": payload.email.lower(),
             "verification_code": verification_code,
         },
@@ -1365,11 +1367,35 @@ async def resend_verification_email(payload: ResendVerificationRequest):
 
 @router.post("/auth/verify-email")
 async def verify_email(payload: VerifyEmailRequest):
-    # Scope by tenant when partner_code is provided — prevents cross-tenant ambiguity
-    query: Dict[str, Any] = {"email": payload.email.lower()}
-    if payload.partner_code:
+    # Support token-based verification (single JWT string)
+    if payload.token and not payload.email and not payload.code:
         try:
-            tenant = await resolve_tenant(payload.partner_code)
+            from core.security import decode_token
+            claims = decode_token(payload.token)
+            email_from_token = claims.get("email")
+            code_from_token = claims.get("code")
+            if not email_from_token or not code_from_token:
+                raise HTTPException(status_code=400, detail="Invalid or expired verification token")
+            # Reconstruct payload-like data
+            resolve_email = email_from_token
+            resolve_code = code_from_token
+            resolve_partner_code = claims.get("partner_code")
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid or expired verification token")
+    elif payload.email and payload.code:
+        resolve_email = payload.email
+        resolve_code = payload.code
+        resolve_partner_code = payload.partner_code
+    else:
+        raise HTTPException(status_code=400, detail="Provide either 'token' or both 'email' and 'code'")
+
+    # Scope by tenant when partner_code is provided — prevents cross-tenant ambiguity
+    query: Dict[str, Any] = {"email": resolve_email.lower()}
+    if resolve_partner_code:
+        try:
+            tenant = await resolve_tenant(resolve_partner_code)
             query["tenant_id"] = tenant["id"]
         except Exception:
             pass  # Invalid code — fall back to unscoped lookup
@@ -1392,7 +1418,7 @@ async def verify_email(payload: VerifyEmailRequest):
         except (ValueError, TypeError):
             pass  # Invalid date format, continue
     
-    if user.get("verification_code") != payload.code:
+    if user.get("verification_code") != resolve_code:
         # Increment attempt counter
         new_attempts = verification_attempts + 1
         update = {"$set": {"verification_attempts": new_attempts}}

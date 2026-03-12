@@ -17,13 +17,21 @@ class AddressInput(BaseModel):
 class RegisterRequest(BaseModel):
     email: str
     password: str
-    full_name: str
+    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     company_name: str = ""
     job_title: str = ""
     phone: str = ""
     address: AddressInput
     profile_meta: Optional[Dict[str, Any]] = None
     partner_code: Optional[str] = None
+
+    def get_full_name(self) -> str:
+        if self.full_name:
+            return self.full_name
+        parts = [p for p in [self.first_name, self.last_name] if p]
+        return " ".join(parts) if parts else ""
 
 
 class LoginRequest(BaseModel):
@@ -73,9 +81,10 @@ class CreatePartnerAdminRequest(BaseModel):
 
 
 class VerifyEmailRequest(BaseModel):
-    email: str
-    code: str
+    email: Optional[str] = None
+    code: Optional[str] = None
     partner_code: Optional[str] = None
+    token: Optional[str] = None  # JWT verification token (alternative to email+code)
 
 
 class ResendVerificationRequest(BaseModel):
@@ -100,7 +109,7 @@ class PricingCalcRequest(BaseModel):
 
 class CartItemInput(BaseModel):
     product_id: str
-    quantity: int = 1
+    quantity: int = Field(default=1, ge=1, description="Must be a positive integer (≥1)")
     inputs: Dict[str, Any] = Field(default_factory=dict)
     price_override: Optional[float] = None
 

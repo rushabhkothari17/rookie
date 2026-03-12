@@ -1,0 +1,78 @@
+{
+  "summary": "Tested all 7 backend hardening fixes. 6/7 fixes are working correctly. Fix 3 (rate limiting) has a critical path mismatch bug - the rate limit is configured for /api/auth/tenant-info but the actual endpoint is /api/tenant-info. All other fixes verified with 26 passing tests.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/tenant-info",
+        "issue": "Fix 3 BROKEN: rate_limit.py adds rate limit to '/api/auth/tenant-info' (which doesn't exist as a route), but the actual endpoint is '/api/tenant-info'. Sending 25 rapid requests to /api/tenant-info all return 200 (no 429 triggered). The route /api/auth/tenant-info returns 404. The 20/min rate limit is never applied.",
+        "priority": "HIGH",
+        "rca": "In middleware/rate_limit.py RATE_LIMITS dict, the key '/api/auth/tenant-info' should be '/api/tenant-info'. The auth router prefix is /api and the route is /tenant-info (not /auth/tenant-info). Fix: change the key in RATE_LIMITS from '/api/auth/tenant-info' to '/api/tenant-info'."
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "fix_results": {
+    "Fix 1 - checkout_status_404": {
+      "status": "PASS",
+      "tests": 3,
+      "details": "GET /api/checkout/status/{invalid_id} returns 404 JSON {detail: 'Session not found'} for all invalid session IDs. No 500 returned."
+    },
+    "Fix 2 - api_key_401": {
+      "status": "PASS",
+      "tests": 5,
+      "details": "Invalid X-API-Key returns 401 on /api/tenant-info, /api/products, /api/categories. No 422 returned. Missing key (no header) works fine for public endpoints."
+    },
+    "Fix 3 - rate_limiting": {
+      "status": "FAIL",
+      "tests": 1,
+      "details": "CRITICAL PATH MISMATCH: rate_limit.py has '/api/auth/tenant-info' at 20/min but actual endpoint is '/api/tenant-info'. 25 requests to /api/tenant-info all returned 200 (no 429). /api/auth/tenant-info route returns 404 (doesn't exist). The rate limit is never triggered."
+    },
+    "Fix 4 - customer_login_errors": {
+      "status": "PASS",
+      "tests": 3,
+      "details": "Admin account using customer-login returns 403 'Admin accounts must use /api/auth/partner-login'. Unverified user returns 403 'Email not verified'."
+    },
+    "Fix 5 - register_first_last_name": {
+      "status": "PASS",
+      "tests": 4,
+      "details": "POST /api/auth/register accepts first_name+last_name, still accepts full_name (backward compat), rejects no-name registration with 400, accepts first_name only."
+    },
+    "Fix 6 - orders_preview_quantity": {
+      "status": "PASS",
+      "tests": 5,
+      "details": "POST /api/orders/preview returns 422 for quantity=0 and quantity=-1. quantity=1 and quantity=100 are valid (no 422)."
+    },
+    "Fix 7 - admin_orders_subscriptions_empty": {
+      "status": "PASS",
+      "tests": 4,
+      "details": "GET /api/orders returns 200 {orders:[], items:[]} for admin JWT. GET /api/subscriptions returns 200 {subscriptions:[]} for admin JWT. No 404 Customer not found."
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter252_backend_hardening.py",
+    "/app/test_reports/pytest/pytest_iter252_backend_hardening.xml"
+  ],
+  "action_items": [
+    "Fix 3 CRITICAL: In backend/middleware/rate_limit.py, change key from '/api/auth/tenant-info' to '/api/tenant-info' in RATE_LIMITS dict. Current key '/api/auth/tenant-info' does not match any real route (returns 404) so 20/min limit is never enforced on the actual tenant-info endpoint."
+  ],
+  "critical_code_review_comments": [
+    "rate_limit.py RATE_LIMITS: key '/api/auth/tenant-info' is wrong - route is GET /api/tenant-info (prefix=/api, path=/tenant-info). Must be '/api/tenant-info' to match the actual endpoint."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter252_backend_hardening.py"
+  ],
+  "success_rate": {
+    "backend": "93% (26/27 tests passed, 1 failed - Fix 3 rate limit path mismatch)",
+    "frontend": "N/A - backend only testing requested"
+  },
+  "seed_data_creation": "Created TEST_HardeningOrg tenant (code: test-hardening-fix4) and TEST_admin_fix4@example.com partner_admin user for Fix 4 testing",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "6 out of 7 fixes are working correctly. Only Fix 3 (rate limiting) is broken due to wrong path in rate_limit.py. Test file: /app/backend/tests/test_iter252_backend_hardening.py. Test tenant 'test-hardening-fix4' may exist in DB from this run. After fixing rate_limit.py path from '/api/auth/tenant-info' to '/api/tenant-info', re-run the rate limit test.",
+  "rca_of_issue": "Fix 3 RCA: In middleware/rate_limit.py line 28, the key '/api/auth/tenant-info' is configured with (20, 60) limit. However, the actual route is registered in routes/auth.py as @router.get('/tenant-info') with router prefix '/api', making the full path '/api/tenant-info'. The rate limiter does prefix matching: path '/api/tenant-info' does NOT start with '/api/auth/tenant-info' so the limit is never matched. Path '/api/auth/tenant-info' returns 404 (no such route). Fix: change line 28 in rate_limit.py from '/api/auth/tenant-info': (20, 60) to '/api/tenant-info': (20, 60)."
+}

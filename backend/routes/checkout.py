@@ -729,8 +729,16 @@ async def checkout_status(
     customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
     tenant_id = customer.get("tenant_id", "") if customer else ""
     stripe_api_key, _, _ = await get_stripe_creds(tenant_id)
+    if not stripe_api_key:
+        raise HTTPException(status_code=404, detail="Session not found")
     stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
-    status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+    try:
+        status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+    except Exception as exc:
+        err_msg = str(exc).lower()
+        if "no such" in err_msg or "not found" in err_msg or "invalid" in err_msg:
+            raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="Session not found")
     transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
     if transaction:
         await db.payment_transactions.update_one(

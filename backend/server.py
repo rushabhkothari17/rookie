@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from typing import Optional, Dict, Any
@@ -74,6 +75,21 @@ async def generic_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"detail": "An internal error occurred. Please try again later."},
     )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Convert missing X-API-Key header validation errors from 422 to 401."""
+    errors = exc.errors()
+    api_key_fields = {"x_api_key", "x-api-key", "X-API-Key"}
+    for error in errors:
+        locs = {str(loc).lower() for loc in error.get("loc", ())}
+        if locs & {"x_api_key", "x-api-key"}:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "X-API-Key header is missing or invalid"},
+            )
+    return JSONResponse(status_code=422, content={"detail": errors})
 
 # ---------------------------------------------------------------------------
 # Include new route modules

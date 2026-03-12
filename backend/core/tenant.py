@@ -196,7 +196,8 @@ async def resolve_api_key_tenant(
             {"key": x_api_key, "is_active": True}, {"_id": 0, "tenant_id": 1, "id": 1}
         )
     if not key_doc:
-        return None
+        # Key was provided but is invalid/inactive — raise 401 instead of returning None
+        raise HTTPException(status_code=401, detail="Invalid or inactive API key")
     # Update last_used_at
     await db.api_keys.update_one(
         {"id": key_doc["id"]}, {"$set": {"last_used_at": _now_iso()}}
