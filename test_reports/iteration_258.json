@@ -1,0 +1,72 @@
+{
+  "summary": "Iteration 258: Backend testing of Zoho Mail email delivery fixes for partner signup, customer signup, and forgot password flows. The three fixes (platform fallback logic, from_email fix, store_name resolution) are verified WORKING — 13 emails were sent successfully via Zoho Mail with correct store_names before the Zoho OAuth token became exhausted. A secondary bug was identified: email_service.py refreshes the Zoho access_token on EVERY email send, causing the token to become invalid after ~13 rapid uses.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "EmailService.send (email_service.py)",
+        "issue": "Zoho OAuth access_token is NOT cached. Every email send calls refresh_access_token(). After ~13 rapid token refreshes in a session, Zoho returns 400 (token exhausted/rate-limited/rotated). All subsequent emails fail with: 'Zoho token refresh failed: Client error 400 for url https://accounts.zoho.com/oauth/v2/token'. Fix: cache the access_token in oauth_connections.credentials.access_token + access_token_expires_at in DB, and only refresh when expired.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "email_service.py line ~682",
+        "issue": "log_entry['provider'] is set to 'zoho_mail' AFTER send_email(), but AFTER token refresh exception, it remains 'mocked'. Should set provider='zoho_mail' at the START of the Zoho branch (before token refresh) to correctly log which provider was attempted."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter258_email_zoho_fallback.py",
+    "/app/test_reports/pytest/pytest_iter258_email.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Add Zoho access_token caching in email_service.py — store access_token + expiry in oauth_connections.credentials in DB. On every email send: if cached token exists and not expired, use it directly; else call refresh_access_token() and save the new token+expiry. This prevents rapid token refresh exhaustion.",
+    "MINOR: Set log_entry['provider'] = 'zoho_mail' at the START of the Zoho branch in email_service.py (before the token refresh try block) so failed attempts still correctly log provider=zoho_mail.",
+    "OPTIONAL: If Zoho returns a new refresh_token in the token refresh response, save it to DB (handles rotating refresh token configurations)."
+  ],
+  "critical_code_review_comments": [
+    "email_service.py: Zoho access_token is NOT cached. Every email send triggers a fresh token refresh call to Zoho's OAuth endpoint. This causes: (1) unnecessary latency on every email send (~300-500ms per token refresh), (2) Zoho rate limiting/exhaustion after repeated calls, (3) production reliability risk if multiple users register simultaneously. FIX: store access_token + expires_at in oauth_connections.credentials in MongoDB, reuse if valid, only refresh when expired.",
+    "email_service.py line 682: log_entry['provider'] = 'zoho_mail' is set AFTER send_email() call. When token refresh fails (exception caught at line 659-663), log_entry['provider'] remains 'mocked' — misleading. Should be set at the START of the elif zoho_mail_conn: block.",
+    "auth.py resend_verification_email: The endpoint returns HTTP 200 even when EmailService.send() returns status=failed. Consider returning a non-200 or including email_status in response for transparency.",
+    "auth.py forgot_password: Wraps entire try block with bare 'except Exception: pass' which silently swallows all errors including DB errors. While intentional for security (prevent email enumeration), it also hides critical internal errors."
+  ],
+  "verified_scenarios": {
+    "platform_fallback_logic": "PASS — When tenant has no email provider (test-hardening-fix4 has no zoho_mail/resend connection), platform (automate-accounts) Zoho Mail is used for email delivery",
+    "store_name_in_subject_automate_accounts": "PASS — partner signup (tenant_id=None) uses 'Automate Accounts' store_name: 'Verify your Automate Accounts account'",
+    "store_name_in_subject_partner_tenant": "PASS — customer signup with partner_code uses tenant store_name: 'Verify your TEST_HardeningOrg account'",
+    "store_name_in_subject_password_reset": "PASS — 'Reset your TEST_HardeningOrg password' and 'Reset your Automate Accounts password'",
+    "no_more_blank_store_name": "PASS — Old emails showed 'Verify your  account' (blank). After fix, all subjects have correct store_name",
+    "from_email_exists": "PASS — rushabh@automateaccounts.com is a valid Zoho Mail from_email (old fix: non-existent address caused 500 error)",
+    "platform_zoho_connection_validated": "PASS — automate-accounts has is_validated=True Zoho Mail connection with from_email=rushabh@automateaccounts.com",
+    "platform_store_name_not_empty": "PASS — website_settings for automate-accounts: store_name='Automate Accounts'",
+    "partner_tenant_no_email_provider": "PASS — test-hardening-fix4 has NO email connections, confirming fallback tests are valid",
+    "zoho_token_refresh_exhaustion": "FAIL — After ~13 rapid token refreshes, Zoho returns 400. All subsequent email sends fail. Needs access_token caching in email_service.py."
+  },
+  "updated_files": [
+    "/app/backend/tests/test_iter258_email_zoho_fallback.py"
+  ],
+  "success_rate": {
+    "backend": "66% (21/32 tests passed — 11 failures are all due to Zoho token exhaustion from repeated test runs, NOT from the fixes being wrong)",
+    "frontend": "N/A (backend-only testing requested)"
+  },
+  "test_credentials": "Platform Super Admin: admin@automateaccounts.local / ChangeMe123! | Partner code: test-hardening-fix4 (TEST_HardeningOrg)",
+  "seed_data_creation": "Created and auto-cleaned: testiter258_* pending_partner_registrations and unverified users",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The three email fixes (fallback, store_name, from_email) ARE WORKING and VERIFIED via DB email_logs. Key DB evidence: 13 emails sent with provider=zoho_mail, status=sent, correct store_names before token was exhausted by repeated test runs. The secondary bug is Zoho access_token not being cached in email_service.py. After main agent adds token caching, re-run this test file. The Zoho oauth_connection for automate-accounts CURRENTLY has an invalid/exhausted refresh_token — main agent needs to re-validate the Zoho Mail connection in the platform admin settings to get a fresh token before retesting email delivery.",
+  "rca_of_the_issue": {
+    "root_cause": "Zoho OAuth refresh_token became invalid after repeated rapid use. email_service.py calls refresh_access_token() on EVERY email send, with no caching of the resulting access_token.",
+    "reproduction_steps": [
+      "1. Call POST /api/auth/register-partner rapidly 5+ times",
+      "2. Observe email_logs: first few show status=sent, provider=zoho_mail",
+      "3. After ~13 total sends (across all sessions), observe status=failed, error='Zoho token refresh failed: 400'"
+    ],
+    "mitigation": "In email_service.py, before calling oauth_svc.refresh_access_token(), check if creds.get('access_token') exists and creds.get('access_token_expires_at') is still in the future. If yes, use cached token. If not, call refresh, then save: await db.oauth_connections.update_one({'tenant_id': platform_tenant, 'provider': 'zoho_mail'}, {'$set': {'credentials.access_token': new_token, 'credentials.access_token_expires_at': expiry_iso}})",
+    "note": "The main agent should also re-validate the Zoho Mail connection in platform admin settings (Connected Services) to get a fresh refresh_token for the automate-accounts tenant, since the current one is exhausted."
+  }
+}

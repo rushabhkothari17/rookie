@@ -516,8 +516,10 @@ class EmailService:
         if not template.get("is_enabled", True):
             return {"status": "skipped", "reason": "template disabled"}
 
-        # Resolve store_name (global setting)
-        store_name = await SettingsService.get("store_name", "") or ""
+        # Resolve store_name — prefer tenant-scoped website_settings, fallback to global app_settings
+        _tid_for_name = tenant_id or "automate-accounts"
+        ws = await db.website_settings.find_one({"tenant_id": _tid_for_name}, {"_id": 0, "store_name": 1})
+        store_name = (ws or {}).get("store_name") or await SettingsService.get("store_name", "") or ""
         all_vars = {"store_name": store_name, **variables}
 
         subject = _resolve_vars(template["subject"], all_vars)
@@ -556,7 +558,7 @@ class EmailService:
                 {"_id": 0}
             )
         
-        # Also check global/tenant-less connections
+        # Check global/tenant-less connections
         if not resend_conn:
             resend_conn = await db.oauth_connections.find_one(
                 {"provider": "resend", "is_validated": True, "$or": [{"tenant_id": {"$exists": False}}, {"tenant_id": None}]},
@@ -565,6 +567,21 @@ class EmailService:
         if not zoho_mail_conn:
             zoho_mail_conn = await db.oauth_connections.find_one(
                 {"provider": "zoho_mail", "is_validated": True, "$or": [{"tenant_id": {"$exists": False}}, {"tenant_id": None}]},
+                {"_id": 0}
+            )
+
+        # Final fallback: use the platform admin's configured email provider
+        # This ensures system emails (OTP, password reset) are always sent,
+        # even if the partner tenant has no email provider configured.
+        _PLATFORM_TENANT = "automate-accounts"
+        if not resend_conn and tenant_id != _PLATFORM_TENANT:
+            resend_conn = await db.oauth_connections.find_one(
+                {"tenant_id": _PLATFORM_TENANT, "provider": "resend", "is_validated": True},
+                {"_id": 0}
+            )
+        if not zoho_mail_conn and tenant_id != _PLATFORM_TENANT:
+            zoho_mail_conn = await db.oauth_connections.find_one(
+                {"tenant_id": _PLATFORM_TENANT, "provider": "zoho_mail", "is_validated": True},
                 {"_id": 0}
             )
         

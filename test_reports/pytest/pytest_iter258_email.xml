@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="11" skipped="0" tests="32" time="40.532" timestamp="2026-03-12T13:27:38.105413+00:00" hostname="agent-env-15299342-cad2-4ee4-bb42-246a88df0e28"><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestPartnerSignupEmail" name="test_register_partner_200" time="0.753" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestPartnerSignupEmail" name="test_partner_signup_email_log_exists" time="2.006" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestPartnerSignupEmail" name="test_partner_signup_email_provider_zoho" time="0.004"><failure message="AssertionError: Expected provider=zoho_mail, got: mocked&#10;assert 'mocked' == 'zoho_mail'&#10;  &#10;  - zoho_mail&#10;  + mocked">backend/tests/test_iter258_email_zoho_fallback.py:120: in test_partner_signup_email_provider_zoho
+    assert log.get("provider") == "zoho_mail", f"Expected provider=zoho_mail, got: {log.get('provider')}"
+E   AssertionError: Expected provider=zoho_mail, got: mocked
+E   assert 'mocked' == 'zoho_mail'
+E     
+E     - zoho_mail
+E     + mocked</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestPartnerSignupEmail" name="test_partner_signup_email_status_sent" time="0.004"><failure message="AssertionError: Expected status=sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'&#10;  For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400&#10;assert 'failed' == 'sent'&#10;  &#10;  - sent&#10;  + failed">backend/tests/test_iter258_email_zoho_fallback.py:127: in test_partner_signup_email_status_sent
+    assert log.get("status") == "sent", f"Expected status=sent, got: {log.get('status')} | error: {log.get('error_message')}"
+E   AssertionError: Expected status=sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'
+E     For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+E   assert 'failed' == 'sent'
+E     
+E     - sent
+E     + failed</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestPartnerSignupEmail" name="test_partner_signup_subject_contains_store_name" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestPartnerSignupEmail" name="test_partner_signup_no_tenant_id_in_log" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendPartnerVerificationEmail" name="test_setup_pending_partner" time="5.504" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendPartnerVerificationEmail" name="test_resend_verification_email_200" time="0.346" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendPartnerVerificationEmail" name="test_resend_partner_email_provider_zoho" time="2.004"><failure message="AssertionError: Expected zoho_mail, got: mocked&#10;assert 'mocked' == 'zoho_mail'&#10;  &#10;  - zoho_mail&#10;  + mocked">backend/tests/test_iter258_email_zoho_fallback.py:187: in test_resend_partner_email_provider_zoho
+    assert log.get("provider") == "zoho_mail", f"Expected zoho_mail, got: {log.get('provider')}"
+E   AssertionError: Expected zoho_mail, got: mocked
+E   assert 'mocked' == 'zoho_mail'
+E     
+E     - zoho_mail
+E     + mocked</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendPartnerVerificationEmail" name="test_resend_partner_email_status_sent" time="0.003"><failure message="AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'&#10;  For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400&#10;assert 'failed' == 'sent'&#10;  &#10;  - sent&#10;  + failed">backend/tests/test_iter258_email_zoho_fallback.py:194: in test_resend_partner_email_status_sent
+    assert log.get("status") == "sent", f"Expected sent, got: {log.get('status')} | error: {log.get('error_message')}"
+E   AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'
+E     For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+E   assert 'failed' == 'sent'
+E     
+E     - sent
+E     + failed</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendPartnerVerificationEmail" name="test_resend_subject_contains_store_name" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestCustomerSignupEmail" name="test_customer_signup_200" time="5.524" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestCustomerSignupEmail" name="test_customer_signup_email_log_exists" time="2.004" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestCustomerSignupEmail" name="test_customer_signup_email_provider_zoho" time="0.003"><failure message="AssertionError: Expected provider=zoho_mail (platform fallback), got: mocked. This would fail if tenant has no email provider and fallback is broken.&#10;assert 'mocked' == 'zoho_mail'&#10;  &#10;  - zoho_mail&#10;  + mocked">backend/tests/test_iter258_email_zoho_fallback.py:247: in test_customer_signup_email_provider_zoho
+    assert log.get("provider") == "zoho_mail", (
+E   AssertionError: Expected provider=zoho_mail (platform fallback), got: mocked. This would fail if tenant has no email provider and fallback is broken.
+E   assert 'mocked' == 'zoho_mail'
+E     
+E     - zoho_mail
+E     + mocked</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestCustomerSignupEmail" name="test_customer_signup_email_status_sent" time="0.003"><failure message="AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'&#10;  For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400&#10;assert 'failed' == 'sent'&#10;  &#10;  - sent&#10;  + failed">backend/tests/test_iter258_email_zoho_fallback.py:256: in test_customer_signup_email_status_sent
+    assert log.get("status") == "sent", f"Expected sent, got: {log.get('status')} | error: {log.get('error_message')}"
+E   AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'
+E     For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+E   assert 'failed' == 'sent'
+E     
+E     - sent
+E     + failed</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestCustomerSignupEmail" name="test_customer_signup_subject_contains_store_name" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestCustomerSignupEmail" name="test_customer_signup_tenant_id_in_log" time="0.004" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestForgotPasswordEmail" name="test_forgot_password_for_partner_admin_200" time="5.321" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestForgotPasswordEmail" name="test_forgot_password_email_log_exists" time="2.004" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestForgotPasswordEmail" name="test_forgot_password_provider_zoho" time="0.003"><failure message="AssertionError: Expected zoho_mail, got: mocked&#10;assert 'mocked' == 'zoho_mail'&#10;  &#10;  - zoho_mail&#10;  + mocked">backend/tests/test_iter258_email_zoho_fallback.py:311: in test_forgot_password_provider_zoho
+    assert log.get("provider") == "zoho_mail", f"Expected zoho_mail, got: {log.get('provider')}"
+E   AssertionError: Expected zoho_mail, got: mocked
+E   assert 'mocked' == 'zoho_mail'
+E     
+E     - zoho_mail
+E     + mocked</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestForgotPasswordEmail" name="test_forgot_password_status_sent" time="0.003"><failure message="AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'&#10;  For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400&#10;assert 'failed' == 'sent'&#10;  &#10;  - sent&#10;  + failed">backend/tests/test_iter258_email_zoho_fallback.py:317: in test_forgot_password_status_sent
+    assert log.get("status") == "sent", f"Expected sent, got: {log.get('status')} | error: {log.get('error_message')}"
+E   AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'
+E     For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+E   assert 'failed' == 'sent'
+E     
+E     - sent
+E     + failed</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestForgotPasswordEmail" name="test_forgot_password_subject_contains_store_name" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestForgotPasswordEmail" name="test_forgot_password_platform_admin_200" time="5.331" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestForgotPasswordEmail" name="test_forgot_password_platform_admin_email_sent" time="2.004"><failure message="AssertionError: Expected zoho_mail, got: mocked&#10;assert 'mocked' == 'zoho_mail'&#10;  &#10;  - zoho_mail&#10;  + mocked">backend/tests/test_iter258_email_zoho_fallback.py:343: in test_forgot_password_platform_admin_email_sent
+    assert log.get("provider") == "zoho_mail", f"Expected zoho_mail, got: {log.get('provider')}"
+E   AssertionError: Expected zoho_mail, got: mocked
+E   assert 'mocked' == 'zoho_mail'
+E     
+E     - zoho_mail
+E     + mocked</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestEmailFallbackConfiguration" name="test_platform_zoho_mail_connection_exists" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestEmailFallbackConfiguration" name="test_platform_store_name_set" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestEmailFallbackConfiguration" name="test_partner_tenant_has_no_email_provider" time="0.003" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestEmailFallbackConfiguration" name="test_email_fallback_code_path_covered" time="0.004" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendCustomerVerificationEmail" name="test_resend_customer_verification_200" time="5.416" /><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendCustomerVerificationEmail" name="test_resend_customer_email_provider_zoho" time="2.004"><failure message="AssertionError: Expected zoho_mail, got: mocked&#10;assert 'mocked' == 'zoho_mail'&#10;  &#10;  - zoho_mail&#10;  + mocked">backend/tests/test_iter258_email_zoho_fallback.py:445: in test_resend_customer_email_provider_zoho
+    assert log.get("provider") == "zoho_mail", f"Expected zoho_mail, got: {log.get('provider')}"
+E   AssertionError: Expected zoho_mail, got: mocked
+E   assert 'mocked' == 'zoho_mail'
+E     
+E     - zoho_mail
+E     + mocked</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendCustomerVerificationEmail" name="test_resend_customer_email_status_sent" time="0.003"><failure message="AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'&#10;  For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400&#10;assert 'failed' == 'sent'&#10;  &#10;  - sent&#10;  + failed">backend/tests/test_iter258_email_zoho_fallback.py:451: in test_resend_customer_email_status_sent
+    assert log.get("status") == "sent", f"Expected sent, got: {log.get('status')} | error: {log.get('error_message')}"
+E   AssertionError: Expected sent, got: failed | error: Zoho token refresh failed: Client error '400 ' for url 'https://accounts.zoho.com/oauth/v2/token'
+E     For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+E   assert 'failed' == 'sent'
+E     
+E     - sent
+E     + failed</failure></testcase><testcase classname="backend.tests.test_iter258_email_zoho_fallback.TestResendCustomerVerificationEmail" name="test_resend_customer_subject_contains_store_name" time="0.006" /></testsuite></testsuites>
