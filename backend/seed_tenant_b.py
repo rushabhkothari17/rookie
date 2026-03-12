@@ -8,7 +8,6 @@ import os
 import sys
 import uuid
 from datetime import datetime, timezone, timedelta
-import hashlib
 
 sys.path.insert(0, ".")
 from dotenv import load_dotenv

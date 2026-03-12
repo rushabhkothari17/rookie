@@ -8,8 +8,8 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
-from core.security import require_admin, get_current_user
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin, is_platform_admin, enrich_partner_codes
+from core.security import get_current_user
+from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin, is_platform_admin, enrich_partner_codes
 from db.session import db
 from models import TermsCreate, TermsUpdate
 from services.audit_service import create_audit_log
@@ -96,7 +96,6 @@ async def admin_list_terms(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
-    tid = tenant_id_of(admin)
     query: Dict[str, Any] = {**tf}
     if status:
         query["status"] = status

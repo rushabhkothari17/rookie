@@ -13,7 +13,6 @@ Tests for:
 import pytest
 import requests
 import os
-from typing import Optional
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 

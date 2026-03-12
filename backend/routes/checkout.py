@@ -20,7 +20,6 @@ from services.checkout_service import (
     get_fx_rate,
 )
 from services.tax_service import calculate_tax
-from services.settings_service import SettingsService
 from core.constants import SERVICE_FEE_RATE
 
 try:

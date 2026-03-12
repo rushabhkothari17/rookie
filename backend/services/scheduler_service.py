@@ -42,7 +42,6 @@ async def send_renewal_reminders() -> None:
     from db.session import db
     from services.email_service import EmailService
     from core.tenant import DEFAULT_TENANT_ID
-    from core.helpers import now_iso
 
     today = datetime.now(timezone.utc).date()
     tenant_cache: dict = {}  # tid -> Optional[int]
@@ -177,7 +176,7 @@ async def auto_cancel_subscriptions() -> None:
     from db.session import db
     from services.email_service import EmailService
     from core.tenant import DEFAULT_TENANT_ID
-    from core.helpers import now_iso, make_id
+    from core.helpers import now_iso
 
     today = datetime.now(timezone.utc).date()
     tomorrow_str = (today + timedelta(days=1)).isoformat()

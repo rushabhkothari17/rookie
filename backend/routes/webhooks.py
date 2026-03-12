@@ -20,7 +20,6 @@ try:
 except ImportError:
     StripeCheckout = None  # type: ignore
 
-from datetime import datetime, timezone, timedelta
 
 router = APIRouter(prefix="/api", tags=["webhooks"])
 

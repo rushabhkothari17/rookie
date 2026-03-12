@@ -6,8 +6,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
-from core.security import require_admin
+from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin
 from db.session import db
 from models import ArticleEmailTemplateCreate, ArticleEmailTemplateUpdate
 from services.audit_service import create_audit_log

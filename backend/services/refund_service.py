@@ -1,13 +1,11 @@
 """Refund service for processing refunds via Stripe and GoCardless."""
 from __future__ import annotations
 
-import os
 from typing import Any, Dict, Optional
 import httpx
 
 from db.session import db
-from core.helpers import make_id, now_iso, round_cents
-from services.settings_service import SettingsService
+from core.helpers import make_id, now_iso
 
 # Stripe API
 STRIPE_API_URL = "https://api.stripe.com/v1"

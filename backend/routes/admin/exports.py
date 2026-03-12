@@ -11,8 +11,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
-from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin
+from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin
 from db.session import db
 from services.audit_service import create_audit_log
 from routes.admin.permissions import has_permission as _has_perm

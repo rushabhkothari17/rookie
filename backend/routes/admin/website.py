@@ -6,12 +6,11 @@ from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, Header
 
-from core.security import require_admin, optional_get_current_user
-from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
+from core.security import optional_get_current_user
+from core.tenant import tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from db.session import db
 from models import WebsiteSettingsUpdate
 from services.audit_service import create_audit_log
-from services.settings_service import SettingsService
 
 router = APIRouter(prefix="/api", tags=["website-settings"])
 

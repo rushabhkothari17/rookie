@@ -9,7 +9,6 @@ Pricing types:
 from __future__ import annotations
 import math
 from typing import Any, Dict, List, Optional
-from fastapi import HTTPException
 
 SERVICE_FEE_RATE = 0.0
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from fastapi import Depends, HTTPException, Header, Request
+from fastapi import Depends, HTTPException, Header
 
 from core.security import require_admin, require_super_admin, get_current_user
 from db.session import db

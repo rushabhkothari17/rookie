@@ -6,7 +6,6 @@ Tests: Categories, Products, Pricing Engine, Intake Questions, Visibility,
 import pytest
 import requests
 import os
-import time
 from datetime import datetime, timezone, timedelta
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")

@@ -486,8 +486,7 @@ async def list_tenant_customers(tenant_id: str, admin: Dict[str, Any] = Depends(
 # ---------------------------------------------------------------------------
 
 from pydantic import BaseModel
-from typing import List, Optional
-import socket
+from typing import List
 import asyncio
 
 class CustomDomainAdd(BaseModel):
@@ -539,7 +538,7 @@ async def check_dns_cname(domain: str, expected_target: str) -> dict:
     except dns.resolver.NoAnswer:
         # Try A record as fallback
         try:
-            a_answers = await asyncio.to_thread(lambda: dns.resolver.resolve(domain, 'A'))
+            await asyncio.to_thread(lambda: dns.resolver.resolve(domain, 'A'))
             return {
                 "verified": False,
                 "status": "pending",

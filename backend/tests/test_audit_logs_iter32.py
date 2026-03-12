@@ -403,7 +403,6 @@ class TestRegisterAuditLog:
     def test_register_creates_audit_log_entry(self, admin_headers):
         """Register a new user and verify audit_log entry is created."""
         email = f"TEST_auditlog_{secrets.token_hex(4)}@test.com"
-        import random
         reg_resp = requests.post(
             f"{BASE_URL}/api/auth/register",
             json={

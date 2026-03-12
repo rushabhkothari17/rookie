@@ -8,9 +8,8 @@ Seed call in startup ensures all defaults are pre-populated on first run.
 """
 from __future__ import annotations
 
-import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from core.helpers import make_id, now_iso
 from db.session import db

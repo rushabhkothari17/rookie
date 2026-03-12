@@ -5,7 +5,6 @@ Scope Unlock (E1-E5), Enquiry Flow (G1-G4), and Cross-Tenant Security (SEC1-SEC2
 import pytest
 import requests
 import os
-import time
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 

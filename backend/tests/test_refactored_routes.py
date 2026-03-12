@@ -5,7 +5,6 @@ Tests all new route files under /app/backend/routes/
 import pytest
 import requests
 import os
-import time
 import uuid
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")

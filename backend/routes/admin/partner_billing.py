@@ -11,11 +11,10 @@ Supports:
 """
 from __future__ import annotations
 
-import os
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel
 
@@ -606,7 +605,6 @@ async def cancel_partner_subscription(sub_id: str, admin: Dict[str, Any] = Depen
     contract_end = sub.get("contract_end_date")
     if term_months and term_months > 0 and contract_end:
         try:
-            from datetime import timedelta as _td
             end_dt = datetime.fromisoformat(contract_end.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
             if datetime.now(timezone.utc) < end_dt:
                 end_fmt = end_dt.strftime("%d %b %Y")

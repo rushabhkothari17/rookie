@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from core.helpers import make_id, now_iso
 from core.tenant import require_platform_admin, require_platform_super_admin, get_tenant_admin, tenant_id_of
 from db.session import db
-from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["coupons"])
 
@@ -74,7 +73,8 @@ async def create_coupon(body: CouponCreate, admin: Dict[str, Any] = Depends(requ
         "created_by": admin.get("email"),
     }
     await db.coupons.insert_one(doc)
-    doc.pop("_id", None); doc.pop("used_by_orgs", None)
+    doc.pop("_id", None)
+    doc.pop("used_by_orgs", None)
     return doc
 
 

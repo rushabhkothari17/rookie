@@ -13,7 +13,6 @@ import requests
 import os
 import csv
 import io
-import time
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 

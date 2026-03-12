@@ -773,3 +773,22 @@ Added validation (toast.error + early return) to:
 - `PresetsSubTab` shows "Filter by Partner Org" dropdown (with search) for platform admins — filters custom presets by tenant
 - Custom preset cards show tenant name badge when viewed by platform admin
 - Fixed `update_preset` duplicate-name check to use preset's own `tenant_id` (not admin's)
+
+### Codebase Orphan Cleanup (March 2026)
+**Status**: COMPLETED
+
+#### Removed
+- **auth.py lines 984–1135**: 152 lines of unreachable dead code inside `verify_partner_email()` (after a `return` — ghost of old `register_partner` logic)
+- **11 unused frontend files** (2,424 lines total deleted):
+  - `pages/admin/ArticlesTab.tsx` (868 lines)
+  - `pages/admin/RolesTab.tsx` (339 lines)
+  - `components/admin/ContextualGuide.tsx`, `OAuthIntegrationTile.tsx`, `IntegrationGuide.tsx`, `GenericListManager.tsx`
+  - `pages/ArticleView.tsx`, `components/ProductCard.tsx`, `PriceSummary.tsx`, `IncludedList.tsx`
+  - `lib/sections.ts`
+
+#### Fixed
+- **127 unused imports** across 40+ backend files (auto-fixed via ruff F401)
+- **5 unused variable assignments** in routes (`tenants.py`, `terms.py`, `auth.py`, `article_templates.py`, `resource_templates.py`)
+- **Missing `EmailService` import** in `auth.py:1066` (bug — was referenced without import)
+- **Duplicate `Optional` import** in `tenants.py`
+- **Style issues** E701/E702 in `coupons.py` and `store.py`

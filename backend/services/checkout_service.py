@@ -10,7 +10,6 @@ from fastapi import HTTPException
 from core.helpers import make_id, now_iso
 from db.session import db
 from services.pricing_service import calculate_price
-from services.settings_service import SettingsService
 from core.constants import SERVICE_FEE_RATE
 
 logger = logging.getLogger(__name__)

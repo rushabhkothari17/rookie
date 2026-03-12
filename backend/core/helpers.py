@@ -2,7 +2,6 @@
 import uuid
 import re as _re
 from datetime import datetime, timezone
-from typing import Any, Dict
 
 
 def now_iso() -> str:

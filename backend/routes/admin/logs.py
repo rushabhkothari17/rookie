@@ -5,8 +5,7 @@ from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends
 
-from core.security import require_admin
-from core.tenant import get_tenant_filter, set_tenant_id, tenant_id_of, get_tenant_admin, is_platform_admin, enrich_partner_codes
+from core.tenant import get_tenant_filter, get_tenant_admin, is_platform_admin, enrich_partner_codes
 from db.session import db
 from services.audit_service import AuditService
 

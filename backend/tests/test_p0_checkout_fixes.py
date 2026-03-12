@@ -162,7 +162,6 @@ class TestStripeImports:
         """Checkout route module (routes/checkout.py) should load without errors.
         If import fails, StripeCheckout would be None and route would crash at runtime."""
         import sys
-        import os
         sys.path.insert(0, '/app/backend')
         # The module should already be loaded if server started correctly
         # We verify by importing and checking the class is not None (import guard didn't trigger)

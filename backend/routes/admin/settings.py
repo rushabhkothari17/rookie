@@ -6,7 +6,6 @@ from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
-from core.security import require_admin
 from core.tenant import tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
 from db.session import db
 from models import AppSettingsUpdate

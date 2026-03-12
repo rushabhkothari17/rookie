@@ -158,7 +158,6 @@ class TestAdminToggleCustomerActive:
     def test_activate_customer(self, admin_headers):
         """PATCH /api/admin/customers/{id}/active?active=true - use a non-admin customer"""
         import pymongo
-        from datetime import datetime, timezone
         client = pymongo.MongoClient("mongodb://localhost:27017")
         db = client["test_database"]
         # Find a customer whose linked user is NOT an admin (role=customer)

@@ -327,7 +327,6 @@ class TestGocardlessRenewalViaHTTP:
 
     def test_gc_renewal_via_http_webhook(self, admin_session):
         """GoCardless webhook: payments.confirmed for new mandate payment creates renewal order."""
-        import asyncio
         import sys
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         from core.helpers import make_id, now_iso

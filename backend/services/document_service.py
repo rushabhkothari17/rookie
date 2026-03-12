@@ -4,7 +4,7 @@ from __future__ import annotations
 import io
 import re
 from html.parser import HTMLParser
-from typing import List, Tuple
+from typing import List
 
 
 # ─── HTML Parser ────────────────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ def generate_pdf(title: str, author: str, created_at: str, updated_at: str, html
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     from reportlab.lib.colors import HexColor
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, HRFlowable
 
     # Resolve accent color safely
     try:

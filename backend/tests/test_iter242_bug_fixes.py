@@ -13,7 +13,6 @@ Tests for 10 bug fixes (iteration 242):
 import pytest
 import requests
 import os
-import json
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 

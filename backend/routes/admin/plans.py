@@ -114,7 +114,6 @@ async def create_plan(payload: PlanCreate, admin: Dict[str, Any] = Depends(requi
 @router.get("/partner/plans/public")
 async def list_public_plans():
     """Return all active public plans — accessible by partner admins for self-service upgrade."""
-    from core.tenant import get_tenant_admin
     plans = await db.plans.find(
         {"is_active": True, "is_public": True},
         {"_id": 0},

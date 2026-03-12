@@ -123,12 +123,18 @@ def _eval_single_vis_cond(cond: dict, customer: dict) -> bool:
         elif field in ("city", "postal_code"):
             actual = addr.get(field)
     actual_str = str(actual or "").lower() if actual is not None else ""
-    if operator == "equals":        return actual_str == expected.lower()
-    if operator == "not_equals":    return actual_str != expected.lower()
-    if operator == "contains":      return expected.lower() in actual_str
-    if operator == "not_contains":  return expected.lower() not in actual_str
-    if operator == "empty":         return not actual or actual in ("", [], {})
-    if operator == "not_empty":     return bool(actual) and actual not in ("", [], {})
+    if operator == "equals":
+        return actual_str == expected.lower()
+    if operator == "not_equals":
+        return actual_str != expected.lower()
+    if operator == "contains":
+        return expected.lower() in actual_str
+    if operator == "not_contains":
+        return expected.lower() not in actual_str
+    if operator == "empty":
+        return not actual or actual in ("", [], {})
+    if operator == "not_empty":
+        return bool(actual) and actual not in ("", [], {})
     return True
 
 

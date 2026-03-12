@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from typing import Optional, Dict, Any
 from pathlib import Path
 from datetime import datetime, timedelta
 import os
@@ -22,13 +21,13 @@ from db.session import db, client
 from core.config import ADMIN_EMAIL, ADMIN_PASSWORD
 from core.helpers import now_iso, make_id
 from core.security import pwd_context
-from core.constants import ALLOWED_ORDER_STATUSES, ALLOWED_SUBSCRIPTION_STATUSES
+from core.constants import ALLOWED_SUBSCRIPTION_STATUSES
 from core.tenant import DEFAULT_TENANT_ID
 import core.config as _cfg
 
 JWT_SECRET = _cfg.JWT_SECRET
 ADMIN_PASSWORD = _cfg.ADMIN_PASSWORD
-from services.audit_service import AuditService, ensure_audit_indexes, create_audit_log
+from services.audit_service import ensure_audit_indexes, create_audit_log
 from services.settings_service import SettingsService
 from middleware.request_id import RequestIDMiddleware
 from middleware.rate_limit import RateLimitMiddleware
@@ -36,7 +35,6 @@ from middleware.security_headers import SecurityHeadersMiddleware
 
 # Seed data and pricing helpers
 from data.seed_products import build_seed_products
-from services.pricing_service import calculate_price
 
 # ---------------------------------------------------------------------------
 # App — disable interactive docs in production

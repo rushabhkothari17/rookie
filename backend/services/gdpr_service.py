@@ -4,7 +4,7 @@ import csv
 import io
 import zipfile
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from db.session import db
 import logging
 

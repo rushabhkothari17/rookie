@@ -200,7 +200,7 @@ async def admin_update_user(
     payload: Dict[str, Any] = Body(...),
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    from routes.admin.permissions import ADMIN_MODULES, has_permission as _has_perm
+    from routes.admin.permissions import ADMIN_MODULES
 
     tf = get_tenant_filter(admin)
     user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})

@@ -9,13 +9,11 @@ email_service.py and checkout.py continue to work without changes.
 """
 from __future__ import annotations
 
-import os
 import time
 from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime, timezone
 import httpx
 
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from core.helpers import now_iso

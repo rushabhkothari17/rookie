@@ -17,7 +17,7 @@ from pydantic import BaseModel
 import stripe as stripe_sdk
 
 from core.helpers import make_id, now_iso
-from core.tenant import get_tenant_super_admin, tenant_id_of, DEFAULT_TENANT_ID
+from core.tenant import get_tenant_super_admin, tenant_id_of
 from core.config import STRIPE_API_KEY
 from db.session import db
 from services.audit_service import create_audit_log
@@ -244,7 +244,7 @@ async def upgrade_plan(
     new_monthly = new_plan.get("monthly_price", 0) or 0
     partner_name = (tenant or {}).get("name", "")
 
-    from services.billing_service import calculate_prorata, calculate_upgrade_prorata, next_first_of_month
+    from services.billing_service import calculate_prorata, calculate_upgrade_prorata
     today = datetime.now(timezone.utc).date()
 
     existing_sub = await db.partner_subscriptions.find_one(

@@ -11,7 +11,6 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Header, Response, Request
-from fastapi.responses import JSONResponse
 
 from core.helpers import make_id, now_iso
 from core.security import (
@@ -26,7 +25,6 @@ from models import (
 )
 from pydantic import BaseModel
 from services.audit_service import AuditService, create_audit_log
-from services.settings_service import SettingsService
 import os
 
 router = APIRouter(prefix="/api", tags=["auth"])
@@ -525,8 +523,8 @@ async def login(payload: LoginRequest, response: Response):
     Sets HttpOnly cookie with JWT token.
     """
     if payload.partner_code:
-        # Route to tenant-scoped login
-        tenant = await resolve_tenant(payload.partner_code)
+        # Route to tenant-scoped login — validate partner code first, then delegate
+        await resolve_tenant(payload.partner_code)
         if payload.login_type == "customer":
             cust_payload = CustomerLoginRequest(
                 partner_code=payload.partner_code,
@@ -981,158 +979,6 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
                            actor=email, details={"name": org_name, "code": code_candidate})
 
     return {"message": "Verified", "partner_code": code_candidate}
-    base_currency = payload.get("base_currency", "USD").strip().upper() or "USD"
-    address = payload.get("address", {})
-    extra_fields = payload.get("extra_fields", {})
-    if not isinstance(extra_fields, dict):
-        extra_fields = {}
-
-    # ── Field presence ───────────────────────────────────────────────────────
-    if not all([name, admin_name, admin_email, admin_password]):
-        raise HTTPException(status_code=400, detail="All fields are required")
-
-    # ── Character limits ─────────────────────────────────────────────────────
-    if len(name) > 100:
-        raise HTTPException(status_code=400, detail="Organization name must be 100 characters or fewer")
-    if len(admin_name) > 50:
-        raise HTTPException(status_code=400, detail="Admin name must be 50 characters or fewer")
-    if len(admin_email) > 50:
-        raise HTTPException(status_code=400, detail="Admin email must be 50 characters or fewer")
-
-    # ── Email format ─────────────────────────────────────────────────────────
-    if not _re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', admin_email):
-        raise HTTPException(status_code=400, detail="Invalid email address format")
-
-    # ── Password complexity ──────────────────────────────────────────────────
-    pw_error = _validate_password_complexity(admin_password)
-    if pw_error:
-        raise HTTPException(status_code=400, detail=pw_error)
-
-    # ── Address validation ───────────────────────────────────────────────────
-    if any(str(address.get(f, "")).strip() for f in ["line1", "city", "postal", "country"]):
-        mandatory_addr = ["line1", "city", "postal", "country"]
-        missing = [f for f in mandatory_addr if not str(address.get(f, "")).strip()]
-        if missing:
-            raise HTTPException(status_code=400, detail=f"Address fields required: {', '.join(missing)}")
-
-    # ── Currency ─────────────────────────────────────────────────────────────
-    supported = await db.platform_settings.find_one({"_id_key": "supported_currencies"})
-    valid_currencies = supported.get("values", ["USD","CAD","EUR","AUD","GBP","INR","MXN"]) if supported else ["USD","CAD","EUR","AUD","GBP","INR","MXN"]
-    if base_currency not in valid_currencies:
-        base_currency = "USD"
-
-    # ── Email uniqueness check with re-registration support ──────────────────
-    existing_user = await db.users.find_one({"email": admin_email}, {"_id": 0})
-    if existing_user:
-        if existing_user.get("is_verified"):
-            raise HTTPException(status_code=400, detail="Email already registered")
-        # Unverified partner admin — update data and resend OTP
-        if existing_user.get("role") == "partner_super_admin":
-            verification_code = f"{secrets.randbelow(999999):06d}"
-            hashed = pwd_context.hash(admin_password)
-            await db.users.update_one(
-                {"id": existing_user["id"]},
-                {"$set": {
-                    "password_hash": hashed,
-                    "full_name": admin_name,
-                    "company_name": name,
-                    "verification_code": verification_code,
-                    "verification_attempts": 0,
-                    "verification_locked_until": None,
-                }},
-            )
-            # Update the pending tenant data too
-            if existing_user.get("tenant_id"):
-                await db.tenants.update_one(
-                    {"id": existing_user["tenant_id"]},
-                    {"$set": {"name": name, "base_currency": base_currency,
-                               "address": {k: str(address.get(k, "")).strip() for k in ["line1","line2","city","region","postal","country"]},
-                               "extra_fields": extra_fields, "updated_at": now_iso()}},
-                )
-            from services.email_service import EmailService
-            email_result = await EmailService.send(
-                trigger="verification",
-                recipient=admin_email,
-                variables={"customer_name": admin_name, "customer_email": admin_email, "verification_code": verification_code},
-                db=db, tenant_id=existing_user.get("tenant_id"),
-            )
-            if email_result.get("status") == "mocked":
-                import logging
-                logging.getLogger("auth").warning("[DEV] Partner email mocked for %s — OTP: %s", admin_email, verification_code)
-            return {"message": "Verification required"}
-        # Some other unverified user with this email — block
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    # ── Auto-generate a unique partner code from org name ────────────────────
-    base_code = re.sub(r'[^\w\s-]', '', name.lower().strip())
-    base_code = re.sub(r'[\s_]+', '-', base_code)
-    base_code = re.sub(r'-+', '-', base_code).strip('-')[:30]
-    if not base_code:
-        base_code = "partner"
-    code = base_code
-    counter = 1
-    while await db.tenants.find_one({"code": code}) or code == DEFAULT_TENANT_ID:
-        code = f"{base_code}-{counter}"
-        counter += 1
-    if code == DEFAULT_TENANT_ID:
-        raise HTTPException(status_code=400, detail="The generated partner code conflicts with a reserved identifier. Please use a different organization name.")
-
-    # ── Create PENDING tenant (activated on email verification) ──────────────
-    tenant_id = make_id()
-    now = now_iso()
-    await db.tenants.insert_one({
-        "id": tenant_id,
-        "name": name,
-        "code": code,
-        "status": "pending_verification",
-        "base_currency": base_currency,
-        "address": {k: str(address.get(k, "")).strip() for k in ["line1","line2","city","region","postal","country"]},
-        "extra_fields": extra_fields,
-        "created_at": now,
-        "updated_at": now,
-    })
-
-    # Seed tenant defaults now (website_settings, app_settings, etc.)
-    await _seed_new_tenant(tenant_id, name, now)
-
-    # ── Create unverified partner_super_admin user ────────────────────────────
-    user_id = make_id()
-    verification_code = f"{secrets.randbelow(999999):06d}"
-    hashed = pwd_context.hash(admin_password)
-    await db.users.insert_one({
-        "id": user_id,
-        "email": admin_email,
-        "password_hash": hashed,
-        "full_name": admin_name,
-        "company_name": name,
-        "job_title": "",
-        "phone": "",
-        "is_admin": True,
-        "is_verified": False,
-        "role": "partner_super_admin",
-        "tenant_id": tenant_id,
-        "is_active": True,
-        "verification_code": verification_code,
-        "created_at": now,
-    })
-
-    # ── Send OTP email ────────────────────────────────────────────────────────
-    from services.email_service import EmailService
-    email_result = await EmailService.send(
-        trigger="verification",
-        recipient=admin_email,
-        variables={"customer_name": admin_name, "customer_email": admin_email, "verification_code": verification_code},
-        db=db, tenant_id=tenant_id,
-    )
-    if email_result.get("status") == "mocked":
-        import logging
-        logging.getLogger("auth").warning("[DEV] Partner email mocked for %s — OTP: %s", admin_email, verification_code)
-
-    await create_audit_log(entity_type="tenant", entity_id=tenant_id, action="partner_registered_pending",
-                           actor=admin_email, details={"name": name, "code": code})
-    return {"message": "Verification required"}
-
-
 # ---------------------------------------------------------------------------
 # Register
 # ---------------------------------------------------------------------------
@@ -1217,6 +1063,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
                 **({"profile_meta": payload.profile_meta} if payload.profile_meta else {}),
             }},
         )
+        from services.email_service import EmailService
         email_result = await EmailService.send(
             trigger="verification",
             recipient=payload.email.lower(),

@@ -9,11 +9,11 @@ Supports:
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import now_iso
-from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
+from core.tenant import get_tenant_admin, get_tenant_filter
 from db.session import db
 from services.audit_service import create_audit_log
 

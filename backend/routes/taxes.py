@@ -1,7 +1,7 @@
 """Tax management routes: settings, global table, partner override rules."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 

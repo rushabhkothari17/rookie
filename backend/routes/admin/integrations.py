@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel
-from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
+from core.tenant import get_tenant_admin, tenant_id_of
 from services.zoho_service import (
     ZohoOAuthService, ZohoMailService, ZohoCRMService,
     get_crm_field_mappings, save_crm_field_mapping, delete_crm_field_mapping

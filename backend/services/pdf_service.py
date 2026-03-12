@@ -8,15 +8,15 @@ from __future__ import annotations
 import io
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Optional
 from html import unescape
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch, mm
+from reportlab.lib.units import mm
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 )
 
 

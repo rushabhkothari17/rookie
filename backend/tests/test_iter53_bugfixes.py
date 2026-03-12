@@ -8,7 +8,6 @@ Iteration 53 - Bug fixes regression tests:
 import pytest
 import requests
 import os
-import io
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 ADMIN_EMAIL = "admin@automateaccounts.local"

@@ -10,7 +10,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from core.helpers import make_id, now_iso
+from core.helpers import now_iso
 from db.session import db
 
 DEFAULT_TENANT = {
