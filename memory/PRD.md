@@ -763,3 +763,13 @@ Added validation (toast.error + early return) to:
 
 #### Technical
 - Fixed validation_exception_handler for Pydantic ValueError (was causing 500 errors)
+
+### Preset Partner Org Enhancement (March 2026)
+**Status**: COMPLETED | **Tests**: 7/7 backend, 11/11 frontend
+
+- Platform admin creating custom presets must select a mandatory **Partner Org** (searchable dropdown) as first field
+- Invalid/missing tenant_id returns 400/404 with clear error messages
+- Edit mode shows partner org as read-only text with "Cannot be changed" label
+- `PresetsSubTab` shows "Filter by Partner Org" dropdown (with search) for platform admins — filters custom presets by tenant
+- Custom preset cards show tenant name badge when viewed by platform admin
+- Fixed `update_preset` duplicate-name check to use preset's own `tenant_id` (not admin's)

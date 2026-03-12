@@ -115,10 +115,10 @@ async def update_preset(
         name = payload.name.strip()
         if not name:
             raise HTTPException(status_code=400, detail="Preset name is required")
-        # Check for name collision
-        tid = tenant_id_of(admin)
+        # Use the preset's own tenant_id for duplicate check (important for platform admins)
+        preset_tenant_id = existing.get("tenant_id", tenant_id_of(admin))
         other = await db.user_presets.find_one(
-            {"tenant_id": tid, "name": name, "id": {"$ne": preset_id}},
+            {"tenant_id": preset_tenant_id, "name": name, "id": {"$ne": preset_id}},
             {"_id": 0, "id": 1},
         )
         if other:
