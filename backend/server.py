@@ -278,6 +278,36 @@ async def seed_admin_user():
     )
 
 
+async def seed_platform_tenant():
+    """Ensure the automate-accounts platform tenant document exists in the tenants collection."""
+    existing = await db.tenants.find_one({"code": DEFAULT_TENANT_ID}, {"_id": 0, "id": 1})
+    if existing:
+        return
+    now = now_iso()
+    await db.tenants.insert_one({
+        "id": DEFAULT_TENANT_ID,
+        "name": "Automate Accounts",
+        "code": DEFAULT_TENANT_ID,
+        "status": "active",
+        "base_currency": "USD",
+        "address": {},
+        "is_platform": True,
+        "created_at": now,
+        "updated_at": now,
+    })
+    # Ensure branding app_settings (store_name, logo, colors) exist for platform tenant
+    branding_exists = await db.app_settings.find_one(
+        {"tenant_id": DEFAULT_TENANT_ID, "key": {"$exists": False}}, {"_id": 0}
+    )
+    if not branding_exists:
+        await db.app_settings.insert_one({
+            "tenant_id": DEFAULT_TENANT_ID,
+            "store_name": "Automate Accounts",
+            "logo_url": "",
+            "updated_at": now,
+        })
+
+
 async def seed_products():
     if await db.products.count_documents({}) > 0:
         return
@@ -415,6 +445,7 @@ async def startup_tasks():
     await SettingsService.cleanup_obsolete()
     await SettingsService.seed()
     await seed_admin_user()
+    await seed_platform_tenant()
     # Demo product seeding disabled — products are managed by admins directly
     # await seed_products()
     await _seed_free_trial_plan()  # Ensure Free Trial plan has is_default=True and is_readonly=True
