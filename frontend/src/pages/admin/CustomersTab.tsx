@@ -23,6 +23,25 @@ import { CustomerSignupFields } from "@/components/CustomerSignupFields";
 import { useCountries } from "@/hooks/useCountries";
 
 
+/** Map common ISO-2 country codes to the full names used by /utils/countries */
+const ISO_COUNTRY_MAP: Record<string, string> = {
+  CA: "Canada", US: "USA", GB: "United Kingdom", AU: "Australia",
+  NZ: "New Zealand", IE: "Ireland", DE: "Germany", FR: "France",
+  ES: "Spain", IT: "Italy", NL: "Netherlands", BE: "Belgium",
+  SE: "Sweden", NO: "Norway", DK: "Denmark", FI: "Finland",
+  AT: "Austria", CH: "Switzerland", PL: "Poland", PT: "Portugal",
+  CZ: "Czech Republic", SK: "Slovakia", HU: "Hungary", RO: "Romania",
+  BG: "Bulgaria", HR: "Croatia", GR: "Greece", IN: "India",
+  JP: "Japan", CN: "China", SG: "Singapore", HK: "Hong Kong",
+  ZA: "South Africa", BR: "Brazil", MX: "Mexico", AR: "Argentina",
+};
+
+function normaliseCountry(raw: string, options: { value: string }[]): string {
+  if (!raw) return "";
+  if (options.some(o => o.value === raw)) return raw;           // already full name
+  return ISO_COUNTRY_MAP[raw.toUpperCase()] ?? raw;             // fallback ISO → name
+}
+
 export function CustomersTab() {
   const { user: authUser } = useAuth();
   const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
@@ -331,7 +350,7 @@ export function CustomersTab() {
                   {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-customer-partner-${customer.id}`}>{customer.partner_code || "—"}</TableCell>}
                   <TableCell>
                     <div className="flex gap-1 items-center flex-nowrap">
-                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
+                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id, country: normaliseCountry(address.country || customer.country || "", countries) }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const res = await api.get(`/admin/customers/${customer.id}/notes`); setCustomerNotes(res.data.notes || []); setViewNotesCustomer(customer); }} data-testid={`admin-customer-notes-${customer.id}`}>Notes</Button>
                       <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/customers/${customer.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-customer-logs-${customer.id}`}>Logs</Button>
                       {user.id !== authUser?.id && (

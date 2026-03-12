@@ -120,7 +120,12 @@ Build a white-label service commerce platform with:
 - Hidden "My Profile" from all admin roles (platform_admin, platform_super_admin, partner_admin, partner_super_admin) — only `role === "customer"` users see it
 - Fixed login page org name: now reads `branding.store_name` (from `app_settings`) instead of `tenant.name` so it refreshes when org name is saved in settings
 
-### Phase 4: Global Pill UI Overhaul (March 2026)
+### Phase 5: Form Unification & UI Polish (March 2026)
+- Edit Customer dialog rewritten to use `UniversalFormRenderer` (same source as Create Customer)
+- `normaliseCountry()` utility added to map ISO codes (CA, US, GB...) to full names — fixes legacy customer pre-fill
+- Both Create & Edit Customer dialogs now structurally identical: pill inputs, placeholder-only labels, ADDRESS section, gap-4 spacing
+- Only difference: Edit dialog has Payment Methods + Tax Exempt sections (no email/password); Create has email+password
+- Verified by testing agents iteration_267 + iteration_268
 - Updated `input.jsx` base: `rounded-full`, `h-11`, smooth focus + focusGlow animation
 - Updated `button.jsx` base: `rounded-full`, active scale(0.97), hover shadow-lift
 - Updated `select.jsx` trigger: `rounded-full`; content: `rounded-2xl`
