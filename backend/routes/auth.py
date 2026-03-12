@@ -869,9 +869,15 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
     # ── Send OTP email ────────────────────────────────────────────────────────
     from services.email_service import EmailService
     email_result = await EmailService.send(
-        trigger="verification",
+        trigger="partner_verification",
         recipient=admin_email,
-        variables={"customer_name": admin_name, "customer_email": admin_email, "verification_code": verification_code},
+        variables={
+            "admin_name": admin_name,
+            "customer_name": admin_name,       # legacy alias in case template uses it
+            "partner_org_name": payload.get("name", ""),
+            "customer_email": admin_email,
+            "verification_code": verification_code,
+        },
         db=db, tenant_id=None,
     )
     if email_result.get("status") == "mocked":

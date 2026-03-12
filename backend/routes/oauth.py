@@ -649,6 +649,7 @@ async def validate_connection(
                         return (last_resp or None), dc_config["api_domain"]
 
                     # Test API access based on provider
+                    _from_email_error = None
                     if provider == "zoho_mail":
                         # Try each DC's mail_api — use matching accounts_url to get a valid token
                         all_mail_dcs = [(dc_config["accounts_url"], dc_config["mail_api"])] + [
@@ -692,13 +693,35 @@ async def validate_connection(
                                             {"tenant_id": tid, "provider": "zoho_mail"},
                                             {"$set": {"credentials.account_id": auto_account_id}}
                                         )
+
+                                    # Validate from_email if already configured in settings
+                                    conn_settings = await db.oauth_connections.find_one(
+                                        {"tenant_id": tid, "provider": "zoho_mail"},
+                                        {"_id": 0, "settings": 1}
+                                    )
+                                    from_email = (conn_settings or {}).get("settings", {}).get("from_email", "").strip()
+                                    if from_email:
+                                        valid_emails = {
+                                            ea.get("mailId", "").lower()
+                                            for acc in accounts
+                                            for ea in acc.get("emailAddress", [])
+                                            if ea.get("mailId")
+                                        }
+                                        if from_email.lower() not in valid_emails:
+                                            _from_email_error = (
+                                                f"'From' email '{from_email}' is not a registered sender "
+                                                f"in this Zoho Mail account. "
+                                                f"Valid address(es): {', '.join(sorted(valid_emails)) if valid_emails else 'none found'}"
+                                            )
                                 break
                     elif provider == "zoho_crm":
                         test_resp, _ = await _zoho_api_get("/crm/v3/Leads?per_page=1&fields=id")
                     else:  # zoho_books
                         test_resp, _ = await _zoho_api_get("/books/v3/organizations")
 
-                    if test_resp.status_code == 200:
+                    if _from_email_error:
+                        result = {"success": False, "message": _from_email_error}
+                    elif test_resp.status_code == 200:
                         result = {"success": True, "message": f"{config['name']} connection validated successfully"}
                     else:
                         # Expose the actual Zoho error for easier debugging

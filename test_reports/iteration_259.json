@@ -1,0 +1,66 @@
+{
+  "summary": "Iteration 259: Backend testing of email architecture changes. All 28 tests passed (100%). Key verifications: partner signup uses correct trigger=partner_verification (not old verification), Zoho Mail delivers it with status=sent, platform admin sees all restricted templates, partner admin is filtered, ensure_seeded prunes platform-only templates from partner tenants, 2-tier provider lookup is correct, Zoho access_token caching is working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/email-templates (partner admin)",
+        "issue": "Partner tenant (test-hardening-fix4) had 16 templates in DB including 4 partner_billing templates before ensure_seeded was triggered. After first API call, ensure_seeded pruned them correctly. This means any NEW partner tenants created before the pruning code was added may still have stale partner_billing templates until an admin first hits the templates API.",
+        "priority": "LOW — self-heals on first API call"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter259_email_arch.py",
+    "/app/test_reports/pytest/pytest_iter259_email_arch.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "2-tier logic in email_service.py: effective_tid = tenant_id if tenant_id else 'automate-accounts' — this means customer signup emails (tenant_id=partner_tenant, no email provider) will be MOCKED, not sent via platform Zoho. This is correct per the new spec but is a behavioral change from iter258 which showed platform fallback for partner tenant emails. Context: iter258's customer signup tests were testing OLD behavior (platform fallback for any tenant with no provider). The NEW spec restricts fallback to ONLY when tenant_id=None.",
+    "ensure_seeded is called on EVERY email send AND on every list_templates request. For tenants with many templates this could be a minor performance concern, but the existing_count check makes it fast for already-seeded tenants.",
+    "Zoho access_token caching is now working correctly (added in this iteration). Token is cached for ~50 minutes in oauth_connections.credentials. This fixes the iter258 critical bug of token exhaustion."
+  ],
+  "verified_scenarios": {
+    "partner_signup_trigger_partner_verification": "PASS — email_logs shows trigger=partner_verification (not old verification trigger)",
+    "partner_signup_provider_zoho_mail": "PASS — email_logs shows provider=zoho_mail, status=sent",
+    "partner_signup_subject_with_store_name": "PASS — subject='Verify your Automate Accounts partner account'",
+    "platform_admin_sees_partner_verification": "PASS — GET /api/admin/email-templates returns partner_verification with category=platform_admin_only",
+    "platform_admin_sees_partner_billing": "PASS — 4 partner_billing templates visible to platform admin",
+    "partner_admin_no_platform_admin_only": "PASS — partner admin sees 0 platform_admin_only templates",
+    "partner_admin_no_partner_billing": "PASS — partner admin sees 0 partner_billing templates",
+    "ensure_seeded_prunes_partner_billing_from_partner_tenant": "PASS — DB verified: 0 partner_billing templates in partner tenant after ensure_seeded",
+    "ensure_seeded_prunes_platform_admin_only_from_partner_tenant": "PASS — DB verified: 0 platform_admin_only templates in partner tenant",
+    "platform_zoho_connection_validated": "PASS — automate-accounts has is_validated=True Zoho Mail connection",
+    "zoho_access_token_caching": "PASS — access_token and access_token_expires_at cached in DB credentials",
+    "two_tier_provider_lookup_no_global_tier": "PASS — No email connections with tenant_id=None/empty exist in DB",
+    "partner_signup_fallback_to_platform": "PASS — tenant_id=None routes to platform (automate-accounts) connection"
+  },
+  "updated_files": [
+    "/app/backend/tests/test_iter259_email_arch.py"
+  ],
+  "success_rate": {
+    "backend": "100% (28/28 tests passed)",
+    "frontend": "N/A (backend-only testing requested)"
+  },
+  "test_credentials": "Platform Super Admin: admin@automateaccounts.local / ChangeMe123! | Partner Admin: test_admin_fix4@example.com / TestAdmin123! (partner_code=test-hardening-fix4)",
+  "seed_data_creation": "Created and auto-cleaned: testiter259_* pending_partner_registrations",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All email architecture changes verified. The partner signup now uses trigger=partner_verification and sends via Zoho Mail. Zoho access_token caching is working (fixes iter258 token exhaustion bug). Template visibility filtering is correct (platform admin sees all, partner admin sees only non-restricted). ensure_seeded pruning removes partner_billing/platform_admin_only templates from partner tenants. Note: customer signup emails with tenant_id=partner_tenant (no email provider) are MOCKED per new 2-tier spec — no platform fallback when tenant_id is set.",
+  "rca_of_the_issue": {
+    "root_cause": "Previous email architecture had 3-tier lookup (tenant → global → mocked). New 2-tier spec removes global tier: tenant_id present → tenant's connection only; tenant_id=None → platform (automate-accounts) connection.",
+    "fixes_verified": [
+      "1. trigger=partner_verification added to register-partner endpoint (was verification)",
+      "2. partner_verification template added with category=platform_admin_only in _TEMPLATES",
+      "3. list_templates filters by role: platform admin sees all, partner admin filters out platform_admin_only + partner_billing",
+      "4. ensure_seeded prunes platform_admin_only + partner_billing from non-platform tenants",
+      "5. 2-tier provider lookup: effective_tid = tenant_id if tenant_id else 'automate-accounts'",
+      "6. Zoho Mail from_email validation in oauth.py: checks from_email against Zoho account emailAddress list"
+    ]
+  }
+}

@@ -249,6 +249,29 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{reset_code}}"],
         "is_system": True,
     },
+    # ── Partner Registration (Platform Admin only) ──────────────────────────
+    {
+        "trigger": "partner_verification",
+        "label": "Partner Account Verification",
+        "description": "Sent to a new partner organisation admin when they register and need to verify their email. Only editable by platform admin.",
+        "category": "platform_admin_only",
+        "subject": "Verify your {{store_name}} partner account",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 16px">Verify your partner account</h2>
+  <p style="color:#475569;">Hi {{admin_name}},</p>
+  <p style="color:#475569;">You've started registration for <strong>{{partner_org_name}}</strong>. Please verify your email address with the code below:</p>
+  <div style="background:#f1f5f9;border-radius:8px;padding:16px 24px;text-align:center;margin:24px 0">
+    <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#1e293b">{{verification_code}}</span>
+  </div>
+  <p style="color:#64748b;font-size:14px;">This code expires in 24 hours. If you did not request this, you can safely ignore this email.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{admin_name}}", "{{partner_org_name}}", "{{verification_code}}"],
+        "is_system": True,
+    },
     # ── Partner Billing (Platform Admin only) ───────────────────────────────
     {
         "trigger": "partner_subscription_created",
@@ -434,13 +457,23 @@ class EmailService:
         - Seeds all templates if none exist for the tenant
         - Seeds any missing templates if some exist (for new templates added later)
         - Updates existing system templates when their definition changes
+        - platform_admin_only and partner_billing templates are only seeded for the platform tenant
         """
+        _PLATFORM_TENANT = "automate-accounts"
+        _PLATFORM_ONLY_CATEGORIES = {"partner_billing", "platform_admin_only"}
+        
+        # Templates visible to this tenant
+        if tenant_id == _PLATFORM_TENANT:
+            templates_for_tenant = _TEMPLATES
+        else:
+            templates_for_tenant = [t for t in _TEMPLATES if t.get("category") not in _PLATFORM_ONLY_CATEGORIES]
+
         existing_count = await db.email_templates.count_documents({"tenant_id": tenant_id})
         now = now_iso()
         
         if existing_count == 0:
             # First time seeding - add all templates
-            docs = [{"id": make_id(), "tenant_id": tenant_id, "created_at": now, "updated_at": now, **t} for t in _TEMPLATES]
+            docs = [{"id": make_id(), "tenant_id": tenant_id, "created_at": now, "updated_at": now, **t} for t in templates_for_tenant]
             await db.email_templates.insert_many(docs)
         else:
             # Check for missing templates and add them
@@ -453,13 +486,13 @@ class EmailService:
                 existing_triggers.add(doc["trigger"])
             
             # Find templates that don't exist yet
-            missing = [t for t in _TEMPLATES if t["trigger"] not in existing_triggers]
+            missing = [t for t in templates_for_tenant if t["trigger"] not in existing_triggers]
             if missing:
                 docs = [{"id": make_id(), "tenant_id": tenant_id, "created_at": now, "updated_at": now, **t} for t in missing]
                 await db.email_templates.insert_many(docs)
             
             # Update system templates that have new available_variables (non-destructive: only if admin hasn't edited them)
-            for t in _TEMPLATES:
+            for t in templates_for_tenant:
                 if t.get("is_system") and t["trigger"] in existing_triggers:
                     await db.email_templates.update_one(
                         {"tenant_id": tenant_id, "trigger": t["trigger"]},
@@ -470,6 +503,12 @@ class EmailService:
             if _DEPRECATED_TRIGGERS:
                 await db.email_templates.delete_many(
                     {"tenant_id": tenant_id, "trigger": {"$in": list(_DEPRECATED_TRIGGERS)}, "is_system": True}
+                )
+            
+            # Prune platform-only templates that may have been seeded into partner tenants previously
+            if tenant_id != _PLATFORM_TENANT:
+                await db.email_templates.delete_many(
+                    {"tenant_id": tenant_id, "is_system": True, "category": {"$in": list(_PLATFORM_ONLY_CATEGORIES)}}
                 )
 
     @staticmethod
@@ -544,46 +583,20 @@ class EmailService:
         if tenant_id:
             log_entry["tenant_id"] = tenant_id
 
-        # Check for email provider in oauth_connections (Connected Services)
-        resend_conn = None
-        zoho_mail_conn = None
-        
-        if tenant_id:
-            resend_conn = await db.oauth_connections.find_one(
-                {"tenant_id": tenant_id, "provider": "resend", "is_validated": True},
-                {"_id": 0}
-            )
-            zoho_mail_conn = await db.oauth_connections.find_one(
-                {"tenant_id": tenant_id, "provider": "zoho_mail", "is_validated": True},
-                {"_id": 0}
-            )
-        
-        # Check global/tenant-less connections
-        if not resend_conn:
-            resend_conn = await db.oauth_connections.find_one(
-                {"provider": "resend", "is_validated": True, "$or": [{"tenant_id": {"$exists": False}}, {"tenant_id": None}]},
-                {"_id": 0}
-            )
-        if not zoho_mail_conn:
-            zoho_mail_conn = await db.oauth_connections.find_one(
-                {"provider": "zoho_mail", "is_validated": True, "$or": [{"tenant_id": {"$exists": False}}, {"tenant_id": None}]},
-                {"_id": 0}
-            )
-
-        # Final fallback: use the platform admin's configured email provider
-        # This ensures system emails (OTP, password reset) are always sent,
-        # even if the partner tenant has no email provider configured.
+        # Check for email provider in oauth_connections (Connected Services).
+        # Each tenant uses their own connection. When tenant_id is blank
+        # (e.g. partner signup), fall back to the platform tenant's connection.
         _PLATFORM_TENANT = "automate-accounts"
-        if not resend_conn and tenant_id != _PLATFORM_TENANT:
-            resend_conn = await db.oauth_connections.find_one(
-                {"tenant_id": _PLATFORM_TENANT, "provider": "resend", "is_validated": True},
-                {"_id": 0}
-            )
-        if not zoho_mail_conn and tenant_id != _PLATFORM_TENANT:
-            zoho_mail_conn = await db.oauth_connections.find_one(
-                {"tenant_id": _PLATFORM_TENANT, "provider": "zoho_mail", "is_validated": True},
-                {"_id": 0}
-            )
+        effective_tid = tenant_id if tenant_id else _PLATFORM_TENANT
+
+        resend_conn = await db.oauth_connections.find_one(
+            {"tenant_id": effective_tid, "provider": "resend", "is_validated": True},
+            {"_id": 0}
+        )
+        zoho_mail_conn = await db.oauth_connections.find_one(
+            {"tenant_id": effective_tid, "provider": "zoho_mail", "is_validated": True},
+            {"_id": 0}
+        )
         
         # Try Resend first if connected
         if resend_conn:

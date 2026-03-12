@@ -18,7 +18,15 @@ router = APIRouter(prefix="/api", tags=["email-templates"])
 async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tid = tenant_id_of(admin)
     await EmailService.ensure_seeded(db, tid)
-    templates = await db.email_templates.find({"tenant_id": tid}, {"_id": 0}).sort("trigger", 1).to_list(100)
+    
+    query: Dict[str, Any] = {"tenant_id": tid}
+    # Platform-only and partner_billing templates are hidden from partner admins
+    role = admin.get("role", "")
+    is_platform = role in ("platform_admin", "platform_super_admin")
+    if not is_platform:
+        query["category"] = {"$nin": ["platform_admin_only", "partner_billing"]}
+    
+    templates = await db.email_templates.find(query, {"_id": 0}).sort("trigger", 1).to_list(100)
     return {"templates": templates}
 
 
