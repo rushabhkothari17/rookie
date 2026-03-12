@@ -1,0 +1,106 @@
+{
+  "summary": "Tested all 6 features for unified Edit+Create Customer dialog rendering via UniversalFormRenderer. 5/6 features pass. One pre-fill bug found: country dropdown shows empty in Edit dialog when customer has ISO country code ('CA') stored but countries API returns full names as values ('Canada').",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Edit Customer Dialog — Country dropdown",
+        "issue": "Country dropdown is NOT pre-filling in Edit Customer dialog. When customer has 'CA' stored as country (ISO code), but /utils/countries API returns { value: 'Canada', label: 'Canada' } (full country name as value), the Select component finds no matching option and shows empty. Province ('British Columbia') pre-fills correctly because /utils/provinces returns { value: 'BC', label: 'British Columbia' } and the DB also stores 'BC'.",
+        "selector": "[data-testid='addr-country-address']",
+        "priority": "MEDIUM",
+        "root_cause": "Country values in DB use ISO codes ('CA') for legacy customers, but /utils/countries API uses full country names as option values ('Canada'). Mismatch prevents Select from pre-filling.",
+        "fix_suggestion": "Option A: Normalize country value when setting selectedCustomer — map 'CA' → 'Canada' using a country lookup. Option B: Update /utils/countries API to use ISO codes as values (breaking change). Option C: In AddressFieldRenderer, if value.country doesn't match any option value, try matching by label or code."
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "test_1_edit_uses_universal_form_renderer": {
+      "pill_inputs_border_radius": "9999px (all 8 inputs confirmed)",
+      "placeholder_only": "PASS — no standalone labels above inputs (only 2 payment method labels present)",
+      "address_section_header": "PASS — MapPin icon + 'ADDRESS' text present",
+      "gap_4_spacing": "PASS — flex flex-col gap-4 container confirmed",
+      "ufr_field_testids": "PASS — ufr-field-full_name, ufr-field-company_name, ufr-field-job_title, ufr-field-phone all present",
+      "status": "PASS"
+    },
+    "test_2_edit_prefills_data": {
+      "full_name": "PASS — 'TEST Profile Customer' pre-filled",
+      "company_name": "PASS — 'Profile Test Co' pre-filled",
+      "job_title": "PASS — 'TEST_Updated Title' pre-filled",
+      "phone": "PASS — '+1-555-0100' pre-filled",
+      "line1": "PASS — '456 Admin Updated St' pre-filled",
+      "city": "PASS — 'Vancouver' pre-filled",
+      "postal": "PASS — 'V6B 1H7' pre-filled",
+      "province": "PASS — 'British Columbia' selected correctly",
+      "country": "FAIL — country dropdown shows EMPTY (stored 'CA' ISO code doesn't match 'Canada' full name option value)",
+      "status": "PARTIAL PASS (7/8 fields correct, country blank)"
+    },
+    "test_3_payment_and_tax_exempt_sections": {
+      "payment_methods_header": "PASS — 'PAYMENT METHODS' section present below schema form",
+      "gocardless_checkbox": "PASS — data-testid='edit-payment-mode-gocardless', checked=True",
+      "stripe_checkbox": "PASS — data-testid='edit-payment-mode-stripe', checked=False",
+      "tax_exempt_section": "PASS — 'Tax Exempt' + description text present",
+      "tax_exempt_checkbox": "PASS — data-testid='edit-customer-tax-exempt', checked=False",
+      "status": "PASS"
+    },
+    "test_4_save_changes": {
+      "dialog_closes_after_save": "PASS — dialog closed after clicking Save Changes",
+      "data_persisted": "PASS — company name change persisted after re-opening dialog ('Profile Test Co SAVE_TEST' confirmed, then restored)",
+      "success_toast": "PASS — 'Customer updated' toast shown",
+      "status": "PASS"
+    },
+    "test_5_create_customer_no_regression": {
+      "pill_inputs": "PASS — 11 pill inputs (9999px border-radius)",
+      "email_field": "PASS — ufr-field-email present",
+      "password_field": "PASS — ufr-field-password present with hint text",
+      "full_name_field": "PASS",
+      "address_section": "PASS — ADDRESS section with MapPin icon",
+      "gap_4_spacing": "PASS — flex flex-col gap-4 confirmed",
+      "no_payment_methods": "PASS — Create dialog correctly has no Payment Methods section",
+      "status": "PASS"
+    },
+    "test_6_visual_structure_identical": {
+      "both_have_pill_inputs": "PASS — Edit: 8 pills, Create: 11 pills",
+      "both_have_gap_4": "PASS",
+      "both_have_address_section": "PASS",
+      "both_placeholder_only": "PASS — no separate field labels above inputs",
+      "both_use_ufr": "PASS — Edit uses UniversalFormRenderer directly, Create uses CustomerSignupFields → UniversalFormRenderer",
+      "status": "PASS"
+    }
+  },
+  "rca_of_the_issue": {
+    "bug": "Country dropdown not pre-filling in Edit Customer dialog",
+    "root_cause": "/utils/countries API returns { value: 'Canada', label: 'Canada' } (full name as both value and label). DB stores country as ISO code 'CA' for some legacy customers. AddressFieldRenderer's Select component uses value.country as the selected value, which is 'CA'. No SelectItem has value='CA', so Select shows empty.",
+    "affected_customers": "Only customers with ISO 2-letter country codes stored (e.g., 'CA', 'US'). Customers with full country names ('Canada') are unaffected.",
+    "provinces_unaffected": "/utils/provinces returns { value: 'BC', label: 'British Columbia' } using province codes. The DB also stores province codes ('BC'). So provinces match correctly.",
+    "reproduction": "Open admin panel → Customers tab → Edit a customer with 'CA' in Country column → Country dropdown shows empty even though other fields pre-fill correctly",
+    "fix_options": [
+      "Option A (frontend): In CustomersTab.tsx, when setting selectedCustomer, normalize country: map ISO codes to country names using the countries API data before opening dialog",
+      "Option B (backend): The /utils/countries endpoint could be updated to accept/return consistent formats with provinces",
+      "Option C (AddressFieldRenderer): Add fallback matching — if value.country doesn't match any option.value, try case-insensitive match on option.label or check if it matches a code pattern"
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "BUG FIX: Country dropdown not pre-filling in Edit Customer dialog — stored 'CA' doesn't match 'Canada' option value. Fix: normalize country value when opening Edit dialog (map ISO code → full country name using countries API lookup)",
+    "NOTE: All other Edit Customer features work correctly (pill inputs, pre-fill, Payment Methods, Tax Exempt, Save Changes)"
+  ],
+  "critical_code_review_comments": [
+    "CustomersTab.tsx: Edit dialog sets selectedCustomer as {…customer, …user, …address} where address.country='CA' (ISO code). But AddressFieldRenderer expects country value matching /utils/countries options which use full names ('Canada'). Add a country normalization step when setting selectedCustomer.",
+    "Inconsistent country value formats: /utils/provinces uses ISO codes as option values ('BC'), but /utils/countries uses full names ('Canada'). This inconsistency should be resolved for long-term maintainability.",
+    "All 6 required features pass except the country pre-fill edge case for legacy customers with ISO codes."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only test)",
+    "frontend": "83% (5/6 features fully pass; test_2 partial pass due to country pre-fill)"
+  },
+  "seed_data_creation": "",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 268 tests the unified Edit+Create Customer dialog (UniversalFormRenderer). All structure/spacing/Save features pass. ONE BUG: country dropdown empty in Edit dialog when customer has ISO code ('CA') stored. Fix needed: normalize country value ('CA' → 'Canada') when opening Edit dialog. Countries API: /utils/countries returns {value:'Canada'} (full name). Provinces API: /utils/provinces returns {value:'BC'} (ISO code). Test customer: 1247fb1b-37bb-4047-b86c-420c61a715d8 ('TEST Profile Customer', BC/CA). The gap-4 fix from iteration_267 is confirmed working in both dialogs."
+}

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ImportModal } from "@/components/admin/ImportModal";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -17,8 +16,8 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { Download, Plus, Upload} from "lucide-react";
 import { ColHeader } from "@/components/shared/ColHeader";
 import { FieldTip } from "./shared/FieldTip";
-import { SearchableSelect } from "@/components/ui/searchable-select";
 import { getAddressConfig, parseSchema } from "@/components/FormSchemaBuilder";
+import { UniversalFormRenderer } from "@/components/UniversalFormRenderer";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomerSignupFields } from "@/components/CustomerSignupFields";
 import { useCountries } from "@/hooks/useCountries";
@@ -353,44 +352,28 @@ export function CustomersTab() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-customer-edit-dialog">
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           {selectedCustomer && (
-            <div className="space-y-4 pt-1">
-              {/* Personal info */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[["Full Name", "full_name"], ["Company", "company_name"], ["Job Title", "job_title"], ["Phone", "phone"]].map(([label, key]) => (
-                  <div key={key} className="space-y-2">
-                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">{label}</label>
-                    <Input value={selectedCustomer[key] || ""} onChange={(e) => setSelectedCustomer({ ...selectedCustomer, [key]: e.target.value })} placeholder={label as string} />
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-slate-100 pt-4">
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-3">Address</p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {[["Street Address", "line1"], ["Suite / Unit", "line2"], ["City", "city"], ["State / Province", "region"], ["Postal Code", "postal"]].map(([label, key]) => (
-                    <div key={key} className={`space-y-2${key === "line1" ? " sm:col-span-2" : ""}`}>
-                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">{label}</label>
-                      <Input value={selectedCustomer[key] || ""} onChange={(e) => setSelectedCustomer({ ...selectedCustomer, [key]: e.target.value })} placeholder={label as string} />
-                    </div>
-                  ))}
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">Country</label>
-                    <SearchableSelect
-                      value={selectedCustomer.country || undefined}
-                      onValueChange={v => setSelectedCustomer({ ...selectedCustomer, country: v })}
-                      options={countries.length ? countries : [{value:"Canada",label:"Canada"},{value:"USA",label:"United States"}]}
-                      placeholder="Select country…"
-                      searchPlaceholder="Search country..."
-                      data-testid="admin-customer-country-select"
-                    />
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col gap-4 pt-1">
+              {/* Same schema-driven form as Create — no email/password (immutable) */}
+              <UniversalFormRenderer
+                fields={parseSchema(ws.signup_form_schema)}
+                values={selectedCustomer}
+                onChange={(key, value) =>
+                  setSelectedCustomer((prev: any) => ({
+                    ...prev,
+                    [key]: value,
+                    ...(key === "country" ? { region: "" } : {}),
+                  }))
+                }
+                compact={true}
+              />
+
+              {/* Payment methods — not in schema, edit-only */}
               <div className="border-t border-slate-100 pt-4">
                 <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-3">Payment Methods</p>
-                <div className="space-y-2.5">
+                <div className="flex flex-col gap-2">
                   {[
-                    { id: "gocardless", label: "GoCardless (Bank Transfer / Direct Debit)", defaultOn: true },
-                    { id: "stripe", label: "Stripe (Credit / Debit Card)", defaultOn: false },
+                    { id: "gocardless", label: "GoCardless (Bank Transfer / Direct Debit)" },
+                    { id: "stripe", label: "Stripe (Credit / Debit Card)" },
                   ].map(mode => {
                     const modes: string[] | undefined = selectedCustomer.allowed_payment_modes;
                     const isEnabled = modes
@@ -406,7 +389,7 @@ export function CustomersTab() {
                       const next = checked
                         ? current.concat(mode.id).filter((m: string, i: number, a: string[]) => a.indexOf(m) === i)
                         : current.filter((m: string) => m !== mode.id);
-                      setSelectedCustomer({ ...selectedCustomer, allowed_payment_modes: next, _payment_modes_changed: true });
+                      setSelectedCustomer((prev: any) => ({ ...prev, allowed_payment_modes: next, _payment_modes_changed: true }));
                     };
                     return (
                       <label key={mode.id} className="flex items-center gap-2.5 text-sm cursor-pointer select-none">
@@ -419,6 +402,8 @@ export function CustomersTab() {
                   })}
                 </div>
               </div>
+
+              {/* Tax exempt */}
               <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-700">Tax Exempt</p>
@@ -427,12 +412,15 @@ export function CustomersTab() {
                 <input
                   type="checkbox"
                   checked={!!selectedCustomer.tax_exempt}
-                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, tax_exempt: e.target.checked, _tax_exempt_changed: true })}
+                  onChange={(e) => setSelectedCustomer((prev: any) => ({ ...prev, tax_exempt: e.target.checked, _tax_exempt_changed: true }))}
                   className="h-4 w-4 rounded border-slate-300 accent-slate-900"
                   data-testid="edit-customer-tax-exempt"
                 />
               </div>
-              <Button onClick={handleCustomerEdit} disabled={saving} className="w-full h-11" data-testid="admin-customer-save-btn">{saving ? "Saving…" : "Save Changes"}</Button>
+
+              <Button onClick={handleCustomerEdit} disabled={saving} className="w-full h-11" data-testid="admin-customer-save-btn">
+                {saving ? "Saving…" : "Save Changes"}
+              </Button>
             </div>
           )}
         </DialogContent>
@@ -453,10 +441,10 @@ export function CustomersTab() {
       <Dialog open={showCreateDialog} onOpenChange={(open) => { setShowCreateDialog(open); if (!open) { setCreateTenantId(""); } }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-4 pt-1">
             {isPlatformAdmin && (
-              <div>
-                <label className="text-xs font-medium text-slate-700 block mb-1.5">Partner Organization *</label>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Partner Organization <span className="text-red-400">*</span></label>
                 <Select value={createTenantId} onValueChange={setCreateTenantId} data-testid="create-customer-tenant-select">
                   <SelectTrigger data-testid="create-customer-tenant-trigger">
                     <SelectValue placeholder="Select partner org..." />
@@ -478,7 +466,7 @@ export function CustomersTab() {
               showPassword={true}
               compact={true}
             />
-            <Button onClick={handleCreateCustomer} disabled={saving} className="w-full" data-testid="admin-create-customer-save-btn">{saving ? "Creating…" : "Create Customer"}</Button>
+            <Button onClick={handleCreateCustomer} disabled={saving} className="w-full h-11" data-testid="admin-create-customer-save-btn">{saving ? "Creating…" : "Create Customer"}</Button>
           </div>
         </DialogContent>
       </Dialog>
