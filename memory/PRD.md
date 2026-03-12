@@ -102,15 +102,20 @@ Build a white-label service commerce platform with:
 - Product Price Display Fix ($0 instead of "RFQ" for zero-price products)
 - Cache TTL reduced 60s → 1s
 
-### Phase 3: Universal Form Rendering (Feb 2026)
+### Phase 3: Universal Form Rendering + Bug Fixes (Feb 2026)
 - Created `UniversalFormRenderer` — single source of truth for ALL form rendering
-- Fixed `AddressFieldRenderer` — canonical field order, renamed state→region
+- Fixed `AddressFieldRenderer` — canonical field order (Line1→Line2→City→Country→State→Postal), renamed state→region
 - Rewrote `CustomerSignupFields` — thin wrapper around UniversalFormRenderer
 - Rewrote `PartnerOrgForm` — adapter mapping PartnerOrgFormValue → flat keys
-- Rewrote `Profile.tsx` — fully schema-driven, reads signup_form_schema
-- Updated `ProductDetail.tsx` — scope/quote modals use UniversalFormRenderer
+- Rewrote `Profile.tsx` — fully schema-driven, reads/saves ALL schema fields dynamically
+- Updated `ProductDetail.tsx` — scope/quote modals use UniversalFormRenderer (addressMode=json)
 - Fixed `websiteTabShared.tsx` — org address canonical order
-- Removed province-fetching from Signup.tsx and CustomersTab.tsx (handled internally)
+- Added real-time validation (email format, phone format) in `UniversalFormRenderer`
+- Fixed province clearing bug: only dispatch CHANGED address keys (not all 6 on every change)
+- Fixed `GET /me` to return `job_title` in user object
+- Fixed Admin customers list MongoDB projection to include `job_title` and `phone`
+- Added `noValidate` to Profile form so address-required fields don't block other field saves
+- Fixed `Signup.tsx` to pass `partnerCode` to CustomerSignupFields for correct country/province lists
 
 ## Prioritized Backlog
 
