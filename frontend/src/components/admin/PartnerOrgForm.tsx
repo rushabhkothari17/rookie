@@ -111,27 +111,23 @@ export function PartnerOrgForm({ value, onChange, currencies, schema = "", compa
           }
           {sf("line1").enabled && <Input placeholder={`Line 1${sf("line1").required ? " *" : " (optional)"}`} value={value.address.line1} onChange={e => setAddr("line1", e.target.value)} required={sf("line1").required} data-testid={`${prefix}addr-line1`} />}
           {sf("line2").enabled && <Input placeholder="Line 2 (optional)" value={value.address.line2} onChange={e => setAddr("line2", e.target.value)} data-testid={`${prefix}addr-line2`} />}
-          {(sf("city").enabled || sf("postal").enabled) && (
-            <div className="grid grid-cols-2 gap-1">
-              {sf("city").enabled && <Input placeholder={`City${sf("city").required ? " *" : ""}`} value={value.address.city} onChange={e => setAddr("city", e.target.value)} required={sf("city").required} data-testid={`${prefix}addr-city`} />}
-              {sf("postal").enabled && <Input placeholder={`Postal Code${sf("postal").required ? " *" : ""}`} value={value.address.postal} onChange={e => setAddr("postal", e.target.value)} required={sf("postal").required} data-testid={`${prefix}addr-postal`} />}
-            </div>
-          )}
-          {sf("country").enabled && (
-            <Select value={value.address.country} onValueChange={setCountryAddr}>
-              <SelectTrigger data-testid={`${prefix}addr-country`}><SelectValue placeholder={`Country${sf("country").required ? " *" : ""}`} /></SelectTrigger>
-              <SelectContent>{countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-            </Select>
-          )}
+          {sf("city").enabled && <Input placeholder={`City${sf("city").required ? " *" : ""}`} value={value.address.city} onChange={e => setAddr("city", e.target.value)} required={sf("city").required} data-testid={`${prefix}addr-city`} />}
           {sf("state").enabled && (
             provinces.length > 0 ? (
               <Select value={value.address.region} onValueChange={v => setAddr("region", v)}>
-                <SelectTrigger data-testid={`${prefix}addr-region-select`}><SelectValue placeholder="Province / State" /></SelectTrigger>
+                <SelectTrigger data-testid={`${prefix}addr-region-select`}><SelectValue placeholder={`Province / State${sf("state").required ? " *" : ""}`} /></SelectTrigger>
                 <SelectContent>{provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
               </Select>
             ) : (
               <Input placeholder={`State / Province${sf("state").required ? " *" : ""}`} value={value.address.region} onChange={e => setAddr("region", e.target.value)} required={sf("state").required} data-testid={`${prefix}addr-region-input`} />
             )
+          )}
+          {sf("postal").enabled && <Input placeholder={`Postal Code${sf("postal").required ? " *" : ""}`} value={value.address.postal} onChange={e => setAddr("postal", e.target.value)} required={sf("postal").required} data-testid={`${prefix}addr-postal`} />}
+          {sf("country").enabled && (
+            <Select value={value.address.country} onValueChange={setCountryAddr}>
+              <SelectTrigger data-testid={`${prefix}addr-country`}><SelectValue placeholder={`Country${sf("country").required ? " *" : ""}`} /></SelectTrigger>
+              <SelectContent>{countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+            </Select>
           )}
         </div>
       );
