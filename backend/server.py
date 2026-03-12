@@ -415,7 +415,8 @@ async def startup_tasks():
     await SettingsService.cleanup_obsolete()
     await SettingsService.seed()
     await seed_admin_user()
-    await seed_products()
+    # Demo product seeding disabled — products are managed by admins directly
+    # await seed_products()
     await _seed_free_trial_plan()  # Ensure Free Trial plan has is_default=True and is_readonly=True
 
     # Migrate platform_admin → platform_super_admin (one-time, idempotent)
