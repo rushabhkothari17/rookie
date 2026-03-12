@@ -422,7 +422,7 @@ function FieldCombobox({ fields, value, onChange, placeholder = "Select field...
 
 export function IntegrationsOverview() {
   const { user } = useAuth();
-  const isPlatformAdmin = user?.role === "platform_admin";
+  const isPlatformAdmin = user?.role === "platform_admin" || user?.role === "platform_super_admin";
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [dataCenters, setDataCenters] = useState<DataCenter[]>([]);
   const [activeEmailProvider, setActiveEmailProvider] = useState<string | null>(null);
