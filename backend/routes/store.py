@@ -356,6 +356,10 @@ async def validate_promo_code(
             used = await db.orders.find_one({"customer_id": customer["id"], "promo_code": code["code"]}, {"_id": 0})
             if used:
                 raise HTTPException(status_code=400, detail="You have already used this promo code")
+    # Check currency restriction
+    if code.get("currency") and payload.currency:
+        if code["currency"].upper() != payload.currency.upper():
+            raise HTTPException(status_code=400, detail=f"Promo code is only valid for {code['currency']} purchases")
     # Check product-scope restriction
     if code.get("applies_to_products") == "selected" and payload.product_ids:
         eligible_ids = code.get("product_ids", [])

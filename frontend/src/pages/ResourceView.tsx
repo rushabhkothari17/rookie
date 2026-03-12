@@ -106,30 +106,7 @@ export default function ResourceView() {
           <p className="text-sm text-slate-400">
             Last updated {new Date(resource.updated_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </p>
-          <div className="flex flex-wrap gap-4 text-xs text-slate-400 pt-1 border-t border-slate-100">
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-slate-500">Short ID:</span>
-              <code
-                className="bg-slate-100 px-1.5 py-0.5 rounded font-mono cursor-pointer hover:bg-slate-200 transition-colors"
-                title="Click to copy"
-                onClick={() => { navigator.clipboard.writeText(resource.id.slice(0, 8)); }}
-                data-testid="resource-short-id"
-              >
-                {resource.id.slice(0, 8)}
-              </code>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-slate-500">Resource ID:</span>
-              <code
-                className="bg-slate-100 px-1.5 py-0.5 rounded font-mono cursor-pointer hover:bg-slate-200 transition-colors"
-                title="Click to copy"
-                onClick={() => { navigator.clipboard.writeText(resource.id); }}
-                data-testid="resource-full-id"
-              >
-                {resource.id}
-              </code>
-            </div>
-          </div>
+          {/* IDs hidden from public view */}
         </div>
 
         <div

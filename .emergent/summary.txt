@@ -1,115 +1,126 @@
 <analysis>**original_problem_statement:**
-The user initiated a major UI/UX overhaul, requesting a premium, minimalist, and animated user experience. After this was implemented, the user provided several batches of bug fixes and feature requests.
+The user initiated a major UI/UX overhaul for a premium, minimalist, and animated user experience. Following this, the user has been providing batches of bug fixes and feature requests.
 
-The most recent request includes four validation and checkout issues:
-1.  **Block subscription creation for deleted customers:** The system currently allows creating subscriptions for customers who have been deleted. This needs to be prevented on both the frontend and backend.
-2.  **Block negative/zero product prices:** The system accepts negative amounts when creating products. Validation is needed to ensure all final product prices are strictly greater than 0.
-3.  **Fix missing checkout button for enquire only products:** The checkout/enquiry button disappears on product pages when the price is enquire only and a  is entered.
-4.  **Add price validation to Scope Final - Won resources:** When creating a resource in this specific category, the price field allows invalid (zero or negative) values.
-
-Previous requests in this session addressed:
-*   Fixing the New Enquiry admin form, which had a  error and lacked searchable, tenant-specific dropdowns for partners, customers, and products.
-*   Correcting the price display for free products, which showed Price on request instead of €0.
-*   Completely removing the Product Categories UI from the customer-facing product detail page and all associated logic.
+The current request is a large batch of issues spanning multiple application areas, including:
+*   **Payment Confirmation:** Payment confirmed notification firing multiple times.
+*   **Customer Cart:** 100% discounted carts failing at checkout and promo codes not validating currency.
+*   **Resource Pages:** Exposed IDs on the frontend.
+*   **Services Page:** Static sidebar category counts (broken faceted navigation).
+*   **Admin User Panel:** Missing unsaved changes warning and incorrect state display in a preset dropdown.
+*   **API & Docs:** A series of fixes to improve the interactive API documentation and streamline endpoint requirements (Base URL placeholder, redundant tenant query, documenting hidden fields).
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application has undergone a significant UI/UX transformation. It now uses  to provide a modern, animated experience, including a pill-shaped top navigation, scroll-triggered animations on cards, and smooth page transitions.
+The application features a modern, animated UI using . The previous session resolved several critical bugs and implemented user-requested features.
 
-Functionally, the admin New Enquiry dialog has been completely rewritten to use searchable  components for selecting partners, customers, and products, resolving previous errors and improving usability. The product detail pages have been cleaned up by removing the category tabs, and logic has been fixed to correctly handle pricing for both free and enquire only products. Backend PDF generation for enquiries now correctly includes all custom form fields.
+Key completed work includes:
+*   **Core Validation:** Fixed four major validation issues related to product pricing, resource pricing, and preventing subscriptions for deleted customers.
+*   **Pricing Engine:** Patched a critical bug in  that allowed negative prices to be calculated via intake question modifiers by adding a hard price floor.
+*   **Global UI Fixes:**
+    *   Resolved a site-wide bug causing all dropdowns/popovers to render in the top-left corner by correcting a CSS  animation conflict in .
+    *   Fixed a bug where  slide-over panels were partially visible.
+*   **Global Error Handling:** Implemented a global Axios interceptor () that correctly formats Pydantic 422 validation errors into user-friendly toast messages, preventing app crashes.
+*   **Form Robustness:** Added  and loading states to submit buttons across 7 admin tabs to prevent duplicate submissions.
+*   **Code Cleanup:** An orphaned Default Renewal Reminder setting was surfaced in the UI, and its source file () was cleaned of other unused, duplicated code.
 
 **Last working item**:
-- **Last item agent was working**: The agent was in the **exploration phase** for a batch of four validation and checkout-related issues. It has just finished a comprehensive review of all relevant frontend and backend files to gather context before starting implementation.
+- **Last item agent was working**: The agent had just started the **exploration phase** for a new, large batch of 10 bug fixes and API improvements requested by the user. The agent has completed reading all relevant files to gather context before implementation.
 - **Status**: IN PROGRESS
 - **Agent Testing Done**: N
 - **Which testing method agent to use?** both
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0): Block subscription creation for deleted customers.**
-- **Issue 2 (P0): Block negative/zero prices when creating a product.**
-- **Issue 3 (P0): Fix missing checkout button for enquire only products with a scope id.**
-- **Issue 4 (P0): Add price validation for Scope Final - Won resources.**
-- **Issue 5 (P1): Spacing on Resources and My Profile Page.**
-- **Issue 6 (P1): Mocked Email Delivery due to Missing API Key.**
+- **Issue 1 (P0): Payment confirmation notification fires multiple times on payment success page.**
+- **Issue 2 (P0): Carts with a 100% discount fail to checkout.**
+- **Issue 3 (P0): Promo code currency is not being validated against cart currency.**
+- **Issue 4 (P0): Resource Short ID and Resource ID are exposed on the public Resource detail page.**
+- **Issue 5 (P0): Sidebar category counts on the Services page are static and don't update with filters.**
+- **Issue 6 (P0): The user edit modal in the admin panel is missing an unsaved changes warning.**
+- **Issue 7 (P0): The quick preset dropdown in the user edit modal does not show the currently applied preset.**
+- **Issue 8 (P0): API docs show  placeholder instead of the actual tenant URL.**
+- **Issue 9 (P0): The  endpoint unnecessarily requires a  query parameter.**
+- **Issue 10 (P0): Multiple API endpoints have undocumented required fields, making them hard to use.**
+- **Issue 11 (P1): Spacing on Resources and My Profile Page needs to be standardized.**
+- **Issue 12 (P1): Email delivery is mocked due to a missing Resend API key.**
 
 **Issues Detail:**
-- **Issue 1: Block subscription creation for deleted customers.**
-    - **Attempted fixes**: None. The agent has only performed file exploration.
-    - **Next debug checklist**:
-        1.  **Backend**: In , modify the  endpoint. Before processing, query the customer by  and check for a  flag or similar status. If the customer is deleted, raise an  with a 400 status.
-        2.  **Frontend**: In , filter the list of customers passed to the selection dropdown to exclude any with a  status.
-    - **Why fix this issue and what will be achieved with the fix?** To prevent data integrity issues and ensure subscriptions are only tied to active customers.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Both
-    - **Blocked on other issue**: None
-
-- **Issue 2: Block negative/zero prices when creating a product.**
-    - **Attempted fixes**: None. Exploration phase only.
-    - **Next debug checklist**:
-        1.  **Backend**: In , locate the Pydantic models for product creation/updates (e.g., ). Add a  (greater than 0) validator to all relevant price fields.
-        2.  **Frontend**: In , add a  attribute and client-side validation logic to the price input fields to provide immediate user feedback.
-    - **Why fix this issue and what will be achieved with the fix?** To maintain valid financial data and prevent nonsensical product pricing.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Both
-    - **Blocked on other issue**: None
-
-- **Issue 3: Fix missing checkout button for enquire only products with a scope id.**
-    - **Attempted fixes**: None. Exploration phase only.
-    - **Next debug checklist**:
-        1.  **Frontend**: Investigate the component rendering logic in .
-        2.  Specifically, review the conditional logic that determines whether to show the Add to Cart or Enquire button. The condition likely incorrectly hides all buttons when  is true and  is present. Adjust the logic to ensure the Enquire button always shows for RFQ products.
-    - **Why fix this issue and what will be achieved with the fix?** To ensure customers can always take action on a product, preventing a dead-end user experience.
+- **Issue 1: Payment confirmation notification fires multiple times.**
+    - **Attempted fixes**: Exploration only.
+    - **Next debug checklist**: In , the  hook triggering the toast is likely re-running. Use a  flag to ensure the toast is only shown once per component mount.
     - **Status**: NOT STARTED
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Frontend
-    - **Blocked on other issue**: None
 
-- **Issue 4: Add price validation for Scope Final - Won resources.**
-    - **Attempted fixes**: None. Exploration phase only.
-    - **Next debug checklist**:
-        1.  **Backend**: In the relevant route file (likely ), add a validation check within the resource creation/update endpoint. If the resource  is Scope Final - Won, ensure the  is greater than 0.
-        2.  **Frontend**: In , add conditional client-side validation to the new/edit resource form. When the category is selected as Scope Final - Won, make the price field required and enforce a minimum value greater than 0.
-    - **Why fix this issue and what will be achieved with the fix?** To enforce business rules and ensure financial data consistency for specific resource types.
+- **Issue 2: 100% discounted carts trigger an endpoint rejection.**
+    - **Attempted fixes**: Exploration only.
+    - **Next debug checklist**: The checkout logic in  needs to handle zero-total carts. This may require a separate free checkout flow or modifying the backend checkout endpoint () to accept zero-value transactions.
     - **Status**: NOT STARTED
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Both
-    - **Blocked on other issue**: None
 
-- **Issue 5: Spacing on Resources and My Profile Page**
-    - **Attempted fixes**: None. This is a carry-over from a previous session.
-    - **Next debug checklist**:
-      1.  Review  and .
-      2.  Apply consistent  utilities between sections as done on the Cart and Service Detail pages.
-    - **Why fix this issue and what will be achieved with the fix?** To ensure a consistent and professional UI across the entire customer portal.
+- **Issue 3: Promo code not validating currencies.**
+    - **Attempted fixes**: Exploration only.
+    - **Next debug checklist**: Add a check in the promo code application logic (either  or ) to verify that the promo code's currency matches the cart's currency.
     - **Status**: NOT STARTED
-    - **Is recurring issue?** Y
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** Both
+
+- **Issue 4: Remove exposed Short ID and Resource ID from frontend.**
+    - **Attempted fixes**: Exploration only.
+    - **Next debug checklist**: Edit  and remove the JSX elements that render  and .
+    - **Status**: NOT STARTED
+    - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Frontend
-    - **Blocked on other issue**: None
 
-- **Issue 6: Mocked Email Delivery due to Missing API Key**
-    - **Attempted fixes**: None. This is a known configuration issue.
-    - **Next debug checklist**: Prompt the user for a Resend API key and configure it in .
-    - **Why fix this issue and what will be achieved with the fix?** To enable real email delivery for OTPs, which is essential for a production-ready authentication flow.
+- **Issue 5: Sidebar category counts are static.**
+    - **Attempted fixes**: Exploration only.
+    - **Next debug checklist**: In , the category counts must be recalculated from the filtered list of products whenever filters change, not just on initial load.
     - **Status**: NOT STARTED
-    - **Is recurring issue?** Y
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** Frontend
+
+- **Issue 6 & 7: User edit modal issues.**
+    - **Attempted fixes**: Exploration only.
+    - **Next debug checklist**: In :
+        - Implement a dirty check by comparing initial user data to the form state to trigger an unsaved changes confirmation dialog on close.
+        - Bind the  prop of the quick preset  component to the active user's preset ID to reflect the current state.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** Frontend
+
+- **Issue 8, 9, 10: API & Docs fixes.**
+    - **Attempted fixes**: Exploration only.
+    - **Next debug checklist**:
+        - **Base URL**: Update Swagger UI config in  to inject the server URL dynamically.
+        - **Tenant Code**: In , modify the  dependency to rely solely on the  header.
+        - **Doc Hidden Fields**: Update Pydantic models in  or route docstrings to accurately reflect all required fields for , , and .
+    - **Status**: NOT STARTED
+    - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Backend
-    - **Blocked on other issue**: Blocked on receiving the API key from the user.
+
+- **Issue 11: Spacing on Resources and My Profile Page**
+    - **Next debug checklist**: Review  and  and apply consistent  utilities.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?** Y
+
+- **Issue 12: Mocked Email Delivery due to Missing API Key**
+    - **Next debug checklist**: Prompt the user for a Resend API key and configure it in .
+    - **Status**: BLOCKED (on user)
+    - **Is recurring issue?** Y
 
 **In progress Task List**:
-- **Task 1: Implement the four validation and checkout fixes.**
-    - **Where to resume**: The agent has completed the file exploration phase. The next step is to plan and execute the code changes outlined in the Issues Detail section above, likely using parallel  calls.
-    - **What will be achieved with this?** A more robust, reliable, and bug-free checkout and data entry experience for both admins and customers.
+- **Task 1: Implement the new batch of 10 bug fixes and API improvements.**
+    - **Where to resume**: The file exploration is complete. The next step is to create a detailed implementation plan and begin coding the fixes.
+    - **What will be achieved with this?** A more stable, polished, and developer-friendly application.
     - **Status**: IN PROGRESS
     - **Should Test frontend/backend/both after fix?** Both
     - **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - (P1) Build the new landing page based on the refined design prompt (This was the original plan before the user pivoted to UI/UX overhaul and bug fixes).
+    - (P1) Build the new landing page based on the refined design prompt.
     - (P1) Add radio filters for **Role** & **Status** columns in the **Users** table.
 - **Future Tasks:**
     - (P2) Google Drive & OneDrive Integration.
@@ -117,32 +128,28 @@ Functionally, the admin New Enquiry dialog has been completely rewritten to use 
     - (P2) Centralize Email Settings.
 
 **Completed work in this session**
-- **Major UI/UX Overhaul**:
-  - Integrated  for app-wide animations.
-  - Replaced the main navigation with a modern, pill-shaped design ().
-  - Implemented scroll-reveal animations for sections ().
-  - Added entrance animations, page transitions, and animated hero blobs across multiple pages (, , , ).
-- **Admin New Enquiry Form Refactor**:
-  - Completely rewrote the New Enquiry dialog in .
-  - Replaced standard dropdowns with searchable  components for Partner, Customer, Product, and Form selection, fixing the  error.
-- **Product Detail Page Cleanup**:
-  - Removed the Product Categories tab/pill UI entirely from all customer-facing product layouts ().
-  - Corrected the price display logic in  to show €0 for free products instead of Price on request.
-- **Backend and Checkout Fixes**:
-  - Ensured zero-price products can be checked out directly ().
-  - Updated the enquiry PDF service to include all dynamic form fields ().
-- **Dependency Check**:
-  - Verified project dependencies and confirmed the presence of  as requested by the user.
+- **Core Validation & Pricing Engine Fixes**:
+  - Implemented 4 key validation rules for subscriptions, products, and resources.
+  - Fixed a critical flaw in  that allowed negative prices.
+- **Global UI & Error Handling**:
+  - Fixed a site-wide bug causing all dropdowns to misalign.
+  - Implemented a global Axios interceptor in  to gracefully handle 422 errors and prevent app crashes.
+- **Form Robustness & Contract Limits**:
+  - Added double-click protection to forms across 7 admin pages.
+  - Enforced a 300-month limit and integer validation on contract term fields.
+- **Code Refactoring**:
+  - Surfaced an orphaned Renewal Reminder setting.
+  - Deleted over 400 lines of unused, duplicated code from .
 
 **Earlier issues found/mentioned but not fixed**
 - **Issue 1: Spacing on Resources and My Profile Page**
-  - **Why to solve this issue and what will be achieved with this?** To create a visually consistent experience across all customer-facing pages.
-  - **Should Test frontend/backend/both after fix**: Frontend
-  - **Is recurring issue?** Y
+    - **Why to solve this issue and what will be achieved with this?** To create a visually consistent experience across all customer-facing pages.
+    - **Should Test frontend/backend/both after fix**: Frontend
+    - **Is recurring issue?** Y
 - **Issue 2: Mocked Email Delivery due to Missing API Key**
-  - **Why to solve this issue and what will be achieved with this?** Enables real email delivery for OTPs, crucial for a complete authentication flow.
-  - **Should Test frontend/backend/both after fix**: Backend
-  - **Is recurring issue?** Y
+    - **Why to solve this issue and what will be achieved with this?** Enables real email delivery for OTPs, crucial for a complete authentication flow.
+    - **Should Test frontend/backend/both after fix**: Backend
+    - **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
 - None.
@@ -151,50 +158,57 @@ Functionally, the admin New Enquiry dialog has been completely rewritten to use 
 
 
 **Key Technical Concepts**
-- **Animation & UI/UX**: Extensive use of  for animations ( components, , ) to create a modern, dynamic user interface.
-- **Advanced Forms**: Refactoring a complex form () from simple dropdowns to searchable  components, requiring intricate state management with , , and  to handle chained/dependent data loading.
-- **Server-Side Validation**: Adding business logic validation directly in backend routes (, ) and Pydantic models () to enforce data integrity at the API level (e.g., ).
-- **Component-Driven Logic Removal**: Systematically removing a feature (Product Categories) by tracing its usage from the parent component () down to its children () and disabling it via props, rather than deleting code chunks, which is a safer refactoring pattern.
+- **Global Error Handling (Axios Interceptors)**: Using a response interceptor to catch and re-format specific HTTP errors (like FastAPI's 422) before they reach application  blocks, providing a single, robust fix for a widespread issue.
+- **CSS Stacking Context Debugging**: Diagnosing and fixing complex visual bugs ( failing) caused by a CSS  on an ancestor element creating a new stacking context. The fix involved removing the transform from a global animation.
+- **Defensive Form UI**: Systematically implementing  and loading states on submit buttons to prevent duplicate API calls from rapid user clicks. This was applied to 7 different forms.
+- **Backend-Driven Pricing Engine**: The core price calculation logic lives in , which computes a final price based on a product's base price and modifiers from intake questions. A critical  floor was added here.
 
 **key DB schema**
-- No database schema changes were made in this session. Upcoming changes will rely on existing fields (e.g., a  or  field on the  collection).
+- No database schema changes were made in this session.
 
 **All files of reference**
-*    (Major rewrite)
-*    (Major rewrite)
-*    (Multiple fixes)
-*    (Directory with multiple files modified)
-*    (File under investigation for next fix)
-*    (File under investigation for next fix)
-*    (File under investigation for next fix)
-*    (File under investigation for next fix)
+*    (New global error handler)
+*    (Global CSS animation fix)
+*    (Critical pricing engine fix)
+*    (Major refactor/cleanup)
+*    (Multiple fixes and feature additions)
+*    (Validation fixes)
+*    (Validation fixes)
+*    (Investigation file for next task)
+*    (Investigation file for next task)
+*    (Investigation file for next task)
+*    (Investigation file for next task)
+*    (Investigation file for next task)
+*    (Investigation file for next task)
+*    (Multiple validation updates)
+*   The 7 admin tab files updated with loading states (, , etc.).
 
 **Critical Info for New Agent**
-1.  **Current Task**: You are in the middle of implementing a batch of four critical validation and checkout fixes. The file exploration is complete. Your immediate next step is to plan and implement the code changes for these four issues.
-2.  **User Workflow**: The user provides feedback and new requests in large, detailed batches. Be prepared to address multiple, interconnected issues simultaneously.
-3.  **UI Overhaul is Complete**: The core UI/UX has been significantly updated with . Be mindful of these new animations and the pill-navigation pattern when making any future frontend changes.
-4.  **Enquiry Form is Refactored**: The New Enquiry modal in the admin panel is a complex, custom component now. Be sure to study  before making changes to it.
-5.  **Pending Tasks from Previous Sessions**: Remember that the landing page build, new admin filters, and spacing fixes are still in the backlog, though the user's recent bug reports have taken precedence.
+1.  **Start Here**: You are starting a new batch of 10 distinct issues. File exploration is complete. Your first task is to create a plan and start implementing the fixes.
+2.  **App is More Stable**: Several critical, global bugs have just been resolved (422 errors, dropdown positioning, negative prices, form double-clicks). The codebase should now be significantly more stable and predictable.
+3.  **API Docs/Endpoints**: A significant portion of the new task list involves improving the backend API documentation and endpoint behavior. Refer to the files  and .
+4.  **Orphaned Code**: Be aware that there was significant orphaned code (). While much was cleaned up, other unused components might exist.
 
 **documents and test reports created in this job**
-- 
-- 
-- 
--  (updated multiple times)
+-  (Generated by testing agent for the first batch of 4 fixes)
+-  (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Provided a list of 4 validation and checkout issues to fix. **Status: IN PROGRESS (Agent has done exploration).**
-2.  **User**: Provided a list of issues:  error, need for searchable/tenant-specific dropdowns, empty forms dropdown, incorrect price for free products, and a request to remove the product category UI. **Status: COMPLETED.**
-3.  **User**: Finished the previous task with 100% test pass rate. **Status: COMPLETED.**
-4.  **User**: Asked to check for 'emergent' dependencies in the codebase. **Status: COMPLETED.**
-5.  **User**: Finished the major UI/UX overhaul task. **Status: COMPLETED.**
-6.  **User**: Clarified the SaaS business model (online store platform). **Status: COMPLETED (Informed agent's design choices).**
-7.  **User**: Kicked off the session by requesting a major UI/UX overhaul due to the site feeling outdated and boring. **Status: COMPLETED.**
+1.  **User**: Provided a large list of 13 new bugs/tasks. **Status: IN PROGRESS (superseded by next message).**
+2.  **User**: Pruned the list to 10 items, ignoring two suggestions. **Status: IN PROGRESS (agent is exploring).**
+3.  **User**: Reported a Create Subscription button allows multiple clicks. **Status: COMPLETED.**
+4.  **User**: Requested the double-click fix be applied to all other relevant forms. **Status: COMPLETED.**
+5.  **User**: Reported a bug where a slide-over panel was partially visible. **Status: COMPLETED.**
+6.  **User**: Requested deletion of orphaned code from . **Status: COMPLETED.**
+7.  **User**: Asked follow-up questions about orphaned settings and renewal reminder logic. **Status: COMPLETED (Agent answered).**
+8.  **User**: Requested the orphaned Renewal Reminder setting be added to the Subscriptions admin page. **Status: COMPLETED.**
+9.  **User**: Asked where the renewal reminder setting is, revealing it was orphaned code. **Status: COMPLETED (Led to a fix).**
+10. **User**: Confirmed the Pydantic 422 error message should be more specific. **Status: COMPLETED (Agent improved the interceptor).**
 
 **Project Health Check:**
-- **Broken**: None.
+- **Broken**: None. All known critical issues were resolved in the last session.
 - **Mocked**:
-  - **Email Delivery**: The Resend email service is still mocked. OTPs are logged to the console.
+  - **Email Delivery**: The Resend email service is mocked. OTPs and other notifications are logged to the console instead of being sent.
 
 **3rd Party Integrations**
 *   GoCardless (Payments)
@@ -203,13 +217,13 @@ Functionally, the admin New Enquiry dialog has been completely rewritten to use 
 *   **Resend (Email)** - Mocked.
 *    (FX rates)
 *    &  (Frontend PDF Generation)
-*   **framer-motion** (UI Animations) - Newly added.
+*   framer-motion (UI Animations)
 
 **Testing status**
-- **Testing agent used after significant changes**: YES
+- **Testing agent used after significant changes**: YES (Used once for the first batch of 4 validation fixes).
 - **Troubleshoot agent used after agent stuck in loop**: NO
 - **Test files created**: None.
-- **Known regressions**: None. Testing agent has been used to validate all major changes.
+- **Known regressions**: None known, but many fixes have been applied since the last testing agent run. A full regression test would be beneficial.
 
 **Credentials to test flow:**
 - **Platform Super Admin:**
@@ -217,5 +231,5 @@ Functionally, the admin New Enquiry dialog has been completely rewritten to use 
   - Password: 
 
 **What agent forgot to execute**
-- The tasks from the initial handoff summary (**Build the new landing page**, **Add radio filters for Role & Status**) have been postponed due to the user's shift in priorities to the UI overhaul and subsequent high-priority bug fixes.
-- The spacing fix for the **Resources** and **My Profile** pages is still pending from the initial handoff.</analysis>
+- The original high-level tasks (**Build the new landing page**, **Add radio filters for Role & Status**) remain in the backlog as the user has prioritized multiple rounds of bug fixes.
+- The UI spacing fix for the **Resources** and **My Profile** pages is still pending.</analysis>

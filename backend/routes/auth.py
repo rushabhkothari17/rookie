@@ -10,7 +10,7 @@ import secrets
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Response, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Header, Response, Request
 from fastapi.responses import JSONResponse
 
 from core.helpers import make_id, now_iso
@@ -587,8 +587,31 @@ async def login(payload: LoginRequest, response: Response):
 # ---------------------------------------------------------------------------
 
 @router.get("/tenant-info")
-async def get_tenant_info(code: str):
-    """Public endpoint to verify a partner code and get tenant display name."""
+async def get_tenant_info(
+    code: Optional[str] = None,
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+):
+    """Public endpoint to verify a partner code or API key and return tenant display name."""
+    # Resolve from X-API-Key header when no code provided
+    if not code and x_api_key:
+        import hashlib
+        key_hash = hashlib.sha256(x_api_key.encode()).hexdigest()
+        key_doc = await db.api_keys.find_one({"key_hash": key_hash, "is_active": True}, {"_id": 0, "tenant_id": 1})
+        if not key_doc:
+            key_doc = await db.api_keys.find_one({"key": x_api_key, "is_active": True}, {"_id": 0, "tenant_id": 1})
+        if not key_doc:
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        tid = key_doc["tenant_id"]
+        if tid == DEFAULT_TENANT_ID:
+            return {"tenant": {"name": "Platform Administration", "code": DEFAULT_TENANT_ID, "is_platform": True}}
+        tenant = await db.tenants.find_one({"id": tid}, {"_id": 0, "id": 1, "name": 1, "code": 1, "status": 1})
+        if not tenant:
+            raise HTTPException(status_code=404, detail="Tenant not found")
+        if tenant.get("status") != "active":
+            raise HTTPException(status_code=403, detail="Organization is inactive")
+        return {"tenant": {"name": tenant["name"], "code": tenant["code"], "is_platform": False}}
+    if not code:
+        raise HTTPException(status_code=400, detail="Partner code or X-API-Key is required")
     # automate-accounts is the reserved platform admin code — not a regular tenant
     if code.strip().lower() == DEFAULT_TENANT_ID:
         return {"tenant": {"name": "Platform Administration", "code": DEFAULT_TENANT_ID, "is_platform": True}}

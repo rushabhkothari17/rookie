@@ -285,6 +285,7 @@ class PromoCodeCreate(BaseModel):
     one_time_code: bool = False
     enabled: bool = True
     promo_note: Optional[str] = None
+    currency: Optional[str] = None
 
 
 class PromoCodeUpdate(BaseModel):
@@ -298,6 +299,7 @@ class PromoCodeUpdate(BaseModel):
     one_time_code: Optional[bool] = None
     enabled: Optional[bool] = None
     promo_note: Optional[str] = None
+    currency: Optional[str] = None
 
 
 class TermsCreate(BaseModel):
@@ -448,6 +450,7 @@ class ApplyPromoRequest(BaseModel):
     code: str
     checkout_type: str
     product_ids: List[str] = Field(default_factory=list)
+    currency: Optional[str] = None
 
 
 class ScopeRequestFormData(BaseModel):

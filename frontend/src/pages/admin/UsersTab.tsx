@@ -252,6 +252,10 @@ export function UsersTab() {
   const [editUser, setEditUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({ full_name: "", role: "" });
   const [editPerms, setEditPerms] = useState<ModulePerm>({});
+  const [editActivePreset, setEditActivePreset] = useState<string>("");
+  const [initialEditForm, setInitialEditForm] = useState({ full_name: "", role: "" });
+  const [initialEditPerms, setInitialEditPerms] = useState<ModulePerm>({});
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
   // Misc
   const [logsUrl, setLogsUrl] = useState("");
@@ -355,12 +359,37 @@ export function UsersTab() {
     if (preset?.module_permissions) setPerms(toModulePerm(preset.module_permissions));
   };
 
-  // ── Edit ────────────────────────────────────────────────────────────────────
+  const isEditDirty = () => {
+    if (editForm.full_name !== initialEditForm.full_name) return true;
+    if (editForm.role !== initialEditForm.role) return true;
+    const allKeys = new Set([...Object.keys(editPerms), ...Object.keys(initialEditPerms)]);
+    return Array.from(allKeys).some(k => (editPerms[k] || "none") !== (initialEditPerms[k] || "none"));
+  };
+
+  const handleCloseEditDialog = (open: boolean) => {
+    if (!open && isEditDirty()) {
+      setShowUnsavedWarning(true);
+    } else {
+      setShowEditDialog(open);
+      if (!open) setEditUser(null);
+    }
+  };
 
   const openEdit = (u: any) => {
+    const form = { full_name: u.full_name || "", role: u.role || "" };
+    const perms = toModulePerm(u.module_permissions);
     setEditUser(u);
-    setEditForm({ full_name: u.full_name || "", role: u.role || "" });
-    setEditPerms(toModulePerm(u.module_permissions));
+    setEditForm(form);
+    setEditPerms(perms);
+    setInitialEditForm({ ...form });
+    setInitialEditPerms({ ...perms });
+    // Detect if current permissions match any preset
+    const matchedPreset = presetRoles.find(preset => {
+      const presetPerms = toModulePerm(preset.module_permissions);
+      const allKeys = new Set([...Object.keys(presetPerms), ...Object.keys(perms)]);
+      return Array.from(allKeys).every(k => (presetPerms[k] || "none") === (perms[k] || "none"));
+    });
+    setEditActivePreset(matchedPreset?.key || "");
     setShowEditDialog(true);
   };
 
@@ -612,7 +641,7 @@ export function UsersTab() {
       </Dialog>
 
       {/* ── Edit Dialog ───────────────────────────────────────────────────── */}
-      <Dialog open={showEditDialog} onOpenChange={open => { setShowEditDialog(open); if (!open) setEditUser(null); }}>
+      <Dialog open={showEditDialog} onOpenChange={handleCloseEditDialog}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-edit-user-dialog">
           <DialogHeader><DialogTitle>Edit User: {editUser?.email}</DialogTitle></DialogHeader>
           {editUser && (
@@ -648,7 +677,7 @@ export function UsersTab() {
                   {presetRoles.length > 0 && (
                     <div className="space-y-1">
                       <label className="text-xs text-slate-500 flex items-center gap-1">Quick Preset <FieldTip tip="Overwrites module permissions below." /></label>
-                      <Select onValueChange={v => applyPreset(v, setEditPerms)}>
+                      <Select value={editActivePreset} onValueChange={v => { setEditActivePreset(v); applyPreset(v, setEditPerms); }}>
                         <SelectTrigger data-testid="admin-edit-user-preset"><SelectValue placeholder="Apply a preset…" /></SelectTrigger>
                         <SelectContent>
                           {presetRoles.map(r => <SelectItem key={r.key} value={r.key}>{r.name}</SelectItem>)}
@@ -680,6 +709,20 @@ export function UsersTab() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => deactivateUserId && handleDeactivate(deactivateUserId)} className="bg-red-600 hover:bg-red-700">Deactivate</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Unsaved Changes Warning ──────────────────────────────────────── */}
+      <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>You have unsaved changes. Are you sure you want to close without saving?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Editing</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setShowUnsavedWarning(false); setShowEditDialog(false); setEditUser(null); }} className="bg-red-600 hover:bg-red-700">Discard Changes</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

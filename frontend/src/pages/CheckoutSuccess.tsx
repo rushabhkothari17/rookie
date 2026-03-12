@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import api from "@/lib/api";
@@ -11,6 +11,8 @@ export default function CheckoutSuccess() {
   const [paymentStatus, setPaymentStatus] = useState("pending");
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const ws = useWebsite();
+  const toastShownRef = useRef(false);
+  const intervalRef = useRef<any>(null);
 
   const pollStatus = async () => {
     if (!sessionId) return;
@@ -18,15 +20,17 @@ export default function CheckoutSuccess() {
     setStatus(response.data.status);
     setPaymentStatus(response.data.payment_status);
     setOrderNumber(response.data.metadata?.order_number || null);
-    if (response.data.payment_status === "paid") {
+    if (response.data.payment_status === "paid" && !toastShownRef.current) {
       toast.success("Payment confirmed");
+      toastShownRef.current = true;
+      if (intervalRef.current) clearInterval(intervalRef.current);
     }
   };
 
   useEffect(() => {
     pollStatus();
-    const interval = setInterval(pollStatus, 2500);
-    return () => clearInterval(interval);
+    intervalRef.current = setInterval(pollStatus, 2500);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [sessionId]);
 
   const displayMessage = useMemo(() => {

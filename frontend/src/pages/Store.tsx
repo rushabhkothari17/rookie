@@ -263,7 +263,27 @@ export default function Store() {
   }, [configuredFilters, products]);
 
   const hasActiveFilters = Object.values(activeFilters).some(Boolean) || activeCategory !== null || searchQuery.trim() !== "";
-  const countFor = (name: string) => products.filter(p => displayCategory(p.category) === name).length;
+
+  // For category counts: apply all filters EXCEPT the category filter itself
+  const filteredWithoutCategory = useMemo(() => {
+    let result = products;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p =>
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.description_long || "").toLowerCase().includes(q)
+      );
+    }
+    for (const [filterId, value] of Object.entries(activeFilters)) {
+      if (!value) continue;
+      const filter = configuredFilters.find(f => f.id === filterId);
+      if (!filter || filter.filter_type === "category") continue;
+      result = result.filter(p => matchesFilter(p, filter.filter_type, value));
+    }
+    return result;
+  }, [products, activeFilters, configuredFilters, searchQuery]);
+
+  const countFor = (name: string) => filteredWithoutCategory.filter(p => displayCategory(p.category) === name).length;
   const countForOpt = (filter: StoreFilter, value: string) =>
     (activeCategory ? products.filter(p => displayCategory(p.category) === activeCategory) : products)
       .filter(p => matchesFilter(p, filter.filter_type, value)).length;

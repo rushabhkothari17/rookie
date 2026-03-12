@@ -36,7 +36,8 @@ const API_ENDPOINTS: EndpointDef[] = [
   {
     method: "GET", path: "/api/tenant-info", auth: "api-key", tags: ["Authentication"],
     summary: "Verify API Key / Get tenant info",
-    description: "Verify your API key is valid and return basic tenant information.",
+    description: "Verify your API key is valid and return basic tenant information. Pass either X-API-Key header (preferred) or ?code= query parameter.",
+    params: [{ name: "code", in: "query", type: "string", required: false, description: "Partner code (optional — omit to resolve from X-API-Key)", example: "your-partner-code" }],
     responseExample: { tenant_id: "your-tenant-id", name: "Your Company Ltd", code: "your-partner-code" },
   },
   {
@@ -134,29 +135,29 @@ const API_ENDPOINTS: EndpointDef[] = [
     method: "POST", path: "/api/orders/scope-request-form", auth: "api-key", tags: ["Quote Requests"],
     summary: "Submit a quote request",
     description: "Submit a scope/quote request. No customer authentication required — suitable for anonymous forms. Associates the request with the tenant via X-API-Key.",
-    bodySchema: { product_id: "string", fields: [{ key: "string", value: "string" }] },
+    bodySchema: { items: [{ product_id: "string", quantity: 1, inputs: {} }], form_data: { name: "string (required)", email: "string (required)", company: "string (optional)", phone: "string (optional)", message: "string (optional)" } },
     responseExample: { success: true, message: "Your request has been received", request_id: "req_xxx" },
   },
   {
     method: "POST", path: "/api/orders/preview", auth: "customer-jwt", tags: ["Quote Requests"],
     summary: "Preview order pricing",
     description: "Calculate and preview the full pricing for a potential order before checkout. Requires customer JWT.",
-    bodySchema: { product_id: "string", promo_code: "string (optional)", intake_answers: {} },
+    bodySchema: { items: [{ product_id: "string", quantity: 1, inputs: { field_key: "value" } }] },
     responseExample: { subtotal: 499, discount: 50, fee: 10, total: 459, line_items: [] },
   },
   {
     method: "POST", path: "/api/promo-codes/validate", auth: "customer-jwt", tags: ["Quote Requests"],
     summary: "Validate a promo code",
     description: "Check if a promo code is valid and return its discount details. Requires customer JWT.",
-    bodySchema: { code: "string" },
+    bodySchema: { code: "string (required)", checkout_type: "one_time | subscription (required)", product_ids: ["prod_xxx"], currency: "USD (optional)" },
     responseExample: { valid: true, discount_type: "percentage", discount_value: 20, applies_to: "all" },
   },
   // ── Checkout ──────────────────────────────────────────────────────────────
   {
     method: "POST", path: "/api/checkout/session", auth: "customer-jwt", tags: ["Checkout"],
     summary: "Create Stripe checkout session",
-    description: "Create a Stripe-hosted checkout session for a product. Returns a redirect URL to the Stripe payment page.",
-    bodySchema: { product_id: "string", promo_code: "string (optional)", terms_accepted: true, intake_answers: {}, pricing_answers: {} },
+    description: "Create a Stripe-hosted checkout session. Returns a redirect URL to the Stripe payment page.",
+    bodySchema: { items: [{ product_id: "string (required)", quantity: 1, inputs: {} }], checkout_type: "one_time | subscription (required)", promo_code: "string (optional)", terms_accepted: true, terms_id: "string (optional)", origin_url: "string (required)" },
     responseExample: { url: "https://checkout.stripe.com/...", session_id: "cs_xxx", order_id: "ord_xxx" },
   },
   {
@@ -569,7 +570,7 @@ function ApiKeyManager({ onKeyResolved }: { onKeyResolved: (key: string) => void
           <div>
             <p className="text-xs font-medium text-slate-600 mb-1">2. Example — fetch your products (cURL):</p>
             <pre className="bg-slate-900 text-blue-300 text-[11px] font-mono p-3 rounded-lg overflow-x-auto">
-{`curl https://{base-url}/api/products \\
+{`curl ${process.env.REACT_APP_BACKEND_URL || "https://your-domain.com"}/api/products \\
   -H "X-API-Key: ak_xxxxxxxx..."`}
             </pre>
           </div>
@@ -577,13 +578,13 @@ function ApiKeyManager({ onKeyResolved }: { onKeyResolved: (key: string) => void
             <p className="text-xs font-medium text-slate-600 mb-1">3. For customer-specific endpoints, also send a customer JWT:</p>
             <pre className="bg-slate-900 text-amber-300 text-[11px] font-mono p-3 rounded-lg overflow-x-auto">
 {`# Step 1: Get the JWT
-curl -X POST https://{base-url}/api/auth/customer-login \\
+curl -X POST ${process.env.REACT_APP_BACKEND_URL || "https://your-domain.com"}/api/auth/customer-login \\
   -H "X-API-Key: ak_xxxxxxxx..." \\
   -H "Content-Type: application/json" \\
   -d '{"email":"customer@example.com","password":"..."}'
 
 # Step 2: Use JWT + API Key together
-curl https://{base-url}/api/subscriptions \\
+curl ${process.env.REACT_APP_BACKEND_URL || "https://your-domain.com"}/api/subscriptions \\
   -H "X-API-Key: ak_xxxxxxxx..." \\
   -H "Authorization: Bearer eyJhbGci..."`}
             </pre>
@@ -709,7 +710,7 @@ export function ApiTab() {
               <div className="rounded-lg bg-slate-50 border border-slate-200 px-4 py-2.5 flex items-center gap-2">
                 <Info size={13} className="text-slate-400 shrink-0" />
                 <p className="text-[11px] text-slate-500">
-                  All paths are relative — prepend your base URL: <code className="bg-white border px-1 rounded font-mono">https://your-domain.com</code>.
+                  All paths are relative — prepend your base URL: <code className="bg-white border px-1 rounded font-mono">{process.env.REACT_APP_BACKEND_URL || "https://your-domain.com"}</code>.
                   The <strong>X-API-Key</strong> resolves the tenant, so the same base URL works for all tenants.
                 </p>
               </div>
