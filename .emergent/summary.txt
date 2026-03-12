@@ -1,119 +1,72 @@
 <analysis>**original_problem_statement:**
-The user initiated a major UI/UX overhaul for a premium, minimalist, and animated user experience. Following this, the user has been providing batches of bug fixes and feature requests.
+The user initiated a major UI/UX overhaul and has since been providing large batches of bug fixes and feature requests.
 
-The current request is a large batch of issues spanning multiple application areas, including:
-*   **Payment Confirmation:** Payment confirmed notification firing multiple times.
-*   **Customer Cart:** 100% discounted carts failing at checkout and promo codes not validating currency.
-*   **Resource Pages:** Exposed IDs on the frontend.
-*   **Services Page:** Static sidebar category counts (broken faceted navigation).
-*   **Admin User Panel:** Missing unsaved changes warning and incorrect state display in a preset dropdown.
-*   **API & Docs:** A series of fixes to improve the interactive API documentation and streamline endpoint requirements (Base URL placeholder, redundant tenant query, documenting hidden fields).
+The current request is a new batch of 11 issues focused on:
+*   **Admin Panel > Filters:** Issues with UI controls (Plan Name dropdown), validation (empty categories, name length, name uniqueness), and functionality (Tag filter saving incorrectly).
+*   **Admin Panel > Users:** A request to make the Quick Presets feature dynamic and editable from the backend, including creation and partner-specific assignment.
+*   **Admin Panel > Resources:** Bugs related to the View button, a UI overflow in the Send Email pop-up, and non-functional formatting tools in the resource editor.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application features a modern, animated UI using . The previous session resolved several critical bugs and implemented user-requested features.
+The application has a modern, animated UI. The previous agent completed a very large number of fixes across multiple sessions, significantly improving application stability and functionality.
 
 Key completed work includes:
-*   **Core Validation:** Fixed four major validation issues related to product pricing, resource pricing, and preventing subscriptions for deleted customers.
-*   **Pricing Engine:** Patched a critical bug in  that allowed negative prices to be calculated via intake question modifiers by adding a hard price floor.
-*   **Global UI Fixes:**
-    *   Resolved a site-wide bug causing all dropdowns/popovers to render in the top-left corner by correcting a CSS  animation conflict in .
-    *   Fixed a bug where  slide-over panels were partially visible.
-*   **Global Error Handling:** Implemented a global Axios interceptor () that correctly formats Pydantic 422 validation errors into user-friendly toast messages, preventing app crashes.
-*   **Form Robustness:** Added  and loading states to submit buttons across 7 admin tabs to prevent duplicate submissions.
-*   **Code Cleanup:** An orphaned Default Renewal Reminder setting was surfaced in the UI, and its source file () was cleaned of other unused, duplicated code.
+- **Subscriptions Module Overhaul:** Fixed 11 issues in the create/edit subscription forms, including robust validation for dates and amounts, filtering out inactive customers/products, fixing UI controls, and resetting form state correctly.
+- **Documents & Integrations Fixes:** Resolved 3 critical issues in the Admin Documents tab, including fixing a broken navigation button, clarifying Zoho WorkDrive connection status, and adding robust error handling to the file upload endpoint to prevent 500 errors.
+- **API & Authentication Hardening:** Fixed 7 backend issues, standardizing API key error responses (401), implementing rate limiting, improving auth error messages, and updating schemas for registration and email verification.
+- **Initial Batch of 10 Fixes:** Resolved a wide range of bugs including multiple payment confirmation toasts, checkout failures for 100% discounted carts, missing promo code currency validation, and several UI/API documentation issues.
+- **Database Reset:** The agent successfully performed a full data wipe, keeping only essential configuration records (admin user, tenants, settings, email templates) to return the application to a clean, default state as requested by the user.
 
 **Last working item**:
-- **Last item agent was working**: The agent had just started the **exploration phase** for a new, large batch of 10 bug fixes and API improvements requested by the user. The agent has completed reading all relevant files to gather context before implementation.
+- **Last item agent was working**: The agent just began the exploration phase for a new batch of 11 issues related to Admin Filters, User Presets, and the Resources section. All relevant files have been read to gather context.
 - **Status**: IN PROGRESS
 - **Agent Testing Done**: N
 - **Which testing method agent to use?** both
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0): Payment confirmation notification fires multiple times on payment success page.**
-- **Issue 2 (P0): Carts with a 100% discount fail to checkout.**
-- **Issue 3 (P0): Promo code currency is not being validated against cart currency.**
-- **Issue 4 (P0): Resource Short ID and Resource ID are exposed on the public Resource detail page.**
-- **Issue 5 (P0): Sidebar category counts on the Services page are static and don't update with filters.**
-- **Issue 6 (P0): The user edit modal in the admin panel is missing an unsaved changes warning.**
-- **Issue 7 (P0): The quick preset dropdown in the user edit modal does not show the currently applied preset.**
-- **Issue 8 (P0): API docs show  placeholder instead of the actual tenant URL.**
-- **Issue 9 (P0): The  endpoint unnecessarily requires a  query parameter.**
-- **Issue 10 (P0): Multiple API endpoints have undocumented required fields, making them hard to use.**
-- **Issue 11 (P1): Spacing on Resources and My Profile Page needs to be standardized.**
-- **Issue 12 (P1): Email delivery is mocked due to a missing Resend API key.**
+- **Issue 1 (P0): Filters - Plan Name field should be a dropdown, not an editable text input.**
+- **Issue 2 (P0): Filters - Prevent creating a Category filter if no product categories exist.**
+- **Issue 3 (P0): Filters - Filter Name field needs a character limit (e.g., 100) to prevent UI breakage.**
+- **Issue 4 (P0): Filters - Prevent creating multiple filters with the same name.**
+- **Issue 5 (P0): Filters - Tag filter saves n-1 options (e.g., saves 1 option when 2 are entered).**
+- **Issue 6 (P0): Users - Quick Presets are static and need to be editable/creatable from the backend.**
+- **Issue 7 (P0): Users - A UI/flow is needed to add new presets.**
+- **Issue 8 (P0): Users - Presets should be partner-specific.**
+- **Issue 9 (P0): Resources - View button leads to an article does not exist error.**
+- **Issue 10 (P0): Resources - The send email pop-up overflows its container.**
+- **Issue 11 (P0): Resources - Bullet point formatting tools in the resource editor are not working.**
 
 **Issues Detail:**
-- **Issue 1: Payment confirmation notification fires multiple times.**
-    - **Attempted fixes**: Exploration only.
-    - **Next debug checklist**: In , the  hook triggering the toast is likely re-running. Use a  flag to ensure the toast is only shown once per component mount.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Frontend
-
-- **Issue 2: 100% discounted carts trigger an endpoint rejection.**
-    - **Attempted fixes**: Exploration only.
-    - **Next debug checklist**: The checkout logic in  needs to handle zero-total carts. This may require a separate free checkout flow or modifying the backend checkout endpoint () to accept zero-value transactions.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Both
-
-- **Issue 3: Promo code not validating currencies.**
-    - **Attempted fixes**: Exploration only.
-    - **Next debug checklist**: Add a check in the promo code application logic (either  or ) to verify that the promo code's currency matches the cart's currency.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Both
-
-- **Issue 4: Remove exposed Short ID and Resource ID from frontend.**
-    - **Attempted fixes**: Exploration only.
-    - **Next debug checklist**: Edit  and remove the JSX elements that render  and .
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Frontend
-
-- **Issue 5: Sidebar category counts are static.**
-    - **Attempted fixes**: Exploration only.
-    - **Next debug checklist**: In , the category counts must be recalculated from the filtered list of products whenever filters change, not just on initial load.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Frontend
-
-- **Issue 6 & 7: User edit modal issues.**
-    - **Attempted fixes**: Exploration only.
-    - **Next debug checklist**: In :
-        - Implement a dirty check by comparing initial user data to the form state to trigger an unsaved changes confirmation dialog on close.
-        - Bind the  prop of the quick preset  component to the active user's preset ID to reflect the current state.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Frontend
-
-- **Issue 8, 9, 10: API & Docs fixes.**
-    - **Attempted fixes**: Exploration only.
+- **Issue 1-5: Admin Panel > Filters (, )**
     - **Next debug checklist**:
-        - **Base URL**: Update Swagger UI config in  to inject the server URL dynamically.
-        - **Tenant Code**: In , modify the  dependency to rely solely on the  header.
-        - **Doc Hidden Fields**: Update Pydantic models in  or route docstrings to accurately reflect all required fields for , , and .
+        - **Issue 1**: Change the  input to a  component populated with existing plan names.
+        - **Issue 2**: Before allowing creation of a Category filter, fetch categories from the backend. If the list is empty, disable the creation button or show a toast.
+        - **Issue 3**: Add a  attribute to the Filter Name input and corresponding backend validation.
+        - **Issue 4**: Before creating a filter, check if a filter with the same name already exists for the tenant.
+        - **Issue 5**: Investigate the state management for tag options in . The logic for adding tags to the array is likely flawed, possibly missing the last item before saving.
     - **Status**: NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Backend
 
-- **Issue 11: Spacing on Resources and My Profile Page**
-    - **Next debug checklist**: Review  and  and apply consistent  utilities.
+- **Issue 6-8: Admin Panel > Users > Quick Presets (, , )**
+    - **Next debug checklist**: This is a feature request.
+        - Create a new database model for  linked to a .
+        - Build new backend CRUD endpoints () to manage these presets.
+        - Create a new admin page or modal to create, edit, and delete presets.
+        - Modify  to fetch and display these dynamic presets instead of the hardcoded ones.
     - **Status**: NOT STARTED
-    - **Is recurring issue?** Y
 
-- **Issue 12: Mocked Email Delivery due to Missing API Key**
-    - **Next debug checklist**: Prompt the user for a Resend API key and configure it in .
-    - **Status**: BLOCKED (on user)
-    - **Is recurring issue?** Y
+- **Issue 9-11: Admin Panel > Resources (, )**
+    - **Next debug checklist**:
+        - **Issue 9**: The View button likely navigates to a public URL that expects a slug or public ID, but the resource may not be published or the wrong identifier is being used. The navigation logic needs to be corrected to point to a proper preview page or use the correct identifier.
+        - **Issue 10**: The modal for sending the email is too large or not responsive. Check the CSS (, ) and layout of the modal component in .
+        - **Issue 11**: The rich text editor's (likely ) configuration or toolbar setup for bullet points is incorrect. Review the component's implementation in .
+    - **Status**: NOT STARTED
 
 **In progress Task List**:
-- **Task 1: Implement the new batch of 10 bug fixes and API improvements.**
-    - **Where to resume**: The file exploration is complete. The next step is to create a detailed implementation plan and begin coding the fixes.
-    - **What will be achieved with this?** A more stable, polished, and developer-friendly application.
+- **Task 1: Implement the new batch of 11 fixes and features.**
+    - **Where to resume**: The context-gathering phase is complete. The next step is to create a detailed implementation plan, starting with the  issues, then the  fixes, and finally the  feature.
+    - **What will be achieved with this?** It will fix several usability issues and introduce a significant new feature for user permission management.
     - **Status**: IN PROGRESS
     - **Should Test frontend/backend/both after fix?** Both
     - **Blocked on something**: None
@@ -128,18 +81,11 @@ Key completed work includes:
     - (P2) Centralize Email Settings.
 
 **Completed work in this session**
-- **Core Validation & Pricing Engine Fixes**:
-  - Implemented 4 key validation rules for subscriptions, products, and resources.
-  - Fixed a critical flaw in  that allowed negative prices.
-- **Global UI & Error Handling**:
-  - Fixed a site-wide bug causing all dropdowns to misalign.
-  - Implemented a global Axios interceptor in  to gracefully handle 422 errors and prevent app crashes.
-- **Form Robustness & Contract Limits**:
-  - Added double-click protection to forms across 7 admin pages.
-  - Enforced a 300-month limit and integer validation on contract term fields.
-- **Code Refactoring**:
-  - Surfaced an orphaned Renewal Reminder setting.
-  - Deleted over 400 lines of unused, duplicated code from .
+- **Admin > Subscriptions Form Overhaul (11 Fixes)**: Resolved all reported issues, including validation (past dates, negative amounts, date logic), data filtering (inactive customers/products), UI controls (dropdowns, read-only fields), and state management (form reset, notes pop-up).
+- **Admin > Documents & Integrations (3 Fixes)**: Fixed navigation, improved Zoho WorkDrive connection status UI, and added robust backend error handling for uploads.
+- **API & Auth Hardening (7 Fixes)**: Standardized API error codes, implemented rate limiting, improved login/registration logic and schemas, and fixed JWT handling on core endpoints.
+- **General Bug Fixes (10 Fixes)**: Addressed issues with payment notifications, free checkouts, promo codes, exposed IDs, static sidebar counts, and missing unsaved changes warnings.
+- **Database Reset**: Wiped all transactional data and reset the application to its default state.
 
 **Earlier issues found/mentioned but not fixed**
 - **Issue 1: Spacing on Resources and My Profile Page**
@@ -147,7 +93,7 @@ Key completed work includes:
     - **Should Test frontend/backend/both after fix**: Frontend
     - **Is recurring issue?** Y
 - **Issue 2: Mocked Email Delivery due to Missing API Key**
-    - **Why to solve this issue and what will be achieved with this?** Enables real email delivery for OTPs, crucial for a complete authentication flow.
+    - **Why to solve this issue and what will be achieved with this?** Enables real email delivery for OTPs and notifications, crucial for a complete user flow. The user needs to be prompted for a Resend API key.
     - **Should Test frontend/backend/both after fix**: Backend
     - **Is recurring issue?** Y
 
@@ -158,72 +104,83 @@ Key completed work includes:
 
 
 **Key Technical Concepts**
-- **Global Error Handling (Axios Interceptors)**: Using a response interceptor to catch and re-format specific HTTP errors (like FastAPI's 422) before they reach application  blocks, providing a single, robust fix for a widespread issue.
-- **CSS Stacking Context Debugging**: Diagnosing and fixing complex visual bugs ( failing) caused by a CSS  on an ancestor element creating a new stacking context. The fix involved removing the transform from a global animation.
-- **Defensive Form UI**: Systematically implementing  and loading states on submit buttons to prevent duplicate API calls from rapid user clicks. This was applied to 7 different forms.
-- **Backend-Driven Pricing Engine**: The core price calculation logic lives in , which computes a final price based on a product's base price and modifiers from intake questions. A critical  floor was added here.
+- **Large-Scale Refactoring**: Successfully executed multiple large-scale refactoring tasks across critical components like  and , applying dozens of fixes and improvements in a structured way.
+- **Comprehensive Form Validation**: Implemented extensive client-side and server-side validation, covering data types, business logic (e.g., end date > start date), and edge cases (negative values, inactive entities).
+- **Centralized API Error Handling**: Enhanced backend error handling in  to catch specific exceptions (like  for missing headers,  from integrations) and return standardized, user-friendly error responses (401, 404, 409) instead of generic 500s.
+- **State Management for Complex UI**: Systematically managed component state in React (, , prop drilling) to fix issues related to form resets, dirty state detection for unsaved changes, and dynamic UI updates based on user interaction.
+- **Database Scripting**: Used  scripts to perform a targeted database wipe, preserving essential configuration data while clearing all transactional records.
 
 **key DB schema**
-- No database schema changes were made in this session.
+- :  field added.
+- :  is now derived from  and  upon registration.
 
 **All files of reference**
-*    (New global error handler)
-*    (Global CSS animation fix)
-*    (Critical pricing engine fix)
-*    (Major refactor/cleanup)
-*    (Multiple fixes and feature additions)
-*    (Validation fixes)
-*    (Validation fixes)
-*    (Investigation file for next task)
-*    (Investigation file for next task)
-*    (Investigation file for next task)
-*    (Investigation file for next task)
-*    (Investigation file for next task)
-*    (Investigation file for next task)
-*    (Multiple validation updates)
-*   The 7 admin tab files updated with loading states (, , etc.).
+*    (Next task)
+*    (Next task)
+*    (Next task)
+*    (Recently overhauled)
+*    (Recently overhauled)
+*    (Recently overhauled)
+*    (Recently modified for rate limiting and error handling)
+*    (Recently modified for error handling)
+
+**Areas that need refactoring**:
+- : This file has grown extremely large and complex due to the numerous features and validations. It is a prime candidate for being broken down into smaller, more manageable components (e.g., , , ).
+
+**key api endpoints**
+-  (MODIFIED: Now returns 404 for invalid sessions)
+-  (MODIFIED: Now rate-limited and works with  header)
+-  (MODIFIED: Improved error messages for admin/unverified users)
+-  (MODIFIED: Schema changed to use /)
+-  (MODIFIED: Now accepts a single JWT token)
+- ,  (MODIFIED: Gracefully handle Admin JWTs)
+-  (MODIFIED: Added error handling for integration failures)
+-  (MODIFIED: Now return 401 instead of 422 on missing key)
 
 **Critical Info for New Agent**
-1.  **Start Here**: You are starting a new batch of 10 distinct issues. File exploration is complete. Your first task is to create a plan and start implementing the fixes.
-2.  **App is More Stable**: Several critical, global bugs have just been resolved (422 errors, dropdown positioning, negative prices, form double-clicks). The codebase should now be significantly more stable and predictable.
-3.  **API Docs/Endpoints**: A significant portion of the new task list involves improving the backend API documentation and endpoint behavior. Refer to the files  and .
-4.  **Orphaned Code**: Be aware that there was significant orphaned code (). While much was cleaned up, other unused components might exist.
+1.  **Start Here**: You are starting a new batch of 11 issues/features. The file exploration is complete. Your first step is to create a detailed implementation plan and begin coding the fixes, likely starting with the  issues.
+2.  **New Feature vs. Fixes**: The request is a mix of straightforward bug fixes (Filters, Resources) and a significant new feature (dynamic User Presets). The preset feature will require creating new backend models, routes, and a new admin UI. Plan accordingly.
+3.  **App Stability**: The application is significantly more stable than it was. Numerous critical bugs, validation gaps, and unhandled errors have been fixed. You can build on a more reliable foundation.
+4.  **Testing is Key**: The previous agent successfully used the  after each major batch of changes. Continue this pattern to ensure no regressions are introduced.
 
 **documents and test reports created in this job**
--  (Generated by testing agent for the first batch of 4 fixes)
--  (Updated)
+- 
+- 
+- 
+- 
+-  (Updated after each completed batch)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Provided a large list of 13 new bugs/tasks. **Status: IN PROGRESS (superseded by next message).**
-2.  **User**: Pruned the list to 10 items, ignoring two suggestions. **Status: IN PROGRESS (agent is exploring).**
-3.  **User**: Reported a Create Subscription button allows multiple clicks. **Status: COMPLETED.**
-4.  **User**: Requested the double-click fix be applied to all other relevant forms. **Status: COMPLETED.**
-5.  **User**: Reported a bug where a slide-over panel was partially visible. **Status: COMPLETED.**
-6.  **User**: Requested deletion of orphaned code from . **Status: COMPLETED.**
-7.  **User**: Asked follow-up questions about orphaned settings and renewal reminder logic. **Status: COMPLETED (Agent answered).**
-8.  **User**: Requested the orphaned Renewal Reminder setting be added to the Subscriptions admin page. **Status: COMPLETED.**
-9.  **User**: Asked where the renewal reminder setting is, revealing it was orphaned code. **Status: COMPLETED (Led to a fix).**
-10. **User**: Confirmed the Pydantic 422 error message should be more specific. **Status: COMPLETED (Agent improved the interceptor).**
+1.  **User**: Provided a list of 11 new issues related to Admin Filters, User Presets, and Resources. **Status: IN PROGRESS (Agent has started exploration).**
+2.  **User**: Confirmed the 11 fixes in the Subscriptions panel passed testing. **Status: COMPLETED.**
+3.  **User**: Provided the list of 11 issues for the Subscriptions panel. **Status: COMPLETED.**
+4.  **User**: Confirmed the 3 fixes for the Documents panel passed testing. **Status: COMPLETED.**
+5.  **User**: Provided the list of 3 issues for the Documents panel (button not working, Zoho status, upload error). **Status: COMPLETED.**
+6.  **User**: Confirmed the 7 backend API/Auth fixes passed testing. **Status: COMPLETED.**
+7.  **User**: Provided the list of 7 backend API/Auth fixes. **Status: COMPLETED.**
+8.  **User**: Acknowledged the database reset was complete. **Status: COMPLETED.**
+9.  **User**: Requested that the database be wiped to a default state, keeping only essential configuration. **Status: COMPLETED.**
+10. **User**: Confirmed the initial batch of 10 fixes passed testing. **Status: COMPLETED.**
 
 **Project Health Check:**
-- **Broken**: None. All known critical issues were resolved in the last session.
+- **Broken**: None. However, the 11 issues in the new batch are pending.
 - **Mocked**:
-  - **Email Delivery**: The Resend email service is mocked. OTPs and other notifications are logged to the console instead of being sent.
+  - **Email Delivery**: The Resend email service is still mocked. The application logs emails to the console instead of sending them. This requires a user-provided API key to become fully functional.
 
 **3rd Party Integrations**
 *   GoCardless (Payments)
 *   Stripe (Payments)
-*   Zoho Suite (OAuth)
+*   Zoho Suite (OAuth, WorkDrive)
 *   **Resend (Email)** - Mocked.
 *    (FX rates)
 *    &  (Frontend PDF Generation)
 *   framer-motion (UI Animations)
 
 **Testing status**
-- **Testing agent used after significant changes**: YES (Used once for the first batch of 4 validation fixes).
+- **Testing agent used after significant changes**: YES. The testing agent was used successfully to verify the last 4 major batches of fixes.
 - **Troubleshoot agent used after agent stuck in loop**: NO
 - **Test files created**: None.
-- **Known regressions**: None known, but many fixes have been applied since the last testing agent run. A full regression test would be beneficial.
+- **Known regressions**: None.
 
 **Credentials to test flow:**
 - **Platform Super Admin:**
@@ -231,5 +188,6 @@ Key completed work includes:
   - Password: 
 
 **What agent forgot to execute**
-- The original high-level tasks (**Build the new landing page**, **Add radio filters for Role & Status**) remain in the backlog as the user has prioritized multiple rounds of bug fixes.
-- The UI spacing fix for the **Resources** and **My Profile** pages is still pending.</analysis>
+- The high-level backlog items (**Build the new landing page**, **Add radio filters for Role & Status** to the Users table) remain pending.
+- The UI spacing consistency fix for the **Resources** and **My Profile** pages is still pending.
+- The new batch of user requests includes filter-related tasks, but the older task to add **Role & Status filters** to the user table is separate and still outstanding.</analysis>

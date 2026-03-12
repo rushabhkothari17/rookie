@@ -95,12 +95,24 @@ async def get_available_modules(admin: Dict[str, Any] = Depends(get_tenant_admin
         modules_dict = ADMIN_MODULES
     else:
         modules_dict = PARTNER_MODULES
+
+    # System (built-in) presets
+    system_presets = [{"key": k, **v, "is_system": True} for k, v in PRESET_ROLES.items()]
+
+    # Dynamic presets from DB scoped to this tenant
+    tf = get_tenant_filter(admin)
+    dynamic_presets = await db.user_presets.find(tf, {"_id": 0}).sort("created_at", 1).to_list(200)
+    for p in dynamic_presets:
+        p.setdefault("is_system", False)
+
+    all_presets = system_presets + dynamic_presets
+
     return {
         "modules": [{"key": k, **v} for k, v in modules_dict.items()],
         "platform_module_keys": list(PLATFORM_MODULES.keys()),
         "partner_module_keys": list(PARTNER_MODULES.keys()),
         "all_module_keys": list(ADMIN_MODULES.keys()),
-        "preset_roles": [{"key": k, **v} for k, v in PRESET_ROLES.items()],
+        "preset_roles": all_presets,
     }
 
 

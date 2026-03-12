@@ -431,7 +431,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   };
 
   const appUrl = (window as any).__REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL || "";
-  const frontendUrl = appUrl.replace("/api", "").replace(":8001", ":3000");
+  const frontendUrl = typeof window !== "undefined" ? window.location.origin : appUrl.replace("/api", "").replace(":8001", ":3000");
 
   return (
     <div className="space-y-4" data-testid="admin-resources-tab">
@@ -714,8 +714,8 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
 
       {/* Email Dialog */}
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="resource-email-dialog">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl flex flex-col h-[90vh]" data-testid="resource-email-dialog">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="flex items-center justify-between gap-2">
               <span className="truncate">Email Resource: {emailTarget?.title}</span>
               <div className="flex gap-2 shrink-0">
@@ -729,7 +729,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-3 py-1">
+          <div className="flex-1 overflow-y-auto space-y-3 py-1 pr-1">
             {/* To field */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">

@@ -81,7 +81,6 @@ async def generic_exception_handler(request: Request, exc: Exception):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Convert missing X-API-Key header validation errors from 422 to 401."""
     errors = exc.errors()
-    api_key_fields = {"x_api_key", "x-api-key", "X-API-Key"}
     for error in errors:
         locs = {str(loc).lower() for loc in error.get("loc", ())}
         if locs & {"x_api_key", "x-api-key"}:
@@ -89,7 +88,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 status_code=401,
                 content={"detail": "X-API-Key header is missing or invalid"},
             )
-    return JSONResponse(status_code=422, content={"detail": errors})
+
+    # Build JSON-safe error list (strip non-serializable ctx values like ValueError)
+    safe_errors = []
+    for e in errors:
+        safe_e = {k: v for k, v in e.items() if k != "ctx"}
+        ctx = e.get("ctx")
+        if ctx:
+            safe_e["ctx"] = {k: str(v) for k, v in ctx.items()}
+        safe_errors.append(safe_e)
+
+    # Return the first validation message as the primary detail for friendlier UX
+    first_msg = safe_errors[0].get("msg", "Validation error") if safe_errors else "Validation error"
+    return JSONResponse(status_code=422, content={"detail": first_msg, "errors": safe_errors})
 
 # ---------------------------------------------------------------------------
 # Include new route modules
@@ -137,6 +148,7 @@ from routes.admin.webhooks import router as webhooks_admin_router
 from routes.admin.integrations import router as integrations_admin_router
 from routes.admin.finance import router as finance_admin_router
 from routes.admin.permissions import router as permissions_admin_router
+from routes.admin.presets import router as presets_admin_router
 from routes.gdpr import router as gdpr_router
 from routes.downloads import router as downloads_router
 from routes.oauth import router as oauth_router
@@ -193,6 +205,7 @@ app.include_router(webhooks_admin_router)
 app.include_router(integrations_admin_router)
 app.include_router(finance_admin_router)
 app.include_router(permissions_admin_router)
+app.include_router(presets_admin_router)
 app.include_router(gdpr_router)
 app.include_router(downloads_router)
 app.include_router(taxes_router)

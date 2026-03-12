@@ -3,7 +3,7 @@ import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,7 +16,7 @@ import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, ShieldCheck, Eye, Pencil, PowerOff, Power, ScrollText, Lock, Users, Zap, ChevronsUpDown, Check, AlertTriangle } from "lucide-react";
+import { Plus, ShieldCheck, Eye, Pencil, PowerOff, Power, ScrollText, Lock, Users, Zap, ChevronsUpDown, Check, AlertTriangle, Trash2 } from "lucide-react";
 import { ColHeader } from "@/components/shared/ColHeader";
 import { FieldTip } from "./shared/FieldTip";
 import { cn } from "@/lib/utils";
@@ -24,7 +24,14 @@ import { cn } from "@/lib/utils";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ModuleInfo { key: string; name: string; description: string; }
-interface PresetRole { key: string; name: string; description: string; module_permissions: Record<string, "read" | "write">; }
+interface PresetRole {
+  key: string;
+  name: string;
+  description: string;
+  module_permissions: Record<string, "read" | "write">;
+  is_system?: boolean;
+  id?: string;
+}
 type ModulePerm = Record<string, "read" | "write" | "none">;
 
 const PARTNER_ROLES = new Set(["partner_super_admin", "partner_admin"]);
@@ -130,47 +137,230 @@ function roleBadgeColor(role: string) {
 
 // ── Presets Sub-tab ─────────────────────────────────────────────────────────
 
-function PresetsSubTab({ modules, presetRoles }: { modules: ModuleInfo[]; presetRoles: PresetRole[] }) {
+// ── Preset Form Modal ─────────────────────────────────────────────────────────
+
+function PresetFormModal({ preset, modules, onClose, onSaved }: {
+  preset: PresetRole | null;
+  modules: ModuleInfo[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const isEdit = !!preset;
+  const [name, setName] = useState(preset?.name || "");
+  const [desc, setDesc] = useState(preset?.description || "");
+  const initPerms: ModulePerm = {};
+  if (preset?.module_permissions) {
+    Object.entries(preset.module_permissions).forEach(([k, v]) => { initPerms[k] = v; });
+  }
+  const [perms, setPerms] = useState<ModulePerm>(initPerms);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!name.trim()) { toast.error("Preset name is required"); return; }
+    setSaving(true);
+    try {
+      const modulePerms: Record<string, string> = {};
+      Object.entries(perms).forEach(([k, v]) => { if (v !== "none") modulePerms[k] = v; });
+      const payload = { name: name.trim(), description: desc.trim(), module_permissions: modulePerms };
+      if (isEdit && preset?.id) {
+        await api.put(`/admin/presets/${preset.id}`, payload);
+        toast.success("Preset updated");
+      } else {
+        await api.post("/admin/presets", payload);
+        toast.success("Preset created");
+      }
+      onSaved();
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Save failed");
+    } finally { setSaving(false); }
+  };
+
   return (
-    <div className="space-y-4" data-testid="presets-subtab">
-      <div>
-        <h2 className="text-base font-semibold text-slate-900">Quick Presets</h2>
-        <p className="text-sm text-slate-500 mt-0.5">
-          Built-in permission templates. Apply these when creating or editing a user via the "Quick Preset" dropdown.
-        </p>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="preset-form-modal">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? `Edit Preset — ${preset?.name}` : "New Custom Preset"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 mt-2">
+          <div className="space-y-1">
+            <RequiredLabel>Preset Name</RequiredLabel>
+            <Input value={name} onChange={e => setName(e.target.value)} maxLength={80} placeholder="e.g. Sales Manager, Support Level 1" data-testid="preset-name-input" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-slate-600">Description</label>
+            <Input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Brief description of this preset's purpose" data-testid="preset-desc-input" />
+          </div>
+          <ModulePermEditor modules={modules} value={perms} onChange={setPerms} />
+        </div>
+        <DialogFooter className="mt-4">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} data-testid="save-preset-btn">
+            {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Preset"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Preset Card ───────────────────────────────────────────────────────────────
+
+function PresetCard({ preset, modules, onEdit, onDelete }: {
+  preset: PresetRole;
+  modules: ModuleInfo[];
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) {
+  const entries = Object.entries(preset.module_permissions || {});
+  const writeCount = entries.filter(([, v]) => v === "write").length;
+  const readCount = entries.filter(([, v]) => v === "read").length;
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3" data-testid={`preset-card-${preset.key}`}>
+      <div className="flex items-start gap-2.5">
+        <div className="p-2 rounded-lg bg-slate-100 shrink-0"><Zap size={14} className="text-slate-500" /></div>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-semibold text-slate-900 truncate">{preset.name}</h4>
+          <span className={`text-[10px] ${preset.is_system ? "text-slate-400" : "text-violet-500 font-medium"}`}>
+            {preset.is_system ? "Built-in" : "Custom"}
+          </span>
+        </div>
+        {!preset.is_system && (
+          <div className="flex gap-1 shrink-0">
+            {onEdit && (
+              <button onClick={onEdit} className="p-1.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600" data-testid={`edit-preset-${preset.key}`}>
+                <Pencil size={12} />
+              </button>
+            )}
+            {onDelete && (
+              <button onClick={onDelete} className="p-1.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-500" data-testid={`delete-preset-${preset.key}`}>
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {presetRoles.map(preset => {
-          const entries = Object.entries(preset.module_permissions || {});
-          const writeCount = entries.filter(([, v]) => v === "write").length;
-          const readCount = entries.filter(([, v]) => v === "read").length;
+      {preset.description && <p className="text-xs text-slate-500">{preset.description}</p>}
+      <div className="flex flex-wrap gap-1.5">
+        {entries.map(([key, val]) => {
+          const mod = modules.find(m => m.key === key);
           return (
-            <div key={preset.key} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3" data-testid={`preset-card-${preset.key}`}>
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-slate-100"><Zap size={14} className="text-slate-500" /></div>
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900">{preset.name}</h4>
-                  <span className="text-[10px] text-slate-400">Built-in preset</span>
-                </div>
-              </div>
-              {preset.description && <p className="text-xs text-slate-500">{preset.description}</p>}
-              <div className="flex flex-wrap gap-1.5">
-                {entries.map(([key, val]) => {
-                  const mod = modules.find(m => m.key === key);
-                  return (
-                    <span key={key} className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border font-medium ${val === "write" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
-                      {val === "write" ? <ShieldCheck size={9} /> : <Eye size={9} />}
-                      {mod?.name || key}
-                    </span>
-                  );
-                })}
-              </div>
-              <p className="text-[10px] text-slate-400 pt-1 border-t border-slate-100">{writeCount} read &amp; write · {readCount} read only</p>
-            </div>
+            <span key={key} className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border font-medium ${val === "write" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
+              {val === "write" ? <ShieldCheck size={9} /> : <Eye size={9} />}
+              {mod?.name || key}
+            </span>
           );
         })}
       </div>
-      {presetRoles.length === 0 && <p className="text-sm text-slate-400 italic">No presets available.</p>}
+      <p className="text-[10px] text-slate-400 pt-1 border-t border-slate-100">{writeCount} read &amp; write · {readCount} read only</p>
+    </div>
+  );
+}
+
+// ── Presets Sub-Tab ───────────────────────────────────────────────────────────
+
+function PresetsSubTab({ modules, presetRoles, onRefreshPresets }: { modules: ModuleInfo[]; presetRoles: PresetRole[]; onRefreshPresets: () => void }) {
+  const [showCreate, setShowCreate] = useState(false);
+  const [editPreset, setEditPreset] = useState<PresetRole | null>(null);
+  const [delPreset, setDelPreset] = useState<PresetRole | null>(null);
+
+  const systemPresets = presetRoles.filter(p => p.is_system !== false);
+  const customPresets = presetRoles.filter(p => p.is_system === false);
+
+  const handleDelete = async (preset: PresetRole) => {
+    try {
+      await api.delete(`/admin/presets/${preset.id}`);
+      toast.success(`"${preset.name}" deleted`);
+      onRefreshPresets();
+    } catch (e: any) {
+      toast.error(e.response?.data?.detail || "Delete failed");
+    }
+  };
+
+  return (
+    <div className="space-y-6" data-testid="presets-subtab">
+      {/* Built-in section */}
+      <div>
+        <h2 className="text-base font-semibold text-slate-900">Quick Presets</h2>
+        <p className="text-sm text-slate-500 mt-0.5 mb-4">
+          Apply permission templates when creating or editing a user via the "Quick Preset" dropdown.
+        </p>
+        {systemPresets.length > 0 && (
+          <>
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Built-in Presets</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {systemPresets.map(preset => (
+                <PresetCard key={preset.key} preset={preset} modules={modules} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Custom section */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Custom Presets</h3>
+          <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-preset-btn">
+            <Plus size={13} className="mr-1" /> New Preset
+          </Button>
+        </div>
+        {customPresets.length === 0 ? (
+          <div className="rounded-xl border-2 border-dashed border-slate-200 py-10 text-center">
+            <Zap size={22} className="mx-auto text-slate-300 mb-2" />
+            <p className="text-sm text-slate-400 font-medium">No custom presets yet</p>
+            <p className="text-xs text-slate-400 mt-1">Create custom permission templates specific to your organisation.</p>
+            <Button size="sm" variant="outline" className="mt-3" onClick={() => setShowCreate(true)}>Create Preset</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {customPresets.map(preset => (
+              <PresetCard
+                key={preset.id || preset.key}
+                preset={preset}
+                modules={modules}
+                onEdit={() => setEditPreset(preset)}
+                onDelete={() => setDelPreset(preset)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      {showCreate && (
+        <PresetFormModal
+          preset={null}
+          modules={modules}
+          onClose={() => setShowCreate(false)}
+          onSaved={() => { setShowCreate(false); onRefreshPresets(); }}
+        />
+      )}
+      {editPreset && (
+        <PresetFormModal
+          preset={editPreset}
+          modules={modules}
+          onClose={() => setEditPreset(null)}
+          onSaved={() => { setEditPreset(null); onRefreshPresets(); }}
+        />
+      )}
+      <AlertDialog open={!!delPreset} onOpenChange={() => setDelPreset(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{delPreset?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>This custom preset will be permanently removed. Users with this preset applied won't be affected.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => { if (delPreset) { handleDelete(delPreset); } setDelPreset(null); }}
+              data-testid="confirm-delete-preset"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -455,7 +645,7 @@ export function UsersTab() {
         </TabsList>
 
         <TabsContent value="presets">
-          <PresetsSubTab modules={allModules} presetRoles={presetRoles} />
+          <PresetsSubTab modules={allModules} presetRoles={presetRoles} onRefreshPresets={loadMeta} />
         </TabsContent>
 
         <TabsContent value="list">

@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID
@@ -13,7 +13,7 @@ from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["store-filters"])
 
-FILTER_TYPES = {"category", "tag", "price_range", "checkout_type", "billing_type", "intake_field"}
+FILTER_TYPES = {"category", "tag", "price_range", "checkout_type", "billing_type", "intake_field", "plan_name"}
 
 
 class FilterOption(BaseModel):
@@ -23,7 +23,16 @@ class FilterOption(BaseModel):
 
 class StoreFilterCreate(BaseModel):
     name: str
-    filter_type: str  # category | tag | price_range | custom
+    filter_type: str  # category | tag | price_range | plan_name | custom
+
+    @validator("name")
+    def name_valid(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Filter name is required")
+        if len(v) > 100:
+            raise ValueError("Filter name must be 100 characters or less")
+        return v
     options: Optional[List[FilterOption]] = None  # For price_range: [{label:"Under £50", value:"0-50"}]
     is_active: bool = True
     sort_order: int = 0
@@ -52,9 +61,20 @@ async def create_store_filter(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     if payload.filter_type not in FILTER_TYPES:
-        raise HTTPException(status_code=400, detail=f"filter_type must be one of: {', '.join(FILTER_TYPES)}")
+        raise HTTPException(status_code=400, detail=f"filter_type must be one of: {', '.join(sorted(FILTER_TYPES))}")
 
     tid = tenant_id_of(admin)
+    tf = get_tenant_filter(admin)
+
+    # Duplicate name check
+    existing_name = await db.store_filters.find_one(
+        {**tf, "name": payload.name}, {"_id": 0, "id": 1}
+    )
+    if existing_name:
+        raise HTTPException(
+            status_code=409, detail=f"A filter named '{payload.name}' already exists"
+        )
+
     filter_id = make_id()
     doc = {
         "id": filter_id,
@@ -91,7 +111,18 @@ async def update_store_filter(
 
     updates: Dict[str, Any] = {"updated_at": now_iso()}
     if payload.name is not None:
-        updates["name"] = payload.name.strip()
+        new_name = payload.name.strip()
+        if not new_name:
+            raise HTTPException(status_code=400, detail="Filter name is required")
+        if len(new_name) > 100:
+            raise HTTPException(status_code=400, detail="Filter name must be 100 characters or less")
+        # Duplicate name check
+        name_conflict = await db.store_filters.find_one(
+            {**tf, "name": new_name, "id": {"$ne": filter_id}}, {"_id": 0, "id": 1}
+        )
+        if name_conflict:
+            raise HTTPException(status_code=409, detail=f"A filter named '{new_name}' already exists")
+        updates["name"] = new_name
     if payload.filter_type is not None:
         if payload.filter_type not in FILTER_TYPES:
             raise HTTPException(status_code=400, detail=f"filter_type must be one of: {', '.join(FILTER_TYPES)}")

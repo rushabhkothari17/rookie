@@ -24,6 +24,7 @@ const FILTER_TYPES = [
   { value: "price_range", label: "Price Range", description: "Filter by price brackets" },
   { value: "checkout_type", label: "Checkout Type", description: "Internal checkout, Enquiry Only, or External Link" },
   { value: "billing_type", label: "Billing Type", description: "One-off or Subscription payment" },
+  { value: "plan_name", label: "Plan Name", description: "Filter by subscription plan name" },
   { value: "intake_field", label: "Intake Field", description: "Filter by a specific intake question field and option value" },
 ];
 
@@ -40,10 +41,12 @@ type StoreFilter = {
 
 function FilterFormModal({
   filter,
+  existingFilters,
   onClose,
   onSaved,
 }: {
   filter: StoreFilter | null;
+  existingFilters: StoreFilter[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -57,6 +60,36 @@ function FilterFormModal({
   const [newOptValue, setNewOptValue] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Issue 2: Category count check
+  const [categoryCount, setCategoryCount] = useState<number | null>(null);
+  const [checkingCategories, setCheckingCategories] = useState(false);
+
+  // Issue 1: Plans for plan_name filter type
+  const [plans, setPlans] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    if (type === "category") {
+      setCheckingCategories(true);
+      api.get("/admin/categories")
+        .then(r => {
+          const cats = r.data.categories || [];
+          setCategoryCount(cats.filter((c: any) => c.is_active !== false).length);
+        })
+        .catch(() => setCategoryCount(0))
+        .finally(() => setCheckingCategories(false));
+    } else {
+      setCategoryCount(null);
+    }
+  }, [type]);
+
+  useEffect(() => {
+    if (type === "plan_name") {
+      api.get("/partner/plans/public")
+        .then(r => setPlans(r.data.plans || []))
+        .catch(() => setPlans([]));
+    }
+  }, [type]);
+
   const addOption = () => {
     if (!newOptLabel.trim()) return;
     const value = newOptValue.trim() || newOptLabel.toLowerCase().replace(/\s+/g, "-");
@@ -66,12 +99,46 @@ function FilterFormModal({
 
   const removeOption = (idx: number) => setOptions(prev => prev.filter((_, i) => i !== idx));
 
+  const togglePlanOption = (plan: { id: string; name: string }) => {
+    const existing = options.find(o => o.value === plan.id);
+    if (existing) {
+      setOptions(prev => prev.filter(o => o.value !== plan.id));
+    } else {
+      setOptions(prev => [...prev, { label: plan.name, value: plan.id }]);
+    }
+  };
+
   const handleSave = async () => {
     if (!name.trim()) { toast.error("Filter name is required"); return; }
+    // Issue 3: Name length check
+    if (name.trim().length > 100) { toast.error("Filter name must be 100 characters or less"); return; }
     if (!type) { toast.error("Filter type is required"); return; }
+
+    // Issue 2: Block if category type but no categories
+    if (type === "category" && categoryCount === 0) {
+      toast.error("No product categories exist. Create categories before adding a Category filter.");
+      return;
+    }
+
+    // Issue 4: Duplicate name check (client-side guard before server call)
+    const nameConflict = existingFilters.find(
+      f => f.name.toLowerCase() === name.trim().toLowerCase() && f.id !== filter?.id
+    );
+    if (nameConflict) {
+      toast.error(`A filter named "${name.trim()}" already exists`);
+      return;
+    }
+
+    // Issue 5: Flush pending option input before saving
+    const finalOptions = [...options];
+    if (newOptLabel.trim()) {
+      const val = newOptValue.trim() || newOptLabel.toLowerCase().replace(/\s+/g, "-");
+      finalOptions.push({ label: newOptLabel.trim(), value: val });
+    }
+
     setSaving(true);
     try {
-      const payload = { name, filter_type: type, options, is_active: isActive, show_count: showCount };
+      const payload = { name: name.trim(), filter_type: type, options: finalOptions, is_active: isActive, show_count: showCount };
       if (isEdit) {
         await api.put(`/admin/store-filters/${filter.id}`, payload);
         toast.success("Filter updated");
@@ -85,7 +152,8 @@ function FilterFormModal({
     } finally { setSaving(false); }
   };
 
-  const needsOptions = type === "tag" || type === "price_range" || type === "intake_field";
+  const needsManualOptions = type === "tag" || type === "price_range" || type === "intake_field";
+  const canSave = !(type === "category" && categoryCount === 0 && !checkingCategories);
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -96,7 +164,16 @@ function FilterFormModal({
         <div className="space-y-4 mt-2">
           <div className="space-y-1">
             <RequiredLabel className="text-slate-600">Filter Name</RequiredLabel>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Service Type, Price Range" data-testid="filter-name-input" />
+            <Input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Service Type, Price Range"
+              maxLength={100}
+              data-testid="filter-name-input"
+            />
+            {name.length > 80 && (
+              <p className="text-xs text-amber-500 text-right">{name.length}/100 characters</p>
+            )}
           </div>
           <div className="space-y-1">
             <RequiredLabel className="text-slate-600">Filter Type</RequiredLabel>
@@ -116,8 +193,17 @@ function FilterFormModal({
           </div>
 
           {type === "category" && (
-            <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
-              Uses your existing product categories automatically. No options needed.
+            <div className={`rounded-lg p-3 text-xs space-y-1 ${categoryCount === 0 && !checkingCategories ? "bg-red-50 text-red-700 border border-red-200" : "bg-blue-50 text-blue-700"}`}>
+              {checkingCategories ? (
+                <p>Checking categories…</p>
+              ) : categoryCount === 0 ? (
+                <>
+                  <p className="font-semibold">No product categories found.</p>
+                  <p>You need at least one product category before creating a Category filter. Go to <strong>Products → Categories</strong> to add one.</p>
+                </>
+              ) : (
+                <p>Uses your existing product categories automatically. No options needed. ({categoryCount} categories found)</p>
+              )}
             </div>
           )}
 
@@ -142,6 +228,43 @@ function FilterFormModal({
             </div>
           )}
 
+          {type === "plan_name" && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-600">Select Plans to Include</label>
+              {plans.length === 0 ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+                  <p className="font-semibold">No public plans found.</p>
+                  <p>Create public plans first (Admin → Plans) or add options manually.</p>
+                </div>
+              ) : (
+                <div className="space-y-1.5 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
+                  {plans.map(plan => {
+                    const selected = options.some(o => o.value === plan.id);
+                    return (
+                      <label key={plan.id} className="flex items-center gap-2.5 cursor-pointer hover:bg-white rounded px-1 py-0.5 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          onChange={() => togglePlanOption(plan)}
+                          className="rounded"
+                          data-testid={`plan-option-${plan.id}`}
+                        />
+                        <span className="text-sm text-slate-700">{plan.name}</span>
+                        {selected && <span className="text-[10px] text-emerald-600 ml-auto">Selected</span>}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="text-xs text-slate-400">{options.length} plan(s) selected as filter options.</p>
+              {/* Also allow manual entry for plan names not in the dropdown */}
+              <div className="flex gap-2">
+                <Input value={newOptLabel} onChange={e => setNewOptLabel(e.target.value)} placeholder="Or type plan name" className="flex-1" onKeyDown={e => e.key === "Enter" && addOption()} />
+                <Button size="sm" variant="outline" onClick={addOption} type="button"><Plus className="h-3.5 w-3.5" /></Button>
+              </div>
+            </div>
+          )}
+
           {type === "tag" && (
             <div className="bg-amber-50 rounded-lg p-3 text-xs text-amber-800 space-y-1">
               <p className="font-semibold">How to associate products with this filter:</p>
@@ -150,7 +273,6 @@ function FilterFormModal({
                 <li>Open each product in the catalog editor → <strong>General</strong> tab → <strong>Filter Tags</strong></li>
                 <li>Add the tag value (e.g. <code className="bg-amber-100 px-1 rounded">express</code>) to that product</li>
               </ol>
-              <p className="text-amber-600 mt-1">When a customer selects "Express", only products tagged <code className="bg-amber-100 px-1 rounded">express</code> will show.</p>
             </div>
           )}
 
@@ -166,7 +288,7 @@ function FilterFormModal({
             </div>
           )}
 
-          {needsOptions && (
+          {needsManualOptions && (
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600">Options</label>
               <div className="space-y-1.5 max-h-36 overflow-y-auto">
@@ -211,7 +333,7 @@ function FilterFormModal({
         </div>
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving} data-testid="save-filter-btn">
+          <Button onClick={handleSave} disabled={saving || !canSave} data-testid="save-filter-btn">
             {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Filter"}
           </Button>
         </DialogFooter>
@@ -340,12 +462,26 @@ export function FiltersTab() {
       )}
 
       <p className="text-xs text-slate-400">
-        Filters appear in the customer-facing storefront. Drag the arrows to reorder them. Toggle on/off to show or hide.
+        Filters appear in the customer-facing storefront. Use the arrows to reorder them. Toggle on/off to show or hide.
       </p>
 
       {/* Modals */}
-      {showCreate && <FilterFormModal filter={null} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
-      {editFilter && <FilterFormModal filter={editFilter} onClose={() => setEditFilter(null)} onSaved={() => { setEditFilter(null); load(); }} />}
+      {showCreate && (
+        <FilterFormModal
+          filter={null}
+          existingFilters={filters}
+          onClose={() => setShowCreate(false)}
+          onSaved={() => { setShowCreate(false); load(); }}
+        />
+      )}
+      {editFilter && (
+        <FilterFormModal
+          filter={editFilter}
+          existingFilters={filters}
+          onClose={() => setEditFilter(null)}
+          onSaved={() => { setEditFilter(null); load(); }}
+        />
+      )}
 
       {deleteFilter && (
         <AlertDialog open onOpenChange={() => setDeleteFilter(null)}>
