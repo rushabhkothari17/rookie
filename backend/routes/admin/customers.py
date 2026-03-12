@@ -359,6 +359,14 @@ async def admin_create_customer(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tid = tenant_id_of(admin)
+    # Platform admin can specify a target tenant_id
+    from core.tenant import is_platform_admin as _is_pa
+    if _is_pa(admin) and payload.tenant_id:
+        # Validate target tenant exists
+        target = await db.tenants.find_one({"id": payload.tenant_id}, {"_id": 0, "id": 1})
+        if not target:
+            raise HTTPException(status_code=400, detail="Partner organization not found")
+        tid = payload.tenant_id
     await _check(admin, "create")
 
     import re as _re

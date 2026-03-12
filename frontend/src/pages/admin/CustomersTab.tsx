@@ -65,6 +65,17 @@ export function CustomersTab() {
   const [newCustomerExtras, setNewCustomerExtras] = useState<Record<string, string>>({});
   const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
   const countries = useCountries();
+  // Platform admin: list of tenants to map customer to a partner org
+  const [partnerTenants, setPartnerTenants] = useState<any[]>([]);
+  const [createTenantId, setCreateTenantId] = useState<string>("");
+
+  useEffect(() => {
+    if (!isPlatformAdmin) return;
+    api.get("/admin/tenants").then(r => {
+      const all = (r.data.tenants || []).filter((t: any) => t.code !== "automate-accounts");
+      setPartnerTenants(all);
+    }).catch(() => {});
+  }, [isPlatformAdmin]);
 
   const STD_CREATE_KEYS = ["full_name", "email", "password", "company_name", "job_title", "phone", "line1", "line2", "city", "region", "postal", "country"];
 
@@ -211,13 +222,19 @@ export function CustomersTab() {
       if (f?.required && !(newCustomer as any)[key]?.trim()) errors.push(f.label || key);
     });
     if (errors.length) { toast.error(`Required: ${errors.join(", ")}`); return; }
+    if (isPlatformAdmin && !createTenantId) { toast.error("Please select a partner organization"); return; }
     setSaving(true);
     try {
       const profile_meta = Object.keys(newCustomerExtras).length ? newCustomerExtras : undefined;
-      await api.post("/admin/customers/create", { ...newCustomer, ...(profile_meta ? { profile_meta } : {}) });
+      await api.post("/admin/customers/create", {
+        ...newCustomer,
+        ...(profile_meta ? { profile_meta } : {}),
+        ...(isPlatformAdmin && createTenantId ? { tenant_id: createTenantId } : {}),
+      });
       toast.success("Customer created"); setShowCreateDialog(false);
       setNewCustomer({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
       setNewCustomerExtras({});
+      setCreateTenantId("");
       load(1);
     } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to create customer"); }
     finally { setSaving(false); }
@@ -447,10 +464,27 @@ export function CustomersTab() {
       </Dialog>
 
       {/* Create Customer Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog open={showCreateDialog} onOpenChange={(open) => { setShowCreateDialog(open); if (!open) { setCreateTenantId(""); } }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Create Customer</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            {isPlatformAdmin && (
+              <div>
+                <label className="text-xs font-medium text-slate-700 block mb-1.5">Partner Organization *</label>
+                <Select value={createTenantId} onValueChange={setCreateTenantId} data-testid="create-customer-tenant-select">
+                  <SelectTrigger data-testid="create-customer-tenant-trigger">
+                    <SelectValue placeholder="Select partner org..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {partnerTenants.map((t: any) => (
+                      <SelectItem key={t.id} value={t.id} data-testid={`tenant-option-${t.code}`}>
+                        {t.store_name || t.name} <span className="text-xs text-slate-400 ml-1">({t.code})</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <CustomerSignupFields
               schema={parseSchema(JSON.stringify(signupSchema))}
               values={createValues}

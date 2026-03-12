@@ -26,6 +26,15 @@ async def list_tenants(
     if plan_id:
         query["license.plan_id"] = plan_id
     tenants = await db.tenants.find(query, {"_id": 0}).to_list(500)
+    # Enrich each tenant with store_name from their app_settings (Organization Info)
+    tenant_ids = [t["id"] for t in tenants if t.get("id")]
+    app_settings_list = await db.app_settings.find(
+        {"tenant_id": {"$in": tenant_ids}},
+        {"_id": 0, "tenant_id": 1, "store_name": 1}
+    ).to_list(500)
+    store_name_map = {s["tenant_id"]: s.get("store_name", "") for s in app_settings_list}
+    for t in tenants:
+        t["store_name"] = store_name_map.get(t.get("id", ""), "") or ""
     return {"tenants": tenants}
 
 

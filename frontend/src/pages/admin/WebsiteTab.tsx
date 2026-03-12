@@ -7,7 +7,7 @@ import { OrgInfoSection, DEFAULT_BRAND_COLORS } from "./WebsiteOrgSection";
 import { AuthPagesSection } from "./WebsiteAuthSection";
 import { FormsSection } from "./WebsiteFormsSection";
 import { SysConfigSection } from "./WebsiteSysSection";
-import { applyBrandingFromSettings } from "@/contexts/WebsiteContext";
+import { applyBrandingFromSettings, useWebsiteUpdate } from "@/contexts/WebsiteContext";
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
@@ -28,6 +28,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
   const [activeSection, setActiveSection] = useState<Section>(defaultSection ?? "branding");
   const displaySection = forcedSection ?? activeSection;
   const [ws, setWs] = useState<WebsiteData>(WEB_DEFAULTS);
+  const updateWebsite = useWebsiteUpdate();
   const [branding, setBranding] = useState<BrandingData>({
     store_name: "", primary_color: "", accent_color: "",
     danger_color: "", success_color: "", warning_color: "",
@@ -109,6 +110,8 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
         api.put("/admin/settings", branding),
       ]);
       applyBrandingFromSettings(branding);
+      // Sync store_name and logo_url into WebsiteContext so TopNav reflects changes immediately
+      updateWebsite({ store_name: branding.store_name, logo_url: branding.logo_url });
       toast.success("Settings saved");
     } catch { toast.error("Failed to save settings"); }
     finally { setSaving(false); }

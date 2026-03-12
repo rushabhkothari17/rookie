@@ -27,6 +27,7 @@ type Tenant = {
   name: string;
   code: string;
   status: "active" | "inactive";
+  store_name?: string;
   created_at: string;
   address?: TenantAddress;
   base_currency?: string;
@@ -296,7 +297,7 @@ export function TenantsTab() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-slate-900">{tenant.name}</h3>
+                  <h3 className="font-semibold text-slate-900">{tenant.store_name || tenant.name}</h3>
                   <Badge variant={tenant.status === "active" ? "default" : "secondary"} className="text-xs">
                     {tenant.status}
                   </Badge>

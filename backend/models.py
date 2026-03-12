@@ -387,6 +387,7 @@ class AdminCreateCustomerRequest(BaseModel):
     country: Optional[str] = ""
     mark_verified: bool = True
     profile_meta: Optional[Dict[str, Any]] = None
+    tenant_id: Optional[str] = None  # Platform admin only: override tenant
 
 
 class SubscriptionUpdate(BaseModel):

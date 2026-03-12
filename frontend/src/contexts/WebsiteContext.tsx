@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import api from "@/lib/api";
 
 // ─── Partner Code Context ──────────────────────────────────────────────────
@@ -6,6 +6,15 @@ const PartnerCodeContext = createContext<string>("");
 
 export function usePartnerCode(): string {
   return useContext(PartnerCodeContext);
+}
+
+// ─── Website Settings Updater Context ─────────────────────────────────────
+type WebsiteUpdater = (partial: Partial<WebsiteSettings>) => void;
+const WebsiteSetterContext = createContext<WebsiteUpdater>(() => {});
+
+/** Merge new values into WebsiteContext state (call after admin saves settings) */
+export function useWebsiteUpdate(): WebsiteUpdater {
+  return useContext(WebsiteSetterContext);
 }
 
 export interface WebsiteSettings {
@@ -405,6 +414,10 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
     () => localStorage.getItem("aa_partner_code") || ""
   );
 
+  const updateWebsiteSettings = useCallback((partial: Partial<WebsiteSettings>) => {
+    setSettings(prev => ({ ...prev, ...partial }));
+  }, []);
+
   useEffect(() => {
     const url = partnerCode
       ? `/website-settings?partner_code=${encodeURIComponent(partnerCode)}`
@@ -432,7 +445,9 @@ export function WebsiteProvider({ children }: { children: ReactNode }) {
   return (
     <PartnerCodeContext.Provider value={partnerCode}>
       <WebsiteContext.Provider value={settings}>
-        {children}
+        <WebsiteSetterContext.Provider value={updateWebsiteSettings}>
+          {children}
+        </WebsiteSetterContext.Provider>
       </WebsiteContext.Provider>
     </PartnerCodeContext.Provider>
   );
