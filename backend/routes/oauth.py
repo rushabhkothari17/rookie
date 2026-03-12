@@ -708,24 +708,29 @@ async def validate_connection(
                                     )
                                     from_email = (conn_settings or {}).get("settings", {}).get("from_email", "").strip()
                                     if from_email and auto_account_id and primary_email:
-                                        import json as _json
                                         test_payload = {
                                             "fromAddress": from_email,
                                             "toAddress": primary_email,
                                             "subject": "[Automate Accounts] From address validation",
                                             "content": "This is an automated validation test to confirm the configured From address is valid. You can ignore this email.",
+                                            "mailFormat": "plaintext",
                                         }
                                         send_r = await client.post(
                                             f"{mail_api}/api/accounts/{auto_account_id}/messages",
-                                            headers={"Authorization": f"Zoho-oauthtoken {mail_token}", "Content-Type": "application/json"},
-                                            content=_json.dumps(test_payload),
+                                            headers={"Authorization": f"Zoho-oauthtoken {mail_token}"},
+                                            json=test_payload,
                                         )
                                         if send_r.status_code not in (200, 201):
                                             try:
                                                 send_err = send_r.json()
-                                                zoho_err = send_err.get("data", {}).get("moreInfo") or send_err.get("status", {}).get("description", "")
+                                                zoho_err = (
+                                                    send_err.get("data", {}).get("moreInfo")
+                                                    or send_err.get("data", {}).get("errorCode")
+                                                    or send_err.get("status", {}).get("description")
+                                                    or f"HTTP {send_r.status_code}"
+                                                )
                                             except Exception:
-                                                zoho_err = f"HTTP {send_r.status_code}"
+                                                zoho_err = send_r.text[:200] or f"HTTP {send_r.status_code}"
                                             _from_email_error = f"'From' email '{from_email}' was rejected by Zoho Mail: {zoho_err}"
                                 break
                     elif provider == "zoho_crm":
