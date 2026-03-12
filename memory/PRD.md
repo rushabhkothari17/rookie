@@ -120,6 +120,18 @@ Build a white-label service commerce platform with:
 - Hidden "My Profile" from all admin roles (platform_admin, platform_super_admin, partner_admin, partner_super_admin) — only `role === "customer"` users see it
 - Fixed login page org name: now reads `branding.store_name` (from `app_settings`) instead of `tenant.name` so it refreshes when org name is saved in settings
 
+### Phase 4: Global Pill UI Overhaul (March 2026)
+- Updated `input.jsx` base: `rounded-full`, `h-11`, smooth focus shadow ring
+- Updated `button.jsx` base: `rounded-full`, active scale(0.97), hover shadow-lift — cascades to ALL buttons
+- Updated `select.jsx` trigger: `rounded-full`; content: `rounded-2xl`
+- Updated `textarea.jsx`: `rounded-3xl`
+- Added global CSS in `index.css`: `.auth-input` and `.btn-primary` classes for auth pages
+- Updated `Login.tsx`: pill inputs, full-width pill button, staggered slide-up animations (global CSS)
+- Updated `ForgotPassword.tsx`: consistent pill styling
+- Updated `Profile.tsx`: pill read-only inputs with dashed border
+- All admin dialogs automatically pill via shadcn base component cascade
+- Verified: testing agent iteration_266.json — 100% pass rate across all form types
+
 ## Prioritized Backlog
 
 ### P0 — Critical (None currently)
