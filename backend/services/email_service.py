@@ -638,6 +638,7 @@ class EmailService:
         # Try Zoho Mail if connected and Resend not available
         elif zoho_mail_conn:
             from services.zoho_service import ZohoMailService, ZohoOAuthService
+            from datetime import datetime, timezone, timedelta
             creds = zoho_mail_conn.get("credentials", {})
             # from_email is stored in settings, not credentials
             settings = zoho_mail_conn.get("settings", {})
@@ -645,22 +646,49 @@ class EmailService:
             from_name = settings.get("from_name", "")
             account_id = creds.get("account_id", "")
             datacenter = (zoho_mail_conn.get("data_center") or "US").upper()
+            # Set provider early so failed token refreshes still log correctly
+            log_entry["provider"] = "zoho_mail"
 
             if from_email and account_id:
-                # Refresh the access token using stored credentials
-                oauth_svc = ZohoOAuthService(tenant_id or "", datacenter)
-                try:
-                    token_result = await oauth_svc.refresh_access_token(
-                        creds.get("refresh_token", ""),
-                        creds.get("client_id", ""),
-                        creds.get("client_secret", ""),
-                    )
-                    access_token = token_result.get("access_token", "")
-                except Exception as exc:
-                    log_entry["status"] = "failed"
-                    log_entry["error_message"] = f"Zoho token refresh failed: {exc}"
-                    await db.email_logs.insert_one(log_entry)
-                    return {"status": "failed", "error": str(exc)}
+                # Use cached access_token if still valid; only refresh when expired
+                cached_token = creds.get("access_token", "")
+                cached_expires = creds.get("access_token_expires_at", "")
+                access_token = ""
+
+                if cached_token and cached_expires:
+                    try:
+                        exp_dt = datetime.fromisoformat(cached_expires.replace("Z", "+00:00"))
+                        if datetime.now(timezone.utc) < exp_dt:
+                            access_token = cached_token
+                    except Exception:
+                        pass
+
+                if not access_token:
+                    # Refresh and cache the new token
+                    oauth_svc = ZohoOAuthService(zoho_mail_conn.get("tenant_id") or tenant_id or "", datacenter)
+                    try:
+                        token_result = await oauth_svc.refresh_access_token(
+                            creds.get("refresh_token", ""),
+                            creds.get("client_id", ""),
+                            creds.get("client_secret", ""),
+                        )
+                        access_token = token_result.get("access_token", "")
+                        if access_token:
+                            # Cache token for ~50 min (Zoho tokens last 1 hour)
+                            expires_at = (datetime.now(timezone.utc) + timedelta(minutes=50)).isoformat()
+                            conn_filter = {"tenant_id": zoho_mail_conn.get("tenant_id"), "provider": "zoho_mail"}
+                            await db.oauth_connections.update_one(
+                                conn_filter,
+                                {"$set": {
+                                    "credentials.access_token": access_token,
+                                    "credentials.access_token_expires_at": expires_at,
+                                }}
+                            )
+                    except Exception as exc:
+                        log_entry["status"] = "failed"
+                        log_entry["error_message"] = f"Zoho token refresh failed: {exc}"
+                        await db.email_logs.insert_one(log_entry)
+                        return {"status": "failed", "error": str(exc)}
 
                 if not access_token:
                     log_entry["status"] = "failed"
@@ -669,7 +697,7 @@ class EmailService:
                     return {"status": "failed", "error": "Failed to refresh Zoho access token"}
 
                 from_address = f"{from_name} <{from_email}>" if from_name else from_email
-                zoho_mail_svc = ZohoMailService(tenant_id or "", datacenter)
+                zoho_mail_svc = ZohoMailService(zoho_mail_conn.get("tenant_id") or tenant_id or "", datacenter)
                 result = await zoho_mail_svc.send_email(
                     access_token=access_token,
                     account_id=account_id,

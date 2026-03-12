@@ -5,6 +5,23 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Email Delivery Fixes ✅
+
+**Root cause**: `EmailService.send()` only looked for email providers scoped to `None` tenant as a fallback, missing the platform admin's ("automate-accounts") Zoho Mail connection.
+
+**Fixes implemented:**
+1. **Platform fallback**: Added a 3rd-tier fallback in `email_service.py` — when no tenant-specific or global connection is found, uses the platform's ("automate-accounts") configured email provider. This enables all system emails (partner signup OTP, customer signup OTP, password reset) to route through the platform's Zoho Mail, even when partner tenants have no email provider of their own.
+
+2. **Zoho Mail from_email correction**: Updated from_email from non-existent `hello@automateaccounts.com` to valid `rushabh@automateaccounts.com` (the actual Zoho Mail account address).
+
+3. **store_name in email subjects**: Fixed empty store_name (was causing `"Verify your  account"` double-space). Now resolves from `website_settings.store_name` for the relevant tenant, falling back to platform's store name ("Automate Accounts"). Set platform store_name = "Automate Accounts" in `website_settings`.
+
+4. **Zoho access_token caching**: Added access_token caching in `oauth_connections.credentials` with 50-minute TTL. Prevents repeated OAuth refresh calls that were exhausting the token after ~13 rapid uses. Token is only refreshed when expired; fresh tokens are saved to DB.
+
+5. **Provider logging fix**: `log_entry["provider"] = "zoho_mail"` is now set at the start of the Zoho branch so failed token refreshes still correctly log the attempted provider.
+
+---
+
 ## Latest Updates (Mar 2026) — Zoho WorkDrive Integration Fixes ✅
 
 **1. Platform super admin can now upload documents** — `documents.py`: `platform_super_admin` role was missing from `is_admin` check in all three document endpoints (list, upload, download). Added it to all three. For uploads, platform admins now correctly derive `tenant_id` from the customer record (not their own JWT which has `null` for `tenant_id`).
