@@ -649,7 +649,6 @@ async def validate_connection(
                         return (last_resp or None), dc_config["api_domain"]
 
                     # Test API access based on provider
-                    _from_email_error = None
                     if provider == "zoho_mail":
                         # Try each DC's mail_api — use matching accounts_url to get a valid token
                         all_mail_dcs = [(dc_config["accounts_url"], dc_config["mail_api"])] + [
@@ -707,11 +706,14 @@ async def validate_connection(
                                             for ea in acc.get("emailAddress", [])
                                             if ea.get("mailId")
                                         }
+                                        # Note: only warn if not in account aliases.
+                                        # Custom "From Addresses" in Zoho Mail are valid senders
+                                        # but don't appear in the /accounts emailAddress list.
                                         if from_email.lower() not in valid_emails:
-                                            _from_email_error = (
-                                                f"'From' email '{from_email}' is not a registered sender "
-                                                f"in this Zoho Mail account. "
-                                                f"Valid address(es): {', '.join(sorted(valid_emails)) if valid_emails else 'none found'}"
+                                            import logging as _logging
+                                            _logging.getLogger("oauth").info(
+                                                "from_email '%s' not in account aliases — may be a custom From Address.",
+                                                from_email
                                             )
                                 break
                     elif provider == "zoho_crm":
@@ -719,9 +721,7 @@ async def validate_connection(
                     else:  # zoho_books
                         test_resp, _ = await _zoho_api_get("/books/v3/organizations")
 
-                    if _from_email_error:
-                        result = {"success": False, "message": _from_email_error}
-                    elif test_resp.status_code == 200:
+                    if test_resp.status_code == 200:
                         result = {"success": True, "message": f"{config['name']} connection validated successfully"}
                     else:
                         # Expose the actual Zoho error for easier debugging
