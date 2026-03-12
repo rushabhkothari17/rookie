@@ -1096,17 +1096,6 @@ export function IntegrationsOverview() {
                             </Button>
                           )}
                           
-                          {integration.settings.length > 0 && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-slate-400 hover:text-slate-600 px-2"
-                              onClick={() => openSettingsPanel(integration)}
-                              data-testid={`settings-${integration.id}`}
-                            >
-                              <Settings size={14} />
-                            </Button>
-                          )}
                           
                           <Button
                             size="sm"
