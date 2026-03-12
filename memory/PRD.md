@@ -5,6 +5,20 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Customer Tenant Mapping + Store Name Sync ✅
+
+**Three UX improvements implemented:**
+
+1. **Customer creation → Partner dropdown for platform admins**: Platform admins now see a "Partner Organization" dropdown in the Create Customer dialog. Customers are mapped to the selected partner's tenant. Partner admins creating customers still auto-map to their own tenant. Backend `AdminCreateCustomerRequest` model and `admin_create_customer` handler updated to accept optional `tenant_id` override.
+
+2. **Store name top-left sync**: `useWebsiteUpdate` hook added to `WebsiteContext` (`WebsiteSetterContext`). After platform/partner admin saves Organization Info, TopNav store name updates immediately without a page refresh.
+
+3. **Partner names in TenantsTab from Organization Info**: `/admin/tenants` API now enriches each tenant with `store_name` from `app_settings`. TenantsTab shows `tenant.store_name || tenant.name`.
+
+**Tested**: 100% frontend + 92% backend (iteration_261.json)
+
+---
+
 ## Latest Updates (Mar 2026) — Partner Org Creation Bug Fix ✅
 
 **Root cause**: `TenantsTab.tsx` was calling `/auth/register-partner` (public self-service OTP endpoint) which returns `{"message": "Verification required"}` with no `partner_code`. Frontend expected `partner_code` in response to show success screen — dialog hung silently.

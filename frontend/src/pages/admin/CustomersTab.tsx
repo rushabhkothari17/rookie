@@ -72,7 +72,7 @@ export function CustomersTab() {
   useEffect(() => {
     if (!isPlatformAdmin) return;
     api.get("/admin/tenants").then(r => {
-      const all = (r.data.tenants || []).filter((t: any) => t.code !== "automate-accounts");
+      const all = (r.data.tenants || []).filter((t: any) => t.code && t.code !== "automate-accounts");
       setPartnerTenants(all);
     }).catch(() => {});
   }, [isPlatformAdmin]);
