@@ -61,7 +61,6 @@ export function CustomersTab() {
   const [customerNotes, setCustomerNotes] = useState<any[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
-  const [signupSchema, setSignupSchema] = useState<any[]>([]);
   const [newCustomerExtras, setNewCustomerExtras] = useState<Record<string, string>>({});
   const countries = useCountries();
   // Platform admin: list of tenants to map customer to a partner org
@@ -127,15 +126,6 @@ export function CustomersTab() {
 
   useEffect(() => { load(1); }, [nameFilter, emailFilter, stateFilter, countryFilter, statusFilter, paymentModeFilter, partnerFilter]);
 
-  // Fetch signup form schema whenever Create dialog opens (ensures fresh schema)
-  useEffect(() => {
-    if (!showCreateDialog) return;
-    api.get("/admin/website-settings").then(r => {
-      try { setSignupSchema(JSON.parse(r.data.settings?.signup_form_schema || "[]")); }
-      catch { setSignupSchema([]); }
-    }).catch(() => {});
-  }, [showCreateDialog]);
-
   // Province loading moved to AddressFieldRenderer — no longer needed here.
 
   const downloadCsv = () => {
@@ -184,7 +174,7 @@ export function CustomersTab() {
   const handleCreateCustomer = async () => {
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     const PHONE_REGEX = /^[+\d][\d\s\-(). ]{3,49}$/;
-    const schemaField = (key: string) => signupSchema.find((f: any) => f.key === key);
+    const schemaField = (key: string) => parseSchema(ws.signup_form_schema).find((f: any) => f.key === key);
     const errors: string[] = [];
     if (!newCustomer.full_name.trim()) errors.push("Full Name");
     else if (newCustomer.full_name.trim().length > 50) errors.push("Full Name (max 50 characters)");
@@ -477,7 +467,7 @@ export function CustomersTab() {
               </div>
             )}
             <CustomerSignupFields
-              schema={parseSchema(JSON.stringify(signupSchema))}
+              schema={parseSchema(ws.signup_form_schema)}
               values={createValues}
               onChange={handleCreateFieldChange}
               showPassword={true}
