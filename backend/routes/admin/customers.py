@@ -392,9 +392,11 @@ async def admin_create_customer(
         if len(phone) > 50:
             raise HTTPException(status_code=400, detail="Phone must be 50 characters or fewer")
 
-    existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tid}, {"_id": 0})
+    existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tid}, {"_id": 0, "role": 1})
     if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        role = existing.get("role", "user")
+        detail = "Email already registered as a customer in this organisation" if role == "customer" else "Email belongs to an existing user in this organisation"
+        raise HTTPException(status_code=400, detail=detail)
 
     user_id = make_id()
     customer_id = make_id()

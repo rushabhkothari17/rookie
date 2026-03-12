@@ -145,9 +145,12 @@ async def admin_create_admin_user(
     if pw_err:
         raise HTTPException(400, pw_err)
 
-    existing = await db.users.find_one({"email": payload.email.lower()}, {"_id": 0})
+    # Email must be unique within this tenant (covers both admin users AND customers, since customers are also stored in users collection)
+    existing = await db.users.find_one({"email": payload.email.lower(), "tenant_id": tid}, {"_id": 0, "role": 1})
     if existing:
-        raise HTTPException(400, "Email already registered")
+        role = existing.get("role", "user")
+        detail = "Email belongs to an existing customer in this organisation" if role == "customer" else "Email already registered in this organisation"
+        raise HTTPException(400, detail)
 
     # License check
     from services.license_service import check_limit as _check_limit
