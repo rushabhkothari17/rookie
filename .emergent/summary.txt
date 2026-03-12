@@ -1,30 +1,59 @@
 <analysis>**original_problem_statement:**
-The user's initial request involved a series of UI/UX fixes for an admin panel. This evolved to include adding multi-tenancy support for a Quick Presets feature, followed by a major codebase cleanup. Subsequently, the focus shifted to fixing critical bugs in the Zoho WorkDrive integration. The most recent set of tasks involved a deep dive into fixing the entire email delivery system (for OTPs, signups, and password resets), which was failing to send real emails. This led to further architectural clarifications from the user regarding tenant-specific connected services, a robust validation mechanism for Zoho Mail, and fixing several other UI bugs related to a database wipe. The current issue is a critical bug preventing the creation of new partner organizations.
+The user initially requested UI/UX fixes, multi-tenancy for Quick Presets, and codebase cleanup. This shifted to fixing critical bugs in Zoho WorkDrive integration and a complete overhaul of the email delivery system. The most recent requests have focused on a series of feature additions and bug fixes reported by the user after the major architectural changes were completed.
+
+The latest user requests from this session include:
+1.  Ensuring a dropdown is available for platform admins to map a new customer to a specific partner.
+2.  Ensuring the store name in the top-left of the UI and the partner name in the admin list dynamically sync with the Organization Info settings.
+3.  Fixing various data synchronization and caching bugs.
+4.  Implementing tenant-scoped email validation for users and customers.
+5.  Cleaning up all test data from the database.
+6.  The current top-priority task is to enforce consistent rendering of address form fields across all pages of the application, as they are currently inconsistent.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has successfully resolved a wide range of critical issues. The Zoho WorkDrive integration is now fully functional for both customers and platform admins. The email service has been completely overhauled: it now correctly uses Zoho Mail, caches OAuth tokens to prevent rate-limiting, and implements a user-defined fallback logic (tenant's provider -> platform's provider -> mocked). A robust  validation for Zoho Mail was also implemented. Several UI bugs were fixed, including dynamic address fields, default brand colors, and role-based component visibility. The database was also wiped and re-seeded per the user's request. The application is now in a much more stable state, but a critical bug in the partner creation flow has just been identified.
+The agent has successfully resolved several critical bugs and implemented multiple user-requested features. The primary P0 bug blocking partner creation was fixed by adding a new, direct creation endpoint. Subsequently, the agent implemented a feature for platform admins to assign customers to partners via a dropdown, and made the store/partner names dynamic and synced with the Organization Info settings. Several follow-up bugs related to data synchronization and caching were also fixed. The agent implemented tenant-scoped email validation to prevent duplicates, cleaned the entire database of test data, and fixed a UI display issue for product pricing. The application is now in a stable state, but with a known UI inconsistency issue that is the current focus.
 
 **Last working item**:
-- **Last item agent was working**: Investigating a bug where creating a new partner organization fails silently in the UI. The agent diagnosed that the backend endpoint () initiates an email verification but does not return the  in its response, which the frontend requires to update the UI.
+- **Last item agent was working**: Investigating and planning the resolution of inconsistent address form layouts across different pages. The user wants the form builder to render fields identically everywhere, but pages like partner signup, customer signup, and the user profile page have different ordering for fields like country, province, and postal code.
 - **Status**: IN PROGRESS
 - **Agent Testing Done**: N
-- **Which testing method agent to use?** both
+- **Which testing method agent to use?** Frontend testing agent
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0): New partner organization creation fails silently.** After filling out the form and clicking Save, the dialog does not close, and the new partner does not appear in the list.
+- **Issue 1 (P0): Address form fields are inconsistent across different pages.** The layout and order of address fields (country, state/province, postal code) differ between , , and .
+- **Issue 2 (P2): Spacing on Resources and My Profile Page.** Minor UI spacing inconsistency.
+- **Issue 3 (P2): Missing Resend API Key for Email Delivery.** The Resend email provider option is non-functional without an API key.
 
 **Issues Detail:**
-- **Issue 1: New partner organization creation fails silently.**
-    - **Attempted fixes**: Investigation is complete. The root cause is a mismatch between the backend response and frontend expectation. The  endpoint returns  but omits the  which the frontend () needs to update its state and close the creation modal.
+- **Issue 1: Address form fields are inconsistent across different pages.**
+    - **Attempted fixes**: The agent identified the differing JSX order in , , and . An initial change was made to , but the user clarified that a holistic, application-wide fix for consistency is required.
     - **Next debug checklist**:
-        - Modify the  function in .
-        - Ensure the JSON response includes the  alongside the Verification required message.
-    - **Why fix this issue and what will be achieved with the fix?** This is a critical bug blocking a core administrative function: onboarding new partners.
+        1.  Establish a single, canonical order for all address fields. Functionally,  must be selected *before*  to populate the state dropdown.
+        2.  Refactor the address sections in , , and .
+        3.  The ideal fix is to create a single, reusable shared component for the address block and use it in all three locations.
+    - **Why fix this issue and what will be achieved with the fix?** To provide a consistent and predictable UX, and to fix the functional bug where the state/province dropdown cannot be populated correctly.
     - **Status**: IN PROGRESS
-    - **Is recurring issue?** N
+    - **Is recurring issue?** Y
+    - **Should Test frontend/backend/both after fix?** Frontend
+    - **Blocked on other issue**: None
+
+- **Issue 2: Spacing on Resources and My Profile Page**
+    - **Attempted fixes**: None.
+    - **Next debug checklist**: Compare the CSS/styling of the Resources and My Profile pages with other correctly-spaced pages and apply consistent padding/margin.
+    - **Why fix this issue and what will be achieved with the fix?** To create a visually consistent experience across all customer-facing pages.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?** Y
+    - **Should Test frontend/backend/both after fix?** Frontend
+    - **Blocked on other issue**: None
+
+- **Issue 3: Missing Resend API Key for Email Delivery**
+    - **Attempted fixes**: None.
+    - **Next debug checklist**: Implement a UI flow where if a tenant selects Resend as their email provider, they are prompted to enter and save their Resend API key.
+    - **Why fix this issue and what will be achieved with the fix?** To make the Resend email integration functional for tenants who wish to use it.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?** Y
     - **Should Test frontend/backend/both after fix?** Both
     - **Blocked on other issue**: None
 
@@ -41,25 +70,23 @@ The agent has successfully resolved a wide range of critical issues. The Zoho Wo
     - (P2) Centralize Email Settings.
 
 **Completed work in this session**
-- **Zoho WorkDrive Integration Fix**: Resolved all file upload failures and permission issues in .
-- **Email Service Overhaul (OTP & General)**: Fixed mocked email delivery for all user flows (partner/customer signup, forgot password) by implementing a robust Zoho Mail integration with OAuth token caching and a 3-tier fallback logic in .
-- **Tenant-Specific Architecture Refinement**: Enforced the rule that Connected Services are tenant-specific, with the platform's  tenant serving as a fallback for specific flows like partner signup.
-- **Robust Zoho  Validation**: Implemented a dry run test email during Zoho Mail connection validation to reliably check if a  is usable via the API, fixing a major user frustration ().
-- **Database Wipe & Re-seed**: Wiped all collections except  for a fresh start as requested.
-- **Multiple UI/UX Fixes**:
-    - **Organization Info**: Address fields now dynamically pull countries/states from the tax module ().
-    - **Brand Colors**: Color pickers now show default theme colors instead of black on a fresh DB ().
-    - **Connected Services**: Hid Request an integration button and removed settings icon for platform admins ().
+- **P0 Partner Creation Bug Fix**: Resolved the silent failure of partner organization creation by implementing a new endpoint () that directly creates the tenant and user, returning the  to the frontend.
+- **Customer-to-Partner Mapping**: Added a partner selection dropdown in the Create Customer dialog, visible only to platform admins.
+- **Store & Partner Name Synchronization**:
+    - The top-left store name now dynamically updates from Organization Info settings after saving.
+    - The partner list in the Partner Orgs tab now displays the  from each partner's Organization Info.
+    - Fixed bugs where updating a partner's name did not sync across the  and  collections.
+- **Email Template Visibility Fix**: The  email template is now correctly displayed in the UI for platform admins.
+- **Database and Cache Management**:
+    - Performed a full database wipe as requested.
+    - Fixed a 60-second in-memory cache TTL in  that caused delays in settings propagation, reducing it to 1 second.
+    - Disabled the automatic seeding of demo products on startup.
+    - Ensured the  platform tenant is created on startup so it's always visible.
+- **Tenant-Scoped Email Uniqueness**: Implemented backend validation to prevent creating a customer or user if their email already exists for another user or customer within the same tenant.
+- **Product Price Display Fix**: Products with internal checkout but no price now display a formatted zero value (e.g., ) instead of RFQ.
 
 **Earlier issues found/mentioned but not fixed**
-- **Issue 1: Spacing on Resources and My Profile Page**
-    - **Why to solve this issue and what will be achieved with this?** To create a visually consistent experience across all customer-facing pages.
-    - **Should Test frontend/backend/both after fix**: Frontend
-    - **Is recurring issue?** Y
-- **Issue 2: Missing Resend API Key for Email Delivery**
-    - **Why to solve this issue and what will be achieved with this?** Although Zoho Mail is now the primary email provider, Resend is still an option for tenants. It is currently non-functional without an API key. The user should be prompted for a key if they select it.
-    - **Should Test frontend/backend/both after fix**: Backend
-    - **Is recurring issue?** Y
+- See All Pending/In progress Issue list. These have been promoted to the main list.
 
 **Known issue recurrence from previous fork**
 - None.
@@ -68,77 +95,93 @@ The agent has successfully resolved a wide range of critical issues. The Zoho Wo
 
 
 **Key Technical Concepts**
-- **3-Tier Service Fallback**: A pattern (Tenant Provider -> Platform Provider -> Mock) was implemented for the email service to ensure graceful degradation and adhere to user requirements.
-- **API Token Caching**: Added caching with an expiry for the Zoho Mail OAuth access token in  to prevent API rate-limiting and improve performance.
-- **Functional API Validation**: Instead of relying on metadata endpoints, the system now validates the Zoho  by attempting a real test send. This proved to be the only reliable method.
-- **Dynamic Data-Driven UI**: Refactored static form fields (e.g., in ) into dynamic components that source data from a backend module (Tax) and include graceful fallbacks (e.g., to a text input if no dropdown data is available).
-- **Role-Based UI Correction**: Corrected multiple instances where UI elements were not correctly hidden/shown for the  role due to incomplete role checks.
+- **Context Refresh Pattern**: Introduced a  function in  to allow child components to trigger a data re-fetch from the provider, solving stale data issues after save operations.
+- **Data Synchronization on Edit**: Extended the  endpoint to update both the  and the corresponding  to maintain data consistency.
+- **Defensive Data Merging**: Fixed a bug in the  endpoint by excluding specific fields from a secondary data source to prevent it from incorrectly overriding the primary, authoritative source for .
+- **Tenant-Scoped Validation**: Implemented robust, cross-collection checks to enforce email uniqueness at the tenant level for both users and customers.
+- **Configuration-driven Startup**: Modified startup tasks in  to ensure the platform tenant is always seeded and to prevent unwanted demo data from being re-seeded after a database wipe.
 
 **key DB schema**
-- **user_presets**: 
-- **email_templates**: (Implicitly modified to support a  flag)
+- No new schemas. Modifications were to data within existing schemas (, , , ).
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
--  (Frontend for the current partner creation bug)
--  (Backend for the current partner creation bug)
--  (Contains the new Zoho Mail validation logic)
--  (Contains the new email service architecture)
--  (Contains the recently fixed dynamic address fields)
+- **Current Issue**:
+    - 
+    - 
+    - 
+- **Recently Modified**:
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
+    - 
 
 **Areas that need refactoring**:
 - : This file remains over 1200 lines and should be broken down into smaller components.
-- : The validation logic, which now sends a test email, could be moved into  to better separate concerns.
+- **Address Forms**: The three files with address forms (, , ) should be refactored to use a single, shared address component to ensure consistency and maintainability.
 
 **key api endpoints**
-- **Under Investigation:**
+- **Created**:
     - 
-- **Heavily Modified:**
+- **Modified**:
     - 
+    - 
+    - 
+    -  (and )
 
 **Critical Info for New Agent**
-1.  **Current Blocker**: Your immediate priority is to fix the partner organization creation flow. The backend at  must be modified in  to include the  in its JSON response. The frontend hangs because it's waiting for this code.
-2.  **Email Architecture**: The email system now uses a specific 3-tier fallback logic: Tenant-configured provider -> Platform's provider ( tenant) -> Mocked email. Do not deviate from this user-defined architecture.
-3.  **Zoho Mail Validation**: Validating a  for a Zoho Mail connection is done by sending a minimal test email. This is the only reliable method found, as Zoho's APIs do not provide a comprehensive list of all valid sender addresses.
-4.  **Database State**: The database was recently wiped (except for email templates). The only user is the platform admin. This is critical context for any testing.
-5.  **Role Checks**: Be mindful that several previous bugs were caused by checks for  that only looked for  and missed .
+1.  **Current Blocker (P0)**: Your immediate priority is to standardize the address form layout across the application. The user wants identical forms on the partner signup, customer signup, and profile pages. The best approach is to create a single shared React component for the address block and use it in all three locations. Remember that functionally, the  field must come before the  field to populate the dropdown correctly.
+2.  **Database is Clean**: The database has been wiped of all demo data (products, categories, etc.), and startup seeding for this data is disabled. Only the platform admin user and the  tenant record are now created on startup. Do not rely on demo data for testing.
+3.  **Tenant-Scoped Uniqueness**: User and customer emails must be unique *within a single tenant*, but can be reused across different tenants. The creation endpoints now validate this across both  and  collections.
+4.  **Data Synchronization is Key**: Be aware that some data (like ) is stored in multiple places ( and  collections). When editing, ensure all relevant records are updated to prevent UI inconsistencies. The fix in  is a good pattern to follow.
+5.  **Caching Behavior**: An in-memory cache in  was reduced from 60s to 1s. If you make changes to settings and don't see them reflected immediately, this could still be a factor. The  function in  is the pattern used to force a UI refresh.
 
 **documents and test reports created in this job**
 - 
 - 
--  (Updated)
+- 
+- 
+-  (Updated multiple times)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Reported that creating a new partner org fails silently. **Status: IN PROGRESS.**
-2.  **User**: Requested to wipe the database but preserve email templates. **Status: COMPLETED.**
-3.  **User**: Asked to remove the settings icon from the connected services cards. **Status: COMPLETED.**
-4.  **User**: Reported a Zoho validation error (). **Status: COMPLETED.**
-5.  **User**: Reported a Zoho validation error (). **Status: COMPLETED.**
-6.  **User**: Asked for strict validation of  for Zoho Mail, blocking invalid addresses. **Status: COMPLETED.**
-7.  **User**: Reported being able to send from an email address via Zoho's UI but not validate it in the app, asking for the reason. **Status: COMPLETED.**
-8.  **User**: Asked to delete all email queues. **Status: COMPLETED.**
-9.  **User**: Clarified that if a partner has no email provider, the platform admin's provider should be used as a fallback. **Status: COMPLETED.**
-10. **User**: Provided detailed architectural requirements for tenant-specific connected services and email templates. **Status: COMPLETED.**
+1.  **User**: Stated that the form builder must render the same fields on all pages. **Status: IN PROGRESS.**
+2.  **User**: Reported an inconsistency in the address block between partner signup and the profile page. **Status: IN PROGRESS (root cause of current P0 task).**
+3.  **User**: Asked why the  partner org wasn't visible. **Status: COMPLETED.**
+4.  **User**: Requested deletion of all test products and data. **Status: COMPLETED.**
+5.  **User**: Reported that users and customers could be created with duplicate emails within a tenant. **Status: COMPLETED.**
+6.  **User**: Requested that zero-price products show a formatted currency value (e.g., ) instead of a dash. **Status: COMPLETED.**
+7.  **User**: Asked why a product was showing RFQ as the price incorrectly. **Status: COMPLETED.**
+8.  **User**: Requested a full DB clear due to caching issues. **Status: COMPLETED.**
+9.  **User**: Asked if the  email template was visible to admins. **Status: COMPLETED.**
+10. **User**: Reported that editing a partner org name didn't update everywhere and that saves required two clicks. **Status: COMPLETED.**
 
 **Project Health Check:**
 - **Broken**:
-    - **Partner Organization Creation**: This core feature fails silently in the UI due to a backend response issue.
+    - **UI Form Consistency**: Address form rendering is inconsistent across multiple pages, which is the current P0 task.
 - **Mocked**:
     - **Resend Email Integration**: The Resend integration path exists but is non-functional as it requires a user-provided API key.
 
 **3rd Party Integrations**
 *   GoCardless (Payments)
 *   Stripe (Payments)
-*   **Zoho Suite (OAuth, WorkDrive)** - Now fully functional.
-*   **Resend (Email)** - Configured but requires API key (mocked).
+*   **Zoho Suite (OAuth, WorkDrive)**
+*   **Resend (Email)** - Configured but requires API key.
 *    (FX rates)
 *    &  (Frontend PDF Generation)
 *   framer-motion (UI Animations)
 
 **Testing status**
-- **Testing agent used after significant changes**: YES. The testing agent was used multiple times to verify the comprehensive email and WorkDrive fixes.
+- **Testing agent used after significant changes**: YES, used multiple times to validate feature implementations and bug fixes.
 - **Troubleshoot agent used after agent stuck in loop**: NO
 - **Test files created**: None.
 - **Known regressions**: None currently active.
@@ -149,4 +192,4 @@ The agent has successfully resolved a wide range of critical issues. The Zoho Wo
   - Password: 
 
 **What agent forgot to execute**
-- All high-level backlog tasks from the initial handoff (new landing page, user table filters, etc.) remain pending as the agent has been focused on critical, user-reported bugs and architectural refinements.</analysis>
+- The upcoming and future tasks from the initial product requirements (new landing page, user table filters, etc.) remain pending as the focus has been on user-reported bugs and iterative improvements.</analysis>
