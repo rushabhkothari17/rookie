@@ -78,6 +78,9 @@ async def update_app_settings(
         {"$set": {**update, "tenant_id": tid}},
         upsert=True,
     )
+    # Keep tenants.name in sync with store_name so /api/tenant-info is always current
+    if "store_name" in update and update["store_name"]:
+        await db.tenants.update_one({"id": tid}, {"$set": {"name": update["store_name"]}})
     for k, v in update.items():
         await SettingsService.set(k, v, updated_by=admin.get("email", "admin"))
     await AuditService.log(

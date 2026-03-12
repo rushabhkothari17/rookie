@@ -1,28 +1,24 @@
 /**
- * UniversalFormRenderer — the single source of truth for rendering any form schema.
+ * UniversalFormRenderer — single source of truth for rendering any form schema.
  *
- * Every form in the application (customer signup, partner signup, profile,
- * scope/quote modals) uses this component so that field rendering is always
- * identical and driven entirely by the FormSchemaBuilder schema.
+ * Design: modern pill-shaped inputs with placeholders instead of labels,
+ * asterisk suffix for required fields, staggered entrance animations, and
+ * smooth focus transitions.
  *
  * Address handling:
- *   default ("flat") — address sub-fields are stored as flat keys in `values`:
- *     values.line1, values.line2, values.city, values.region, values.postal, values.country
+ *   "flat" (default) — sub-fields as flat keys (line1, city, region, …)
  *   "json"           — address stored as JSON string at values[field.key]
- *                      (used by dynamic forms like scope/quote modals in ProductDetail)
- *
- * Canonical address field order (enforced by AddressFieldRenderer):
- *   Line 1 → Line 2 → City → Country → State/Province → Postal
  */
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AddressFieldRenderer } from "@/components/AddressFieldRenderer";
 import { FormField } from "@/components/FormSchemaBuilder";
+import { cn } from "@/lib/utils";
 
 type AddressValue = {
   line1?: string; line2?: string; city?: string;
@@ -31,107 +27,110 @@ type AddressValue = {
 
 const ADDR_KEYS = ["line1", "line2", "city", "region", "postal", "country"] as const;
 
+const PHONE_RE = /^[+\d][\d\s\-(). ]{3,49}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function validateField(key: string, val: string, required: boolean): string {
+  if (!val) return required ? "This field is required" : "";
+  if (key === "email" && !EMAIL_RE.test(val)) return "Enter a valid email address";
+  if (key === "phone" && !PHONE_RE.test(val)) return "Enter a valid phone number";
+  if (val.length > 100) return "Maximum 100 characters";
+  return "";
+}
+
+/** Returns placeholder text — includes * suffix for required fields */
+function ph(label: string, required: boolean): string {
+  return required ? `${label} \u00A0*` : label;
+}
+
+const pillInput = (hasError: boolean) =>
+  cn(
+    "h-12 w-full rounded-full border bg-white/90 px-5 text-sm text-slate-900",
+    "placeholder:text-slate-400 transition-all duration-200",
+    "focus:outline-none focus:ring-0",
+    hasError
+      ? "border-red-400 focus:border-red-500 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.08)]"
+      : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+  );
+
+const pillSelect = cn(
+  "h-12 w-full rounded-full border border-slate-200 bg-white/90 px-5 text-sm",
+  "hover:border-slate-300 data-[state=open]:border-slate-800",
+  "focus:ring-0 focus:outline-none transition-all duration-200 [&>span]:line-clamp-1",
+  "shadow-none"
+);
+
+const pillTextarea = (hasError: boolean) =>
+  cn(
+    "w-full rounded-3xl border bg-white/90 px-5 py-3.5 text-sm text-slate-900 resize-none",
+    "placeholder:text-slate-400 transition-all duration-200",
+    "focus:outline-none focus:ring-0",
+    hasError
+      ? "border-red-400 focus:border-red-500"
+      : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+  );
+
 interface Props {
   fields: FormField[];
   values: Record<string, string>;
   onChange: (key: string, value: string) => void;
-  /** compact=true for dialogs; false (default) for full-page forms */
   compact?: boolean;
-  /** Scope country/province lists to a specific partner's tax tables */
   partnerCode?: string;
-  /**
-   * "flat"  – address sub-fields live as flat keys (line1, city, …) in values   [default]
-   * "json"  – address stored as JSON string at values[field.key]
-   */
   addressMode?: "flat" | "json";
 }
 
-function FieldLabel({ field, compact }: { field: FormField; compact: boolean }) {
-  if (compact) {
-    return (
-      <label className="block mb-0.5 text-xs text-slate-600 font-medium">
-        {field.label}{field.required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-    );
-  }
-  return (
-    <label className="block mb-0.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-      {field.label}{field.required && <span className="text-red-500 ml-0.5">*</span>}
-    </label>
-  );
-}
-
-const PHONE_RE = /^[+\d][\d\s\-(). ]{3,49}$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const MAX_LEN: Record<string, number> = { email: 50, phone: 50, full_name: 50, company_name: 50, job_title: 50 };
-
-function validateField(key: string, val: string, required: boolean): string {
-  if (!val) return required ? `${key.replace(/_/g, " ")} is required` : "";
-  if (key === "email" && !EMAIL_RE.test(val)) return "Invalid email address";
-  if (key === "phone" && !PHONE_RE.test(val)) return "Invalid phone (digits, spaces, +, - only)";
-  if (MAX_LEN[key] && val.length > MAX_LEN[key]) return `Max ${MAX_LEN[key]} characters`;
-  return "";
-}
-
 export function UniversalFormRenderer({
-  fields,
-  values,
-  onChange,
-  compact = false,
-  partnerCode,
-  addressMode = "flat",
+  fields, values, onChange, compact = false, partnerCode, addressMode = "flat",
 }: Props) {
   const enabled = fields.filter(f => f.enabled !== false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleChange = (key: string, newVal: string, required: boolean) => {
-    // Real-time validation — only for fields we know how to validate
     if (["email", "phone", "full_name", "company_name", "job_title"].includes(key)) {
       const err = validateField(key, newVal, required);
-      setFieldErrors(prev => err ? { ...prev, [key]: err } : (() => { const n = { ...prev }; delete n[key]; return n; })());
+      setFieldErrors(prev =>
+        err ? { ...prev, [key]: err } : (() => { const n = { ...prev }; delete n[key]; return n; })()
+      );
     }
     onChange(key, newVal);
   };
 
-  const renderOne = (field: FormField) => {
+  const renderOne = (field: FormField, index = 0) => {
     const key = field.key;
     const val = values[key] || "";
     const tid = `ufr-field-${key}`;
+    const err = fieldErrors[key] || "";
 
-    // ── Address block ───────────────────────────────────────────────────────
+    // Entrance animation — stagger by index
+    const animStyle: React.CSSProperties = {
+      animation: `fadeSlideUp 0.35s cubic-bezier(0.16,1,0.3,1) ${index * 45}ms both`,
+    };
+
+    // ── Address block ─────────────────────────────────────────────────────
     if (field.type === "address") {
       let addrValue: AddressValue;
-
       if (addressMode === "json") {
         addrValue = (() => { try { return JSON.parse(val || "{}"); } catch { return {}; } })();
       } else {
         addrValue = {
-          line1:   values.line1   || "",
-          line2:   values.line2   || "",
-          city:    values.city    || "",
-          region:  values.region  || "",
-          postal:  values.postal  || "",
-          country: values.country || "",
+          line1: values.line1 || "", line2: values.line2 || "",
+          city: values.city || "", region: values.region || "",
+          postal: values.postal || "", country: values.country || "",
         };
       }
-
       const handleAddrChange = (v: AddressValue) => {
         if (addressMode === "json") {
           onChange(key, JSON.stringify(v));
         } else {
-          // Only dispatch keys that actually changed — prevents cascading resets.
-          // e.g. selecting a province must NOT re-dispatch unchanged country,
-          // which would trigger "reset region" logic in the parent handler.
-          ADDR_KEYS.forEach(k => {
-            const next = v[k] || "";
-            const prev = values[k] || "";
+          (ADDR_KEYS as readonly string[]).forEach(k => {
+            const next = (v as any)[k] || "";
+            const prev = (values as any)[k] || "";
             if (next !== prev) onChange(k, next);
           });
         }
       };
-
       return (
-        <div key={field.id}>
+        <div key={field.id} style={animStyle}>
           <AddressFieldRenderer
             field={field}
             value={addrValue}
@@ -143,80 +142,97 @@ export function UniversalFormRenderer({
       );
     }
 
-    // ── Textarea ────────────────────────────────────────────────────────────
+    // ── Textarea ─────────────────────────────────────────────────────────
     if (field.type === "textarea") {
       return (
-        <div key={field.id} className="space-y-1">
-          <FieldLabel field={field} compact={compact} />
-          <Textarea
+        <div key={field.id} style={animStyle}>
+          <textarea
+            className={pillTextarea(!!err)}
             value={val}
             onChange={e => onChange(key, e.target.value)}
-            placeholder={field.placeholder}
-            rows={3}
-            className="text-sm resize-none"
+            placeholder={ph(field.label || key, field.required)}
+            rows={compact ? 3 : 4}
+            aria-label={field.label}
             data-testid={tid}
           />
+          {err && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>}
         </div>
       );
     }
 
-    // ── Select / Dropdown ───────────────────────────────────────────────────
+    // ── Select / Dropdown ────────────────────────────────────────────────
     if (field.type === "select") {
       return (
-        <div key={field.id} className="space-y-1">
-          <FieldLabel field={field} compact={compact} />
+        <div key={field.id} style={animStyle}>
           <Select value={val} onValueChange={v => onChange(key, v)}>
-            <SelectTrigger data-testid={tid}>
-              <SelectValue placeholder={field.placeholder || "Select…"} />
+            <SelectTrigger className={pillSelect} data-testid={tid} aria-label={field.label}>
+              <SelectValue placeholder={ph(field.label || key, field.required)} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
               {(field.options || []).map(opt => {
                 const [lbl, v] = opt.includes("|") ? opt.split("|") : [opt, opt];
-                return <SelectItem key={v} value={v}>{lbl}</SelectItem>;
+                return <SelectItem key={v} value={v} className="rounded-xl">{lbl}</SelectItem>;
               })}
             </SelectContent>
           </Select>
+          {err && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>}
         </div>
       );
     }
 
-    // ── Checkbox ────────────────────────────────────────────────────────────
+    // ── Checkbox ─────────────────────────────────────────────────────────
     if (field.type === "checkbox") {
       return (
-        <label key={field.id} className="flex items-center gap-2 cursor-pointer" data-testid={tid}>
+        <label
+          key={field.id}
+          style={animStyle}
+          className="flex items-center gap-3 cursor-pointer group"
+          data-testid={tid}
+        >
           <Checkbox
             checked={val === "true"}
             onCheckedChange={c => onChange(key, c ? "true" : "false")}
+            className="rounded-full h-5 w-5 border-slate-300 data-[state=checked]:bg-slate-900 data-[state=checked]:border-slate-900"
           />
-          <span className="text-sm text-slate-600">{field.placeholder || field.label}</span>
+          <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
+            {field.placeholder || field.label}
+            {field.required && <span className="text-red-500 ml-0.5"> *</span>}
+          </span>
         </label>
       );
     }
 
-    // ── Default: text / email / tel / number / date / password ──────────────
+    // ── Default: text / email / tel / number / date / password ────────────
     const htmlType = (["email", "tel", "number", "date", "password"].includes(field.type))
       ? field.type as React.HTMLInputTypeAttribute
       : "text";
-    const fieldErr = fieldErrors[key] || "";
+
+    const placeholder = ph(field.placeholder || field.label || key, field.required);
 
     return (
-      <div key={field.id} className="space-y-1">
-        <FieldLabel field={field} compact={compact} />
-        <Input
+      <div key={field.id} style={animStyle}>
+        <input
           type={htmlType}
+          className={pillInput(!!err)}
           value={val}
           onChange={e => handleChange(key, e.target.value, field.required)}
-          placeholder={field.placeholder || undefined}
+          placeholder={placeholder}
           required={field.required}
+          aria-label={field.label}
           data-testid={tid}
-          className={fieldErr ? "border-red-400 focus-visible:ring-red-400" : ""}
+          autoComplete={
+            key === "email" ? "email" :
+            key === "password" ? "new-password" :
+            key === "full_name" ? "name" :
+            key === "phone" ? "tel" : undefined
+          }
         />
-        {fieldErr && (
-          <p className="text-[11px] text-red-500 mt-0.5" data-testid={`${tid}-error`}>{fieldErr}</p>
+        {err && (
+          <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>
         )}
-        {key === "password" && !fieldErr && (
-          <p className="text-[11px] text-slate-400 mt-0.5">
-            Min. 10 characters · at least one uppercase · one number · one special character (!@#$%^&*)
+        {key === "password" && !err && (
+          <p className="mt-1.5 px-4 text-[11px] text-slate-400">
+            Min. 10 characters · uppercase · number · special character (!@#$%^&*)
           </p>
         )}
       </div>
@@ -224,32 +240,59 @@ export function UniversalFormRenderer({
   };
 
   if (compact) {
-    return <div className="space-y-3">{enabled.map(renderOne)}</div>;
+    return (
+      <>
+        <style>{`
+          @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+        <div className="space-y-3">
+          {enabled.map((f, i) => renderOne(f, i))}
+        </div>
+      </>
+    );
   }
 
-  // Full layout: non-address fields in a 2-col grid; address block sits full-width
-  // at its schema-defined position.
+  // Full layout: address full-width at its schema position; other fields in 2-col grid
   const addrIdx = enabled.findIndex(f => f.type === "address");
   const before    = addrIdx >= 0 ? enabled.slice(0, addrIdx) : enabled;
   const addrField = addrIdx >= 0 ? enabled[addrIdx] : null;
   const after     = addrIdx >= 0 ? enabled.slice(addrIdx + 1) : [];
 
+  // Running index for consistent stagger across all fields
+  let idx = 0;
   const grid = (flds: FormField[]) =>
     flds.length === 0 ? null : (
-      <div className="grid gap-4 sm:grid-cols-2">
-        {flds.map(f => (
-          <div key={f.id} className={f.type === "textarea" ? "sm:col-span-2" : ""}>
-            {renderOne(f)}
-          </div>
-        ))}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {flds.map(f => {
+          const i = idx++;
+          return (
+            <div key={f.id} className={f.type === "textarea" ? "sm:col-span-2" : ""}>
+              {renderOne(f, i)}
+            </div>
+          );
+        })}
       </div>
     );
 
+  const addrI = idx;
+  if (addrField) idx++;
+
   return (
-    <div className="space-y-4">
-      {grid(before)}
-      {addrField && renderOne(addrField)}
-      {grid(after)}
-    </div>
+    <>
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      <div className="space-y-3">
+        {grid(before)}
+        {addrField && renderOne(addrField, addrI)}
+        {grid(after)}
+      </div>
+    </>
   );
 }

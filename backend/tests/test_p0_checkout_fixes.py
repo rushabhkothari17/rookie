@@ -275,7 +275,7 @@ class TestStripeCheckout:
         payload = {
             "items": [{"product_id": TEST_PRODUCT_ID, "quantity": 1}],
             "checkout_type": "one_time",
-            "origin_url": "https://field-alignment.preview.emergentagent.com",
+            "origin_url": "https://schema-driven-forms-1.preview.emergentagent.com",
             "terms_accepted": True,
             "partner_tag_response": "Yes",
         }
@@ -288,7 +288,7 @@ class TestStripeCheckout:
         payload = {
             "items": [{"product_id": TEST_PRODUCT_ID, "quantity": 1}],
             "checkout_type": "one_time",
-            "origin_url": "https://field-alignment.preview.emergentagent.com",
+            "origin_url": "https://schema-driven-forms-1.preview.emergentagent.com",
             "terms_accepted": False,
             "partner_tag_response": "Yes",
         }
@@ -301,7 +301,7 @@ class TestStripeCheckout:
         payload = {
             "items": [{"product_id": TEST_PRODUCT_ID, "quantity": 1}],
             "checkout_type": "one_time",
-            "origin_url": "https://field-alignment.preview.emergentagent.com",
+            "origin_url": "https://schema-driven-forms-1.preview.emergentagent.com",
             "terms_accepted": True,
             "partner_tag_response": "Yes",
             # Missing zoho_subscription_type, current_zoho_product, zoho_account_access
@@ -315,7 +315,7 @@ class TestStripeCheckout:
         payload = {
             "items": [{"product_id": TEST_PRODUCT_ID, "quantity": 1, "inputs": {}}],
             "checkout_type": "one_time",
-            "origin_url": "https://field-alignment.preview.emergentagent.com",
+            "origin_url": "https://schema-driven-forms-1.preview.emergentagent.com",
             "terms_accepted": True,
             "partner_tag_response": "Yes",
         }
