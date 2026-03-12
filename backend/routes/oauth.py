@@ -716,7 +716,7 @@ async def validate_connection(
                                             "mailFormat": "plaintext",
                                         }
                                         send_r = await client.post(
-                                            f"{mail_api}/api/accounts/{auto_account_id}/messages",
+                                            f"{mail_api}/accounts/{auto_account_id}/messages",
                                             headers={"Authorization": f"Zoho-oauthtoken {mail_token}"},
                                             json=test_payload,
                                         )
