@@ -25,7 +25,7 @@ RATE_LIMITS: Dict[str, Tuple[int, int]] = {
     "/api/auth/resend-verification-email":     (3, 300),    # 3 per 5 min
     "/api/auth/reset-password":                (5, 300),
     "/api/auth/verify-email":                  (10, 300),   # 10 per 5 min (brute-force guard)
-    "/api/auth/tenant-info":                   (20, 60),    # 20 per minute — public endpoint
+    "/api/tenant-info":                        (20, 60),    # 20 per minute — public endpoint
     "/api/checkout/session":                   (15, 60),    # 15 per minute
     "/api/checkout/bank-transfer":             (15, 60),
     "/api/orders/scope-request":               (20, 60),    # 20 per minute

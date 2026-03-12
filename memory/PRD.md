@@ -5,7 +5,23 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Mar 2026) — 10 P0 Bug Fixes ✅
+## Latest Updates (Mar 2026) — 7 Backend Hardening Fixes ✅
+
+**1. Fix 500 on invalid checkout session** — `checkout.py`: `get_checkout_status` wrapped in try-except; returns 404 `{detail: "Session not found"}` for any invalid/missing Stripe session.
+
+**2. API key auth returns 401** — `core/tenant.py`: `resolve_api_key_tenant` now raises `HTTPException(401)` for provided-but-invalid keys. `server.py`: `RequestValidationError` handler converts missing X-API-Key header errors from 422 → 401.
+
+**3. Rate limiting on `/api/tenant-info`** — `middleware/rate_limit.py`: Added 20 req/min per IP limit. Returns 429 with `Retry-After` header.
+
+**4. Login error messages improved** — `auth.py`: Admin role check moved before password verification. Message changed to `"Admin accounts must use /api/auth/partner-login"`. Unverified user message changed to `"Email not verified"`.
+
+**5. Register accepts first_name/last_name** — `models.py`: `RegisterRequest` gains optional `first_name`, `last_name` fields and `get_full_name()` helper. At least one name form is required. `VerifyEmailRequest` gains optional `token` field for JWT-based verification.
+
+**6. Order preview rejects negative quantity** — `models.py`: `CartItemInput.quantity` now has `Field(ge=1)` — returns 422 for `quantity < 1`.
+
+**7. Admin JWT on orders/subscriptions returns 200** — `store.py`: `GET /api/orders` and `GET /api/subscriptions` return empty lists for admin JWTs instead of throwing 404.
+
+---
 
 ### All 10 issues resolved and tested (iteration_251: 96% backend + 100% frontend):
 
