@@ -4,9 +4,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { applyPartnerBranding } from "@/contexts/WebsiteContext";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { AlertCircle, ArrowRight, ChevronLeft, Loader2 } from "lucide-react";
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -32,47 +29,7 @@ function isLightColor(hex?: string): boolean {
 }
 
 const css = `
-  @keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-  .anim-slide-up   { animation: slideUpFade 0.45s cubic-bezier(.16,1,.3,1) both; }
-  .anim-scale-in   { animation: scaleIn 0.35s cubic-bezier(.16,1,.3,1) both; }
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .auth-input {
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .auth-input:focus {
-    border-color: #0f172a;
-    box-shadow: 0 0 0 3px rgba(15,23,42,0.08);
-    outline: none;
-  }
-  .auth-input.error {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239,68,68,0.08);
-  }
-  .btn-primary {
-    transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
-  }
-  .btn-primary:hover:not(:disabled) {
-    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
-  }
-  .btn-primary:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-  .partner-pill {
-    transition: background-color 0.15s, color 0.15s;
-  }
-  .partner-pill:hover {
-    background-color: #e2e8f0;
-  }
+  /* local override — globals are in index.css */
 `;
 
 export default function Login() {
@@ -200,7 +157,7 @@ export default function Login() {
                   onKeyDown={e => e.key === "Enter" && codeInput.trim() && validateAndProceed(codeInput)}
                   required
                   autoFocus
-                  className={`auth-input w-full h-12 px-4 rounded-xl border text-sm text-slate-800 placeholder:text-slate-300 bg-white ${codeError ? "error" : "border-slate-200"}`}
+                  className={`auth-input ${codeError ? "error" : ""}`}
                   data-testid="partner-code-input"
                 />
                 {codeError && (
@@ -223,7 +180,7 @@ export default function Login() {
               <button
                 onClick={() => codeInput.trim() && validateAndProceed(codeInput)}
                 disabled={codeLoading || !codeInput.trim()}
-                className="btn-primary w-full h-12 rounded-xl bg-slate-900 text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                className="btn-primary bg-slate-900 text-white shadow-sm"
                 data-testid="partner-code-submit"
               >
                 {codeLoading ? (
@@ -427,10 +384,10 @@ export default function Login() {
               className="space-y-4"
               data-testid="login-form"
             >
-              <div className="anim-slide-up delay-100 space-y-1.5">
-                <Label htmlFor="email" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="anim-slide-up delay-100 space-y-2">
+                <label htmlFor="email" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
                   Email
-                </Label>
+                </label>
                 <input
                   id="email"
                   type="email"
@@ -439,16 +396,16 @@ export default function Login() {
                   onChange={e => { setEmail(e.target.value); setNeedsVerification(false); setLoginError(""); }}
                   required
                   autoFocus
-                  className="auth-input w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder:text-slate-300 bg-white"
+                  className="auth-input"
                   data-testid="login-email-input"
                 />
               </div>
 
-              <div className="anim-slide-up delay-200 space-y-1.5">
+              <div className="anim-slide-up delay-200 space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <label htmlFor="password" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
                     Password
-                  </Label>
+                  </label>
                   <Link
                     to={`/forgot-password${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
                     className="text-xs font-medium transition-colors hover:opacity-70"
@@ -461,11 +418,11 @@ export default function Login() {
                 <input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder="••••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  className="auth-input w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder:text-slate-300 bg-white"
+                  className="auth-input"
                   data-testid="login-password-input"
                 />
               </div>
@@ -474,7 +431,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="btn-primary w-full h-11 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                  className="btn-primary text-white"
                   style={{ backgroundColor: primary }}
                   data-testid="login-submit-button"
                 >
@@ -553,33 +510,33 @@ function ForcePasswordChangeModal({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8">
         <h2 className="text-xl font-bold text-slate-900 mb-1">Set a new password</h2>
         <p className="text-sm text-slate-500 mb-6">Your account requires a password change before you can continue.</p>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">New password</label>
+            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">New password</label>
             <input
               type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-              required autoFocus
-              className="w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-white"
+              required autoFocus placeholder="Min 10 characters"
+              className="auth-input"
               data-testid="force-new-password"
             />
-            <p className="text-[11px] text-slate-400 mt-1">Min. 10 characters · uppercase · number · special character</p>
+            <p className="text-[11px] text-slate-400 mt-1.5 px-1">Min. 10 characters · uppercase · number · special character</p>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Confirm password</label>
+            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">Confirm password</label>
             <input
               type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
-              required
-              className="w-full h-11 px-3.5 rounded-lg border border-slate-200 text-sm text-slate-800 bg-white"
+              required placeholder="Re-enter new password"
+              className="auth-input"
               data-testid="force-confirm-password"
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit" disabled={saving}
-            className="w-full h-11 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-50"
+            className="btn-primary bg-slate-900 text-white mt-2"
             data-testid="force-password-submit"
           >
             {saving ? "Saving…" : "Update Password & Continue"}

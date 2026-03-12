@@ -103,7 +103,7 @@ export function UniversalFormRenderer({
 
     // Entrance animation — stagger by index
     const animStyle: React.CSSProperties = {
-      animation: `fadeSlideUp 0.35s cubic-bezier(0.16,1,0.3,1) ${index * 45}ms both`,
+      animation: `fadeSlideUp 0.4s cubic-bezier(0.16,1,0.3,1) ${index * 50}ms both`,
     };
 
     // ── Address block ─────────────────────────────────────────────────────
@@ -244,7 +244,7 @@ export function UniversalFormRenderer({
       <>
         <style>{`
           @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(12px); }
             to   { opacity: 1; transform: translateY(0); }
           }
         `}</style>
@@ -284,7 +284,7 @@ export function UniversalFormRenderer({
     <>
       <style>{`
         @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(10px); }
+          from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>

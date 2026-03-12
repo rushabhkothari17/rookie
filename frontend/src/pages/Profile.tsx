@@ -140,27 +140,27 @@ export default function Profile() {
         <div className="grid gap-4 md:grid-cols-2 mb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-1.5">
-              <label className="text-sm text-slate-600">Email address</label>
-              <Lock size={11} className="text-slate-400" />
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Email address</label>
+              <Lock size={10} className="text-slate-300" />
             </div>
             <Input
               value={user?.email || ""}
               readOnly
-              className="bg-slate-50 cursor-not-allowed text-slate-500"
+              className="bg-slate-50 cursor-not-allowed text-slate-400 border-dashed"
               data-testid="profile-email-input"
             />
-            <p className="text-xs text-slate-400">Email can only be changed by an admin.</p>
+            <p className="text-xs text-slate-400 px-1">Email can only be changed by an admin.</p>
           </div>
           <div className="space-y-2">
-            <label className="text-sm text-slate-600">Partner / Tenant Code</label>
+            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Partner / Tenant Code</label>
             <div className="flex items-center gap-2">
               <Input
                 value={user?.partner_code || "—"}
                 readOnly
-                className="bg-slate-50 cursor-not-allowed font-mono text-sm"
+                className="bg-slate-50 cursor-not-allowed font-mono text-sm border-dashed"
                 data-testid="profile-partner-code"
               />
-              <span className="text-xs text-slate-400 whitespace-nowrap">Read-only</span>
+              <span className="text-xs text-slate-400 whitespace-nowrap shrink-0">Read-only</span>
             </div>
           </div>
         </div>

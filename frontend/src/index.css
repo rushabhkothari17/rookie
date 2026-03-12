@@ -224,3 +224,79 @@ textarea:not([readonly]):not([disabled]):focus {
   font-family: monospace;
   font-size: 0.88em;
 }
+
+/* ── Global pill auth inputs ─────────────────────────── */
+.auth-input {
+  height: 48px;
+  border-radius: 9999px;
+  border: 1.5px solid #e2e8f0;
+  background: rgba(255,255,255,0.96);
+  padding: 0 20px;
+  font-size: 14px;
+  color: #0f172a;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  width: 100%;
+  display: block;
+  outline: none;
+  font-family: inherit;
+}
+.auth-input::placeholder { color: #94a3b8; }
+.auth-input:hover { border-color: #cbd5e1; }
+.auth-input:focus {
+  border-color: #334155;
+  box-shadow: 0 0 0 4px rgba(15,23,42,0.07);
+  background: #fff;
+}
+.auth-input.error,
+.auth-input[data-error="true"] {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239,68,68,0.07);
+}
+
+/* ── Global pill action buttons ──────────────────────── */
+.btn-primary {
+  height: 48px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s, opacity 0.15s;
+  border: none;
+  font-family: inherit;
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+  transform: translateY(-1px);
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98) translateY(0);
+  box-shadow: none;
+}
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Form animations ─────────────────────────────────── */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.anim-slide-up { animation: slideUpFade 0.5s cubic-bezier(.16,1,.3,1) both; }
+.anim-scale-in { animation: scaleIn 0.38s cubic-bezier(.16,1,.3,1) both; }
+.anim-in       { animation: slideUpFade 0.45s cubic-bezier(.16,1,.3,1) both; }
+.delay-100 { animation-delay: 80ms; }
+.delay-200 { animation-delay: 160ms; }
+.delay-300 { animation-delay: 240ms; }
+.delay-400 { animation-delay: 320ms; }
+.delay-1   { animation-delay: 60ms; }
+.delay-2   { animation-delay: 120ms; }
+.delay-3   { animation-delay: 180ms; }
+.partner-pill { transition: background-color 0.15s, color 0.15s, transform 0.15s; }
+.partner-pill:hover { background-color: #e2e8f0; transform: scale(1.02); }

@@ -360,7 +360,7 @@ export default function Signup() {
                       setTimeout(() => partnerOtpRefs.current[Math.min(digits.length, 5)]?.focus(), 0);
                     }
                   } : undefined}
-                  className="h-12 w-10 rounded-lg border border-slate-300 text-center text-lg font-semibold focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-colors"
+                  className="h-12 w-10 rounded-full border-2 border-slate-200 text-center text-lg font-semibold focus:border-slate-900 focus:shadow-[0_0_0_3px_rgba(15,23,42,0.07)] outline-none transition-all duration-200"
                 />
               ))}
             </div>
@@ -576,7 +576,7 @@ export default function Signup() {
                       inputMode="numeric"
                       maxLength={1}
                       value={digit}
-                      className="w-11 h-14 border-2 rounded-xl text-center text-xl font-bold text-slate-900 border-slate-300 focus:border-slate-900 focus:outline-none transition-colors"
+                      className="w-12 h-14 border-2 rounded-2xl text-center text-xl font-bold text-slate-900 border-slate-200 focus:border-slate-800 focus:shadow-[0_0_0_3px_rgba(15,23,42,0.07)] focus:outline-none transition-all duration-200"
                       onChange={e => {
                         const val = e.target.value.replace(/\D/g, "");
                         if (!val) return;

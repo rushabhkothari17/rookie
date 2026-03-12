@@ -3,11 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { AlertCircle, CheckCircle, ArrowLeft, ChevronLeft } from "lucide-react";
 import { applyPartnerBranding } from "@/contexts/WebsiteContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+const css = `/* globals in index.css */`;
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12" data-testid="forgot-password-page">
-      <div className="w-full max-w-[360px] space-y-6">
+      <div className="w-full max-w-[380px] space-y-6">
 
         {/* Partner brand header */}
         <div className="flex items-center gap-2.5">
@@ -121,11 +122,11 @@ export default function ForgotPassword() {
         {step === "request" && (
           <form
             onSubmit={handleRequestCode}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4"
+            className="anim-in space-y-4"
             data-testid="forgot-password-form"
           >
             <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
+              <label htmlFor="email" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Email address</label>
               <Input
                 id="email"
                 type="email"
@@ -139,7 +140,7 @@ export default function ForgotPassword() {
             </div>
             <Button
               type="submit"
-              className="w-full text-white"
+              className="w-full h-12 text-white font-semibold"
               style={{ backgroundColor: primaryColor }}
               disabled={loading}
               data-testid="forgot-password-submit"
@@ -162,14 +163,14 @@ export default function ForgotPassword() {
         {step === "reset" && (
           <form
             onSubmit={handleResetPassword}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4"
+            className="anim-in space-y-4"
             data-testid="reset-password-form"
           >
-            <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2.5 border border-slate-100">
+            <div className="text-xs text-slate-500 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
               Code sent to <span className="font-medium text-slate-700">{email}</span>
-            </p>
+            </div>
             <div className="space-y-2">
-              <Label htmlFor="code">Reset Code</Label>
+              <label htmlFor="code" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Reset Code</label>
               <Input
                 id="code"
                 placeholder="6-digit code"
@@ -177,12 +178,12 @@ export default function ForgotPassword() {
                 onChange={(e) => setCode(e.target.value)}
                 required
                 maxLength={6}
-                className="font-mono tracking-widest text-center text-lg"
+                className="font-mono tracking-[0.3em] text-center text-lg"
                 data-testid="reset-code-input"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <label htmlFor="new-password" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">New Password</label>
               <Input
                 id="new-password"
                 type="password"
@@ -194,7 +195,7 @@ export default function ForgotPassword() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <label htmlFor="confirm-password" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Confirm Password</label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -207,7 +208,7 @@ export default function ForgotPassword() {
             </div>
             <Button
               type="submit"
-              className="w-full text-white"
+              className="w-full h-12 text-white font-semibold"
               style={{ backgroundColor: primaryColor }}
               disabled={loading}
               data-testid="reset-password-submit"
@@ -229,17 +230,19 @@ export default function ForgotPassword() {
         {/* Step 3: Done */}
         {step === "done" && (
           <div
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4 text-center"
+            className="anim-in space-y-4 text-center"
             data-testid="reset-password-success"
           >
             <div className="flex justify-center">
-              <CheckCircle className="h-12 w-12 text-green-500" />
+              <div className="h-16 w-16 rounded-full bg-green-50 flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
             </div>
             <p className="text-slate-600 text-sm">
               Your password has been reset. You can now sign in with your new password.
             </p>
             <Button
-              className="w-full text-white"
+              className="w-full h-12 text-white font-semibold"
               style={{ backgroundColor: primaryColor }}
               onClick={() => navigate("/login")}
               data-testid="goto-login-btn"
