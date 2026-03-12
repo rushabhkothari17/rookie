@@ -163,7 +163,7 @@ _OBSOLETE_KEYS = [
 
 _cache: Dict[str, Any] = {}
 _cache_ts: float = 0.0
-_CACHE_TTL = 60  # seconds
+_CACHE_TTL = 10  # seconds — keep low to avoid stale settings propagation issues
 
 
 def _cache_expired() -> bool:
