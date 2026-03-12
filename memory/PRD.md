@@ -121,16 +121,19 @@ Build a white-label service commerce platform with:
 - Fixed login page org name: now reads `branding.store_name` (from `app_settings`) instead of `tenant.name` so it refreshes when org name is saved in settings
 
 ### Phase 4: Global Pill UI Overhaul (March 2026)
-- Updated `input.jsx` base: `rounded-full`, `h-11`, smooth focus shadow ring
-- Updated `button.jsx` base: `rounded-full`, active scale(0.97), hover shadow-lift — cascades to ALL buttons
+- Updated `input.jsx` base: `rounded-full`, `h-11`, smooth focus + focusGlow animation
+- Updated `button.jsx` base: `rounded-full`, active scale(0.97), hover shadow-lift
 - Updated `select.jsx` trigger: `rounded-full`; content: `rounded-2xl`
 - Updated `textarea.jsx`: `rounded-3xl`
-- Added global CSS in `index.css`: `.auth-input` and `.btn-primary` classes for auth pages
-- Updated `Login.tsx`: pill inputs, full-width pill button, staggered slide-up animations (global CSS)
-- Updated `ForgotPassword.tsx`: consistent pill styling
-- Updated `Profile.tsx`: pill read-only inputs with dashed border
-- All admin dialogs automatically pill via shadcn base component cascade
-- Verified: testing agent iteration_266.json — 100% pass rate across all form types
+- Global CSS in `index.css`: `.auth-input`, `.btn-primary`, `@keyframes focusGlow`, `@keyframes fadeSlideUp`
+- Login.tsx: pill inputs, full-width pill button, staggered slide-up animations
+- ForgotPassword.tsx: consistent pill styling
+- Profile.tsx: pill read-only inputs with dashed border
+- Focus glow animation on ALL inputs (one-shot pulse → settles to ring)
+- Edit Customer dialog: updated to match Create Customer - uppercase labels (11px tracking), grid layout, gap-4 spacing, pill inputs
+- Create Customer dialog: fixed 0px gap bug (React 19 `display:contents` span breaks `space-y-*`, fixed with `flex flex-col gap-4`)
+- Filters tab: updated to use AdminPageHeader + size="sm" buttons, matches Products tab styling
+- Verified by testing agent iteration_267.json — 7/8 tests PASS, gap bug fixed post-test
 
 ## Prioritized Backlog
 

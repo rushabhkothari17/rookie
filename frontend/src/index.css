@@ -225,6 +225,12 @@ textarea:not([readonly]):not([disabled]):focus {
   font-size: 0.88em;
 }
 
+/* ── UniversalFormRenderer stagger animation ─────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── UniversalFormRenderer pill focus via direct CSS ─────── */
 input.rounded-full:focus,
 input[class*="rounded-full"]:focus {

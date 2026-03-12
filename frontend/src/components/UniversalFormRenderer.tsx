@@ -241,17 +241,9 @@ export function UniversalFormRenderer({
 
   if (compact) {
     return (
-      <>
-        <style>{`
-          @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
-        <div className="space-y-4">
-          {enabled.map((f, i) => renderOne(f, i))}
-        </div>
-      </>
+      <div className="flex flex-col gap-4">
+        {enabled.map((f, i) => renderOne(f, i))}
+      </div>
     );
   }
 
@@ -281,18 +273,10 @@ export function UniversalFormRenderer({
   if (addrField) idx++;
 
   return (
-    <>
-      <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-      <div className="space-y-4">
-        {grid(before)}
-        {addrField && renderOne(addrField, addrI)}
-        {grid(after)}
-      </div>
-    </>
+    <div className="flex flex-col gap-4">
+      {grid(before)}
+      {addrField && renderOne(addrField, addrI)}
+      {grid(after)}
+    </div>
   );
 }
