@@ -9,7 +9,7 @@ from fastapi.responses import Response
 from db.session import db
 from core.helpers import make_id, now_iso
 from core.security import require_admin, get_current_user
-from core.tenant import tenant_id_of
+from core.tenant import tenant_id_of, is_platform_admin, get_tenant_filter
 from services import workdrive_service as wd
 from services.audit_service import create_audit_log
 
@@ -86,11 +86,11 @@ async def list_documents(
     Admin: returns all documents for the tenant (or filtered by customer_id).
     Customer: returns their own documents only.
     """
-    tid = tenant_id_of(current_user)
     role = current_user.get("role", "")
-    is_admin = role in ("admin", "platform_admin", "partner_admin", "partner_super_admin", "partner_staff")
+    is_admin = role in ("admin", "platform_admin", "platform_super_admin", "partner_admin", "partner_super_admin", "partner_staff")
 
     if not is_admin:
+        tid = tenant_id_of(current_user)
         # Customer — find their customer record
         customer = await db.customers.find_one({"user_id": current_user["id"]}, {"_id": 0})
         if not customer:
@@ -98,7 +98,8 @@ async def list_documents(
         cid = customer["id"]
         query = {"tenant_id": tid, "customer_id": cid}
     else:
-        query: Dict[str, Any] = {"tenant_id": tid}
+        # Use tenant filter: platform admins see all, tenant admins see their own
+        query: Dict[str, Any] = get_tenant_filter(current_user)
         if customer_id:
             query["customer_id"] = customer_id
 
@@ -130,7 +131,7 @@ async def upload_document(
     """Upload a document (max 5 MB) to the customer's WorkDrive folder."""
     tid = tenant_id_of(current_user)
     role = current_user.get("role", "")
-    is_admin = role in ("admin", "platform_admin", "partner_admin", "partner_super_admin", "partner_staff")
+    is_admin = role in ("admin", "platform_admin", "platform_super_admin", "partner_admin", "partner_super_admin", "partner_staff")
 
     if not is_admin:
         # Customer uploads to their own folder
@@ -146,6 +147,13 @@ async def upload_document(
         cid = customer_id
         uploaded_by_label = "admin"
         uploaded_by_id = current_user["id"]
+
+        # For platform admins, derive tenant_id from the customer record
+        # (platform admins have no tenant_id in their JWT)
+        if is_platform_admin(current_user):
+            cust_record = await db.customers.find_one({"id": cid}, {"_id": 0, "tenant_id": 1})
+            if cust_record and cust_record.get("tenant_id"):
+                tid = cust_record["tenant_id"]
 
     content = await file.read()
     if len(content) > MAX_FILE_SIZE:
@@ -211,19 +219,27 @@ async def download_document(
     current_user: Dict[str, Any] = Depends(get_current_user),
 ):
     """Proxy-download a document from WorkDrive (auth required)."""
-    tid = tenant_id_of(current_user)
-    doc = await db.workdrive_documents.find_one({"id": doc_id, "tenant_id": tid}, {"_id": 0})
+    role = current_user.get("role", "")
+    is_admin = role in ("admin", "platform_admin", "platform_super_admin", "partner_admin", "partner_super_admin", "partner_staff")
+
+    if is_platform_admin(current_user):
+        # Platform admins can access documents across all tenants
+        doc = await db.workdrive_documents.find_one({"id": doc_id}, {"_id": 0})
+    else:
+        tid = tenant_id_of(current_user)
+        doc = await db.workdrive_documents.find_one({"id": doc_id, "tenant_id": tid}, {"_id": 0})
+
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    role = current_user.get("role", "")
-    is_admin = role in ("admin", "platform_admin", "partner_admin", "partner_super_admin", "partner_staff")
     if not is_admin:
         cust = await db.customers.find_one({"user_id": current_user["id"]}, {"_id": 0})
         if not cust or cust["id"] != doc["customer_id"]:
             raise HTTPException(status_code=403, detail="Access denied")
 
-    content, filename = await wd.download_file(tid, doc["workdrive_file_id"])
+    # Use the document's actual tenant_id for WorkDrive credentials
+    download_tid = doc.get("tenant_id") or tenant_id_of(current_user)
+    content, filename = await wd.download_file(download_tid, doc["workdrive_file_id"])
     return Response(
         content=content,
         media_type=doc.get("mime_type", "application/octet-stream"),

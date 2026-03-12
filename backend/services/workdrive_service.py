@@ -36,6 +36,15 @@ LOCATION_TO_DC: Dict[str, str] = {
     "jp": "JP", "ca": "CA", "cn": "US",
 }
 
+DATACENTER_UPLOAD_DOMAINS: Dict[str, str] = {
+    "US": "https://workdrive.zoho.com",
+    "EU": "https://workdrive.zoho.eu",
+    "AU": "https://workdrive.zoho.com.au",
+    "IN": "https://workdrive.zoho.in",
+    "JP": "https://workdrive.zoho.jp",
+    "CA": "https://workdrive.zohocloud.ca",
+}
+
 WORKDRIVE_SCOPES = (
     "WorkDrive.files.CREATE,WorkDrive.files.READ,"
     "WorkDrive.files.UPDATE,WorkDrive.files.DELETE,"
@@ -233,19 +242,44 @@ async def upload_file(
     content: bytes,
     mime_type: str = "application/octet-stream",
 ) -> Dict[str, Any]:
-    """Upload a file into folder_id. Returns file metadata."""
+    """Upload a file into folder_id using the WorkDrive upload API. Returns file metadata."""
     if len(content) > MAX_FILE_SIZE:
         raise ValueError(f"File exceeds 5 MB limit ({len(content) / 1024 / 1024:.1f} MB)")
 
-    files = {"file": (filename, BytesIO(content), mime_type)}
-    resp = await _call(tenant_id, "POST", f"/files/{folder_id}/files", files=files)
-    resp.raise_for_status()
-    data = resp.json()
-    # WorkDrive returns data as a list or dict depending on API version
-    file_data = data.get("data", {})
+    creds = await _get_credentials(tenant_id)
+    if not creds:
+        raise RuntimeError("WorkDrive not configured")
+    dc = creds.get("datacenter", "US")
+    upload_domain = DATACENTER_UPLOAD_DOMAINS.get(dc, DATACENTER_UPLOAD_DOMAINS["US"])
+    access_token = creds.get("access_token", "")
+    url = f"{upload_domain}/api/v1/upload"
+
+    # WorkDrive upload uses multipart/form-data with 'content' (file) and 'parent_id' fields
+    form_files = {"content": (filename, BytesIO(content), mime_type)}
+    form_data = {"parent_id": folder_id}
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        resp = await client.post(
+            url, headers=_auth_headers(access_token), files=form_files, data=form_data
+        )
+        if resp.status_code == 401:
+            access_token = await _refresh_access_token(tenant_id, creds)
+            resp = await client.post(
+                url, headers=_auth_headers(access_token), files=form_files, data=form_data
+            )
+        resp.raise_for_status()
+
+    resp_data = resp.json()
+    logger.debug("WorkDrive upload response: %s", resp_data)
+    file_data = resp_data.get("data", {})
     if isinstance(file_data, list):
         file_data = file_data[0] if file_data else {}
-    file_id = file_data.get("id", "")
+    # WorkDrive REST API returns file ID in "id" field or within "attributes"
+    file_id = (
+        file_data.get("id", "")
+        or file_data.get("attributes", {}).get("resource_id", "")
+        or file_data.get("attributes", {}).get("id", "")
+    )
     return {"workdrive_file_id": file_id, "file_name": filename, "file_size": len(content)}
 
 
