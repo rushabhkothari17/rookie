@@ -301,7 +301,7 @@ async def get_website_settings_public(
 
     settings = {
         **DEFAULT_WEBSITE_SETTINGS,
-        # Branding (from app_settings)
+        # Branding (from app_settings — authoritative, must not be overridden by website_settings)
         "store_name": app_s.get("store_name", ""),
         "logo_url": app_s.get("logo_url") or "",
         "primary_color": app_s.get("primary_color") or "",
@@ -313,8 +313,13 @@ async def get_website_settings_public(
         "text_color": app_s.get("text_color") or "",
         "border_color": app_s.get("border_color") or "",
         "muted_color": app_s.get("muted_color") or "",
-        # Content overrides (from website_settings)
-        **{k: v for k, v in web_s.items() if v is not None and k not in ("_id", "tenant_id")},
+        # Content overrides (from website_settings — exclude branding keys which live in app_settings)
+        **{k: v for k, v in web_s.items() if v is not None and k not in (
+            "_id", "tenant_id",
+            "store_name", "logo_url",
+            "primary_color", "accent_color", "danger_color", "success_color",
+            "warning_color", "background_color", "text_color", "border_color", "muted_color",
+        )},
         # Payment flags (from oauth_connections)
         "stripe_enabled": bool(stripe_enabled),
         "gocardless_enabled": bool(gocardless_enabled),
@@ -355,9 +360,17 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
     tid = tenant_id_of(admin)
     web_s = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0}) or {}
     app_s = await db.app_settings.find_one({"tenant_id": tid, "key": {"$exists": False}}, {"_id": 0}) or {}
-    # Merge: defaults → app_settings (branding/colors) → website_settings (content overrides)
+    # Merge: defaults → website_settings (content) → app_settings (branding, always wins)
     merged = {
         **DEFAULT_WEBSITE_SETTINGS,
+        # Content overrides (from website_settings — exclude branding keys which live in app_settings)
+        **{k: v for k, v in web_s.items() if v is not None and k not in (
+            "_id", "tenant_id",
+            "store_name", "logo_url",
+            "primary_color", "accent_color", "danger_color", "success_color",
+            "warning_color", "background_color", "text_color", "border_color", "muted_color",
+        )},
+        # Branding (from app_settings — authoritative)
         "store_name": app_s.get("store_name", ""),
         "logo_url": app_s.get("logo_url") or "",
         "primary_color": app_s.get("primary_color") or "",
@@ -369,7 +382,6 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
         "text_color": app_s.get("text_color") or "",
         "border_color": app_s.get("border_color") or "",
         "muted_color": app_s.get("muted_color") or "",
-        **{k: v for k, v in web_s.items() if v is not None and k not in ("_id", "tenant_id")},
     }
     # Migrate: inject default checkout_sections when DB has empty value
     try:

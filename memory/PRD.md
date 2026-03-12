@@ -5,6 +5,23 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Partner Name Sync + TopNav Store Name Bug Fixes ✅
+
+**Two bugs fixed:**
+
+1. **Bug: Platform admin tenant name edit not syncing to Organization Info**
+   - Root cause: `PUT /admin/tenants/{id}` only updated `tenants.name`, not `app_settings.store_name`
+   - Fix: Added upsert of `app_settings.store_name` in `update_tenant` handler (`tenants.py`)
+
+2. **Bug: Save twice needed for TopNav store name to update**  
+   - Root cause: `website_settings` collection had a stale `store_name` field overriding `app_settings.store_name` in the `/website-settings` merge endpoint (`website.py`). The `website_settings` override dict was applied AFTER `app_settings`, stomping on the correct value.
+   - Fix: Excluded all branding fields (`store_name`, `logo_url`, color fields) from the `website_settings` override in both `GET /website-settings` (public) and `GET /admin/website-settings`. `app_settings` is now the authoritative source for all branding. Both endpoints fixed.
+   - Also added `refreshWebsite()` to WebsiteContext and WebsiteTab.save() for belt-and-suspenders refresh.
+
+**Tested**: All backend tests pass (100%), full E2E verified.
+
+---
+
 ## Latest Updates (Mar 2026) — Customer Tenant Mapping + Store Name Sync ✅
 
 **Three UX improvements implemented:**
