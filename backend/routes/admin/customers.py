@@ -264,6 +264,8 @@ async def admin_customers(
                     "id": "$user_data.id",
                     "email": "$user_data.email",
                     "full_name": "$user_data.full_name",
+                    "job_title": "$user_data.job_title",
+                    "phone": "$user_data.phone",
                     "is_active": "$user_data.is_active"
                 },
                 "address": {

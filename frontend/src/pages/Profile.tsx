@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,65 +9,85 @@ import { parseSchema } from "@/components/FormSchemaBuilder";
 import { UniversalFormRenderer } from "@/components/UniversalFormRenderer";
 import { Download, Lock, Trash2, AlertTriangle } from "lucide-react";
 
-function validatePhone(phone: string) {
-  if (!phone) return "";
-  const clean = phone.replace(/[\s\-().+]/g, "");
-  if (!/^\d{7,15}$/.test(clean)) return "Enter a valid phone number (7–15 digits)";
-  return "";
-}
-
-// Keys managed by the schema-driven form
-const SCHEMA_ADDR_KEYS = ["line1", "line2", "city", "region", "postal", "country"];
-const AUTH_KEYS = ["email", "password"]; // never rendered by UniversalFormRenderer in profile
+// Auth-only fields — never shown as editable in profile
+const AUTH_KEYS = new Set(["email", "password"]);
+// Address flat keys
+const ADDR_KEYS = new Set(["line1", "line2", "city", "region", "postal", "country"]);
+// Core user-model keys saved directly to the user record
+const CORE_USER_KEYS = new Set(["full_name", "company_name", "phone", "job_title"]);
 
 export default function Profile() {
   const { user, customer, address, refresh } = useAuth();
   const ws = useWebsite();
-  const [form, setForm] = useState<Record<string, string>>({
-    full_name: "",
-    company_name: "",
-    phone: "",
-    line1: "",
-    line2: "",
-    city: "",
-    region: "",
-    postal: "",
-    country: "",
-  });
+  const [form, setForm] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [phoneError, setPhoneError] = useState("");
 
-  // Parse the signup schema and filter out auth-only fields (email, password)
-  const allSchemaFields = parseSchema(ws.signup_form_schema)
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .filter(f => f.enabled !== false && !AUTH_KEYS.includes(f.key));
+  // Parse schema; exclude auth-only fields
+  const allSchemaFields = useMemo(() =>
+    parseSchema(ws.signup_form_schema)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter(f => f.enabled !== false && !AUTH_KEYS.has(f.key)),
+    [ws.signup_form_schema]
+  );
 
-  // Determine if phone is required (from schema)
-  const phoneField = allSchemaFields.find(f => f.key === "phone");
-  const phoneRequired = phoneField?.required ?? true;
-
+  // Initialise form from ALL schema fields using user / customer / address data
   useEffect(() => {
     if (!user) return;
-    setForm({
-      full_name:    user.full_name     || "",
-      company_name: user.company_name  || "",
-      phone:        user.phone         || "",
-      line1:        address?.line1     || "",
-      line2:        address?.line2     || "",
-      city:         address?.city      || "",
-      region:       address?.region    || "",
-      postal:       address?.postal    || "",
-      country:      address?.country   || "",
-    });
-  }, [user, address]);
+    const init: Record<string, string> = {};
+    for (const field of allSchemaFields) {
+      if (field.type === "address") {
+        init.line1   = address?.line1   || "";
+        init.line2   = address?.line2   || "";
+        init.city    = address?.city    || "";
+        init.region  = address?.region  || "";
+        init.postal  = address?.postal  || "";
+        init.country = address?.country || "";
+      } else {
+        const v = (user as any)[field.key]
+          ?? (customer as any)?.[field.key]
+          ?? customer?.profile_meta?.[field.key]
+          ?? "";
+        init[field.key] = v === null ? "" : String(v);
+      }
+    }
+    setForm(init);
+  }, [user, customer, address, allSchemaFields]);
 
   const handleChange = (key: string, value: string) => {
-    if (key === "phone") setPhoneError("");
     setForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const corePayload: Record<string, string> = {};
+      const extraMeta: Record<string, string> = {};
+      for (const [k, v] of Object.entries(form)) {
+        if (ADDR_KEYS.has(k)) continue;
+        if (CORE_USER_KEYS.has(k)) corePayload[k] = v;
+        else extraMeta[k] = v;
+      }
+      await api.put("/me", {
+        ...corePayload,
+        address: {
+          line1: form.line1 || "", line2: form.line2 || "",
+          city: form.city || "", region: form.region || "",
+          postal: form.postal || "", country: form.country || "",
+        },
+        ...(Object.keys(extraMeta).length ? { profile_meta: extraMeta } : {}),
+      });
+      await refresh();
+      toast.success("Profile updated");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Update failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExportData = async () => {
@@ -83,8 +103,8 @@ export default function Profile() {
       link.remove();
       window.URL.revokeObjectURL(url);
       toast.success("Data export downloaded");
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Export failed");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Export failed");
     } finally {
       setExporting(false);
     }
@@ -96,39 +116,9 @@ export default function Profile() {
       await api.post("/me/request-deletion", { reason: deleteReason, confirm: true });
       toast.success("Account deleted. You will be logged out.");
       setTimeout(() => { window.location.href = "/login"; }, 2000);
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Deletion failed");
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Deletion failed");
       setDeleting(false);
-    }
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (phoneField && phoneRequired) {
-      const err = validatePhone(form.phone);
-      if (err) { setPhoneError(err); return; }
-    }
-    setLoading(true);
-    try {
-      await api.put("/me", {
-        full_name:    form.full_name,
-        company_name: form.company_name,
-        phone:        form.phone,
-        address: {
-          line1:   form.line1,
-          line2:   form.line2,
-          city:    form.city,
-          region:  form.region,
-          postal:  form.postal,
-          country: form.country,
-        },
-      });
-      await refresh();
-      toast.success("Profile updated");
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Update failed");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -142,6 +132,7 @@ export default function Profile() {
 
       <form
         onSubmit={handleSubmit}
+        noValidate
         className="rounded-3xl bg-white/80 p-8 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur"
         data-testid="profile-form"
       >
@@ -174,23 +165,15 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Schema-driven editable fields — powered by UniversalFormRenderer */}
+        {/* Schema-driven editable fields — all rendered via UniversalFormRenderer */}
         {allSchemaFields.length > 0 && (
           <UniversalFormRenderer
             fields={allSchemaFields}
             values={form}
-            onChange={(key, val) => {
-              if (key === "phone") {
-                setPhoneError(validatePhone(val));
-              }
-              handleChange(key, val);
-            }}
+            onChange={handleChange}
             compact={false}
+            partnerCode={user?.partner_code || undefined}
           />
-        )}
-
-        {phoneError && (
-          <p className="text-xs text-red-500 mt-2">{phoneError}</p>
         )}
 
         <div className="mt-6 flex items-center justify-end">
@@ -205,7 +188,7 @@ export default function Profile() {
         </div>
       </form>
 
-      {/* GDPR / Data Privacy — hidden under Advanced Settings */}
+      {/* GDPR / Data Privacy */}
       <details className="mt-8 border-t border-slate-200 pt-6 group">
         <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600 transition-colors list-none flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wider">Advanced Settings</span>
@@ -222,12 +205,8 @@ export default function Profile() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </summary>
-
             <div className="mt-4 space-y-4">
-              <p className="text-xs text-slate-500">
-                Manage your personal data. You can export all your data or request account deletion.
-              </p>
-
+              <p className="text-xs text-slate-500">Manage your personal data. You can export all your data or request account deletion.</p>
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <div>
                   <p className="text-sm font-medium text-slate-700">Export my data</p>
@@ -238,7 +217,6 @@ export default function Profile() {
                   {exporting ? "Exporting..." : "Export Data"}
                 </Button>
               </div>
-
               <div className="p-4 bg-red-50 rounded-lg border border-red-200">
                 <div className="flex items-center justify-between">
                   <div>
@@ -250,36 +228,24 @@ export default function Profile() {
                     Delete Account
                   </Button>
                 </div>
-
                 {showDeleteConfirm && (
                   <div className="mt-4 p-4 bg-white rounded-lg border border-red-300">
                     <div className="flex items-start gap-3 mb-3">
                       <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-medium text-red-700">Are you sure?</p>
-                        <p className="text-xs text-red-600 mt-1">
-                          This will permanently anonymize your account and all associated data.
-                          You will be logged out and cannot recover your account.
-                        </p>
+                        <p className="text-xs text-red-600 mt-1">This will permanently anonymize your account. You will be logged out and cannot recover it.</p>
                       </div>
                     </div>
                     <div className="mb-3">
                       <label className="text-xs font-medium text-slate-600">Reason (optional)</label>
-                      <Input
-                        value={deleteReason}
-                        onChange={e => setDeleteReason(e.target.value)}
-                        placeholder="Why are you leaving?"
-                        className="mt-1"
-                        data-testid="gdpr-delete-reason"
-                      />
+                      <Input value={deleteReason} onChange={e => setDeleteReason(e.target.value)} placeholder="Why are you leaving?" className="mt-1" data-testid="gdpr-delete-reason" />
                     </div>
                     <div className="flex gap-2">
                       <Button variant="destructive" size="sm" onClick={handleDeleteAccount} disabled={deleting} data-testid="gdpr-delete-confirm-btn">
                         {deleting ? "Deleting..." : "Yes, delete my account"}
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => setShowDeleteConfirm(false)}>
-                        Cancel
-                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
                     </div>
                   </div>
                 )}

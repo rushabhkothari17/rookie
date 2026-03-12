@@ -15,8 +15,8 @@
  *   Line 1 → Line 2 → City → Country → State/Province → Postal
  */
 
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -61,6 +61,18 @@ function FieldLabel({ field, compact }: { field: FormField; compact: boolean }) 
   );
 }
 
+const PHONE_RE = /^[+\d][\d\s\-(). ]{3,49}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const MAX_LEN: Record<string, number> = { email: 50, phone: 50, full_name: 50, company_name: 50, job_title: 50 };
+
+function validateField(key: string, val: string, required: boolean): string {
+  if (!val) return required ? `${key.replace(/_/g, " ")} is required` : "";
+  if (key === "email" && !EMAIL_RE.test(val)) return "Invalid email address";
+  if (key === "phone" && !PHONE_RE.test(val)) return "Invalid phone (digits, spaces, +, - only)";
+  if (MAX_LEN[key] && val.length > MAX_LEN[key]) return `Max ${MAX_LEN[key]} characters`;
+  return "";
+}
+
 export function UniversalFormRenderer({
   fields,
   values,
@@ -70,6 +82,16 @@ export function UniversalFormRenderer({
   addressMode = "flat",
 }: Props) {
   const enabled = fields.filter(f => f.enabled !== false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const handleChange = (key: string, newVal: string, required: boolean) => {
+    // Real-time validation — only for fields we know how to validate
+    if (["email", "phone", "full_name", "company_name", "job_title"].includes(key)) {
+      const err = validateField(key, newVal, required);
+      setFieldErrors(prev => err ? { ...prev, [key]: err } : (() => { const n = { ...prev }; delete n[key]; return n; })());
+    }
+    onChange(key, newVal);
+  };
 
   const renderOne = (field: FormField) => {
     const key = field.key;
@@ -97,7 +119,14 @@ export function UniversalFormRenderer({
         if (addressMode === "json") {
           onChange(key, JSON.stringify(v));
         } else {
-          ADDR_KEYS.forEach(k => onChange(k, v[k] || ""));
+          // Only dispatch keys that actually changed — prevents cascading resets.
+          // e.g. selecting a province must NOT re-dispatch unchanged country,
+          // which would trigger "reset region" logic in the parent handler.
+          ADDR_KEYS.forEach(k => {
+            const next = v[k] || "";
+            const prev = values[k] || "";
+            if (next !== prev) onChange(k, next);
+          });
         }
       };
 
@@ -168,6 +197,7 @@ export function UniversalFormRenderer({
     const htmlType = (["email", "tel", "number", "date", "password"].includes(field.type))
       ? field.type as React.HTMLInputTypeAttribute
       : "text";
+    const fieldErr = fieldErrors[key] || "";
 
     return (
       <div key={field.id} className="space-y-1">
@@ -175,12 +205,16 @@ export function UniversalFormRenderer({
         <Input
           type={htmlType}
           value={val}
-          onChange={e => onChange(key, e.target.value)}
+          onChange={e => handleChange(key, e.target.value, field.required)}
           placeholder={field.placeholder || undefined}
           required={field.required}
           data-testid={tid}
+          className={fieldErr ? "border-red-400 focus-visible:ring-red-400" : ""}
         />
-        {key === "password" && (
+        {fieldErr && (
+          <p className="text-[11px] text-red-500 mt-0.5" data-testid={`${tid}-error`}>{fieldErr}</p>
+        )}
+        {key === "password" && !fieldErr && (
           <p className="text-[11px] text-slate-400 mt-0.5">
             Min. 10 characters · at least one uppercase · one number · one special character (!@#$%^&*)
           </p>

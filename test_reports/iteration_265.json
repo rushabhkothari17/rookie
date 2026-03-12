@@ -1,0 +1,68 @@
+{
+  "summary": "Tested all 4 bug fixes (province selection, job_title/phone in profile, admin edit → profile sync, real-time validation). Found and fixed 2 additional bugs: Profile form blocked by HTML5 required validation (noValidate fix) and admin customers list not returning job_title/phone for pre-population in edit dialog (backend projection fix). All 4 original bugs confirmed fixed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/admin/customers",
+        "issue": "Users projection was missing job_title and phone fields — edit dialog could not pre-populate them. FIXED by adding job_title and phone to $project stage in MongoDB aggregation."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Profile.tsx (form element)",
+        "issue": "Profile form lacked noValidate — HTML5 required validation on address fields (line1, city, postal) blocked form submission entirely when address was empty. Customer could NOT save any profile changes (job_title, phone, name). FIXED by adding noValidate to <form>.",
+        "selector": "[data-testid=\"profile-form\"]",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Admin Edit Customer Dialog",
+        "issue": "Country field shows 'Select country...' even when country is set to 'CA' — Radix Select doesn't display the label for pre-populated country code. Minor display-only issue; value is saved correctly.",
+        "selector": "[data-testid=\"admin-customer-country-select\"]",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter265_field_bugs.py",
+    "/app/test_reports/pytest/pytest_iter265_field_bugs.xml"
+  ],
+  "action_items": [
+    "Country field in admin Edit Customer dialog shows 'Select country...' even when country='CA' is set — investigate Radix Select initialization timing in admin CustomersTab.tsx",
+    "Consider whether address fields in Profile should be truly required (or change to optional) — currently required by schema but customers may not need to fill them to save job_title/phone"
+  ],
+  "critical_code_review_comments": [
+    "Profile.tsx lacked noValidate — HTML5 form validation was silently blocking all profile saves when address fields were empty. Added noValidate to fix.",
+    "Admin /api/admin/customers list projection: user object only had {id, email, full_name, is_active} — missing job_title and phone. This caused the admin edit dialog to show empty values for these fields. Any save from admin would clear those fields. Fixed by adding job_title and phone to the $project stage.",
+    "Profile.tsx address init: address from GET /me is empty {} for new customers — but required HTML attributes on line1/city/postal prevented any form submission. noValidate is the correct short-term fix.",
+    "GET /api/admin/customers users array now includes job_title and phone — admin edit dialog is pre-populated correctly."
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/Profile.tsx (added noValidate to form element)",
+    "/app/backend/routes/admin/customers.py (added job_title and phone to user projection)"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8 passed, 1 skipped for 405 endpoint)",
+    "frontend": "95% (all 4 bugs confirmed fixed; country display in admin edit dialog is minor)"
+  },
+  "test_credentials": {
+    "admin": {"email": "admin@automateaccounts.local", "password": "ChangeMe123!", "partner_code": "automate-accounts"},
+    "test_customer": {"email": "test.profile2.iter265@test.local", "password": "TestPass123!", "partner_code": "aa"},
+    "tenant_id": "81bdc4a0-adfd-4fe2-8243-f0a562fc54b9"
+  },
+  "seed_data_creation": "Created test customer: test.profile2.iter265@test.local (password: TestPass123!, partner: aa, tenant: 81bdc4a0-adfd-4fe2-8243-f0a562fc54b9). Also created test.profile.iter265@test.local under automate-accounts.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All 4 original bugs are fixed and verified. T1 (iter 265) also fixed: 1) Profile.tsx noValidate (address required fields blocking profile save), 2) Admin customers list backend projection to include job_title/phone. Test customer: test.profile2.iter265@test.local / TestPass123! / partner:aa. Minor: admin edit dialog country shows 'Select country...' for pre-populated CA value.",
+  "rca_of_issues": {
+    "Bug1_province_cleared": "UniversalFormRenderer was dispatching ALL 6 address keys on every change; Signup.tsx's handleFieldChange for country reset region=''. Fixed by only dispatching changed keys.",
+    "Bug2_job_title_missing_from_me": "GET /me did not return job_title. Fixed in auth.py.",
+    "Bug2_profile_save_blocked": "Profile.tsx form had no noValidate — HTML5 required validation on addr-line1, addr-city, addr-postal blocked form submission when address was empty. Added noValidate.",
+    "Bug3_admin_edit_empty_job_title": "Admin /api/admin/customers list MongoDB $project for user field was missing job_title and phone, so setSelectedCustomer spread had no job_title/phone. Fixed by adding those fields to projection.",
+    "Bug4_validation": "UniversalFormRenderer had no inline validation. Email regex and phone regex validation added, showing inline error on blur/change."
+  }
+}

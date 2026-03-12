@@ -662,6 +662,7 @@ export default function Signup() {
                     onChange={handleFieldChange}
                     showPassword={true}
                     compact={false}
+                    partnerCode={partnerCode || undefined}
                   />
                   <Button
                     type="submit"

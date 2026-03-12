@@ -7,6 +7,7 @@ type AuthUser = {
   full_name: string;
   company_name: string;
   phone: string;
+  job_title?: string;
   is_verified: boolean;
   is_admin: boolean;
   role: string;
