@@ -370,21 +370,26 @@ export function OrgAddressSection() {
   const [tenantId, setTenantId] = useState("");
   const [addr, setAddr] = useState({ line1:"", line2:"", city:"", region:"", postal:"", country:"" });
   const [saving, setSaving] = useState(false);
-  const isPlatformAdmin = !!(user?.role && ["platform_admin", "admin"].includes(user.role));
+
+  const isPlatformAdmin = !!(user?.role && ["platform_admin", "platform_super_admin", "admin"].includes(user.role));
 
   const countries = useCountries();
   const provinces = useProvinces(addr.country);
 
   useEffect(() => {
-    if (isPlatformAdmin) return;
     api.get("/admin/tenants/my").then(r => {
       setTenantId(r.data.tenant?.id || "");
       const a = r.data.tenant?.address || {};
       setAddr({ line1: a.line1||"", line2: a.line2||"", city: a.city||"", region: a.region||"", postal: a.postal||"", country: a.country||"" });
     }).catch(() => {});
-  }, [isPlatformAdmin]);
+  }, []);
 
-  if (isPlatformAdmin) return null;
+  // Clear province when country changes and saved value is no longer in the new list
+  useEffect(() => {
+    if (provinces.length > 0 && addr.region && !provinces.find(p => p.value === addr.region || p.label === addr.region)) {
+      setAddr(prev => ({ ...prev, region: "" }));
+    }
+  }, [provinces]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = async () => {
     if (!tenantId) return;
@@ -402,26 +407,48 @@ export function OrgAddressSection() {
       <h3 className="text-sm font-semibold text-slate-700 mb-1">Organization Address</h3>
       <p className="text-xs text-slate-400 mb-3">Your organization's registered address.</p>
       <div className="space-y-2" data-testid="org-address-section">
-        <Input placeholder="Line 1 *" value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} data-testid="org-addr-line1" />
-        <Input placeholder="Line 2 (optional)" value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
-        <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="City *" value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} data-testid="org-addr-city" />
-          <Input placeholder="Postal Code *" value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} data-testid="org-addr-postal" />
+        <div>
+          <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Line 1 <span className="text-red-500">*</span></label>
+          <Input placeholder="Street address" value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} data-testid="org-addr-line1" />
         </div>
-        <Select value={addr.country} onValueChange={v => setAddr(p=>({...p,country:v,region:""}))}>
-          <SelectTrigger data-testid="org-addr-country"><SelectValue placeholder="Country *" /></SelectTrigger>
-          <SelectContent>{countries.map(c=><SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-        </Select>
-        {provinces.length > 0 ? (
-          <Select value={addr.region} onValueChange={v => setAddr(p=>({...p,region:v}))}>
-            <SelectTrigger data-testid="org-addr-region-select"><SelectValue placeholder="Province / State *" /></SelectTrigger>
-            <SelectContent>{provinces.map(p=><SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
-          </Select>
-        ) : (
-          <Input placeholder="State / Province" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} data-testid="org-addr-region-input" />
-        )}
+        <div>
+          <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Line 2</label>
+          <Input placeholder="Apartment, suite, unit…" value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[11px] text-slate-500 font-medium block mb-0.5">City <span className="text-red-500">*</span></label>
+            <Input placeholder="City" value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} data-testid="org-addr-city" />
+          </div>
+          <div>
+            <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Postal / ZIP <span className="text-red-500">*</span></label>
+            <Input placeholder="Postal code" value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} data-testid="org-addr-postal" />
+          </div>
+        </div>
+        <div>
+          <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Country <span className="text-red-500">*</span></label>
+          {countries.length > 0 ? (
+            <Select value={addr.country} onValueChange={v => setAddr(p=>({...p,country:v,region:""}))}>
+              <SelectTrigger data-testid="org-addr-country"><SelectValue placeholder="Select country…" /></SelectTrigger>
+              <SelectContent>{countries.map(c=><SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+            </Select>
+          ) : (
+            <Input placeholder="Country" value={addr.country} onChange={e => setAddr(p=>({...p,country:e.target.value,region:""}))} data-testid="org-addr-country" />
+          )}
+        </div>
+        <div>
+          <label className="text-[11px] text-slate-500 font-medium block mb-0.5">State / Province</label>
+          {provinces.length > 0 ? (
+            <Select value={addr.region} onValueChange={v => setAddr(p=>({...p,region:v}))}>
+              <SelectTrigger data-testid="org-addr-region-select"><SelectValue placeholder="Select province / state…" /></SelectTrigger>
+              <SelectContent>{provinces.map(p=><SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+            </Select>
+          ) : (
+            <Input placeholder="State / Province" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} data-testid="org-addr-region-input" />
+          )}
+        </div>
       </div>
-      <Button onClick={save} disabled={saving} size="sm" className="mt-3" data-testid="org-addr-save-btn">
+      <Button onClick={save} disabled={saving || (!isPlatformAdmin && !tenantId)} size="sm" className="mt-3" data-testid="org-addr-save-btn">
         {saving ? "Saving…" : "Save Address"}
       </Button>
     </div>
