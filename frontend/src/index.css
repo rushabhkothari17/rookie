@@ -225,7 +225,13 @@ textarea:not([readonly]):not([disabled]):focus {
   font-size: 0.88em;
 }
 
-/* ── Global pill auth inputs ─────────────────────────── */
+/* ── UniversalFormRenderer pill focus via direct CSS ─────── */
+input.rounded-full:focus,
+input[class*="rounded-full"]:focus {
+  animation: focusGlow 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+
 .auth-input {
   height: 48px;
   border-radius: 9999px;
@@ -242,9 +248,20 @@ textarea:not([readonly]):not([disabled]):focus {
 }
 .auth-input::placeholder { color: #94a3b8; }
 .auth-input:hover { border-color: #cbd5e1; }
+/* ── Focus glow animation (one-shot pulse on focus) ──── */
+@keyframes focusGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(15,23,42,0.0); }
+  40%  { box-shadow: 0 0 0 5px rgba(15,23,42,0.1); }
+  100% { box-shadow: 0 0 0 4px rgba(15,23,42,0.07); }
+}
+@keyframes focusGlowRed {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.0); }
+  40%  { box-shadow: 0 0 0 5px rgba(239,68,68,0.12); }
+  100% { box-shadow: 0 0 0 4px rgba(239,68,68,0.08); }
+}
 .auth-input:focus {
   border-color: #334155;
-  box-shadow: 0 0 0 4px rgba(15,23,42,0.07);
+  animation: focusGlow 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   background: #fff;
 }
 .auth-input.error,

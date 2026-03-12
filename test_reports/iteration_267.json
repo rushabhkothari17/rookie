@@ -1,0 +1,109 @@
+{
+  "summary": "Tested all 8 features for pill UI fixes (iteration 267). 7/8 tests passed. One critical spacing bug found in Create Customer dialog.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Create Customer Dialog (UniversalFormRenderer compact mode)",
+        "issue": "0px gap between pill input fields — fields are cramped/touching with no visible spacing",
+        "selector": "[data-testid='admin-create-customer-btn']",
+        "priority": "HIGH",
+        "details": "Measurements confirm: Full Name bottom=311, Company Name top=311 (0px gap). Root cause: React 19 (v^19.0.0) wraps JSX fragment returns in <span display='contents'> for source mapping. The space-y-4 class uses CSS direct-child selector (> *) which stops working when there's a display:contents SPAN between the .space-y-4 div and the animation wrapper divs. All 10+ field inputs stack with zero gap.",
+        "fix": "In UniversalFormRenderer.tsx compact mode: change <div className=\"space-y-4\"> to <div className=\"flex flex-col gap-4\">. CSS gap works correctly even through display:contents children in flexbox.",
+        "note": "Edit Customer dialog is NOT affected (uses hardcoded JSX, no component chain with Fragment wrapper). HOWEVER: this may be a dev-mode-only issue. React 19 only adds source-map SPANs in development builds. Production builds may render correctly."
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "test_1_gateway": {
+      "input_border_radius": "9999px",
+      "continue_button_border_radius": "9999px",
+      "continue_button_full_width": "400px",
+      "status": "PASS"
+    },
+    "test_2_login_form": {
+      "email_input_border_radius": "9999px",
+      "password_input_border_radius": "9999px",
+      "sign_in_button_border_radius": "9999px",
+      "sign_in_button_width": "360px (full-width)",
+      "focus_glow_animation": "focusGlow",
+      "focus_box_shadow": "rgba(15,23,42,0.08) 0px 0px 0px 4.19px (glow confirmed)",
+      "status": "PASS"
+    },
+    "test_3_create_customer_dialog": {
+      "pill_inputs_border_radius": "9999px (all 11 inputs)",
+      "spacing_between_fields": "0px — FAIL (fields touching, no visible gap)",
+      "space_y_4_class_present": "true (but ineffective due to React 19 display:contents SPAN wrapper)",
+      "focus_glow_animation": "focusGlow confirmed",
+      "status": "FAIL — cramped fields"
+    },
+    "test_4_edit_customer_dialog": {
+      "label_style": "11px, font-weight 600, uppercase, letter-spacing 1.1px, color slate-400",
+      "grid_layout": "grid gap-4 sm:grid-cols-2 confirmed",
+      "pill_inputs_border_radius": "9999px",
+      "space_y_4_working": "YES — 16px margins between sections (grid, address, payment, tax, save button)",
+      "focus_glow": "focusGlow animation + boxShadow confirmed",
+      "status": "PASS"
+    },
+    "test_5_filters_tab": {
+      "admin_page_header": "PASS — title: 'Customer Filters'",
+      "subtitle": "PASS — 'Configure the filters shown to customers in your storefront product listing.'",
+      "new_filter_button_height": "32px (h-8, size='sm')",
+      "new_filter_button_radius": "9999px (rounded-full)",
+      "matches_products_tab": "PASS — Products '+ New Product' button also 32px h-8",
+      "status": "PASS"
+    },
+    "test_6_filters_no_errors": {
+      "compile_errors": "none",
+      "empty_state": "PASS — dashed border 'No filters configured yet'",
+      "status": "PASS"
+    },
+    "test_7_edit_customer_save": {
+      "save_action": "Dialog closes on save — success",
+      "status": "PASS"
+    },
+    "test_8_products_tab_regression": {
+      "title": "Products",
+      "new_product_button_height": "32px",
+      "new_product_button_radius": "9999px",
+      "errors": "none",
+      "status": "PASS"
+    }
+  },
+  "rca_of_the_issue": {
+    "bug": "Create Customer dialog — 0px gap between fields",
+    "root_cause": "React 19 (v^19.0.0) in development mode wraps JSX fragment returns with <span style='display:contents'> elements for source mapping (x-file-name, x-line-number attributes). When UniversalFormRenderer compact mode returns <><style>...</style><div className='space-y-4'>{fields}</div></>, React 19 wraps the content inside a display:contents SPAN. The space-y-4 Tailwind class uses CSS selector '.space-y-4 > :not([hidden]) ~ :not([hidden])' which only applies to direct children. Since the SPAN is the only direct child of .space-y-4, no margin is applied between the actual field wrapper divs inside the SPAN.",
+    "reproduction": "Open Create Customer dialog in dev environment → fields are cramped with 0px gap",
+    "verification": "DOM inspection: input.parentElement.parentElement has display:contents, tagName SPAN, children contain x-file-name='UniversalFormRenderer' attributes. space-y-4 div has childCount=1 (just the SPAN).",
+    "mitigation": "Replace <div className='space-y-4'> with <div className='flex flex-col gap-4'> in UniversalFormRenderer compact mode. CSS gap property works correctly through display:contents children in flexbox/grid context.",
+    "production_note": "This may be a dev-mode-only issue — React 19 source map SPANs are only added in development builds."
+  },
+  "test_report_links": [],
+  "action_items": [
+    "FIX UniversalFormRenderer.tsx compact mode: change <div className='space-y-4'> to <div className='flex flex-col gap-4'> to fix 0px gap issue caused by React 19 dev-mode display:contents SPAN wrappers",
+    "NOTE: Verify if this issue also affects production build (React 19 dev-mode-only behavior)"
+  ],
+  "critical_code_review_comments": [
+    "UniversalFormRenderer.tsx: React 19 breaks space-y-4 in compact mode due to display:contents span wrapper. Use flex flex-col gap-4 instead.",
+    "Edit Customer dialog uses correct space-y-4 (direct children, no component chain) — no fix needed there.",
+    "Filters tab properly implements AdminPageHeader + size='sm' buttons — matches Products tab.",
+    "UniversalFormRenderer: The inline <style> tag inside a Fragment (<>) in React 19 triggers source-map wrapper behavior. Consider moving @keyframes fadeSlideUp to index.css and removing the inline style tag."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only test)",
+    "frontend": "87.5% (7/8 tests pass)"
+  },
+  "seed_data_creation": "",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All pill UI features from iteration 266 are still working. New fixes in 267: Edit Customer labels/spacing/grid PASS. Filters tab AdminPageHeader + size=sm PASS. Focus glow animation on all inputs PASS. ONE BUG: Create Customer dialog fields have 0px gap (not space-y-4). Root cause: React 19 display:contents SPAN wrapper around UniversalFormRenderer compact mode. Fix: use flex flex-col gap-4 instead of space-y-4. After fix, retest Create Customer dialog spacing.",
+  "test_credentials": {
+    "admin": {"email": "admin@automateaccounts.local", "password": "ChangeMe123!", "partner_code": "automate-accounts"}
+  }
+}

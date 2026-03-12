@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { AdminPageHeader } from "./shared/AdminPageHeader";
+
 import { Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronUp, X } from "lucide-react";
 
 const FILTER_TYPES = [
@@ -162,8 +163,8 @@ function FilterFormModal({
           <DialogTitle>{isEdit ? `Edit Filter — ${filter?.name}` : "New Filter"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-2">
-          <div className="space-y-1">
-            <RequiredLabel className="text-slate-600">Filter Name</RequiredLabel>
+          <div className="space-y-2">
+            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">Filter Name <span className="text-red-400">*</span></label>
             <Input
               value={name}
               onChange={e => setName(e.target.value)}
@@ -175,8 +176,8 @@ function FilterFormModal({
               <p className="text-xs text-amber-500 text-right">{name.length}/100 characters</p>
             )}
           </div>
-          <div className="space-y-1">
-            <RequiredLabel className="text-slate-600">Filter Type</RequiredLabel>
+          <div className="space-y-2">
+            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">Filter Type <span className="text-red-400">*</span></label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger data-testid="filter-type-select"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -391,31 +392,34 @@ export function FiltersTab() {
   const typeLabel = (t: string) => FILTER_TYPES.find(f => f.value === t)?.label || t;
 
   return (
-    <div className="space-y-5" data-testid="filters-tab">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Customer Filters</h2>
-          <p className="text-sm text-slate-500">Configure the filters shown to customers in your storefront product listing.</p>
-        </div>
-        <Button onClick={() => setShowCreate(true)} data-testid="create-filter-btn">
-          <Plus className="h-4 w-4 mr-1" /> New Filter
-        </Button>
-      </div>
+    <div className="space-y-4" data-testid="filters-tab">
+      <AdminPageHeader
+        title="Customer Filters"
+        subtitle="Configure the filters shown to customers in your storefront product listing."
+        actions={
+          <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-filter-btn">
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> New Filter
+          </Button>
+        }
+      />
 
       {/* Filter list */}
       {loading ? (
         <div className="py-12 text-center text-slate-400">Loading…</div>
       ) : filters.length === 0 ? (
-        <div className="rounded-xl border-2 border-dashed border-slate-200 py-14 text-center">
+        <div className="rounded-xl border-2 border-dashed border-slate-200 py-14 text-center bg-white">
           <p className="text-slate-500 font-medium">No filters configured yet</p>
           <p className="text-slate-400 text-sm mt-1">Create your first filter to let customers narrow down products.</p>
-          <Button className="mt-4" onClick={() => setShowCreate(true)}>Create Filter</Button>
+          <Button size="sm" className="mt-4" onClick={() => setShowCreate(true)}>Create Filter</Button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
           {filters.map((f, idx) => (
-            <div key={f.id} className={`rounded-xl border px-4 py-3 flex items-center gap-3 ${f.is_active ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50 opacity-60"}`} data-testid={`filter-row-${f.id}`}>
+            <div
+              key={f.id}
+              className={`px-4 py-3 flex items-center gap-3 border-b border-slate-100 last:border-0 transition-colors ${f.is_active ? "bg-white hover:bg-slate-50/50" : "bg-slate-50/60 opacity-60"}`}
+              data-testid={`filter-row-${f.id}`}
+            >
               <div className="flex flex-col gap-0.5">
                 <button onClick={() => moveFilter(idx, -1)} disabled={idx === 0} className="text-slate-300 hover:text-slate-500 disabled:opacity-20 leading-none">
                   <ChevronUp className="h-3 w-3" />
@@ -434,7 +438,7 @@ export function FiltersTab() {
                 {f.options.length > 0 && (
                   <div className="flex gap-1 mt-1 flex-wrap">
                     {f.options.slice(0, 5).map((opt, oi) => (
-                      <span key={oi} className="text-[11px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{opt.label}</span>
+                      <span key={oi} className="text-[11px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">{opt.label}</span>
                     ))}
                     {f.options.length > 5 && <span className="text-[11px] text-slate-400">+{f.options.length - 5} more</span>}
                   </div>
@@ -449,11 +453,11 @@ export function FiltersTab() {
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${f.is_active ? "translate-x-4" : "translate-x-0"}`} />
                 </button>
-                <Button size="sm" variant="ghost" onClick={() => setEditFilter(f)} data-testid={`edit-filter-${f.id}`}>
-                  <Pencil className="h-4 w-4" />
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditFilter(f)} data-testid={`edit-filter-${f.id}`}>
+                  <Pencil className="h-3.5 w-3.5" />
                 </Button>
-                <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600" onClick={() => setDeleteFilter(f)} data-testid={`delete-filter-${f.id}`}>
-                  <Trash2 className="h-4 w-4" />
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-400 hover:text-red-600" onClick={() => setDeleteFilter(f)} data-testid={`delete-filter-${f.id}`}>
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>

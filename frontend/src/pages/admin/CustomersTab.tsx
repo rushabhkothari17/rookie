@@ -353,35 +353,41 @@ export function CustomersTab() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-customer-edit-dialog">
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           {selectedCustomer && (
-            <div className="space-y-3">
-              {[["Full Name", "full_name"], ["Company", "company_name"], ["Job Title", "job_title"], ["Phone", "phone"]].map(([label, key]) => (
-                <div key={key} className="space-y-1">
-                  <label className="text-xs text-slate-500">{label}</label>
-                  <Input value={selectedCustomer[key] || ""} onChange={(e) => setSelectedCustomer({ ...selectedCustomer, [key]: e.target.value })} />
-                </div>
-              ))}
-              <hr />
-              {[["Address Line 1", "line1"], ["Line 2", "line2"], ["City", "city"], ["Region / Province", "region"], ["Postal Code", "postal"]].map(([label, key]) => (
-                <div key={key} className="space-y-1">
-                  <label className="text-xs text-slate-500">{label}</label>
-                  <Input value={selectedCustomer[key] || ""} onChange={(e) => setSelectedCustomer({ ...selectedCustomer, [key]: e.target.value })} />
-                </div>
-              ))}
-              <div className="space-y-1">
-                <label className="text-xs text-slate-500">Country</label>
-                <SearchableSelect
-                  value={selectedCustomer.country || undefined}
-                  onValueChange={v => setSelectedCustomer({ ...selectedCustomer, country: v })}
-                  options={countries.length ? countries : [{value:"Canada",label:"Canada"},{value:"USA",label:"United States"}]}
-                  placeholder="Select country…"
-                  searchPlaceholder="Search country..."
-                  data-testid="admin-customer-country-select"
-                />
+            <div className="space-y-4 pt-1">
+              {/* Personal info */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                {[["Full Name", "full_name"], ["Company", "company_name"], ["Job Title", "job_title"], ["Phone", "phone"]].map(([label, key]) => (
+                  <div key={key} className="space-y-2">
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">{label}</label>
+                    <Input value={selectedCustomer[key] || ""} onChange={(e) => setSelectedCustomer({ ...selectedCustomer, [key]: e.target.value })} placeholder={label as string} />
+                  </div>
+                ))}
               </div>
-              <hr />
-              <div>
-                <label className="text-xs font-medium text-slate-700 block mb-2">Allowed Payment Methods</label>
-                <div className="space-y-2">
+              <div className="border-t border-slate-100 pt-4">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-3">Address</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {[["Street Address", "line1"], ["Suite / Unit", "line2"], ["City", "city"], ["State / Province", "region"], ["Postal Code", "postal"]].map(([label, key]) => (
+                    <div key={key} className={`space-y-2${key === "line1" ? " sm:col-span-2" : ""}`}>
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">{label}</label>
+                      <Input value={selectedCustomer[key] || ""} onChange={(e) => setSelectedCustomer({ ...selectedCustomer, [key]: e.target.value })} placeholder={label as string} />
+                    </div>
+                  ))}
+                  <div className="space-y-2 sm:col-span-2">
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block">Country</label>
+                    <SearchableSelect
+                      value={selectedCustomer.country || undefined}
+                      onValueChange={v => setSelectedCustomer({ ...selectedCustomer, country: v })}
+                      options={countries.length ? countries : [{value:"Canada",label:"Canada"},{value:"USA",label:"United States"}]}
+                      placeholder="Select country…"
+                      searchPlaceholder="Search country..."
+                      data-testid="admin-customer-country-select"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-slate-100 pt-4">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-3">Payment Methods</p>
+                <div className="space-y-2.5">
                   {[
                     { id: "gocardless", label: "GoCardless (Bank Transfer / Direct Debit)", defaultOn: true },
                     { id: "stripe", label: "Stripe (Credit / Debit Card)", defaultOn: false },
@@ -413,11 +419,10 @@ export function CustomersTab() {
                   })}
                 </div>
               </div>
-              <hr />
-              <div className="flex items-center justify-between py-1">
+              <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
                 <div>
-                  <label className="text-sm font-medium text-slate-700">Tax Exempt</label>
-                  <p className="text-xs text-slate-400">Customer will not be charged any tax at checkout.</p>
+                  <p className="text-sm font-medium text-slate-700">Tax Exempt</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Customer will not be charged any tax at checkout.</p>
                 </div>
                 <input
                   type="checkbox"
@@ -427,7 +432,7 @@ export function CustomersTab() {
                   data-testid="edit-customer-tax-exempt"
                 />
               </div>
-              <Button onClick={handleCustomerEdit} disabled={saving} className="w-full" data-testid="admin-customer-save-btn">{saving ? "Saving…" : "Save Changes"}</Button>
+              <Button onClick={handleCustomerEdit} disabled={saving} className="w-full h-11" data-testid="admin-customer-save-btn">{saving ? "Saving…" : "Save Changes"}</Button>
             </div>
           )}
         </DialogContent>

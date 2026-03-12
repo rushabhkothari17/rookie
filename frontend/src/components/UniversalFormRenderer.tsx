@@ -50,7 +50,7 @@ const pillInput = (hasError: boolean) =>
     "focus:outline-none focus:ring-0",
     hasError
       ? "border-red-400 focus:border-red-500 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.08)]"
-      : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+      : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white [&:focus]:[animation:focusGlow_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]"
   );
 
 const pillSelect = cn(
@@ -248,7 +248,7 @@ export function UniversalFormRenderer({
             to   { opacity: 1; transform: translateY(0); }
           }
         `}</style>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {enabled.map((f, i) => renderOne(f, i))}
         </div>
       </>
@@ -265,7 +265,7 @@ export function UniversalFormRenderer({
   let idx = 0;
   const grid = (flds: FormField[]) =>
     flds.length === 0 ? null : (
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {flds.map(f => {
           const i = idx++;
           return (
@@ -288,7 +288,7 @@ export function UniversalFormRenderer({
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {grid(before)}
         {addrField && renderOne(addrField, addrI)}
         {grid(after)}
