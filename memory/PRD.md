@@ -5,25 +5,40 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
-## Latest Updates (Feb 2026) — 4 P0 Validation & Checkout Fixes ✅
+## Latest Updates (Mar 2026) — 10 P0 Bug Fixes ✅
 
-### All 16 tests pass (iteration_250: 8/8 backend + 8/8 frontend):
+### All 10 issues resolved and tested (iteration_251: 96% backend + 100% frontend):
 
-**1. Block subscription creation for deleted customers**
-- Backend: `subscriptions.py` — after fetching customer, checks `customer.get("deleted_at")`. If set, raises HTTP 400 ("Cannot create a subscription for a deleted customer.")
-- Frontend: `SubscriptionsTab.tsx` datalist filters out custUsers whose corresponding customer has `deleted_at` set
+**1. Payment toast fires only once (Issue 1)**
+- `CheckoutSuccess.tsx`: `useRef(false)` prevents duplicate toast on repeated polls. Polling stops once paid.
 
-**2. Block negative product prices**
-- Backend: `models.py` — `AdminProductCreate.base_price` and `AdminProductUpdate.base_price` now use `Field(ge=0)`. Negative prices return 422.
-- Frontend: `ProductForm.tsx` price input has `min="0"` attribute. Zero (free products) remain allowed.
+**2. 100% discount carts checkout successfully (Issue 2)**
+- `Cart.tsx`: Free checkout path no longer restricted to `one_time` only. Subscriptions with 100% discount now route to `/checkout/free`.
 
-**3. Fix missing checkout/enquiry button for enquiry-only products in ShowcaseLayout**
-- Root cause: `isEnquiry` check in all 3 layouts used `&& product?.base_price == null`, which fails when admin API sets `base_price=0.0` as default. Also `ShowcaseLayout` only checked `isRFQ` (not `pricing?.is_enquiry`).
-- Fix: Changed `isEnquiry` condition in all 3 layouts to: `product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null)`. ShowcaseLayout now shows "Request Quote" + ScopeIdBlock for enquiry products.
+**3. Promo code currency validation (Issue 3)**
+- `models.py`: `ApplyPromoRequest` + `PromoCodeCreate`/`PromoCodeUpdate` gain optional `currency` field.
+- `store.py`: Validates currency match when promo has currency restriction. `Cart.tsx` passes `displayCurrency` on validate.
 
-**4. Add price > 0 validation for "Scope Final - Won" resources**
-- Backend: `resources.py` — create endpoint checks `price is None or price <= 0` (was `not price`). Update endpoint also validates `price <= 0`. Returns 400 with clear message.
-- Frontend: `ResourcesTab.tsx` validates `parseFloat(price) <= 0` and shows toast error. Price input min changed to `0.01`.
+**4. Resource IDs hidden from public page (Issue 4)**
+- `ResourceView.tsx`: Short ID and Resource ID sections removed from public-facing resource detail.
+
+**5. Sidebar category counts are dynamic (Issue 5)**
+- `Store.tsx`: `filteredWithoutCategory` memo applies all non-category filters; `countFor` uses it so counts update when other filters change.
+
+**6. Unsaved changes warning in user edit dialog (Issue 6)**
+- `UsersTab.tsx`: `isEditDirty()` compares form vs initial state. `handleCloseEditDialog` shows `AlertDialog` confirmation before discarding changes.
+
+**7. Quick preset dropdown reflects current preset (Issue 7)**
+- `UsersTab.tsx`: `openEdit()` detects matching preset from current permissions and sets `editActivePreset`. Bound to `Select value={editActivePreset}`.
+
+**8. API docs show real base URL (Issue 8)**
+- `ApiTab.tsx`: Quick start examples and docs section now use `process.env.REACT_APP_BACKEND_URL` instead of `{base-url}`.
+
+**9. `/api/tenant-info` works without `?code=` (Issue 9)**
+- `auth.py`: Endpoint accepts optional `code` param; if omitted, resolves tenant from `X-API-Key` header. Returns 400 if neither provided.
+
+**10. Accurate API endpoint bodySchemas (Issue 10)**
+- `ApiTab.tsx`: Fixed docs for `/api/checkout/session`, `/api/orders/scope-request-form`, `/api/promo-codes/validate` to show actual required fields.
 
 ---
 
