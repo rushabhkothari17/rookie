@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 from pydantic import BaseModel
 
 from core.helpers import make_id, now_iso
@@ -27,6 +27,117 @@ async def list_tenants(
         query["license.plan_id"] = plan_id
     tenants = await db.tenants.find(query, {"_id": 0}).to_list(500)
     return {"tenants": tenants}
+
+
+@router.post("/admin/tenants/create-partner")
+async def admin_create_partner(
+    payload: Dict[str, Any] = Body(...),
+    admin: Dict[str, Any] = Depends(require_platform_admin),
+):
+    """Platform admin creates a partner org directly (no OTP). Returns partner_code immediately."""
+    import re as _re
+
+    name = (payload.get("name") or "").strip()
+    admin_name = (payload.get("admin_name") or "").strip()
+    admin_email = (payload.get("admin_email") or "").strip().lower()
+    admin_password = payload.get("admin_password") or ""
+    base_currency = (payload.get("base_currency") or "USD").strip().upper() or "USD"
+    address = payload.get("address") or {}
+    extra_fields = payload.get("extra_fields") or {}
+
+    if not all([name, admin_name, admin_email, admin_password]):
+        raise HTTPException(status_code=400, detail="All fields are required")
+    if len(name) > 100:
+        raise HTTPException(status_code=400, detail="Organization name must be 100 characters or fewer")
+    if len(admin_name) > 50:
+        raise HTTPException(status_code=400, detail="Admin name must be 50 characters or fewer")
+    if len(admin_email) > 50:
+        raise HTTPException(status_code=400, detail="Admin email must be 50 characters or fewer")
+    if not _re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$', admin_email):
+        raise HTTPException(status_code=400, detail="Invalid email address format")
+
+    # Password complexity
+    from routes.auth import _validate_password_complexity
+    pw_error = _validate_password_complexity(admin_password)
+    if pw_error:
+        raise HTTPException(status_code=400, detail=pw_error)
+
+    # Block duplicate email
+    existing_user = await db.users.find_one({"email": admin_email}, {"_id": 0, "id": 1})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Validate currency
+    supported = await db.platform_settings.find_one({"_id_key": "supported_currencies"})
+    valid_currencies = supported.get("values", ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]) if supported else ["USD", "CAD", "EUR", "AUD", "GBP", "INR", "MXN"]
+    if base_currency not in valid_currencies:
+        base_currency = "USD"
+
+    # Generate unique partner code from org name
+    base_code = _re.sub(r'[^\w\s-]', '', name.lower().strip())
+    base_code = _re.sub(r'[\s_]+', '-', base_code)
+    base_code = _re.sub(r'-+', '-', base_code).strip('-')[:30] or "partner"
+    code_candidate = base_code
+    counter = 1
+    while await db.tenants.find_one({"code": code_candidate}) or code_candidate == DEFAULT_TENANT_ID:
+        code_candidate = f"{base_code}-{counter}"
+        counter += 1
+
+    # Create tenant
+    tenant_id = make_id()
+    now = now_iso()
+    await db.tenants.insert_one({
+        "id": tenant_id,
+        "name": name,
+        "code": code_candidate,
+        "status": "active",
+        "base_currency": base_currency,
+        "address": {k: str(address.get(k, "")).strip() for k in ["line1", "line2", "city", "region", "postal", "country"]},
+        "extra_fields": extra_fields if isinstance(extra_fields, dict) else {},
+        "created_at": now,
+        "updated_at": now,
+    })
+
+    # Seed tenant defaults
+    from routes.auth import _seed_new_tenant
+    await _seed_new_tenant(tenant_id, name, now)
+
+    # Assign free trial plan
+    try:
+        free_trial = await db.plans.find_one({"is_default": True}, {"_id": 0})
+        if free_trial:
+            limits = {k: v for k, v in free_trial.items() if k.startswith("max_")}
+            await db.tenants.update_one({"id": tenant_id}, {"$set": {
+                "license": {"plan_id": free_trial["id"], "plan_name": free_trial["name"],
+                            "assigned_at": now, **limits}
+            }})
+    except Exception:
+        pass
+
+    # Create partner_super_admin user (verified immediately — no OTP needed)
+    user_id = make_id()
+    await db.users.insert_one({
+        "id": user_id,
+        "email": admin_email,
+        "password_hash": pwd_context.hash(admin_password),
+        "full_name": admin_name,
+        "company_name": name,
+        "job_title": "",
+        "phone": "",
+        "is_admin": True,
+        "is_verified": True,
+        "role": "partner_super_admin",
+        "tenant_id": tenant_id,
+        "is_active": True,
+        "created_at": now,
+    })
+
+    await create_audit_log(
+        entity_type="tenant", entity_id=tenant_id, action="partner_created_by_admin",
+        actor=admin.get("email", "admin"),
+        details={"name": name, "code": code_candidate, "admin_email": admin_email},
+    )
+    return {"partner_code": code_candidate, "tenant_id": tenant_id}
 
 
 @router.post("/admin/tenants")

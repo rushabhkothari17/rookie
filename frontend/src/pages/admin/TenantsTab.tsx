@@ -166,7 +166,7 @@ export function TenantsTab() {
     e.preventDefault();
     setCreating(true);
     try {
-      const res = await api.post("/auth/register-partner", newPartner);
+      const res = await api.post("/admin/tenants/create-partner", newPartner);
       setGeneratedCode(res.data.partner_code || "");
       load();
     } catch (err: any) {
