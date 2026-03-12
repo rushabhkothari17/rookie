@@ -36,10 +36,46 @@ const ISO_COUNTRY_MAP: Record<string, string> = {
   ZA: "South Africa", BR: "Brazil", MX: "Mexico", AR: "Argentina",
 };
 
+/** Map common province/state codes to full names for table display */
+const ISO_PROVINCE_MAP: Record<string, string> = {
+  // Canada
+  AB: "Alberta", BC: "British Columbia", MB: "Manitoba", NB: "New Brunswick",
+  NL: "Newfoundland and Labrador", NS: "Nova Scotia", NT: "Northwest Territories",
+  NU: "Nunavut", ON: "Ontario", PE: "Prince Edward Island", QC: "Quebec",
+  SK: "Saskatchewan", YT: "Yukon",
+  // United States
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas",
+  CA: "California", CO: "Colorado", CT: "Connecticut", DE: "Delaware",
+  FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho",
+  IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas",
+  KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi",
+  MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada",
+  NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico", NY: "New York",
+  NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma",
+  OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
+  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah",
+  VT: "Vermont", VA: "Virginia", WA: "Washington", WV: "West Virginia",
+  WI: "Wisconsin", WY: "Wyoming", DC: "District of Columbia",
+  // Australian states
+  NSW: "New South Wales", VIC: "Victoria", QLD: "Queensland",
+  WA_AU: "Western Australia", SA: "South Australia", TAS: "Tasmania",
+  ACT: "Australian Capital Territory",
+  // UK
+  ENG: "England", SCO: "Scotland", WAL: "Wales", NIR: "Northern Ireland",
+};
+
 function normaliseCountry(raw: string, options: { value: string }[]): string {
   if (!raw) return "";
   if (options.some(o => o.value === raw)) return raw;           // already full name
   return ISO_COUNTRY_MAP[raw.toUpperCase()] ?? raw;             // fallback ISO → name
+}
+
+function normaliseRegion(raw: string): string {
+  if (!raw) return "";
+  // If it already looks like a full name (>3 chars and not all-caps), return as-is
+  if (raw.length > 3 && raw !== raw.toUpperCase()) return raw;
+  return ISO_PROVINCE_MAP[raw.toUpperCase()] ?? raw;
 }
 
 export function CustomersTab() {
@@ -335,8 +371,8 @@ export function CustomersTab() {
                 <TableRow key={customer.id} data-testid={`admin-customer-row-${customer.id}`}>
                   <TableCell data-testid={`admin-customer-name-${customer.id}`}>{user.full_name || customer.company_name}</TableCell>
                   <TableCell data-testid={`admin-customer-email-${customer.id}`}>{user.email || "—"}</TableCell>
-                  <TableCell data-testid={`admin-customer-region-${customer.id}`}>{address.region || "—"}</TableCell>
-                  <TableCell data-testid={`admin-customer-country-${customer.id}`}>{address.country || "—"}</TableCell>
+                  <TableCell data-testid={`admin-customer-region-${customer.id}`}>{normaliseRegion(address.region || "") || "—"}</TableCell>
+                  <TableCell data-testid={`admin-customer-country-${customer.id}`}>{normaliseCountry(address.country || "", countries) || "—"}</TableCell>
                   <TableCell>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`} data-testid={`admin-customer-status-${customer.id}`}>{isActive ? "Active" : "Inactive"}</span>
                   </TableCell>
@@ -350,7 +386,7 @@ export function CustomersTab() {
                   {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-customer-partner-${customer.id}`}>{customer.partner_code || "—"}</TableCell>}
                   <TableCell>
                     <div className="flex gap-1 items-center flex-nowrap">
-                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id, country: normaliseCountry(address.country || customer.country || "", countries) }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
+                      <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setSelectedCustomer({ ...customer, ...user, ...address, id: customer.id, country: normaliseCountry(address.country || customer.country || "", countries), region: address.region || customer.region || "" }); }} data-testid={`admin-customer-edit-${customer.id}`}>Edit</Button>
                       <Button variant="outline" size="sm" className="h-6 px-2 text-[11px]" onClick={async () => { const res = await api.get(`/admin/customers/${customer.id}/notes`); setCustomerNotes(res.data.notes || []); setViewNotesCustomer(customer); }} data-testid={`admin-customer-notes-${customer.id}`}>Notes</Button>
                       <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/customers/${customer.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-customer-logs-${customer.id}`}>Logs</Button>
                       {user.id !== authUser?.id && (
