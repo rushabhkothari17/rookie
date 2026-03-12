@@ -5,6 +5,22 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Partner Org Creation Bug Fix ✅
+
+**Root cause**: `TenantsTab.tsx` was calling `/auth/register-partner` (public self-service OTP endpoint) which returns `{"message": "Verification required"}` with no `partner_code`. Frontend expected `partner_code` in response to show success screen — dialog hung silently.
+
+**Fix**:
+- Created new admin-only endpoint `POST /api/admin/tenants/create-partner` in `backend/routes/admin/tenants.py`
+  - Requires platform admin JWT auth
+  - Directly creates tenant + `partner_super_admin` user (no OTP — admin is trusted actor)
+  - Seeds tenant defaults, assigns free trial plan
+  - Returns `{partner_code}` immediately
+- Updated `TenantsTab.tsx` `handleCreate` to call `/admin/tenants/create-partner` instead of `/auth/register-partner`
+
+**Tested**: 11/11 backend tests + full frontend E2E (100% pass, iteration_260.json)
+
+---
+
 ## Latest Updates (Mar 2026) — Email Architecture Fixes ✅
 
 **Root causes addressed:**
