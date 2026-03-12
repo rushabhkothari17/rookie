@@ -151,9 +151,30 @@ async def upload_document(
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail=f"File exceeds 5 MB limit ({len(content)/1024/1024:.1f} MB)")
 
-    folder_id = await _ensure_folder(tid, cid)
+    try:
+        folder_id = await _ensure_folder(tid, cid)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("WorkDrive folder setup failed for customer %s: %s", cid, exc)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Could not create or locate the customer's WorkDrive folder: {str(exc)}"
+        )
 
-    result = await wd.upload_file(tid, folder_id, file.filename, content, file.content_type or "application/octet-stream")
+    try:
+        result = await wd.upload_file(tid, folder_id, file.filename, content, file.content_type or "application/octet-stream")
+    except Exception as exc:
+        logger.error("WorkDrive upload failed for customer %s: %s", cid, exc)
+        # Surface the real error from WorkDrive rather than a generic 500
+        msg = str(exc)
+        if "401" in msg or "Unauthorized" in msg.lower():
+            raise HTTPException(status_code=502, detail="WorkDrive authentication failed. Please reconnect WorkDrive in Connected Services.")
+        if "403" in msg or "Forbidden" in msg.lower():
+            raise HTTPException(status_code=502, detail="WorkDrive access denied. Check that the folder permissions are correct.")
+        if "413" in msg or "too large" in msg.lower():
+            raise HTTPException(status_code=413, detail="File is too large for WorkDrive.")
+        raise HTTPException(status_code=502, detail=f"WorkDrive upload failed: {msg[:200]}")
 
     doc_id = make_id()
     doc = {
@@ -315,7 +336,8 @@ async def sync_customer_folders(admin: Dict[str, Any] = Depends(require_admin)):
             })
             created += 1
         except Exception as exc:
-            errors.append(f"customer {cid}: {str(exc)[:100]}")
+            logger.error("Folder creation failed for customer %s: %s", cid, exc)
+            errors.append(f"customer {cid}: {str(exc)[:150]}")
 
     return {
         "created": created,

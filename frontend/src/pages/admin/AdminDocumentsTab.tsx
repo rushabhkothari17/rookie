@@ -37,13 +37,14 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-export function AdminDocumentsTab() {
+export function AdminDocumentsTab({ onNavigateToTab }: { onNavigateToTab?: (tab: string) => void }) {
   const [docs, setDocs] = useState<Document[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [custLoading, setCustLoading] = useState(false);
   const [custOpen, setCustOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [workdriveConnected, setWorkdriveConnected] = useState<boolean | null>(null);
+  const [workdriveStatus, setWorkdriveStatus] = useState<"connected" | "not_connected" | "loading">("loading");
   const [search, setSearch] = useState("");
 
   // Upload modal
@@ -79,7 +80,9 @@ export function AdminDocumentsTab() {
       ]);
       setDocs(docsRes.data.documents || []);
       const wd = (connRes.data.integrations || []).find((i: any) => i.id === "zoho_workdrive");
-      setWorkdriveConnected(wd?.is_validated === true);
+      const isConnected = wd?.is_validated === true;
+      setWorkdriveConnected(isConnected);
+      setWorkdriveStatus(isConnected ? "connected" : "not_connected");
       // Load first 15 customers for upload modal
       fetchCustomers("");
     } catch {
@@ -195,21 +198,33 @@ export function AdminDocumentsTab() {
         <p className="text-sm text-slate-500 max-w-sm">
           To enable document sharing with clients, connect a cloud storage service under <strong>Connected Services</strong>.
         </p>
-        <div className="flex flex-col gap-2 mt-2">
-          <div className="flex items-center gap-2 text-sm text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-lg">
-            <span className="w-2 h-2 rounded-full bg-sky-400" />
-            Zoho WorkDrive — <span className="text-sky-600 font-medium">available</span>
+        <div className="flex flex-col gap-2 mt-2 w-full max-w-xs">
+          <button
+            type="button"
+            onClick={() => onNavigateToTab?.("integrations")}
+            className="flex items-center gap-2 text-sm text-sky-700 bg-sky-50 border border-sky-200 hover:bg-sky-100 transition-colors px-4 py-2.5 rounded-lg cursor-pointer w-full"
+            data-testid="workdrive-connect-btn"
+          >
+            <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
+            <span className="flex-1 text-left font-medium">Zoho WorkDrive</span>
+            <span className="text-xs text-sky-500 font-semibold">Connect →</span>
+          </button>
+          <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-lg">
+            <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
+            <span className="flex-1 text-left">Google Drive</span>
+            <span className="text-xs italic">coming soon</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-50 border border-slate-100 px-4 py-2 rounded-lg">
-            <span className="w-2 h-2 rounded-full bg-slate-300" />
-            Google Drive — <span className="italic">coming soon</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-50 border border-slate-100 px-4 py-2 rounded-lg">
-            <span className="w-2 h-2 rounded-full bg-slate-300" />
-            OneDrive — <span className="italic">coming soon</span>
+          <div className="flex items-center gap-2 text-sm text-slate-400 bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-lg">
+            <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
+            <span className="flex-1 text-left">OneDrive</span>
+            <span className="text-xs italic">coming soon</span>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="mt-2" onClick={() => window.location.hash = "integrations"} data-testid="go-to-integrations-btn">
+        <Button
+          variant="outline" size="sm" className="mt-1 text-sky-600 border-sky-200 hover:bg-sky-50"
+          onClick={() => onNavigateToTab?.("integrations")}
+          data-testid="go-to-integrations-btn"
+        >
           Go to Connected Services
         </Button>
       </div>
@@ -220,15 +235,23 @@ export function AdminDocumentsTab() {
     <div className="space-y-4" data-testid="admin-documents-tab">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="relative">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <Input
-            placeholder="Search by file name or customer…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="h-8 pl-7 text-xs w-64"
-            data-testid="documents-search"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Search by file name or customer…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="h-8 pl-7 text-xs w-64"
+              data-testid="documents-search"
+            />
+          </div>
+          {workdriveConnected && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full" data-testid="workdrive-connected-badge">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              WorkDrive connected
+            </span>
+          )}
         </div>
         <div className="flex gap-2">
           <Button

@@ -240,7 +240,7 @@ export default function Admin() {
             <ResourcesTab editResourceId={editResourceId || undefined} />
           </TabsContent>
           <TabsContent value="documents" className="space-y-4">
-            <AdminDocumentsTab />
+            <AdminDocumentsTab onNavigateToTab={setActiveTab} />
           </TabsContent>
           <TabsContent value="categories" className="space-y-4">
             <CategoriesTab />
