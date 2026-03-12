@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, validator
 
 from core.helpers import make_id, now_iso
-from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
+from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of, is_platform_admin
 from db.session import db
 from services.audit_service import create_audit_log
 
@@ -18,6 +18,7 @@ class PresetCreate(BaseModel):
     name: str
     description: str = ""
     module_permissions: Dict[str, str]  # {module_key: "read"|"write"}
+    tenant_id: Optional[str] = None  # Platform admins must supply this
 
     @validator("name")
     def name_not_empty(cls, v: str) -> str:
@@ -49,7 +50,19 @@ async def create_preset(
     payload: PresetCreate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    tid = tenant_id_of(admin)
+    if is_platform_admin(admin):
+        if not payload.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Partner org is required for platform admins — please select a partner org.",
+            )
+        tenant = await db.tenants.find_one({"id": payload.tenant_id}, {"_id": 0, "id": 1})
+        if not tenant:
+            raise HTTPException(status_code=404, detail="Partner org not found")
+        tid = payload.tenant_id
+    else:
+        tid = tenant_id_of(admin)
+
     existing = await db.user_presets.find_one(
         {"tenant_id": tid, "name": payload.name}, {"_id": 0, "id": 1}
     )

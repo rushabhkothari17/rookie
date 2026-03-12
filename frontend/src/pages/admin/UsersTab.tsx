@@ -31,8 +31,10 @@ interface PresetRole {
   module_permissions: Record<string, "read" | "write">;
   is_system?: boolean;
   id?: string;
+  tenant_id?: string;
 }
 type ModulePerm = Record<string, "read" | "write" | "none">;
+interface TenantOption { id: string; name: string; }
 
 const PARTNER_ROLES = new Set(["partner_super_admin", "partner_admin"]);
 
@@ -139,9 +141,11 @@ function roleBadgeColor(role: string) {
 
 // ── Preset Form Modal ─────────────────────────────────────────────────────────
 
-function PresetFormModal({ preset, modules, onClose, onSaved }: {
+function PresetFormModal({ preset, modules, isPlatformAdmin, tenants, onClose, onSaved }: {
   preset: PresetRole | null;
   modules: ModuleInfo[];
+  isPlatformAdmin: boolean;
+  tenants: TenantOption[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -155,13 +159,31 @@ function PresetFormModal({ preset, modules, onClose, onSaved }: {
   const [perms, setPerms] = useState<ModulePerm>(initPerms);
   const [saving, setSaving] = useState(false);
 
+  // Partner org selection (platform admin only)
+  const [selectedTenantId, setSelectedTenantId] = useState(preset?.tenant_id || "");
+  const [tenantDropOpen, setTenantDropOpen] = useState(false);
+  const [tenantSearch, setTenantSearch] = useState("");
+
+  const selectedTenantName = tenants.find(t => t.id === selectedTenantId)?.name;
+  const filteredTenants = tenants.filter(t =>
+    t.name.toLowerCase().includes(tenantSearch.toLowerCase()) ||
+    t.id.toLowerCase().includes(tenantSearch.toLowerCase())
+  );
+
   const handleSave = async () => {
     if (!name.trim()) { toast.error("Preset name is required"); return; }
+    if (isPlatformAdmin && !isEdit && !selectedTenantId) {
+      toast.error("Partner org is required — please select a partner org");
+      return;
+    }
     setSaving(true);
     try {
       const modulePerms: Record<string, string> = {};
       Object.entries(perms).forEach(([k, v]) => { if (v !== "none") modulePerms[k] = v; });
-      const payload = { name: name.trim(), description: desc.trim(), module_permissions: modulePerms };
+      const payload: Record<string, any> = { name: name.trim(), description: desc.trim(), module_permissions: modulePerms };
+      if (isPlatformAdmin && !isEdit) {
+        payload.tenant_id = selectedTenantId;
+      }
       if (isEdit && preset?.id) {
         await api.put(`/admin/presets/${preset.id}`, payload);
         toast.success("Preset updated");
@@ -182,6 +204,60 @@ function PresetFormModal({ preset, modules, onClose, onSaved }: {
           <DialogTitle>{isEdit ? `Edit Preset — ${preset?.name}` : "New Custom Preset"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-2">
+
+          {/* Partner Org — platform admin only */}
+          {isPlatformAdmin && (
+            <div className="space-y-1">
+              <RequiredLabel>Partner Org</RequiredLabel>
+              {isEdit ? (
+                <div className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-md bg-slate-50">
+                  <span className="text-sm text-slate-700 flex-1">{selectedTenantName || selectedTenantId || "—"}</span>
+                  <span className="text-xs text-slate-400">Cannot be changed</span>
+                </div>
+              ) : (
+                <Popover open={tenantDropOpen} onOpenChange={setTenantDropOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn("w-full justify-between h-9 font-normal text-left", !selectedTenantId && "text-slate-400")}
+                      data-testid="preset-tenant-trigger"
+                    >
+                      <span className="truncate">{selectedTenantName || "Select partner org…"}</span>
+                      <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search partner orgs…"
+                        value={tenantSearch}
+                        onValueChange={setTenantSearch}
+                        data-testid="preset-tenant-search"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No partner orgs found.</CommandEmpty>
+                        <CommandGroup>
+                          {filteredTenants.map(t => (
+                            <CommandItem
+                              key={t.id}
+                              value={t.id}
+                              onSelect={() => { setSelectedTenantId(t.id); setTenantDropOpen(false); setTenantSearch(""); }}
+                              data-testid={`preset-tenant-option-${t.id}`}
+                            >
+                              <Check className={cn("mr-2 h-4 w-4", selectedTenantId === t.id ? "opacity-100" : "opacity-0")} />
+                              {t.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+          )}
+
           <div className="space-y-1">
             <RequiredLabel>Preset Name</RequiredLabel>
             <Input value={name} onChange={e => setName(e.target.value)} maxLength={80} placeholder="e.g. Sales Manager, Support Level 1" data-testid="preset-name-input" />
@@ -205,9 +281,10 @@ function PresetFormModal({ preset, modules, onClose, onSaved }: {
 
 // ── Preset Card ───────────────────────────────────────────────────────────────
 
-function PresetCard({ preset, modules, onEdit, onDelete }: {
+function PresetCard({ preset, modules, tenantName, onEdit, onDelete }: {
   preset: PresetRole;
   modules: ModuleInfo[];
+  tenantName?: string;
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
@@ -220,9 +297,16 @@ function PresetCard({ preset, modules, onEdit, onDelete }: {
         <div className="p-2 rounded-lg bg-slate-100 shrink-0"><Zap size={14} className="text-slate-500" /></div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-semibold text-slate-900 truncate">{preset.name}</h4>
-          <span className={`text-[10px] ${preset.is_system ? "text-slate-400" : "text-violet-500 font-medium"}`}>
-            {preset.is_system ? "Built-in" : "Custom"}
-          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className={`text-[10px] ${preset.is_system ? "text-slate-400" : "text-violet-500 font-medium"}`}>
+              {preset.is_system ? "Built-in" : "Custom"}
+            </span>
+            {tenantName && (
+              <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-100 px-1.5 py-0.5 rounded font-medium truncate max-w-[120px]" title={tenantName}>
+                {tenantName}
+              </span>
+            )}
+          </div>
         </div>
         {!preset.is_system && (
           <div className="flex gap-1 shrink-0">
@@ -259,12 +343,41 @@ function PresetCard({ preset, modules, onEdit, onDelete }: {
 // ── Presets Sub-Tab ───────────────────────────────────────────────────────────
 
 function PresetsSubTab({ modules, presetRoles, onRefreshPresets }: { modules: ModuleInfo[]; presetRoles: PresetRole[]; onRefreshPresets: () => void }) {
+  const { user: authUser } = useAuth();
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
+
   const [showCreate, setShowCreate] = useState(false);
   const [editPreset, setEditPreset] = useState<PresetRole | null>(null);
   const [delPreset, setDelPreset] = useState<PresetRole | null>(null);
 
+  // Tenant list (only fetched for platform admins)
+  const [tenants, setTenants] = useState<TenantOption[]>([]);
+  const [filterTenantId, setFilterTenantId] = useState("all");
+  const [filterDropOpen, setFilterDropOpen] = useState(false);
+  const [filterSearch, setFilterSearch] = useState("");
+
+  useEffect(() => {
+    if (isPlatformAdmin) {
+      api.get("/admin/tenants?per_page=200")
+        .then(r => setTenants(r.data.tenants || []))
+        .catch(() => {});
+    }
+  }, [isPlatformAdmin]);
+
   const systemPresets = presetRoles.filter(p => p.is_system !== false);
   const customPresets = presetRoles.filter(p => p.is_system === false);
+
+  // Apply partner org filter for platform admins
+  const filteredCustomPresets = (isPlatformAdmin && filterTenantId !== "all")
+    ? customPresets.filter(p => p.tenant_id === filterTenantId)
+    : customPresets;
+
+  const tenantName = (tid?: string) => tid ? (tenants.find(t => t.id === tid)?.name || tid) : undefined;
+
+  const filteredTenantOptions = tenants.filter(t =>
+    t.name.toLowerCase().includes(filterSearch.toLowerCase()) ||
+    t.id.toLowerCase().includes(filterSearch.toLowerCase())
+  );
 
   const handleDelete = async (preset: PresetRole) => {
     try {
@@ -298,26 +411,86 @@ function PresetsSubTab({ modules, presetRoles, onRefreshPresets }: { modules: Mo
 
       {/* Custom section */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Custom Presets</h3>
+        <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Custom Presets</h3>
+
+            {/* Partner Org filter — platform admins only */}
+            {isPlatformAdmin && tenants.length > 0 && (
+              <Popover open={filterDropOpen} onOpenChange={setFilterDropOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1.5 font-normal"
+                    data-testid="preset-filter-partner-trigger"
+                  >
+                    {filterTenantId === "all"
+                      ? "All Partner Orgs"
+                      : (tenants.find(t => t.id === filterTenantId)?.name || filterTenantId)}
+                    <ChevronsUpDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-0" align="start">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search partner orgs…"
+                      value={filterSearch}
+                      onValueChange={setFilterSearch}
+                      data-testid="preset-filter-partner-search"
+                    />
+                    <CommandList>
+                      <CommandEmpty>No partner orgs found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="all"
+                          onSelect={() => { setFilterTenantId("all"); setFilterDropOpen(false); setFilterSearch(""); }}
+                          data-testid="preset-filter-all"
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", filterTenantId === "all" ? "opacity-100" : "opacity-0")} />
+                          All Partner Orgs
+                        </CommandItem>
+                        {filteredTenantOptions.map(t => (
+                          <CommandItem
+                            key={t.id}
+                            value={t.id}
+                            onSelect={() => { setFilterTenantId(t.id); setFilterDropOpen(false); setFilterSearch(""); }}
+                            data-testid={`preset-filter-${t.id}`}
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", filterTenantId === t.id ? "opacity-100" : "opacity-0")} />
+                            {t.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+
           <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-preset-btn">
             <Plus size={13} className="mr-1" /> New Preset
           </Button>
         </div>
-        {customPresets.length === 0 ? (
+
+        {filteredCustomPresets.length === 0 ? (
           <div className="rounded-xl border-2 border-dashed border-slate-200 py-10 text-center">
             <Zap size={22} className="mx-auto text-slate-300 mb-2" />
-            <p className="text-sm text-slate-400 font-medium">No custom presets yet</p>
-            <p className="text-xs text-slate-400 mt-1">Create custom permission templates specific to your organisation.</p>
+            <p className="text-sm text-slate-400 font-medium">
+              {filterTenantId !== "all" ? "No custom presets for this partner org" : "No custom presets yet"}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Create custom permission templates specific to an organisation.</p>
             <Button size="sm" variant="outline" className="mt-3" onClick={() => setShowCreate(true)}>Create Preset</Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {customPresets.map(preset => (
+            {filteredCustomPresets.map(preset => (
               <PresetCard
                 key={preset.id || preset.key}
                 preset={preset}
                 modules={modules}
+                tenantName={isPlatformAdmin ? tenantName(preset.tenant_id) : undefined}
                 onEdit={() => setEditPreset(preset)}
                 onDelete={() => setDelPreset(preset)}
               />
@@ -331,6 +504,8 @@ function PresetsSubTab({ modules, presetRoles, onRefreshPresets }: { modules: Mo
         <PresetFormModal
           preset={null}
           modules={modules}
+          isPlatformAdmin={isPlatformAdmin}
+          tenants={tenants}
           onClose={() => setShowCreate(false)}
           onSaved={() => { setShowCreate(false); onRefreshPresets(); }}
         />
@@ -339,6 +514,8 @@ function PresetsSubTab({ modules, presetRoles, onRefreshPresets }: { modules: Mo
         <PresetFormModal
           preset={editPreset}
           modules={modules}
+          isPlatformAdmin={isPlatformAdmin}
+          tenants={tenants}
           onClose={() => setEditPreset(null)}
           onSaved={() => { setEditPreset(null); onRefreshPresets(); }}
         />
