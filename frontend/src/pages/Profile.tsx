@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import api from "@/lib/api";
-import { parseSchema, getAddressConfig } from "@/components/FormSchemaBuilder";
+import { parseSchema } from "@/components/FormSchemaBuilder";
+import { UniversalFormRenderer } from "@/components/UniversalFormRenderer";
 import { Download, Lock, Trash2, AlertTriangle } from "lucide-react";
 
 function validatePhone(phone: string) {
@@ -16,12 +16,14 @@ function validatePhone(phone: string) {
   return "";
 }
 
+// Keys managed by the schema-driven form
+const SCHEMA_ADDR_KEYS = ["line1", "line2", "city", "region", "postal", "country"];
+const AUTH_KEYS = ["email", "password"]; // never rendered by UniversalFormRenderer in profile
+
 export default function Profile() {
   const { user, customer, address, refresh } = useAuth();
   const ws = useWebsite();
-  const isAdmin = user?.role && ["partner_admin", "platform_admin", "admin"].includes(user.role);
-  const [tenantCountry, setTenantCountry] = useState<string>("");
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Record<string, string>>({
     full_name: "",
     company_name: "",
     phone: "",
@@ -37,71 +39,41 @@ export default function Profile() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
-  const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
   const [phoneError, setPhoneError] = useState("");
 
-  // Derive address config and field visibility from signup schema
-  const schema = parseSchema(ws.signup_form_schema);
-  const schemaFields = Object.fromEntries(schema.map((f: any) => [f.key, f]));
-  const phoneRequired = schemaFields["phone"]?.required ?? true;
-  const companyRequired = schemaFields["company_name"]?.required ?? false;
-  const addrSchemaField = schemaFields["address"];
-  const addrVisible = !addrSchemaField || addrSchemaField.enabled !== false;
-  const addrCfg = addrSchemaField ? getAddressConfig(addrSchemaField) : null;
-  const sf = (key: string) => addrCfg ? (addrCfg as any)[key] : { enabled: true, required: true };
+  // Parse the signup schema and filter out auth-only fields (email, password)
+  const allSchemaFields = parseSchema(ws.signup_form_schema)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .filter(f => f.enabled !== false && !AUTH_KEYS.includes(f.key));
+
+  // Determine if phone is required (from schema)
+  const phoneField = allSchemaFields.find(f => f.key === "phone");
+  const phoneRequired = phoneField?.required ?? true;
 
   useEffect(() => {
     if (!user) return;
     setForm({
-      full_name: user.full_name || "",
-      company_name: user.company_name || "",
-      phone: user.phone || "",
-      line1: address?.line1 || "",
-      line2: address?.line2 || "",
-      city: address?.city || "",
-      region: address?.region || "",
-      postal: address?.postal || "",
-      country: address?.country || "",
+      full_name:    user.full_name     || "",
+      company_name: user.company_name  || "",
+      phone:        user.phone         || "",
+      line1:        address?.line1     || "",
+      line2:        address?.line2     || "",
+      city:         address?.city      || "",
+      region:       address?.region    || "",
+      postal:       address?.postal    || "",
+      country:      address?.country   || "",
     });
-    // For admins, fetch their tenant's country from tax settings
-    if (isAdmin) {
-      api.get("/admin/taxes/settings").then(r => {
-        const country = r.data.tax_settings?.country || "";
-        setTenantCountry(country);
-      }).catch(() => {});
-    }
-  }, [user, address, isAdmin]);
-
-  // Fetch countries from taxes module on mount
-  useEffect(() => {
-    api.get("/utils/countries")
-      .then(r => setCountries(r.data.countries || []))
-      .catch(() => setCountries([{ value: "Canada", label: "Canada" }, { value: "USA", label: "United States" }]));
-  }, []);
-
-  // Fetch provinces/states when country changes
-  useEffect(() => {
-    const country = form.country;
-    if (country) {
-      api.get(`/utils/provinces?country_code=${encodeURIComponent(country)}`).then(r => {
-        setProvinces(r.data.regions || []);
-      }).catch(() => setProvinces([]));
-    } else {
-      setProvinces([]);
-    }
-  }, [form.country]);
+  }, [user, address]);
 
   const handleChange = (key: string, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    if (key === "phone") setPhoneError("");
+    setForm(prev => ({ ...prev, [key]: value }));
   };
 
   const handleExportData = async () => {
     setExporting(true);
     try {
-      const response = await api.get("/me/data-export/download", {
-        responseType: "blob"
-      });
+      const response = await api.get("/me/data-export/download", { responseType: "blob" });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -121,14 +93,9 @@ export default function Profile() {
   const handleDeleteAccount = async () => {
     setDeleting(true);
     try {
-      await api.post("/me/request-deletion", {
-        reason: deleteReason,
-        confirm: true
-      });
+      await api.post("/me/request-deletion", { reason: deleteReason, confirm: true });
       toast.success("Account deleted. You will be logged out.");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 2000);
+      setTimeout(() => { window.location.href = "/login"; }, 2000);
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Deletion failed");
       setDeleting(false);
@@ -137,18 +104,22 @@ export default function Profile() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (phoneField && phoneRequired) {
+      const err = validatePhone(form.phone);
+      if (err) { setPhoneError(err); return; }
+    }
     setLoading(true);
     try {
       await api.put("/me", {
-        full_name: form.full_name,
+        full_name:    form.full_name,
         company_name: form.company_name,
-        phone: form.phone,
+        phone:        form.phone,
         address: {
-          line1: form.line1,
-          line2: form.line2,
-          city: form.city,
-          region: form.region,
-          postal: form.postal,
+          line1:   form.line1,
+          line2:   form.line2,
+          city:    form.city,
+          region:  form.region,
+          postal:  form.postal,
           country: form.country,
         },
       });
@@ -174,25 +145,8 @@ export default function Profile() {
         className="rounded-3xl bg-white/80 p-8 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur"
         data-testid="profile-form"
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm text-slate-600">Full name</label>
-            <Input
-              value={form.full_name}
-              onChange={(e) => handleChange("full_name", e.target.value)}
-              data-testid="profile-name-input"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-slate-600">Company</label>
-            <Input
-              value={form.company_name}
-              onChange={(e) => handleChange("company_name", e.target.value)}
-              data-testid="profile-company-input"
-              required={companyRequired}
-            />
-          </div>
+        {/* Fixed read-only identity fields — always shown, not in schema */}
+        <div className="grid gap-4 md:grid-cols-2 mb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-1.5">
               <label className="text-sm text-slate-600">Email address</label>
@@ -204,7 +158,7 @@ export default function Profile() {
               className="bg-slate-50 cursor-not-allowed text-slate-500"
               data-testid="profile-email-input"
             />
-            <p className="text-xs text-slate-400">Email can only be changed by an admin from the admin panel.</p>
+            <p className="text-xs text-slate-400">Email can only be changed by an admin.</p>
           </div>
           <div className="space-y-2">
             <label className="text-sm text-slate-600">Partner / Tenant Code</label>
@@ -217,142 +171,28 @@ export default function Profile() {
               />
               <span className="text-xs text-slate-400 whitespace-nowrap">Read-only</span>
             </div>
-            <p className="text-xs text-slate-400">Use this code when logging in via the partner portal.</p>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm text-slate-600">Phone{phoneRequired && <span className="text-red-500 ml-0.5">*</span>}</label>
-            <Input
-              value={form.phone}
-              onChange={(e) => { handleChange("phone", e.target.value); setPhoneError(validatePhone(e.target.value)); }}
-              onBlur={e => setPhoneError(validatePhone(e.target.value))}
-              data-testid="profile-phone-input"
-              required={phoneRequired}
-              type="tel"
-              placeholder="+1 (555) 000-0000"
-            />
-            {phoneError && <p className="text-xs text-red-500">{phoneError}</p>}
-          </div>
-          {isAdmin && tenantCountry && (
-            <div className="space-y-2">
-              <label className="text-sm text-slate-600">Business Country (from Tax Settings)</label>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={tenantCountry}
-                  readOnly
-                  className="bg-slate-50 cursor-not-allowed font-mono text-sm"
-                  data-testid="profile-admin-country"
-                />
-                <span className="text-xs text-slate-400 whitespace-nowrap">Read-only</span>
-              </div>
-              <p className="text-xs text-slate-400">Set via Admin &rsaquo; Taxes &rsaquo; Tax Settings.</p>
-            </div>
-          )}
-          {/* Address — driven by address_config from signup schema */}
-          {addrVisible && (
-            <>
-              {sf("line1").enabled && (
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm text-slate-600">
-                    Address line 1{sf("line1").required && <span className="text-red-500 ml-0.5">*</span>}
-                  </label>
-                  <Input
-                    value={form.line1}
-                    onChange={(e) => handleChange("line1", e.target.value)}
-                    data-testid="profile-line1-input"
-                    required={sf("line1").required}
-                  />
-                </div>
-              )}
-              {sf("line2").enabled && (
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm text-slate-600">
-                    Address line 2{sf("line2").required && <span className="text-red-500 ml-0.5">*</span>}
-                  </label>
-                  <Input
-                    value={form.line2}
-                    onChange={(e) => handleChange("line2", e.target.value)}
-                    data-testid="profile-line2-input"
-                    required={sf("line2").required}
-                  />
-                </div>
-              )}
-              {sf("city").enabled && (
-                <div className="space-y-2">
-                  <label className="text-sm text-slate-600">
-                    City{sf("city").required && <span className="text-red-500 ml-0.5">*</span>}
-                  </label>
-                  <Input
-                    value={form.city}
-                    onChange={(e) => handleChange("city", e.target.value)}
-                    data-testid="profile-city-input"
-                    required={sf("city").required}
-                  />
-                </div>
-              )}
-              {sf("state").enabled && (
-                <div className="space-y-2">
-                  <label className="text-sm text-slate-600">
-                    State / Province{sf("state").required && <span className="text-red-500 ml-0.5">*</span>}
-                  </label>
-                  {provinces.length > 0 ? (
-                    <Select value={form.region} onValueChange={(v) => handleChange("region", v)}>
-                      <SelectTrigger data-testid="profile-region-select">
-                        <SelectValue placeholder="Select province / state" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {provinces.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      value={form.region}
-                      onChange={(e) => handleChange("region", e.target.value)}
-                      data-testid="profile-region-input"
-                      required={sf("state").required}
-                    />
-                  )}
-                </div>
-              )}
-              {sf("postal").enabled && (
-                <div className="space-y-2">
-                  <label className="text-sm text-slate-600">
-                    Postal / ZIP{sf("postal").required && <span className="text-red-500 ml-0.5">*</span>}
-                  </label>
-                  <Input
-                    value={form.postal}
-                    onChange={(e) => handleChange("postal", e.target.value)}
-                    data-testid="profile-postal-input"
-                    required={sf("postal").required}
-                  />
-                </div>
-              )}
-              {sf("country").enabled && (
-                <div className="space-y-2">
-                  <label className="text-sm text-slate-600">
-                    Country{sf("country").required && <span className="text-red-500 ml-0.5">*</span>}
-                  </label>
-                  {countries.length > 0 ? (
-                    <Select value={form.country} onValueChange={(v) => { handleChange("country", v); handleChange("region", ""); }}>
-                      <SelectTrigger data-testid="profile-country-select">
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countries.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      value={form.country}
-                      onChange={(e) => handleChange("country", e.target.value)}
-                      data-testid="profile-country-input"
-                      required={sf("country").required}
-                    />
-                  )}
-                </div>
-              )}
-            </>
-          )}
         </div>
+
+        {/* Schema-driven editable fields — powered by UniversalFormRenderer */}
+        {allSchemaFields.length > 0 && (
+          <UniversalFormRenderer
+            fields={allSchemaFields}
+            values={form}
+            onChange={(key, val) => {
+              if (key === "phone") {
+                setPhoneError(validatePhone(val));
+              }
+              handleChange(key, val);
+            }}
+            compact={false}
+          />
+        )}
+
+        {phoneError && (
+          <p className="text-xs text-red-500 mt-2">{phoneError}</p>
+        )}
+
         <div className="mt-6 flex items-center justify-end">
           <Button
             type="submit"
@@ -365,7 +205,7 @@ export default function Profile() {
         </div>
       </form>
 
-      {/* GDPR Data Privacy Section - Hidden in Advanced Settings */}
+      {/* GDPR / Data Privacy — hidden under Advanced Settings */}
       <details className="mt-8 border-t border-slate-200 pt-6 group">
         <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600 transition-colors list-none flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wider">Advanced Settings</span>
@@ -373,7 +213,7 @@ export default function Profile() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </summary>
-        
+
         <div className="mt-4">
           <details className="group/gdpr">
             <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600 transition-colors list-none flex items-center gap-2">
@@ -382,43 +222,30 @@ export default function Profile() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </summary>
-            
+
             <div className="mt-4 space-y-4">
               <p className="text-xs text-slate-500">
                 Manage your personal data. You can export all your data or request account deletion.
               </p>
 
-              {/* Export Data */}
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <div>
                   <p className="text-sm font-medium text-slate-700">Export my data</p>
                   <p className="text-xs text-slate-500">Download all your personal data in a ZIP file</p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportData}
-                  disabled={exporting}
-                  data-testid="gdpr-export-btn"
-                >
+                <Button variant="outline" size="sm" onClick={handleExportData} disabled={exporting} data-testid="gdpr-export-btn">
                   <Download className="w-4 h-4 mr-2" />
                   {exporting ? "Exporting..." : "Export Data"}
                 </Button>
               </div>
 
-              {/* Delete Account */}
               <div className="p-4 bg-red-50 rounded-lg border border-red-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-red-700">Delete my account</p>
                     <p className="text-xs text-red-600">Permanently anonymize all your data. This cannot be undone.</p>
                   </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    data-testid="gdpr-delete-btn"
-                  >
+                  <Button variant="destructive" size="sm" onClick={() => setShowDeleteConfirm(true)} data-testid="gdpr-delete-btn">
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Account
                   </Button>
@@ -431,7 +258,7 @@ export default function Profile() {
                       <div>
                         <p className="text-sm font-medium text-red-700">Are you sure?</p>
                         <p className="text-xs text-red-600 mt-1">
-                          This will permanently anonymize your account and all associated data. 
+                          This will permanently anonymize your account and all associated data.
                           You will be logged out and cannot recover your account.
                         </p>
                       </div>
@@ -440,27 +267,17 @@ export default function Profile() {
                       <label className="text-xs font-medium text-slate-600">Reason (optional)</label>
                       <Input
                         value={deleteReason}
-                        onChange={(e) => setDeleteReason(e.target.value)}
+                        onChange={e => setDeleteReason(e.target.value)}
                         placeholder="Why are you leaving?"
                         className="mt-1"
                         data-testid="gdpr-delete-reason"
                       />
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleDeleteAccount}
-                        disabled={deleting}
-                        data-testid="gdpr-delete-confirm-btn"
-                      >
+                      <Button variant="destructive" size="sm" onClick={handleDeleteAccount} disabled={deleting} data-testid="gdpr-delete-confirm-btn">
                         {deleting ? "Deleting..." : "Yes, delete my account"}
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowDeleteConfirm(false)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => setShowDeleteConfirm(false)}>
                         Cancel
                       </Button>
                     </div>

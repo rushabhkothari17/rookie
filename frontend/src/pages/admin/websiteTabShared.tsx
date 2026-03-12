@@ -415,15 +415,9 @@ export function OrgAddressSection() {
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Line 2</label>
           <Input placeholder="Apartment, suite, unit…" value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-[11px] text-slate-500 font-medium block mb-0.5">City <span className="text-red-500">*</span></label>
-            <Input placeholder="City" value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} data-testid="org-addr-city" />
-          </div>
-          <div>
-            <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Postal / ZIP <span className="text-red-500">*</span></label>
-            <Input placeholder="Postal code" value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} data-testid="org-addr-postal" />
-          </div>
+        <div>
+          <label className="text-[11px] text-slate-500 font-medium block mb-0.5">City <span className="text-red-500">*</span></label>
+          <Input placeholder="City" value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} data-testid="org-addr-city" />
         </div>
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Country <span className="text-red-500">*</span></label>
@@ -446,6 +440,10 @@ export function OrgAddressSection() {
           ) : (
             <Input placeholder="State / Province" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} data-testid="org-addr-region-input" />
           )}
+        </div>
+        <div>
+          <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Postal / ZIP <span className="text-red-500">*</span></label>
+          <Input placeholder="Postal code" value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} data-testid="org-addr-postal" />
         </div>
       </div>
       <Button onClick={save} disabled={saving || (!isPlatformAdmin && !tenantId)} size="sm" className="mt-3" data-testid="org-addr-save-btn">

@@ -4,8 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
@@ -14,54 +12,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite, usePartnerCode } from "@/contexts/WebsiteContext";
 import AppShell from "@/components/AppShell";
 import { displayCategory } from "@/lib/categories";
-import { parseSchema, getAddressConfig, type FormField } from "@/components/FormSchemaBuilder";
-import { AddressFieldRenderer, type AddressValue } from "@/components/AddressFieldRenderer";
+import { parseSchema, getAddressConfig } from "@/components/FormSchemaBuilder";
+import { type AddressValue } from "@/components/AddressFieldRenderer";
+import { UniversalFormRenderer } from "@/components/UniversalFormRenderer";
 import { ProductLayout, evaluateVisibilityRule, getEnabledIntakeQuestions } from "@/pages/store/layouts";
-
-// ── Dynamic form field renderer ─────────────────────────────
-function DynamicField({ field, value, onChange }: {
-  field: FormField; value: string; onChange: (v: string) => void;
-}) {
-  const common = { "data-testid": `dyn-field-${field.key}` };
-  if (field.type === "address") {
-    const addrValue: AddressValue = (() => { try { return JSON.parse(value || "{}"); } catch { return {}; } })();
-    return (
-      <AddressFieldRenderer
-        field={field}
-        value={addrValue}
-        onChange={v => onChange(JSON.stringify(v))}
-      />
-    );
-  }
-  if (field.type === "textarea") {
-    return <Textarea value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} rows={3} {...common} />;
-  }
-  if (field.type === "select") {
-    return (
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger {...common}><SelectValue placeholder="Select..." /></SelectTrigger>
-        <SelectContent>
-          {(field.options || []).map(opt => {
-            const [label, val] = opt.includes("|") ? opt.split("|") : [opt, opt];
-            return <SelectItem key={val} value={val}>{label}</SelectItem>;
-          })}
-        </SelectContent>
-      </Select>
-    );
-  }
-  if (field.type === "checkbox") {
-    return (
-      <label className="flex items-center gap-2 cursor-pointer" {...common}>
-        <Checkbox checked={value === "true"} onCheckedChange={c => onChange(c ? "true" : "false")} />
-        <span className="text-sm text-slate-600">{field.placeholder || field.label}</span>
-      </label>
-    );
-  }
-  return (
-    <Input type={field.type === "password" ? "password" : field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
-      value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} {...common} />
-  );
-}
 
 const QUOTE_STD = ["name", "email", "company", "phone", "message"];
 const SCOPE_STD = ["project_summary", "desired_outcomes", "apps_involved", "timeline_urgency", "budget_range", "additional_notes"];
@@ -284,7 +238,7 @@ export default function ProductDetail() {
         if (addrCfg.city.required && !addrVal.city) { toast.error(`${field.label}: City is required`); return; }
         if (addrCfg.country.required && !addrVal.country) { toast.error(`${field.label}: Country is required`); return; }
         if (addrCfg.postal.required && !addrVal.postal) { toast.error(`${field.label}: Postal Code is required`); return; }
-        if (addrCfg.state.required && !addrVal.state) { toast.error(`${field.label}: State/Province is required`); return; }
+        if (addrCfg.state.required && !addrVal.region) { toast.error(`${field.label}: State/Province is required`); return; }
       } else {
         if (!scopeFormData[field.key]) {
           toast.error(`${field.label} is required`);
@@ -470,20 +424,17 @@ export default function ProductDetail() {
             {(() => {
               const schema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false);
               if (schema.length > 0) {
-                return schema.map(field => (
-                  <div key={field.id} className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">
-                      {field.label}{field.required && <span className="text-red-500"> *</span>}
-                    </label>
-                    <DynamicField
-                      field={field}
-                      value={quoteFormData[field.key] || ""}
-                      onChange={v => setQuoteFormData(prev => ({ ...prev, [field.key]: v }))}
-                    />
-                  </div>
-                ));
+                return (
+                  <UniversalFormRenderer
+                    fields={schema}
+                    values={quoteFormData}
+                    onChange={(key, val) => setQuoteFormData(prev => ({ ...prev, [key]: val }))}
+                    compact={true}
+                    addressMode="json"
+                  />
+                );
               }
-              // Fallback to hardcoded fields
+              // Fallback hardcoded fields when no schema is configured
               return (
                 <>
                   <div className="space-y-1">
@@ -528,18 +479,15 @@ export default function ProductDetail() {
               const activeSchema = product?.resolved_form_schema || ws.scope_form_schema;
               const schema = parseSchema(activeSchema).filter(f => f.enabled !== false);
               if (schema.length > 0) {
-                return schema.map(field => (
-                  <div key={field.id} className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">
-                      {field.label}{field.required && <span className="text-red-500"> *</span>}
-                    </label>
-                    <DynamicField
-                      field={field}
-                      value={scopeFormData[field.key] || ""}
-                      onChange={v => setScopeFormData(prev => ({ ...prev, [field.key]: v }))}
-                    />
-                  </div>
-                ));
+                return (
+                  <UniversalFormRenderer
+                    fields={schema}
+                    values={scopeFormData}
+                    onChange={(key, val) => setScopeFormData(prev => ({ ...prev, [key]: val }))}
+                    compact={true}
+                    addressMode="json"
+                  />
+                );
               }
               // Fallback hardcoded scope fields
               return (

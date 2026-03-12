@@ -32,9 +32,6 @@ export default function Signup() {
   const [partnerLoading, setPartnerLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
-
-  // Fetch provinces/states for customer signup when country changes
-  const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]);
   const [form, setForm] = useState({
     full_name: "", job_title: "", company_name: "",
     email: "", phone: "", password: "",
@@ -99,20 +96,8 @@ export default function Signup() {
     }
   }, [isPartnerMode, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch provinces/states when country changes (customer signup)
-  useEffect(() => {
-    const country = form.country;
-    if (country) {
-      api.get(`/utils/provinces?country_code=${encodeURIComponent(country)}`).then(r => {
-        setProvinces(r.data.regions || []);
-        if (r.data.regions && !r.data.regions.find((p: any) => p.value === form.region || p.label === form.region)) {
-          handleFieldChange("region", "");
-        }
-      }).catch(() => setProvinces([]));
-    } else {
-      setProvinces([]);
-    }
-  }, [form.country]);
+  // Fetch provinces/states when country changes — no longer needed;
+  // AddressFieldRenderer handles province loading internally.
 
   const schema: FormField[] = parseSchema(ws.signup_form_schema);
 
@@ -675,8 +660,6 @@ export default function Signup() {
                     schema={schema}
                     values={allValues}
                     onChange={handleFieldChange}
-                    provinces={provinces}
-                    countries={countries}
                     showPassword={true}
                     compact={false}
                   />

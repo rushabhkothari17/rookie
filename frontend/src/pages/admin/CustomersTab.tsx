@@ -63,7 +63,6 @@ export function CustomersTab() {
   const [newCustomer, setNewCustomer] = useState({ full_name: "", company_name: "", job_title: "", email: "", phone: "", password: "", line1: "", line2: "", city: "", region: "", postal: "", country: "", mark_verified: true });
   const [signupSchema, setSignupSchema] = useState<any[]>([]);
   const [newCustomerExtras, setNewCustomerExtras] = useState<Record<string, string>>({});
-  const [provinces, setProvinces] = useState<{value:string;label:string}[]>([]);
   const countries = useCountries();
   // Platform admin: list of tenants to map customer to a partner org
   const [partnerTenants, setPartnerTenants] = useState<any[]>([]);
@@ -137,15 +136,7 @@ export function CustomersTab() {
     }).catch(() => {});
   }, [showCreateDialog]);
 
-  // Fetch provinces when country changes in create form
-  useEffect(() => {
-    const c = newCustomer.country;
-    if (c) {
-      api.get(`/utils/provinces?country_code=${encodeURIComponent(c)}`)
-        .then(r => setProvinces(r.data.regions || []))
-        .catch(() => setProvinces([]));
-    } else { setProvinces([]); }
-  }, [newCustomer.country]);
+  // Province loading moved to AddressFieldRenderer — no longer needed here.
 
   const downloadCsv = () => {
     const token = localStorage.getItem("aa_token");
@@ -489,8 +480,6 @@ export function CustomersTab() {
               schema={parseSchema(JSON.stringify(signupSchema))}
               values={createValues}
               onChange={handleCreateFieldChange}
-              provinces={provinces}
-              countries={countries.length ? countries : [{ value: "Canada", label: "Canada" }, { value: "USA", label: "United States" }]}
               showPassword={true}
               compact={true}
             />
