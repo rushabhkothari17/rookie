@@ -5,6 +5,24 @@ Build a multi-tenant SaaS platform with a comprehensive B2B partner management l
 
 ---
 
+## Latest Updates (Mar 2026) — Email Architecture Fixes ✅
+
+**Root causes addressed:**
+1. Email provider lookup was 3-tier (tenant → global/no-tenant → platform), but "global" connections never exist. Now 2-tier: if `tenant_id` is provided → use that tenant's connection; if blank → use platform ("automate-accounts") connection.
+2. Partner signup was using the customer `verification` template. Now uses a dedicated `partner_verification` template (category: `platform_admin_only`).
+3. Zoho Mail validation did not verify the `from_email` against actual Zoho account addresses. Now fails validation with a clear message if `from_email` is not a valid sender.
+4. Platform-only templates (`partner_billing`, `platform_admin_only`) were being seeded to all partner tenants and visible to all admins.
+
+**Fixes:**
+- `email_service.py`: Simplified provider lookup; added `partner_verification` template; `ensure_seeded` prunes platform-only templates from partner tenants; partner admin list filters them out.
+- `routes/auth.py`: `register_partner` now uses `trigger="partner_verification"` with `admin_name`, `partner_org_name`, `verification_code` variables.
+- `routes/admin/email_templates.py`: `list_templates` hides `platform_admin_only` and `partner_billing` templates for partner admins.
+- `routes/oauth.py`: Zoho Mail validate now checks `from_email` is a real sender in the Zoho account; fails with list of valid addresses if not.
+
+**Behavioral note:** If a partner tenant has no email provider configured, their customer signup/forgot-password emails will be mocked (not sent). Platform emails (partner signup OTP) always use the platform's Zoho Mail.
+
+---
+
 ## Latest Updates (Mar 2026) — Email Delivery Fixes ✅
 
 **Root cause**: `EmailService.send()` only looked for email providers scoped to `None` tenant as a fallback, missing the platform admin's ("automate-accounts") Zoho Mail connection.
