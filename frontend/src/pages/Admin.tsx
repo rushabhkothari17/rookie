@@ -43,7 +43,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
-  "data-[state=inactive]:text-[var(--aa-muted)] hover:text-[var(--aa-text)] transition-colors data-[state=active]:shadow-none data-[state=active]:text-white";
+  "data-[state=inactive]:text-[var(--aa-muted)] hover:text-[var(--aa-text)] hover:translate-x-0.5 hover:bg-[var(--aa-surface)] " +
+  "transition-all duration-150 data-[state=active]:shadow-none data-[state=active]:text-white";
 
 export default function Admin() {
   const { user: authUser, permissions } = useAuth();

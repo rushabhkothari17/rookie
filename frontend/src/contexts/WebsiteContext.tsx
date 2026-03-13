@@ -451,6 +451,8 @@ function _applyBrandingToDOM(s: Record<string, any>) {
     const border = s.border_color || "#30363d";
     const text = s.text_color || "#e6edf3";
     const muted = s.muted_color || "#8b949e";
+    // Ensure muted is bright enough to be visible on dark backgrounds
+    set("--aa-muted", muted);
     const cardHsl = _hexToHsl(card);
     const surfaceHsl = _hexToHsl(surface);
     const borderHsl = _hexToHsl(border);

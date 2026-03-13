@@ -109,6 +109,8 @@ export default function Store() {
   const [fxRates, setFxRates] = useState<Record<string, number>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 12;
   const ws = useWebsite();
   const partnerCode = usePartnerCode();
 
@@ -191,6 +193,14 @@ export default function Store() {
 
     return result;
   }, [products, activeCategory, activeFilters, configuredFilters, sortBy, fxRates, searchQuery]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setCurrentPage(1); }, [activeCategory, activeFilters, sortBy, searchQuery]);
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * PRODUCTS_PER_PAGE,
+    currentPage * PRODUCTS_PER_PAGE
+  );
 
   const handleCategoryChange = (cat: string | null) => {
     setActiveCategory(cat);
@@ -600,17 +610,17 @@ export default function Store() {
                   </p>
                 </div>
 
-                {/* Search + Sort row */}
-                <div className="flex items-center gap-2 shrink-0 flex-wrap w-full sm:w-auto">
+                {/* Search + Sort row — always inline, never wraps */}
+                <div className="flex items-center gap-2 shrink-0 flex-nowrap">
                   {/* Search pill */}
-                  <div className="relative">
+                  <div className="relative flex-1 min-w-[120px] max-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder="Search products…"
-                      className="h-9 w-full sm:w-40 md:w-48 rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
+                      placeholder="Search…"
+                      className="h-9 w-full rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
                       data-testid="store-search-input"
                     />
                     {searchQuery && (
@@ -628,7 +638,7 @@ export default function Store() {
                   {/* Sort dropdown */}
                   <Select value={sortBy} onValueChange={val => setSortBy(val as SortOption)}>
                     <SelectTrigger
-                      className="h-9 min-w-[150px] sm:min-w-[175px] bg-white border-slate-200 hover:bg-slate-50 text-slate-700 text-sm"
+                      className="h-9 min-w-[140px] bg-white border-slate-200 hover:bg-slate-50 text-slate-700 text-sm flex-shrink-0"
                       data-testid="sort-select"
                     >
                       <span className="flex items-center gap-1.5">
@@ -668,11 +678,50 @@ export default function Store() {
             {filteredProducts.length === 0 ? (
               <p className="text-slate-400 text-sm py-12 text-center">No products match the selected filters.</p>
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" data-testid="products-grid">
-                {filteredProducts.map((product, i) => (
-                  <OfferingCard key={product.id} product={product} index={i} />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" data-testid="products-grid">
+                  {paginatedProducts.map((product, i) => (
+                    <OfferingCard key={product.id} product={product} index={i} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-10" data-testid="store-pagination">
+                    <button
+                      onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      disabled={currentPage === 1}
+                      className="h-9 px-4 rounded-full border border-slate-200 text-sm font-medium text-slate-600 hover:border-slate-400 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      data-testid="store-prev-page"
+                    >
+                      ← Prev
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                        className={`h-9 w-9 rounded-full text-sm font-semibold transition-all ${
+                          page === currentPage
+                            ? "text-white shadow-sm"
+                            : "border border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-900"
+                        }`}
+                        style={page === currentPage ? { backgroundColor: "var(--aa-primary)" } : {}}
+                        data-testid={`store-page-${page}`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      disabled={currentPage === totalPages}
+                      className="h-9 px-4 rounded-full border border-slate-200 text-sm font-medium text-slate-600 hover:border-slate-400 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      data-testid="store-next-page"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

@@ -83,7 +83,7 @@ export default function ForgotPassword() {
   const primaryColor = partnerPrimaryColor || "var(--aa-primary)";
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12" data-testid="forgot-password-page">
+    <div className="min-h-screen flex items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--aa-bg)", color: "var(--aa-text)" }} data-testid="forgot-password-page">
       <div className="w-full max-w-[380px] space-y-6">
 
         {/* Partner brand header */}

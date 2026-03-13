@@ -8,6 +8,7 @@ import { WebsiteProvider } from "@/contexts/WebsiteContext";
 import TopNav from "@/components/TopNav";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { CookieConsent } from "@/components/CookieConsent";
+import { PageLoader } from "@/components/PageLoader";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import VerifyEmail from "@/pages/VerifyEmail";
@@ -85,6 +86,7 @@ export default function App() {
       <CartProvider>
         <WebsiteProvider>
         <BrowserRouter>
+          <PageLoader />
           <Routes>
             <Route path="/" element={<Navigate to="/store" replace />} />
             <Route path="/login" element={<Login />} />

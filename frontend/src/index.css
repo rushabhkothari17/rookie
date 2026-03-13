@@ -596,3 +596,81 @@ input[class*="rounded-full"]:focus {
 /* ── Keep primary/accent explicitly dark even in dark mode ─ */
 .aa-dark .bg-slate-900 { background-color: var(--aa-primary) !important; }
 .aa-dark .text-white   { color: #ffffff !important; }
+
+/* ── Icon / SVG visibility in dark mode ──────────────────── */
+/* Icons that use text-slate-* classes — inherit the overridden muted color */
+.aa-dark svg.lucide,
+.aa-dark [class*="lucide-"] { color: inherit; }
+/* Sidebar icons and standalone icon containers */
+.aa-dark .text-slate-400 svg,
+.aa-dark .text-slate-500 svg { color: var(--aa-muted) !important; }
+/* Make sure nav/icon elements don't go dark on dark backgrounds */
+.aa-dark .text-slate-400 { color: var(--aa-muted) !important; }
+.aa-dark .text-slate-300 { color: color-mix(in srgb, var(--aa-muted) 80%, #ffffff) !important; }
+
+/* ── Product card hover lift (supplements framer-motion) ─── */
+.aa-product-lift {
+  transition: transform 0.25s cubic-bezier(.16,1,.3,1), box-shadow 0.25s ease;
+}
+.aa-product-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.14), 0 0 20px var(--aa-glow);
+}
+
+/* ── Cart item row hover ─────────────────────────────────── */
+.aa-cart-item {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.aa-cart-item:hover {
+  background-color: color-mix(in srgb, var(--aa-surface) 80%, transparent);
+  transform: translateX(2px);
+}
+
+/* ── Product hero image zoom ─────────────────────────────── */
+.aa-img-zoom {
+  overflow: hidden;
+  border-radius: inherit;
+}
+.aa-img-zoom img {
+  transition: transform 0.5s cubic-bezier(.16,1,.3,1);
+}
+.aa-img-zoom:hover img {
+  transform: scale(1.04);
+}
+
+/* ── Hero section animated accent line ───────────────────── */
+@keyframes accentSlide {
+  from { width: 0; opacity: 0; }
+  to   { width: 48px; opacity: 1; }
+}
+.aa-hero-accent {
+  animation: accentSlide 0.8s cubic-bezier(.16,1,.3,1) 0.3s both;
+}
+
+/* ── Floating card animations ───────────────────────────── */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+.aa-float { animation: floatUp 6s ease-in-out infinite; }
+.aa-float-slow { animation: floatUp 9s ease-in-out infinite; }
+
+/* ── Nav link hover underline ────────────────────────────── */
+.aa-nav-link {
+  position: relative;
+}
+.aa-nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  right: 50%;
+  height: 2px;
+  background: var(--aa-accent);
+  border-radius: 1px;
+  transition: left 0.2s ease, right 0.2s ease;
+}
+.aa-nav-link:hover::after {
+  left: 0;
+  right: 0;
+}

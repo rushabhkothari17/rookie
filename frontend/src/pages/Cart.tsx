@@ -462,7 +462,7 @@ export default function Cart() {
               </div>
               <div className="divide-y divide-slate-100">
                 {[...grouped.oneTime, ...grouped.subscriptions].map((item: any) => (
-                  <div key={item.product.id} className="p-4 hover:bg-slate-50/50 transition-colors" data-testid={`cart-item-${item.product.id}`}>
+                  <div key={item.product.id} className="p-4 aa-cart-item transition-all" data-testid={`cart-item-${item.product.id}`}>
                     <div className="flex gap-4">
                       {item.product.image_url && (
                         <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 shadow-sm">

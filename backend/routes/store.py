@@ -53,7 +53,7 @@ async def get_stripe_fee_rate(tenant_id: str) -> float:
 
 async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
     """Resolve tenant_id: X-View-As-Tenant (platform_admin) > user JWT > API key > partner_code lookup > default."""
-    if x_view_as_tenant and user and user.get("role") == "platform_admin":
+    if x_view_as_tenant and user and is_platform_admin(user):
         return x_view_as_tenant
     if user and user.get("tenant_id"):
         return user["tenant_id"]
@@ -395,14 +395,20 @@ async def validate_promo_code(
 async def orders_preview(
     payload: OrderPreviewRequest,
     user: Dict[str, Any] = Depends(get_current_user),
+    x_view_as_tenant: Optional[str] = Header(None),
 ):
-    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    tid = await _resolve_tenant_id(user, None, x_view_as_tenant)
     # Use stripe_fee_rate from oauth_connections for card payment preview
     fee_rate = await get_stripe_fee_rate(tid)
     _ = await db.customers.find_one({"tenant_id": tid, "user_id": user["id"]}, {"_id": 0})
     results = []
     for item in payload.items:
         product = await db.products.find_one({"tenant_id": tid, "id": item.product_id}, {"_id": 0})
+        # Platform admins can preview products from any tenant (they see all products on the storefront)
+        if not product and is_platform_admin(user):
+            product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
+            if product:
+                fee_rate = await get_stripe_fee_rate(product.get("tenant_id", tid))
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         pricing = calculate_price(product, item.inputs, fee_rate=fee_rate)

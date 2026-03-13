@@ -122,7 +122,8 @@ export default function Login() {
       <>
         <style>{css}</style>
         <div
-          className="min-h-screen bg-white flex items-center justify-center px-4"
+          className="min-h-screen flex items-center justify-center px-4"
+          style={{ backgroundColor: "var(--aa-bg)", color: "var(--aa-text)" }}
           data-testid="auth-gateway"
         >
           <div className="w-full max-w-[400px]">
@@ -212,7 +213,7 @@ export default function Login() {
   return (
     <>
       <style>{css}</style>
-      <div className="min-h-screen bg-white flex" data-testid="login-page" key={authKey}>
+      <div className="min-h-screen flex" style={{ backgroundColor: "var(--aa-bg)", color: "var(--aa-text)" }} data-testid="login-page" key={authKey}>
 
         {/* Left brand panel */}
         <div
@@ -510,7 +511,7 @@ function ForcePasswordChangeModal({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8">
+      <div className="w-full max-w-md rounded-3xl shadow-2xl p-8" style={{ backgroundColor: "var(--aa-card)", color: "var(--aa-text)" }}>
         <h2 className="text-xl font-bold text-slate-900 mb-1">Set a new password</h2>
         <p className="text-sm text-slate-500 mb-6">Your account requires a password change before you can continue.</p>
         <form onSubmit={submit} className="space-y-4">

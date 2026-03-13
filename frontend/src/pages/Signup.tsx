@@ -313,7 +313,7 @@ export default function Signup() {
     // ── OTP verification step ─────────────────────────────────────────────────
     if (partnerStep === "verify") {
       return (
-        <div className="min-h-screen bg-white flex items-center justify-center p-4" data-testid="partner-verify-step">
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "var(--aa-bg)", color: "var(--aa-text)" }} data-testid="partner-verify-step">
           <div className="w-full max-w-sm space-y-6 text-center">
             <button type="button" onClick={() => setPartnerStep("form")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors">
               <ChevronLeft size={12} /> Back to form
@@ -395,7 +395,7 @@ export default function Signup() {
     // ── Success screen ────────────────────────────────────────────────────────
     if (generatedCode) {
       return (
-        <div className="min-h-screen bg-white flex items-center justify-center p-4" data-testid="partner-signup-success">
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "var(--aa-bg)", color: "var(--aa-text)" }} data-testid="partner-signup-success">
           <div className="w-full max-w-md text-center space-y-6">
             <div className="flex justify-center">
               <div className="h-14 w-14 rounded-full bg-green-50 flex items-center justify-center">
@@ -453,7 +453,7 @@ export default function Signup() {
 
     // ── Registration form ─────────────────────────────────────────────────────
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4" data-testid="partner-signup-page">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "var(--aa-bg)", color: "var(--aa-text)" }} data-testid="partner-signup-page">
         <div className="w-full max-w-md space-y-6">
           <div className="space-y-1">
             <Link to="/login" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors mb-4">
@@ -545,7 +545,7 @@ export default function Signup() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 bg-white flex items-start justify-center py-10 px-4 overflow-y-auto">
+      <div className="flex-1 flex items-start justify-center py-10 px-4 overflow-y-auto" style={{ backgroundColor: "var(--aa-bg)" }}>
         <div className="w-full max-w-2xl">
           {/* Mobile header */}
           <div className="lg:hidden mb-6 text-center">
@@ -553,7 +553,7 @@ export default function Signup() {
             <p className="text-sm text-slate-500 mt-1">{ws.register_title || "Create your portal access"}</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-8">
+          <div className="rounded-2xl border border-slate-200 shadow-sm p-8" style={{ backgroundColor: "var(--aa-card)" }}>
             {step === "verify" ? (
               /* ── Inline OTP verification ──────────────────────────────── */
               <div className="flex flex-col items-center text-center space-y-6 py-4" data-testid="verify-step">
