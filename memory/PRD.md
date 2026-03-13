@@ -173,7 +173,13 @@ Build a white-label service commerce platform with:
 - **All endpoints tested**: 66 GET endpoints + 17 mutation (POST/PUT/DELETE) endpoints = 83 total, 100% PASS
 - **Includes**: request body schemas, response shapes, curl examples, field validation notes, error codes, quick-start test script
 
-### Phase 11: Futuristic CSS Variable Design System (March 2026)
+### Phase 11: Futuristic CSS Variable Design System + Dark Mode (March 2026)
+- **New CSS variables**: `--aa-card`, `--aa-surface`, `--aa-primary-fg` (auto-luminance), `--aa-card-border`, `--aa-glow` (auto from accent), `--aa-text`, `--aa-muted`
+- **Global `.aa-dark` class**: Auto-toggled on `<html>` when background luminance < 0.08 — overrides ALL hardcoded Tailwind slate classes (bg-white, text-slate-*, border-slate-*, inputs, tables, badges, hover states)
+- **Dot pattern hero texture**: `radial-gradient` dots using `--aa-primary-fg` at 22% opacity (replaced harsh grid lines)
+- **Theme presets** (3): Midnight Tech (GitHub-dark palette), Slate Pro (light default), Ocean Deep (teal dark)
+- **All form inputs** (`auth-input`, standard inputs) use CSS variables — no hardcoded colors remain
+- Tested via iteration_274 + iteration_275 — dark mode confirmed fully readable (table cells rgb(230,237,243) on dark bg, no black-on-black)
 - **New CSS variables**: `--aa-card`, `--aa-surface`, `--aa-primary-fg` (auto-computed), `--aa-card-border`, `--aa-glow` (auto-derived from accent)
 - **New utility classes**: `.aa-card`, `.aa-card-glow`, `.aa-surface`, `.aa-badge` + semantic variants (success/danger/warning/muted/accent), `.aa-mono` (JetBrains Mono), `.aa-grid-texture` (hero grid overlay), `.aa-active-accent` (sidebar glow), `.aa-input`, `.aa-glow-sm/md`, theme-aware scrollbars
 - **Admin panel**: 3 one-click theme presets (Midnight Tech dark, Slate Pro light, Ocean Deep teal) with color swatches + 2 new color pickers (Card Background, Surface)

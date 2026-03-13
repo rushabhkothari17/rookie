@@ -423,13 +423,6 @@ function _applyBrandingToDOM(s: Record<string, any>) {
   if (s.background_color) {
     set("--aa-bg", s.background_color);
     setHsl("--background", s.background_color);
-    // Auto-toggle dark mode class based on background luminance
-    const bgLum = _luminance(s.background_color);
-    if (bgLum < 0.08) {
-      document.documentElement.classList.add("aa-dark");
-    } else {
-      document.documentElement.classList.remove("aa-dark");
-    }
   }
   if (s.card_color) { set("--aa-card", s.card_color); setHsl("--card", s.card_color); }
   if (s.surface_color) set("--aa-surface", s.surface_color);
@@ -442,6 +435,18 @@ function _applyBrandingToDOM(s: Record<string, any>) {
   }
   if (s.card_color && s.border_color) set("--aa-card-border", s.border_color);
   if (s.muted_color) { set("--aa-muted", s.muted_color); setHsl("--muted-foreground", s.muted_color); }
+
+  // Auto-toggle .aa-dark class based on final background luminance
+  // Use custom bg if set, otherwise fall back to CSS-computed value, then to default
+  const finalBg = s.background_color
+    || getComputedStyle(document.documentElement).getPropertyValue("--aa-bg").trim()
+    || "#f8fafc";
+  const darkBgLum = _luminance(finalBg);
+  if (darkBgLum < 0.08) {
+    document.documentElement.classList.add("aa-dark");
+  } else {
+    document.documentElement.classList.remove("aa-dark");
+  }
 }
 
 // (branding helpers are now in _applyBrandingToDOM above)

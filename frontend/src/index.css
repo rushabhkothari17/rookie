@@ -247,19 +247,19 @@ input[class*="rounded-full"]:focus {
 .auth-input {
   height: 48px;
   border-radius: 9999px;
-  border: 1.5px solid #e2e8f0;
-  background: rgba(255,255,255,0.96);
+  border: 1.5px solid var(--aa-border);
+  background: var(--aa-card);
   padding: 0 20px;
   font-size: 14px;
-  color: #0f172a;
+  color: var(--aa-text);
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   width: 100%;
   display: block;
   outline: none;
   font-family: inherit;
 }
-.auth-input::placeholder { color: #94a3b8; }
-.auth-input:hover { border-color: #cbd5e1; }
+.auth-input::placeholder { color: var(--aa-muted); }
+.auth-input:hover { border-color: var(--aa-muted); }
 /* ── Focus glow animation (one-shot pulse on focus) ──── */
 @keyframes focusGlow {
   0%   { box-shadow: 0 0 0 0 rgba(15,23,42,0.0); }
@@ -272,14 +272,14 @@ input[class*="rounded-full"]:focus {
   100% { box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
 }
 .auth-input:focus {
-  border-color: #334155;
+  border-color: var(--aa-accent);
   animation: focusGlow 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  background: #fff;
+  background: var(--aa-surface);
 }
 .auth-input.error,
 .auth-input[data-error="true"] {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239,68,68,0.07);
+  border-color: var(--aa-danger);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--aa-danger) 10%, transparent);
 }
 
 /* ── Global pill action buttons ──────────────────────── */
