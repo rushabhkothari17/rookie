@@ -199,7 +199,21 @@ Build a white-label service commerce platform with:
 - **index.css**: Global mobile CSS — admin tables get `overflow-x: auto` scroll container, store layout stacks vertically on mobile
 - Verified via testing agent iteration_273 — 8/8 tests PASS (100%)
 
-### Phase 13: P0 Bug Fixes + Animations + Pagination (March 2026)
+### Phase 14: 12 UI Enhancements — Animations, Skeleton, Glass, Tooltips (March 2026)
+- **Smooth Page Transitions**: `BaseLayout` + `AppShell` wrap content in `motion.div` keyed by `location.pathname`. Fade-in + slight upward slide on every navigation.
+- **Skeleton Loaders**: `SkeletonCard`, `SkeletonRow`, `SkeletonStat`, `SkeletonGrid` reusable components. Used in Store (products), Portal (orders table + stat cards), Articles.
+- **Staggered List Animations**: Articles grid cards animate in with `staggerChildren: 0.06`. Portal order rows use staggered `motion.tr` with `delay: idx * 0.04`.
+- **Portal Stats + Counter Animation**: `PortalStats` component added above order table showing Orders, Subscriptions, Total Spend. Numbers count up from 0 using `useCountUp` hook with easeOutExpo easing.
+- **Glassmorphism Cards**: `aa-glass` CSS class (backdrop-blur 20px, 72% opacity) applied to portal stat cards.
+- **Empty States**: `EmptyState` component with icon + title + description. Used in Store (no products/search), Articles (no articles), Portal (no orders).
+- **Button Ripple Effect**: CSS `::after` pseudo-element ripple on all `.btn-primary` + `.aa-btn-ripple` buttons. OfferingCard CTA updated with explicit ripple + primary accent style.
+- **Button Hover Depth**: All `btn-primary` buttons get `translateY(-1px)` + glow shadow on hover.
+- **Admin Sidebar Tooltips**: `SideTab` helper wraps all 32 sidebar `TabsTrigger`s in Radix `Tooltip`. `TooltipProvider` wraps sidebar. Tooltip appears on right on hover.
+- **Hover Animations on Sidebar**: `hover:translate-x-0.5` + `hover:bg-[var(--aa-surface)]` on all sidebar items.
+- **Page Loader Top Bar**: Gradient progress bar (`--aa-accent` → `--aa-primary`) with glow shadow on route changes.
+- **Toast Redesign**: Sonner `Toaster` with `borderRadius:12px`, `backdropFilter:blur(12px)`, brand border color.
+- **Hero Accent Line Animation**: `aa-hero-accent` keyframe slide-in on ProductHero accent bar.
+- Tested via iteration_278 — **11/12 PASS (92%)**, 1 minor (ripple CSS extended to all buttons ✓ fixed post-test)
 - **Cart Preview Bug Fixed**: `orders_preview` endpoint failed for platform admins (tenant_id=null) — now uses `_resolve_tenant_id` + fallback `is_platform_admin` product lookup across all tenants
 - **`_resolve_tenant_id` Bug Fixed**: Was checking `role == "platform_admin"` (missing `platform_super_admin`) — now uses `is_platform_admin()` helper
 - **Store Search+Sort Layout**: Removed `flex-wrap w-full sm:w-auto` — replaced with `flex-nowrap` + `flex-1 min-w-[120px] max-w-[200px]` on search, so search and sort always render side-by-side

@@ -135,7 +135,7 @@ export default function OfferingCard({ product, index = 0 }: { product: any; ind
           {priceInfo.prefix && <span className="text-xs font-medium mr-1 aa-mono" style={{ color: "var(--aa-muted)" }}>{priceInfo.prefix} </span>}
           <span className="text-lg font-bold aa-mono" style={{ color: "var(--aa-text)" }}>{priceInfo.label}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-sm font-semibold transition-colors" style={{ color: "var(--aa-muted)" }} data-testid={`offering-cta-${product.id}`}>
+        <div className="flex items-center gap-1.5 text-sm font-semibold transition-colors aa-btn-ripple px-3 py-1.5 rounded-lg" style={{ color: "var(--aa-primary)", backgroundColor: "color-mix(in srgb, var(--aa-primary) 10%, transparent)" }} data-testid={`offering-cta-${product.id}`}>
           {isExternal ? "Visit site" : "View details"}
           {isExternal ? <ExternalLink size={14} /> : <ArrowUpRight size={14} />}
         </div>

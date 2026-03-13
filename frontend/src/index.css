@@ -700,12 +700,17 @@ input[class*="rounded-full"]:focus {
 }
 
 /* ── Button ripple effect ────────────────────────────────── */
-.aa-btn-ripple {
+/* Applied to aa-btn-ripple class AND any button with inline --aa-primary background */
+.aa-btn-ripple,
+button.btn-primary,
+.btn-primary {
   position: relative;
   overflow: hidden;
   transform: translateZ(0);
 }
-.aa-btn-ripple::after {
+.aa-btn-ripple::after,
+button.btn-primary::after,
+.btn-primary::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -715,8 +720,11 @@ input[class*="rounded-full"]:focus {
   border-radius: inherit;
   opacity: 0;
   transition: none;
+  pointer-events: none;
 }
-.aa-btn-ripple:active::after {
+.aa-btn-ripple:active::after,
+button.btn-primary:active::after,
+.btn-primary:active::after {
   transform: scale(2.5);
   opacity: 0;
   transition: transform 0.45s cubic-bezier(.4,0,.2,1), opacity 0.45s ease-out;
