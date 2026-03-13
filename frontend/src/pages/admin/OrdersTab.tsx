@@ -37,7 +37,7 @@ const PAYMENT_METHODS_FALLBACK = ["card", "bank_transfer", "offline", "manual"];
 
 export function OrdersTab() {
   const { user: authUser } = useAuth();
-  const isPlatformAdmin = authUser?.role === "platform_admin";
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
   const [orders, setOrders] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [orderItems, setOrderItems] = useState<any[]>([]);

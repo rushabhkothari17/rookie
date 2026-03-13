@@ -21,7 +21,7 @@ import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
 export function ProductsTab() {
   const { user: authUser } = useAuth();
-  const isPlatformAdmin = authUser?.role === "platform_admin";
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
   const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [activeSubTab, setActiveSubTab] = useState("products");
   const navigate = useNavigate();

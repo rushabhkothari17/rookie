@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantSwitcher";
@@ -79,6 +79,40 @@ const SideTab = ({ value, label, testId }: { value: string; label: string; testI
   );
 };
 
+/** Map every tab value → the section it belongs to */
+const TAB_SECTIONS: Record<string, string> = {
+  tenants: "platform", plans: "platform", "partner-subscriptions": "platform",
+  "partner-orders": "platform", "partner-submissions": "platform",
+  "billing-settings": "platform", currencies: "platform",
+  "plan-billing": "my-billing", "my-subscriptions": "my-billing",
+  "my-orders": "my-billing", "my-submissions": "my-billing",
+  users: "people", customers: "people",
+  catalog: "commerce", filters: "commerce", subscriptions: "commerce",
+  orders: "commerce", enquiries: "commerce",
+  resources: "content", documents: "content",
+  "org-info": "settings", taxes: "settings", "auth-pages": "settings",
+  "forms-tab": "settings", "email-templates": "settings",
+  references: "settings", domains: "settings",
+  integrations: "integrations", "integration-requests": "integrations",
+  api: "integrations", webhooks: "integrations", sync: "integrations",
+};
+
+/** Accordion section header for the admin sidebar */
+const SectionHeader = ({
+  label, sectionId, expanded, onToggle,
+}: { label: string; sectionId: string; expanded: boolean; onToggle: (id: string) => void }) => (
+  <button
+    type="button"
+    onClick={() => onToggle(sectionId)}
+    className="w-full flex items-center justify-between px-3 pt-4 pb-1.5 group select-none"
+    aria-expanded={expanded}
+    data-testid={`admin-section-${sectionId}`}
+  >
+    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-500 transition-colors">{label}</span>
+    <ChevronDown size={12} className={`text-slate-400 transition-transform duration-200 group-hover:text-slate-500 ${expanded ? "" : "-rotate-90"}`} />
+  </button>
+);
+
 export default function Admin() {
   const { user: authUser, permissions } = useAuth();
   const ws = useWebsite();
@@ -128,6 +162,17 @@ export default function Admin() {
     try { return localStorage.getItem("admin_active_tab") || "customers"; } catch { return "customers"; }
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Accordion: expand the section that contains the active tab; only one open at a time
+  const [expandedSection, setExpandedSection] = useState<string>(() => {
+    const tab = (() => { try { return localStorage.getItem("admin_active_tab") || "customers"; } catch { return "customers"; } })();
+    return TAB_SECTIONS[tab] || "people";
+  });
+  useEffect(() => {
+    const s = TAB_SECTIONS[activeTab];
+    if (s) setExpandedSection(s);
+  }, [activeTab]);
+  const toggleSection = (id: string) => setExpandedSection(prev => prev === id ? "" : id);
 
   useEffect(() => {
     try { localStorage.setItem("admin_active_tab", activeTab); } catch {}
@@ -206,86 +251,120 @@ export default function Admin() {
           <TooltipProvider delayDuration={350}>
           <ActiveTabCtx.Provider value={activeTab}>
           <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
-            {/* Platform — only for platform_admin when NOT viewing as a tenant */}
+            {/* ── PLATFORM section (platform_admin only, not viewing as tenant) ── */}
             {showPartnerOrgs && (
               <>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Platform</p>
-                <SideTab value="tenants" testId="admin-tab-tenants" label="Partner Orgs" />
-                <SideTab value="plans" testId="admin-tab-plans" label="Plans" />
-                <SideTab value="partner-subscriptions" testId="admin-tab-partner-subscriptions" label="Partner Subscriptions" />
-                <SideTab value="partner-orders" testId="admin-tab-partner-orders" label="Partner Orders" />
-                <SideTab value="partner-submissions" testId="admin-tab-partner-submissions" label="Partner Submissions" />
-                <SideTab value="billing-settings" testId="admin-tab-billing-settings" label="Billing Settings" />
-                {authUser?.role === "platform_super_admin" && (
-                  <SideTab value="currencies" testId="admin-tab-currencies" label="Supported Currencies" />
+                <SectionHeader label="Platform" sectionId="platform" expanded={expandedSection === "platform"} onToggle={toggleSection} />
+                {expandedSection === "platform" && (
+                  <>
+                    <SideTab value="tenants" testId="admin-tab-tenants" label="Partner Orgs" />
+                    <SideTab value="plans" testId="admin-tab-plans" label="Plans" />
+                    <SideTab value="partner-subscriptions" testId="admin-tab-partner-subscriptions" label="Partner Subscriptions" />
+                    <SideTab value="partner-orders" testId="admin-tab-partner-orders" label="Partner Orders" />
+                    <SideTab value="partner-submissions" testId="admin-tab-partner-submissions" label="Partner Submissions" />
+                    <SideTab value="billing-settings" testId="admin-tab-billing-settings" label="Billing Settings" />
+                    {authUser?.role === "platform_super_admin" && (
+                      <SideTab value="currencies" testId="admin-tab-currencies" label="Supported Currencies" />
+                    )}
+                  </>
                 )}
               </>
             )}
 
-            {/* My Billing — only for partner admins, shown ABOVE People */}
+            {/* ── MY BILLING section (partner admins only) ── */}
             {isPartnerAdmin && (
               <>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">My Billing</p>
-                <SideTab value="plan-billing" testId="admin-tab-plan-billing" label="Plan &amp; Billing" />
-                <SideTab value="my-subscriptions" testId="admin-tab-my-subscriptions" label="My Subscriptions" />
-                <SideTab value="my-orders" testId="admin-tab-my-orders" label="My Orders" />
-                <SideTab value="my-submissions" testId="admin-tab-my-submissions" label="My Submissions" />
+                <SectionHeader label="My Billing" sectionId="my-billing" expanded={expandedSection === "my-billing"} onToggle={toggleSection} />
+                {expandedSection === "my-billing" && (
+                  <>
+                    <SideTab value="plan-billing" testId="admin-tab-plan-billing" label="Plan &amp; Billing" />
+                    <SideTab value="my-subscriptions" testId="admin-tab-my-subscriptions" label="My Subscriptions" />
+                    <SideTab value="my-orders" testId="admin-tab-my-orders" label="My Orders" />
+                    <SideTab value="my-submissions" testId="admin-tab-my-submissions" label="My Submissions" />
+                  </>
+                )}
               </>
             )}
 
-            {/* People */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">People</p>
-            {(isSuperAdmin || hasModule("users")) && (
-              <SideTab value="users" testId="admin-tab-users" label="Users" />
+            {/* ── PEOPLE section ── */}
+            {(isSuperAdmin || hasModule("users") || hasModule("customers")) && (
+              <>
+                <SectionHeader label="People" sectionId="people" expanded={expandedSection === "people"} onToggle={toggleSection} />
+                {expandedSection === "people" && (
+                  <>
+                    {(isSuperAdmin || hasModule("users")) && (
+                      <SideTab value="users" testId="admin-tab-users" label="Users" />
+                    )}
+                    {hasModule("customers") && <SideTab value="customers" testId="admin-tab-customers" label="Customers" />}
+                  </>
+                )}
+              </>
             )}
-            {hasModule("customers") && <SideTab value="customers" testId="admin-tab-customers" label="Customers" />}
 
-            {/* Commerce */}
+            {/* ── COMMERCE section ── */}
             {(hasModule("orders") || hasModule("subscriptions") || hasModule("products")) && (
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
+              <>
+                <SectionHeader label="Commerce" sectionId="commerce" expanded={expandedSection === "commerce"} onToggle={toggleSection} />
+                {expandedSection === "commerce" && (
+                  <>
+                    {hasModule("products") && <SideTab value="catalog" testId="admin-tab-catalog" label="Products" />}
+                    {hasModule("products") && <SideTab value="filters" testId="admin-tab-filters" label="Filters" />}
+                    {hasModule("subscriptions") && <SideTab value="subscriptions" testId="admin-tab-subscriptions" label="Subscriptions" />}
+                    {hasModule("orders") && <SideTab value="orders" testId="admin-tab-orders" label="Orders" />}
+                    {hasModule("customers") && <SideTab value="enquiries" testId="admin-tab-enquiries" label="Enquiries" />}
+                  </>
+                )}
+              </>
             )}
-            {hasModule("products") && <SideTab value="catalog" testId="admin-tab-catalog" label="Products" />}
-            {hasModule("products") && <SideTab value="filters" testId="admin-tab-filters" label="Filters" />}
-            {hasModule("subscriptions") && <SideTab value="subscriptions" testId="admin-tab-subscriptions" label="Subscriptions" />}
-            {hasModule("orders") && <SideTab value="orders" testId="admin-tab-orders" label="Orders" />}
-            {hasModule("customers") && <SideTab value="enquiries" testId="admin-tab-enquiries" label="Enquiries" />}
 
-            {/* Content */}
+            {/* ── CONTENT section ── */}
             {hasModule("content") && (
               <>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
-                <SideTab value="resources" testId="admin-tab-resources" label="Resources" />
-                <SideTab value="documents" testId="admin-tab-documents" label="Documents" />
+                <SectionHeader label="Content" sectionId="content" expanded={expandedSection === "content"} onToggle={toggleSection} />
+                {expandedSection === "content" && (
+                  <>
+                    <SideTab value="resources" testId="admin-tab-resources" label="Resources" />
+                    <SideTab value="documents" testId="admin-tab-documents" label="Documents" />
+                  </>
+                )}
               </>
             )}
 
-            {/* Website & Settings */}
+            {/* ── SETTINGS section ── */}
             {hasModule("settings") && (
               <>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
-                <SideTab value="org-info" testId="admin-tab-org-info" label="Organization Info" />
-                <SideTab value="taxes" testId="admin-tab-taxes" label="Taxes" />
-                <SideTab value="auth-pages" testId="admin-tab-auth-pages" label="Auth &amp; Pages" />
-                <SideTab value="forms-tab" testId="admin-tab-forms" label="Forms" />
-                <SideTab value="email-templates" testId="admin-tab-email-templates" label="Email Templates" />
-                <SideTab value="references" testId="admin-tab-references" label="References" />
-                <SideTab value="domains" testId="admin-tab-domains" label="Custom Domains" />
+                <SectionHeader label="Settings" sectionId="settings" expanded={expandedSection === "settings"} onToggle={toggleSection} />
+                {expandedSection === "settings" && (
+                  <>
+                    <SideTab value="org-info" testId="admin-tab-org-info" label="Organization Info" />
+                    <SideTab value="taxes" testId="admin-tab-taxes" label="Taxes" />
+                    <SideTab value="auth-pages" testId="admin-tab-auth-pages" label="Auth &amp; Pages" />
+                    <SideTab value="forms-tab" testId="admin-tab-forms" label="Forms" />
+                    <SideTab value="email-templates" testId="admin-tab-email-templates" label="Email Templates" />
+                    <SideTab value="references" testId="admin-tab-references" label="References" />
+                    <SideTab value="domains" testId="admin-tab-domains" label="Custom Domains" />
+                  </>
+                )}
               </>
             )}
 
-            {/* Integrations */}
+            {/* ── INTEGRATIONS section ── */}
             {hasModule("integrations") && (
               <>
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Integrations</p>
-                <SideTab value="integrations" testId="admin-tab-integrations" label="Connect Services" />
+                <SectionHeader label="Integrations" sectionId="integrations" expanded={expandedSection === "integrations"} onToggle={toggleSection} />
+                {expandedSection === "integrations" && (
+                  <>
+                    <SideTab value="integrations" testId="admin-tab-integrations" label="Connect Services" />
+                    {isPlatformAdmin && (
+                      <SideTab value="integration-requests" testId="admin-tab-integration-requests" label="Integration Requests" />
+                    )}
+                    <SideTab value="api" testId="admin-tab-api" label="API" />
+                    {hasModule("webhooks") && <SideTab value="webhooks" testId="admin-tab-webhooks" label="Webhooks" />}
+                    {hasModule("logs") && <SideTab value="sync" testId="admin-tab-sync" label="Logs" />}
+                  </>
+                )}
               </>
             )}
-            {hasModule("integrations") && isPlatformAdmin && (
-              <SideTab value="integration-requests" testId="admin-tab-integration-requests" label="Integration Requests" />
-            )}
-            {hasModule("integrations") && <SideTab value="api" testId="admin-tab-api" label="API" />}
-            {hasModule("webhooks") && <SideTab value="webhooks" testId="admin-tab-webhooks" label="Webhooks" />}
-            {hasModule("logs") && <SideTab value="sync" testId="admin-tab-sync" label="Logs" />}
 
           </TabsList>
           </ActiveTabCtx.Provider>

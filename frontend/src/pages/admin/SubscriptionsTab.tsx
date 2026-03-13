@@ -230,9 +230,9 @@ export function SubscriptionsTab() {
     }).catch(() => {});
     load(1);
     api.get("/admin/products-all?per_page=500").then(r => {
-      // Only show active, non-deleted subscription products
+      // Show all active, non-deleted products in manual subscription (not just "subscription" type)
       const allProds = r.data.products || [];
-      setProducts(allProds.filter((p: any) => !p.deleted_at && p.is_active !== false && p.pricing_type === "subscription"));
+      setProducts(allProds.filter((p: any) => !p.deleted_at && p.is_active !== false));
     }).catch(() => {});
     api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
   }, [emailFilter, statusFilter, paymentFilter, subNumberFilter, processorIdFilter, planFilter, currencyFilter, amountRange, taxRange, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);
