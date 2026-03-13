@@ -140,6 +140,16 @@ Build a white-label service commerce platform with:
 - Filters tab: updated to use AdminPageHeader + size="sm" buttons, matches Products tab styling
 - Verified by testing agent iteration_267.json — 7/8 tests PASS, gap bug fixed post-test
 
+### Phase 6: Form Size & Animation Polish (March 2026)
+- Reduced all admin form inputs from h-11 (44px) → h-9 (36px) via `input.jsx` and `select.jsx` base component changes
+- Reduced UFR pill inputs from h-12 (48px) → h-9 (compact) / h-10 (full) — size-aware based on `compact` prop
+- Reduced AddressFieldRenderer inputs from h-12 (48px) → h-9 (compact) / h-10 (full) — same pattern
+- Added `dialogIn` animation to all dialogs (`[role='dialog'] > div`) via `index.css`
+- Enhanced `focusGlow` animation (more visible pulse)
+- Auth pages (Login `.auth-input` = 48px, ForgotPassword explicit `h-11` = 44px) unaffected
+- Verified via testing agent iteration_270 — 8/8 tests PASS
+- Verified `store_name → tenants.name` sync via curl: PUT /api/admin/settings updates both `app_settings.store_name` AND `tenants.name` in one operation (settings.py line 82-83)
+
 ## Prioritized Backlog
 
 ### P0 — Critical (None currently)
