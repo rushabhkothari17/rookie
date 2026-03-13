@@ -16,6 +16,16 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Feb 2026 - Password Reset Link + Product Page Audit
+- **Admin-Initiated Password Reset Link** (was sending code-only, now sends clickable link):
+  - New `admin_password_reset` email template with "Set New Password" button and `{{reset_link}}` variable
+  - `customers.py` + `users.py`: build `reset_link = {APP_URL}/forgot-password?email=...&code=...&partner=...`, use new trigger
+  - `ForgotPassword.tsx`: reads `?email`, `?code`, `?partner` from URL params, skips to set-password step, hides code field when pre-filled
+- **Product Page Audit — card_description removed from detail pages**:
+  - `ShowcaseLayout.tsx`: hero subtitle now uses `product.tagline` (not `card_description`)
+  - `ApplicationLayout.tsx`: overview intro now uses `product.tagline` (not `card_description`)
+  - `ProductHero.tsx` (used by Classic): fallback chain fixed from `description_long || tagline || short_description` → `tagline || short_description`
+
 ### Session: Feb 2026 - Product Layout Standardization & Admin Dark Mode
 - **P0 Complete: All Product Page Layouts Standardized** (all 4 non-standard layouts rewritten):
   - `QuickBuyLayout.tsx`: Removed `slice(0,4)` question cap, replaced local `formatCurrency` with shared utils, replaced `bg-blue-600` with `var(--aa-primary)`, added free/subscription indicators, ReactMarkdown for custom sections, all sdp_* labels from WebsiteContext
