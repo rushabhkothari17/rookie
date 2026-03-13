@@ -1,99 +1,207 @@
 {
-  "design_guidelines": {
-    "project_name": "SaaS Store Filter Redesign",
-    "theme_strategy": {
-      "archetype": "Swiss & High-Contrast (Modified for SaaS)",
-      "primary_color": "#0f172a",
-      "accent_color": "#1e40af",
-      "background_color": "#f8fafc",
-      "font_family_headings": "Manrope, sans-serif",
-      "font_family_body": "Inter, sans-serif"
-    },
-    "layout": {
-      "sidebar_width": "w-64",
-      "container_spacing": "px-4 sm:px-6 lg:px-8",
-      "grid_gap": "gap-8",
-      "mobile_strategy": "Sidebar moves to Sheet (Drawer) on mobile"
-    },
-    "typography": {
-      "section_headers": "text-sm font-semibold text-slate-900 uppercase tracking-wide font-manrope",
-      "filter_labels": "text-sm text-slate-600",
-      "input_text": "text-sm text-slate-900 font-inter",
-      "active_state_text": "font-medium text-slate-900",
-      "inactive_state_text": "text-slate-500 hover:text-slate-900"
-    },
-    "components": {
-      "sidebar": {
-        "container": "h-screen sticky top-0 border-r border-slate-200 bg-white/50 backdrop-blur-xl p-6 hidden lg:block overflow-y-auto no-scrollbar",
-        "section_spacing": "space-y-8",
-        "item_spacing": "space-y-3"
-      },
-      "category_nav": {
-        "item_base": "flex items-center justify-between w-full px-3 py-2 rounded-md text-sm transition-all duration-200 group",
-        "item_active": "bg-slate-100 text-slate-900 font-medium shadow-sm",
-        "item_inactive": "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
-        "badge": "text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full group-hover:bg-white group-hover:text-slate-700 transition-colors"
-      },
-      "price_filter": {
-        "container": "space-y-4",
-        "input_group": "flex items-center gap-2",
-        "currency_select": "w-[70px] flex-shrink-0 h-9",
-        "input": "h-9 bg-white border-slate-200 focus:border-slate-900 focus:ring-slate-900/20 transition-all text-xs"
-      },
-      "sort_dropdown": {
-        "trigger": "h-9 min-w-[180px] bg-white border-slate-200 hover:bg-slate-50 text-slate-700 font-medium",
-        "content": "bg-white border-slate-100 shadow-xl p-1 rounded-lg"
-      },
-      "active_filters": {
-        "container": "flex flex-wrap items-center gap-2 mb-6",
-        "pill": "inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full border border-slate-200 hover:bg-slate-200 transition-colors cursor-pointer",
-        "clear_button": "text-xs text-slate-500 hover:text-slate-900 hover:underline transition-colors ml-2"
-      }
-    },
-    "visual_enhancements": {
-      "shadows": {
-        "dropdown": "0 4px 20px -2px rgba(15, 23, 42, 0.1)",
-        "card_hover": "0 10px 40px -10px rgba(15, 23, 42, 0.05)"
-      },
-      "borders": {
-        "default": "border border-slate-200",
-        "active": "border-slate-900"
-      },
-      "transitions": {
-        "hover": "transition-all duration-200 ease-out"
-      }
-    },
-    "implementation_steps": [
-      {
-        "step": 1,
-        "description": "Refactor Sidebar Structure",
-        "details": "Create a `FilterSidebar` component. Use `aside` tag. Implement sticky positioning. Use `Accordion` for collapsible sections if needed, but keep it open by default for visibility."
-      },
-      {
-        "step": 2,
-        "description": "Implement Category Navigation",
-        "details": "Replace old links with the new 'Button-like' list items. Ensure 'All' is distinct or top of list. Add counts using Badge component."
-      },
-      {
-        "step": 3,
-        "description": "Implement Price Filter",
-        "details": "Use Shadcn `Select` for currency. Use two `Input` components for Min/Max. Add a small 'Apply' button with `size='sm'` and `variant='outline'`."
-      },
-      {
-        "step": 4,
-        "description": "Implement Sort Control",
-        "details": "Place above the product grid. Use Shadcn `Select`. Align to the right. Options: 'Name (A-Z)', 'Name (Z-A)', 'Price (Low-High)', 'Price (High-Low)'."
-      },
-      {
-        "step": 5,
-        "description": "Mobile Responsiveness",
-        "details": "Hide Sidebar on mobile. Add a 'Filters' button that opens a Shadcn `Sheet` containing the `FilterSidebar` component."
-      }
+  "project_name": "Automate Accounts - Modern SaaS Overhaul",
+  "version": "2.0.0",
+  "design_philosophy": {
+    "core_principles": [
+      "Fusion over Imitation: Mix Fintech precision with Cyberpunk atmospherics.",
+      "Emotion First: Every interaction must feel 'alive' via micro-interactions and glow.",
+      "Content is King: Data density for Admins, storytelling for Storefronts.",
+      "Dark Mode First Strategy: The 'Midnight Tech' theme is the flagship aesthetic."
     ],
-    "universal_guidelines": {
-      "do_not_use": ["gradients for text", "generic blue default buttons", "native select elements"],
-      "must_use": ["Shadcn components for interactivity", "Manrope for headings", "Inter for body", "Slate-900 for primary actions"],
-      "spacing_rule": "Use generous padding. Minimum p-6 inside the sidebar container."
+    "anti_patterns": [
+      "No default browser scrollbars.",
+      "No solid flat colors without texture or noise.",
+      "No generic 'Bootstrap' grids.",
+      "No hardcoded hex values in components."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "hierarchy": {
+      "display": "text-5xl md:text-7xl font-bold tracking-tight leading-none (Manrope)",
+      "h1": "text-4xl md:text-5xl font-bold tracking-tight (Manrope)",
+      "h2": "text-3xl font-semibold tracking-tight (Manrope)",
+      "h3": "text-2xl font-semibold (Manrope)",
+      "body_lg": "text-lg leading-relaxed (Inter)",
+      "body_base": "text-base leading-relaxed text-[var(--aa-text)] (Inter)",
+      "caption": "text-sm text-[var(--aa-muted)] (Inter)",
+      "code": "font-mono text-sm (JetBrains Mono)"
+    },
+    "rules": [
+      "Headings (h1-h3) must always use Manrope.",
+      "All financial data, ID numbers, and code snippets must use JetBrains Mono.",
+      "Body text must use Inter for maximum legibility at small sizes.",
+      "Use 'tracking-tight' on all headings larger than 24px."
+    ]
+  },
+  "themes": {
+    "presets": {
+      "midnight_tech": {
+        "name": "Midnight Tech",
+        "type": "dark",
+        "variables": {
+          "--aa-primary": "#0a0e1a",
+          "--aa-primary-fg": "#e2e8f0",
+          "--aa-accent": "#3b82f6",
+          "--aa-bg": "#05070a",
+          "--aa-card": "rgba(17, 24, 39, 0.7)",
+          "--aa-card-border": "rgba(59, 130, 246, 0.2)",
+          "--aa-surface": "#111827",
+          "--aa-text": "#e2e8f0",
+          "--aa-muted": "#94a3b8",
+          "--aa-border": "#1e293b",
+          "--aa-danger": "#ef4444",
+          "--aa-success": "#10b981",
+          "--aa-warning": "#f59e0b",
+          "--aa-glow": "rgba(59, 130, 246, 0.5)"
+        },
+        "description": "Cyberpunk-inspired deep dark mode with neon blue accents and glassmorphism."
+      },
+      "slate_pro": {
+        "name": "Slate Pro",
+        "type": "light",
+        "variables": {
+          "--aa-primary": "#0f172a",
+          "--aa-primary-fg": "#ffffff",
+          "--aa-accent": "#2563eb",
+          "--aa-bg": "#f8fafc",
+          "--aa-card": "#ffffff",
+          "--aa-card-border": "#e2e8f0",
+          "--aa-surface": "#f1f5f9",
+          "--aa-text": "#0f172a",
+          "--aa-muted": "#64748b",
+          "--aa-border": "#e2e8f0",
+          "--aa-danger": "#dc2626",
+          "--aa-success": "#16a34a",
+          "--aa-warning": "#d97706",
+          "--aa-glow": "rgba(37, 99, 235, 0.2)"
+        },
+        "description": "Clean, high-contrast professional light mode. The current default evolved."
+      },
+      "ocean_deep": {
+        "name": "Ocean Deep",
+        "type": "dark",
+        "variables": {
+          "--aa-primary": "#042f2e",
+          "--aa-primary-fg": "#ccfbf1",
+          "--aa-accent": "#06b6d4",
+          "--aa-bg": "#020617",
+          "--aa-card": "#0f172a",
+          "--aa-card-border": "#115e59",
+          "--aa-surface": "#134e4a",
+          "--aa-text": "#ccfbf1",
+          "--aa-muted": "#5eead4",
+          "--aa-border": "#115e59",
+          "--aa-danger": "#fb7185",
+          "--aa-success": "#34d399",
+          "--aa-warning": "#fbbf24",
+          "--aa-glow": "rgba(6, 182, 212, 0.4)"
+        },
+        "description": "Teal and Cyan dominant modern dark theme. Deep and aquatic."
+      }
+    },
+    "css_implementation_guide": "The implementation must map Shadcn's HSL variables (e.g., --primary, --card) to these --aa-* variables dynamically or via a color utility helper, as Tailwind expects HSL for alpha transparency support. For the 'Midnight Tech' glassmorphism, use the alpha channel in the --aa-card variable."
+  },
+  "ui_components": {
+    "common_styles": {
+      "aa-card": "bg-[var(--aa-card)] border border-[var(--aa-card-border)] backdrop-blur-xl shadow-lg rounded-xl",
+      "aa-surface": "bg-[var(--aa-surface)] border border-[var(--aa-border)] rounded-lg",
+      "aa-glow": "shadow-[0_0_20px_var(--aa-glow)]",
+      "aa-badge-success": "bg-[var(--aa-success)]/10 text-[var(--aa-success)] border border-[var(--aa-success)]/20",
+      "aa-badge-danger": "bg-[var(--aa-danger)]/10 text-[var(--aa-danger)] border border-[var(--aa-danger)]/20",
+      "aa-badge-warning": "bg-[var(--aa-warning)]/10 text-[var(--aa-warning)] border border-[var(--aa-warning)]/20"
+    },
+    "component_specs": {
+      "Button": {
+        "style": "h-11 px-8 rounded-full font-manrope font-semibold transition-all duration-300",
+        "variants": {
+          "default": "bg-[var(--aa-primary)] text-[var(--aa-primary-fg)] hover:shadow-[0_8px_20px_var(--aa-glow)] hover:-translate-y-0.5 active:translate-y-0",
+          "outline": "border-2 border-[var(--aa-border)] hover:border-[var(--aa-accent)] hover:text-[var(--aa-accent)] bg-transparent",
+          "ghost": "hover:bg-[var(--aa-surface)] text-[var(--aa-muted)] hover:text-[var(--aa-text)]"
+        }
+      },
+      "Card": {
+        "base": "relative overflow-hidden transition-all duration-300",
+        "hover": "hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] hover:border-[var(--aa-accent)]/50 group"
+      },
+      "Input": {
+        "base": "h-12 rounded-full border border-[var(--aa-border)] bg-[var(--aa-bg)]/50 px-4 transition-all",
+        "focus": "focus:border-[var(--aa-accent)] focus:ring-4 focus:ring-[var(--aa-accent)]/10 outline-none"
+      },
+      "Sidebar": {
+        "container": "border-r border-[var(--aa-border)] bg-[var(--aa-card)]/95 backdrop-blur-md",
+        "item": "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-[var(--aa-muted)] hover:text-[var(--aa-text)] hover:bg-[var(--aa-surface)]",
+        "item_active": "bg-[var(--aa-accent)]/10 text-[var(--aa-accent)] font-medium border-l-2 border-[var(--aa-accent)]"
+      },
+      "Table": {
+        "header": "bg-[var(--aa-surface)] text-[var(--aa-muted)] uppercase text-xs font-mono tracking-wider",
+        "row": "border-b border-[var(--aa-border)] hover:bg-[var(--aa-surface)]/50 transition-colors"
+      }
     }
-  }
+  },
+  "animations": {
+    "library": "framer-motion",
+    "patterns": {
+      "staggered_list": {
+        "container": {
+          "hidden": { "opacity": 0 },
+          "show": {
+            "opacity": 1,
+            "transition": { "staggerChildren": 0.05 }
+          }
+        },
+        "item": {
+          "hidden": { "opacity": 0, "y": 20 },
+          "show": { "opacity": 1, "y": 0 }
+        }
+      },
+      "page_transition": {
+        "initial": { "opacity": 0, "y": 10, "filter": "blur(10px)" },
+        "animate": { "opacity": 1, "y": 0, "filter": "blur(0px)" },
+        "exit": { "opacity": 0, "y": -10 },
+        "transition": { "duration": 0.4, "ease": [0.22, 1, 0.36, 1] }
+      },
+      "hover_lift": {
+        "whileHover": { "y": -4, "transition": { "duration": 0.2 } }
+      },
+      "active_glow": {
+        "animate": {
+          "boxShadow": [
+            "0 0 0px var(--aa-glow)",
+            "0 0 10px var(--aa-glow)",
+            "0 0 0px var(--aa-glow)"
+          ]
+        },
+        "transition": { "duration": 2, "repeat": "Infinity" }
+      }
+    },
+    "recommendations": [
+      "Use 'AnimatePresence' for route transitions.",
+      "Wrap lists in 'motion.ul' and items in 'motion.li' using the staggered pattern.",
+      "Add 'layout' prop to cards in grids to animate sorting/filtering smoothly."
+    ]
+  },
+  "assets": {
+    "icons": "lucide-react",
+    "icon_style": "stroke-width={1.5} className='text-[var(--aa-muted)] group-hover:text-[var(--aa-accent)] transition-colors'",
+    "grid_texture": "background-image: linear-gradient(var(--aa-border) 1px, transparent 1px), linear-gradient(90deg, var(--aa-border) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.03;"
+  },
+  "universal_guidelines": {
+    "color_usage": "Do NOT use direct hex codes in components. Always use 'var(--aa-*)'.",
+    "spacing": "Use 'gap-6' or 'gap-8' for dashboard grids. Use 'p-8' for cards. 'p-4' is too tight.",
+    "borders": "Use 'border-[var(--aa-border)]' for all structural borders.",
+    "accessibility": "Ensure '--aa-primary-fg' contrasts 4.5:1 against '--aa-primary'.",
+    "testing": "All interactive elements MUST have 'data-testid' attributes (kebab-case)."
+  },
+  "instructions_to_main_agent": [
+    "1. Update index.css to include the utility classes defined in 'ui_components.common_styles'.",
+    "2. Implement a ThemeManager context that applies the selected preset's variables to the :root element.",
+    "3. Replace all hardcoded 'bg-white', 'text-slate-900', etc. with 'bg-[var(--aa-card)]', 'text-[var(--aa-text)]'.",
+    "4. Refactor the Sidebar to support the 'Midnight Tech' glassmorphism style.",
+    "5. Ensure the Storefront Product Grid uses the staggered animation pattern."
+  ]
 }
