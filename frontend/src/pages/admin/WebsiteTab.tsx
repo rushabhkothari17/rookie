@@ -180,8 +180,8 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
       {!forcedSection && (
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Website Settings</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Manage all content, branding, forms, and integrations.</p>
+            <h2 className="text-xl font-bold" style={{ color: "var(--aa-text)" }}>Website Settings</h2>
+            <p className="text-sm mt-0.5" style={{ color: "var(--aa-muted)" }}>Manage all content, branding, forms, and integrations.</p>
           </div>
           <Button onClick={save} disabled={saving} data-testid="website-save-btn">
             {saving ? "Saving…" : "Save Changes"}
@@ -199,7 +199,12 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
                 <div className="space-y-0.5">
                   {group.items.map(item => (
                     <button key={item.key} type="button" onClick={() => setActiveSection(item.key)}
-                      className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${activeSection === item.key ? "bg-slate-900 text-white font-medium" : "text-slate-600 hover:bg-slate-100"}`}
+                      className={`w-full text-left px-3 py-2 text-sm rounded transition-colors`}
+                      style={{
+                        background: activeSection === item.key ? "var(--aa-primary)" : "transparent",
+                        color: activeSection === item.key ? "var(--aa-primary-fg)" : "var(--aa-muted)",
+                        fontWeight: activeSection === item.key ? 500 : 400,
+                      }}
                       data-testid={`website-section-${item.key}`}>
                       {item.label}
                     </button>
@@ -211,7 +216,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
         )}
 
         {/* Content panel */}
-        <div className="flex-1 min-w-0 border border-slate-100 rounded-xl p-6 bg-white space-y-5">
+        <div className="flex-1 min-w-0 rounded-xl p-6 space-y-5" style={{ background: "var(--aa-card)", border: "1px solid var(--aa-border)" }}>
           {displaySection === "branding" && (
             <OrgInfoSection
               ws={ws} branding={branding} s={s} b={b}

@@ -420,16 +420,25 @@ function _applyBrandingToDOM(s: Record<string, any>) {
   if (s.danger_color) { set("--aa-danger", s.danger_color); setHsl("--destructive", s.danger_color); }
   if (s.success_color) set("--aa-success", s.success_color);
   if (s.warning_color) set("--aa-warning", s.warning_color);
-  if (s.background_color) { set("--aa-bg", s.background_color); setHsl("--background", s.background_color); }
+  if (s.background_color) {
+    set("--aa-bg", s.background_color);
+    setHsl("--background", s.background_color);
+    // Auto-toggle dark mode class based on background luminance
+    const bgLum = _luminance(s.background_color);
+    if (bgLum < 0.08) {
+      document.documentElement.classList.add("aa-dark");
+    } else {
+      document.documentElement.classList.remove("aa-dark");
+    }
+  }
   if (s.card_color) { set("--aa-card", s.card_color); setHsl("--card", s.card_color); }
   if (s.surface_color) set("--aa-surface", s.surface_color);
   if (s.text_color) { set("--aa-text", s.text_color); setHsl("--foreground", s.text_color); setHsl("--card-foreground", s.text_color); }
   if (s.border_color) {
     set("--aa-border", s.border_color);
+    set("--aa-card-border", s.border_color);
     setHsl("--border", s.border_color);
     setHsl("--input", s.border_color);
-    // card border falls back to border_color if card_color not set
-    if (!s.card_color) set("--aa-card-border", s.border_color);
   }
   if (s.card_color && s.border_color) set("--aa-card-border", s.border_color);
   if (s.muted_color) { set("--aa-muted", s.muted_color); setHsl("--muted-foreground", s.muted_color); }

@@ -1,0 +1,84 @@
+{
+  "summary": "Comprehensive dark mode visual quality testing for Midnight Tech theme (iteration 275). All 10 test items tested. Dark mode works correctly for admin panel (sidebar + content), store page, hero sections, and table readability. Critical persistence issue found: dark mode does NOT persist after page refresh when aa_partner_code='AA' is in localStorage (which is the standard test environment setup) - because partner AA tenant has empty background_color so _applyBrandingToDOM never toggles .aa-dark. Dark mode DOES persist correctly when no partner code is set (platform tenant has dark colors saved).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "WebsiteContext _applyBrandingToDOM + multi-tenant persistence",
+        "issue": "Dark mode persistence fails when aa_partner_code='AA' is in localStorage. After saving Midnight Tech and refreshing, .aa-dark class is NOT restored because /api/website-settings?partner_code=AA returns empty background_color (AA partner tenant has no dark colors set). The .aa-dark toggle only fires when background_color is non-empty. Platform admin dark colors are saved to 'automate-accounts' tenant, not AA tenant. Without partner code: .aa-dark persists correctly. With partner_code=AA: .aa-dark=False after reload, --aa-bg=#f8fafc (reverts to light).",
+        "selector": "document.documentElement.classList.contains('aa-dark')",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Login page - email input not found",
+        "issue": "When testing /login without partner code (platform dark mode), the page shows the gateway (partner code entry page), not the actual login form. The email input is only accessible after entering a partner code. This is expected behavior but means the branded login form (with dark inputs) cannot be tested for the platform tenant alone. Minor issue: the .auth-input CSS class uses hardcoded background: rgba(255,255,255,0.96) which would show white in dark mode if not overridden by .aa-dark input selector. The .aa-dark input override does cover this: background-color: var(--aa-surface).",
+        "selector": "input[type='email']",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Store page dark mode hero",
+        "issues": [
+          "Hero section has a blank/lighter area in the top-right corner (the blurred decorative orbs appear as slightly lighter patches against the dark background). This is subtle but visible. May be intentional for depth effect.",
+          "When loading with partner_code=AA, the store shows LIGHT theme (not dark) because AA tenant has no dark color settings. Dark mode only works for platform tenant (no partner code)."
+        ]
+      },
+      {
+        "screen": "Admin sidebar section labels",
+        "issues": [
+          "Section labels (PLATFORM, PEOPLE, SETTINGS etc.) use text-slate-400 which is overridden to color(srgb 0.545098 0.580392 0.619608 / 0.75) in dark mode. This is approximately rgba(139,148,158,0.75) - readable but on the faint side for uppercase section labels. Not critical."
+        ]
+      }
+    ]
+  },
+  "test_results_detail": {
+    "T1_midnight_tech_applies_immediately": "PASS - Clicking Midnight Tech preset immediately applies dark colors: --aa-bg=#0a0f1a, --aa-card=#161b22, --aa-text=#e6edf3, .aa-dark=true",
+    "T2_dark_class_on_html": "PASS - document.documentElement.classList.contains('aa-dark') = true after Midnight Tech applied",
+    "T3_admin_panel_full_dark": "PASS - Both sidebar (background: var(--aa-card) = rgb(22,27,34)) and content panel (background: var(--aa-card) = rgb(22,27,34)) are dark. Screenshots confirm full dark admin panel.",
+    "T4_hero_dot_pattern": "PASS - .aa-grid-texture::before uses radial-gradient(circle at 1px 1px ...) with 28px 28px background-size. Dot pattern (not grid lines) confirmed in CSS stylesheet rules. Hero element found with correct dimensions.",
+    "T5_hero_text_readable": "PASS - Admin hero badge text: rgb(255,255,255), Hero h1: rgb(255,255,255). Both use var(--aa-primary-fg) inline style which is #ffffff for dark primary.",
+    "T6_users_table_readable": "PASS - Table cells: color rgb(230,237,243) on transparent bg (dark surface shows through). Headers: color rgb(139,148,158) on bg rgb(28,35,51). No black-on-black cells (0/14 cells with contrast issue).",
+    "T7_settings_saved": "PASS - 'Settings saved' toast appeared after clicking Save Changes with Midnight Tech active.",
+    "T8_persistence_without_partner_code": "PASS - Without aa_partner_code in localStorage: after reload .aa-dark=true, --aa-bg=#0a0f1a (persists correctly).",
+    "T8_persistence_with_partner_code": "FAIL - With aa_partner_code='AA': after reload .aa-dark=false, --aa-bg=#f8fafc (light theme). Root cause: /api/website-settings?partner_code=AA returns empty background_color for AA tenant.",
+    "T9_slate_pro_resets_light": "PASS - Clicking Slate Pro: .aa-dark=false, --aa-bg=#f8fafc. Clean light theme restoration.",
+    "T10_ocean_deep": "PASS - Ocean Deep: .aa-dark=true (luminance of #071521 < 0.08), --aa-bg=#071521, accent=#06b6d4 (teal). Dark mode applies correctly.",
+    "store_dark_mode": "PASS (without partner code) - Store page: .aa-dark=true, product cards rgb(22,27,34) bg with rgb(230,237,243) text, search input dark bg with light text. Hero has aa-grid-texture. FAIL (with partner code AA) - store shows light theme.",
+    "login_gateway_dark": "PASS - Gateway page in dark mode: dark background, white text, partner code input styled dark.",
+    "admin_sidebar_AND_content_dark": "PASS - Both sidebar and content use var(--aa-card) CSS variable which resolves to #161b22 in Midnight Tech dark mode."
+  },
+  "rca_persistence_bug": {
+    "issue": "Dark mode persistence fails when loading with partner code AA",
+    "root_cause": "1. Platform admin (tenant_id=null → DEFAULT_TENANT_ID='automate-accounts') saves Midnight Tech colors to 'automate-accounts' tenant settings. 2. When page loads with aa_partner_code='AA' in localStorage, WebsiteContext calls /api/website-settings?partner_code=AA which loads AA partner tenant's settings. 3. AA partner tenant has primary_color='#2563eb' but empty background_color. 4. In _applyBrandingToDOM, the .aa-dark toggle is inside 'if (s.background_color)' block - when background_color is empty, this block is skipped, so .aa-dark is never toggled. 5. Result: page reverts to light theme after reload when partner code AA is active.",
+    "reproduction": "1. Set localStorage.setItem('aa_partner_code', 'AA'). 2. Login as platform_super_admin. 3. Go to admin?tab=org-info. 4. Click Midnight Tech preset. 5. Verify .aa-dark=true. 6. Click Save Changes. 7. Reload page. 8. .aa-dark=false (light theme shown).",
+    "fix_options": [
+      "Option A (Simple): In WebsiteContext _applyBrandingToDOM, always call _applyBrandingToDOM even if background_color is empty by using the DEFAULT_BG from CSS vars and checking against luminance. But this needs a fallback background_color.",
+      "Option B (Proper): When loading website-settings with partner_code, if background_color is empty, merge in the parent/platform tenant settings. Add a fallback query to DEFAULT_TENANT_ID settings when partner has no custom background_color.",
+      "Option C (UI Fix): In _applyBrandingToDOM, use document.documentElement.style.getPropertyValue('--aa-bg') as fallback if s.background_color is empty, then apply luminance check on that. This would preserve the last-applied state."
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_275.json"],
+  "action_items": [
+    "CRITICAL: Fix dark mode persistence when aa_partner_code is set. The .aa-dark toggle is inside 'if (s.background_color)' block in _applyBrandingToDOM in WebsiteContext.tsx (line 423-432). When partner code tenant has empty background_color, dark mode is never toggled. Fix: either (a) fall back to platform tenant background_color when partner tenant has empty value, or (b) store the last applied dark-mode state in localStorage and restore on load regardless of partner code settings.",
+    "LOW: Login page input styling (auth-input class) uses hardcoded rgba(255,255,255,0.96) background. The .aa-dark input override covers most inputs but .auth-input class has its own hardcoded background. Verify that the .aa-dark input rule covers auth-input elements too (it does via 'input:not([type=color])' selector but confirm).",
+    "INFO: Hero section in store dark mode shows a blank/lighter area top-right from the blurred orb decorations. Consider reducing opacity of the orb divs in dark mode or making them subtler."
+  ],
+  "critical_code_review_comments": [
+    "BUG (HIGH): WebsiteContext.tsx _applyBrandingToDOM line 423: 'if (s.background_color) { ... document.documentElement.classList.add/remove(\"aa-dark\"); }'. When partner tenant has empty background_color, the .aa-dark toggle is skipped. On page reload with partner code, dark mode is lost. Fix: add else clause to handle empty background_color case OR persist the aa-dark preference in localStorage separately.",
+    "DESIGN: The multi-tenant branding system means platform admin's dark theme only applies to the DEFAULT_TENANT_ID ('automate-accounts'). Partner tenants (like AA) need their own dark color settings. This may be intended, but for the testing scenario where aa_partner_code='AA' is set, the platform admin cannot apply dark theme that persists. Documentation should clarify this.",
+    "CODE QUALITY: OrgInfoSection.tsx theme preset buttons still use hardcoded Tailwind classes (bg-white, border-slate-200, hover:bg-slate-50) instead of CSS variables. These are overridden by .aa-dark CSS rules, but it would be cleaner to use CSS variables directly. Not a bug since the .aa-dark overrides work."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "frontend": "80% (8/10 test items passing, 2 failing: persistence with partner code, login dark mode form not testable)"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Midnight Tech dark theme (iteration 275). Key finding: dark mode works correctly LIVE (clicking preset applies instantly) and PERSISTS when no partner code is set. Fails to persist when aa_partner_code='AA' because AA tenant has empty background_color. Test setup: to test dark mode persistence properly, do NOT set aa_partner_code in localStorage (or configure AA tenant with same dark colors). Auth: admin@automateaccounts.local / ChangeMe123!. CSS: .aa-dark class on html element is the key. aa-grid-texture uses radial-gradient (dot pattern). Visual quality confirmed good from screenshots: dark sidebar, dark content, readable table text (rgb(230,237,243) on dark bg), no black-on-black. Hero dot pattern confirmed in CSS."
+}

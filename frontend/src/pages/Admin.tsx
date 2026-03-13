@@ -118,10 +118,10 @@ export default function Admin() {
         <div className="relative space-y-3">
           <div className="flex items-center gap-2.5">
             <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{adminBadge}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: "var(--aa-primary-fg)", opacity: 0.6 }}>{adminBadge}</p>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">{adminTitle}</h1>
-          <p className="max-w-xl text-sm text-slate-300">{adminSubtitle}</p>
+          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--aa-primary-fg)" }}>{adminTitle}</h1>
+          <p className="max-w-xl text-sm" style={{ color: "var(--aa-primary-fg)", opacity: 0.7 }}>{adminSubtitle}</p>
         </div>
       </section>
 
@@ -140,7 +140,8 @@ export default function Admin() {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-slate-700 border-slate-200"
+            className="gap-2"
+            style={{ color: "var(--aa-text)", borderColor: "var(--aa-border)" }}
             onClick={() => setSidebarOpen(v => !v)}
             data-testid="admin-sidebar-toggle"
           >
