@@ -173,7 +173,13 @@ Build a white-label service commerce platform with:
 - **All endpoints tested**: 66 GET endpoints + 17 mutation (POST/PUT/DELETE) endpoints = 83 total, 100% PASS
 - **Includes**: request body schemas, response shapes, curl examples, field validation notes, error codes, quick-start test script
 
-### Phase 11: Futuristic CSS Variable Design System + Dark Mode (March 2026)
+### Phase 12: Dark Mode Deep Fixes (March 2026)
+- **Root cause fixed**: `.aa-bg` had hardcoded `linear-gradient(#ffffff, #f8fafc)` → replaced with CSS-variable radial gradients using `var(--aa-bg)`, `var(--aa-accent)`, `var(--aa-primary)`
+- **Shadcn deep integration**: `--muted`, `--secondary`, `--accent`, `--popover`, `--border` Shadcn CSS vars dynamically set to dark equivalents when `aa-dark` activated; light defaults restored on Slate Pro
+- **Store layout**: Removed `w-full` class conflict on sidebar aside; now uses clean `hidden md:block` pattern
+- **Midnight Tech palette redesigned**: Primary `#161b22` (hero) vs Background `#0d1117` (page) = 30-unit color difference = clear depth; Accent `#58a6ff` (GitHub-dark bright blue)
+- **Ocean Deep palette redesigned** with proper 3-layer depth
+- Tested via iteration_276 — **10/10 tests PASS** (page bg dark, admin full dark, store layout side-by-side, hero depth confirmed, Shadcn vars dark)
 - **New CSS variables**: `--aa-card`, `--aa-surface`, `--aa-primary-fg` (auto-luminance), `--aa-card-border`, `--aa-glow` (auto from accent), `--aa-text`, `--aa-muted`
 - **Global `.aa-dark` class**: Auto-toggled on `<html>` when background luminance < 0.08 — overrides ALL hardcoded Tailwind slate classes (bg-white, text-slate-*, border-slate-*, inputs, tables, badges, hover states)
 - **Dot pattern hero texture**: `radial-gradient` dots using `--aa-primary-fg` at 22% opacity (replaced harsh grid lines)
