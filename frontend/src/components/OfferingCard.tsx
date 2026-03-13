@@ -15,9 +15,11 @@ const fmtPrice = (amount: number, currency = "USD") =>
 /** Derive a minimum starting price from intake questions for data-driven pricing. */
 const getStartingPrice = (product: any): number | null => {
   const base = parseFloat(product.base_price) || 0;
+  // Treat explicitly-set base_price of 0 as a free product (not "no price")
+  const baseIsSet = product.base_price !== null && product.base_price !== undefined && product.base_price !== "";
   const schema = product.intake_schema_json;
   if (!schema) {
-    let starting = base > 0 ? base : null;
+    let starting = (base > 0 || (baseIsSet && base === 0)) ? base : null;
     if (starting !== null && product.price_rounding) {
       const nearest: Record<string, number> = {"25": 25, "50": 50, "100": 100};
       const n = nearest[String(product.price_rounding)];
@@ -46,7 +48,7 @@ const getStartingPrice = (product: any): number | null => {
     }
   }
 
-  if (base > 0 || hasPricedRequired) {
+  if (base > 0 || hasPricedRequired || (baseIsSet && base === 0)) {
     let starting = base + minAdd;
     if (product.price_rounding) {
       const nearest: Record<string, number> = {"25": 25, "50": 50, "100": 100};
