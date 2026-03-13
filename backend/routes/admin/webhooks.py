@@ -125,7 +125,15 @@ async def create_webhook(
 
     name = (payload.get("name") or "My Webhook").strip()[:120]
     secret = (payload.get("secret") or _gen_secret()).strip()
+    # Accept both full subscriptions format and shorthand events list
     subscriptions = payload.get("subscriptions") or []
+    if not subscriptions and payload.get("events"):
+        from services.webhook_service import _DEFAULT_FIELDS
+        subscriptions = [
+            {"event": e, "fields": _DEFAULT_FIELDS.get(e, [])}
+            for e in payload["events"]
+            if isinstance(e, str)
+        ]
     _validate_subscriptions(subscriptions)
 
     tid = tenant_id_of(admin)
@@ -186,6 +194,23 @@ async def update_webhook(
         updates["secret"] = payload["secret"].strip()
     if "subscriptions" in payload:
         subs = payload["subscriptions"] or []
+        # Accept shorthand events list too
+        if not subs and payload.get("events"):
+            from services.webhook_service import _DEFAULT_FIELDS
+            subs = [
+                {"event": e, "fields": _DEFAULT_FIELDS.get(e, [])}
+                for e in payload["events"]
+                if isinstance(e, str)
+            ]
+        _validate_subscriptions(subs)
+        updates["subscriptions"] = subs
+    elif "events" in payload:
+        from services.webhook_service import _DEFAULT_FIELDS
+        subs = [
+            {"event": e, "fields": _DEFAULT_FIELDS.get(e, [])}
+            for e in (payload["events"] or [])
+            if isinstance(e, str)
+        ]
         _validate_subscriptions(subs)
         updates["subscriptions"] = subs
 
@@ -263,6 +288,25 @@ async def test_webhook(
     }
     body = json.dumps(test_payload, default=str).encode()
     sig = _hmac.new(wh["secret"].encode(), body, hashlib.sha256).hexdigest()
+    delivery_id = make_id()
+
+    # Pre-create delivery record so it always appears in logs
+    await db.webhook_deliveries.insert_one({
+        "id": delivery_id,
+        "webhook_id": webhook_id,
+        "tenant_id": tenant_id_of(admin),
+        "event": event,
+        "payload": test_payload,
+        "attempts": 1,
+        "status": "pending",
+        "response_status": None,
+        "response_body": None,
+        "error": None,
+        "is_test": True,
+        "created_at": now_iso(),
+        "last_attempt_at": now_iso(),
+        "delivered_at": None,
+    })
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -273,13 +317,27 @@ async def test_webhook(
                     "Content-Type": "application/json",
                     "X-Webhook-Event": event,
                     "X-Webhook-Signature": f"sha256={sig}",
-                    "X-Webhook-Delivery": make_id(),
+                    "X-Webhook-Delivery": delivery_id,
                     "User-Agent": "AutomateAccounts-Webhook/1.0",
                 },
             )
-        return {"success": 200 <= resp.status_code < 300, "status_code": resp.status_code, "body": resp.text[:500]}
+        success = 200 <= resp.status_code < 300
+        await db.webhook_deliveries.update_one(
+            {"id": delivery_id},
+            {"$set": {
+                "status": "success" if success else "failed",
+                "response_status": resp.status_code,
+                "response_body": resp.text[:500],
+                **({"delivered_at": now_iso()} if success else {}),
+            }}
+        )
+        return {"success": success, "status_code": resp.status_code, "body": resp.text[:500], "delivery_id": delivery_id}
     except Exception as exc:
-        return {"success": False, "status_code": 0, "body": str(exc)[:300]}
+        await db.webhook_deliveries.update_one(
+            {"id": delivery_id},
+            {"$set": {"status": "failed", "error": str(exc)[:300]}}
+        )
+        return {"success": False, "status_code": 0, "body": str(exc)[:300], "delivery_id": delivery_id}
 
 
 # ── Delivery logs ─────────────────────────────────────────────────────────────

@@ -608,16 +608,28 @@ const API_ENDPOINTS: EndpointDef[] = [
   {
     method: "POST", path: "/api/admin/webhooks", auth: "admin-jwt", tags: ["Admin — Webhooks"],
     summary: "Create a webhook",
-    description: "Register a new webhook URL. The signing secret is only returned once — store it securely.",
-    bodySchema: { url: "https://example.com/webhook", events: ["order.confirmed", "customer.registered"], is_active: true },
+    description: "Register a new webhook URL. The signing secret is only returned once — store it securely. Use subscriptions to specify which events trigger this webhook and which fields to include in the payload. Shorthand: pass events as a string array to subscribe with all default fields.",
+    bodySchema: {
+      url: "https://example.com/webhook",
+      name: "My CRM Sync (optional)",
+      subscriptions: [
+        { event: "order.created", fields: ["id", "order_number", "customer_email", "total"] },
+        { event: "customer.registered", fields: ["id", "email", "full_name", "company"] }
+      ],
+      "events (shorthand)": ["order.created", "customer.registered"]
+    },
     responseExample: { id: "wh_xxx", secret: "whsec_..." },
   },
   {
     method: "PUT", path: "/api/admin/webhooks/{webhook_id}", auth: "admin-jwt", tags: ["Admin — Webhooks"],
     summary: "Update a webhook",
     params: [{ name: "webhook_id", in: "path", type: "string", required: true, description: "Webhook ID", example: "wh_abc123" }],
-    bodySchema: { url: "https://example.com/new-url", events: ["order.confirmed"], is_active: true },
-    description: "Update a webhook's URL, event subscriptions, or active status.",
+    bodySchema: {
+      url: "https://example.com/new-url",
+      subscriptions: [{ event: "order.created", fields: ["id", "order_number"] }],
+      is_active: true
+    },
+    description: "Update a webhook's URL, event subscriptions, or active status. Accepts either subscriptions or events (shorthand).",
     responseExample: { message: "Webhook updated" },
   },
   {
