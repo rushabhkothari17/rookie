@@ -6,14 +6,14 @@
   width: 48px;
   height: 48px;
   border-radius: 999px;
-  border: 3px solid rgba(15, 23, 42, 0.2);
-  border-top-color: #0f172a;
+  border: 3px solid var(--aa-border);
+  border-top-color: var(--aa-accent);
   animation: spin 1s linear infinite;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: color-mix(in srgb, var(--aa-card) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--aa-border) 60%, transparent);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
   backdrop-filter: blur(16px);
 }

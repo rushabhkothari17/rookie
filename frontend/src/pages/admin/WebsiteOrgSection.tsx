@@ -23,15 +23,15 @@ const THEME_PRESETS: { name: string; desc: string; swatches: string[]; colors: P
   {
     name: "Midnight Tech",
     desc: "Dark · Electric blue · Futuristic",
-    swatches: ["#0d1117", "#3b82f6", "#161b22", "#0d1117"],
+    swatches: ["#161b22", "#58a6ff", "#0d1117", "#21262d"],
     colors: {
-      primary_color:    "#0d1117",
-      accent_color:     "#3b82f6",
-      background_color: "#0a0f1a",
-      card_color:       "#161b22",
-      surface_color:    "#1c2333",
-      text_color:       "#e6edf3",
-      border_color:     "#30363d",
+      primary_color:    "#161b22",   // hero bg — distinctly above page bg
+      accent_color:     "#58a6ff",   // GitHub-dark bright blue
+      background_color: "#0d1117",   // page bg — deepest layer
+      card_color:       "#0d1117",   // cards same plane as page (flat look)
+      surface_color:    "#21262d",   // elevated rows, table headers
+      text_color:       "#e6edf3",   // near-white readable text
+      border_color:     "#30363d",   // visible but subtle borders
       danger_color:     "#f85149",
       success_color:    "#3fb950",
       warning_color:    "#d29922",
@@ -47,19 +47,19 @@ const THEME_PRESETS: { name: string; desc: string; swatches: string[]; colors: P
   {
     name: "Ocean Deep",
     desc: "Dark · Teal · Modern",
-    swatches: ["#0c1f2a", "#06b6d4", "#112233", "#071521"],
+    swatches: ["#1a3d50", "#06b6d4", "#0c2233", "#1a3d50"],
     colors: {
-      primary_color:    "#0c1f2a",
-      accent_color:     "#06b6d4",
-      background_color: "#071521",
-      card_color:       "#112233",
-      surface_color:    "#1a3349",
-      text_color:       "#e0f2fe",
-      border_color:     "#1e4060",
+      primary_color:    "#1a3d50",   // hero bg — teal-navy elevated
+      accent_color:     "#06b6d4",   // cyan/teal accent
+      background_color: "#0c2233",   // page bg — dark ocean blue
+      card_color:       "#0c2233",   // cards flat to page
+      surface_color:    "#1a3d50",   // elevated surfaces
+      text_color:       "#cae6f0",   // light blue-white text
+      border_color:     "#1e5070",   // visible teal-dark borders
       danger_color:     "#fb7185",
       success_color:    "#34d399",
       warning_color:    "#fbbf24",
-      muted_color:      "#67c5dd",
+      muted_color:      "#67a3b5",
     },
   },
 ];

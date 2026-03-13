@@ -439,13 +439,57 @@ function _applyBrandingToDOM(s: Record<string, any>) {
   // Auto-toggle .aa-dark class based on final background luminance
   // Use custom bg if set, otherwise fall back to CSS-computed value, then to default
   const finalBg = s.background_color
+    || s.card_color
     || getComputedStyle(document.documentElement).getPropertyValue("--aa-bg").trim()
     || "#f8fafc";
   const darkBgLum = _luminance(finalBg);
   if (darkBgLum < 0.08) {
     document.documentElement.classList.add("aa-dark");
+    // Override Shadcn CSS variables for dark mode
+    const card = s.card_color || "#161b22";
+    const surface = s.surface_color || "#1c2333";
+    const border = s.border_color || "#30363d";
+    const text = s.text_color || "#e6edf3";
+    const muted = s.muted_color || "#8b949e";
+    const cardHsl = _hexToHsl(card);
+    const surfaceHsl = _hexToHsl(surface);
+    const borderHsl = _hexToHsl(border);
+    const textHsl = _hexToHsl(text);
+    const mutedHsl = _hexToHsl(muted);
+    if (cardHsl) {
+      document.documentElement.style.setProperty("--popover", cardHsl);
+      document.documentElement.style.setProperty("--popover-foreground", textHsl || "210 40% 91%");
+    }
+    if (surfaceHsl) {
+      document.documentElement.style.setProperty("--muted", surfaceHsl);
+      document.documentElement.style.setProperty("--secondary", surfaceHsl);
+      document.documentElement.style.setProperty("--accent", surfaceHsl);
+    }
+    if (textHsl) {
+      document.documentElement.style.setProperty("--secondary-foreground", textHsl);
+      document.documentElement.style.setProperty("--accent-foreground", textHsl);
+    }
+    if (mutedHsl) document.documentElement.style.setProperty("--muted-foreground", mutedHsl);
+    if (borderHsl) {
+      document.documentElement.style.setProperty("--border", borderHsl);
+      document.documentElement.style.setProperty("--input", borderHsl);
+    }
   } else {
     document.documentElement.classList.remove("aa-dark");
+    // Reset Shadcn CSS variables to light mode defaults
+    document.documentElement.style.setProperty("--muted",               "210 40% 96.1%");
+    document.documentElement.style.setProperty("--muted-foreground",    "215.4 16.3% 46.9%");
+    document.documentElement.style.setProperty("--secondary",           "210 40% 96.1%");
+    document.documentElement.style.setProperty("--secondary-foreground","222.2 47.4% 11.2%");
+    document.documentElement.style.setProperty("--accent",              "210 40% 96.1%");
+    document.documentElement.style.setProperty("--accent-foreground",   "222.2 47.4% 11.2%");
+    document.documentElement.style.setProperty("--popover",             "0 0% 100%");
+    document.documentElement.style.setProperty("--popover-foreground",  "222.2 84% 4.9%");
+    // Restore border/input to user setting or default
+    if (s.border_color) {
+      const bh = _hexToHsl(s.border_color);
+      if (bh) { document.documentElement.style.setProperty("--border", bh); document.documentElement.style.setProperty("--input", bh); }
+    }
   }
 }
 

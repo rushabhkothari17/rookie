@@ -372,7 +372,7 @@ export default function Store() {
           </div>
 
           {/* ── Left Sidebar ── */}
-          <aside className={`shrink-0 w-full md:w-64 ${mobileFiltersOpen ? "block" : "hidden"} md:block`} data-testid="category-sidebar">
+          <aside className={`shrink-0 md:w-64 ${mobileFiltersOpen ? "block w-full" : "hidden md:block"}`} data-testid="category-sidebar">
             <div className="sticky top-28 space-y-7">
 
               {/* Browse / Categories */}
