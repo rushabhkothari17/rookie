@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { ImportModal } from "@/components/admin/ImportModal";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,8 @@ function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) 
 }
 
 export function PromoCodesTab() {
+  const { user: authUser } = useAuth();
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -93,6 +96,7 @@ export function PromoCodesTab() {
   const [appliesToFilter, setAppliesToFilter] = useState<string[]>([]);
   const [usageFilter, setUsageFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [partnerFilter, setPartnerFilter] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [expiryFrom, setExpiryFrom] = useState("");
@@ -102,6 +106,10 @@ export function PromoCodesTab() {
   // Build unique options for dropdowns
   const uniqueCodes = useMemo(() => {
     return Array.from(new Set(promoCodes.map(p => p.code).filter(Boolean))).sort().map(c => [c, c] as [string, string]);
+  }, [promoCodes]);
+
+  const uniquePartners = useMemo(() => {
+    return Array.from(new Set(promoCodes.map(p => p.partner_code).filter(Boolean))).sort().map(c => [c, c] as [string, string]);
   }, [promoCodes]);
 
   const uniqueDiscounts = useMemo(() => {
@@ -118,6 +126,7 @@ export function PromoCodesTab() {
     let r = [...promoCodes];
     // Apply local multi-select filters
     if (codeFilter.length > 0) r = r.filter(p => codeFilter.includes(p.code));
+    if (partnerFilter.length > 0) r = r.filter(p => partnerFilter.includes(p.partner_code));
     if (discountFilter.length > 0) r = r.filter(p => {
       const disc = p.discount_type === "percent" ? `${p.discount_value}%` : `$${p.discount_value}`;
       return discountFilter.includes(disc);
@@ -143,6 +152,7 @@ export function PromoCodesTab() {
         if (colSort.col === "code") { av = a.code; bv = b.code; }
         else if (colSort.col === "discount") { av = a.discount_value; bv = b.discount_value; }
         else if (colSort.col === "applies_to") { av = a.applies_to; bv = b.applies_to; }
+        else if (colSort.col === "partner") { av = a.partner_code || ""; bv = b.partner_code || ""; }
         else if (colSort.col === "expiry") { av = a.expiry_date || ""; bv = b.expiry_date || ""; }
         else if (colSort.col === "max_uses") { av = a.max_uses ?? 0; bv = b.max_uses ?? 0; }
         else if (colSort.col === "uses") { av = a.use_count ?? 0; bv = b.use_count ?? 0; }
@@ -261,6 +271,7 @@ export function PromoCodesTab() {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <ColHeader label="Code" colKey="code" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={codeFilter} onFilter={v => { setCodeFilter(v); setPage(1); }} onClearFilter={() => { setCodeFilter([]); setPage(1); }} statusOptions={uniqueCodes} />
+              {isPlatformAdmin && <ColHeader label="Partner" colKey="partner" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={partnerFilter} onFilter={v => { setPartnerFilter(v); setPage(1); }} onClearFilter={() => { setPartnerFilter([]); setPage(1); }} statusOptions={uniquePartners} />}
               <ColHeader label="Discount" colKey="discount" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={discountFilter} onFilter={v => { setDiscountFilter(v); setPage(1); }} onClearFilter={() => { setDiscountFilter([]); setPage(1); }} statusOptions={uniqueDiscounts} />
               <ColHeader label="Applies To" colKey="applies_to" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="dropdown" filterValue={appliesToFilter} onFilter={v => { setAppliesToFilter(v); setPage(1); }} onClearFilter={() => { setAppliesToFilter([]); setPage(1); }} statusOptions={[["both", "Both"], ["one-time", "One-time"], ["subscription", "Subscription"]]} />
               <ColHeader label="Expiry" colKey="expiry" sortCol={colSort?.col} sortDir={colSort?.dir} onSort={(c, d) => setColSort({ col: c, dir: d })} onClearSort={() => setColSort(null)} filterType="date-range" filterValue={{ from: expiryFrom, to: expiryTo }} onFilter={v => { setExpiryFrom(v.from || ""); setExpiryTo(v.to || ""); }} onClearFilter={() => { setExpiryFrom(""); setExpiryTo(""); }} />
@@ -275,6 +286,7 @@ export function PromoCodesTab() {
             {displayPromos.map((promo) => (
               <TableRow key={promo.id} data-testid={`admin-promo-row-${promo.id}`} className="border-b border-slate-100">
                 <TableCell className="font-mono font-semibold">{promo.code}</TableCell>
+                {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-promo-partner-${promo.id}`}>{promo.partner_code || "—"}</TableCell>}
                 <TableCell>{promo.discount_type === "percent" ? `${promo.discount_value}%` : `$${promo.discount_value}`}</TableCell>
                 <TableCell className="capitalize">{promo.applies_to}</TableCell>
                 <TableCell>{promo.expiry_date?.slice(0, 10) || "—"}</TableCell>

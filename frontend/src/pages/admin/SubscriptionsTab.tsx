@@ -89,7 +89,7 @@ function computeExpiryDate(startDate: string, termMonths: string | number): stri
 
 export function SubscriptionsTab() {
   const { user: authUser } = useAuth();
-  const isPlatformAdmin = authUser?.role === "platform_admin";
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
   const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [subs, setSubs] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
@@ -230,9 +230,8 @@ export function SubscriptionsTab() {
     }).catch(() => {});
     load(1);
     api.get("/admin/products-all?per_page=500").then(r => {
-      // Show all active, non-deleted products in manual subscription (not just "subscription" type)
       const allProds = r.data.products || [];
-      setProducts(allProds.filter((p: any) => !p.deleted_at && p.is_active !== false));
+      setProducts(allProds.filter((p: any) => !p.deleted_at && p.is_active !== false && p.pricing_type === "subscription"));
     }).catch(() => {});
     api.get("/admin/customers?per_page=1000").then(r => { setCustomers(r.data.customers || []); setCustUsers(r.data.users || []); }).catch(() => {});
   }, [emailFilter, statusFilter, paymentFilter, subNumberFilter, processorIdFilter, planFilter, currencyFilter, amountRange, taxRange, renewalFrom, renewalTo, createdFrom, createdTo, startFrom, startTo, contractEndFrom, contractEndTo, sortField, sortOrder]);

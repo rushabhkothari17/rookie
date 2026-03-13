@@ -701,7 +701,7 @@ export function UsersTab() {
     try {
       const res = await api.post(`/admin/users/${userId}/send-reset-link`);
       if (res.data.mocked) {
-        toast.success("Reset link generated (email mocked — no Resend key configured)");
+        toast.success("Reset link generated (no email service configured — connect Zoho or Resend in Integrations)");
       } else {
         toast.success("Password reset link sent successfully");
       }
@@ -1075,7 +1075,7 @@ export function UsersTab() {
               )}
 
               <Button onClick={handleEdit} disabled={saving} className="w-full" data-testid="admin-edit-user-save">{saving ? "Saving…" : "Save Changes"}</Button>
-              {isSuperAdmin && editUser && !isSuperAdminUser(editUser) && (
+              {isSuperAdmin && editUser && editUser.id !== authUser?.id && (
                 <div className="border-t border-slate-100 pt-3">
                   <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-2">Security Actions</p>
                   <Button

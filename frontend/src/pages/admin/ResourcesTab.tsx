@@ -73,7 +73,7 @@ interface ResourcesTabProps {
 
 export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const { user: authUser } = useAuth();
-  const isPlatformAdmin = authUser?.role === "platform_admin";
+  const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
   const { currencies: supportedCurrencies } = useSupportedCurrencies();
   const [showImportResources, setShowImportResources] = useState(false);
   const [subTab, setSubTab] = useState<"resources" | "templates" | "email-templates" | "categories">("resources");

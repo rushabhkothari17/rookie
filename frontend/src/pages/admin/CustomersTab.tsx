@@ -200,7 +200,7 @@ export function CustomersTab() {
     try {
       const res = await api.post(`/admin/customers/${customerId}/send-reset-link`);
       if (res.data.mocked) {
-        toast.success("Reset link generated (email mocked — no Resend key configured)");
+        toast.success("Reset link generated (no email service configured — connect Zoho or Resend in Integrations)");
       } else {
         toast.success("Password reset link sent successfully");
       }
@@ -423,9 +423,9 @@ export function CustomersTab() {
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           {selectedCustomer && (
             <div className="flex flex-col gap-4 pt-1">
-              {/* Same schema-driven form as Create — no email/password (immutable) */}
+              {/* Edit dialog — filter out email & password (immutable; use reset link) */}
               <UniversalFormRenderer
-                fields={parseSchema(ws.signup_form_schema)}
+                fields={parseSchema(ws.signup_form_schema).filter((f: any) => !['email', 'password'].includes(f.key))}
                 values={selectedCustomer}
                 onChange={(key, value) =>
                   setSelectedCustomer((prev: any) => ({
