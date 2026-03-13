@@ -173,7 +173,13 @@ Build a white-label service commerce platform with:
 - **All endpoints tested**: 66 GET endpoints + 17 mutation (POST/PUT/DELETE) endpoints = 83 total, 100% PASS
 - **Includes**: request body schemas, response shapes, curl examples, field validation notes, error codes, quick-start test script
 
-### Phase 10: Mobile Optimization (March 2026)
+### Phase 11: Futuristic CSS Variable Design System (March 2026)
+- **New CSS variables**: `--aa-card`, `--aa-surface`, `--aa-primary-fg` (auto-computed), `--aa-card-border`, `--aa-glow` (auto-derived from accent)
+- **New utility classes**: `.aa-card`, `.aa-card-glow`, `.aa-surface`, `.aa-badge` + semantic variants (success/danger/warning/muted/accent), `.aa-mono` (JetBrains Mono), `.aa-grid-texture` (hero grid overlay), `.aa-active-accent` (sidebar glow), `.aa-input`, `.aa-glow-sm/md`, theme-aware scrollbars
+- **Admin panel**: 3 one-click theme presets (Midnight Tech dark, Slate Pro light, Ocean Deep teal) with color swatches + 2 new color pickers (Card Background, Surface)
+- **Components**: OfferingCard → CSS variables throughout; TopNav → glass backdrop; Admin sidebar → CSS var border/bg; Hero sections → grid texture; AppShell → CSS var background
+- **Backend**: `card_color`, `surface_color` added to `AppSettingsUpdate` model + all 3 settings endpoints (`/settings/public`, `/website-settings`, `/admin/website-settings`)
+- Verified via testing agent iteration_274 — **18/18 backend + 10/10 frontend = 100% pass rate**
 - **TopNav.tsx**: Hamburger menu on mobile (`md:hidden`), animated mobile drawer with all nav links, closes on route change
 - **Admin.tsx**: Collapsible sidebar on mobile — toggle button shows active tab name, overlay backdrop, sidebar slides in from left with z-index layering
 - **Store.tsx**: Mobile filters toggle button, `flex-col md:flex-row` layout, responsive hero padding (`px-6 md:px-10`), search+sort wraps on mobile, aside cleaned up
