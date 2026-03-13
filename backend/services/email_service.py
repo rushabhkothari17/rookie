@@ -555,10 +555,19 @@ class EmailService:
         if not template.get("is_enabled", True):
             return {"status": "skipped", "reason": "template disabled"}
 
-        # Resolve store_name — prefer tenant-scoped website_settings, fallback to global app_settings
+        # Resolve store_name — read from flat app_settings (authoritative for branding), then website_settings, then SettingsService key-value store
         _tid_for_name = tenant_id or "automate-accounts"
+        flat_app_s = await db.app_settings.find_one(
+            {"tenant_id": _tid_for_name, "key": {"$exists": False}},
+            {"_id": 0, "store_name": 1}
+        )
         ws = await db.website_settings.find_one({"tenant_id": _tid_for_name}, {"_id": 0, "store_name": 1})
-        store_name = (ws or {}).get("store_name") or await SettingsService.get("store_name", "") or ""
+        store_name = (
+            (flat_app_s or {}).get("store_name")
+            or (ws or {}).get("store_name")
+            or await SettingsService.get("store_name", "")
+            or ""
+        )
         all_vars = {"store_name": store_name, **variables}
 
         subject = _resolve_vars(template["subject"], all_vars)
