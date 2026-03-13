@@ -43,6 +43,6 @@
   "seed_data_creation": "",
   "retest_needed": false,
   "should_main_agent_self_test": false,
-  "context_for_next_testing_agent": "Iteration 272: All 4 fixes verified. Policy text removed from StickyPurchaseSummary confirmed. Quote/Scope modals no longer have hardcoded fallback fields. URL param autofill code in place (no intake questions on test product to visually verify). CRM mappings API returns 13 modules. Product detail is at /product/:productId (not /store/product/:productId). Platform admin login: POST /api/auth/login without partner_code. Test product: Sample Service1 (id=835a49fe-0258-41c0-bab7-14114c6536cf, pricing=fixed, GBP 99).",
+  "context_for_next_testing_agent": "Iteration 272: All 4 fixes verified. Policy text removed from StickyPurchaseSummary confirmed. Quote/Scope modals no longer have hardcoded fallback fields. URL param autofill code in place (no intake questions on test product to visually verify). CRM mappings API returns 13 modules. Product detail is at /product/:productId (not /store/product/:productId). Platform admin login: POST /api/auth/login without partner_code. Test product: Sample Service1 (id=api-docs-test-1, pricing=fixed, GBP 99).",
   "rca_of_issues": "N/A - No bugs found. All features working as designed."
 }

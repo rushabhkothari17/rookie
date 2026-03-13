@@ -16,7 +16,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://form-polish-suite.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://api-docs-test-1.preview.emergentagent.com").rstrip("/")
 
 # Test credentials from review request
 TENANT_B_ADMIN = {

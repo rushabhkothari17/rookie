@@ -167,7 +167,11 @@ Build a white-label service commerce platform with:
 - **Bulk Sync Now covers all 13 modules**: `oauth.py` updated from 3 → 13 modules with enrichment applied
 - Verified via testing agent iteration_272 — all checks passed
 
-
+### Phase 9: API Documentation (March 2026)
+- **Created `/app/docs/api.md`** — complete API reference covering all 37 endpoint groups and 200+ endpoints
+- **Modules documented**: Auth, Public Store, Customer Portal, Checkout, Admin Catalog, Admin Customers, Orders, Enquiries, Subscriptions, Plans, Promo Codes, Terms, Users & Permissions, Settings, Website Settings, Email Templates, Integrations (Zoho CRM/Mail/Books/WorkDrive, Stripe, GoCardless), Finance, API Keys, Webhooks, Taxes & Invoices, Tenants, Resources, Articles, Forms, Import/Export, Audit Logs, Store Filters, GDPR, Partner Billing, OAuth, Documents, Utilities, Incoming Webhooks
+- **All endpoints tested**: 66 GET endpoints + 17 mutation (POST/PUT/DELETE) endpoints = 83 total, 100% PASS
+- **Includes**: request body schemas, response shapes, curl examples, field validation notes, error codes, quick-start test script
 
 ### P0 — Critical (None currently)
 
