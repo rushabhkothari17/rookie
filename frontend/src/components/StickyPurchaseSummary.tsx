@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, RefreshCcw, CreditCard } from "lucide-react";
 
 export default function StickyPurchaseSummary({
   pricing,
@@ -87,21 +86,6 @@ export default function StickyPurchaseSummary({
       <p className="mt-3 text-center text-xs text-slate-400" data-testid="summary-currency-note">
         {currency ? `All prices in ${currency}` : "Confirmed at checkout"}
       </p>
-
-      <div className="mt-5 space-y-2.5 border-t border-slate-100 pt-5" data-testid="summary-policies">
-        <div className="flex items-start gap-2.5 text-xs text-slate-500">
-          <ShieldCheck size={14} className="mt-0.5 flex-shrink-0 text-slate-400" />
-          <span>No refunds for delivered services.</span>
-        </div>
-        <div className="flex items-start gap-2.5 text-xs text-slate-500">
-          <RefreshCcw size={14} className="mt-0.5 flex-shrink-0 text-slate-400" />
-          <span>Subscriptions cancel at end of billing month.</span>
-        </div>
-        <div className="flex items-start gap-2.5 text-xs text-slate-500">
-          <CreditCard size={14} className="mt-0.5 flex-shrink-0 text-slate-400" />
-          <span>Secure payment via our payment provider.</span>
-        </div>
-      </div>
     </div>
   );
 }

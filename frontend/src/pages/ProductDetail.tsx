@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,12 +17,13 @@ import { type AddressValue } from "@/components/AddressFieldRenderer";
 import { UniversalFormRenderer } from "@/components/UniversalFormRenderer";
 import { ProductLayout, evaluateVisibilityRule, getEnabledIntakeQuestions } from "@/pages/store/layouts";
 
-const QUOTE_STD = ["name", "email", "company", "phone", "message"];
-const SCOPE_STD = ["project_summary", "desired_outcomes", "apps_involved", "timeline_urgency", "budget_range", "additional_notes"];
+const QUOTE_STD: string[] = [];
+const SCOPE_STD: string[] = [];
 
 export default function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { addItem } = useCart();
   const { customer } = useAuth();
   const ws = useWebsite();
@@ -118,10 +119,26 @@ export default function ProductDetail() {
     const defaults: Record<string, any> = {};
     for (const q of enabledIntakeQuestions) {
       if (q.type === "multiselect") defaults[q.key] = [];
-      else if (q.type === "dropdown") defaults[q.key] = "";  // no default — avoid accidental pricing changes
+      else if (q.type === "dropdown") defaults[q.key] = "";
       else defaults[q.key] = "";
     }
-    setIntakeAnswers(defaults);
+    // Pre-fill from URL search params: ?client_name=John&budget=5000
+    // Any param matching an intake question key is applied
+    const urlPrefill: Record<string, any> = {};
+    for (const q of enabledIntakeQuestions) {
+      const paramVal = searchParams.get(q.key);
+      if (paramVal !== null && paramVal !== "") {
+        if (q.type === "multiselect") {
+          urlPrefill[q.key] = paramVal.split(",").map(s => s.trim()).filter(Boolean);
+        } else if (q.type === "number") {
+          const num = parseFloat(paramVal);
+          urlPrefill[q.key] = isNaN(num) ? paramVal : num;
+        } else {
+          urlPrefill[q.key] = paramVal;
+        }
+      }
+    }
+    setIntakeAnswers({ ...defaults, ...urlPrefill });
   }, [product]);
 
   // Handle intake question change: update answer + clear all questions below (by order)
@@ -434,31 +451,8 @@ export default function ProductDetail() {
                   />
                 );
               }
-              // Fallback hardcoded fields when no schema is configured
-              return (
-                <>
-                  <div className="space-y-1">
-                    <RequiredLabel className="text-sm">Your Name</RequiredLabel>
-                    <Input value={quoteFormData.name || ""} onChange={e => setQuoteFormData(p => ({ ...p, name: e.target.value }))} placeholder="Full name" data-testid="quote-name" />
-                  </div>
-                  <div className="space-y-1">
-                    <RequiredLabel className="text-sm">Email</RequiredLabel>
-                    <Input type="email" value={quoteFormData.email || ""} onChange={e => setQuoteFormData(p => ({ ...p, email: e.target.value }))} placeholder="your@email.com" data-testid="quote-email" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Company</label>
-                    <Input value={quoteFormData.company || ""} onChange={e => setQuoteFormData(p => ({ ...p, company: e.target.value }))} placeholder="Company name" data-testid="quote-company" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Phone</label>
-                    <Input value={quoteFormData.phone || ""} onChange={e => setQuoteFormData(p => ({ ...p, phone: e.target.value }))} placeholder="+1 (555) 000-0000" data-testid="quote-phone" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">Message</label>
-                    <Textarea value={quoteFormData.message || ""} onChange={e => setQuoteFormData(p => ({ ...p, message: e.target.value }))} placeholder="Tell us about your requirements…" rows={3} data-testid="quote-message" />
-                  </div>
-                </>
-              );
+              // No schema configured — render nothing (no hardcoded fallback)
+              return null;
             })()}
             <Button className="w-full" onClick={handleSubmitQuote} disabled={submittingQuote} data-testid="quote-submit-button">
               {submittingQuote ? "Submitting…" : "Submit Enquiry"}
@@ -489,23 +483,8 @@ export default function ProductDetail() {
                   />
                 );
               }
-              // Fallback hardcoded scope fields
-              return (
-                <>
-                  <div className="space-y-1">
-                    <RequiredLabel className="text-sm">Project Summary</RequiredLabel>
-                    <Textarea placeholder="Describe your project..." value={scopeFormData.project_summary || ""} onChange={e => setScopeFormData(p => ({ ...p, project_summary: e.target.value }))} data-testid="scope-project-summary" />
-                  </div>
-                  <div className="space-y-1">
-                    <RequiredLabel className="text-sm">Desired Outcomes</RequiredLabel>
-                    <Textarea placeholder="What do you want to achieve?" value={scopeFormData.desired_outcomes || ""} onChange={e => setScopeFormData(p => ({ ...p, desired_outcomes: e.target.value }))} data-testid="scope-desired-outcomes" />
-                  </div>
-                  <div className="space-y-1">
-                    <RequiredLabel className="text-sm">Apps Involved</RequiredLabel>
-                    <Input placeholder="e.g., CRM, accounting, email..." value={scopeFormData.apps_involved || ""} onChange={e => setScopeFormData(p => ({ ...p, apps_involved: e.target.value }))} data-testid="scope-apps-involved" />
-                  </div>
-                </>
-              );
+              // No schema configured — render nothing (no hardcoded fallback)
+              return null;
             })()}
             <Button className="w-full" onClick={handleSubmitScopeForm} disabled={submittingScope} data-testid="scope-submit-button">
               {submittingScope ? "Submitting..." : "Submit Enquiry"}

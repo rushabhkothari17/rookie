@@ -1192,24 +1192,22 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     errors: List[str] = []
 
     collection_map: Dict[str, Any] = {
-        "customers": db.customers,
-        "orders": db.orders,
-        "subscriptions": db.subscriptions,
+        "customers": (db.customers, {}),
+        "orders": (db.orders, {}),
+        "subscriptions": (db.subscriptions, {}),
+        "products": (db.products, {}),
+        "enquiries": (db.orders, {"type": "enquiry"}),
+        "invoices": (db.invoices, {}),
+        "resources": (db.resources, {}),
+        "plans": (db.plans, {}),            # platform-wide, no tenant_id filter
+        "categories": (db.categories, {}),
+        "terms": (db.terms_and_conditions, {}),
+        "promo_codes": (db.promo_codes, {}),
+        "refunds": (db.refunds, {}),
+        "addresses": (db.addresses, {}),
     }
 
-    # For customers, we need to join with users to get email and full_name
-    async def enrich_customer_records(docs: List[Dict]) -> List[Dict]:
-        enriched = []
-        for doc in docs:
-            record = dict(doc)
-            user_id = record.get("user_id")
-            if user_id:
-                user = await db.users.find_one({"id": user_id}, {"_id": 0, "email": 1, "full_name": 1})
-                if user:
-                    record["email"] = user.get("email")
-                    record["full_name"] = user.get("full_name")
-            enriched.append(record)
-        return enriched
+    from services.zoho_service import _enrich_record_for_module
 
     async with httpx.AsyncClient(timeout=60.0) as client:
         for mapping in mappings:
@@ -1220,18 +1218,27 @@ async def zoho_crm_bulk_sync(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             if not webapp_module or not crm_module or not field_maps:
                 continue
 
-            coll = collection_map.get(webapp_module)
-            if coll is None:
+            coll_entry = collection_map.get(webapp_module)
+            if coll_entry is None:
                 continue
 
-            docs = await coll.find({"tenant_id": tid}, {"_id": 0}).to_list(500)
+            coll, extra_filter = coll_entry
+            # Plans are platform-wide (no tenant_id); everything else filters by tenant
+            if webapp_module == "plans":
+                query = {**extra_filter}
+            else:
+                query = {"tenant_id": tid, **extra_filter}
 
-            # Enrich customer records with user data (email, full_name)
-            if webapp_module == "customers":
-                docs = await enrich_customer_records(docs)
+            docs = await coll.find(query, {"_id": 0}).to_list(500)
 
             zoho_records = []
-            for record in docs:
+            for raw_doc in docs:
+                # Enrich each record (handles customers joining users, products extracting intake schema, etc.)
+                user = None
+                if webapp_module == "customers" and raw_doc.get("user_id"):
+                    user = await db.users.find_one({"id": raw_doc["user_id"]}, {"_id": 0, "email": 1, "full_name": 1})
+                record = _enrich_record_for_module(webapp_module, raw_doc, user)
+
                 zoho_record: Dict[str, Any] = {}
                 for fm in field_maps:
                     wf = fm.get("webapp_field")
