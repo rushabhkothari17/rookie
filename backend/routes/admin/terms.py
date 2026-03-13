@@ -14,6 +14,7 @@ from db.session import db
 from models import TermsCreate, TermsUpdate
 from services.audit_service import create_audit_log
 from services.checkout_service import resolve_terms_tags
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["admin-terms"])
 
@@ -129,10 +130,11 @@ async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(get
     if payload.is_default:
         await db.terms_and_conditions.update_many({**tf, "is_default": True}, {"$set": {"is_default": False}})
     terms_id = make_id()
-    await db.terms_and_conditions.insert_one({
+    terms_doc = {
         "id": terms_id, "tenant_id": tid, "title": payload.title, "content": _sanitize_html(payload.content),
         "is_default": payload.is_default, "status": payload.status, "created_at": now_iso(),
-    })
+    }
+    await db.terms_and_conditions.insert_one(terms_doc)
     await create_audit_log(
         entity_type="terms",
         entity_id=terms_id,
@@ -140,6 +142,8 @@ async def create_terms(payload: TermsCreate, admin: Dict[str, Any] = Depends(get
         actor=f"admin:{admin.get('email', admin['id'])}",
         details={"title": payload.title, "is_default": payload.is_default, "status": payload.status},
     )
+    import asyncio as _asyncio
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tid, "terms", {k: v for k, v in terms_doc.items() if k != "_id"}, "create"))
     return {"message": "Terms created", "id": terms_id}
 
 
@@ -173,6 +177,10 @@ async def update_terms(terms_id: str, payload: TermsUpdate, admin: Dict[str, Any
         actor=f"admin:{admin.get('email', admin['id'])}",
         details={"changes": update_data},
     )
+    import asyncio as _asyncio
+    updated_terms = await db.terms_and_conditions.find_one({"id": terms_id}, {"_id": 0})
+    if updated_terms:
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id_of(admin), "terms", updated_terms, "update"))
     return {"message": "Terms updated"}
 
 

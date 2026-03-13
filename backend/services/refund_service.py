@@ -6,6 +6,7 @@ import httpx
 
 from db.session import db
 from core.helpers import make_id, now_iso
+import asyncio as _asyncio
 
 # Stripe API
 STRIPE_API_URL = "https://api.stripe.com/v1"
@@ -210,6 +211,12 @@ async def record_refund(
     }
     
     await db.refunds.insert_one(refund_doc)
+    refund_doc_clean = {k: v for k, v in refund_doc.items() if k != "_id"}
+    try:
+        from services.zoho_service import auto_sync_to_zoho_crm
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id, "refunds", refund_doc_clean, "create"))
+    except Exception:
+        pass
     
     # Update order with refund info
     order = await db.orders.find_one({"id": order_id, "tenant_id": tenant_id}, {"_id": 0})

@@ -11,6 +11,7 @@ from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin, is_pl
 from db.session import db
 from models import PromoCodeCreate, PromoCodeUpdate
 from services.audit_service import create_audit_log
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["admin-promo-codes"])
 
@@ -60,6 +61,7 @@ async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any
         "promo_note": payload.promo_note, "currency": payload.currency,
     }
     await db.promo_codes.insert_one(doc)
+    doc.pop("_id", None)
     await create_audit_log(
         entity_type="promo_code",
         entity_id=code_id,
@@ -67,6 +69,8 @@ async def admin_create_promo_code(payload: PromoCodeCreate, admin: Dict[str, Any
         actor=f"admin:{admin.get('email', admin['id'])}",
         details={"code": payload.code.upper(), "discount_type": payload.discount_type, "discount_value": payload.discount_value, "applies_to": payload.applies_to},
     )
+    import asyncio as _asyncio
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tid, "promo_codes", doc, "create"))
     return {"message": "Promo code created", "id": code_id}
 
 
@@ -90,6 +94,10 @@ async def admin_update_promo_code(code_id: str, payload: PromoCodeUpdate, admin:
         actor=f"admin:{admin.get('email', admin['id'])}",
         details={"changes": update},
     )
+    import asyncio as _asyncio
+    updated_code = await db.promo_codes.find_one({"id": code_id}, {"_id": 0})
+    if updated_code:
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id_of(admin), "promo_codes", updated_code, "update"))
     return {"message": "Promo code updated"}
 
 

@@ -1044,5 +1044,7 @@ async def create_manual_enquiry(
         actor=admin.get("email", "admin"),
         details={"order_number": order_number, "customer_id": payload.customer_id},
     )
+    import asyncio as _asyncio
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id_of(admin), "enquiries", doc, "create"))
     return {"message": "Enquiry created", "id": order_id, "order_number": order_number}
 

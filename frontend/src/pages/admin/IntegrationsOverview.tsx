@@ -186,10 +186,133 @@ const DEFAULT_FIELD_MAPS: Record<string, Record<string, FieldMapping[]>> = {
       { webapp_field: "order_number", crm_field: "Deal_Name" },
       { webapp_field: "total", crm_field: "Amount" },
       { webapp_field: "status", crm_field: "Stage" },
+      { webapp_field: "currency", crm_field: "Currency" },
+      { webapp_field: "payment_method", crm_field: "Description" },
     ],
-    invoices: [
-      { webapp_field: "order_number", crm_field: "reference_number" },
-      { webapp_field: "total", crm_field: "total" },
+    Sales_Orders: [
+      { webapp_field: "order_number", crm_field: "Subject" },
+      { webapp_field: "total", crm_field: "Grand_Total" },
+      { webapp_field: "status", crm_field: "Status" },
+      { webapp_field: "currency", crm_field: "Currency" },
+    ],
+  },
+  subscriptions: {
+    Subscriptions: [
+      { webapp_field: "subscription_number", crm_field: "Subscription_Name" },
+      { webapp_field: "plan_name", crm_field: "Plan_Name" },
+      { webapp_field: "status", crm_field: "Status" },
+      { webapp_field: "amount", crm_field: "Price" },
+      { webapp_field: "billing_cycle", crm_field: "Billing_Cycle" },
+      { webapp_field: "currency", crm_field: "Currency" },
+    ],
+    Deals: [
+      { webapp_field: "subscription_number", crm_field: "Deal_Name" },
+      { webapp_field: "amount", crm_field: "Amount" },
+      { webapp_field: "status", crm_field: "Stage" },
+    ],
+  },
+  products: {
+    Products: [
+      { webapp_field: "name", crm_field: "Product_Name" },
+      { webapp_field: "base_price", crm_field: "Unit_Price" },
+      { webapp_field: "category", crm_field: "Product_Category" },
+      { webapp_field: "description", crm_field: "Description" },
+      { webapp_field: "currency", crm_field: "Currency" },
+      { webapp_field: "is_active", crm_field: "Product_Active" },
+      { webapp_field: "pricing_type", crm_field: "Product_Code" },
+      { webapp_field: "intake_questions_labels", crm_field: "Qty_Ordered" },
+      { webapp_field: "intake_questions_count", crm_field: "Qty_in_Stock" },
+      { webapp_field: "intake_questions_json", crm_field: "CF_Intake_Schema" },
+    ],
+  },
+  enquiries: {
+    Leads: [
+      { webapp_field: "customer_name", crm_field: "Last_Name" },
+      { webapp_field: "customer_email", crm_field: "Email" },
+      { webapp_field: "product_name", crm_field: "Lead_Source" },
+      { webapp_field: "order_number", crm_field: "Ref_Number" },
+      { webapp_field: "status", crm_field: "Lead_Status" },
+      { webapp_field: "notes", crm_field: "Description" },
+    ],
+    Deals: [
+      { webapp_field: "order_number", crm_field: "Deal_Name" },
+      { webapp_field: "customer_name", crm_field: "Contact_Name" },
+      { webapp_field: "status", crm_field: "Stage" },
+      { webapp_field: "notes", crm_field: "Description" },
+    ],
+  },
+  invoices: {
+    Invoices: [
+      { webapp_field: "order_id", crm_field: "Subject" },
+      { webapp_field: "amount_paid", crm_field: "Grand_Total" },
+      { webapp_field: "status", crm_field: "Status" },
+      { webapp_field: "currency", crm_field: "Currency" },
+    ],
+  },
+  resources: {
+    Campaigns: [
+      { webapp_field: "title", crm_field: "Campaign_Name" },
+      { webapp_field: "category", crm_field: "Type" },
+      { webapp_field: "visibility", crm_field: "Status" },
+      { webapp_field: "slug", crm_field: "Description" },
+    ],
+  },
+  plans: {
+    Products: [
+      { webapp_field: "name", crm_field: "Product_Name" },
+      { webapp_field: "description", crm_field: "Description" },
+      { webapp_field: "monthly_price", crm_field: "Unit_Price" },
+      { webapp_field: "currency", crm_field: "Currency" },
+      { webapp_field: "is_active", crm_field: "Product_Active" },
+    ],
+  },
+  categories: {
+    Product_Categories: [
+      { webapp_field: "name", crm_field: "Category_Name" },
+      { webapp_field: "description", crm_field: "Description" },
+      { webapp_field: "is_active", crm_field: "Status" },
+    ],
+  },
+  terms: {
+    Notes: [
+      { webapp_field: "title", crm_field: "Note_Title" },
+      { webapp_field: "status", crm_field: "Parent_Id" },
+      { webapp_field: "is_default", crm_field: "Note_Content" },
+    ],
+  },
+  promo_codes: {
+    Campaigns: [
+      { webapp_field: "code", crm_field: "Campaign_Name" },
+      { webapp_field: "discount_type", crm_field: "Type" },
+      { webapp_field: "discount_value", crm_field: "Budgeted_Cost" },
+      { webapp_field: "applies_to", crm_field: "Description" },
+      { webapp_field: "enabled", crm_field: "Status" },
+      { webapp_field: "expiry_date", crm_field: "End_Date" },
+    ],
+  },
+  refunds: {
+    Invoices: [
+      { webapp_field: "order_id", crm_field: "Subject" },
+      { webapp_field: "amount", crm_field: "Grand_Total" },
+      { webapp_field: "status", crm_field: "Status" },
+      { webapp_field: "reason", crm_field: "Description" },
+      { webapp_field: "currency", crm_field: "Currency" },
+    ],
+  },
+  addresses: {
+    Contacts: [
+      { webapp_field: "line1", crm_field: "Mailing_Street" },
+      { webapp_field: "city", crm_field: "Mailing_City" },
+      { webapp_field: "region", crm_field: "Mailing_State" },
+      { webapp_field: "postal", crm_field: "Mailing_Zip" },
+      { webapp_field: "country", crm_field: "Mailing_Country" },
+    ],
+    Leads: [
+      { webapp_field: "line1", crm_field: "Street" },
+      { webapp_field: "city", crm_field: "City" },
+      { webapp_field: "region", crm_field: "State" },
+      { webapp_field: "postal", crm_field: "Zip_Code" },
+      { webapp_field: "country", crm_field: "Country" },
     ],
   },
 };

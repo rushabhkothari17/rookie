@@ -375,6 +375,54 @@ async def delete_crm_field_mapping(tenant_id: str, mapping_id: str) -> Dict[str,
 # Auto-sync functionality for real-time Zoho CRM sync on record create/update
 # ---------------------------------------------------------------------------
 
+def _enrich_record_for_module(webapp_module: str, record: Dict[str, Any], user: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Enrich a record with derived / computed fields before CRM mapping."""
+    import json as _json
+    enriched = dict(record)
+
+    if webapp_module == "customers" and user:
+        enriched["email"] = user.get("email")
+        enriched["full_name"] = user.get("full_name")
+
+    elif webapp_module == "products":
+        schema = record.get("intake_schema_json") or {}
+        questions = schema.get("questions", []) if isinstance(schema, dict) else []
+        enriched["intake_questions_count"] = len(questions)
+        enriched["intake_questions_labels"] = ", ".join(
+            q.get("label", q.get("key", "")) for q in questions if q.get("type") != "html_block"
+        )
+        enriched["intake_questions_json"] = _json.dumps(questions, ensure_ascii=False) if questions else ""
+        # Flatten description
+        if not enriched.get("description"):
+            enriched["description"] = record.get("card_description", "")
+
+    elif webapp_module == "promo_codes":
+        # Boolean → string for CRM compatibility
+        enriched["enabled"] = "Yes" if record.get("enabled") else "No"
+
+    elif webapp_module == "plans":
+        enriched["is_active"] = "Yes" if record.get("is_active") else "No"
+        enriched["is_public"] = "Yes" if record.get("is_public") else "No"
+
+    elif webapp_module == "categories":
+        enriched["is_active"] = "Yes" if record.get("is_active") else "No"
+
+    elif webapp_module == "terms":
+        enriched["is_default"] = "Yes" if record.get("is_default") else "No"
+
+    elif webapp_module == "addresses":
+        enriched["is_primary"] = "Yes" if record.get("is_primary") else "No"
+
+    # Flatten any list fields to comma-separated strings
+    for k, v in list(enriched.items()):
+        if isinstance(v, list):
+            enriched[k] = ", ".join(str(i) for i in v)
+        elif isinstance(v, dict):
+            enriched[k] = _json.dumps(v, ensure_ascii=False)
+
+    return enriched
+
+
 async def auto_sync_to_zoho_crm(
     tenant_id: str,
     webapp_module: str,
@@ -382,43 +430,22 @@ async def auto_sync_to_zoho_crm(
     operation: str = "create"  # "create" or "update"
 ) -> Dict[str, Any]:
     """
-    Automatically sync a single record to Zoho CRM based on active mappings.
-    
-    Args:
-        tenant_id: The tenant ID
-        webapp_module: The webapp module name (customers, orders, subscriptions, quote_requests)
-        record: The record data to sync
-        operation: "create" or "update"
-    
-    Returns:
-        Dict with success status and any errors
+    Sync a single record to Zoho CRM for ALL active mappings for this module.
+    Supports multiple CRM destinations per source module (find → fan-out).
     """
     try:
-        # Find active mapping for this module
-        mapping = await db.crm_mappings.find_one({
+        # Find ALL active mappings for this module (supports multiple CRM targets)
+        mappings = await db.crm_mappings.find({
             "tenant_id": tenant_id,
             "webapp_module": webapp_module,
             "is_active": True,
             "$or": [{"provider": "zoho_crm"}, {"provider": {"$exists": False}}],
-        }, {"_id": 0})
-        
-        if not mapping:
-            # No active mapping for this module - skip silently
+        }, {"_id": 0}).to_list(None)
+
+        if not mappings:
             return {"success": True, "skipped": True, "reason": "no_mapping"}
-        
-        # Check if sync is enabled for this operation
-        if operation == "create" and not mapping.get("sync_on_create", True):
-            return {"success": True, "skipped": True, "reason": "sync_on_create_disabled"}
-        if operation == "update" and not mapping.get("sync_on_update", True):
-            return {"success": True, "skipped": True, "reason": "sync_on_update_disabled"}
-        
-        crm_module = mapping.get("crm_module")
-        field_maps = mapping.get("field_mappings", [])
-        
-        if not crm_module or not field_maps:
-            return {"success": True, "skipped": True, "reason": "incomplete_mapping"}
-        
-        # Get Zoho connection credentials
+
+        # Get Zoho connection credentials (shared for all mappings)
         conn = await db.oauth_connections.find_one(
             {"tenant_id": tenant_id, "provider": "zoho_crm", "is_validated": True},
             {"_id": 0}
@@ -426,19 +453,19 @@ async def auto_sync_to_zoho_crm(
         if not conn:
             logger.warning(f"Auto-sync skipped: No validated Zoho CRM connection for tenant {tenant_id}")
             return {"success": False, "error": "no_zoho_connection"}
-        
+
         creds = conn.get("credentials", {})
         refresh_token = creds.get("refresh_token")
         client_id = creds.get("client_id")
         client_secret = creds.get("client_secret")
         api_domain = creds.get("_api_domain", "https://www.zohoapis.com")
         accounts_url = creds.get("_accounts_url", "https://accounts.zoho.com")
-        
+
         if not all([refresh_token, client_id, client_secret]):
             return {"success": False, "error": "missing_credentials"}
-        
-        # Get access token
+
         async with httpx.AsyncClient(timeout=30.0) as client:
+            # Refresh access token once for all mappings
             token_resp = await client.post(
                 f"{accounts_url}/oauth/v2/token",
                 data={
@@ -451,81 +478,100 @@ async def auto_sync_to_zoho_crm(
             if token_resp.status_code != 200:
                 logger.error(f"Auto-sync token refresh failed: {token_resp.text}")
                 return {"success": False, "error": "token_refresh_failed"}
-            
+
             access_token = token_resp.json().get("access_token")
             if not access_token:
                 return {"success": False, "error": "no_access_token"}
-            
-            # Enrich record if it's a customer (add email, full_name from user)
-            enriched_record = dict(record)
+
+            # Enrich record once for this module (fetch user for customers)
+            user = None
             if webapp_module == "customers" and record.get("user_id"):
                 user = await db.users.find_one(
                     {"id": record["user_id"]},
                     {"_id": 0, "email": 1, "full_name": 1}
                 )
-                if user:
-                    enriched_record["email"] = user.get("email")
-                    enriched_record["full_name"] = user.get("full_name")
-            
-            # Build Zoho record from field mappings
-            zoho_record: Dict[str, Any] = {}
-            for fm in field_maps:
-                wf = fm.get("webapp_field")
-                cf = fm.get("crm_field")
-                if wf and cf:
-                    val = enriched_record.get(wf)
-                    if val is not None:
-                        zoho_record[cf] = val if isinstance(val, (int, float, bool)) else str(val)
-            
-            if not zoho_record:
-                return {"success": True, "skipped": True, "reason": "no_fields_to_sync"}
-            
-            # Send to Zoho CRM
-            resp = await client.post(
-                f"{api_domain}/crm/v3/{crm_module}",
-                json={"data": [zoho_record]},
-                headers={
-                    "Authorization": f"Zoho-oauthtoken {access_token}",
-                    "Content-Type": "application/json",
-                },
-            )
-            
-            if resp.status_code in [200, 201]:
-                resp_data = resp.json().get("data", [])
-                if resp_data and isinstance(resp_data[0], dict):
-                    code = resp_data[0].get("code", "")
-                    if code in ("SUCCESS", "RECORD_ADDED"):
-                        zoho_id = resp_data[0].get("details", {}).get("id")
-                        logger.info(f"Auto-sync success: {webapp_module} -> {crm_module}, Zoho ID: {zoho_id}")
-                        await create_audit_log(
-                            entity_type=webapp_module, entity_id=record.get("id", "unknown"),
-                            action="zoho_crm_sync_success", actor="system",
-                            details={"zoho_module": crm_module, "operation": operation, "zoho_id": zoho_id},
-                            tenant_id=tenant_id,
-                        )
-                        return {"success": True, "zoho_id": zoho_id}
-                    else:
-                        error_msg = resp_data[0].get("message", str(resp_data[0]))
-                        logger.warning(f"Auto-sync Zoho error: {error_msg}")
-                        await create_audit_log(
-                            entity_type=webapp_module, entity_id=record.get("id", "unknown"),
-                            action="zoho_crm_sync_failed", actor="system",
-                            details={"zoho_module": crm_module, "operation": operation, "error": error_msg},
-                            tenant_id=tenant_id,
-                        )
-                        return {"success": False, "error": error_msg}
-                return {"success": True}
-            else:
-                error_msg = resp.text[:200]
-                logger.error(f"Auto-sync HTTP error {resp.status_code}: {error_msg}")
-                await create_audit_log(
-                    entity_type=webapp_module, entity_id=record.get("id", "unknown"),
-                    action="zoho_crm_sync_failed", actor="system",
-                    details={"zoho_module": crm_module, "operation": operation, "error": error_msg},
-                    tenant_id=tenant_id,
+            enriched_record = _enrich_record_for_module(webapp_module, record, user)
+
+            # Fan-out: push to each active mapping target
+            results = []
+            for mapping in mappings:
+                # Respect per-mapping sync toggles
+                if operation == "create" and not mapping.get("sync_on_create", True):
+                    results.append({"skipped": True, "reason": "sync_on_create_disabled"})
+                    continue
+                if operation == "update" and not mapping.get("sync_on_update", True):
+                    results.append({"skipped": True, "reason": "sync_on_update_disabled"})
+                    continue
+
+                crm_module = mapping.get("crm_module")
+                field_maps = mapping.get("field_mappings", [])
+                if not crm_module or not field_maps:
+                    results.append({"skipped": True, "reason": "incomplete_mapping"})
+                    continue
+
+                # Build Zoho record from field mappings
+                zoho_record: Dict[str, Any] = {}
+                for fm in field_maps:
+                    wf = fm.get("webapp_field")
+                    cf = fm.get("crm_field")
+                    if wf and cf:
+                        val = enriched_record.get(wf)
+                        if val is not None:
+                            zoho_record[cf] = val if isinstance(val, (int, float, bool)) else str(val)
+
+                if not zoho_record:
+                    results.append({"skipped": True, "reason": "no_fields_to_sync"})
+                    continue
+
+                resp = await client.post(
+                    f"{api_domain}/crm/v3/{crm_module}",
+                    json={"data": [zoho_record]},
+                    headers={
+                        "Authorization": f"Zoho-oauthtoken {access_token}",
+                        "Content-Type": "application/json",
+                    },
                 )
-                return {"success": False, "error": f"HTTP {resp.status_code}: {error_msg}"}
-                
+
+                if resp.status_code in [200, 201]:
+                    resp_data = resp.json().get("data", [])
+                    if resp_data and isinstance(resp_data[0], dict):
+                        code = resp_data[0].get("code", "")
+                        if code in ("SUCCESS", "RECORD_ADDED"):
+                            zoho_id = resp_data[0].get("details", {}).get("id")
+                            logger.info(f"Auto-sync success: {webapp_module} -> {crm_module}, Zoho ID: {zoho_id}")
+                            await create_audit_log(
+                                entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                                action="zoho_crm_sync_success", actor="system",
+                                details={"zoho_module": crm_module, "operation": operation, "zoho_id": zoho_id},
+                                tenant_id=tenant_id,
+                            )
+                            results.append({"success": True, "crm_module": crm_module, "zoho_id": zoho_id})
+                        else:
+                            error_msg = resp_data[0].get("message", str(resp_data[0]))
+                            logger.warning(f"Auto-sync Zoho error: {error_msg}")
+                            await create_audit_log(
+                                entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                                action="zoho_crm_sync_failed", actor="system",
+                                details={"zoho_module": crm_module, "operation": operation, "error": error_msg},
+                                tenant_id=tenant_id,
+                            )
+                            results.append({"success": False, "crm_module": crm_module, "error": error_msg})
+                    else:
+                        results.append({"success": True, "crm_module": crm_module})
+                else:
+                    error_msg = resp.text[:200]
+                    logger.error(f"Auto-sync HTTP error {resp.status_code}: {error_msg}")
+                    await create_audit_log(
+                        entity_type=webapp_module, entity_id=record.get("id", "unknown"),
+                        action="zoho_crm_sync_failed", actor="system",
+                        details={"zoho_module": crm_module, "operation": operation, "error": error_msg},
+                        tenant_id=tenant_id,
+                    )
+                    results.append({"success": False, "crm_module": crm_module, "error": f"HTTP {resp.status_code}: {error_msg}"})
+
+            any_success = any(r.get("success") for r in results)
+            return {"success": any_success, "results": results}
+
     except Exception as e:
         logger.error(f"Auto-sync exception: {str(e)}")
         return {"success": False, "error": str(e)}

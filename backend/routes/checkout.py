@@ -1,6 +1,7 @@
 """Checkout routes: Stripe session, bank transfer, checkout status."""
 from __future__ import annotations
 
+import asyncio as _asyncio
 import os
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional, Tuple
@@ -13,6 +14,7 @@ from core.config import STRIPE_API_KEY
 from db.session import db
 from models import CheckoutSessionRequestBody, BankTransferCheckoutRequest, TaxCalculateRequest
 from services.audit_service import create_audit_log
+from services.zoho_service import auto_sync_to_zoho_crm
 from services.checkout_service import (
     build_order_items,
     build_checkout_notes_json,
@@ -440,11 +442,15 @@ async def checkout_bank_transfer(
                 },
             )
 
-    await db.invoices.insert_one({
+    invoice_doc_gc = {
         "id": make_id(), "order_id": order_id, "subscription_id": None,
         "stripe_invoice_id": None, "zoho_books_invoice_id": None,
         "amount_paid": 0.0, "status": "unpaid",
-    })
+        "tenant_id": tenant_id, "currency": order_items[0]["product"].get("currency", "USD"),
+    }
+    await db.invoices.insert_one(invoice_doc_gc)
+    invoice_doc_gc.pop("_id", None)
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id, "invoices", invoice_doc_gc, "create"))
     await db.zoho_sync_logs.insert_one({
         "id": make_id(), "entity_type": "deal", "entity_id": order_id,
         "status": "Not Sent", "last_error": None, "attempts": 0, "created_at": now_iso(), "mocked": True,
@@ -800,11 +806,16 @@ async def checkout_status(
                     "previous_status": order.get("status"),
                 },
             )
-            await db.invoices.insert_one({
+            invoice_doc_stripe = {
                 "id": make_id(), "order_id": order["id"], "subscription_id": None,
                 "stripe_invoice_id": None, "zoho_books_invoice_id": None,
                 "amount_paid": order.get("total"), "status": "paid",
-            })
+                "tenant_id": order.get("tenant_id", ""), "currency": order.get("currency"),
+            }
+            await db.invoices.insert_one(invoice_doc_stripe)
+            invoice_doc_stripe.pop("_id", None)
+            if order.get("tenant_id"):
+                _asyncio.ensure_future(auto_sync_to_zoho_crm(order["tenant_id"], "invoices", invoice_doc_stripe, "create"))
             if order.get("type") == "subscription_start":
                 existing_sub = await db.subscriptions.find_one({"order_id": order["id"]}, {"_id": 0})
                 if not existing_sub:
@@ -1062,7 +1073,7 @@ async def checkout_free(
                 },
             )
 
-    await db.invoices.insert_one({
+    invoice_doc_free = {
         "id": make_id(),
         "order_id": order_id,
         "subscription_id": None,
@@ -1070,7 +1081,12 @@ async def checkout_free(
         "zoho_books_invoice_id": None,
         "amount_paid": 0.0,
         "status": "paid",
-    })
+        "tenant_id": tenant_id,
+        "currency": order_items[0]["product"].get("currency", "USD"),
+    }
+    await db.invoices.insert_one(invoice_doc_free)
+    invoice_doc_free.pop("_id", None)
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id, "invoices", invoice_doc_free, "create"))
     
     await db.zoho_sync_logs.insert_one({
         "id": make_id(),

@@ -571,7 +571,45 @@ async def get_crm_mappings(
         ]},
         {"name": "subscriptions", "label": "Subscriptions", "fields": [
             "subscription_number", "plan_name", "status", "amount", "currency", "billing_cycle", "created_at"
-        ]}
+        ]},
+        {"name": "products", "label": "Products", "fields": [
+            "name", "card_tag", "card_description", "description", "category", "base_price",
+            "is_subscription", "is_active", "currency", "pricing_type", "billing_type",
+            "default_term_months", "display_layout", "visible_to_customers", "show_price_breakdown",
+            "intake_questions_count", "intake_questions_labels", "intake_questions_json", "created_at"
+        ]},
+        {"name": "enquiries", "label": "Enquiries", "fields": [
+            "order_number", "status", "customer_name", "customer_email", "product_name",
+            "products", "notes", "created_at"
+        ]},
+        {"name": "invoices", "label": "Invoices", "fields": [
+            "order_id", "amount_paid", "status", "currency", "created_at"
+        ]},
+        {"name": "resources", "label": "Resources", "fields": [
+            "title", "slug", "category", "visibility", "price", "currency", "created_at", "updated_at"
+        ]},
+        {"name": "plans", "label": "Plans", "fields": [
+            "name", "description", "monthly_price", "currency", "is_active", "is_public",
+            "max_users", "max_customers_per_month", "max_orders_per_month",
+            "max_subscriptions_per_month", "max_resources", "created_at"
+        ]},
+        {"name": "categories", "label": "Product Categories", "fields": [
+            "name", "description", "is_active", "created_at"
+        ]},
+        {"name": "terms", "label": "Terms & Conditions", "fields": [
+            "title", "status", "is_default", "created_at"
+        ]},
+        {"name": "promo_codes", "label": "Promo Codes", "fields": [
+            "code", "discount_type", "discount_value", "applies_to", "max_uses",
+            "usage_count", "enabled", "expiry_date", "currency", "created_at"
+        ]},
+        {"name": "refunds", "label": "Refunds", "fields": [
+            "order_id", "amount", "reason", "status", "currency", "created_at"
+        ]},
+        {"name": "addresses", "label": "Addresses", "fields": [
+            "line1", "line2", "city", "region", "postal", "country", "customer_id",
+            "is_primary", "created_at"
+        ]},
     ]
     
     return {

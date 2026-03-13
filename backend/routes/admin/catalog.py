@@ -11,6 +11,7 @@ from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin, is_pl
 from db.session import db
 from models import AdminProductCreate, AdminProductUpdate, CategoryCreate, CategoryUpdate, IntakeSchemaJson
 from services.audit_service import create_audit_log
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["admin-catalog"])
 
@@ -225,6 +226,8 @@ async def admin_create_product(
         actor=f"admin:{admin.get('email', admin['id'])}",
         details=audit_details,
     )
+    import asyncio as _asyncio
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tid, "products", product, "create"))
     return {"product": product}
 
 
@@ -316,6 +319,10 @@ async def admin_update_product(
         actor=f"admin:{admin.get('email', admin['id'])}",
         details=audit_details,
     )
+    import asyncio as _asyncio
+    updated_product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if updated_product:
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id_of(admin), "products", updated_product, "update"))
     return {"message": "Product updated"}
 
 
@@ -388,6 +395,8 @@ async def admin_create_category(
         actor=f"admin:{admin.get('email', admin['id'])}",
         details={"name": payload.name},
     )
+    import asyncio as _asyncio
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tenant_id_of(admin), "categories", cat, "create"))
     return {"category": cat}
 
 

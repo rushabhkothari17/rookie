@@ -14,6 +14,7 @@ from core.helpers import make_id, now_iso
 from core.tenant import require_platform_admin, require_platform_super_admin
 from db.session import db
 from services.audit_service import create_audit_log
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["admin-plans"])
 
@@ -108,6 +109,8 @@ async def create_plan(payload: PlanCreate, admin: Dict[str, Any] = Depends(requi
         actor=admin.get("email", "admin"),
         details={"name": payload.name},
     )
+    import asyncio as _asyncio
+    _asyncio.ensure_future(auto_sync_to_zoho_crm("platform", "plans", plan_doc, "create"))
     return {"plan": plan_doc}
 
 

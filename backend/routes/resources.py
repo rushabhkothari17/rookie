@@ -17,6 +17,7 @@ from db.session import db
 from models import ResourceCreate, ResourceEmailRequest, ResourceUpdate, ResourceSendEmailRequest
 from services.audit_service import AuditService, create_audit_log
 from services.settings_service import SettingsService
+from services.zoho_service import auto_sync_to_zoho_crm
 
 router = APIRouter(prefix="/api", tags=["resources"])
 
@@ -368,6 +369,7 @@ async def create_article(
     )
     await create_audit_log(entity_type="resource", entity_id=resource_id, action="created", actor=admin.get("email", "admin"), details={"title": payload.title, "category": payload.category})
     doc.pop("_id", None)
+    asyncio.ensure_future(auto_sync_to_zoho_crm(tid, "resources", doc, "create"))
     return {"resource": doc}
 
 
@@ -453,6 +455,7 @@ async def update_article(
 
     updated = await db.resources.find_one({"id": resource_id}, {"_id": 0})
     updated.pop("_id", None)
+    asyncio.ensure_future(auto_sync_to_zoho_crm(tid, "resources", updated, "update"))
     return {"resource": updated}
 
 

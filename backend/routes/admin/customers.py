@@ -452,7 +452,7 @@ async def admin_create_customer(
     }
     await db.customers.insert_one(customer_doc)
 
-    await db.addresses.insert_one({
+    addr_doc = {
         "id": make_id(),
         "customer_id": customer_id,
         "tenant_id": tid,
@@ -462,7 +462,12 @@ async def admin_create_customer(
         "region": payload.region,
         "postal": payload.postal,
         "country": payload.country,
-    })
+        "is_primary": True,
+        "created_at": now_iso(),
+    }
+    await db.addresses.insert_one(addr_doc)
+    addr_doc.pop("_id", None)
+    asyncio.create_task(auto_sync_to_zoho_crm(tid, "addresses", addr_doc, "create"))
 
     await create_audit_log(
         entity_type="customer",

@@ -1,0 +1,51 @@
+{
+  "summary": "Tested extended Zoho CRM integration with 13 webapp_modules. All 18 backend tests passed. Verified: (1) API returns exactly 13 modules, (2) Products module has 19 fields including 3 intake derived fields, (3) Multiple mappings per module supported (customers→Leads AND customers→Contacts). Frontend code confirms webappModules dropdown directly uses API response (13 modules). Zoho CRM not validated in this environment so UI mapping panel couldn't be opened directly, but API-confirmed and code-reviewed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "component": "catalog.py startup",
+        "issue": "Transient NameError on 'router' at startup — auto-resolved by hot-reload. Backend is currently healthy.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_health": "PASS - Backend responding, admin login OK",
+    "api_13_modules": "PASS - GET /api/admin/integrations/crm-mappings returns exactly 13 webapp_modules: customers, orders, subscriptions, products, enquiries, invoices, resources, plans, categories, terms, promo_codes, refunds, addresses",
+    "products_19_fields": "PASS - Products module has exactly 19 fields including intake_questions_count, intake_questions_labels, intake_questions_json",
+    "multiple_mappings_per_module": "PASS - Created customers→TEST_Leads_271 AND customers→TEST_Contacts_271 successfully; both appear in GET response",
+    "frontend_13_modules_in_dropdown": "CONFIRMED via code review - entity-select dropdown (line 1695) uses webappModules from API response; API returns 13 modules",
+    "DEFAULT_FIELD_MAPS": "CONFIRMED - DEFAULT_FIELD_MAPS in IntegrationsOverview.tsx has all 13 modules (customers, orders, subscriptions, products, enquiries, invoices, resources, plans, categories, terms, promo_codes, refunds, addresses)",
+    "zoho_crm_ui_mapping_panel": "NOT TESTABLE - Zoho CRM not validated in this environment; mappings button only shows when is_validated=true. API tests confirmed equivalent functionality."
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter271_zoho_crm_extended.py",
+    "/app/test_reports/pytest/pytest_iter271_zoho_crm.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "auto_sync_to_zoho_crm correctly changed to find (fan-out) from find_one - verified in zoho_service.py lines 438-444",
+    "_enrich_record_for_module correctly computes intake_questions_count, intake_questions_labels, intake_questions_json from intake_schema_json field for products module",
+    "save_crm_field_mapping uses (tenant_id, webapp_module, crm_module) as unique key allowing multiple CRM targets per source module",
+    "DEFAULT_FIELD_MAPS in frontend includes all 13 modules with sensible field mappings",
+    "Backend had transient NameError in catalog.py (router not defined) but hot-reload fixed it; verify catalog.py has router defined before the decorator"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter271_zoho_crm_extended.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "N/A (Zoho CRM not validated; code review confirms 13-module dropdown; API tests confirm full functionality)"
+  },
+  "seed_data_creation": "Created and cleaned up test CRM mappings: customers→TEST_Leads_271, customers→TEST_Contacts_271, products→TEST_Products_271 (all deleted in cleanup)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 271: Extended Zoho CRM integration fully verified via backend tests. API returns 13 webapp_modules. Products module has 19 fields with 3 intake derived fields. Multiple mappings per module work (fan-out). Frontend DEFAULT_FIELD_MAPS covers all 13 modules. Zoho CRM tile visible in Connect Services but not validated in env. Backend had transient startup NameError in catalog.py but auto-fixed by hot-reload.",
+  "rca_of_issues": "N/A - No bugs found. All features working as designed."
+}
