@@ -183,9 +183,13 @@ export function UniversalFormRenderer({
             onChange={e => onChange(key, e.target.value)}
             placeholder={samplePh(key, field)}
             rows={compact ? 3 : 4}
+            maxLength={field.max_length || undefined}
             aria-label={field.label}
             data-testid={tid}
           />
+          {field.max_length && (
+            <p className="mt-0.5 px-4 text-[10px] text-slate-400 text-right">{(val as string).length}/{field.max_length}</p>
+          )}
           {err && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>}
         </div>
       );
@@ -249,6 +253,7 @@ export function UniversalFormRenderer({
           onChange={e => handleChange(key, e.target.value, field.required)}
           placeholder={samplePh(key, field)}
           required={field.required}
+          maxLength={field.max_length || undefined}
           aria-label={field.label}
           data-testid={tid}
           autoComplete={
@@ -258,6 +263,9 @@ export function UniversalFormRenderer({
             key === "phone" ? "tel" : undefined
           }
         />
+        {field.max_length && !["number","date"].includes(field.type) && (
+          <p className="mt-0.5 px-4 text-[10px] text-slate-400 text-right">{(val as string).length}/{field.max_length}</p>
+        )}
         {err && (
           <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>
         )}

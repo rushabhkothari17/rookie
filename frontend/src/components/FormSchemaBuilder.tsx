@@ -53,6 +53,7 @@ export interface FormField {
   locked: boolean;
   enabled: boolean;
   order: number;
+  max_length?: number;
   address_config?: AddressConfig;
 }
 
@@ -202,6 +203,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                 <p className="text-[11px] text-slate-400 font-mono">{field.key}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                {/* Hide/Show for locked fields that aren't always-visible */}
                 {field.locked && !ALWAYS_VISIBLE_KEYS.has(field.key) && (
                   <button
                     type="button"
@@ -309,10 +311,32 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                     </div>
                     <div className="flex items-end gap-4 pb-1">
                       <label className="flex items-center gap-1.5 cursor-pointer">
-                        <input type="checkbox" checked={field.required} onChange={e => updateField(field.id, { required: e.target.checked })} className="w-3.5 h-3.5" />
+                        <input type="checkbox" checked={field.required} onChange={e => updateField(field.id, { required: e.target.checked })} className="w-3.5 h-3.5" data-testid={`field-required-${field.id}`} />
                         <span className="text-xs text-slate-600">Required</span>
                       </label>
+                      {!ALWAYS_VISIBLE_KEYS.has(field.key) && (
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" checked={field.enabled !== false} onChange={e => updateField(field.id, { enabled: e.target.checked })} className="w-3.5 h-3.5" data-testid={`field-enabled-${field.id}`} />
+                          <span className="text-xs text-slate-600">Visible</span>
+                        </label>
+                      )}
                     </div>
+                    {/* Max length — only for text/email/tel/textarea fields */}
+                    {(["text", "email", "tel", "textarea", "password"].includes(field.type)) && (
+                      <div>
+                        <label className="text-[11px] text-slate-500 font-medium">Max characters <span className="text-slate-400">(optional)</span></label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={10000}
+                          value={field.max_length ?? ""}
+                          onChange={e => updateField(field.id, { max_length: e.target.value ? Number(e.target.value) : undefined })}
+                          placeholder="No limit"
+                          className="mt-0.5 h-7 text-xs"
+                          data-testid={`field-maxlength-${field.id}`}
+                        />
+                      </div>
+                    )}
                       {field.type === "select" && (
                       <div className="col-span-2">
                         <label className="text-[11px] text-slate-500 font-medium">Options (one per line, format: Label|value)</label>
