@@ -99,6 +99,9 @@ h3,
   scrollbar-width: none;
 }
 
+/* Admin filter-row search inputs — prevent unbounded stretch */
+.aa-admin-search { max-width: 15rem !important; }
+
 /* Admin panel tab active state — contrasting highlight with left accent bar */
 .aa-tab-trigger[data-state="active"] {
   background-color: rgba(255, 255, 255, 0.13) !important;
@@ -531,6 +534,39 @@ input[class*="rounded-full"]:focus {
 .aa-dark .bg-slate-200      { background-color: color-mix(in srgb, var(--aa-border) 60%, var(--aa-surface)) !important; }
 .aa-dark .hover\:bg-slate-50:hover   { background-color: var(--aa-surface) !important; }
 .aa-dark .hover\:bg-slate-100:hover  { background-color: color-mix(in srgb, var(--aa-surface) 80%, var(--aa-card)) !important; }
+.aa-dark .bg-gray-50,  .aa-dark .bg-gray-100  { background-color: var(--aa-surface) !important; }
+.aa-dark .bg-zinc-50,  .aa-dark .bg-zinc-100  { background-color: var(--aa-surface) !important; }
+.aa-dark .bg-neutral-50, .aa-dark .bg-neutral-100 { background-color: var(--aa-surface) !important; }
+
+/* ── Tinted info/alert boxes (50-shade) ─────────────────── */
+.aa-dark .bg-indigo-50  { background-color: color-mix(in srgb, #6366f1 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-blue-50    { background-color: color-mix(in srgb, #3b82f6 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-amber-50   { background-color: color-mix(in srgb, #f59e0b 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-orange-50  { background-color: color-mix(in srgb, #f97316 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-green-50   { background-color: color-mix(in srgb, #22c55e 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-red-50     { background-color: color-mix(in srgb, #ef4444 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-rose-50    { background-color: color-mix(in srgb, #f43f5e 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-purple-50  { background-color: color-mix(in srgb, #a855f7 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-sky-50     { background-color: color-mix(in srgb, #0ea5e9 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-teal-50    { background-color: color-mix(in srgb, #14b8a6 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-emerald-50 { background-color: color-mix(in srgb, #10b981 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-pink-50    { background-color: color-mix(in srgb, #ec4899 12%, var(--aa-surface)) !important; }
+.aa-dark .bg-cyan-50    { background-color: color-mix(in srgb, #06b6d4 12%, var(--aa-surface)) !important; }
+
+/* ── Tinted 100-shade ──────────────────────────────────────── */
+.aa-dark .bg-indigo-100 { background-color: color-mix(in srgb, #6366f1 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-blue-100   { background-color: color-mix(in srgb, #3b82f6 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-amber-100  { background-color: color-mix(in srgb, #f59e0b 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-orange-100 { background-color: color-mix(in srgb, #f97316 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-green-100  { background-color: color-mix(in srgb, #22c55e 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-red-100    { background-color: color-mix(in srgb, #ef4444 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-rose-100   { background-color: color-mix(in srgb, #f43f5e 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-purple-100 { background-color: color-mix(in srgb, #a855f7 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-sky-100    { background-color: color-mix(in srgb, #0ea5e9 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-teal-100   { background-color: color-mix(in srgb, #14b8a6 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-emerald-100{ background-color: color-mix(in srgb, #10b981 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-pink-100   { background-color: color-mix(in srgb, #ec4899 18%, var(--aa-surface)) !important; }
+.aa-dark .bg-cyan-100   { background-color: color-mix(in srgb, #06b6d4 18%, var(--aa-surface)) !important; }
 
 /* ── Text ────────────────────────────────────────────────── */
 .aa-dark .text-slate-900    { color: var(--aa-text) !important; }
@@ -540,6 +576,28 @@ input[class*="rounded-full"]:focus {
 .aa-dark .text-slate-500    { color: var(--aa-muted) !important; }
 .aa-dark .text-slate-400    { color: color-mix(in srgb, var(--aa-muted) 75%, transparent) !important; }
 .aa-dark .text-slate-300    { color: color-mix(in srgb, var(--aa-muted) 55%, transparent) !important; }
+.aa-dark .text-gray-900, .aa-dark .text-gray-800  { color: var(--aa-text) !important; }
+.aa-dark .text-gray-700, .aa-dark .text-gray-600  { color: var(--aa-muted) !important; }
+.aa-dark .text-gray-500, .aa-dark .text-gray-400  { color: color-mix(in srgb, var(--aa-muted) 75%, transparent) !important; }
+
+/* ── Tinted text → vibrant hue in dark ──────────────────── */
+.aa-dark .text-indigo-800, .aa-dark .text-indigo-700 { color: #818cf8 !important; }
+.aa-dark .text-indigo-600                            { color: #a5b4fc !important; }
+.aa-dark .text-blue-800,   .aa-dark .text-blue-700   { color: #60a5fa !important; }
+.aa-dark .text-blue-600                              { color: #93c5fd !important; }
+.aa-dark .text-amber-900,  .aa-dark .text-amber-800  { color: #fbbf24 !important; }
+.aa-dark .text-amber-700,  .aa-dark .text-amber-600  { color: #fcd34d !important; }
+.aa-dark .text-orange-800, .aa-dark .text-orange-700 { color: #fb923c !important; }
+.aa-dark .text-orange-600                            { color: #fdba74 !important; }
+.aa-dark .text-purple-800, .aa-dark .text-purple-700 { color: #c084fc !important; }
+.aa-dark .text-purple-600                            { color: #d8b4fe !important; }
+.aa-dark .text-rose-800,   .aa-dark .text-rose-700   { color: #fb7185 !important; }
+.aa-dark .text-emerald-800,.aa-dark .text-emerald-700{ color: #34d399 !important; }
+.aa-dark .text-emerald-600                           { color: #6ee7b7 !important; }
+.aa-dark .text-teal-700,   .aa-dark .text-teal-600   { color: #2dd4bf !important; }
+.aa-dark .text-sky-700,    .aa-dark .text-sky-600    { color: #38bdf8 !important; }
+.aa-dark .text-cyan-700,   .aa-dark .text-cyan-600   { color: #22d3ee !important; }
+.aa-dark .text-pink-700,   .aa-dark .text-pink-600   { color: #f472b6 !important; }
 
 /* ── Borders ─────────────────────────────────────────────── */
 .aa-dark .border-slate-100  { border-color: var(--aa-border) !important; }
@@ -547,6 +605,17 @@ input[class*="rounded-full"]:focus {
 .aa-dark .border-slate-300  { border-color: color-mix(in srgb, var(--aa-border) 140%, transparent) !important; }
 .aa-dark .divide-slate-100 > * + * { border-color: var(--aa-border) !important; }
 .aa-dark .divide-slate-200 > * + * { border-color: var(--aa-border) !important; }
+.aa-dark .border-indigo-100, .aa-dark .border-indigo-200 { border-color: color-mix(in srgb, #6366f1 35%, var(--aa-border)) !important; }
+.aa-dark .border-blue-100,   .aa-dark .border-blue-200   { border-color: color-mix(in srgb, #3b82f6 35%, var(--aa-border)) !important; }
+.aa-dark .border-amber-100,  .aa-dark .border-amber-200  { border-color: color-mix(in srgb, #f59e0b 35%, var(--aa-border)) !important; }
+.aa-dark .border-amber-300                               { border-color: color-mix(in srgb, #f59e0b 45%, var(--aa-border)) !important; }
+.aa-dark .border-orange-100, .aa-dark .border-orange-200 { border-color: color-mix(in srgb, #f97316 35%, var(--aa-border)) !important; }
+.aa-dark .border-green-100,  .aa-dark .border-green-200  { border-color: color-mix(in srgb, #22c55e 35%, var(--aa-border)) !important; }
+.aa-dark .border-red-100,    .aa-dark .border-red-200    { border-color: color-mix(in srgb, #ef4444 35%, var(--aa-border)) !important; }
+.aa-dark .border-purple-100, .aa-dark .border-purple-200 { border-color: color-mix(in srgb, #a855f7 35%, var(--aa-border)) !important; }
+.aa-dark .border-emerald-200, .aa-dark .border-emerald-100 { border-color: color-mix(in srgb, #10b981 35%, var(--aa-border)) !important; }
+.aa-dark .border-teal-200,   .aa-dark .border-teal-100   { border-color: color-mix(in srgb, #14b8a6 35%, var(--aa-border)) !important; }
+.aa-dark .border-sky-200,    .aa-dark .border-sky-100    { border-color: color-mix(in srgb, #0ea5e9 35%, var(--aa-border)) !important; }
 
 /* ── Forms & Inputs ─────────────────────────────────────── */
 .aa-dark input:not([type="color"]),
@@ -576,6 +645,34 @@ input[class*="rounded-full"]:focus {
   color: var(--aa-text) !important;
 }
 
+/* ── Shadcn Tabs — sub-nav tabs (horizontal, non-sidebar) ── */
+/* TabsList background */
+.aa-dark [role="tablist"]:not(.flex-col) {
+  background-color: var(--aa-surface) !important;
+  border-color: var(--aa-border) !important;
+}
+/* Active TabsTrigger — works for both bg-background and bg-white active states */
+.aa-dark [role="tablist"]:not(.flex-col) [data-state="active"] {
+  background-color: var(--aa-card) !important;
+  color: var(--aa-text) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4) !important;
+}
+/* Inactive TabsTrigger text */
+.aa-dark [role="tablist"]:not(.flex-col) [data-state="inactive"] {
+  color: var(--aa-muted) !important;
+}
+.aa-dark [role="tablist"]:not(.flex-col) [data-state="inactive"]:hover {
+  color: var(--aa-text) !important;
+  background-color: color-mix(in srgb, var(--aa-card) 50%, var(--aa-surface)) !important;
+}
+
+/* ── Admin sidebar active tab ────────────────────────────── */
+.aa-tab-trigger[data-state="active"] {
+  background-color: rgba(255, 255, 255, 0.16) !important;
+  color: white !important;
+  box-shadow: inset 3px 0 0 var(--aa-accent) !important;
+}
+
 /* ── Badges (keep semantic color, override bg-* from hardcoded Tailwind) */
 .aa-dark .bg-green-100  { background-color: color-mix(in srgb, var(--aa-success) 14%, transparent) !important; }
 .aa-dark .bg-red-100    { background-color: color-mix(in srgb, var(--aa-danger) 12%, transparent) !important; }
@@ -598,16 +695,32 @@ input[class*="rounded-full"]:focus {
 .aa-dark .bg-slate-900 { background-color: var(--aa-primary) !important; }
 .aa-dark .text-white   { color: #ffffff !important; }
 
+/* ── Inline code blocks in info panels ──────────────────── */
+.aa-dark code {
+  background-color: color-mix(in srgb, var(--aa-border) 60%, var(--aa-surface)) !important;
+  color: var(--aa-text) !important;
+}
+
+/* ── Connected services / integration cards ─────────────── */
+.aa-dark .rounded-xl.border { border-color: var(--aa-border) !important; }
+/* Icons inside colored containers */
+.aa-dark [class*="bg-"][class*="-500"] svg,
+.aa-dark [class*="bg-"][class*="-400"] svg { color: #ffffff !important; }
+
 /* ── Icon / SVG visibility in dark mode ──────────────────── */
-/* Icons that use text-slate-* classes — inherit the overridden muted color */
 .aa-dark svg.lucide,
 .aa-dark [class*="lucide-"] { color: inherit; }
-/* Sidebar icons and standalone icon containers */
 .aa-dark .text-slate-400 svg,
 .aa-dark .text-slate-500 svg { color: var(--aa-muted) !important; }
-/* Make sure nav/icon elements don't go dark on dark backgrounds */
 .aa-dark .text-slate-400 { color: var(--aa-muted) !important; }
 .aa-dark .text-slate-300 { color: color-mix(in srgb, var(--aa-muted) 80%, #ffffff) !important; }
+
+/* ── Inline active-state buttons (e.g. ApiTab section switcher) ─ */
+.aa-dark [class*="bg-white"][class*="text-slate-900"],
+.aa-dark [class*="text-slate-900"][class*="bg-white"] {
+  background-color: var(--aa-card) !important;
+  color: var(--aa-text) !important;
+}
 
 /* ── Product card hover lift (supplements framer-motion) ─── */
 .aa-product-lift {

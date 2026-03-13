@@ -427,7 +427,7 @@ export function OrdersTab() {
               {/* Customer selector — email typeahead */}
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Customer (search by email)</label>
-                <Input placeholder="Type email to search…" value={custSearch} onChange={e => setCustSearch(e.target.value)} className="h-9" data-testid="admin-order-customer-search" />
+                <Input placeholder="Type email to search…" value={custSearch} onChange={e => setCustSearch(e.target.value)} className="h-9 aa-admin-search" data-testid="admin-order-customer-search" />
                 {custSearch && filteredCusts.length > 0 && (
                   <div className="border border-slate-200 rounded bg-white shadow-md max-h-36 overflow-y-auto z-10">
                     {filteredCusts.map((c: any) => {
