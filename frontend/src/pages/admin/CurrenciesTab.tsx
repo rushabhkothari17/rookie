@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, RefreshCw, Coins } from "lucide-react";
 import { invalidateCurrencyCache } from "@/hooks/useSupportedCurrencies";
+import { AdminPageHeader } from "./shared/AdminPageHeader";
 
 export function CurrenciesTab() {
   const [currencies, setCurrencies] = useState<string[]>([]);
@@ -59,34 +60,34 @@ export function CurrenciesTab() {
   };
 
   return (
-    <div className="space-y-6" data-testid="currencies-tab">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Supported Currencies</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            These currencies appear in all dropdowns across the platform — partner orgs, plans, subscriptions, orders and pricing.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading} data-testid="refresh-currencies-btn">
-          <RefreshCw size={14} className={loading ? "animate-spin mr-1.5" : "mr-1.5"} /> Refresh
-        </Button>
-      </div>
+    <div className="space-y-4" data-testid="currencies-tab">
+      <AdminPageHeader
+        title="Supported Currencies"
+        subtitle={`${currencies.length} ${currencies.length === 1 ? "currency" : "currencies"} configured`}
+        actions={
+          <>
+            <Input
+              placeholder="e.g. CHF"
+              value={newCode}
+              onChange={e => setNewCode(e.target.value.toUpperCase())}
+              maxLength={3}
+              className="font-mono uppercase w-28 h-8 text-sm"
+              onKeyDown={e => e.key === "Enter" && handleAdd()}
+              data-testid="new-currency-input"
+            />
+            <Button size="sm" onClick={handleAdd} disabled={adding || newCode.trim().length !== 3} data-testid="add-currency-btn">
+              <Plus size={14} className="mr-1" />Add Currency
+            </Button>
+            <Button variant="outline" size="sm" onClick={load} disabled={loading} data-testid="refresh-currencies-btn">
+              <RefreshCw size={14} className={loading ? "animate-spin mr-1" : "mr-1"} />Refresh
+            </Button>
+          </>
+        }
+      />
 
-      {/* Add currency */}
-      <div className="flex gap-2 max-w-sm">
-        <Input
-          placeholder="ISO code e.g. CHF"
-          value={newCode}
-          onChange={e => setNewCode(e.target.value.toUpperCase())}
-          maxLength={3}
-          className="font-mono uppercase"
-          onKeyDown={e => e.key === "Enter" && handleAdd()}
-          data-testid="new-currency-input"
-        />
-        <Button size="sm" onClick={handleAdd} disabled={adding || newCode.trim().length !== 3} data-testid="add-currency-btn">
-          <Plus size={14} className="mr-1.5" />Add
-        </Button>
-      </div>
+      <p className="text-sm text-slate-500 -mt-2">
+        These currencies appear in all dropdowns across the platform — partner orgs, plans, subscriptions, orders and pricing.
+      </p>
 
       {/* Currency list */}
       {loading ? (
@@ -118,7 +119,6 @@ export function CurrenciesTab() {
       )}
 
       <p className="text-xs text-slate-400">
-        {currencies.length} {currencies.length === 1 ? "currency" : "currencies"} configured.
         Removing a currency will not affect existing subscriptions or orders already using it.
       </p>
     </div>
