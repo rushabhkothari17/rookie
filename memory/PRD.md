@@ -173,6 +173,14 @@ Build a white-label service commerce platform with:
 - **All endpoints tested**: 66 GET endpoints + 17 mutation (POST/PUT/DELETE) endpoints = 83 total, 100% PASS
 - **Includes**: request body schemas, response shapes, curl examples, field validation notes, error codes, quick-start test script
 
+### Phase 10: Mobile Optimization (March 2026)
+- **TopNav.tsx**: Hamburger menu on mobile (`md:hidden`), animated mobile drawer with all nav links, closes on route change
+- **Admin.tsx**: Collapsible sidebar on mobile — toggle button shows active tab name, overlay backdrop, sidebar slides in from left with z-index layering
+- **Store.tsx**: Mobile filters toggle button, `flex-col md:flex-row` layout, responsive hero padding (`px-6 md:px-10`), search+sort wraps on mobile, aside cleaned up
+- **Resources.tsx**: Responsive hero padding fixed
+- **index.css**: Global mobile CSS — admin tables get `overflow-x: auto` scroll container, store layout stacks vertically on mobile
+- Verified via testing agent iteration_273 — 8/8 tests PASS (100%)
+
 ### P0 — Critical (None currently)
 
 ### P1 — High Priority

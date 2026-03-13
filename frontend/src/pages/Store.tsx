@@ -600,7 +600,7 @@ export default function Store() {
                 </div>
 
                 {/* Search + Sort row */}
-                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap w-full sm:w-auto">
                   {/* Search pill */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
@@ -609,7 +609,7 @@ export default function Store() {
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       placeholder="Search products…"
-                      className="h-9 w-40 sm:w-48 rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
+                      className="h-9 w-full sm:w-40 md:w-48 rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
                       data-testid="store-search-input"
                     />
                     {searchQuery && (
