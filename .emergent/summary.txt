@@ -1,114 +1,75 @@
 <analysis>**original_problem_statement:**
-The user initially requested a series of UI/UX improvements and bug fixes. During this session, the user added several more requests:
-1.  **UI Standardization**: Make all admin tables (Plans, Users, etc.) and their action buttons look and feel like the Products table.
-2.  **Database Cleanup**: Delete all test users and customers, leaving only the platform admin account.
-3.  **Bug Fixes**:
-    *   Fix a recurring  error that appeared when interacting with dropdowns.
-    *   Fix  errors that blocked access to admin pages.
-    *   Fix a bug where emails were sent with a stale store name after it was updated in the admin panel.
-    *   Perform a comprehensive dark mode overhaul to fix dozens of UI issues (unreadable text, incorrect backgrounds, invisible active states).
-4.  **New Feature & Bugs (Latest Request)**:
-    *   **Feature**: Implement a secure way for super admins to change a user's or customer's email/password. This must force a logout on all devices and require a password change or email re-verification on the next login.
-    *   **Bug**: The active tab in the admin sidebar is still not highlighted correctly across all themes.
-    *   **Bug**: Text selected in dark mode becomes unreadable.
-    *   **Bug**: A  error occurs intermittently, especially after logging out.
+The user requested a full audit and fix of all product page layouts (, , , ) to match the functionality and style of the Standard () layout. This was prompted by numerous bugs and inconsistencies, such as Contact us showing for free products, missing information, hardcoded values, and weird color combinations.
+
+During the session, the user also requested and had the agent implement several other features and fixes:
+1.  **Admin Sidebar**: Make it collapsible with accordion sections.
+2.  **Password Reset**: Implement an admin-initiated password reset link feature for users and customers.
+3.  **Password Visibility**: Add an eye icon to toggle password visibility on login and password change forms.
+4.  **Admin Tables**: Add a Partner Code column to all relevant tables for platform admins.
+5.  **Customer Edit Form**: Make the password field read-only while keeping the email field editable.
+6.  **Bug Fixes**: Addressed a  error on logout, fixed an issue with the product dropdown for manual subscriptions, fixed unreadable text selection in dark mode, and permanently fixed the active tab highlighting in the admin sidebar.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application's UI has been significantly standardized. All admin pages now share a consistent table style and header layout. The database has been cleaned of all test data. A large number of bugs have been fixed, including a comprehensive overhaul of the dark mode CSS, resolution of persistent  and  errors, and a fix for stale data being used in emails and other services. The agent was in the exploration and planning phase for the user's latest and most complex request: an admin-initiated password/email reset feature.
+The application has received significant updates. A secure admin-initiated password reset feature is now in place, the admin sidebar has been revamped to be a collapsible accordion, and password visibility toggles have been added to auth forms. Several bugs related to admin table visibility, UI consistency, and error handling have been resolved.
+
+Most importantly, the agent has completed a comprehensive audit of all product page layouts, identifying **36 distinct bugs and inconsistencies**. The agent began the implementation phase by centralizing currency formatting logic and fixing the root cause of the Contact Us bug for free products. The main body of work—fixing the remaining 35+ bugs across the product layouts—is currently in progress.
 
 **Last working item**:
-    - Last item agent was working: The agent was planning the implementation for a major new feature: admin-initiated password and email changes for customers and users. This involves backend logic for forcing logouts and requiring re-verification/password changes, as well as frontend UI changes restricted by user role. The agent was also assessing three other bugs reported by the user (active tab highlight, dark mode text selection, 404 error).
+    - Last item agent was working: The agent was in the midst of a large-scale refactoring effort to fix 36 identified bugs across all non-standard product page layouts (, , , ). The goal is to standardize their functionality and appearance to match the .
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use?: both
+    - Which testing method agent to use?: Frontend testing agent
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Implement Admin-Initiated Password/Email Change feature (P0)
-  - Issue 2: Active tab highlight in admin panel is not working correctly in all themes (P1)
-  - Issue 3: Text selection highlight in dark mode makes text unreadable (P1)
-  - Issue 4:  error appears on logout and during general browsing (P1)
-  - Issue 5: Spacing on Resources Page (P2)
-  - Issue 6: Missing Resend API Key for Email Delivery (P2)
-
+  - Issue 1: Standardize all product page layouts to match the Standard layout (P0)
+  - Issue 2: Missing Resend API Key for Email Delivery (P1)
+  - Issue 3: Spacing on Resources Page (P2)
+  
   Issues Detail:
-  - Issue 1: Implement Admin-Initiated Password/Email Change feature
-     - Attempted fixes: The agent has completed a thorough investigation of , , ,  and the relevant frontend tabs to identify existing mechanisms (, ) and plan the implementation.
-     - Next debug checklist:
-        1.  **Backend (, , ):**
-            *   Create a new protected endpoint (e.g., ).
-            *   Add role-based access to allow only platform/partner super admins.
-            *   On password change: hash the new password, set , and increment  to invalidate existing sessions.
-            *   On email change: update the email, set , increment , and trigger a new verification email.
-        2.  **Frontend (, ):**
-            *   Conditionally render Email and Password fields in the edit modal based on the admin's role.
-            *   Call the new backend endpoint upon saving.
-     - Why fix this issue and what will be achieved with the fix? This is a critical security and admin management feature requested by the user.
-     - Status: IN PROGRESS
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? both
-     - Blocked on other issue: None
-
-  - Issue 2: Active tab highlight in admin panel
-     - Attempted fixes: An earlier fix using  was implemented, but it doesn't work in light mode and the user reported it's still an issue.
-     - Next debug checklist:
-        1.  Inspect  and .
-        2.  The active state style needs to be theme-aware, providing contrast against the sidebar in both light and dark modes. Use a semi-transparent version of a theme variable like  or .
-     - Why fix this issue and what will be achieved with the fix? Improves usability and visual feedback in the admin panel.
-     - Status: IN PROGRESS
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None
-
-  - Issue 3: Dark mode text selection highlight
-     - Attempted fixes: None.
-     - Next debug checklist:
-        1.  In , add a  rule inside the  scope.
-        2.  Set a  and  that provides good contrast (e.g., use  for the background).
-     - Why fix this issue and what will be achieved with the fix? Fixes a basic usability and accessibility issue in dark mode.
-     - Status: NOT STARTED
+  - Issue 1: 
+     - Attempted fixes: A full audit was completed, identifying 36 specific bugs. A shared  utility was created in , and the core  logic in  was fixed.
+     - Next debug checklist: 
+        1.  Continue implementing the 36 fixes as detailed in the audit.
+        2.  Centralize  and  logic into .
+        3.  Replace all hardcoded currency formatters with the new shared  function.
+        4.  Replace all native  tooltips on form questions with the Radix  component for consistency.
+        5.  Ensure all layouts use  for  and custom section content.
+        6.  Fix layout-specific bugs, such as the  cap in , the broken review step and progress bar in , and the missing/hardcoded sections in .
+        7.  Replace all hardcoded theme colors (e.g., ) with CSS variables (e.g., ).
+     - Why fix this issue and what will be achieved with the fix? This will resolve dozens of UI bugs and create a consistent, reliable, and professional user experience across all product purchasing flows.
+     - Status:  IN PROGRESS
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
-
-  - Issue 4:  error on logout/browsing
-     - Attempted fixes: None.
+  - Issue 2: 
+     - Attempted fixes: The agent updated the toast notification to clarify that an email service needs to be configured, but the core issue remains.
      - Next debug checklist:
-        1.  Use the browser's developer tools to identify the exact URL that is failing.
-        2.  The error stack trace points to a data loading function. Investigate data-fetching hooks (e.g., SWR, React Query) that might be trying to revalidate data after the user is logged out.
-        3.  Ensure the logout process properly clears all cached/stale data from these hooks.
-     - Why fix this issue and what will be achieved with the fix? Prevents confusing errors and improves application stability.
-     - Status: NOT STARTED
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on other issue: None
-
-  - Issue 5: Spacing on Resources Page
-     - Attempted fixes: None.
-     - Next debug checklist: Compare CSS of the Resources page with other pages and apply consistent padding/margin.
-     - Why fix this issue and what will be achieved with the fix? Visual consistency.
-     - Status: NOT STARTED
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None
-
-  - Issue 6: Missing Resend API Key for Email Delivery
-     - Attempted fixes: None.
-     - Next debug checklist: Implement a UI for tenants to enter and save their Resend API key.
-     - Why fix this issue and what will be achieved with the fix? To make the Resend integration functional.
-     - Status: NOT STARTED
+        1.  Implement a new UI in the admin panel (e.g., in Settings) for tenants to enter their Resend API key.
+        2.  Create a backend endpoint to securely store this key against the tenant's data.
+        3.  Modify the  to retrieve and use the stored key.
+     - Why fix this issue and what will be achieved with the fix? This will make the password reset feature and any other email-sending functionality fully operational.
+     - Status:  NOT STARTED
      - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Both
+     - Blocked on other issue: None
+  - Issue 3: 
+     - Attempted fixes: None.
+     - Next debug checklist: Compare CSS of the Resources page with other admin pages and apply consistent padding/margin.
+     - Why fix this issue and what will be achieved with the fix? Improves visual consistency across the admin panel.
+     - Status:  NOT STARTED
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
 
 **In progress Task List**:
-  - Task 1: Implement the Admin-Initiated Password/Email Change feature.
-     - Where to resume: The agent has finished the investigation. The next step is to begin backend implementation of the new endpoint and logic, followed by the role-restricted frontend UI.
-     - What will be achieved with this? Deliver a major user-requested feature for security and user management.
-     - Status: IN PROGRESS
-     - Should Test frontend/backend/both after fix? Both
+  - Task 1: Complete the implementation of all 36 layout bug fixes.
+     - Where to resume: The agent has created  and fixed . The next step is to systematically apply the remaining fixes across , , , and .
+     - What will be achieved with this? A consistent and bug-free user experience for all product page layouts.
+     - Status:  IN PROGRESS
+     - Should Test frontend/backend/both after fix? Frontend
      - Blocked on something: None
 
 **Upcoming and Future Tasks**
@@ -121,99 +82,101 @@ The application's UI has been significantly standardized. All admin pages now sh
     - (P2) Centralize Email Settings.
 
 **Completed work in this session**
-- **UI Standardization**:
-  - Aligned all admin tables (, , , etc.) with the  table style (background, layout).
-  - Refactored admin page headers (, , , etc.) to use the consistent  component.
+- **Admin-Initiated Password Reset**: Implemented backend endpoints and frontend UI for admins to send password reset links to both users and customers.
+- **Admin Sidebar Overhaul**:
+  - Implemented a collapsible accordion-style sidebar in .
+  - Permanently fixed the active tab highlighting bug using a React Context.
+  - Removed redundant tooltips that appeared on hover.
+- **Customer/User Form Enhancements**:
+  - Made the password field read-only in the customer edit modal while allowing the email to be edited, using a new  prop in .
+  - Added a password visibility toggle (eye icon) to  and .
+- **Admin Table Improvements**: Added the Partner Code column to , , , , and  for platform admins.
 - **Critical Bug Fixes**:
-  - **ResizeObserver Loop**: Permanently fixed the UI error by setting  in base , , , and  components.
-  - **API Rate Limiting**: Solved  errors and Failed to load messages by increasing the global rate limit and keying limits by API path.
-  - **Stale Data**: Fixed a bug causing emails/PDFs to use an old  by creating a single-source-of-truth helper function () and refactoring 5 services to use it.
-- **Dark Mode Overhaul**: Executed a comprehensive CSS fix for dark mode, correcting dozens of issues with text colors, backgrounds, and component styles.
-- **Backend & Database**:
-  - Finalized the backend migration for partner signup forms.
-  - Cleaned the database, removing all test users and customers to leave a clean baseline.
+  - Fixed Contact us text showing for zero-priced products by correcting logic in .
+  - Fixed a bug where products weren't appearing in the manual subscription creation dropdown.
+  - Fixed  error on logout by adding a guard clause to the token refresh logic in .
+  - Fixed unreadable text selection in dark mode via .
 
 **Earlier issues found/mentioned but not fixed**
    - Issue 1: Spacing on Resources Page.
    - Issue 2: Missing Resend API Key for Email Delivery.
 
 **Known issue recurrence from previous fork**
-  - None.
+  - **Recurrence count:** 3 issues (Active tab highlight, Spacing, Resend Key).
+  - **Status:** The Active tab highlight was RESOLVED in this session. The other two remain NOT STARTED.
 
 **Code Architecture**
-
+readonlyKeysformatCurrencygetStartingPrice
 
 **Key Technical Concepts**
-- **Systemic CSS Refactoring**: Using CSS variables and a global  class to implement a robust and comprehensive dark mode theme.
-- **Component Standardization**: Refactoring multiple pages to use a single  component to enforce UI consistency and DRY principles.
-- **Root Cause Debugging**: Successfully tracing UI errors (, Failed to load toasts) back to their underlying causes in third-party libraries and backend rate-limiting logic, and implementing robust fixes.
-- **Data Integrity**: Identifying and fixing a stale data bug by centralizing data access into a single helper function, ensuring all parts of the app get the latest information.
-- **Secure Feature Planning**: Analyzing existing auth mechanisms (, ) to plan a new secure feature for admin-initiated credential changes.
+- **Large-Scale UI Auditing**: Systematically comparing multiple component implementations () against a golden reference () to identify and catalog dozens of inconsistencies and bugs.
+- **Refactoring for Standardization**: Centralizing duplicated logic (like ) into a shared utility file () to be used by all layouts, ensuring consistency and easier maintenance.
+- **React Context for State Management**: Using a React Context () to share the  state and solve a complex CSS specificity issue between the sidebar and a third-party tooltip library.
+- **Enhancing Reusable Components**: Adding a  prop to the  component to programmatically disable specific form fields, making the component more flexible.
 
 **key DB schema**
-  - No new schema changes. The next feature will leverage existing fields in the **users** collection: , , and .
+  - No changes were made to the database schema.
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
--  (For password/email change logic)
-- ,  (For new endpoints)
-- ,  (For UI changes)
--  (For active tab highlight)
--  (For all theme/styling fixes)
--  (For logout logic and 404 error)
+-  (All files in this directory are the primary target for the main pending task).
+-  (Newly created utility file for shared logic).
+-  (Contains shared product page logic like ).
+-  (Reference for sidebar structure).
+-  (Reference for user/customer editing UI).
 
 **Areas that need refactoring**:
--  is still over 1200 lines and should be broken down into smaller components.
+- The primary task is to refactor all product page layouts in  to remove inconsistencies and align with .
+-  is still a very large file (>1200 lines) and could be broken down into smaller components.
 
 **key api endpoints**
-- A new endpoint will be created for the password/email reset feature, likely similar to .
-
-**Critical Info for New Agent**
-1.  **Top Priority**: The main task is to implement the **Admin-Initiated Password/Email Change** feature. The user has provided clear requirements, and the initial code investigation is complete. You should start with the backend implementation.
-2.  **Concurrent Bugs**: Address the three other bugs reported by the user: the recurring active tab highlight issue, the dark mode text selection color, and the 404 error on logout. These are high-visibility UI/UX issues.
-3.  **UI/Theme Consistency**: A major effort was just completed to standardize the UI and fix dark mode. Ensure all new work respects these new standards. The active tab highlight bug is a recurring complaint, so the fix needs to be tested thoroughly in both light and dark themes.
-4.  **Clean Database**: The database contains only the single platform admin user (). All test data has been wiped.
-
-**documents and test reports created in this job**
+- 
 - 
 
-**Last 10 User Messages and any pending HUMAN messages**
-- **User (Latest)**: Confirmed detailed requirements for the password/email reset feature and reported three other bugs: active tab highlight, dark mode text selection, and a 404 error on logout. **Status: IN PROGRESS (Agent is planning).**
-- **User:** the second issue is it repeating anywhere else as well for other fields? (Regarding stale store name). **Status: RESOLVED.**
-- **User:** Reported two issues: active tab not highlighted, and email template using stale store name. **Status: PARTIALLY RESOLVED** (active tab highlight was reported again).
-- **User:** failed to load resources, orders, etc. fix all similar errors. Also reported 429 errors. **Status: RESOLVED.**
-- **User:** any other places where similar error would exist? (Regarding ResizeObserver). **Status: RESOLVED.**
-- **User:** Reported  error is still happening. **Status: RESOLVED.**
-- **User:** when I click country on partner signup page the same error is still coming up. **Status: RESOLVED.**
-- **User:** k (Acknowledging a fix). **Status: RESOLVED.**
-- **User:** Reported  error. **Status: RESOLVED.**
-- **User:** Reported inconsistencies in buttons/layout for , , . **Status: RESOLVED.**
+**Critical Info for New Agent**
+1.  **Main Priority (P0)**: Your immediate and primary task is to continue the large-scale UI standardization of the product page layouts. A detailed audit identifying **36 specific bugs** has already been completed and is your guide. The user wants a thorough fix, so focus on creating shared utilities (, , etc.) in  and applying them consistently across all layouts.
+2.  **Wizard Layout Bugs**: The user specifically highlighted two bugs in the : the review step showing a dash instead of the selected answer, and the progress bar starting at an incorrect percentage. Ensure these are fixed as part of the overall effort, as they are high-visibility issues.
+3.  **No New Features**: Do not start any new features (like the Resend API key UI) until the layout standardization is complete and verified. The current task is large and critical.
+4.  **Testing is Crucial**: After implementing the fixes across all layouts, you must call the frontend testing agent to perform a comprehensive regression test. Given the scope of the changes, manual verification via screenshots will be insufficient.
+
+**documents and test reports created in this job**
+  - None.
+
+**Last 10 User Messages and any pending HUMAN messages** 
+ - **User (Latest)**: Approved the plan to fix the 36 identified layout bugs, highlighted specific issues in the Wizard layout (review answers and progress bar), and encouraged a deeper comparison to ensure no bugs were missed. **Status: IN PROGRESS.**
+ - **User:** Reported widespread inconsistencies in product layouts and a bug where a product showed Contact us instead of Free. Requested a full audit comparing all layouts to the Standard one. **Status: RESOLVED (Audit complete, Contact Us fix implemented).**
+ - **User:** Clarified that in the customer edit form, the email should be editable, but the password should be a read-only field with asterisks. Approved other pending fixes. **Status: RESOLVED.**
+ - **User:** Asked for the reasoning behind hiding email/password fields in the edit form and reported other UI bugs (sidebar tooltip, Contact us). **Status: RESOLVED.**
+ - **User:** Pointed out several issues: password reset emails not sending, a subscription filter being too restrictive, missing Partner Code columns, and the ability to still edit customer passwords. **Status: RESOLVED.**
+ - **User:** Confirmed the new accordion sidebar and other fixes were working. **Status: RESOLVED.**
+ - **User:** Requested a collapsible sidebar, a fix for the product dropdown, and the addition of the Partner Code column to all tables. Also asked for an explanation of the new password reset logic. **Status: RESOLVED.**
+ - **User:** Confirmed the password visibility toggle was working. **Status: RESOLVED.**
+ - **User:** Requested a password visibility toggle (eye icon) for login forms. **Status: RESOLVED.**
+ - **User:** Confirmed the admin-initiated password reset feature was working as expected. **Status: RESOLVED.**
 
 **Project Health Check:**
 - **Broken**:
-  - The admin-initiated password/email change flow is missing.
-  - Active admin tab highlight does not work correctly in all themes.
-  - Text selection in dark mode is unreadable.
-  - A  error occurs on logout.
+  - **Product Page Layouts**: All layouts except Standard (, , , ) have numerous bugs, including incorrect pricing display, missing features from the Standard layout, inconsistent styling, and hardcoded values.
+  - **Wizard Layout**: Contains specific, user-reported bugs where the review step fails to display answers and the progress bar calculation is incorrect.
 - **Mocked**:
-  - **Resend Email Integration**: UI exists, but it is non-functional as it lacks a mechanism for tenants to provide their API key.
+  - **Resend Email Integration**: The password reset feature is functionally incomplete. While the UI and backend logic exist, emails are not actually sent because there is no mechanism for an admin to configure the required Resend API key.
 
 **3rd Party Integrations**
-*   **Zoho CRM**: Deeply integrated with 13 modules for automatic synchronization.
-*   **GoCardless**: Payments.
-*   **Stripe**: Payments.
-*   **Resend**: Email (Partially implemented, requires API key).
-*   : Foreign exchange rates.
-*    & : Frontend PDF Generation.
-*   : UI Animations.
+*   Zoho CRM
+*   GoCardless
+*   Stripe
+*   **Resend** (Partially implemented; requires API key configuration UI)
+*   
+*    & 
+*   
 
 **Testing status**
-  - Testing agent used after significant changes: YES, for the UI standardization and backend migration.
+  - Testing agent used after significant changes: NO
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: None.
-  - Known regressions: The admin sidebar active tab highlight fix was not fully effective.
+  - Known regressions: None from this session.
 
 **Credentials to test flow:**
 - **Platform Super Admin:**
@@ -221,4 +184,4 @@ The application's UI has been significantly standardized. All admin pages now sh
   - Password: 
 
 **What agent forgot to execute**
-- The agent was in the process of planning the implementation of the user's latest requests when the session ended. No specific implementation steps were missed, but the new feature and associated bug fixes are now the immediate priority.</analysis>
+- The agent was in the middle of a large-scale implementation to fix the 36 identified bugs in the product page layouts. This work is incomplete and is the highest priority for the next session.</analysis>

@@ -2,10 +2,12 @@
  * QuickBuyLayout — Compact, price-first, fast checkout
  * Best for: Simple products, subscriptions, one-click purchases
  */
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, RefreshCcw, FileText, Check } from "lucide-react";
 import type { LayoutProps } from "./types";
-import { QuestionLabel, renderIntakeField, ScopeIdBlock } from "./utils";
+import { QuestionLabel, renderIntakeField, ScopeIdBlock, formatCurrency } from "./utils";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
 export default function QuickBuyLayout({
   product,
@@ -25,30 +27,36 @@ export default function QuickBuyLayout({
   scopeError,
   scopeUnlock,
 }: LayoutProps) {
-  const formatCurrency = (amount: number) => {
-    const symbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : "£";
-    return `${symbol}${amount.toFixed(2)}`;
-  };
+  const ws = useWebsite();
+  const cur = currency || "USD";
 
-  const hasQuestions = visibleIntakeQuestions.length > 0;
   const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
   const isFree = !isEnquiry && pricing && pricing.total === 0;
 
-  // CTA label — update when scope unlocked
   const ctaLabel = scopeUnlock
-    ? `Add to Cart — $${scopeUnlock.price}`
-    : isEnquiry ? "Request Quote" : isFree ? "Get it Free" : "Buy Now";
+    ? `${ws.sdp_cta_buy || "Add to cart"} — ${formatCurrency(scopeUnlock.price, cur)}`
+    : isEnquiry
+    ? (ws.sdp_cta_quote || "Request Quote")
+    : isFree
+    ? (ws.sdp_cta_free || "Get it free")
+    : (ws.sdp_cta_buy || "Buy Now");
 
   return (
     <div className="max-w-xl mx-auto" data-testid="quick-buy-layout">
       {/* Price-first hero card */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white mb-6">
+      <div
+        className="rounded-3xl p-8 text-white mb-6"
+        style={{ background: `linear-gradient(135deg, var(--aa-primary), color-mix(in srgb, var(--aa-primary) 80%, black))` }}
+      >
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">{product.name}</h1>
           </div>
           {isSubscription && (
-            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-medium rounded-full flex items-center gap-1">
+            <span
+              className="px-3 py-1 text-xs font-medium rounded-full flex items-center gap-1"
+              style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
+            >
               <RefreshCcw size={12} />
               Subscription
             </span>
@@ -56,27 +64,27 @@ export default function QuickBuyLayout({
         </div>
 
         {product.tagline && (
-          <p className="text-slate-300 mb-6">{product.tagline}</p>
+          <p style={{ color: "rgba(255,255,255,0.75)" }} className="mb-6">{product.tagline}</p>
         )}
 
         {/* Price display */}
-        <div className="border-t border-slate-700 pt-6">
+        <div className="border-t pt-6" style={{ borderColor: "rgba(255,255,255,0.2)" }}>
           {pricing ? (
             <div>
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">
+              <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.55)" }}>
                 {isEnquiry ? "Pricing" : isFree ? "Price" : "Total"}
               </p>
               <p className="text-4xl font-bold">
-                {isEnquiry ? "On request" : isFree ? "Free" : formatCurrency(pricing.total)}
+                {isEnquiry ? "On request" : isFree ? "Free" : formatCurrency(pricing.total, cur)}
               </p>
-              {isSubscription && !isRFQ && (
-                <p className="text-sm text-slate-400 mt-1">per month</p>
+              {isSubscription && !isEnquiry && (
+                <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>per month</p>
               )}
             </div>
           ) : (
             <div className="animate-pulse">
-              <div className="h-4 w-16 bg-slate-700 rounded mb-2" />
-              <div className="h-10 w-32 bg-slate-700 rounded" />
+              <div className="h-4 w-16 rounded mb-2" style={{ background: "rgba(255,255,255,0.15)" }} />
+              <div className="h-10 w-32 rounded" style={{ background: "rgba(255,255,255,0.15)" }} />
             </div>
           )}
         </div>
@@ -84,12 +92,14 @@ export default function QuickBuyLayout({
 
       {/* Quick features/bullets */}
       {product.bullets && product.bullets.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">What's included</h3>
+        <div className="rounded-2xl border p-6 mb-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--aa-text)" }}>
+            {ws.sdp_features_title || "What's included"}
+          </h3>
           <ul className="space-y-3">
-            {product.bullets.slice(0, 5).map((bullet, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
-                <Check size={16} className="text-green-500 mt-0.5 shrink-0" />
+            {product.bullets.map((bullet, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm" style={{ color: "var(--aa-muted)" }}>
+                <Check size={16} className="mt-0.5 shrink-0" style={{ color: "var(--aa-success)" }} />
                 {bullet}
               </li>
             ))}
@@ -99,28 +109,64 @@ export default function QuickBuyLayout({
 
       {/* Description */}
       {product.description_long && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-          <h3 className="text-sm font-semibold text-slate-900 mb-3">About this product</h3>
-          <p className="text-sm text-slate-600 leading-relaxed">{product.description_long}</p>
+        <div className="rounded-2xl border p-6 mb-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--aa-text)" }}>
+            {ws.sdp_about_title || "About this product"}
+          </h3>
+          <div className="prose prose-sm max-w-none" style={{ color: "var(--aa-muted)" }}>
+            <ReactMarkdown>{product.description_long}</ReactMarkdown>
+          </div>
         </div>
       )}
 
-      {/* Minimal intake form (if any) */}
-      {hasQuestions && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Quick questions</h3>
+      {/* Intake form */}
+      {visibleIntakeQuestions.length > 0 && (
+        <div className="rounded-2xl border p-6 mb-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--aa-text)" }}>
+            {ws.sdp_intake_title || "Quick questions"}
+          </h3>
           <div className="space-y-4">
-            {visibleIntakeQuestions.slice(0, 4).map(q => (
+            {visibleIntakeQuestions.map(q => (
               <div key={q.key} className="space-y-1.5" data-testid={`intake-field-${q.key}`}>
                 {q.type !== "html_block" && <QuestionLabel q={q} />}
-                {renderIntakeField(
-                  q,
-                  intakeAnswers[q.key],
-                  v => onIntakeChange(q.key, v)
+                {q.helper_text && q.type !== "html_block" && (
+                  <p className="text-xs" style={{ color: "var(--aa-muted)" }}>{q.helper_text}</p>
                 )}
+                {renderIntakeField(q, intakeAnswers[q.key], v => onIntakeChange(q.key, v))}
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Free product indicator */}
+      {isFree && (
+        <div
+          className="flex items-center gap-2 p-3 rounded-xl border text-sm mb-4"
+          style={{
+            borderColor: "color-mix(in srgb, var(--aa-success) 30%, transparent)",
+            background: "color-mix(in srgb, var(--aa-success) 10%, transparent)",
+            color: "var(--aa-success)",
+          }}
+          data-testid="free-product-indicator"
+        >
+          <span>Free — no payment required</span>
+        </div>
+      )}
+
+      {/* Subscription indicator */}
+      {isSubscription && (
+        <div
+          className="flex items-center gap-2 p-3 rounded-xl border text-sm mb-4"
+          style={{
+            borderColor: "color-mix(in srgb, var(--aa-accent) 30%, transparent)",
+            background: "color-mix(in srgb, var(--aa-accent) 10%, transparent)",
+            color: "var(--aa-accent)",
+          }}
+          data-testid="subscription-indicator"
+        >
+          <RefreshCcw size={14} />
+          <span>This is a recurring subscription</span>
         </div>
       )}
 
@@ -128,7 +174,8 @@ export default function QuickBuyLayout({
       <Button
         onClick={handleAddToCart}
         size="lg"
-        className="w-full h-14 text-base font-semibold bg-blue-600 hover:bg-blue-700 rounded-xl gap-2"
+        className="w-full h-14 text-base font-semibold rounded-xl gap-2"
+        style={{ background: "var(--aa-primary)", color: "var(--aa-primary-fg)" }}
         data-testid="quick-buy-cta"
       >
         <ShoppingCart size={20} />
@@ -137,14 +184,16 @@ export default function QuickBuyLayout({
 
       {/* Scope ID Override for enquiry products */}
       {isEnquiry && setScopeId && handleValidateScopeId && (
-        <ScopeIdBlock
-          scopeId={scopeId}
-          setScopeId={setScopeId}
-          handleValidateScopeId={handleValidateScopeId}
-          scopeValidating={scopeValidating}
-          scopeError={scopeError}
-          scopeUnlock={scopeUnlock}
-        />
+        <div className="mt-4">
+          <ScopeIdBlock
+            scopeId={scopeId}
+            setScopeId={setScopeId}
+            handleValidateScopeId={handleValidateScopeId}
+            scopeValidating={scopeValidating}
+            scopeError={scopeError}
+            scopeUnlock={scopeUnlock}
+          />
+        </div>
       )}
 
       {/* Terms link */}
@@ -153,7 +202,8 @@ export default function QuickBuyLayout({
           href={termsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-slate-600 mt-4"
+          className="flex items-center justify-center gap-2 text-xs mt-4 hover:opacity-70 transition-opacity"
+          style={{ color: "var(--aa-muted)" }}
           data-testid="terms-link"
         >
           <FileText size={12} />
@@ -167,7 +217,8 @@ export default function QuickBuyLayout({
           {product.tag.split(",").map((tag, i) => (
             <span
               key={i}
-              className="px-3 py-1 bg-slate-100 text-slate-500 text-xs rounded-full"
+              className="px-3 py-1 text-xs rounded-full"
+              style={{ background: "var(--aa-surface)", color: "var(--aa-muted)" }}
               data-testid={`product-tag-${i}`}
             >
               {tag.trim()}
@@ -178,23 +229,43 @@ export default function QuickBuyLayout({
 
       {/* Custom Sections */}
       {(product.custom_sections || []).map((sec: any, i: number) => (
-        <div key={sec.id || i} className="bg-white rounded-2xl border border-slate-200 p-6 mt-4 text-left">
-          <h3 className="text-sm font-semibold text-slate-900 mb-3">{sec.name}</h3>
+        <div
+          key={sec.id || i}
+          className="rounded-2xl border p-6 mt-4 text-left"
+          style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
+        >
+          <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--aa-text)" }}>{sec.name}</h3>
           {sec.content && (
-            <p className="text-sm text-slate-600 leading-relaxed">{sec.content}</p>
+            <div className="prose prose-sm max-w-none" style={{ color: "var(--aa-muted)" }}>
+              <ReactMarkdown>{sec.content}</ReactMarkdown>
+            </div>
+          )}
+          {sec.tags && sec.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {sec.tags.map((tag: string) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full text-xs" style={{ background: "var(--aa-surface)", color: "var(--aa-muted)" }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       ))}
 
       {/* FAQs */}
       {(product.faqs || []).length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-4 text-left">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">FAQs</h3>
+        <div
+          className="rounded-2xl border p-6 mt-4 text-left"
+          style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
+        >
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--aa-text)" }}>
+            {ws.sdp_faqs_title || "FAQs"}
+          </h3>
           <div className="space-y-4">
             {(product.faqs || []).map((faq: any, i: number) => (
-              <div key={i} className="pb-4 border-b border-slate-100 last:border-0 last:pb-0">
-                <p className="text-sm font-medium text-slate-900 mb-1">{faq.question}</p>
-                <p className="text-sm text-slate-600">{faq.answer}</p>
+              <div key={i} className="pb-4 last:pb-0" style={{ borderBottom: "1px solid var(--aa-border)" }}>
+                <p className="text-sm font-medium mb-1" style={{ color: "var(--aa-text)" }}>{faq.question}</p>
+                <p className="text-sm" style={{ color: "var(--aa-muted)" }}>{faq.answer}</p>
               </div>
             ))}
           </div>

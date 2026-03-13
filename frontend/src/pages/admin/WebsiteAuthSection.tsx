@@ -35,6 +35,7 @@ function getSlideTitle(key: AuthSlide | null): string {
     documents_page: "Documents Page",
     store_hero: "Services Page",
     articles_hero: "Resources Page",
+    service_detail: "Service Detail Page",
   };
   return map[key];
 }
@@ -59,6 +60,7 @@ function getSlideDesc(key: AuthSlide | null): string {
     documents_page: "Customize the Documents page heading, subtitle, nav label, and upload instructions.",
     store_hero: "Services page hero label, title, and subtitle.",
     articles_hero: "Resources page hero label, title, and subtitle.",
+    service_detail: "Section headers, CTA labels, and navigation text across all product page layouts.",
   };
   return map[key];
 }
@@ -111,6 +113,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
             <AuthTile title="Customer Portal" preview={ws.portal_title || undefined} description="Portal heading & subtitle" onEdit={() => setAuthSlide("portal")} testId="auth-tile-portal" />
             <AuthTile title="Services Page" description="Hero label, title, subtitle on the main store page" preview={ws.hero_title || undefined} onEdit={() => setAuthSlide("store_hero")} testId="auth-tile-store-hero" />
             <AuthTile title="Resources Page" description="Hero label, title, subtitle on the resources page" preview={ws.articles_hero_title || undefined} onEdit={() => setAuthSlide("articles_hero")} testId="auth-tile-articles-hero" />
+            <AuthTile title="Service Detail Page" description="Section headers, CTA labels, and layout text" onEdit={() => setAuthSlide("service_detail")} testId="auth-tile-service-detail" />
             <AuthTile title="Documents Page" description="Page heading, subtitle, nav label, upload text" preview={ws.documents_page_title || undefined} onEdit={() => setAuthSlide("documents_page")} testId="auth-tile-documents" />
             <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
             <AuthTile title="Admin Panel" preview={ws.admin_page_title || "Admin Control Centre"} description="Admin panel heading, subtitle, and badge text" onEdit={() => setAuthSlide("admin_panel")} testId="auth-tile-admin-panel" />
@@ -377,6 +380,65 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
             <Field label="Label" hint='Small badge above title (e.g. "Resources")' value={ws.articles_hero_label} onChange={s("articles_hero_label")} testId="ws-articles-hero-label" />
             <Field label="Title" value={ws.articles_hero_title} onChange={s("articles_hero_title")} testId="ws-articles-hero-title" />
             <Field label="Subtitle" value={ws.articles_hero_subtitle} onChange={s("articles_hero_subtitle")} multiline testId="ws-articles-hero-subtitle" />
+          </div>
+        )}
+        {authSlide === "service_detail" && (
+          <div className="space-y-5">
+            <p className="text-xs" style={{ color: "var(--aa-muted)" }}>
+              Customise section headers and CTA labels shown on all product detail pages. Leave blank to use the built-in defaults shown in the placeholder.
+            </p>
+
+            <div className="border-t pt-4" style={{ borderColor: "var(--aa-border)" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--aa-muted)" }}>General Section Headers</p>
+              <div className="space-y-3">
+                <Field label="Intake / Questions section title" hint='Used by Standard layout (default: "Tell us about your project")' value={ws.sdp_intake_title} onChange={s("sdp_intake_title")} placeholder="Tell us about your project" testId="ws-sdp-intake-title" />
+                <Field label="Features / Bullets section title" hint={"Default: \"What's included\""} value={ws.sdp_features_title} onChange={s("sdp_features_title")} placeholder="What's included" testId="ws-sdp-features-title" />
+                <Field label="About / Description section title" hint='Default: "About this product"' value={ws.sdp_about_title} onChange={s("sdp_about_title")} placeholder="About this product" testId="ws-sdp-about-title" />
+                <Field label="FAQs section title" hint='Default: "FAQs"' value={ws.sdp_faqs_title} onChange={s("sdp_faqs_title")} placeholder="FAQs" testId="ws-sdp-faqs-title" />
+                <Field label="Key features section title" hint='Showcase layout (default: "Key Features")' value={ws.sdp_key_features_title} onChange={s("sdp_key_features_title")} placeholder="Key Features" testId="ws-sdp-key-features-title" />
+                <Field label="Additional info section title" hint='Showcase layout (default: "Additional Information")' value={ws.sdp_additional_info_title} onChange={s("sdp_additional_info_title")} placeholder="Additional Information" testId="ws-sdp-additional-info-title" />
+                <Field label="Pricing section title" hint='Default: "Price Summary"' value={ws.sdp_pricing_title} onChange={s("sdp_pricing_title")} placeholder="Price Summary" testId="ws-sdp-pricing-title" />
+              </div>
+            </div>
+
+            <div className="border-t pt-4" style={{ borderColor: "var(--aa-border)" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--aa-muted)" }}>CTA Labels</p>
+              <div className="space-y-3">
+                <Field label="Free product CTA" hint='Default: "Get it free"' value={ws.sdp_cta_free} onChange={s("sdp_cta_free")} placeholder="Get it free" testId="ws-sdp-cta-free" />
+                <Field label="Buy / Add to cart CTA" hint='Default: "Buy Now" or "Add to cart"' value={ws.sdp_cta_buy} onChange={s("sdp_cta_buy")} placeholder="Add to cart" testId="ws-sdp-cta-buy" />
+                <Field label="Enquiry / Quote CTA" hint='Default: "Request Quote"' value={ws.sdp_cta_quote} onChange={s("sdp_cta_quote")} placeholder="Request Quote" testId="ws-sdp-cta-quote" />
+              </div>
+            </div>
+
+            <div className="border-t pt-4" style={{ borderColor: "var(--aa-border)" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--aa-muted)" }}>Showcase Layout — Configure & Price</p>
+              <div className="space-y-3">
+                <Field label="Panel title" hint='Default: "Configure & Price"' value={ws.sdp_configure_price_title} onChange={s("sdp_configure_price_title")} placeholder="Configure & Price" testId="ws-sdp-configure-title" />
+                <Field label="Panel subtitle" hint='Default: "Adjust options to see live pricing"' value={ws.sdp_configure_price_subtitle} onChange={s("sdp_configure_price_subtitle")} placeholder="Adjust options to see live pricing" testId="ws-sdp-configure-subtitle" />
+              </div>
+            </div>
+
+            <div className="border-t pt-4" style={{ borderColor: "var(--aa-border)" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--aa-muted)" }}>Application Layout — Navigation & Buttons</p>
+              <div className="space-y-3">
+                <Field label="Overview nav label" hint='Default: "Overview"' value={ws.sdp_app_nav_overview} onChange={s("sdp_app_nav_overview")} placeholder="Overview" testId="ws-sdp-app-overview" />
+                <Field label="Questions nav label" hint='Default: "Application Form"' value={ws.sdp_app_nav_questions} onChange={s("sdp_app_nav_questions")} placeholder="Application Form" testId="ws-sdp-app-questions" />
+                <Field label="Pricing nav label" hint='Default: "Pricing & Checkout"' value={ws.sdp_app_nav_pricing} onChange={s("sdp_app_nav_pricing")} placeholder="Pricing & Checkout" testId="ws-sdp-app-pricing" />
+                <Field label="FAQs nav label" hint='Default: "FAQs"' value={ws.sdp_app_nav_faqs} onChange={s("sdp_app_nav_faqs")} placeholder="FAQs" testId="ws-sdp-app-faqs" />
+                <Field label="Start button text" hint='Default: "Start Application"' value={ws.sdp_app_start_btn} onChange={s("sdp_app_start_btn")} placeholder="Start Application" testId="ws-sdp-app-start-btn" />
+                <Field label="Continue to pricing button text" hint='Default: "Continue to Pricing"' value={ws.sdp_app_continue_btn} onChange={s("sdp_app_continue_btn")} placeholder="Continue to Pricing" testId="ws-sdp-app-continue-btn" />
+              </div>
+            </div>
+
+            <div className="border-t pt-4" style={{ borderColor: "var(--aa-border)" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--aa-muted)" }}>Wizard Layout</p>
+              <div className="space-y-3">
+                <Field label="First step title" hint={"Default: \"Let's get started\""} value={ws.sdp_wizard_step_title} onChange={s("sdp_wizard_step_title")} placeholder="Let's get started" testId="ws-sdp-wizard-step-title" />
+                <Field label="Review step title" hint='Default: "Review Your Selections"' value={ws.sdp_wizard_review_title} onChange={s("sdp_wizard_review_title")} placeholder="Review Your Selections" testId="ws-sdp-wizard-review-title" />
+                <Field label="Review step subtitle" hint='Default: "Please confirm your choices before proceeding"' value={ws.sdp_wizard_review_subtitle} onChange={s("sdp_wizard_review_subtitle")} placeholder="Please confirm your choices before proceeding" testId="ws-sdp-wizard-review-subtitle" />
+                <Field label="Submit / Checkout button text" hint='Default: "Proceed to Checkout"' value={ws.sdp_wizard_submit_btn} onChange={s("sdp_wizard_submit_btn")} placeholder="Proceed to Checkout" testId="ws-sdp-wizard-submit-btn" />
+              </div>
+            </div>
           </div>
         )}
       </SlideOver>

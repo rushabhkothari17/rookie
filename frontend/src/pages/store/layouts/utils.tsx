@@ -3,10 +3,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info, Key, Check } from "lucide-react";
 import api from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import type { IntakeQuestion } from "./types";
+
+/** Shared currency formatter — handles any ISO 4217 currency code */
+export function formatCurrency(amount: number, currency = "USD"): string {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toFixed(2)}`;
+  }
+}
 
 /** Debounced number input — clamps to [min, max] on debounce and on blur */
 function DebouncedNumberInput({

@@ -9,7 +9,8 @@ import ProductHero from "@/components/ProductHero";
 import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
 import SectionCard from "@/components/SectionCard";
 import type { LayoutProps } from "./types";
-import { QuestionLabel, renderIntakeField, ScopeIdBlock } from "./utils";
+import { QuestionLabel, renderIntakeField, ScopeIdBlock, formatCurrency } from "./utils";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
 export default function ClassicLayout({
   product,
@@ -29,6 +30,9 @@ export default function ClassicLayout({
   scopeValidating,
   scopeError,
 }: LayoutProps) {
+  const ws = useWebsite();
+  const cur = currency || "USD";
+
   // base_price=0 → free product, never show "Price on request" even if pricing_type="enquiry"
   const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
   const isFree = !isEnquiry && pricing && pricing.total === 0;
@@ -37,14 +41,14 @@ export default function ClassicLayout({
   const ctaConfig = (() => {
     if (isEnquiry) {
       if (scopeUnlock) {
-        return { label: `Add to cart — $${scopeUnlock.price}`, onClick: handleAddToCart };
+        return { label: `${ws.sdp_cta_buy || "Add to cart"} — ${formatCurrency(scopeUnlock.price, cur)}`, onClick: handleAddToCart };
       }
-      return { label: "Proceed to checkout", onClick: handleAddToCart };
+      return { label: ws.sdp_cta_quote || "Request Quote", onClick: handleAddToCart };
     }
     if (isFree) {
-      return { label: "Get it free", onClick: handleAddToCart };
+      return { label: ws.sdp_cta_free || "Get it free", onClick: handleAddToCart };
     }
-    return { label: "Add to cart", onClick: handleAddToCart };
+    return { label: ws.sdp_cta_buy || "Add to cart", onClick: handleAddToCart };
   })();
 
   return (
@@ -55,7 +59,7 @@ export default function ClassicLayout({
 
         {/* Intake Questions */}
         {visibleIntakeQuestions.length > 0 && (
-          <SectionCard title="Tell us about your project" testId="product-intake-section">
+          <SectionCard title={ws.sdp_intake_title || "Tell us about your project"} testId="product-intake-section">
             <div className="space-y-4">
               {visibleIntakeQuestions.map(q => (
                 <div key={q.key} className="space-y-1.5" data-testid={`intake-field-${q.key}`}>
@@ -104,7 +108,7 @@ export default function ClassicLayout({
 
         {/* FAQs */}
         {(product.faqs || []).length > 0 && (
-          <SectionCard title="FAQs" testId="product-faqs">
+          <SectionCard title={ws.sdp_faqs_title || "FAQs"} testId="product-faqs">
             <div className="space-y-5" data-testid="product-faqs-list">
               {(product.faqs || []).map((item, i) => (
                 <div key={i} className="space-y-1">
@@ -150,7 +154,12 @@ export default function ClassicLayout({
             {/* Subscription indicator */}
             {isSubscription && (
               <div
-                className="flex items-center gap-2 p-3 rounded-xl border border-blue-100 bg-blue-50 text-sm text-blue-700"
+                className="flex items-center gap-2 p-3 rounded-xl border text-sm"
+                style={{
+                  borderColor: "color-mix(in srgb, var(--aa-accent) 30%, transparent)",
+                  background: "color-mix(in srgb, var(--aa-accent) 10%, transparent)",
+                  color: "var(--aa-accent)",
+                }}
                 data-testid="subscription-indicator"
               >
                 <RefreshCcw size={16} />
@@ -161,7 +170,12 @@ export default function ClassicLayout({
             {/* Free product indicator */}
             {isFree && (
               <div
-                className="flex items-center gap-2 p-3 rounded-xl border border-green-100 bg-green-50 text-sm text-green-700"
+                className="flex items-center gap-2 p-3 rounded-xl border text-sm"
+                style={{
+                  borderColor: "color-mix(in srgb, var(--aa-success) 30%, transparent)",
+                  background: "color-mix(in srgb, var(--aa-success) 10%, transparent)",
+                  color: "var(--aa-success)",
+                }}
                 data-testid="free-product-indicator"
               >
                 <span>Free - no payment required</span>

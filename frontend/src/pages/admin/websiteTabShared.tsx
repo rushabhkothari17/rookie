@@ -24,7 +24,8 @@ export type AuthSlide =
   | "checkout_messages"
   | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social"
   | "documents_page"
-  | "store_hero" | "articles_hero";
+  | "store_hero" | "articles_hero"
+  | "service_detail";
 
 export interface WebsiteData {
   hero_label: string; hero_title: string; hero_subtitle: string;
@@ -80,6 +81,29 @@ export interface WebsiteData {
   signup_bullet_2: string;
   signup_bullet_3: string;
   signup_cta: string;
+  // Service detail page labels
+  sdp_intake_title: string;
+  sdp_features_title: string;
+  sdp_about_title: string;
+  sdp_faqs_title: string;
+  sdp_key_features_title: string;
+  sdp_additional_info_title: string;
+  sdp_configure_price_title: string;
+  sdp_configure_price_subtitle: string;
+  sdp_app_nav_overview: string;
+  sdp_app_nav_questions: string;
+  sdp_app_nav_pricing: string;
+  sdp_app_nav_faqs: string;
+  sdp_app_start_btn: string;
+  sdp_app_continue_btn: string;
+  sdp_wizard_step_title: string;
+  sdp_wizard_review_title: string;
+  sdp_wizard_review_subtitle: string;
+  sdp_wizard_submit_btn: string;
+  sdp_pricing_title: string;
+  sdp_cta_free: string;
+  sdp_cta_buy: string;
+  sdp_cta_quote: string;
 }
 
 export interface BrandingData {
@@ -140,6 +164,29 @@ export const WEB_DEFAULTS: WebsiteData = {
   documents_page_upload_label: "", documents_page_upload_hint: "",
   documents_page_empty_text: "",
   signup_bullet_1: "", signup_bullet_2: "", signup_bullet_3: "", signup_cta: "",
+  // Service detail page labels (empty = use defaults)
+  sdp_intake_title: "",
+  sdp_features_title: "",
+  sdp_about_title: "",
+  sdp_faqs_title: "",
+  sdp_key_features_title: "",
+  sdp_additional_info_title: "",
+  sdp_configure_price_title: "",
+  sdp_configure_price_subtitle: "",
+  sdp_app_nav_overview: "",
+  sdp_app_nav_questions: "",
+  sdp_app_nav_pricing: "",
+  sdp_app_nav_faqs: "",
+  sdp_app_start_btn: "",
+  sdp_app_continue_btn: "",
+  sdp_wizard_step_title: "",
+  sdp_wizard_review_title: "",
+  sdp_wizard_review_subtitle: "",
+  sdp_wizard_submit_btn: "",
+  sdp_pricing_title: "",
+  sdp_cta_free: "",
+  sdp_cta_buy: "",
+  sdp_cta_quote: "",
 };
 
 // ─── Atom components ──────────────────────────────────────────────────────────
@@ -150,8 +197,8 @@ export function Field({ label, hint, value, onChange, multiline = false, testId,
 }) {
   return (
     <div>
-      <label className="text-xs font-medium text-slate-700">{label}</label>
-      {hint && <p className="text-[11px] text-slate-400 mt-0.5 mb-1">{hint}</p>}
+      <label className="text-xs font-medium" style={{ color: "var(--aa-text)" }}>{label}</label>
+      {hint && <p className="text-[11px] mt-0.5 mb-1" style={{ color: "var(--aa-muted)" }}>{hint}</p>}
       {multiline ? (
         <Textarea value={value} onChange={e => onChange(e.target.value)} rows={2}
           className="mt-0.5 text-sm" data-testid={testId} placeholder={placeholder} disabled={disabled} />
@@ -193,18 +240,25 @@ export function AuthTile({ title, description, preview, onEdit, testId }: {
   title: string; description?: string; preview?: string; onEdit: () => void; testId?: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 flex items-center gap-3 hover:border-slate-300 transition-colors cursor-pointer" onClick={onEdit} data-testid={testId}>
-      <div className="p-2.5 rounded-xl bg-slate-100 shrink-0">
-        <LayoutTemplate size={15} className="text-slate-600" />
+    <div
+      className="rounded-xl border p-4 flex items-center gap-3 transition-colors cursor-pointer"
+      style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--aa-muted)")}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--aa-border)")}
+      onClick={onEdit}
+      data-testid={testId}
+    >
+      <div className="p-2.5 rounded-xl shrink-0" style={{ background: "var(--aa-surface)" }}>
+        <LayoutTemplate size={15} style={{ color: "var(--aa-muted)" }} />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-xs font-semibold text-slate-900">{title}</h4>
+        <h4 className="text-xs font-semibold" style={{ color: "var(--aa-text)" }}>{title}</h4>
         {preview
-          ? <p className="text-[11px] text-slate-600 mt-0.5 truncate">{preview}</p>
-          : description && <p className="text-[11px] text-slate-400 mt-0.5">{description}</p>
+          ? <p className="text-[11px] mt-0.5 truncate" style={{ color: "var(--aa-text)" }}>{preview}</p>
+          : description && <p className="text-[11px] mt-0.5" style={{ color: "var(--aa-muted)" }}>{description}</p>
         }
       </div>
-      <Pencil size={13} className="text-slate-400 shrink-0" />
+      <Pencil size={13} style={{ color: "var(--aa-muted)" }} className="shrink-0" />
     </div>
   );
 }

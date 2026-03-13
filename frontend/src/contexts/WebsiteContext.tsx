@@ -186,6 +186,29 @@ export interface WebsiteSettings {
   signup_bullet_2: string;
   signup_bullet_3: string;
   signup_cta: string;
+  // Service detail page labels
+  sdp_intake_title: string;
+  sdp_features_title: string;
+  sdp_about_title: string;
+  sdp_faqs_title: string;
+  sdp_key_features_title: string;
+  sdp_additional_info_title: string;
+  sdp_configure_price_title: string;
+  sdp_configure_price_subtitle: string;
+  sdp_app_nav_overview: string;
+  sdp_app_nav_questions: string;
+  sdp_app_nav_pricing: string;
+  sdp_app_nav_faqs: string;
+  sdp_app_start_btn: string;
+  sdp_app_continue_btn: string;
+  sdp_wizard_step_title: string;
+  sdp_wizard_review_title: string;
+  sdp_wizard_review_subtitle: string;
+  sdp_wizard_submit_btn: string;
+  sdp_pricing_title: string;
+  sdp_cta_free: string;
+  sdp_cta_buy: string;
+  sdp_cta_quote: string;
 }
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
@@ -332,6 +355,29 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   signup_bullet_2: "",
   signup_bullet_3: "",
   signup_cta: "",
+  // Service detail page labels (empty = use built-in defaults)
+  sdp_intake_title: "",
+  sdp_features_title: "",
+  sdp_about_title: "",
+  sdp_faqs_title: "",
+  sdp_key_features_title: "",
+  sdp_additional_info_title: "",
+  sdp_configure_price_title: "",
+  sdp_configure_price_subtitle: "",
+  sdp_app_nav_overview: "",
+  sdp_app_nav_questions: "",
+  sdp_app_nav_pricing: "",
+  sdp_app_nav_faqs: "",
+  sdp_app_start_btn: "",
+  sdp_app_continue_btn: "",
+  sdp_wizard_step_title: "",
+  sdp_wizard_review_title: "",
+  sdp_wizard_review_subtitle: "",
+  sdp_wizard_submit_btn: "",
+  sdp_pricing_title: "",
+  sdp_cta_free: "",
+  sdp_cta_buy: "",
+  sdp_cta_quote: "",
 };
 
 const WebsiteContext = createContext<WebsiteSettings>(DEFAULT_SETTINGS);

@@ -3,10 +3,12 @@
  * Best for: Complex products with many intake questions, insurance applications
  */
 import { useState, useMemo } from "react";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Check, RefreshCcw, FileText } from "lucide-react";
 import type { LayoutProps, IntakeQuestion } from "./types";
-import { QuestionLabel, renderIntakeField, ScopeIdBlock } from "./utils";
+import { QuestionLabel, renderIntakeField, ScopeIdBlock, formatCurrency } from "./utils";
+import { useWebsite } from "@/contexts/WebsiteContext";
 
 export default function WizardLayout({
   product,
@@ -26,28 +28,34 @@ export default function WizardLayout({
   scopeError,
   scopeUnlock,
 }: LayoutProps) {
-  // Group questions by step_group or create auto-groups of 3-4 questions
+  const ws = useWebsite();
+  const cur = currency || "USD";
+
+  const isEnquiry = product.pricing_type === "enquiry" || ((isRFQ || pricing?.is_enquiry) && product?.base_price == null);
+  const isFree = !isEnquiry && pricing && pricing.total === 0;
+
+  // Group questions by step_group or create auto-groups of 3 questions
   const steps = useMemo(() => {
     const grouped = new Map<number, IntakeQuestion[]>();
-    
     visibleIntakeQuestions.forEach((q, idx) => {
       const stepNum = q.step_group ?? Math.floor(idx / 3);
       if (!grouped.has(stepNum)) grouped.set(stepNum, []);
       grouped.get(stepNum)!.push(q);
     });
-    
     const sortedSteps = Array.from(grouped.entries())
       .sort((a, b) => a[0] - b[0])
       .map(([, questions]) => questions);
-    
-    // Always add a review step at the end
-    return sortedSteps.length > 0 ? sortedSteps : [];
+    return sortedSteps;
   }, [visibleIntakeQuestions]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = steps.length + 1; // +1 for review step
   const isReviewStep = currentStep === steps.length;
-  const progress = ((currentStep + 1) / totalSteps) * 100;
+
+  // Progress: 0% on first step, 100% on review step
+  const progress = totalSteps > 1
+    ? Math.round((currentStep / (totalSteps - 1)) * 100)
+    : 100;
 
   const currentQuestions = steps[currentStep] || [];
 
@@ -62,24 +70,33 @@ export default function WizardLayout({
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    const symbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : "£";
-    return `${symbol}${amount.toFixed(2)}`;
-  };
+  const submitLabel = scopeUnlock
+    ? `Add to cart — ${formatCurrency(scopeUnlock.price, cur)}`
+    : isEnquiry
+    ? (ws.sdp_cta_quote || "Submit Enquiry")
+    : (ws.sdp_wizard_submit_btn || "Proceed to Checkout");
 
   return (
     <div className="max-w-3xl mx-auto" data-testid="wizard-layout">
       {/* Compact Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">{product.name}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--aa-text)" }}>{product.name}</h1>
         {product.tagline && (
-          <p className="text-slate-500 mt-1">{product.tagline}</p>
+          <p className="mt-1" style={{ color: "var(--aa-muted)" }}>{product.tagline}</p>
         )}
-        {/* Tags */}
         {product.tag && (
           <div className="flex flex-wrap gap-2 mt-3">
             {product.tag.split(",").map((tag: string, i: number) => (
-              <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100" data-testid={`product-tag-${i}`}>
+              <span
+                key={i}
+                className="px-3 py-1 text-xs font-medium rounded-full border"
+                style={{
+                  background: "color-mix(in srgb, var(--aa-accent) 10%, transparent)",
+                  color: "var(--aa-accent)",
+                  borderColor: "color-mix(in srgb, var(--aa-accent) 25%, transparent)",
+                }}
+                data-testid={`product-tag-${i}`}
+              >
                 {tag.trim()}
               </span>
             ))}
@@ -89,15 +106,20 @@ export default function WizardLayout({
 
       {/* Description + Bullets (shown before steps) */}
       {(product.description_long || (product.bullets && product.bullets.length > 0)) && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <div className="rounded-2xl border p-6 mb-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
           {product.description_long && (
-            <p className="text-slate-600 text-sm leading-relaxed mb-4">{product.description_long}</p>
+            <div className="prose prose-sm max-w-none mb-4" style={{ color: "var(--aa-muted)" }}>
+              <ReactMarkdown>{product.description_long}</ReactMarkdown>
+            </div>
           )}
           {product.bullets && product.bullets.length > 0 && (
             <ul className="space-y-2">
               {product.bullets.map((bullet: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "var(--aa-muted)" }}>
+                  <span
+                    className="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0"
+                    style={{ background: "var(--aa-accent)" }}
+                  />
                   {bullet}
                 </li>
               ))}
@@ -108,14 +130,14 @@ export default function WizardLayout({
 
       {/* Progress Bar */}
       <div className="mb-8">
-        <div className="flex justify-between text-xs text-slate-500 mb-2">
+        <div className="flex justify-between text-xs mb-2" style={{ color: "var(--aa-muted)" }}>
           <span>Step {currentStep + 1} of {totalSteps}</span>
-          <span>{Math.round(progress)}% complete</span>
+          <span>{progress}% complete</span>
         </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-blue-600 transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
+        <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--aa-surface)" }}>
+          <div
+            className="h-full transition-all duration-300 ease-out rounded-full"
+            style={{ width: `${progress}%`, background: "var(--aa-primary)" }}
           />
         </div>
         {/* Step indicators */}
@@ -126,12 +148,17 @@ export default function WizardLayout({
               onClick={() => idx <= currentStep && setCurrentStep(idx)}
               disabled={idx > currentStep}
               className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${
-                idx < currentStep
-                  ? "bg-blue-600 text-white"
+                idx <= currentStep ? "cursor-pointer hover:scale-110" : "cursor-not-allowed"
+              }`}
+              style={{
+                background: idx < currentStep
+                  ? "var(--aa-primary)"
                   : idx === currentStep
-                  ? "bg-blue-600 text-white ring-4 ring-blue-100"
-                  : "bg-slate-100 text-slate-400"
-              } ${idx <= currentStep ? "cursor-pointer hover:scale-110" : "cursor-not-allowed"}`}
+                  ? "var(--aa-primary)"
+                  : "var(--aa-surface)",
+                color: idx <= currentStep ? "var(--aa-primary-fg)" : "var(--aa-muted)",
+                boxShadow: idx === currentStep ? `0 0 0 4px color-mix(in srgb, var(--aa-primary) 20%, transparent)` : "none",
+              }}
               data-testid={`wizard-step-${idx}`}
             >
               {idx < currentStep ? <Check size={14} className="mx-auto" /> : idx + 1}
@@ -141,35 +168,52 @@ export default function WizardLayout({
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 min-h-[300px]">
+      <div
+        className="rounded-2xl border p-6 mb-6 min-h-[300px]"
+        style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
+      >
         {isReviewStep ? (
           <div className="space-y-8" data-testid="wizard-review-step">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-1">Review Your Selections</h2>
-              <p className="text-sm text-slate-500">Please confirm your choices before proceeding</p>
+              <h2 className="text-lg font-semibold mb-1" style={{ color: "var(--aa-text)" }}>
+                {ws.sdp_wizard_review_title || "Review Your Selections"}
+              </h2>
+              <p className="text-sm" style={{ color: "var(--aa-muted)" }}>
+                {ws.sdp_wizard_review_subtitle || "Please confirm your choices before proceeding"}
+              </p>
             </div>
-            
+
             {/* Summary of answers */}
             <div className="space-y-3">
               {visibleIntakeQuestions.filter(q => q.type !== "html_block").map(q => {
                 const val = intakeAnswers[q.key];
-                let displayVal = val;
-                if (q.type === "boolean") displayVal = val === "yes" ? "Yes" : val === "no" ? "No" : "-";
-                else if (q.type === "dropdown") {
+                let displayVal: any = val;
+                const valLower = String(val ?? "").toLowerCase();
+                if (q.type === "boolean") {
+                  displayVal = valLower === "yes" ? "Yes" : valLower === "no" ? "No" : "-";
+                } else if (q.type === "dropdown") {
                   const opt = q.options?.find(o => o.value === val);
-                  displayVal = opt?.label || val;
+                  displayVal = opt?.label || val || "-";
                 } else if (q.type === "multiselect" && Array.isArray(val)) {
-                  displayVal = val.map(v => q.options?.find(o => o.value === v)?.label || v).join(", ");
-                } else if (q.type === "date" && typeof val === "object") {
+                  displayVal = val.length > 0
+                    ? val.map(v => q.options?.find(o => o.value === v)?.label || v).join(", ")
+                    : "-";
+                } else if (q.type === "date" && typeof val === "object" && val !== null) {
                   displayVal = `${val.from || ""} to ${val.to || ""}`;
-                } else if (q.type === "file" && typeof val === "object") {
+                } else if (q.type === "file" && typeof val === "object" && val !== null) {
                   displayVal = val.filename || "-";
+                } else {
+                  displayVal = val || "-";
                 }
-                
+
                 return (
-                  <div key={q.key} className="flex justify-between py-2 border-b border-slate-100 last:border-0">
-                    <span className="text-sm text-slate-600">{q.label}</span>
-                    <span className="text-sm font-medium text-slate-900">{displayVal || "-"}</span>
+                  <div
+                    key={q.key}
+                    className="flex justify-between py-2"
+                    style={{ borderBottom: "1px solid var(--aa-border)" }}
+                  >
+                    <span className="text-sm" style={{ color: "var(--aa-muted)" }}>{q.label}</span>
+                    <span className="text-sm font-medium" style={{ color: "var(--aa-text)" }}>{displayVal}</span>
                   </div>
                 );
               })}
@@ -177,15 +221,20 @@ export default function WizardLayout({
 
             {/* Price Summary */}
             {pricing && (
-              <div className="mt-6 p-4 bg-slate-50 rounded-xl">
+              <div
+                className="mt-6 p-4 rounded-xl"
+                style={{ background: "var(--aa-surface)", border: "1px solid var(--aa-border)" }}
+              >
                 <div className="flex justify-between items-center">
-                  <span className="font-medium text-slate-700">Total</span>
-                  <span className="text-2xl font-bold text-slate-900">
-                    {isRFQ ? "Price on request" : formatCurrency(pricing.total)}
+                  <span className="font-medium" style={{ color: "var(--aa-text)" }}>
+                    {ws.sdp_pricing_title || "Total"}
+                  </span>
+                  <span className="text-2xl font-bold" style={{ color: "var(--aa-text)" }}>
+                    {isEnquiry ? "Price on request" : isFree ? "Free" : formatCurrency(pricing.total, cur)}
                   </span>
                 </div>
                 {isSubscription && (
-                  <div className="flex items-center gap-2 mt-2 text-sm text-blue-600">
+                  <div className="flex items-center gap-2 mt-2 text-sm" style={{ color: "var(--aa-accent)" }}>
                     <RefreshCcw size={14} />
                     <span>Recurring subscription</span>
                   </div>
@@ -198,7 +247,8 @@ export default function WizardLayout({
                 href={termsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-700"
+                className="flex items-center gap-2 text-xs hover:opacity-70 transition-opacity"
+                style={{ color: "var(--aa-muted)" }}
                 data-testid="terms-link"
               >
                 <FileText size={14} />
@@ -209,28 +259,26 @@ export default function WizardLayout({
         ) : (
           <div className="space-y-8" data-testid={`wizard-step-${currentStep}-content`}>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-1">
-                {currentStep === 0 ? "Let's get started" : `Step ${currentStep + 1}`}
+              <h2 className="text-lg font-semibold mb-1" style={{ color: "var(--aa-text)" }}>
+                {currentStep === 0
+                  ? (ws.sdp_wizard_step_title || "Let's get started")
+                  : `Step ${currentStep + 1}`}
               </h2>
-              <p className="text-sm text-slate-500">
-                {currentQuestions.length === 1 
+              <p className="text-sm" style={{ color: "var(--aa-muted)" }}>
+                {currentQuestions.length === 1
                   ? "Answer the question below to continue"
                   : `Answer the ${currentQuestions.length} questions below to continue`}
               </p>
             </div>
-            
+
             <div className="space-y-5">
               {currentQuestions.map(q => (
                 <div key={q.key} className="space-y-2" data-testid={`intake-field-${q.key}`}>
                   {q.type !== "html_block" && <QuestionLabel q={q} />}
                   {q.helper_text && q.type !== "html_block" && (
-                    <p className="text-xs text-slate-400">{q.helper_text}</p>
+                    <p className="text-xs" style={{ color: "var(--aa-muted)" }}>{q.helper_text}</p>
                   )}
-                  {renderIntakeField(
-                    q,
-                    intakeAnswers[q.key],
-                    v => onIntakeChange(q.key, v)
-                  )}
+                  {renderIntakeField(q, intakeAnswers[q.key], v => onIntakeChange(q.key, v))}
                 </div>
               ))}
             </div>
@@ -250,23 +298,23 @@ export default function WizardLayout({
           <ChevronLeft size={16} />
           Back
         </Button>
-        
+
         {isReviewStep ? (
-          <>
-            <Button
-              onClick={handleAddToCart}
-              className="gap-2 bg-blue-600 hover:bg-blue-700"
-              data-testid="wizard-submit-btn"
-            >
-              {scopeUnlock ? `Add to Cart — $${scopeUnlock.price}` : isRFQ ? "Submit Enquiry" : "Proceed to Checkout"}
-              <ChevronRight size={16} />
-            </Button>
-          </>
+          <Button
+            onClick={handleAddToCart}
+            className="gap-2"
+            style={{ background: "var(--aa-primary)", color: "var(--aa-primary-fg)" }}
+            data-testid="wizard-submit-btn"
+          >
+            {submitLabel}
+            <ChevronRight size={16} />
+          </Button>
         ) : (
           <Button
             onClick={() => setCurrentStep(s => s + 1)}
             disabled={!canProceed()}
-            className="gap-2 bg-blue-600 hover:bg-blue-700"
+            className="gap-2"
+            style={{ background: "var(--aa-primary)", color: "var(--aa-primary-fg)" }}
             data-testid="wizard-next-btn"
           >
             Continue
@@ -276,7 +324,7 @@ export default function WizardLayout({
       </div>
 
       {/* Scope ID override — shown on review step for enquiry products */}
-      {isReviewStep && isRFQ && setScopeId && handleValidateScopeId && (
+      {isReviewStep && isEnquiry && setScopeId && handleValidateScopeId && (
         <div className="mt-4">
           <ScopeIdBlock
             scopeId={scopeId}
@@ -291,23 +339,43 @@ export default function WizardLayout({
 
       {/* Custom Sections */}
       {(product.custom_sections || []).map((sec: any, i: number) => (
-        <div key={sec.id || i} className="bg-white rounded-2xl border border-slate-200 p-6 mt-6">
-          <h3 className="font-semibold text-slate-900 mb-3">{sec.name}</h3>
+        <div
+          key={sec.id || i}
+          className="rounded-2xl border p-6 mt-6"
+          style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
+        >
+          <h3 className="font-semibold mb-3" style={{ color: "var(--aa-text)" }}>{sec.name}</h3>
           {sec.content && (
-            <p className="text-sm text-slate-600 leading-relaxed">{sec.content}</p>
+            <div className="prose prose-sm max-w-none" style={{ color: "var(--aa-muted)" }}>
+              <ReactMarkdown>{sec.content}</ReactMarkdown>
+            </div>
+          )}
+          {sec.tags && sec.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {sec.tags.map((tag: string) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full text-xs" style={{ background: "var(--aa-surface)", color: "var(--aa-muted)" }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       ))}
 
       {/* FAQs */}
       {(product.faqs || []).length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-6">
-          <h3 className="font-semibold text-slate-900 mb-4">FAQs</h3>
+        <div
+          className="rounded-2xl border p-6 mt-6"
+          style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
+        >
+          <h3 className="font-semibold mb-4" style={{ color: "var(--aa-text)" }}>
+            {ws.sdp_faqs_title || "FAQs"}
+          </h3>
           <div className="space-y-4">
             {(product.faqs || []).map((faq: any, i: number) => (
-              <div key={i} className="pb-4 border-b border-slate-100 last:border-0 last:pb-0">
-                <p className="font-medium text-slate-900 mb-1">{faq.question}</p>
-                <p className="text-sm text-slate-600">{faq.answer}</p>
+              <div key={i} className="pb-4 last:pb-0" style={{ borderBottom: "1px solid var(--aa-border)" }}>
+                <p className="font-medium mb-1" style={{ color: "var(--aa-text)" }}>{faq.question}</p>
+                <p className="text-sm" style={{ color: "var(--aa-muted)" }}>{faq.answer}</p>
               </div>
             ))}
           </div>
