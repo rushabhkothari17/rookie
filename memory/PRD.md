@@ -25,6 +25,7 @@ Build a white-label service commerce platform with:
 │   │   ├── tenants.py     # Partner org CRUD, create-partner endpoint
 │   │   ├── users.py       # User management, tenant-scoped email validation
 │   │   ├── customers.py   # Customer management, tenant-scoped email validation
+│   │   ├── website.py     # Website settings, signup form migration (_migrate_signup_schema + _migrate_partner_signup_schema)
 │   │   └── ...
 │   ├── website.py         # Public/admin website settings (store_name sync fix)
 │   └── ...
@@ -226,6 +227,13 @@ Build a white-label service commerce platform with:
 - **ProductHero Accent Line**: Added `aa-hero-accent` keyframe animation for accent line slide-in
 - **CSS Animations**: Added `aa-product-lift`, `aa-cart-item`, `aa-img-zoom`, `aa-hero-accent`, `aa-float`, `aa-float-slow`, `aa-nav-link` utility classes
 - Tested via iteration_277 — **7/7 features PASS (100%)**
+
+### Mar 2026 — Table Standardization & Form Migration Fix
+- **Table White Background**: All admin table containers updated from `overflow-hidden` (no bg) → `rounded-xl border border-slate-200 bg-white overflow-x-auto`, matching product table reference style. Files: PlansTab (4 tables), UsersTab, ResourceEmailTemplatesTab, PartnerSubscriptionsTab, ResourcesTab, MyOrdersTab, ArticleCategoriesTab, ArticleTemplatesTab, ResourceCategoriesTab, ArticleEmailTemplatesTab, LogsTab, ReferencesSection, ResourceTemplatesTab, MySubscriptionsTab, TaxesTab, PartnerOrdersTab
+- **Currencies Add Button**: CurrenciesTab Add button now uses `size="sm"` to match Products page button style
+- **Signup Form Migration Fix**: Fixed bug in `_migrate_signup_schema` — return condition now includes `shift > 0` so schemas missing email/password are correctly returned after injection
+- **Partner Signup Migration**: Added `_migrate_partner_signup_schema` function to inject `admin_email`/`admin_password` locked fields into old partner signup schemas. Called in both GET /website-settings endpoints
+- Tested via iteration_280 — **6/6 frontend + 11/11 backend PASS (100%)**
 
 ### P0 — Critical (None currently)
 
