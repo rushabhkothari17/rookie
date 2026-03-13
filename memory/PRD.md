@@ -150,7 +150,15 @@ Build a white-label service commerce platform with:
 - Verified via testing agent iteration_270 — 8/8 tests PASS
 - Verified `store_name → tenants.name` sync via curl: PUT /api/admin/settings updates both `app_settings.store_name` AND `tenants.name` in one operation (settings.py line 82-83)
 
-## Prioritized Backlog
+### Phase 7: Zoho CRM Extended Module Sync (March 2026)
+- **13 syncable modules total** (3 existing + 10 new): customers, orders, subscriptions, products, enquiries, invoices, resources, plans, categories, terms, promo_codes, refunds, addresses
+- **Products module** includes 19 fields: all standard fields + `intake_questions_count`, `intake_questions_labels`, `intake_questions_json` (full schema as text)
+- **Multiple mappings per module**: `find_one` → `find` fan-out in `auto_sync_to_zoho_crm` — one store module can sync to multiple Zoho CRM destinations simultaneously
+- **Auto-sync triggers added** to: catalog.py, promo_codes.py, resources.py, terms.py, plans.py, orders.py (enquiries), checkout.py (invoices, 3 paths), refund_service.py, customers.py (addresses)
+- **Frontend DEFAULT_FIELD_MAPS** expanded with sensible default mappings for all 13 modules
+- Verified via testing agent iteration_271 — 18/18 backend tests PASS
+
+
 
 ### P0 — Critical (None currently)
 
