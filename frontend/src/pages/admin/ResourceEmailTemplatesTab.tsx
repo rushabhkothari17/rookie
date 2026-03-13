@@ -122,7 +122,7 @@ export function ResourceEmailTemplatesTab() {
         </Button>
       </div>
 
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">

@@ -121,7 +121,7 @@ export function MySubscriptionsTab() {
         <Button size="sm" variant="outline" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
       </div>
 
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <table className="w-full text-sm" data-testid="my-subscriptions-table">
           <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
             <tr>

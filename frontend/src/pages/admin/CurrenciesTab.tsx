@@ -83,7 +83,7 @@ export function CurrenciesTab() {
           onKeyDown={e => e.key === "Enter" && handleAdd()}
           data-testid="new-currency-input"
         />
-        <Button onClick={handleAdd} disabled={adding || newCode.trim().length !== 3} data-testid="add-currency-btn">
+        <Button size="sm" onClick={handleAdd} disabled={adding || newCode.trim().length !== 3} data-testid="add-currency-btn">
           <Plus size={14} className="mr-1.5" />Add
         </Button>
       </div>

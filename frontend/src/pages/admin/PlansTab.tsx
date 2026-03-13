@@ -464,7 +464,7 @@ function PlansSection() {
           No plans yet. Create your first plan to start assigning limits to partner organisations.
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden">
+        <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
           <table className="w-full text-sm" data-testid="plans-table">
             <thead className="bg-slate-50">
               <tr>
@@ -651,7 +651,7 @@ function OneTimeRatesSection() {
           No rates configured. Add a rate to allow partners to buy extra limits.
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden">
+        <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
           <table className="w-full text-sm" data-testid="rates-table">
             <thead className="bg-slate-50">
               <tr>
@@ -861,7 +861,7 @@ function CouponsSection() {
         </Button>
       </div>
 
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <table className="w-full text-sm" data-testid="coupons-table">
           <thead className="bg-slate-50">
             <tr>
@@ -1208,7 +1208,7 @@ function CouponUsageSection() {
           <p className="text-xs text-slate-400 mt-1">Usage will appear here once partners apply coupons during checkout.</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden" data-testid="usage-report-table">
+        <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto" data-testid="usage-report-table">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
               <tr>

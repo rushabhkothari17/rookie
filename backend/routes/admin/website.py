@@ -41,11 +41,13 @@ _DEFAULT_ADDRESS_CONFIG = {
 }
 
 _SIGNUP_FORM_SCHEMA = json.dumps([
-    {"id": "su_name",    "key": "full_name",    "label": "Full Name",    "type": "text",    "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 0},
-    {"id": "su_company", "key": "company_name", "label": "Company Name", "type": "text",    "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 1},
-    {"id": "su_job",     "key": "job_title",    "label": "Job Title",    "type": "text",    "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 2},
-    {"id": "su_phone",   "key": "phone",        "label": "Phone",        "type": "tel",     "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 3},
-    {"id": "su_address", "key": "address",      "label": "Address",      "type": "address", "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 4,
+    {"id": "su_email",   "key": "email",        "label": "Email Address", "type": "email",    "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 0},
+    {"id": "su_pass",    "key": "password",     "label": "Password",      "type": "password", "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 1},
+    {"id": "su_name",    "key": "full_name",    "label": "Full Name",     "type": "text",     "required": True,  "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 2},
+    {"id": "su_company", "key": "company_name", "label": "Company Name",  "type": "text",     "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 3},
+    {"id": "su_job",     "key": "job_title",    "label": "Job Title",     "type": "text",     "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 4},
+    {"id": "su_phone",   "key": "phone",        "label": "Phone",         "type": "tel",      "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 5},
+    {"id": "su_address", "key": "address",      "label": "Address",       "type": "address",  "required": False, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 6,
      "address_config": _DEFAULT_ADDRESS_CONFIG},
 ])
 
@@ -62,7 +64,8 @@ _PARTNER_SIGNUP_FORM_SCHEMA = json.dumps([
 
 def _migrate_signup_schema(schema_str: str) -> str:
     """Migrate old signup schema format to current format.
-    - Removes standalone country/email/password locked fields
+    - Ensures email + password appear as locked fields at order 0 and 1
+    - Removes standalone country locked field
     - Adds address field with type 'address' and default address_config
     - Upgrades existing 'address' field from type 'text' to type 'address'
     """
@@ -70,12 +73,30 @@ def _migrate_signup_schema(schema_str: str) -> str:
         fields = json.loads(schema_str) if schema_str else []
         if not fields:
             return schema_str
+
         has_address = any(f.get("key") == "address" for f in fields)
         has_old_country = any(f.get("key") == "country" and f.get("locked") for f in fields)
 
-        # Step 1: remove old locked fields (email, password, standalone country)
+        # Step 1: remove old locked standalone country field
         if has_old_country:
-            fields = [f for f in fields if f.get("key") not in ("country", "email", "password") or not f.get("locked")]
+            fields = [f for f in fields if not (f.get("key") == "country" and f.get("locked"))]
+
+        # Step 2: inject email + password as locked fields at the front if missing
+        has_email = any(f.get("key") == "email" for f in fields)
+        has_password = any(f.get("key") == "password" for f in fields)
+
+        # Shift all existing orders by 2 if we need to inject both, by 1 if only one
+        shift = (0 if has_email else 1) + (0 if has_password else 1)
+        if shift > 0:
+            for f in fields:
+                f["order"] = f.get("order", 0) + shift
+
+        if not has_email:
+            fields.insert(0, {"id": "su_email", "key": "email", "label": "Email Address", "type": "email",
+                               "required": True, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 0})
+        if not has_password:
+            fields.insert(1, {"id": "su_pass", "key": "password", "label": "Password", "type": "password",
+                               "required": True, "placeholder": "", "options": [], "locked": True, "enabled": True, "order": 1})
 
         # Step 2: add address field if missing
         if not has_address:
@@ -98,9 +119,45 @@ def _migrate_signup_schema(schema_str: str) -> str:
                     f["address_config"] = _DEFAULT_ADDRESS_CONFIG
                     changed = True
 
-        if has_old_country or not has_address or changed:
+        if has_old_country or not has_address or changed or shift > 0:
             fields.sort(key=lambda f: f.get("order", 0))
             return json.dumps(fields)
+    except Exception:
+        pass
+    return schema_str
+
+
+def _migrate_partner_signup_schema(schema_str: str) -> str:
+    """Ensure partner signup schema has admin_email and admin_password locked fields."""
+    try:
+        fields = json.loads(schema_str) if schema_str else []
+        if not fields:
+            return schema_str
+
+        has_email = any(f.get("key") == "admin_email" for f in fields)
+        has_password = any(f.get("key") == "admin_password" for f in fields)
+
+        shift = (0 if has_email else 1) + (0 if has_password else 1)
+        if shift == 0:
+            return schema_str
+
+        for f in fields:
+            f["order"] = f.get("order", 0) + shift
+
+        if not has_email:
+            fields.insert(0, {
+                "id": "pf_admin_email", "key": "admin_email", "label": "Admin Email",
+                "type": "email", "required": True, "placeholder": "", "options": [],
+                "locked": True, "enabled": True, "order": 0,
+            })
+        if not has_password:
+            fields.insert(1, {
+                "id": "pf_admin_pass", "key": "admin_password", "label": "Password",
+                "type": "password", "required": True, "placeholder": "", "options": [],
+                "locked": True, "enabled": True, "order": 1,
+            })
+        fields.sort(key=lambda f: f.get("order", 0))
+        return json.dumps(fields)
     except Exception:
         pass
     return schema_str
@@ -355,6 +412,11 @@ async def get_website_settings_public(
         settings["signup_form_schema"] = _migrate_signup_schema(settings.get("signup_form_schema", "[]"))
     except Exception:
         pass
+    # Migrate: ensure partner signup schema has admin_email and admin_password
+    try:
+        settings["partner_signup_form_schema"] = _migrate_partner_signup_schema(settings.get("partner_signup_form_schema", "[]"))
+    except Exception:
+        pass
     return {"settings": settings}
 
 
@@ -399,6 +461,11 @@ async def get_website_settings_admin(admin: Dict[str, Any] = Depends(get_tenant_
     # Migrate: fix old signup schema format (standalone country → address block)
     try:
         merged["signup_form_schema"] = _migrate_signup_schema(merged.get("signup_form_schema", "[]"))
+    except Exception:
+        pass
+    # Migrate: ensure partner signup schema has admin_email and admin_password
+    try:
+        merged["partner_signup_form_schema"] = _migrate_partner_signup_schema(merged.get("partner_signup_form_schema", "[]"))
     except Exception:
         pass
     return {"settings": merged}

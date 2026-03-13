@@ -287,7 +287,7 @@ function TaxTablePanel() {
       {loading ? (
         <div className="text-sm text-slate-500 py-8 text-center">Loading tax table...</div>
       ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden">
+        <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
@@ -1035,7 +1035,7 @@ function TaxSummaryPanel() {
       ) : (
         <div className="space-y-4">
           {months_list.map(month => (
-            <div key={month} className="rounded-xl border border-slate-200 overflow-hidden">
+            <div key={month} className="rounded-xl border border-slate-200 bg-white overflow-hidden">
               <div className="bg-slate-50 px-4 py-2.5 flex items-center justify-between border-b border-slate-200">
                 <span className="text-sm font-semibold text-slate-700">{month}</span>
                 <span className="text-xs text-slate-400">

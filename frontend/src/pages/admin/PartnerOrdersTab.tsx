@@ -429,7 +429,7 @@ export function PartnerOrdersTab() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <table className="w-full text-sm" data-testid="partner-orders-table">
           <thead className="bg-slate-50">
             <tr>

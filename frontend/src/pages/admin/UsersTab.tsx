@@ -839,7 +839,7 @@ export function UsersTab() {
           {/* Filters removed — use column headers below */}
 
           {/* Table */}
-          <div className="rounded-lg border border-slate-200 overflow-x-auto">
+          <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50">

@@ -553,7 +553,7 @@ export function PartnerSubscriptionsTab() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <table className="w-full text-sm" data-testid="partner-subscriptions-table">
           <thead className="bg-slate-50">
             <tr>

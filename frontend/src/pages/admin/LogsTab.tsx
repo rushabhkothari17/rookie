@@ -424,7 +424,7 @@ export function LogsTab() {
       </div>
 
       {/* ── Table ── */}
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 border-b border-slate-200">

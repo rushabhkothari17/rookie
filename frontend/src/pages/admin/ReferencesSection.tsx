@@ -110,7 +110,7 @@ export default function ReferencesSection() {
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         {refs.length === 0 ? (
           <div className="py-10 text-center text-slate-400 text-sm">
             No custom references yet.

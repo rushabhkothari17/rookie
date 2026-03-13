@@ -1,90 +1,56 @@
 <analysis>**original_problem_statement:**
-The user initially requested a comprehensive UI/UX overhaul. This evolved into a series of major feature requests and fixes, including:
-1.  **Expand Zoho CRM Integration**: Sync all 13 application modules to Zoho CRM.
-2.  **Remove Hardcoded Content**: Remove hardcoded policy text from product detail pages.
-3.  **Autofill Intake Forms**: Pre-fill product intake forms using URL query parameters.
-4.  **Fix Auth Redirects**: Ensure unauthenticated users are correctly redirected back to pages with URL parameters after logging in.
-5.  **Update API Documentation**: Update and thoroughly test all API documentation.
-6.  **Fix Webhook Bugs**: Address issues with webhook creation and test delivery logging.
-7.  **Code Cleanup**: Find and remove all orphaned and conflicting code from the codebase.
-8.  **Mobile Optimization**: Make the entire web application responsive and usable on mobile devices.
+The user initially requested a series of UI/UX improvements and bug fixes. This evolved into several batches of feature implementation:
+
+1.  **P0 Bug Fixes & UI Polish**:
+    *   Fix Failed to load card preview bug when adding products to the cart.
+    *   Fix store page layout where search/filter/sort controls were not aligned.
+    *   Fix dark mode icons blending into the background.
+    *   Ensure partner-facing pages (sign-in, sign-up, etc.) adhere to the selected color theme.
+2.  **P1 UI/UX Enhancements**:
+    *   Implement a modern page loader animation.
+    *   Add hover animations to various elements (sidebar, hero, cards).
+    *   Add pagination to the store, services, resources, and articles pages.
+3.  **Comprehensive UI Modernization (12 Enhancements)**:
+    *   Implement smooth page transitions, skeleton loaders, staggered list animations, custom toast notifications, number counter animations, glassmorphism, scroll-reveal animations, button ripple effects, illustrated empty states, hover tooltips, active nav indicators, and a cart badge animation.
+4.  **Universal Form Builder Fixes & Enhancements**:
+    *   Restore missing hide/show toggle and add a max character limit field.
+    *   Add max file size limits for file uploads.
+    *   Add format options for date fields.
+    *   Add min/max value constraints for number fields.
+5.  **Admin & Portal Configuration**:
+    *   Ensure email and password fields appear in the form builder for Partner Sign Up/In pages.
+    *   Restrict visibility of the Partner Sign Up page settings to platform admins only.
+    *   Add a toggle in the admin panel to show/hide statistics on the customer portal page.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- The application's core features, including the expanded 13-module Zoho CRM sync, URL-based form pre-filling, and robust authentication redirects, are complete and functional.
-- The API documentation has been completely overhauled, documenting over 200 endpoints.
-- Two critical webhook bugs have been identified and fixed.
-- A major code cleanup was performed.
-- The entire application has undergone significant mobile optimization and UI/UX overhaul, including implementing CSS variables for branding, preset themes, grid/dot pattern backgrounds, and fixing numerous hardcoded color issues across the application for proper dark mode support. Most components now respond to global branding settings.
+The application has undergone a massive UI/UX overhaul. All 12 requested cutting-edge UI enhancements (page transitions, skeleton loaders, animations, etc.) have been implemented. The critical Failed to load card preview bug is fixed. The store layout and dark mode icon issues are resolved. Partner pages now correctly use the application's theme. The Universal Form Builder has been significantly enhanced with new validation fields (max length, file size, number ranges) and a restored hide/show toggle. New admin controls for the customer portal and role-based visibility for partner settings are also in place.
 
 **Last working item**:
-    - Last item agent was working: The agent is currently investigating two issues raised by the user: Failed to load card preview when adding a product to the cart (a bug), and the search filter and sort on the store front is not next to each other (a layout/design issue). The agent has started by using  to examine relevant frontend files (, , , ) to understand the structure and potential causes.
+    - Last item agent was working: The agent was finalizing a batch of 6 features related to the form builder and admin settings. The testing subagent ran and passed 7/8 tests, automatically fixing several frontend and backend model inconsistencies. The final remaining step is a backend fix to ensure existing partner sign-up forms are correctly migrated to include the new default  and  fields. The agent was in the process of modifying the  and  function in .
     - Status: IN PROGRESS
-    - Agent Testing Done: N
-    - Which testing method agent to use?: Frontend testing agent for the UI issues and backend testing for the cart bug.
+    - Agent Testing Done: Y
+    - Which testing method agent to use?: manual testing by curl to verify the backend migration script after the fix.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1 (P0): Investigate and fix Failed to load card preview bug when adding product to cart.
-  - Issue 2 (P0): Fix search filter and sort on the store front is not next to each other layout issue.
-  - Issue 3 (P0): Icons in the dark theme are still dark, blending in.
-  - Issue 4 (P0): Partner sign-in, sign-up, forgot password, main partner code entry, and all platform-specific pages to follow platform admin color theme.
-  - Issue 5 (P1): Implement modern page loader animation and animations on hover (left sidebar, hero section, cart page, product detail pages).
-  - Issue 6 (P1): Add pagination to services, resource, and articles pages if not present already.
-  - Issue 7 (P2): Spacing on Resources Page.
-  - Issue 8 (P2): Missing Resend API Key for Email Delivery.
+  - Issue 1: Finalize the migration for existing Partner Signup forms (P0)
+  - Issue 2: Spacing on Resources Page (P2)
+  - Issue 3: Missing Resend API Key for Email Delivery (P2)
 
   Issues Detail:
-  - Issue 1: Investigate and fix Failed to load card preview bug when adding product to cart.
-     - Attempted fixes: None yet, currently investigating.
-     - Next debug checklist: Examine the ,  for cart-related logic and API calls. Check network requests in the browser console for specific error messages when the bug is reproduced.
-     - Why fix this issue and what will be achieved with the fix? This is a critical functional bug that prevents users from adding products to their cart, directly impacting core application functionality. Fixing it will restore the expected user flow.
+  - Issue 1: Finalize the migration for existing Partner Signup forms
+     - Attempted fixes: The frontend and Pydantic models are correct. The testing agent identified that the default schema on the backend ( in ) and the migration logic () need to be updated to inject  and  fields into schemas that don't already have them.
+     - Next debug checklist:
+        1.  Modify  in  to include the default email and password field definitions.
+        2.  Update the  function in  to check if  or  fields exist in a loaded schema and inject them if they are missing, preserving the rest of the form structure.
+     - Why fix this issue and what will be achieved with the fix? This ensures that all existing partner tenants, who may have customized their signup forms before this change, will have the essential email and password fields correctly and automatically added, preventing broken signup flows.
      - Status: IN PROGRESS
      - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Both
+     - Should Test frontend/backend/both after fix? Backend
      - Blocked on other issue: None
-  - Issue 2: Fix search filter and sort on the store front is not next to each other layout issue.
-     - Attempted fixes: The agent has previously addressed general store layout issues related to mobile responsiveness but this specific alignment concern persists.
-     - Next debug checklist: Review  and  CSS for conflicting  or  properties,  declarations, and responsive breakpoints that might be causing the misalignment.
-     - Why fix this issue and what will be achieved with the fix? To improve the visual consistency and user experience of the store front, making it more intuitive and professional.
-     - Status: IN PROGRESS
-     - Is recurring issue? Y (similar layout issues have appeared before)
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None
-  - Issue 3: Icons in the dark theme are still dark, blending in.
-     - Attempted fixes: None explicitly, but general dark theme fixes were implemented.
-     - Next debug checklist: Identify the components/pages where icons are rendered. Check how icon colors are determined (e.g., hardcoded, inherited, based on parent text color). Modify CSS variables or Tailwind classes to ensure icons adapt to the dark theme with appropriate contrast.
-     - Why fix this issue and what will be achieved with the fix? To enhance the usability and aesthetic appeal of the dark theme by ensuring all UI elements, including icons, are clearly visible and legible.
-     - Status: NOT STARTED
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None
-  - Issue 4: Partner sign-in, sign-up, forgot password, main partner code entry, and all platform-specific pages to follow platform admin color theme.
-     - Attempted fixes: None.
-     - Next debug checklist: Identify the routes and components for these partner-facing pages. Ensure they correctly consume the global CSS variables and the  class for theme application. Modify hardcoded styles where necessary.
-     - Why fix this issue and what will be achieved with the fix? To ensure a consistent and branded experience across all parts of the application, especially for partner-facing interfaces, which reflects the platform's overall design.
-     - Status: NOT STARTED
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None
-  - Issue 5: Implement modern page loader animation and animations on hover (left sidebar, hero section, cart page, product detail pages).
-     - Attempted fixes: None.
-     - Next debug checklist: Investigate existing  implementations. Identify suitable animation libraries or CSS techniques for specific elements. Implement page loader as a global component and add hover effects using Tailwind CSS or  to individual components.
-     - Why fix this issue and what will be achieved with the fix? To significantly enhance the perceived performance and modern feel of the application, providing a more engaging and cutting-edge user experience.
-     - Status: NOT STARTED
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None
-  - Issue 6: Add pagination to services, resource, and articles pages if not present already.
-     - Attempted fixes: None.
-     - Next debug checklist: Inspect , , and  to determine current data fetching and rendering. Implement pagination UI (using Shadcn components) and update backend APIs (if necessary) to support paginated data retrieval.
-     - Why fix this issue and what will be achieved with the fix? To improve performance and usability for pages with large datasets, making content easier to browse and manage.
-     - Status: NOT STARTED
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on other issue: None
-  - Issue 7: Spacing on Resources Page.
+  - Issue 2: Spacing on Resources Page
      - Attempted fixes: None.
      - Next debug checklist: Compare the CSS/styling of the Resources page with other correctly-spaced pages and apply consistent padding/margin using Tailwind CSS utilities.
      - Why fix this issue and what will be achieved with the fix? To create a visually consistent experience across all pages.
@@ -92,7 +58,7 @@ The user initially requested a comprehensive UI/UX overhaul. This evolved into a
      - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
-  - Issue 8: Missing Resend API Key for Email Delivery.
+  - Issue 3: Missing Resend API Key for Email Delivery
      - Attempted fixes: None.
      - Next debug checklist: Implement a UI flow for tenants to enter and save their Resend API key when Resend is selected as the email provider in the settings.
      - Why fix this issue and what will be achieved with the fix? To make the Resend email integration functional for tenants.
@@ -102,97 +68,74 @@ The user initially requested a comprehensive UI/UX overhaul. This evolved into a
      - Blocked on other issue: None
 
 **In progress Task List**:
-  - Task 1: Investigate and fix Failed to load card preview bug. (P0)
-    - Where to resume: Agent is currently viewing frontend files related to  and cart functionality. Next, verify if the  endpoint returns error or if UI is failing to render.
-    - What will be achieved with this? The ability for users to successfully add products to their cart.
-    - Status: IN PROGRESS
-    - Should Test frontend/backend/both after fix? Both
-    - Blocked on something: None
-  - Task 2: Address search filter and sort on the store front is not next to each other layout issue. (P0)
-    - Where to resume: Agent is currently viewing  and . Next, identify specific CSS properties causing the misalignment and apply corrective styles.
-    - What will be achieved with this? A visually consistent and well-aligned search filter and sort section on the store front.
-    - Status: IN PROGRESS
-    - Should Test frontend/backend/both after fix? Frontend
-    - Blocked on something: None
+  - Task 1: Complete the backend migration for partner signup forms. (P0)
+     - Where to resume: . The agent needs to implement the logic inside the  function.
+     - What will be achieved with this? All partner signup forms will correctly include email and password fields.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix? Backend
+     - Blocked on something: None
 
 **Upcoming and Future Tasks**
   Upcoming Tasks:
-  - (P0) Partner sign-in, sign-up, forgot password, main partner code entry, and all platform-specific pages to follow platform admin color theme.
-  - (P0) Icons in the dark theme are still dark, blending in.
-  - (P1) Implement modern page loader animation and animations on hover (left sidebar, hero section, cart page, product detail pages).
-  - (P1) Add pagination to services, resource, and articles pages.
-  - (P2) Build the new landing page.
-  - (P2) Add radio filters for **Role** & **Status** columns in the **Users** table.
-  - (P2) Spacing on Resources Page.
-  - (P2) Missing Resend API Key for Email Delivery.
+    - (P2) Spacing on Resources Page.
+    - (P2) Add radio filters for **Role** & **Status** columns in the **Users** table.
+    - (P2) Missing Resend API Key for Email Delivery.
+    - (P2) Build the new landing page.
   Future Tasks:
-  - (P2) Google Drive & OneDrive Integration.
-  - (P2) Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button).
-  - (P2) Centralize Email Settings.
+    - (P2) Google Drive & OneDrive Integration.
+    - (P2) Customer Portal Enhancements (self-service cancellation, renewal dates, reorder button).
+    - (P2) Centralize Email Settings.
 
 **Completed work in this session**
-- **Mobile Optimization**:
-  - Implemented responsive layouts across , , , .
-  - Fixed mobile-specific layout issues in  (e.g.,  conflicts).
-  - Verified mobile responsiveness with targeted visual checks and comprehensive  tests (all tests passed).
-- **Comprehensive UI/UX Overhaul (Phase 1 - CSS Variables and Theming)**:
-  - Introduced new global CSS variables (, , ) for enhanced theming flexibility.
-  - Modified  to use a subtle dot pattern background for hero sections instead of lines.
-  - Updated  to handle new CSS variables and compute  based on luminance.
-  - Updated  interface and  to include  and .
-  - Implemented preset theme selection (Midnight Tech, Slate Pro, Ocean Deep) in  and .
-  - Migrated numerous hardcoded Tailwind classes (, , etc.) in key components (, , , , , , , etc.) to use the new CSS variables, enabling true dynamic branding.
-  - Added a global  class with overrides for hardcoded Tailwind classes in  to ensure proper dark mode appearance across legacy components.
-  - Implemented  class toggling in  for dynamic theme switching.
-  - Updated public website-settings API endpoint () to return  and .
-  - Fixed specific hardcoded background/text colors in components like  and admin content panels to properly adhere to the active theme.
-  - Refined  and  preset colors for better visual depth and readability.
-  - Tested and verified the UI/UX changes with  (all tests passed multiple times).
+- **Critical Bug Fixes & Theming**:
+  - Fixed Failed to load card preview bug by correcting tenant resolution logic in .
+  - Fixed store layout by adjusting flex properties in .
+  - Fixed dark mode icon visibility by updating  color variable in .
+  - Applied dynamic theme colors to partner auth pages (, , ).
+- **Form Builder Overhaul**:
+  - Added Hide/Show toggle and Max Length input to the form builder UI in .
+  - Added Max File Size, Date Format, and Number Min/Max inputs to the form builder.
+  - Implemented the corresponding validation logic in .
+- **New Features & Admin Controls**:
+  - Added pagination to the  page.
+  - Added a Show Stats toggle for the customer portal in  and , with backend support.
+  - Implemented role-based visibility for the Partner Sign Up settings tile in .
+  - Ensured  and  fields are now included by default in signup form schemas.
+- **Comprehensive UI/UX Modernization**:
+  - **Animations**: Implemented a global page loader, smooth page transitions (), skeleton loaders, staggered list animations (), number counters, scroll-reveal effects, and button ripples.
+  - **Styling**: Implemented glassmorphism card styles, custom-themed toast notifications, illustrated empty states, and an active nav indicator.
+  - **Components**: Created reusable , , and  components.
+  - **Usability**: Added hover tooltips to the admin sidebar.
 
 **Earlier issues found/mentioned but not fixed**
    - Issue 1: Spacing on Resources Page.
    - Issue 2: Missing Resend API Key for Email Delivery.
-   - Issue 3: Icons in the dark theme are still dark, blending in.
-   - Issue 4: Partner sign-in, sign-up, forgot password, main partner code entry, and all platform-specific pages to follow platform admin color theme.
-   - Issue 5: Implement modern page loader animation and animations on hover (left sidebar, hero section, cart page, product detail pages).
-   - Issue 6: Add pagination to services, resource, and articles pages.
 
 **Known issue recurrence from previous fork**
-- **Form Spacing**: The root cause was addressed by migrating to a  pattern. This is considered resolved.
+  - None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Responsive Design with Tailwind CSS**: Using responsive prefixes (, ) and React state () to create adaptive layouts, including collapsible hamburger menus and sidebars.
-- **Global CSS Targeting**: Applying styles like  to elements based on their children (e.g., a  containing a ) via global CSS for broad, sweeping fixes.
-- **API Documentation Generation**: Systematically scanning route files to auto-generate comprehensive documentation.
-- **Conflict Resolution**: Identifying and resolving code conflicts, such as duplicate route registrations in FastAPI and incorrect export names in React components.
-- **Dynamic Theming with CSS Variables**: Extensive use of CSS variables (, , etc., plus new , , ) to allow runtime customization of UI colors from the admin panel.
-- **Dark Mode Implementation**: Using a global  class applied to the  and JavaScript to toggle it based on theme settings, along with CSS overrides for hardcoded Tailwind classes, to ensure proper dark mode display across the application.
-- **Luminance Calculation**: Implementing a utility function () to convert HEX to HSL and determine text readability (light/dark text on background) for dynamic text color assignment.
-- **Preset Themes**: Implementing logic to allow users to select pre-defined color palettes from the admin panel, applying a consistent branding across the app.
+- **Advanced Animations with Framer Motion**: Extensive use of  for  (smooth page transitions),  (staggered list animations), and  effects.
+- **Component-Based UI Enhancements**: Created reusable components like , , and  to build a polished and consistent UX.
+- **Conditional Rendering & Logic**: Implemented complex conditional logic in the  to show different validation inputs based on field type.
+- **Dynamic CSS & Theming**: Continued use of CSS variables for theming, plus addition of global animation and utility classes in .
+- **Backend Data Migration**: Logic in  to retroactively update existing database records () to conform to a new data structure.
+- **Role-Based Access Control (RBAC)**: Simple role-checking () to conditionally render UI elements in the admin panel.
 
 **key DB schema**
-- **website_settings**:  (string),  (string) added to store new color variables.
+  - **website_settings**: Added 
+  - **product_forms (within products collection)**: The  array elements now support optional keys: , , , , , .
 
 **changes in tech stack**
-- No changes to the core tech stack.
+  - No changes to the core tech stack.
 
 **All files of reference**
-- **Files being investigated for current issues:**
+- **Files for pending fix**:
   - 
-  - 
-  - 
-  - 
-- **Key modified files from this session:**
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  -  (for website-settings endpoint)
+- **Key modified files in this session**:
   - 
   - 
   - 
@@ -200,46 +143,47 @@ The user initially requested a comprehensive UI/UX overhaul. This evolved into a
   - 
   - 
   - 
-  - Other components were touched for migration from hardcoded colors to CSS variables.
-- **Previously important files:**
-  -  (major API doc UI update)
-  -  (webhook bug fixes)
-  -  (newly created documentation)
+  - 
+  - 
+  -  (New)
+  -  (New)
+  -  (New)
+  -  (New)
+  - 
+  - 
 
 **Areas that need refactoring**:
--  remains a very large component (over 1200 lines) and should be broken down.
-- Duplicate function definitions exist between backend service files and route files (e.g., ), which could be consolidated.
+-  is still over 1200 lines and should be broken down into smaller components.
 
 **key api endpoints**
-- : Modified to return  and .
-- : Behavior fixed to correctly handle the  array shorthand.
-- : Behavior fixed to correctly log test deliveries.
-- The Admin Panel UI now provides an interactive explorer for ~100 partner-admin endpoints.
+- : Modified to return .
+- : Now handles saving the  boolean.
+- : Bug fixed, now works correctly for platform admins viewing tenant products.
 
 **Critical Info for New Agent**
-1.  **Top Priority (P0)**: Address the current user feedback starting with the Failed to load card preview bug and the search filter and sort on the store front is not next to each other layout issue, as the agent is already investigating them.
-2.  **Continued UI/UX Refinement**: The agent has implemented a comprehensive dynamic theming system, but the user is still identifying areas where the new theme isn't fully applied or where visual aspects (like icons) don't adapt well. Further work is needed to ensure full theme consistency across all pages and components, especially for partner-facing pages.
-3.  **Animations**: The user has specifically requested modern animations. This is a significant enhancement area.
-4.  **Pagination**: New feature request for improved data handling on list pages.
+1.  **Top Priority**: Immediately complete the backend migration logic in . The  constant needs to be updated, and the  function needs to be implemented to add  and  fields to existing partner signup forms. This is the last step to complete the recent batch of user requests.
+2.  **Verify All Enhancements**: Although the testing agent passed most tests, a manual check of the 12+ new UI enhancements (skeletons, transitions, animations) across different pages would be beneficial to ensure they feel fluid and are bug-free.
+3.  **User Is Focused on UI/UX**: The user has shown a strong interest in modern, cutting-edge UI. Be prepared for more feedback and requests in this area. Future suggestions should align with this preference.
 
 **documents and test reports created in this job**
--  (from previous session)
+- 
+- 
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-- **User (Latest)**: Partner sign in, partner sign up, partner forgot password , the main partner code entry page, and all platform specific pages to follow platform admin color theme. When i add a product to cart, it says failed to load card preview. Pagination to be present on services page, resource page, articles page if not present already. The search filter and sort on the store front is not next to each other. Its one below the other and its a bad look. Icons in the dark theme are still dark color so its blending in. Also need a modern page loader animation, animations when hovering on left sidebar, hero section, cart page, product detail pages, etc. the website has to be future tech and modern yet professional. Dark theme doesn’t just make things modern. You need to check the colors used for buttons and all other places along with animations, elements, etc to give that cutting edge effect. **Status: PENDING INVESTIGATION / NOT STARTED.**
-- **User**: The search filter and products are not aligned next to each other but are present one below the other. They need to follow the same pattern. For the dark themes- The admin panel still looks bad as only parts are dark snd the background is still white. The hero section and other elements still seem to blend in and its not the best of color combinations that are selected for the dark theme. **Status: RESOLVED.** The agent addressed these issues by fixing hardcoded colors,  gradient, dot patterns, and refining theme presets.
-- **User**: Check the midnight blue. It sucks in the UI. Firstly its unreadable as there are dark on dark components. Secondly, the admin panel view is so bad as just the sidebar changed. Overall experience is bad with these colors. The hero section like store, resource, control panel has a vertical and horizontal lines in background which looks really bad. Can you fix all these and give a cleaner ui. **Status: RESOLVED.** The agent addressed hardcoded colors, dark-on-dark issues, and changed grid to dot patterns.
-- **User**: Go ahead (Approving UI/UX recommendations) **Status: COMPLETED.** Agent implemented the recommended changes.
-- **User**: Color palette - this can be managed through admin panel info. So any changes to the color has to be added to the admin panel and can be changed by the brand. Do the changes but make sure the colors are added to the admin panel. Givr priority to use the current colors that are present in the admin panel. No hardcoded colors ever. No animations recommended? Any theme recommendations? Any overall styling recommendation? **Status: COMPLETED.** Agent provided detailed recommendations and incorporated admin panel color management.
-- **User**: What are the UI/UX improvements in the current application? I want a modern futuristic tech-driven UI/UX. I want the app to feel super cutting edge in design. Give recommendations **Status: COMPLETED.** Agent provided detailed audit and recommendations.
-- **User**: Yes P0 (Approving mobile optimization) **Status: COMPLETED.** Agent completed and verified mobile optimization.
-- **User**: Is the webapp mobile optimized? **Status: COMPLETED.** The agent audited, found it was not, and implemented the fixes.
-- **User**: Yes clean [the orphaned code]. **Status: COMPLETED.** The agent performed a deep scan and removed all identified orphaned/conflicting code.
-- **User**: Find orphaned code in codebase. **Status: COMPLETED.** The agent performed an initial scan and presented a report of unused files and models.
+- **User (Latest)**: Listed 4 new requests: file upload max limit, date format, number min/max in form builder; email/password fields missing from partner signup forms; Partner sign up page in admin to be visible to platform admins only; Customer portal tile to have a toggle for stats. **Status: IN PROGRESS** (last backend part remaining).
+- **User**: in the universal form builder there is no hide/show checkbox as well as no max character limits field in the form builder. did it go away? **Status: RESOLVED.**
+- **User**: do all (approving the list of 12 UI enhancements). **Status: RESOLVED.**
+- **User**: yes (confirming to proceed with the UI enhancements). **Status: RESOLVED.**
+- **User**: what are the other UI enhancements that can be done? I like the page loader that you created. **Status: RESOLVED.** (Agent provided a list of 12 enhancements).
+- **User**: No everything except product detail should require login **Status: RESOLVED.** (Agent confirmed this is the current behavior).
+- **User**: Can unauthenticated customers view the store or checkout? **Status: RESOLVED.** (Agent explained the current auth setup).
+- **User**: Confirmed successful finish of previous task. **Status: RESOLVED.**
 
 **Project Health Check:**
 - **Broken**:
-  - Failed to load card preview bug: This is a functional bug that needs immediate attention.
+  - None. The critical cart preview bug was fixed.
 - **Mocked**:
   - **Resend Email Integration**: The UI option exists, but it remains non-functional as it lacks a mechanism for users to provide their API key.
 
@@ -250,13 +194,13 @@ The user initially requested a comprehensive UI/UX overhaul. This evolved into a
 *   **Resend**: Email (Partially implemented, requires API key).
 *   : Foreign exchange rates.
 *    & : Frontend PDF Generation.
-*   : UI Animations (existing, but user wants more advanced animations).
+*   : UI Animations.
 
 **Testing status**
-- **Testing agent used after significant changes**: YES (for mobile optimization and multiple rounds of UI/UX overhaul).
-- **Troubleshoot agent used after agent stuck in loop**: NO
-- **Test files created**: None. (126 stale test files were deleted).
-- **Known regressions**: None currently identified after the last testing agent run (10/10 tests passed after latest UI fixes). However, the new user messages indicate new issues have appeared or were not fully resolved.
+  - Testing agent used after significant changes: YES. The agent was used to validate the large batch of UI/UX features and again for the form builder/admin enhancements.
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: None.
+  - Known regressions: None identified. The last test run (88% pass) had its failures automatically fixed by the testing agent, with one manual backend fix remaining.
 
 **Credentials to test flow:**
 - **Platform Super Admin:**
@@ -264,17 +208,4 @@ The user initially requested a comprehensive UI/UX overhaul. This evolved into a
   - Password: 
 
 **What agent forgot to execute**
-- The agent has completed the mobile optimization and the comprehensive UI/UX theming, which were the primary tasks it was working on.
-- However, new issues and requests were identified in the latest user message (Chat 409) that the agent is only just starting to investigate.
-
-**Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Partner sign in, partner sign up, partner forgot password , the main partner code entry page, and all platform specific pages to follow platform admin color theme. When i add a product to cart, it says failed to load card preview. Pagination to be present on services page, resource page, articles page if not present already. The search filter and sort on the store front is not next to each other. Its one below the other and its a bad look. Icons in the dark theme are still dark color so its blending in. Also need a modern page loader animation, animations when hovering on left sidebar, hero section, cart page, product detail pages, etc. the website has to be future tech and modern yet professional. Dark theme doesn’t just make things modern. You need to check the colors used for buttons and all other places along with animations, elements, etc to give that cutting edge effect. (PENDING INVESTIGATION / NOT STARTED)
-2.  **User**: The search filter and products are not aligned next to each other but are present one below the other. They need to follow the same pattern. For the dark themes- The admin panel still looks bad as only parts are dark snd the background is still white. The hero section and other elements still seem to blend in and its not the best of color combinations that are selected for the dark theme. (RESOLVED)
-3.  **User**: Check the midnight blue. It sucks in the UI. Firstly its unreadable as there are dark on dark components. Secondly, the admin panel view is so bad as just the sidebar changed. Overall experience is bad with these colors. The hero section like store, resource, control panel has a vertical and horizontal lines in background which looks really bad. Can you fix all these and give a cleaner ui. (RESOLVED)
-4.  **User**: Go ahead (Approving UI/UX recommendations) (COMPLETED)
-5.  **User**: Color palette - this can be managed through admin panel>organization info. So any changes to the color has to be added to the admin panel and can be changed by the brand. Do the changes but make sure the colors are added to the admin panel. Givr priority to use the current colors that are present in the admin panel. No hardcoded colors ever. No animations recommended? Any theme recommendations? Any overall styling recommendation? (COMPLETED)
-6.  **User**: What are the UI/UX improvements in the current application? I want a modern futuristic tech-driven UI/UX. I want the app to feel super cutting edge in design. Give recommendations (COMPLETED)
-7.  **User**: Yes P0 (Approving mobile optimization) (COMPLETED)
-8.  **User**: Is the webapp mobile optimized? (COMPLETED)
-9.  **User**: Yes clean [the orphaned code]. (COMPLETED)
-10. **User**: Find orphaned code in codebase. (COMPLETED)</analysis>
+- The agent was in the final step of implementing the user's latest requests. The only remaining action is to modify  and  in  to ensure backward compatibility for existing partner signup forms.</analysis>
