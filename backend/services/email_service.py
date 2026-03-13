@@ -263,11 +263,11 @@ _TEMPLATES: list[Dict[str, Any]] = [
   <div style="text-align:center;margin:32px 0">
     <a href="{{reset_link}}" style="background:#0f172a;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;display:inline-block">Set New Password</a>
   </div>
-  <p style="color:#64748b;font-size:13px;">This link expires in <strong>1 hour</strong>. If you didn't expect this email, you can safely ignore it — your password will remain unchanged.</p>
+  <p style="color:#64748b;font-size:13px;">This link expires at <strong>{{reset_expires_at}}</strong>. If you didn't expect this email, you can safely ignore it — your password will remain unchanged.</p>
   <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
 </div></body></html>""",
         "is_enabled": True,
-        "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{reset_link}}"],
+        "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{reset_link}}", "{{reset_expires_at}}"],
         "is_system": True,
     },
     # ── Partner Registration (Platform Admin only) ──────────────────────────

@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, ArrowLeft, ChevronLeft } from "lucide-react";
+import { AlertCircle, CheckCircle, ArrowLeft, Clock, ChevronLeft } from "lucide-react";
 import { applyPartnerBranding } from "@/contexts/WebsiteContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -14,10 +14,11 @@ export default function ForgotPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Support admin-initiated reset via URL params: ?email=x&code=y&partner=z
+  // Support admin-initiated reset via URL params: ?email=x&code=y&partner=z&expires=ISO
   const urlEmail = searchParams.get("email") || "";
   const urlCode = searchParams.get("code") || "";
   const urlPartner = searchParams.get("partner") || "";
+  const urlExpires = searchParams.get("expires") || "";
 
   const [partnerCode] = useState<string>(() => {
     if (urlPartner) return urlPartner;
@@ -38,6 +39,31 @@ export default function ForgotPassword() {
   const [code, setCode] = useState(urlCode);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Live countdown timer for admin-initiated links
+  const [timeLeft, setTimeLeft] = useState<string>("");
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    if (!urlExpires || !urlCode) return;
+    const expiryMs = new Date(urlExpires).getTime();
+    if (isNaN(expiryMs)) return;
+
+    const tick = () => {
+      const remaining = expiryMs - Date.now();
+      if (remaining <= 0) {
+        setIsExpired(true);
+        setTimeLeft("expired");
+      } else {
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        setTimeLeft(`${mins}m ${secs.toString().padStart(2, "0")}s`);
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [urlExpires, urlCode]);
 
   // Require partner code — redirect to login if missing
   useEffect(() => {
@@ -193,6 +219,25 @@ export default function ForgotPassword() {
                 Code sent to <span className="font-medium text-slate-700">{email}</span>
               </div>
             )}
+
+            {/* Countdown timer — only shown for admin-initiated links with expires param */}
+            {urlCode && timeLeft && (
+              <div
+                className={`flex items-center gap-2 text-xs px-4 py-3 rounded-xl border transition-colors ${
+                  isExpired
+                    ? "bg-red-50 border-red-100 text-red-600"
+                    : timeLeft.startsWith("0m")
+                    ? "bg-amber-50 border-amber-100 text-amber-700"
+                    : "bg-slate-50 border-slate-100 text-slate-500"
+                }`}
+                data-testid="reset-countdown-timer"
+              >
+                <Clock size={14} className="shrink-0" />
+                {isExpired
+                  ? "This link has expired. Please request a new password reset."
+                  : `Link expires in ${timeLeft}`}
+              </div>
+            )}
             {/* Hide code field when pre-filled from URL (admin-initiated reset) */}
             {!urlCode && (
               <div className="space-y-2">
@@ -238,11 +283,11 @@ export default function ForgotPassword() {
             <Button
               type="submit"
               className="w-full h-12 text-white font-semibold"
-              style={{ backgroundColor: primaryColor }}
-              disabled={loading}
+              style={{ backgroundColor: isExpired ? "#94a3b8" : primaryColor }}
+              disabled={loading || isExpired}
               data-testid="reset-password-submit"
             >
-              {loading ? "Resetting…" : "Reset Password"}
+              {loading ? "Resetting…" : isExpired ? "Link Expired" : "Set New Password"}
             </Button>
             <div className="text-center">
               <button

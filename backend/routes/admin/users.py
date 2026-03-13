@@ -362,14 +362,16 @@ async def admin_send_user_reset_link(
         raise HTTPException(403, "Cannot send reset link to platform super admin")
 
     reset_code = f"{secrets.randbelow(999999):06d}"
-    expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    expiry = datetime.now(timezone.utc) + timedelta(hours=1)
+    expiry_iso = expiry.isoformat()
+    expiry_display = expiry.strftime("%d %b %Y, %-I:%M %p UTC")
 
     await db.users.update_one(
         {"id": user_id},
         {
             "$set": {
                 "password_reset_code": reset_code,
-                "password_reset_expires": expiry,
+                "password_reset_expires": expiry_iso,
             },
             "$inc": {"token_version": 1},
         },
@@ -384,6 +386,7 @@ async def admin_send_user_reset_link(
         f"?email={quote(user['email'])}"
         f"&code={reset_code}"
         f"&partner={quote(partner_code)}"
+        f"&expires={quote(expiry_iso)}"
     )
 
     from services.email_service import EmailService
@@ -394,6 +397,7 @@ async def admin_send_user_reset_link(
             "customer_name": user.get("full_name", ""),
             "customer_email": user["email"],
             "reset_link": reset_link,
+            "reset_expires_at": expiry_display,
         },
         db=db,
         tenant_id=user.get("tenant_id"),

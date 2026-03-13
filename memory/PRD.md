@@ -17,6 +17,12 @@ Build a white-label service commerce platform with:
 ## Completed Work Log
 
 ### Session: Feb 2026 - Password Reset Link + Product Page Audit
+- **Password Reset Link Expiry Timer**:
+  - `ForgotPassword.tsx`: live countdown timer from `?expires=ISO_TIMESTAMP` URL param — grey badge counting down `Xm Ys`, turns amber in last minute, turns red with "Link Expired" message when past expiry; submit button disabled + shows "Link Expired" text
+  - Backend: passes `reset_expires_at` (formatted human-readable UTC) as email variable + `expires` ISO timestamp in URL
+  - Email template: shows exact expiry time instead of generic "1 hour"
+  - `available_variables` updated to include `{{reset_expires_at}}`
+
 - **Admin-Initiated Password Reset Link** (was sending code-only, now sends clickable link):
   - New `admin_password_reset` email template with "Set New Password" button and `{{reset_link}}` variable
   - `customers.py` + `users.py`: build `reset_link = {APP_URL}/forgot-password?email=...&code=...&partner=...`, use new trigger
