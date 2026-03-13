@@ -135,6 +135,7 @@ export default function ForgotPassword() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
+                className="h-11"
                 data-testid="forgot-email-input"
               />
             </div>
@@ -178,7 +179,7 @@ export default function ForgotPassword() {
                 onChange={(e) => setCode(e.target.value)}
                 required
                 maxLength={6}
-                className="font-mono tracking-[0.3em] text-center text-lg"
+                className="h-11 font-mono tracking-[0.3em] text-center text-lg"
                 data-testid="reset-code-input"
               />
             </div>
@@ -191,6 +192,7 @@ export default function ForgotPassword() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
+                className="h-11"
                 data-testid="new-password-input"
               />
             </div>
@@ -203,6 +205,7 @@ export default function ForgotPassword() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                className="h-11"
                 data-testid="confirm-password-input"
               />
             </div>

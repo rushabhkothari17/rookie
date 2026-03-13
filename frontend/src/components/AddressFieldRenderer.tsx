@@ -25,17 +25,19 @@ interface Props {
 
 type Option = { value: string; label: string };
 
-const pillInput = (hasError = false) =>
+const pillInput = (hasError = false, compact = false) =>
   cn(
-    "h-12 w-full rounded-full border bg-white/90 px-5 text-sm text-slate-900",
+    compact ? "h-9" : "h-10",
+    "w-full rounded-full border bg-white/90 px-5 text-sm text-slate-900",
     "placeholder:text-slate-400 transition-all duration-200 focus:outline-none focus:ring-0",
     hasError
       ? "border-red-400 focus:border-red-500"
       : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
   );
 
-const pillSelect = cn(
-  "h-12 w-full rounded-full border border-slate-200 bg-white/90 px-5 text-sm",
+const pillSelect = (compact = false) => cn(
+  compact ? "h-9" : "h-10",
+  "w-full rounded-full border border-slate-200 bg-white/90 px-5 text-sm",
   "hover:border-slate-300 focus:border-slate-800 focus:ring-0 focus:outline-none",
   "transition-all duration-200 [&>span]:line-clamp-1"
 );
@@ -95,7 +97,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
             Street Address{cfg.line1.required && <span className="text-red-400 ml-0.5"> *</span>}
           </label>
           <input
-            className={pillInput()}
+            className={pillInput(false, compact)}
             value={value.line1 || ""}
             onChange={e => set("line1", e.target.value)}
             placeholder="e.g. 123 Main Street"
@@ -110,7 +112,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
         <div className="flex flex-col gap-2">
           <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Suite / Unit</label>
           <input
-            className={pillInput()}
+            className={pillInput(false, compact)}
             value={value.line2 || ""}
             onChange={e => set("line2", e.target.value)}
             placeholder="e.g. Suite 400"
@@ -126,7 +128,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
             City{cfg.city.required && <span className="text-red-400 ml-0.5"> *</span>}
           </label>
           <input
-            className={pillInput()}
+            className={pillInput(false, compact)}
             value={value.city || ""}
             onChange={e => set("city", e.target.value)}
             placeholder="e.g. Toronto"
@@ -144,7 +146,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
           </label>
           {countries.length > 0 ? (
             <Select value={value.country || ""} onValueChange={v => set("country", v)}>
-              <SelectTrigger className={pillSelect} data-testid={`addr-country-${field.key}`}>
+              <SelectTrigger className={pillSelect(compact)} data-testid={`addr-country-${field.key}`}>
                 <SelectValue placeholder="Select country…" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
@@ -153,7 +155,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
             </Select>
           ) : (
             <input
-              className={pillInput()}
+              className={pillInput(false, compact)}
               value={value.country || ""}
               onChange={e => set("country", e.target.value)}
               placeholder="e.g. Canada"
@@ -169,7 +171,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
           <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">State / Province</label>
           {provinces.length > 0 ? (
             <Select value={value.region || ""} onValueChange={v => set("region", v)}>
-              <SelectTrigger className={pillSelect} data-testid={`addr-region-${field.key}`}>
+              <SelectTrigger className={pillSelect(compact)} data-testid={`addr-region-${field.key}`}>
                 <SelectValue placeholder="Select state / province…" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
@@ -178,7 +180,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
             </Select>
           ) : (
             <input
-              className={pillInput()}
+              className={pillInput(false, compact)}
               value={value.region || ""}
               onChange={e => set("region", e.target.value)}
               placeholder="e.g. Ontario"
@@ -196,7 +198,7 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
             Postal / ZIP Code{cfg.postal.required && <span className="text-red-400 ml-0.5"> *</span>}
           </label>
           <input
-            className={pillInput()}
+            className={pillInput(false, compact)}
             value={value.postal || ""}
             onChange={e => set("postal", e.target.value)}
             placeholder="e.g. M5V 3A8"

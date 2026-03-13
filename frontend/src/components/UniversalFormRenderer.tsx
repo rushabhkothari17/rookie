@@ -43,9 +43,10 @@ function ph(label: string, required: boolean): string {
   return required ? `${label} \u00A0*` : label;
 }
 
-const pillInput = (hasError: boolean) =>
+const pillInput = (hasError: boolean, compact?: boolean) =>
   cn(
-    "h-12 w-full rounded-full border bg-white/90 px-5 text-sm text-slate-900",
+    compact ? "h-9" : "h-10",
+    "w-full rounded-full border bg-white/90 px-5 text-sm text-slate-900",
     "placeholder:text-slate-400 transition-all duration-200",
     "focus:outline-none focus:ring-0",
     hasError
@@ -53,8 +54,9 @@ const pillInput = (hasError: boolean) =>
       : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white [&:focus]:[animation:focusGlow_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]"
   );
 
-const pillSelect = cn(
-  "h-12 w-full rounded-full border border-slate-200 bg-white/90 px-5 text-sm",
+const pillSelect = (compact?: boolean) => cn(
+  compact ? "h-9" : "h-10",
+  "w-full rounded-full border border-slate-200 bg-white/90 px-5 text-sm",
   "hover:border-slate-300 data-[state=open]:border-slate-800",
   "focus:ring-0 focus:outline-none transition-all duration-200 [&>span]:line-clamp-1",
   "shadow-none"
@@ -62,7 +64,7 @@ const pillSelect = cn(
 
 const pillTextarea = (hasError: boolean) =>
   cn(
-    "w-full rounded-3xl border bg-white/90 px-5 py-3.5 text-sm text-slate-900 resize-none",
+    "w-full rounded-3xl border bg-white/90 px-5 py-3 text-sm text-slate-900 resize-none",
     "placeholder:text-slate-400 transition-all duration-200",
     "focus:outline-none focus:ring-0",
     hasError
@@ -123,7 +125,7 @@ export function UniversalFormRenderer({
     onChange(key, newVal);
   };
 
-  const renderOne = (field: FormField, index = 0) => {
+  const renderOne = (field: FormField, index = 0, isCompact = compact) => {
     const key = field.key;
     const val = values[key] || "";
     const tid = `ufr-field-${key}`;
@@ -195,7 +197,7 @@ export function UniversalFormRenderer({
         <div key={field.id} style={animStyle}>
           <FieldLabel label={field.label || key} required={field.required} />
           <Select value={val} onValueChange={v => onChange(key, v)}>
-            <SelectTrigger className={pillSelect} data-testid={tid} aria-label={field.label}>
+            <SelectTrigger className={pillSelect(isCompact)} data-testid={tid} aria-label={field.label}>
               <SelectValue placeholder={field.placeholder || `Select ${field.label || key}…`} />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
@@ -242,7 +244,7 @@ export function UniversalFormRenderer({
         <FieldLabel label={field.label || key} required={field.required} />
         <input
           type={htmlType}
-          className={pillInput(!!err)}
+          className={pillInput(!!err, isCompact)}
           value={val}
           onChange={e => handleChange(key, e.target.value, field.required)}
           placeholder={samplePh(key, field)}
