@@ -929,14 +929,14 @@ export function UsersTab() {
       <Dialog open={showCreateDialog} onOpenChange={open => { setShowCreateDialog(open); if (!open) { setNewUser({ email: "", full_name: "", password: "", role: "", target_tenant_id: "" }); setNewUserPerms({}); setOrgHasSuperAdmin(false); } }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="create-user-dialog">
           <DialogHeader><DialogTitle>Add Admin User</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <RequiredLabel className="text-slate-500 font-normal">Full Name</RequiredLabel>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Full Name <span className="text-red-400">*</span></label>
                 <Input value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} placeholder="Jane Smith" data-testid="new-user-name" />
               </div>
-              <div className="space-y-1">
-                <RequiredLabel className="text-slate-500 font-normal">Role</RequiredLabel>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Role <span className="text-red-400">*</span></label>
                 <Select value={newUser.role} onValueChange={v => { setNewUser(p => ({ ...p, role: v, target_tenant_id: "" })); setNewUserPerms({}); setOrgHasSuperAdmin(false); }}>
                   <SelectTrigger data-testid="new-user-role"><SelectValue placeholder="Select role…" /></SelectTrigger>
                   <SelectContent>
@@ -944,22 +944,22 @@ export function UsersTab() {
                   </SelectContent>
                 </Select>
                 {newUser.role === "platform_super_admin" && (
-                  <p className="text-[10px] text-amber-600 flex items-center gap-1 mt-1"><AlertTriangle size={10} />Only 1 platform super admin allowed. Cannot create another.</p>
+                  <p className="text-[10px] text-amber-600 flex items-center gap-1"><AlertTriangle size={10} />Only 1 platform super admin allowed. Cannot create another.</p>
                 )}
               </div>
             </div>
 
             {/* Partner org picker — only for partner roles created by platform admin */}
             {PARTNER_ROLES.has(newUser.role) && isPlatformSuperAdmin && (
-              <div className="space-y-1">
-                <RequiredLabel className="text-slate-500 font-normal">Partner Org</RequiredLabel>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Partner Org <span className="text-red-400">*</span></label>
                 <OrgPicker
                   value={newUser.target_tenant_id}
                   onChange={id => { setNewUser(p => ({ ...p, target_tenant_id: id })); checkOrgSuperAdmin(id); }}
                   partners={partners}
                 />
                 {orgHasSuperAdmin && newUser.role === "partner_super_admin" && (
-                  <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-50 border border-amber-200 mt-1">
+                  <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
                     <AlertTriangle size={13} className="text-amber-600 mt-0.5 shrink-0" />
                     <p className="text-[11px] text-amber-700">
                       This org already has a partner super admin. Create as <strong>Partner Admin</strong> and use <strong>Transfer Super Admin</strong> in Partner Orgs to promote them.
@@ -969,19 +969,19 @@ export function UsersTab() {
               </div>
             )}
 
-            <div className="space-y-1">
-              <RequiredLabel className="text-slate-500 font-normal">Email</RequiredLabel>
+            <div className="flex flex-col gap-2">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Email <span className="text-red-400">*</span></label>
               <Input type="email" value={newUser.email} onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))} placeholder="jane@company.com" data-testid="new-user-email" />
             </div>
-            <div className="space-y-1">
-              <RequiredLabel className="text-slate-500 font-normal">Temporary Password</RequiredLabel>
+            <div className="flex flex-col gap-2">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Temporary Password <span className="text-red-400">*</span></label>
               <Input type="password" value={newUser.password} onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))} placeholder="Min 10 chars, upper, lower, digit, symbol" data-testid="new-user-password" />
             </div>
 
             {/* Preset quick-fill — not for super admin roles */}
             {presetRoles.length > 0 && !["partner_super_admin", "platform_super_admin"].includes(newUser.role) && (
-              <div className="space-y-1">
-                <label className="text-xs text-slate-500 flex items-center gap-1">Quick Preset <FieldTip tip="Auto-fills module permissions below." /></label>
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] flex items-center gap-1">Quick Preset <FieldTip tip="Auto-fills module permissions below." /></label>
                 <Select onValueChange={v => applyPreset(v, setNewUserPerms)}>
                   <SelectTrigger data-testid="new-user-preset"><SelectValue placeholder="Apply a preset (optional)…" /></SelectTrigger>
                   <SelectContent>
@@ -1012,16 +1012,16 @@ export function UsersTab() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="admin-edit-user-dialog">
           <DialogHeader><DialogTitle>Edit User: {editUser?.email}</DialogTitle></DialogHeader>
           {editUser && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <RequiredLabel className="text-slate-500 font-normal">Full Name</RequiredLabel>
-                <Input value={editForm.full_name} onChange={e => setEditForm(p => ({ ...p, full_name: e.target.value }))} data-testid="admin-edit-user-name" />
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Full Name <span className="text-red-400">*</span></label>
+                <Input value={editForm.full_name} onChange={e => setEditForm(p => ({ ...p, full_name: e.target.value }))} placeholder="Jane Smith" data-testid="admin-edit-user-name" />
               </div>
 
               {/* Role change — not for super admins */}
               {!isSuperAdminUser(editUser) && (
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-500 flex items-center gap-1">Role <FieldTip tip="Cannot promote to partner super admin here — use 'Transfer Super Admin' in Partner Orgs. Cannot assign platform super admin." /></label>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] flex items-center gap-1">Role <FieldTip tip="Cannot promote to partner super admin here — use 'Transfer Super Admin' in Partner Orgs. Cannot assign platform super admin." /></label>
                   <Select value={editForm.role} onValueChange={v => setEditForm(p => ({ ...p, role: v }))}>
                     <SelectTrigger data-testid="admin-edit-user-role"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -1042,8 +1042,8 @@ export function UsersTab() {
               ) : (
                 <>
                   {presetRoles.length > 0 && (
-                    <div className="space-y-1">
-                      <label className="text-xs text-slate-500 flex items-center gap-1">Quick Preset <FieldTip tip="Overwrites module permissions below." /></label>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] flex items-center gap-1">Quick Preset <FieldTip tip="Overwrites module permissions below." /></label>
                       <Select value={editActivePreset} onValueChange={v => { setEditActivePreset(v); applyPreset(v, setEditPerms); }}>
                         <SelectTrigger data-testid="admin-edit-user-preset"><SelectValue placeholder="Apply a preset…" /></SelectTrigger>
                         <SelectContent>

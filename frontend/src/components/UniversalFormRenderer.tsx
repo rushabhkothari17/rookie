@@ -79,6 +79,34 @@ interface Props {
   addressMode?: "flat" | "json";
 }
 
+/** Sample placeholder values for common field keys */
+const SAMPLE_VALUES: Record<string, string> = {
+  full_name:    "e.g. Jane Smith",
+  company_name: "e.g. Acme Corp",
+  email:        "e.g. jane@company.com",
+  phone:        "e.g. +1 (555) 000-1234",
+  job_title:    "e.g. Operations Manager",
+  password:     "Min 10 chars · upper · number · symbol",
+  first_name:   "e.g. Jane",
+  last_name:    "e.g. Smith",
+  website:      "e.g. https://acmecorp.com",
+  notes:        "e.g. Referred by John, prefers email contact",
+};
+
+function samplePh(key: string, field: FormField): string {
+  if (field.placeholder) return field.placeholder;           // admin-defined wins
+  return SAMPLE_VALUES[key] ?? `e.g. ${field.label || key}`; // fallback to generic
+}
+
+/** Small uppercase label above a field */
+function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+  return (
+    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">
+      {label}{required && <span className="text-red-400 ml-0.5"> *</span>}
+    </label>
+  );
+}
+
 export function UniversalFormRenderer({
   fields, values, onChange, compact = false, partnerCode, addressMode = "flat",
 }: Props) {
@@ -146,11 +174,12 @@ export function UniversalFormRenderer({
     if (field.type === "textarea") {
       return (
         <div key={field.id} style={animStyle}>
+          <FieldLabel label={field.label || key} required={field.required} />
           <textarea
             className={pillTextarea(!!err)}
             value={val}
             onChange={e => onChange(key, e.target.value)}
-            placeholder={ph(field.label || key, field.required)}
+            placeholder={samplePh(key, field)}
             rows={compact ? 3 : 4}
             aria-label={field.label}
             data-testid={tid}
@@ -164,9 +193,10 @@ export function UniversalFormRenderer({
     if (field.type === "select") {
       return (
         <div key={field.id} style={animStyle}>
+          <FieldLabel label={field.label || key} required={field.required} />
           <Select value={val} onValueChange={v => onChange(key, v)}>
             <SelectTrigger className={pillSelect} data-testid={tid} aria-label={field.label}>
-              <SelectValue placeholder={ph(field.label || key, field.required)} />
+              <SelectValue placeholder={field.placeholder || `Select ${field.label || key}…`} />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
               {(field.options || []).map(opt => {
@@ -207,16 +237,15 @@ export function UniversalFormRenderer({
       ? field.type as React.HTMLInputTypeAttribute
       : "text";
 
-    const placeholder = ph(field.placeholder || field.label || key, field.required);
-
     return (
       <div key={field.id} style={animStyle}>
+        <FieldLabel label={field.label || key} required={field.required} />
         <input
           type={htmlType}
           className={pillInput(!!err)}
           value={val}
           onChange={e => handleChange(key, e.target.value, field.required)}
-          placeholder={placeholder}
+          placeholder={samplePh(key, field)}
           required={field.required}
           aria-label={field.label}
           data-testid={tid}

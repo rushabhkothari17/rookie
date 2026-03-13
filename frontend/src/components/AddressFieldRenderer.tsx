@@ -90,94 +90,120 @@ export function AddressFieldRenderer({ field, value, onChange, partnerCode, comp
 
       {/* Line 1 */}
       {cfg.line1.enabled && (
-        <input
-          className={pillInput()}
-          value={value.line1 || ""}
-          onChange={e => set("line1", e.target.value)}
-          placeholder={ph("Street address", cfg.line1.required)}
-          required={cfg.line1.required}
-          data-testid={`addr-line1-${field.key}`}
-        />
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
+            Street Address{cfg.line1.required && <span className="text-red-400 ml-0.5"> *</span>}
+          </label>
+          <input
+            className={pillInput()}
+            value={value.line1 || ""}
+            onChange={e => set("line1", e.target.value)}
+            placeholder="e.g. 123 Main Street"
+            required={cfg.line1.required}
+            data-testid={`addr-line1-${field.key}`}
+          />
+        </div>
       )}
 
       {/* Line 2 */}
       {cfg.line2.enabled && (
-        <input
-          className={pillInput()}
-          value={value.line2 || ""}
-          onChange={e => set("line2", e.target.value)}
-          placeholder={ph("Apt, suite, unit…", cfg.line2.required)}
-          data-testid={`addr-line2-${field.key}`}
-        />
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Suite / Unit</label>
+          <input
+            className={pillInput()}
+            value={value.line2 || ""}
+            onChange={e => set("line2", e.target.value)}
+            placeholder="e.g. Suite 400"
+            data-testid={`addr-line2-${field.key}`}
+          />
+        </div>
       )}
 
       {/* City */}
       {cfg.city.enabled && (
-        <input
-          className={pillInput()}
-          value={value.city || ""}
-          onChange={e => set("city", e.target.value)}
-          placeholder={ph("City", cfg.city.required)}
-          required={cfg.city.required}
-          data-testid={`addr-city-${field.key}`}
-        />
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
+            City{cfg.city.required && <span className="text-red-400 ml-0.5"> *</span>}
+          </label>
+          <input
+            className={pillInput()}
+            value={value.city || ""}
+            onChange={e => set("city", e.target.value)}
+            placeholder="e.g. Toronto"
+            required={cfg.city.required}
+            data-testid={`addr-city-${field.key}`}
+          />
+        </div>
       )}
 
       {/* Country — before State/Province */}
       {cfg.country.enabled && (
-        countries.length > 0 ? (
-          <Select value={value.country || ""} onValueChange={v => set("country", v)}>
-            <SelectTrigger className={pillSelect} data-testid={`addr-country-${field.key}`}>
-              <SelectValue placeholder={ph("Country", cfg.country.required)} />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
-              {countries.map(c => <SelectItem key={c.value} value={c.value} className="rounded-xl">{c.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        ) : (
-          <input
-            className={pillInput()}
-            value={value.country || ""}
-            onChange={e => set("country", e.target.value)}
-            placeholder={ph("Country", cfg.country.required)}
-            data-testid={`addr-country-input-${field.key}`}
-          />
-        )
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
+            Country{cfg.country.required && <span className="text-red-400 ml-0.5"> *</span>}
+          </label>
+          {countries.length > 0 ? (
+            <Select value={value.country || ""} onValueChange={v => set("country", v)}>
+              <SelectTrigger className={pillSelect} data-testid={`addr-country-${field.key}`}>
+                <SelectValue placeholder="Select country…" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
+                {countries.map(c => <SelectItem key={c.value} value={c.value} className="rounded-xl">{c.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          ) : (
+            <input
+              className={pillInput()}
+              value={value.country || ""}
+              onChange={e => set("country", e.target.value)}
+              placeholder="e.g. Canada"
+              data-testid={`addr-country-input-${field.key}`}
+            />
+          )}
+        </div>
       )}
 
       {/* State / Province — after Country */}
       {cfg.state.enabled && (
-        provinces.length > 0 ? (
-          <Select value={value.region || ""} onValueChange={v => set("region", v)}>
-            <SelectTrigger className={pillSelect} data-testid={`addr-region-${field.key}`}>
-              <SelectValue placeholder={ph("State / Province", cfg.state.required)} />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
-              {provinces.map(p => <SelectItem key={p.value} value={p.value} className="rounded-xl">{p.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        ) : (
-          <input
-            className={pillInput()}
-            value={value.region || ""}
-            onChange={e => set("region", e.target.value)}
-            placeholder={ph("State / Province", cfg.state.required)}
-            required={cfg.state.required}
-            data-testid={`addr-region-input-${field.key}`}
-          />
-        )
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">State / Province</label>
+          {provinces.length > 0 ? (
+            <Select value={value.region || ""} onValueChange={v => set("region", v)}>
+              <SelectTrigger className={pillSelect} data-testid={`addr-region-${field.key}`}>
+                <SelectValue placeholder="Select state / province…" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
+                {provinces.map(p => <SelectItem key={p.value} value={p.value} className="rounded-xl">{p.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          ) : (
+            <input
+              className={pillInput()}
+              value={value.region || ""}
+              onChange={e => set("region", e.target.value)}
+              placeholder="e.g. Ontario"
+              required={cfg.state.required}
+              data-testid={`addr-region-input-${field.key}`}
+            />
+          )}
+        </div>
       )}
 
       {/* Postal / ZIP */}
       {cfg.postal.enabled && (
-        <input
-          className={pillInput()}
-          value={value.postal || ""}
-          onChange={e => set("postal", e.target.value)}
-          placeholder={ph("Postal / ZIP code", cfg.postal.required)}
-          required={cfg.postal.required}
-          data-testid={`addr-postal-${field.key}`}
-        />
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
+            Postal / ZIP Code{cfg.postal.required && <span className="text-red-400 ml-0.5"> *</span>}
+          </label>
+          <input
+            className={pillInput()}
+            value={value.postal || ""}
+            onChange={e => set("postal", e.target.value)}
+            placeholder="e.g. M5V 3A8"
+            required={cfg.postal.required}
+            data-testid={`addr-postal-${field.key}`}
+          />
+        </div>
       )}
     </div>
   );
