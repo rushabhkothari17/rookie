@@ -14,7 +14,24 @@ Build a white-label service commerce platform with:
 - File storage via Zoho WorkDrive
 - Dynamic form builder (FormSchemaBuilder) powering all customer-facing forms
 
-## Architecture
+## Completed Work Log
+
+### Session: Feb 2026 - Admin Features & Bug Fixes
+- **Admin-Initiated Password Reset** (P0 complete):
+  - Backend: `POST /api/admin/customers/{id}/send-reset-link` and `POST /api/admin/users/{id}/send-reset-link` — super admin only, increments `token_version` (forces logout), sends password reset email via Resend (mocked if no API key)
+  - Frontend: "SECURITY ACTIONS" section in Customer and User edit modals with "Send Password Reset Link" button
+- **Active Tab Highlight Fix** (P1 complete, recurring issue resolved):
+  - Root cause: Radix `TooltipTrigger asChild` was overriding `TabsTrigger`'s `data-state` attribute — breaking CSS `[data-state="active"]` rules
+  - Fix: Used `React.createContext<string>("")` (ActiveTabCtx) to share `activeTab` with `SideTab`; applied active styles via inline `style` prop instead of CSS data-state selector
+- **Dark Mode Text Selection Fix** (P1 complete):
+  - Added `.aa-dark ::selection { background: var(--aa-accent); color: var(--aa-bg); }` in `index.css`
+- **404 on Logout Mitigation** (P1 partial):
+  - `api.ts` now skips token refresh attempt if no token in localStorage (prevents spurious background 401→refresh cycles after logout)
+- **UI Standardization** (previous session): All admin tables/headers aligned to Products table style
+- **ResizeObserver Fix** (previous session): Set `avoidCollisions={false}` in base UI components
+- **429 Rate Limiting Fix** (previous session): Increased global limit + path-keyed limits
+- **Stale Data Fix** (previous session): `get_store_name()` helper centralizes store name access across 5 services
+- **Dark Mode Overhaul** (previous session): Comprehensive CSS rewrite for dark theme
 
 ### Backend (FastAPI + MongoDB)
 ```

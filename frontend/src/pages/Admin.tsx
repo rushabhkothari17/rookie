@@ -1,7 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -45,15 +45,32 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
   "data-[state=inactive]:text-[var(--aa-muted)] hover:text-[var(--aa-text)] hover:translate-x-0.5 hover:bg-[var(--aa-surface)] " +
-  "transition-all duration-150 data-[state=active]:shadow-none data-[state=active]:text-white";
+  "transition-all duration-150 data-[state=active]:shadow-none";
 
-/** Sidebar tab with tooltip on hover */
+/** Context to share active tab with SideTab without prop-drilling through 32 usages */
+const ActiveTabCtx = React.createContext<string>("");
+
+/** Sidebar tab with tooltip on hover.
+ * Uses inline styles for active state because Radix TooltipTrigger asChild
+ * overrides TabsTrigger's data-state, breaking CSS [data-state="active"] rules.
+ */
 const SideTab = ({ value, label, testId }: { value: string; label: string; testId?: string }) => {
+  const activeTab = React.useContext(ActiveTabCtx);
+  const isActive = activeTab === value;
   const Content = TooltipContent as any;
   return (
     <Tooltip delayDuration={400}>
       <TooltipTrigger asChild>
-        <TabsTrigger value={value} className={TAB_CLASS} data-testid={testId || `tab-${value}`}>
+        <TabsTrigger
+          value={value}
+          className={TAB_CLASS}
+          data-testid={testId || `tab-${value}`}
+          style={
+            isActive
+              ? { backgroundColor: "var(--aa-primary)", color: "var(--aa-primary-fg, #ffffff)", boxShadow: "inset 3px 0 0 var(--aa-accent)" }
+              : undefined
+          }
+        >
           {label}
         </TabsTrigger>
       </TooltipTrigger>
@@ -187,6 +204,7 @@ export default function Admin() {
             </Button>
           </div>
           <TooltipProvider delayDuration={350}>
+          <ActiveTabCtx.Provider value={activeTab}>
           <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
             {/* Platform — only for platform_admin when NOT viewing as a tenant */}
             {showPartnerOrgs && (
@@ -270,6 +288,7 @@ export default function Admin() {
             {hasModule("logs") && <SideTab value="sync" testId="admin-tab-sync" label="Logs" />}
 
           </TabsList>
+          </ActiveTabCtx.Provider>
           </TooltipProvider>
         </div>
 
