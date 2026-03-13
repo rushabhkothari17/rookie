@@ -199,6 +199,20 @@ Build a white-label service commerce platform with:
 - **index.css**: Global mobile CSS — admin tables get `overflow-x: auto` scroll container, store layout stacks vertically on mobile
 - Verified via testing agent iteration_273 — 8/8 tests PASS (100%)
 
+### Phase 13: P0 Bug Fixes + Animations + Pagination (March 2026)
+- **Cart Preview Bug Fixed**: `orders_preview` endpoint failed for platform admins (tenant_id=null) — now uses `_resolve_tenant_id` + fallback `is_platform_admin` product lookup across all tenants
+- **`_resolve_tenant_id` Bug Fixed**: Was checking `role == "platform_admin"` (missing `platform_super_admin`) — now uses `is_platform_admin()` helper
+- **Store Search+Sort Layout**: Removed `flex-wrap w-full sm:w-auto` — replaced with `flex-nowrap` + `flex-1 min-w-[120px] max-w-[200px]` on search, so search and sort always render side-by-side
+- **Dark Theme Icon Visibility**: `--aa-muted` now explicitly set to `#8b949e` (visible on dark backgrounds) when `aa-dark` mode activates; added `.aa-dark .text-slate-400 svg` CSS overrides
+- **Partner Pages Theme**: Login.tsx, Signup.tsx, ForgotPassword.tsx — all `bg-white` containers replaced with `style={{ backgroundColor: "var(--aa-bg)" }}` so they follow admin-configured theme
+- **Page Loader Animation**: `PageLoader.tsx` component — top progress bar using gradient from accent to primary, triggers on every `useLocation` change inside BrowserRouter
+- **Admin Sidebar Hover Animations**: `TAB_CLASS` updated with `hover:translate-x-0.5 hover:bg-[var(--aa-surface)] transition-all`
+- **Store Pagination**: 12 products per page, resets on filter/sort/search change, prev/next + page number buttons with brand primary color active state
+- **Cart Item Hover**: Added `aa-cart-item` class with `translateX(2px)` hover effect
+- **ProductHero Accent Line**: Added `aa-hero-accent` keyframe animation for accent line slide-in
+- **CSS Animations**: Added `aa-product-lift`, `aa-cart-item`, `aa-img-zoom`, `aa-hero-accent`, `aa-float`, `aa-float-slow`, `aa-nav-link` utility classes
+- Tested via iteration_277 — **7/7 features PASS (100%)**
+
 ### P0 — Critical (None currently)
 
 ### P1 — High Priority
