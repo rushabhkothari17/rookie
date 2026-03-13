@@ -79,6 +79,8 @@ interface Props {
   compact?: boolean;
   partnerCode?: string;
   addressMode?: "flat" | "json";
+  /** Keys that render as read-only (e.g. "password" in edit forms) */
+  readonlyKeys?: string[];
 }
 
 /** Sample placeholder values for common field keys */
@@ -110,7 +112,7 @@ function FieldLabel({ label, required }: { label: string; required?: boolean }) 
 }
 
 export function UniversalFormRenderer({
-  fields, values, onChange, compact = false, partnerCode, addressMode = "flat",
+  fields, values, onChange, compact = false, partnerCode, addressMode = "flat", readonlyKeys = [],
 }: Props) {
   const enabled = fields.filter(f => f.enabled !== false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -276,6 +278,28 @@ export function UniversalFormRenderer({
             <p className="mt-0.5 px-4 text-[10px] text-slate-400">Max size: {field.max_file_size_mb} MB</p>
           )}
           {displayErr && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{displayErr}</p>}
+        </div>
+      );
+    }
+
+    // ── Read-only field (e.g. password in admin edit forms) ──────────────────
+    if ((readonlyKeys as string[]).includes(key)) {
+      return (
+        <div key={field.id} style={animStyle}>
+          <FieldLabel label={field.label || key} required={false} />
+          <div className="relative">
+            <input
+              type="password"
+              className={`${pillInput(false, isCompact)} cursor-not-allowed opacity-50 select-none`}
+              value="••••••••••"
+              readOnly
+              tabIndex={-1}
+              aria-label={field.label}
+              data-testid={tid}
+            />
+            <span className="absolute inset-y-0 right-3 flex items-center text-[10px] text-slate-400 pointer-events-none select-none">locked</span>
+          </div>
+          <p className="mt-1.5 px-4 text-[11px] text-slate-400">Use "Send Password Reset Link" to let the user change their password.</p>
         </div>
       );
     }

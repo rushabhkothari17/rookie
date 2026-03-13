@@ -50,32 +50,23 @@ const TAB_CLASS =
 /** Context to share active tab with SideTab without prop-drilling through 32 usages */
 const ActiveTabCtx = React.createContext<string>("");
 
-/** Sidebar tab with tooltip on hover.
- * Uses inline styles for active state because Radix TooltipTrigger asChild
- * overrides TabsTrigger's data-state, breaking CSS [data-state="active"] rules.
- */
+/** Sidebar tab — no tooltip (label always visible) */
 const SideTab = ({ value, label, testId }: { value: string; label: string; testId?: string }) => {
   const activeTab = React.useContext(ActiveTabCtx);
   const isActive = activeTab === value;
-  const Content = TooltipContent as any;
   return (
-    <Tooltip delayDuration={400}>
-      <TooltipTrigger asChild>
-        <TabsTrigger
-          value={value}
-          className={TAB_CLASS}
-          data-testid={testId || `tab-${value}`}
-          style={
-            isActive
-              ? { backgroundColor: "var(--aa-primary)", color: "var(--aa-primary-fg, #ffffff)", boxShadow: "inset 3px 0 0 var(--aa-accent)" }
-              : undefined
-          }
-        >
-          {label}
-        </TabsTrigger>
-      </TooltipTrigger>
-      <Content side="right" className="text-xs font-medium px-2.5 py-1.5">{label}</Content>
-    </Tooltip>
+    <TabsTrigger
+      value={value}
+      className={TAB_CLASS}
+      data-testid={testId || `tab-${value}`}
+      style={
+        isActive
+          ? { backgroundColor: "var(--aa-primary)", color: "var(--aa-primary-fg, #ffffff)", boxShadow: "inset 3px 0 0 var(--aa-accent)" }
+          : undefined
+      }
+    >
+      {label}
+    </TabsTrigger>
   );
 };
 
@@ -248,7 +239,6 @@ export default function Admin() {
               <X size={16} />
             </Button>
           </div>
-          <TooltipProvider delayDuration={350}>
           <ActiveTabCtx.Provider value={activeTab}>
           <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
             {/* ── PLATFORM section (platform_admin only, not viewing as tenant) ── */}
@@ -368,7 +358,6 @@ export default function Admin() {
 
           </TabsList>
           </ActiveTabCtx.Provider>
-          </TooltipProvider>
         </div>
 
         {/* Content Area */}

@@ -423,9 +423,10 @@ export function CustomersTab() {
           <DialogHeader><DialogTitle>Edit Customer</DialogTitle></DialogHeader>
           {selectedCustomer && (
             <div className="flex flex-col gap-4 pt-1">
-              {/* Edit dialog — filter out email & password (immutable; use reset link) */}
+              {/* Edit dialog — all schema fields shown; password is read-only */}
               <UniversalFormRenderer
-                fields={parseSchema(ws.signup_form_schema).filter((f: any) => !['email', 'password'].includes(f.key))}
+                fields={parseSchema(ws.signup_form_schema)}
+                readonlyKeys={["password"]}
                 values={selectedCustomer}
                 onChange={(key, value) =>
                   setSelectedCustomer((prev: any) => ({

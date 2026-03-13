@@ -73,7 +73,7 @@ const formatPrice = (product: any): { label: string; prefix?: string } => {
     const prefix = (hasIntake || !product.base_price) ? "From" : "";
     return { label: fmtPrice(starting, currency), prefix };
   }
-  if (starting === 0 && product.base_price === 0) return { label: "Free", prefix: "" };
+  if (starting === 0 && parseFloat(product.base_price ?? 0) === 0) return { label: "Free", prefix: "" };
 
   if (type === "scope_request" || type === "inquiry") return { label: "Get in touch", prefix: "" };
 
