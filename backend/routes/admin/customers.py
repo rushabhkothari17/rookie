@@ -2,14 +2,15 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
+import secrets
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso, currency_for_country
 from core.security import pwd_context
-from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin, is_platform_admin, enrich_partner_codes
+from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin, get_tenant_super_admin, is_platform_admin, enrich_partner_codes
 from db.session import db
 from models import (
     AdminCreateCustomerRequest,
@@ -647,6 +648,60 @@ async def admin_set_customer_active(
         details={"is_active": {"old": old_state, "new": active}, "also_updated_user": bool(user)},
     )
     return {"message": f"Customer {'activated' if active else 'deactivated'}", "is_active": active}
+
+
+@router.post("/admin/customers/{customer_id}/send-reset-link")
+async def admin_send_customer_reset_link(
+    customer_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
+):
+    """Send a password reset link to a customer. Super admins only.
+    Increments token_version to force logout on all existing sessions.
+    """
+    tf = get_tenant_filter(admin)
+    customer = await db.customers.find_one({**tf, "id": customer_id}, {"_id": 0})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    user = await db.users.find_one({"id": customer["user_id"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found")
+
+    reset_code = f"{secrets.randbelow(999999):06d}"
+    expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {
+                "password_reset_code": reset_code,
+                "password_reset_expires": expiry,
+            },
+            "$inc": {"token_version": 1},
+        },
+    )
+
+    from services.email_service import EmailService
+    result = await EmailService.send(
+        trigger="password_reset",
+        recipient=user["email"],
+        variables={
+            "customer_name": user.get("full_name", ""),
+            "customer_email": user["email"],
+            "reset_code": reset_code,
+        },
+        db=db,
+        tenant_id=user.get("tenant_id"),
+    )
+
+    await create_audit_log(
+        entity_type="customer",
+        entity_id=customer_id,
+        action="admin_sent_password_reset",
+        actor=f"admin:{admin['id']}",
+        details={"email": user["email"], "sent_by": admin.get("email"), "mocked": result.get("status") == "mocked"},
+    )
+    return {"message": f"Password reset email sent to {user['email']}", "mocked": result.get("status") == "mocked"}
 
 
 @router.get("/admin/customers/{customer_id}/logs")

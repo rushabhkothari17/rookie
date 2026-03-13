@@ -694,6 +694,20 @@ export function UsersTab() {
   // ── Create ──────────────────────────────────────────────────────────────────
 
   const [saving, setSaving] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
+
+  const handleSendResetLink = async (userId: string) => {
+    setSendingReset(true);
+    try {
+      const res = await api.post(`/admin/users/${userId}/send-reset-link`);
+      if (res.data.mocked) {
+        toast.success("Reset link generated (email mocked — no Resend key configured)");
+      } else {
+        toast.success("Password reset link sent successfully");
+      }
+    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to send reset link"); }
+    finally { setSendingReset(false); }
+  };
 
   const handleCreate = async () => {
     if (!newUser.email || !newUser.password || !newUser.role || !newUser.full_name.trim()) { toast.error("Email, full name, password and role are required"); return; }
@@ -1061,6 +1075,22 @@ export function UsersTab() {
               )}
 
               <Button onClick={handleEdit} disabled={saving} className="w-full" data-testid="admin-edit-user-save">{saving ? "Saving…" : "Save Changes"}</Button>
+              {isSuperAdmin && editUser && !isSuperAdminUser(editUser) && (
+                <div className="border-t border-slate-100 pt-3">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-2">Security Actions</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+                    onClick={() => handleSendResetLink(editUser.id)}
+                    disabled={sendingReset}
+                    data-testid="admin-user-send-reset-link-btn"
+                  >
+                    {sendingReset ? "Sending…" : "Send Password Reset Link"}
+                  </Button>
+                  <p className="text-[10px] text-slate-400 mt-1.5">Forces logout on all devices and sends a reset email.</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

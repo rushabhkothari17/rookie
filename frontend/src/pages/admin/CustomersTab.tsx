@@ -81,6 +81,7 @@ function normaliseRegion(raw: string): string {
 export function CustomersTab() {
   const { user: authUser } = useAuth();
   const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
+  const isSuperAdmin = authUser?.role === "platform_super_admin" || authUser?.role === "partner_super_admin";
   const [customers, setCustomers] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
@@ -192,6 +193,20 @@ export function CustomersTab() {
 
 
   const [saving, setSaving] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
+
+  const handleSendResetLink = async (customerId: string) => {
+    setSendingReset(true);
+    try {
+      const res = await api.post(`/admin/customers/${customerId}/send-reset-link`);
+      if (res.data.mocked) {
+        toast.success("Reset link generated (email mocked — no Resend key configured)");
+      } else {
+        toast.success("Password reset link sent successfully");
+      }
+    } catch (e: any) { toast.error(e.response?.data?.detail || "Failed to send reset link"); }
+    finally { setSendingReset(false); }
+  };
 
   const handleCustomerEdit = async () => {
     if (!selectedCustomer) return;
@@ -476,6 +491,22 @@ export function CustomersTab() {
               <Button onClick={handleCustomerEdit} disabled={saving} className="w-full h-11" data-testid="admin-customer-save-btn">
                 {saving ? "Saving…" : "Save Changes"}
               </Button>
+              {isSuperAdmin && selectedCustomer && (
+                <div className="border-t border-slate-100 pt-3">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.1em] mb-2">Security Actions</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+                    onClick={() => handleSendResetLink(selectedCustomer.id)}
+                    disabled={sendingReset}
+                    data-testid="admin-customer-send-reset-link-btn"
+                  >
+                    {sendingReset ? "Sending…" : "Send Password Reset Link"}
+                  </Button>
+                  <p className="text-[10px] text-slate-400 mt-1.5">Forces logout on all devices and sends a reset email.</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

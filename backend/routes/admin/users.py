@@ -4,6 +4,9 @@ from __future__ import annotations
 import re as _re
 from typing import Any, Dict, Optional
 
+import secrets
+from datetime import datetime, timezone, timedelta
+
 from fastapi import APIRouter, Body, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
@@ -338,6 +341,59 @@ async def get_user_logs(user_id: str, page: int = 1, limit: int = 20, admin: Dic
     skip = (page - 1) * limit
     logs = await db.audit_logs.find(flt, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     return {"logs": logs, "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
+
+
+@router.post("/admin/users/{user_id}/send-reset-link")
+async def admin_send_user_reset_link(
+    user_id: str,
+    admin: Dict[str, Any] = Depends(get_tenant_super_admin),
+):
+    """Send a password reset link to an admin user. Super admins only.
+    Increments token_version to force logout on all existing sessions.
+    """
+    tf = get_tenant_filter(admin)
+    user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    if user.get("role") == "platform_super_admin":
+        raise HTTPException(403, "Cannot send reset link to platform super admin")
+
+    reset_code = f"{secrets.randbelow(999999):06d}"
+    expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+
+    await db.users.update_one(
+        {"id": user_id},
+        {
+            "$set": {
+                "password_reset_code": reset_code,
+                "password_reset_expires": expiry,
+            },
+            "$inc": {"token_version": 1},
+        },
+    )
+
+    from services.email_service import EmailService
+    result = await EmailService.send(
+        trigger="password_reset",
+        recipient=user["email"],
+        variables={
+            "customer_name": user.get("full_name", ""),
+            "customer_email": user["email"],
+            "reset_code": reset_code,
+        },
+        db=db,
+        tenant_id=user.get("tenant_id"),
+    )
+
+    await create_audit_log(
+        entity_type="user",
+        entity_id=user_id,
+        action="admin_sent_password_reset",
+        actor=f"admin:{admin['id']}",
+        details={"email": user["email"], "sent_by": admin.get("email"), "mocked": result.get("status") == "mocked"},
+    )
+    return {"message": f"Password reset email sent to {user['email']}", "mocked": result.get("status") == "mocked"}
 
 
 @router.post("/admin/users/{user_id}/unlock")

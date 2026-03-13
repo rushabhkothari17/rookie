@@ -79,6 +79,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && error.response?.data) {
       const errorMessage = (error.response.data as any)?.detail || '';
       
+      // Don't try to refresh if there's no token (user is logged out)
+      const currentToken = localStorage.getItem("aa_token");
+      if (!currentToken) {
+        return Promise.reject(error);
+      }
+      
       // Check if it's a token expiry issue (not invalid credentials)
       if (errorMessage.includes('expired') || errorMessage === 'Not authenticated') {
         if (!isRefreshing) {

@@ -1,85 +1,119 @@
 <analysis>**original_problem_statement:**
-The user initially requested a series of UI/UX improvements and bug fixes. This evolved into several batches of feature implementation:
-
-1.  **P0 Bug Fixes & UI Polish**:
-    *   Fix Failed to load card preview bug when adding products to the cart.
-    *   Fix store page layout where search/filter/sort controls were not aligned.
-    *   Fix dark mode icons blending into the background.
-    *   Ensure partner-facing pages (sign-in, sign-up, etc.) adhere to the selected color theme.
-2.  **P1 UI/UX Enhancements**:
-    *   Implement a modern page loader animation.
-    *   Add hover animations to various elements (sidebar, hero, cards).
-    *   Add pagination to the store, services, resources, and articles pages.
-3.  **Comprehensive UI Modernization (12 Enhancements)**:
-    *   Implement smooth page transitions, skeleton loaders, staggered list animations, custom toast notifications, number counter animations, glassmorphism, scroll-reveal animations, button ripple effects, illustrated empty states, hover tooltips, active nav indicators, and a cart badge animation.
-4.  **Universal Form Builder Fixes & Enhancements**:
-    *   Restore missing hide/show toggle and add a max character limit field.
-    *   Add max file size limits for file uploads.
-    *   Add format options for date fields.
-    *   Add min/max value constraints for number fields.
-5.  **Admin & Portal Configuration**:
-    *   Ensure email and password fields appear in the form builder for Partner Sign Up/In pages.
-    *   Restrict visibility of the Partner Sign Up page settings to platform admins only.
-    *   Add a toggle in the admin panel to show/hide statistics on the customer portal page.
+The user initially requested a series of UI/UX improvements and bug fixes. During this session, the user added several more requests:
+1.  **UI Standardization**: Make all admin tables (Plans, Users, etc.) and their action buttons look and feel like the Products table.
+2.  **Database Cleanup**: Delete all test users and customers, leaving only the platform admin account.
+3.  **Bug Fixes**:
+    *   Fix a recurring  error that appeared when interacting with dropdowns.
+    *   Fix  errors that blocked access to admin pages.
+    *   Fix a bug where emails were sent with a stale store name after it was updated in the admin panel.
+    *   Perform a comprehensive dark mode overhaul to fix dozens of UI issues (unreadable text, incorrect backgrounds, invisible active states).
+4.  **New Feature & Bugs (Latest Request)**:
+    *   **Feature**: Implement a secure way for super admins to change a user's or customer's email/password. This must force a logout on all devices and require a password change or email re-verification on the next login.
+    *   **Bug**: The active tab in the admin sidebar is still not highlighted correctly across all themes.
+    *   **Bug**: Text selected in dark mode becomes unreadable.
+    *   **Bug**: A  error occurs intermittently, especially after logging out.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application has undergone a massive UI/UX overhaul. All 12 requested cutting-edge UI enhancements (page transitions, skeleton loaders, animations, etc.) have been implemented. The critical Failed to load card preview bug is fixed. The store layout and dark mode icon issues are resolved. Partner pages now correctly use the application's theme. The Universal Form Builder has been significantly enhanced with new validation fields (max length, file size, number ranges) and a restored hide/show toggle. New admin controls for the customer portal and role-based visibility for partner settings are also in place.
+The application's UI has been significantly standardized. All admin pages now share a consistent table style and header layout. The database has been cleaned of all test data. A large number of bugs have been fixed, including a comprehensive overhaul of the dark mode CSS, resolution of persistent  and  errors, and a fix for stale data being used in emails and other services. The agent was in the exploration and planning phase for the user's latest and most complex request: an admin-initiated password/email reset feature.
 
 **Last working item**:
-    - Last item agent was working: The agent was finalizing a batch of 6 features related to the form builder and admin settings. The testing subagent ran and passed 7/8 tests, automatically fixing several frontend and backend model inconsistencies. The final remaining step is a backend fix to ensure existing partner sign-up forms are correctly migrated to include the new default  and  fields. The agent was in the process of modifying the  and  function in .
+    - Last item agent was working: The agent was planning the implementation for a major new feature: admin-initiated password and email changes for customers and users. This involves backend logic for forcing logouts and requiring re-verification/password changes, as well as frontend UI changes restricted by user role. The agent was also assessing three other bugs reported by the user (active tab highlight, dark mode text selection, 404 error).
     - Status: IN PROGRESS
-    - Agent Testing Done: Y
-    - Which testing method agent to use?: manual testing by curl to verify the backend migration script after the fix.
+    - Agent Testing Done: N
+    - Which testing method agent to use?: both
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Finalize the migration for existing Partner Signup forms (P0)
-  - Issue 2: Spacing on Resources Page (P2)
-  - Issue 3: Missing Resend API Key for Email Delivery (P2)
+  - Issue 1: Implement Admin-Initiated Password/Email Change feature (P0)
+  - Issue 2: Active tab highlight in admin panel is not working correctly in all themes (P1)
+  - Issue 3: Text selection highlight in dark mode makes text unreadable (P1)
+  - Issue 4:  error appears on logout and during general browsing (P1)
+  - Issue 5: Spacing on Resources Page (P2)
+  - Issue 6: Missing Resend API Key for Email Delivery (P2)
 
   Issues Detail:
-  - Issue 1: Finalize the migration for existing Partner Signup forms
-     - Attempted fixes: The frontend and Pydantic models are correct. The testing agent identified that the default schema on the backend ( in ) and the migration logic () need to be updated to inject  and  fields into schemas that don't already have them.
+  - Issue 1: Implement Admin-Initiated Password/Email Change feature
+     - Attempted fixes: The agent has completed a thorough investigation of , , ,  and the relevant frontend tabs to identify existing mechanisms (, ) and plan the implementation.
      - Next debug checklist:
-        1.  Modify  in  to include the default email and password field definitions.
-        2.  Update the  function in  to check if  or  fields exist in a loaded schema and inject them if they are missing, preserving the rest of the form structure.
-     - Why fix this issue and what will be achieved with the fix? This ensures that all existing partner tenants, who may have customized their signup forms before this change, will have the essential email and password fields correctly and automatically added, preventing broken signup flows.
+        1.  **Backend (, , ):**
+            *   Create a new protected endpoint (e.g., ).
+            *   Add role-based access to allow only platform/partner super admins.
+            *   On password change: hash the new password, set , and increment  to invalidate existing sessions.
+            *   On email change: update the email, set , increment , and trigger a new verification email.
+        2.  **Frontend (, ):**
+            *   Conditionally render Email and Password fields in the edit modal based on the admin's role.
+            *   Call the new backend endpoint upon saving.
+     - Why fix this issue and what will be achieved with the fix? This is a critical security and admin management feature requested by the user.
      - Status: IN PROGRESS
      - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Backend
+     - Should Test frontend/backend/both after fix? both
      - Blocked on other issue: None
-  - Issue 2: Spacing on Resources Page
+
+  - Issue 2: Active tab highlight in admin panel
+     - Attempted fixes: An earlier fix using  was implemented, but it doesn't work in light mode and the user reported it's still an issue.
+     - Next debug checklist:
+        1.  Inspect  and .
+        2.  The active state style needs to be theme-aware, providing contrast against the sidebar in both light and dark modes. Use a semi-transparent version of a theme variable like  or .
+     - Why fix this issue and what will be achieved with the fix? Improves usability and visual feedback in the admin panel.
+     - Status: IN PROGRESS
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on other issue: None
+
+  - Issue 3: Dark mode text selection highlight
      - Attempted fixes: None.
-     - Next debug checklist: Compare the CSS/styling of the Resources page with other correctly-spaced pages and apply consistent padding/margin using Tailwind CSS utilities.
-     - Why fix this issue and what will be achieved with the fix? To create a visually consistent experience across all pages.
+     - Next debug checklist:
+        1.  In , add a  rule inside the  scope.
+        2.  Set a  and  that provides good contrast (e.g., use  for the background).
+     - Why fix this issue and what will be achieved with the fix? Fixes a basic usability and accessibility issue in dark mode.
+     - Status: NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on other issue: None
+
+  - Issue 4:  error on logout/browsing
+     - Attempted fixes: None.
+     - Next debug checklist:
+        1.  Use the browser's developer tools to identify the exact URL that is failing.
+        2.  The error stack trace points to a data loading function. Investigate data-fetching hooks (e.g., SWR, React Query) that might be trying to revalidate data after the user is logged out.
+        3.  Ensure the logout process properly clears all cached/stale data from these hooks.
+     - Why fix this issue and what will be achieved with the fix? Prevents confusing errors and improves application stability.
+     - Status: NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Both
+     - Blocked on other issue: None
+
+  - Issue 5: Spacing on Resources Page
+     - Attempted fixes: None.
+     - Next debug checklist: Compare CSS of the Resources page with other pages and apply consistent padding/margin.
+     - Why fix this issue and what will be achieved with the fix? Visual consistency.
      - Status: NOT STARTED
      - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
-  - Issue 3: Missing Resend API Key for Email Delivery
+
+  - Issue 6: Missing Resend API Key for Email Delivery
      - Attempted fixes: None.
-     - Next debug checklist: Implement a UI flow for tenants to enter and save their Resend API key when Resend is selected as the email provider in the settings.
-     - Why fix this issue and what will be achieved with the fix? To make the Resend email integration functional for tenants.
+     - Next debug checklist: Implement a UI for tenants to enter and save their Resend API key.
+     - Why fix this issue and what will be achieved with the fix? To make the Resend integration functional.
      - Status: NOT STARTED
      - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Both
      - Blocked on other issue: None
 
 **In progress Task List**:
-  - Task 1: Complete the backend migration for partner signup forms. (P0)
-     - Where to resume: . The agent needs to implement the logic inside the  function.
-     - What will be achieved with this? All partner signup forms will correctly include email and password fields.
+  - Task 1: Implement the Admin-Initiated Password/Email Change feature.
+     - Where to resume: The agent has finished the investigation. The next step is to begin backend implementation of the new endpoint and logic, followed by the role-restricted frontend UI.
+     - What will be achieved with this? Deliver a major user-requested feature for security and user management.
      - Status: IN PROGRESS
-     - Should Test frontend/backend/both after fix? Backend
+     - Should Test frontend/backend/both after fix? Both
      - Blocked on something: None
 
 **Upcoming and Future Tasks**
   Upcoming Tasks:
-    - (P2) Spacing on Resources Page.
     - (P2) Add radio filters for **Role** & **Status** columns in the **Users** table.
-    - (P2) Missing Resend API Key for Email Delivery.
     - (P2) Build the new landing page.
   Future Tasks:
     - (P2) Google Drive & OneDrive Integration.
@@ -87,25 +121,17 @@ The application has undergone a massive UI/UX overhaul. All 12 requested cutting
     - (P2) Centralize Email Settings.
 
 **Completed work in this session**
-- **Critical Bug Fixes & Theming**:
-  - Fixed Failed to load card preview bug by correcting tenant resolution logic in .
-  - Fixed store layout by adjusting flex properties in .
-  - Fixed dark mode icon visibility by updating  color variable in .
-  - Applied dynamic theme colors to partner auth pages (, , ).
-- **Form Builder Overhaul**:
-  - Added Hide/Show toggle and Max Length input to the form builder UI in .
-  - Added Max File Size, Date Format, and Number Min/Max inputs to the form builder.
-  - Implemented the corresponding validation logic in .
-- **New Features & Admin Controls**:
-  - Added pagination to the  page.
-  - Added a Show Stats toggle for the customer portal in  and , with backend support.
-  - Implemented role-based visibility for the Partner Sign Up settings tile in .
-  - Ensured  and  fields are now included by default in signup form schemas.
-- **Comprehensive UI/UX Modernization**:
-  - **Animations**: Implemented a global page loader, smooth page transitions (), skeleton loaders, staggered list animations (), number counters, scroll-reveal effects, and button ripples.
-  - **Styling**: Implemented glassmorphism card styles, custom-themed toast notifications, illustrated empty states, and an active nav indicator.
-  - **Components**: Created reusable , , and  components.
-  - **Usability**: Added hover tooltips to the admin sidebar.
+- **UI Standardization**:
+  - Aligned all admin tables (, , , etc.) with the  table style (background, layout).
+  - Refactored admin page headers (, , , etc.) to use the consistent  component.
+- **Critical Bug Fixes**:
+  - **ResizeObserver Loop**: Permanently fixed the UI error by setting  in base , , , and  components.
+  - **API Rate Limiting**: Solved  errors and Failed to load messages by increasing the global rate limit and keying limits by API path.
+  - **Stale Data**: Fixed a bug causing emails/PDFs to use an old  by creating a single-source-of-truth helper function () and refactoring 5 services to use it.
+- **Dark Mode Overhaul**: Executed a comprehensive CSS fix for dark mode, correcting dozens of issues with text colors, backgrounds, and component styles.
+- **Backend & Database**:
+  - Finalized the backend migration for partner signup forms.
+  - Cleaned the database, removing all test users and customers to leave a clean baseline.
 
 **Earlier issues found/mentioned but not fixed**
    - Issue 1: Spacing on Resources Page.
@@ -118,74 +144,61 @@ The application has undergone a massive UI/UX overhaul. All 12 requested cutting
 
 
 **Key Technical Concepts**
-- **Advanced Animations with Framer Motion**: Extensive use of  for  (smooth page transitions),  (staggered list animations), and  effects.
-- **Component-Based UI Enhancements**: Created reusable components like , , and  to build a polished and consistent UX.
-- **Conditional Rendering & Logic**: Implemented complex conditional logic in the  to show different validation inputs based on field type.
-- **Dynamic CSS & Theming**: Continued use of CSS variables for theming, plus addition of global animation and utility classes in .
-- **Backend Data Migration**: Logic in  to retroactively update existing database records () to conform to a new data structure.
-- **Role-Based Access Control (RBAC)**: Simple role-checking () to conditionally render UI elements in the admin panel.
+- **Systemic CSS Refactoring**: Using CSS variables and a global  class to implement a robust and comprehensive dark mode theme.
+- **Component Standardization**: Refactoring multiple pages to use a single  component to enforce UI consistency and DRY principles.
+- **Root Cause Debugging**: Successfully tracing UI errors (, Failed to load toasts) back to their underlying causes in third-party libraries and backend rate-limiting logic, and implementing robust fixes.
+- **Data Integrity**: Identifying and fixing a stale data bug by centralizing data access into a single helper function, ensuring all parts of the app get the latest information.
+- **Secure Feature Planning**: Analyzing existing auth mechanisms (, ) to plan a new secure feature for admin-initiated credential changes.
 
 **key DB schema**
-  - **website_settings**: Added 
-  - **product_forms (within products collection)**: The  array elements now support optional keys: , , , , , .
+  - No new schema changes. The next feature will leverage existing fields in the **users** collection: , , and .
 
 **changes in tech stack**
-  - No changes to the core tech stack.
+  - None.
 
 **All files of reference**
-- **Files for pending fix**:
-  - 
-- **Key modified files in this session**:
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  -  (New)
-  -  (New)
-  -  (New)
-  -  (New)
-  - 
-  - 
+-  (For password/email change logic)
+- ,  (For new endpoints)
+- ,  (For UI changes)
+-  (For active tab highlight)
+-  (For all theme/styling fixes)
+-  (For logout logic and 404 error)
 
 **Areas that need refactoring**:
 -  is still over 1200 lines and should be broken down into smaller components.
 
 **key api endpoints**
-- : Modified to return .
-- : Now handles saving the  boolean.
-- : Bug fixed, now works correctly for platform admins viewing tenant products.
+- A new endpoint will be created for the password/email reset feature, likely similar to .
 
 **Critical Info for New Agent**
-1.  **Top Priority**: Immediately complete the backend migration logic in . The  constant needs to be updated, and the  function needs to be implemented to add  and  fields to existing partner signup forms. This is the last step to complete the recent batch of user requests.
-2.  **Verify All Enhancements**: Although the testing agent passed most tests, a manual check of the 12+ new UI enhancements (skeletons, transitions, animations) across different pages would be beneficial to ensure they feel fluid and are bug-free.
-3.  **User Is Focused on UI/UX**: The user has shown a strong interest in modern, cutting-edge UI. Be prepared for more feedback and requests in this area. Future suggestions should align with this preference.
+1.  **Top Priority**: The main task is to implement the **Admin-Initiated Password/Email Change** feature. The user has provided clear requirements, and the initial code investigation is complete. You should start with the backend implementation.
+2.  **Concurrent Bugs**: Address the three other bugs reported by the user: the recurring active tab highlight issue, the dark mode text selection color, and the 404 error on logout. These are high-visibility UI/UX issues.
+3.  **UI/Theme Consistency**: A major effort was just completed to standardize the UI and fix dark mode. Ensure all new work respects these new standards. The active tab highlight bug is a recurring complaint, so the fix needs to be tested thoroughly in both light and dark themes.
+4.  **Clean Database**: The database contains only the single platform admin user (). All test data has been wiped.
 
 **documents and test reports created in this job**
 - 
-- 
-- 
-- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-- **User (Latest)**: Listed 4 new requests: file upload max limit, date format, number min/max in form builder; email/password fields missing from partner signup forms; Partner sign up page in admin to be visible to platform admins only; Customer portal tile to have a toggle for stats. **Status: IN PROGRESS** (last backend part remaining).
-- **User**: in the universal form builder there is no hide/show checkbox as well as no max character limits field in the form builder. did it go away? **Status: RESOLVED.**
-- **User**: do all (approving the list of 12 UI enhancements). **Status: RESOLVED.**
-- **User**: yes (confirming to proceed with the UI enhancements). **Status: RESOLVED.**
-- **User**: what are the other UI enhancements that can be done? I like the page loader that you created. **Status: RESOLVED.** (Agent provided a list of 12 enhancements).
-- **User**: No everything except product detail should require login **Status: RESOLVED.** (Agent confirmed this is the current behavior).
-- **User**: Can unauthenticated customers view the store or checkout? **Status: RESOLVED.** (Agent explained the current auth setup).
-- **User**: Confirmed successful finish of previous task. **Status: RESOLVED.**
+- **User (Latest)**: Confirmed detailed requirements for the password/email reset feature and reported three other bugs: active tab highlight, dark mode text selection, and a 404 error on logout. **Status: IN PROGRESS (Agent is planning).**
+- **User:** the second issue is it repeating anywhere else as well for other fields? (Regarding stale store name). **Status: RESOLVED.**
+- **User:** Reported two issues: active tab not highlighted, and email template using stale store name. **Status: PARTIALLY RESOLVED** (active tab highlight was reported again).
+- **User:** failed to load resources, orders, etc. fix all similar errors. Also reported 429 errors. **Status: RESOLVED.**
+- **User:** any other places where similar error would exist? (Regarding ResizeObserver). **Status: RESOLVED.**
+- **User:** Reported  error is still happening. **Status: RESOLVED.**
+- **User:** when I click country on partner signup page the same error is still coming up. **Status: RESOLVED.**
+- **User:** k (Acknowledging a fix). **Status: RESOLVED.**
+- **User:** Reported  error. **Status: RESOLVED.**
+- **User:** Reported inconsistencies in buttons/layout for , , . **Status: RESOLVED.**
 
 **Project Health Check:**
 - **Broken**:
-  - None. The critical cart preview bug was fixed.
+  - The admin-initiated password/email change flow is missing.
+  - Active admin tab highlight does not work correctly in all themes.
+  - Text selection in dark mode is unreadable.
+  - A  error occurs on logout.
 - **Mocked**:
-  - **Resend Email Integration**: The UI option exists, but it remains non-functional as it lacks a mechanism for users to provide their API key.
+  - **Resend Email Integration**: UI exists, but it is non-functional as it lacks a mechanism for tenants to provide their API key.
 
 **3rd Party Integrations**
 *   **Zoho CRM**: Deeply integrated with 13 modules for automatic synchronization.
@@ -197,10 +210,10 @@ The application has undergone a massive UI/UX overhaul. All 12 requested cutting
 *   : UI Animations.
 
 **Testing status**
-  - Testing agent used after significant changes: YES. The agent was used to validate the large batch of UI/UX features and again for the form builder/admin enhancements.
+  - Testing agent used after significant changes: YES, for the UI standardization and backend migration.
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: None.
-  - Known regressions: None identified. The last test run (88% pass) had its failures automatically fixed by the testing agent, with one manual backend fix remaining.
+  - Known regressions: The admin sidebar active tab highlight fix was not fully effective.
 
 **Credentials to test flow:**
 - **Platform Super Admin:**
@@ -208,4 +221,4 @@ The application has undergone a massive UI/UX overhaul. All 12 requested cutting
   - Password: 
 
 **What agent forgot to execute**
-- The agent was in the final step of implementing the user's latest requests. The only remaining action is to modify  and  in  to ensure backward compatibility for existing partner signup forms.</analysis>
+- The agent was in the process of planning the implementation of the user's latest requests when the session ended. No specific implementation steps were missed, but the new feature and associated bug fixes are now the immediate priority.</analysis>

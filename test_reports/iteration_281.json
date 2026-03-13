@@ -1,0 +1,83 @@
+{
+  "summary": "Tested iteration 281 features: Admin-initiated password reset link for customers/users, sidebar active tab highlight (P1 fix), dark mode text selection fix, and logout 404 fix. Backend: all 11 tests pass (1 skipped - no non-super-admin users). Frontend: reset link button works for customers (toast shows 'Password reset link sent successfully'), dark mode selection CSS rule confirmed, logout redirects cleanly to login page. PRIMARY BUG: Sidebar active tab highlight NOT working correctly due to Radix UI Tooltip/Tabs data-state conflict.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/admin/users/{user_id}/send-reset-link", "issue": "test_send_reset_link_to_non_super_admin_user skipped - no non-super-admin users in system to test with (both existing users are super admins)"}
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Admin Sidebar - SideTab",
+        "issue": "Active tab highlight NOT showing dark navy (#0f172a). CSS rule .aa-tab-trigger[data-state='active'] { background-color: var(--aa-primary) } exists but never matches. Root cause: SideTab wraps TabsTrigger inside TooltipTrigger asChild. Radix Tooltip sets data-state='closed' on the trigger element (when tooltip not open), overriding Tabs' data-state='active'. Result: All sidebar tabs always show data-state='closed' so the dark navy background CSS rule never applies. Active tab shows light gray (rgb(241,245,249)) from other styling instead of dark navy.",
+        "selector": ".aa-tab-trigger[data-state='active']",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Users Tab - Edit Dialog",
+        "issue": "Send Password Reset Link button correctly HIDDEN for super admin users (working as designed). However, with only super admin users in the system, the button could not be tested for non-super-admin users via UI. Code logic appears correct.",
+        "selector": "[data-testid='admin-user-send-reset-link-btn']",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin Sidebar",
+        "issues": [
+          "Active tab shows very subtle light gray background instead of intended dark navy (#0f172a) - low contrast/visibility",
+          "Dark mode active tab highlight would also be affected by the same Tooltip data-state override issue"
+        ]
+      }
+    ]
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_iter281_reset_link.py",
+    "/app/test_reports/pytest/pytest_iter281.xml"
+  ],
+
+  "action_items": [
+    "FIX: Sidebar active tab highlight - The SideTab component wraps TabsTrigger with TooltipTrigger asChild which overrides data-state to 'closed'. Fix options: (1) Add custom data-active={value === activeTab} attribute to TabsTrigger and update CSS to use [data-active='true'] instead of [data-state='active'], OR (2) Apply active background via style prop: style={{ backgroundColor: activeTab === value ? 'var(--aa-primary)' : undefined }}, OR (3) Remove Tooltip from SideTab and use title attribute instead for the tooltip",
+    "VERIFY: Create a non-super-admin user to test the Users tab 'Send Password Reset Link' button visibility"
+  ],
+
+  "critical_code_review_comments": [
+    "SideTab component in Admin.tsx uses <TooltipTrigger asChild><TabsTrigger> - this is a known Radix UI conflict where Tooltip's data-state='closed' overwrites Tab's data-state='active'. The active tab styling fix (CSS rule) won't work until this is resolved. Recommend using a custom data attribute or inline style for the active tab background.",
+    "Platform super admin login works WITHOUT partner_code (POST /api/auth/login with just email+password). This is by design but undocumented in UI - the gateway asks for partner code. Admin should be able to navigate directly to admin panel. This is working correctly."
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_iter281_reset_link.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (11 passed, 1 skipped)",
+    "frontend": "75% (Customer reset link works, User reset link untestable for non-super-admin, sidebar highlight broken, dark mode CSS exists but visual unverified, logout clean)"
+  },
+
+  "mocked_apis": {
+    "Resend email (password_reset trigger)": "MOCKED - endpoint returns {mocked: true, message: 'Password reset link sent successfully'} when no Resend API key configured"
+  },
+
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Platform super admin logs in with email=admin@automateaccounts.local, password=ChangeMe123! DIRECTLY via /api/auth/login WITHOUT partner_code. In the UI, enter 'automate-accounts' as partner code, then the email+password login form appears. The Send Password Reset Link button is visible at the bottom of Customer edit dialogs under 'SECURITY ACTIONS' section. The sidebar active tab CSS fix is implemented but broken due to Radix Tooltip/Tabs data-state conflict in SideTab component. All backend tests in /app/backend/tests/test_iter281_reset_link.py pass.",
+
+  "rca_of_issue": {
+    "bug": "Sidebar active tab highlight not showing dark navy background",
+    "root_cause": "The SideTab component in /app/frontend/src/pages/Admin.tsx wraps TabsTrigger inside TooltipTrigger with asChild prop. Radix UI's Tooltip component applies data-state='closed' to the trigger element (when tooltip is not showing). Because TooltipTrigger asChild passes its own data-state to the child, it overrides the TabsTrigger's data-state='active'. Result: all tabs permanently show data-state='closed', so the CSS rule '.aa-tab-trigger[data-state=\"active\"] { background-color: var(--aa-primary) }' never matches.",
+    "reproduction_steps": [
+      "1. Log in to admin panel",
+      "2. Click on any sidebar tab (e.g., Plans)",
+      "3. Inspect the [data-testid='admin-tab-plans'] element",
+      "4. Observe: data-state is 'closed' not 'active'",
+      "5. The dark navy background CSS rule doesn't apply"
+    ],
+    "mitigation": "In SideTab component, add explicit data-active attribute or apply active styling via style prop based on activeTab comparison, bypassing the Radix data-state conflict. Example: style={{ backgroundColor: activeTab === value ? 'var(--aa-primary)' : undefined, color: activeTab === value ? 'white' : undefined }}"
+  }
+}

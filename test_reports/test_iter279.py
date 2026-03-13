@@ -14,7 +14,7 @@ Tests 8 features:
 import asyncio
 import sys
 
-BASE_URL = "https://ui-modernize-v2.preview.emergentagent.com"
+BASE_URL = "https://admin-panel-fixes-17.preview.emergentagent.com"
 results = {}
 
 async def login(page):

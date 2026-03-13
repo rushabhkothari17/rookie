@@ -53,6 +53,12 @@ h3,
   color: #0f172a;
 }
 
+/* Dark mode: readable text selection */
+.aa-dark ::selection {
+  background: var(--aa-accent);
+  color: var(--aa-bg);
+}
+
 @layer base {
   :root {
     --background: 210 40% 98%;
@@ -102,10 +108,10 @@ h3,
 /* Admin filter-row search inputs — prevent unbounded stretch */
 .aa-admin-search { max-width: 15rem !important; }
 
-/* Admin panel tab active state — contrasting highlight with left accent bar */
+/* Admin panel tab active state — uses primary color for clear visibility in light mode */
 .aa-tab-trigger[data-state="active"] {
-  background-color: rgba(255, 255, 255, 0.13) !important;
-  color: white !important;
+  background-color: var(--aa-primary) !important;
+  color: var(--aa-primary-fg, #ffffff) !important;
   box-shadow: inset 3px 0 0 var(--aa-accent) !important;
 }
 
@@ -666,8 +672,8 @@ input[class*="rounded-full"]:focus {
   background-color: color-mix(in srgb, var(--aa-card) 50%, var(--aa-surface)) !important;
 }
 
-/* ── Admin sidebar active tab ────────────────────────────── */
-.aa-tab-trigger[data-state="active"] {
+/* ── Admin sidebar active tab — dark mode: subtle white overlay ──────────── */
+.aa-dark .aa-tab-trigger[data-state="active"] {
   background-color: rgba(255, 255, 255, 0.16) !important;
   color: white !important;
   box-shadow: inset 3px 0 0 var(--aa-accent) !important;
