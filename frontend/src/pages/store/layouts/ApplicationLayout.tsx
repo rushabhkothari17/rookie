@@ -132,8 +132,8 @@ export default function ApplicationLayout({
           <div className="space-y-8" data-testid="section-overview">
             <div className="rounded-2xl border p-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
               <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--aa-text)" }}>{product.name}</h1>
-              {product.card_description && (
-                <p className="text-lg mb-4" style={{ color: "var(--aa-muted)" }}>{product.card_description}</p>
+              {product.tagline && (
+                <p className="text-lg mb-4" style={{ color: "var(--aa-muted)" }}>{product.tagline}</p>
               )}
 
               {product.description_long && (

@@ -25,12 +25,12 @@ export default function ProductHero({ product }: { product: any }) {
             {product.name}
           </h1>
 
-          {(product.description_long || product.tagline || product.short_description) && (
+          {(product.tagline || product.short_description) && (
             <p
               className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300"
               data-testid="product-hero-description"
             >
-              {product.description_long || product.tagline || product.short_description}
+              {product.tagline || product.short_description}
             </p>
           )}
 

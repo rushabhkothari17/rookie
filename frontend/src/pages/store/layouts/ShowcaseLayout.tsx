@@ -78,9 +78,9 @@ export default function ShowcaseLayout({
           <h1 className="text-3xl lg:text-5xl font-bold mb-4" style={{ color: "var(--aa-primary-fg)" }}>
             {product.name}
           </h1>
-          {product.card_description && (
+          {product.tagline && (
             <p className="text-lg lg:text-xl max-w-2xl mb-8" style={{ color: "rgba(255,255,255,0.8)" }}>
-              {product.card_description}
+              {product.tagline}
             </p>
           )}
         </div>

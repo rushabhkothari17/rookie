@@ -231,8 +231,8 @@ _TEMPLATES: list[Dict[str, Any]] = [
     },
     {
         "trigger": "password_reset",
-        "label": "Password Reset",
-        "description": "Sent when a customer requests a password reset.",
+        "label": "Password Reset (Self-Service)",
+        "description": "Sent when a customer requests a password reset via the Forgot Password page.",
         "subject": "Reset your {{store_name}} password",
         "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
@@ -247,6 +247,27 @@ _TEMPLATES: list[Dict[str, Any]] = [
 </div></body></html>""",
         "is_enabled": True,
         "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{reset_code}}"],
+        "is_system": True,
+    },
+    {
+        "trigger": "admin_password_reset",
+        "label": "Admin-Initiated Password Reset",
+        "description": "Sent to a user or customer when an admin manually triggers a password reset on their behalf. Contains a direct link to set a new password.",
+        "subject": "Set a new password for your {{store_name}} account",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 16px">Set your new password</h2>
+  <p style="color:#475569;">Hi {{customer_name}},</p>
+  <p style="color:#475569;">An administrator has initiated a password reset for your account (<strong>{{customer_email}}</strong>). Click the button below to set a new password.</p>
+  <div style="text-align:center;margin:32px 0">
+    <a href="{{reset_link}}" style="background:#0f172a;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;display:inline-block">Set New Password</a>
+  </div>
+  <p style="color:#64748b;font-size:13px;">This link expires in <strong>1 hour</strong>. If you didn't expect this email, you can safely ignore it — your password will remain unchanged.</p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{reset_link}}"],
         "is_system": True,
     },
     # ── Partner Registration (Platform Admin only) ──────────────────────────

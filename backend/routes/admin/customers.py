@@ -5,9 +5,11 @@ import asyncio
 import secrets
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from core.config import APP_URL
 from core.helpers import make_id, now_iso, currency_for_country
 from core.security import pwd_context
 from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin, get_tenant_super_admin, is_platform_admin, enrich_partner_codes
@@ -681,14 +683,25 @@ async def admin_send_customer_reset_link(
         },
     )
 
+    # Build reset link — include partner code so ForgotPassword page can auto-apply branding
+    tenant = await db.tenants.find_one({"id": user.get("tenant_id")}, {"_id": 0, "code": 1})
+    partner_code = tenant.get("code", "") if tenant else ""
+    base_url = APP_URL or ""
+    reset_link = (
+        f"{base_url}/forgot-password"
+        f"?email={quote(user['email'])}"
+        f"&code={reset_code}"
+        f"&partner={quote(partner_code)}"
+    )
+
     from services.email_service import EmailService
     result = await EmailService.send(
-        trigger="password_reset",
+        trigger="admin_password_reset",
         recipient=user["email"],
         variables={
             "customer_name": user.get("full_name", ""),
             "customer_email": user["email"],
-            "reset_code": reset_code,
+            "reset_link": reset_link,
         },
         db=db,
         tenant_id=user.get("tenant_id"),

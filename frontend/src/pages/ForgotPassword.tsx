@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,18 +12,30 @@ const css = `/* globals in index.css */`;
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [partnerCode] = useState<string>(() => localStorage.getItem("aa_partner_code") || "");
+  // Support admin-initiated reset via URL params: ?email=x&code=y&partner=z
+  const urlEmail = searchParams.get("email") || "";
+  const urlCode = searchParams.get("code") || "";
+  const urlPartner = searchParams.get("partner") || "";
+
+  const [partnerCode] = useState<string>(() => {
+    if (urlPartner) return urlPartner;
+    return localStorage.getItem("aa_partner_code") || "";
+  });
   const [partnerName, setPartnerName] = useState("");
   const [partnerLogoUrl, setPartnerLogoUrl] = useState("");
   const [partnerPrimaryColor, setPartnerPrimaryColor] = useState("");
 
-  const [email, setEmail] = useState("");
-  const [step, setStep] = useState<"request" | "reset" | "done">("request");
+  const [email, setEmail] = useState(urlEmail);
+  // If email+code arrive via URL, skip straight to the reset step
+  const [step, setStep] = useState<"request" | "reset" | "done">(
+    urlEmail && urlCode ? "reset" : "request"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(urlCode);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -33,12 +45,16 @@ export default function ForgotPassword() {
       navigate("/login");
       return;
     }
+    // If partner arrived via URL, persist it for the session
+    if (urlPartner && !localStorage.getItem("aa_partner_code")) {
+      localStorage.setItem("aa_partner_code", urlPartner);
+    }
     applyPartnerBranding(partnerCode).then(s => {
       setPartnerName(s.store_name || "");
       setPartnerLogoUrl(s.logo_url || "");
       setPartnerPrimaryColor(s.primary_color || "");
     }).catch(() => {});
-  }, [partnerCode, navigate]);
+  }, [partnerCode, navigate, urlPartner]);
 
   async function handleRequestCode(e: React.FormEvent) {
     e.preventDefault();
@@ -103,11 +119,12 @@ export default function ForgotPassword() {
 
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-            {step === "done" ? "Password reset" : "Forgot password?"}
+            {step === "done" ? "Password reset" : step === "reset" && urlCode ? "Set new password" : "Forgot password?"}
           </h1>
           <p className="text-sm text-slate-400">
             {step === "request" && "We'll send a reset code to your email."}
-            {step === "reset" && "Check your email for the 6-digit code."}
+            {step === "reset" && urlCode && "Enter your new password below."}
+            {step === "reset" && !urlCode && "Check your email for the 6-digit code."}
             {step === "done" && "Your password has been updated."}
           </p>
         </div>
@@ -167,22 +184,31 @@ export default function ForgotPassword() {
             className="anim-in space-y-4"
             data-testid="reset-password-form"
           >
-            <div className="text-xs text-slate-500 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
-              Code sent to <span className="font-medium text-slate-700">{email}</span>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="code" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Reset Code</label>
-              <Input
-                id="code"
-                placeholder="6-digit code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                required
-                maxLength={6}
-                className="h-11 font-mono tracking-[0.3em] text-center text-lg"
-                data-testid="reset-code-input"
-              />
-            </div>
+            {urlCode ? (
+              <div className="text-xs text-slate-500 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
+                Setting password for <span className="font-medium text-slate-700">{email}</span>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
+                Code sent to <span className="font-medium text-slate-700">{email}</span>
+              </div>
+            )}
+            {/* Hide code field when pre-filled from URL (admin-initiated reset) */}
+            {!urlCode && (
+              <div className="space-y-2">
+                <label htmlFor="code" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Reset Code</label>
+                <Input
+                  id="code"
+                  placeholder="6-digit code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  required
+                  maxLength={6}
+                  className="h-11 font-mono tracking-[0.3em] text-center text-lg"
+                  data-testid="reset-code-input"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <label htmlFor="new-password" className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">New Password</label>
               <Input
