@@ -16,6 +16,7 @@ import { ChevronRight, CheckCircle2, ChevronLeft, Copy, Check, DollarSign, Mail 
 export default function Signup() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const redirect = searchParams.get("redirect") || "";
   const isPartnerMode = searchParams.get("type") === "partner";
   const { register, verifyEmail } = useAuth();
   const ws = useWebsite();
@@ -216,7 +217,7 @@ export default function Signup() {
     try {
       await verifyEmail(form.email, code, partnerCode || undefined);
       toast.success("Email verified! You can now sign in.");
-      navigate("/login");
+      navigate(redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login");
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Invalid code — please try again");
       setOtpDigits(["", "", "", "", "", ""]);

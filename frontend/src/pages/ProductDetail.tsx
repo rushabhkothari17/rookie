@@ -243,6 +243,12 @@ export default function ProductDetail() {
   };
 
   const handleSubmitScopeForm = async () => {
+    // Require authentication — redirect to login with full product URL as return (params preserved)
+    if (!customer) {
+      const returnUrl = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+      navigate(`/login?redirect=${returnUrl}`);
+      return;
+    }
     // Use product's custom form schema if available, else fall back to default
     const activeSchema = product?.resolved_form_schema || ws.scope_form_schema;
     const scopeSchema = parseSchema(activeSchema).filter(f => f.enabled !== false);
@@ -286,6 +292,12 @@ export default function ProductDetail() {
     (pricing?.total === 0 || !pricing?.total);
 
   const handleSubmitQuote = async () => {
+    // Require authentication — redirect to login with full product URL as return (params preserved)
+    if (!customer) {
+      const returnUrl = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+      navigate(`/login?redirect=${returnUrl}`);
+      return;
+    }
     // Validate required fields (if schema-driven)
     const qSchema = parseSchema(ws.scope_form_schema).filter(f => f.enabled !== false && f.required);
     if (qSchema.length > 0) {
