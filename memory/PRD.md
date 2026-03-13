@@ -160,6 +160,15 @@ Build a white-label service commerce platform with:
 
 
 
+### Phase 8: Product Detail Cleanup + CRM Sync Completions (March 2026)
+- **Hardcoded policy text removed** from `StickyPurchaseSummary.tsx`: "No refunds for delivered services", "Subscriptions cancel at end of billing month", "Secure payment via our payment provider" — all layouts
+- **Hardcoded fallback forms removed** from `ProductDetail.tsx`: Quote and Scope modals no longer show hardcoded fields when no schema is configured; clean empty state  
+- **URL param autofill** for intake questions: `?question_key=value` in product URL pre-fills intake form answers (supports string, number, multiselect via comma-separated)
+- **Bulk Sync Now covers all 13 modules**: `oauth.py` updated from 3 → 13 modules with enrichment applied
+- Verified via testing agent iteration_272 — all checks passed
+
+
+
 ### P0 — Critical (None currently)
 
 ### P1 — High Priority

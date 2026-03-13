@@ -299,9 +299,8 @@ export default function ProductDetail() {
           toast.error(`${field.label} is required`); return;
         }
       }
-    } else if (!quoteFormData.name || !quoteFormData.email) {
-      toast.error("Name and email are required");
-      return;
+    } else {
+      // No schema configured and no hardcoded fallback — allow empty submission
     }
     setSubmittingQuote(true);
     try {
