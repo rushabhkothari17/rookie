@@ -674,3 +674,84 @@ input[class*="rounded-full"]:focus {
   left: 0;
   right: 0;
 }
+
+/* ── Shimmer skeleton ────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.aa-shimmer {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--aa-surface) 80%, transparent) 25%,
+    color-mix(in srgb, var(--aa-border) 60%, var(--aa-surface)) 50%,
+    color-mix(in srgb, var(--aa-surface) 80%, transparent) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* ── Glassmorphism card ──────────────────────────────────── */
+.aa-glass {
+  background: color-mix(in srgb, var(--aa-card) 72%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--aa-border) 60%, transparent);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* ── Button ripple effect ────────────────────────────────── */
+.aa-btn-ripple {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+.aa-btn-ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.25);
+  transform: scale(0);
+  transform-origin: center;
+  border-radius: inherit;
+  opacity: 0;
+  transition: none;
+}
+.aa-btn-ripple:active::after {
+  transform: scale(2.5);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(.4,0,.2,1), opacity 0.45s ease-out;
+}
+
+/* ── Button depth on hover ───────────────────────────────── */
+.btn-primary, button[style*="var(--aa-primary)"], button[style*="aa-primary"] {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--aa-primary) 40%, transparent);
+  filter: brightness(1.06);
+}
+.btn-primary:active {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: none;
+}
+
+/* ── Stat counter card ───────────────────────────────────── */
+.aa-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.aa-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.09);
+}
+
+/* ── Sonner toast branding ───────────────────────────────── */
+[data-sonner-toast][data-type="success"] {
+  background: color-mix(in srgb, var(--aa-card) 98%, transparent) !important;
+  border-color: color-mix(in srgb, var(--aa-accent) 30%, transparent) !important;
+  color: var(--aa-text) !important;
+}
+[data-sonner-toast] [data-title] {
+  font-weight: 600;
+  font-size: 0.875rem;
+}

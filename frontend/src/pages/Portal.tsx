@@ -8,8 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
+import { SkeletonRow, SkeletonStat } from "@/components/SkeletonCard";
+import { EmptyState } from "@/components/EmptyState";
+import { useCountUp } from "@/hooks/useCountUp";
 import api from "@/lib/api";
-import { Search, ChevronLeft, ChevronRight, Package, RefreshCw, ArrowUp, ArrowDown, FileText, History, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Package, RefreshCw, ArrowUp, ArrowDown, FileText, History, ChevronDown, ChevronUp, CreditCard, TrendingUp } from "lucide-react";
 
 const ORDERS_PER_PAGE = 8;
 const SUBS_PER_PAGE = 5;
@@ -69,7 +72,48 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-// ── Renewal History Component ────────────────────────────────────────────────
+// ── Portal Stats Component ──────────────────────────────────────────────────
+function PortalStats({ orderCount, subCount, totalSpend, currency }: {
+  orderCount: number; subCount: number; totalSpend: number; currency: string;
+}) {
+  const orders = useCountUp(orderCount, 800);
+  const subs = useCountUp(subCount, 800);
+
+  const stats = [
+    { label: "Orders", value: orders, icon: <Package size={16} />, testId: "portal-stat-orders" },
+    { label: "Subscriptions", value: subs, icon: <CreditCard size={16} />, testId: "portal-stat-subs" },
+    { label: "Total Spend", value: `${currency} ${totalSpend.toFixed(2)}`, icon: <TrendingUp size={16} />, testId: "portal-stat-spend", isText: true },
+  ];
+
+  return (
+    <motion.div
+      className="grid grid-cols-3 gap-4"
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+      initial="hidden"
+      animate="show"
+      data-testid="portal-stats"
+    >
+      {stats.map((s) => (
+        <motion.div
+          key={s.label}
+          variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } } }}
+          className="rounded-xl p-4 aa-glass aa-stat-card"
+          data-testid={s.testId}
+        >
+          <div className="flex items-center gap-2 mb-1" style={{ color: "var(--aa-muted)" }}>
+            {s.icon}
+            <span className="text-xs font-medium">{s.label}</span>
+          </div>
+          <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--aa-text)" }}>
+            {s.isText ? s.value : s.value}
+          </div>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+
 function RenewalHistory({ orders, subscriptions, navigate }: { orders: any[]; subscriptions: any[]; navigate: (path: string) => void }) {
   const renewals = orders.filter(o => o.type === "subscription_renewal");
   const [expandedSubs, setExpandedSubs] = useState<Record<string, boolean>>({});
@@ -338,8 +382,19 @@ export default function Portal() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20 text-slate-400" data-testid="portal-loading">
-        <RefreshCw size={18} className="animate-spin mr-2" /> Loading your account…
+      <div className="space-y-10 max-w-6xl mx-auto" data-testid="portal-loading">
+        {/* Skeleton stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <SkeletonStat /><SkeletonStat /><SkeletonStat />
+        </div>
+        {/* Skeleton table */}
+        <div className="rounded-xl border overflow-hidden" style={{ borderColor: "var(--aa-border)", backgroundColor: "var(--aa-card)" }}>
+          <table className="w-full">
+            <tbody>
+              {Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={6} />)}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
@@ -353,6 +408,11 @@ export default function Portal() {
     );
   }
 
+  const totalSpend = orders
+    .filter(o => o.type !== "subscription_start" && ["paid", "completed"].includes(o.status))
+    .reduce((sum, o) => sum + (o.total || 0), 0);
+  const orderCurrency = orders[0]?.currency || "";
+
   return (
     <div className="space-y-10 max-w-6xl mx-auto" data-testid="portal-page">
       {/* Header */}
@@ -365,6 +425,14 @@ export default function Portal() {
         <h1 className="text-2xl font-semibold text-slate-900">{ws.portal_title}</h1>
         <p className="text-sm text-slate-400">{ws.portal_subtitle}</p>
       </motion.div>
+
+      {/* ── Stats Row ──────────────────────────────────────── */}
+      <PortalStats
+        orderCount={filteredOrders.length}
+        subCount={subscriptions.length}
+        totalSpend={totalSpend}
+        currency={orderCurrency}
+      />
 
       {/* ── One-time orders ──────────────────────────────── */}
       <motion.section
@@ -402,9 +470,12 @@ export default function Portal() {
         </div>
 
         {paginatedOrders.length === 0 ? (
-          <div className="rounded-xl border border-slate-100 bg-slate-50 py-10 text-center text-sm text-slate-400" data-testid="portal-orders-empty">
-            {orderSearch || orderStatusFilter ? "No orders match your search." : "No one-time orders found."}
-          </div>
+          <EmptyState
+            icon="orders"
+            title={orderSearch || orderStatusFilter ? "No orders match your search" : "No orders yet"}
+            description={!orderSearch && !orderStatusFilter ? "Your orders will appear here once you make a purchase." : undefined}
+            data-testid="portal-orders-empty"
+          />
         ) : (
           <>
             <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
@@ -432,9 +503,20 @@ export default function Portal() {
                     <TableHead className="text-xs"></TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {paginatedOrders.map((order) => (
-                    <TableRow key={order.id} data-testid={`portal-order-row-${order.id}`} className="hover:bg-slate-50/50">
+                <TableBody
+                  data-testid="portal-orders-body"
+                  style={{ "--stagger-count": paginatedOrders.length } as React.CSSProperties}
+                >
+                  {paginatedOrders.map((order, idx) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className="border-b hover:bg-slate-50/50 transition-colors"
+                      style={{ borderColor: "var(--aa-border)" }}
+                      data-testid={`portal-order-row-${order.id}`}
+                    >
                       <TableCell className="font-mono text-xs font-medium" data-testid={`portal-order-number-${order.id}`}>{order.order_number}</TableCell>
                       <TableCell className="font-mono text-xs text-slate-500" data-testid={`portal-order-sub-number-${order.id}`}>{order.subscription_number || "—"}</TableCell>
                       <TableCell className="text-xs text-slate-500" data-testid={`portal-order-date-${order.id}`}>{order.created_at?.slice(0, 10)}</TableCell>
@@ -489,7 +571,7 @@ export default function Portal() {
                           </Button>
                         )}
                       </TableCell>
-                    </TableRow>
+                    </motion.tr>
                   ))}
                 </TableBody>
               </Table>

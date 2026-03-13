@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { X, ArrowUpDown, Search } from "lucide-react";
+import { SkeletonGrid } from "@/components/SkeletonCard";
+import { EmptyState } from "@/components/EmptyState";
 import api from "@/lib/api";
 import AppShell from "@/components/AppShell";
 import OfferingCard from "@/components/OfferingCard";
@@ -110,6 +112,7 @@ export default function Store() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [storeLoading, setStoreLoading] = useState(true);
   const PRODUCTS_PER_PAGE = 12;
   const ws = useWebsite();
   const partnerCode = usePartnerCode();
@@ -132,6 +135,7 @@ export default function Store() {
       setProducts(prods);
       setConfiguredFilters(filterRes.data.filters || []);
       setFxRates(fxRes.data.rates || {});
+      setFxRates(fxRes.data.rates || {});
 
       const catMap: Record<string, string> = catRes.data.category_blurbs || {};
       const catCounts: Record<string, number> = {};
@@ -153,6 +157,7 @@ export default function Store() {
       setCategories(apiCats);
       const fromUrl = categoryFromSlug(searchParams.get("category"), apiCats.map(c => c.name));
       setActiveCategory(fromUrl || null);
+      setStoreLoading(false);
     };
     load();
   }, [partnerCode]);
@@ -675,8 +680,15 @@ export default function Store() {
               )}
             </div>
 
-            {filteredProducts.length === 0 ? (
-              <p className="text-slate-400 text-sm py-12 text-center">No products match the selected filters.</p>
+            {storeLoading ? (
+              <SkeletonGrid count={6} cols="grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" />
+            ) : filteredProducts.length === 0 ? (
+              <EmptyState
+                icon="products"
+                title="No products found"
+                description={searchQuery ? `No results for "${searchQuery}"` : "No products match the selected filters."}
+                data-testid="store-empty-state"
+              />
             ) : (
               <>
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" data-testid="products-grid">

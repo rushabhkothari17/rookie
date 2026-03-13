@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import "@/App.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -69,16 +70,26 @@ const ProtectedRoute = ({
 import { LimitBanner } from "@/layout/LimitBanner";
 import AppFooter from "@/components/AppFooter";
 
-const BaseLayout = () => (
-  <div className="min-h-screen aa-bg flex flex-col" data-testid="base-layout">
-    <TopNav />
-    <LimitBanner />
-    <main className="aa-container py-10 flex-1 page-enter" data-testid="base-layout-main">
-      <Outlet />
-    </main>
-    <AppFooter />
-  </div>
-);
+const BaseLayout = () => {
+  const location = useLocation();
+  return (
+    <div className="min-h-screen aa-bg flex flex-col" data-testid="base-layout">
+      <TopNav />
+      <LimitBanner />
+      <main className="aa-container py-10 flex-1" data-testid="base-layout-main">
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <Outlet />
+        </motion.div>
+      </main>
+      <AppFooter />
+    </div>
+  );
+};
 
 export default function App() {
   return (
@@ -147,7 +158,19 @@ export default function App() {
           </Routes>
         </BrowserRouter>
         </WebsiteProvider>
-        <Toaster richColors position="top-right" />
+        <Toaster
+          richColors
+          position="top-right"
+          toastOptions={{
+            style: {
+              borderRadius: "12px",
+              border: "1px solid color-mix(in srgb, var(--aa-border) 60%, transparent)",
+              backdropFilter: "blur(12px)",
+              fontSize: "0.875rem",
+            },
+            duration: 3500,
+          }}
+        />
         <CookieConsent />
       </CartProvider>
     </AuthProvider>

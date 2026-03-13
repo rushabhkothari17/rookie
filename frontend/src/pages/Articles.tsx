@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import TopNav from "@/components/TopNav";
 import AppFooter from "@/components/AppFooter";
+import { EmptyState } from "@/components/EmptyState";
+import { SkeletonGrid } from "@/components/SkeletonCard";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import api from "@/lib/api";
-import { ArrowRight, BookOpen, Calendar } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 
 const PER_PAGE = 9;
 
@@ -130,25 +133,32 @@ export default function Articles() {
             )}
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-xl border border-slate-200 bg-white h-48 animate-pulse" />
-                ))}
-              </div>
+              <SkeletonGrid count={6} cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
             ) : paginated.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                  <BookOpen size={20} className="text-slate-400" />
-                </div>
-                <p className="text-slate-400 text-sm">No articles available yet.</p>
-              </div>
+              <EmptyState
+                icon="articles"
+                title={selectedCategory ? `No articles in "${selectedCategory}"` : "No articles yet"}
+                description="Check back soon for new guides and resources."
+                data-testid="articles-empty-state"
+              />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="articles-grid">
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                data-testid="articles-grid"
+                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+                initial="hidden"
+                animate="show"
+              >
                 {paginated.map((article) => (
-                  <button
+                  <motion.button
                     key={article.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+                    }}
                     onClick={() => navigate(`/articles/${article.id}`)}
-                    className="rounded-xl border border-slate-200 bg-white hover:shadow-md hover:border-slate-300 transition-all text-left flex flex-col overflow-hidden group"
+                    className="rounded-xl border border-slate-200 hover:shadow-lg hover:border-slate-300 hover:-translate-y-1 transition-all duration-200 text-left flex flex-col overflow-hidden group"
+                    style={{ backgroundColor: "var(--aa-card)", borderColor: "var(--aa-border)" }}
                     data-testid={`article-card-${article.id}`}
                   >
                     {/* Card top accent */}
@@ -160,11 +170,11 @@ export default function Articles() {
                           {article.category}
                         </span>
                       )}
-                      <h3 className="text-sm font-semibold text-slate-900 mb-2 leading-snug line-clamp-2">
+                      <h3 className="text-sm font-semibold mb-2 leading-snug line-clamp-2" style={{ color: "var(--aa-text)" }}>
                         {article.title}
                       </h3>
                       {article.content && (
-                        <p className="text-xs text-slate-500 leading-relaxed line-clamp-3 flex-1">
+                        <p className="text-xs leading-relaxed line-clamp-3 flex-1" style={{ color: "var(--aa-muted)" }}>
                           {article.content.replace(/[#*_`]/g, "").substring(0, 150)}
                         </p>
                       )}
@@ -175,14 +185,14 @@ export default function Articles() {
                             {formatDate(article.created_at)}
                           </span>
                         )}
-                        <span className="flex items-center gap-1 text-xs font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
+                        <span className="flex items-center gap-1 text-xs font-medium group-hover:gap-2 transition-all" style={{ color: "var(--aa-primary)" }}>
                           Read <ArrowRight size={11} />
                         </span>
                       </div>
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
-              </div>
+              </motion.div>
             )}
 
             {/* Pagination */}

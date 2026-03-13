@@ -4,6 +4,7 @@ import { useWebsite } from "@/contexts/WebsiteContext";
 import { useState, useEffect, useRef } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantSwitcher";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
@@ -45,6 +46,21 @@ const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
   "data-[state=inactive]:text-[var(--aa-muted)] hover:text-[var(--aa-text)] hover:translate-x-0.5 hover:bg-[var(--aa-surface)] " +
   "transition-all duration-150 data-[state=active]:shadow-none data-[state=active]:text-white";
+
+/** Sidebar tab with tooltip on hover */
+const SideTab = ({ value, label, testId }: { value: string; label: string; testId?: string }) => {
+  const Content = TooltipContent as any;
+  return (
+    <Tooltip delayDuration={400}>
+      <TooltipTrigger asChild>
+        <TabsTrigger value={value} className={TAB_CLASS} data-testid={testId || `tab-${value}`}>
+          {label}
+        </TabsTrigger>
+      </TooltipTrigger>
+      <Content side="right" className="text-xs font-medium px-2.5 py-1.5">{label}</Content>
+    </Tooltip>
+  );
+};
 
 export default function Admin() {
   const { user: authUser, permissions } = useAuth();
@@ -170,19 +186,20 @@ export default function Admin() {
               <X size={16} />
             </Button>
           </div>
+          <TooltipProvider delayDuration={350}>
           <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
             {/* Platform — only for platform_admin when NOT viewing as a tenant */}
             {showPartnerOrgs && (
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Platform</p>
-                <TabsTrigger value="tenants" data-testid="admin-tab-tenants" className={TAB_CLASS}>Partner Orgs</TabsTrigger>
-                <TabsTrigger value="plans" data-testid="admin-tab-plans" className={TAB_CLASS}>Plans</TabsTrigger>
-                <TabsTrigger value="partner-subscriptions" data-testid="admin-tab-partner-subscriptions" className={TAB_CLASS}>Partner Subscriptions</TabsTrigger>
-                <TabsTrigger value="partner-orders" data-testid="admin-tab-partner-orders" className={TAB_CLASS}>Partner Orders</TabsTrigger>
-                <TabsTrigger value="partner-submissions" data-testid="admin-tab-partner-submissions" className={TAB_CLASS}>Partner Submissions</TabsTrigger>
-                <TabsTrigger value="billing-settings" data-testid="admin-tab-billing-settings" className={TAB_CLASS}>Billing Settings</TabsTrigger>
+                <SideTab value="tenants" testId="admin-tab-tenants" label="Partner Orgs" />
+                <SideTab value="plans" testId="admin-tab-plans" label="Plans" />
+                <SideTab value="partner-subscriptions" testId="admin-tab-partner-subscriptions" label="Partner Subscriptions" />
+                <SideTab value="partner-orders" testId="admin-tab-partner-orders" label="Partner Orders" />
+                <SideTab value="partner-submissions" testId="admin-tab-partner-submissions" label="Partner Submissions" />
+                <SideTab value="billing-settings" testId="admin-tab-billing-settings" label="Billing Settings" />
                 {authUser?.role === "platform_super_admin" && (
-                  <TabsTrigger value="currencies" data-testid="admin-tab-currencies" className={TAB_CLASS}>Supported Currencies</TabsTrigger>
+                  <SideTab value="currencies" testId="admin-tab-currencies" label="Supported Currencies" />
                 )}
               </>
             )}
@@ -191,36 +208,36 @@ export default function Admin() {
             {isPartnerAdmin && (
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">My Billing</p>
-                <TabsTrigger value="plan-billing" data-testid="admin-tab-plan-billing" className={TAB_CLASS}>Plan &amp; Billing</TabsTrigger>
-                <TabsTrigger value="my-subscriptions" data-testid="admin-tab-my-subscriptions" className={TAB_CLASS}>My Subscriptions</TabsTrigger>
-                <TabsTrigger value="my-orders" data-testid="admin-tab-my-orders" className={TAB_CLASS}>My Orders</TabsTrigger>
-                <TabsTrigger value="my-submissions" data-testid="admin-tab-my-submissions" className={TAB_CLASS}>My Submissions</TabsTrigger>
+                <SideTab value="plan-billing" testId="admin-tab-plan-billing" label="Plan &amp; Billing" />
+                <SideTab value="my-subscriptions" testId="admin-tab-my-subscriptions" label="My Subscriptions" />
+                <SideTab value="my-orders" testId="admin-tab-my-orders" label="My Orders" />
+                <SideTab value="my-submissions" testId="admin-tab-my-submissions" label="My Submissions" />
               </>
             )}
 
             {/* People */}
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">People</p>
             {(isSuperAdmin || hasModule("users")) && (
-              <TabsTrigger value="users" data-testid="admin-tab-users" className={TAB_CLASS}>Users</TabsTrigger>
+              <SideTab value="users" testId="admin-tab-users" label="Users" />
             )}
-            {hasModule("customers") && <TabsTrigger value="customers" data-testid="admin-tab-customers" className={TAB_CLASS}>Customers</TabsTrigger>}
+            {hasModule("customers") && <SideTab value="customers" testId="admin-tab-customers" label="Customers" />}
 
             {/* Commerce */}
             {(hasModule("orders") || hasModule("subscriptions") || hasModule("products")) && (
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Commerce</p>
             )}
-            {hasModule("products") && <TabsTrigger value="catalog" data-testid="admin-tab-catalog" className={TAB_CLASS}>Products</TabsTrigger>}
-            {hasModule("products") && <TabsTrigger value="filters" data-testid="admin-tab-filters" className={TAB_CLASS}>Filters</TabsTrigger>}
-            {hasModule("subscriptions") && <TabsTrigger value="subscriptions" data-testid="admin-tab-subscriptions" className={TAB_CLASS}>Subscriptions</TabsTrigger>}
-            {hasModule("orders") && <TabsTrigger value="orders" data-testid="admin-tab-orders" className={TAB_CLASS}>Orders</TabsTrigger>}
-            {hasModule("customers") && <TabsTrigger value="enquiries" data-testid="admin-tab-enquiries" className={TAB_CLASS}>Enquiries</TabsTrigger>}
+            {hasModule("products") && <SideTab value="catalog" testId="admin-tab-catalog" label="Products" />}
+            {hasModule("products") && <SideTab value="filters" testId="admin-tab-filters" label="Filters" />}
+            {hasModule("subscriptions") && <SideTab value="subscriptions" testId="admin-tab-subscriptions" label="Subscriptions" />}
+            {hasModule("orders") && <SideTab value="orders" testId="admin-tab-orders" label="Orders" />}
+            {hasModule("customers") && <SideTab value="enquiries" testId="admin-tab-enquiries" label="Enquiries" />}
 
             {/* Content */}
             {hasModule("content") && (
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Content</p>
-                <TabsTrigger value="resources" data-testid="admin-tab-resources" className={TAB_CLASS}>Resources</TabsTrigger>
-                <TabsTrigger value="documents" data-testid="admin-tab-documents" className={TAB_CLASS}>Documents</TabsTrigger>
+                <SideTab value="resources" testId="admin-tab-resources" label="Resources" />
+                <SideTab value="documents" testId="admin-tab-documents" label="Documents" />
               </>
             )}
 
@@ -228,13 +245,13 @@ export default function Admin() {
             {hasModule("settings") && (
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Settings</p>
-                <TabsTrigger value="org-info" data-testid="admin-tab-org-info" className={TAB_CLASS}>Organization Info</TabsTrigger>
-                <TabsTrigger value="taxes" data-testid="admin-tab-taxes" className={TAB_CLASS}>Taxes</TabsTrigger>
-                <TabsTrigger value="auth-pages" data-testid="admin-tab-auth-pages" className={TAB_CLASS}>Auth &amp; Pages</TabsTrigger>
-                <TabsTrigger value="forms-tab" data-testid="admin-tab-forms" className={TAB_CLASS}>Forms</TabsTrigger>
-                <TabsTrigger value="email-templates" data-testid="admin-tab-email-templates" className={TAB_CLASS}>Email Templates</TabsTrigger>
-                <TabsTrigger value="references" data-testid="admin-tab-references" className={TAB_CLASS}>References</TabsTrigger>
-                <TabsTrigger value="domains" data-testid="admin-tab-domains" className={TAB_CLASS}>Custom Domains</TabsTrigger>
+                <SideTab value="org-info" testId="admin-tab-org-info" label="Organization Info" />
+                <SideTab value="taxes" testId="admin-tab-taxes" label="Taxes" />
+                <SideTab value="auth-pages" testId="admin-tab-auth-pages" label="Auth &amp; Pages" />
+                <SideTab value="forms-tab" testId="admin-tab-forms" label="Forms" />
+                <SideTab value="email-templates" testId="admin-tab-email-templates" label="Email Templates" />
+                <SideTab value="references" testId="admin-tab-references" label="References" />
+                <SideTab value="domains" testId="admin-tab-domains" label="Custom Domains" />
               </>
             )}
 
@@ -242,17 +259,18 @@ export default function Admin() {
             {hasModule("integrations") && (
               <>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 pt-4 pb-1">Integrations</p>
-                <TabsTrigger value="integrations" data-testid="admin-tab-integrations" className={TAB_CLASS}>Connect Services</TabsTrigger>
+                <SideTab value="integrations" testId="admin-tab-integrations" label="Connect Services" />
               </>
             )}
             {hasModule("integrations") && isPlatformAdmin && (
-              <TabsTrigger value="integration-requests" data-testid="admin-tab-integration-requests" className={TAB_CLASS}>Integration Requests</TabsTrigger>
+              <SideTab value="integration-requests" testId="admin-tab-integration-requests" label="Integration Requests" />
             )}
-            {hasModule("integrations") && <TabsTrigger value="api" data-testid="admin-tab-api" className={TAB_CLASS}>API</TabsTrigger>}
-            {hasModule("webhooks") && <TabsTrigger value="webhooks" data-testid="admin-tab-webhooks" className={TAB_CLASS}>Webhooks</TabsTrigger>}
-            {hasModule("logs") && <TabsTrigger value="sync" data-testid="admin-tab-sync" className={TAB_CLASS}>Logs</TabsTrigger>}
+            {hasModule("integrations") && <SideTab value="api" testId="admin-tab-api" label="API" />}
+            {hasModule("webhooks") && <SideTab value="webhooks" testId="admin-tab-webhooks" label="Webhooks" />}
+            {hasModule("logs") && <SideTab value="sync" testId="admin-tab-sync" label="Logs" />}
 
           </TabsList>
+          </TooltipProvider>
         </div>
 
         {/* Content Area */}
