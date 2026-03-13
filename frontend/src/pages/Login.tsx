@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { applyPartnerBranding } from "@/contexts/WebsiteContext";
-import { AlertCircle, ArrowRight, ChevronLeft, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, ChevronLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -50,6 +50,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [needsVerification, setNeedsVerification] = useState(false);
@@ -416,16 +417,28 @@ export default function Login() {
                     Forgot password?
                   </Link>
                 </div>
-                <input
-                  id="password"
-                  type="password"
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPw ? "text" : "password"}
                   placeholder="••••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  className="auth-input"
+                  className="auth-input pr-10"
                   data-testid="login-password-input"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(v => !v)}
+                  className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                  tabIndex={-1}
+                  aria-label={showPw ? "Hide password" : "Show password"}
+                  data-testid="login-toggle-password"
+                >
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                </div>
               </div>
 
               <div className="anim-slide-up delay-300 pt-1">
@@ -492,6 +505,8 @@ function ForcePasswordChangeModal({ onSuccess }: { onSuccess: () => void }) {
   const [confirm, setConfirm] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -517,22 +532,36 @@ function ForcePasswordChangeModal({ onSuccess }: { onSuccess: () => void }) {
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">New password</label>
-            <input
-              type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-              required autoFocus placeholder="Min 10 characters"
-              className="auth-input"
-              data-testid="force-new-password"
-            />
+            <div className="relative">
+              <input
+                type={showNewPw ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                required autoFocus placeholder="Min 10 characters"
+                className="auth-input pr-10"
+                data-testid="force-new-password"
+              />
+              <button type="button" onClick={() => setShowNewPw(v => !v)} tabIndex={-1}
+                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                aria-label={showNewPw ? "Hide password" : "Show password"}>
+                {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             <p className="text-[11px] text-slate-400 mt-1.5 px-1">Min. 10 characters · uppercase · number · special character</p>
           </div>
           <div>
             <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">Confirm password</label>
-            <input
-              type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
-              required placeholder="Re-enter new password"
-              className="auth-input"
-              data-testid="force-confirm-password"
-            />
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"} value={confirm} onChange={e => setConfirm(e.target.value)}
+                required placeholder="Re-enter new password"
+                className="auth-input pr-10"
+                data-testid="force-confirm-password"
+              />
+              <button type="button" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}
+                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                aria-label={showConfirm ? "Hide password" : "Show password"}>
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
