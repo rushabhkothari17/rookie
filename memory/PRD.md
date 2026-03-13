@@ -16,6 +16,21 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Feb 2026 - Product Layout Standardization & Admin Dark Mode
+- **P0 Complete: All Product Page Layouts Standardized** (all 4 non-standard layouts rewritten):
+  - `QuickBuyLayout.tsx`: Removed `slice(0,4)` question cap, replaced local `formatCurrency` with shared utils, replaced `bg-blue-600` with `var(--aa-primary)`, added free/subscription indicators, ReactMarkdown for custom sections, all sdp_* labels from WebsiteContext
+  - `WizardLayout.tsx`: Fixed progress bar (0% first step → 100% review step), fixed boolean review display (case-insensitive), removed local `formatCurrency`, fixed `isEnquiry` vs `isRFQ` inconsistency, CSS variables throughout, all sdp_* labels
+  - `ApplicationLayout.tsx`: Full 4-section nav (Overview/Form/Pricing/FAQs), fixed `isFree` handling in pricing, CSS variables, sdp_* labels for all nav items and buttons
+  - `ShowcaseLayout.tsx`: Theme-aware hero gradient using CSS variables, pricingQuestions vs infoQuestions split, CSS variables for calculator panel, sdp_* labels, ReactMarkdown sections
+  - `ClassicLayout.tsx`: Added `useWebsite()` for sdp_* labels, fixed CTA labels to use `formatCurrency`, fixed subscription/free indicators to use CSS vars
+- **Admin Dark Mode Fix**:
+  - `websiteTabShared.tsx`: `AuthTile`, `FormTile`, `SectionDivider`, `BaseCurrencyWidget`, `Field` components all updated to use CSS variables (`var(--aa-card)`, `var(--aa-border)`, `var(--aa-text)`, `var(--aa-muted)`, `var(--aa-surface)`)
+- **Service Detail Page Tile (Admin > Auth & Pages)**:
+  - New "service_detail" `AuthSlide` type added
+  - New tile added in App Pages tab with `data-testid="auth-tile-service-detail"`
+  - Slide panel with 18 configurable fields: section headers (intake, features, about, faqs, key features, additional info, pricing), CTA labels (free/buy/quote), Showcase panel labels, Application layout nav/button labels, Wizard step/review/submit labels
+  - All `sdp_*` keys added to `WebsiteData`, `WEB_DEFAULTS`, `WebsiteSettings`, `DEFAULT_SETTINGS`
+
 ### Session: Feb 2026 - Admin Features & Bug Fixes
 - **Admin-Initiated Password Reset** (P0 complete):
   - Backend: `POST /api/admin/customers/{id}/send-reset-link` and `POST /api/admin/users/{id}/send-reset-link` — super admin only, increments `token_version` (forces logout), sends password reset email via Resend (mocked if no API key)

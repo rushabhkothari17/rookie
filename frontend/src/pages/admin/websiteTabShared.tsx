@@ -229,9 +229,9 @@ export function ColorInput({ label, value, onChange, testId }: {
 export function SectionDivider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 pt-2">
-      <div className="flex-1 h-px bg-slate-100" />
-      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</span>
-      <div className="flex-1 h-px bg-slate-100" />
+      <div className="flex-1 h-px" style={{ background: "var(--aa-border)" }} />
+      <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--aa-muted)" }}>{label}</span>
+      <div className="flex-1 h-px" style={{ background: "var(--aa-border)" }} />
     </div>
   );
 }
@@ -267,18 +267,28 @@ export function FormTile({ title, description, fieldCount, onEdit, testId }: {
   title: string; description: string; fieldCount: number; onEdit: () => void; testId?: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 flex items-center gap-4 hover:border-slate-300 transition-colors cursor-pointer" onClick={onEdit} data-testid={testId}>
-      <div className="p-3 rounded-xl bg-slate-100 shrink-0">
-        <FileText size={18} className="text-slate-600" />
+    <div
+      className="rounded-xl border p-5 flex items-center gap-4 transition-colors cursor-pointer"
+      style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--aa-muted)")}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--aa-border)")}
+      onClick={onEdit}
+      data-testid={testId}
+    >
+      <div className="p-3 rounded-xl shrink-0" style={{ background: "var(--aa-surface)" }}>
+        <FileText size={18} style={{ color: "var(--aa-muted)" }} />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
-        <p className="text-xs text-slate-400 mt-0.5">{description}</p>
-        <span className="mt-1.5 inline-block text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+        <h4 className="text-sm font-semibold" style={{ color: "var(--aa-text)" }}>{title}</h4>
+        <p className="text-xs mt-0.5" style={{ color: "var(--aa-muted)" }}>{description}</p>
+        <span
+          className="mt-1.5 inline-block text-[11px] font-medium px-2 py-0.5 rounded"
+          style={{ background: "var(--aa-surface)", color: "var(--aa-muted)" }}
+        >
           {fieldCount} field{fieldCount !== 1 ? "s" : ""}
         </span>
       </div>
-      <Pencil size={14} className="text-slate-400 shrink-0" />
+      <Pencil size={14} style={{ color: "var(--aa-muted)" }} className="shrink-0" />
     </div>
   );
 }
@@ -399,9 +409,9 @@ export function BaseCurrencyWidget() {
   if (!loaded) return null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
-      <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Base Currency</h4>
-      <p className="text-xs text-slate-400 mb-3">The primary currency for your partner account.</p>
+    <div className="rounded-xl border p-5 mb-4" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
+      <h4 className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--aa-text)" }}>Base Currency</h4>
+      <p className="text-xs mb-3" style={{ color: "var(--aa-muted)" }}>The primary currency for your partner account.</p>
       <div className="flex items-center gap-3">
         <Select value={currency} onValueChange={setCurrency}>
           <SelectTrigger className="w-40" data-testid="base-currency-select">
