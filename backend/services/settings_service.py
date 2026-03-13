@@ -266,3 +266,25 @@ class SettingsService:
                 entry["value_json"] = "••••••••"
             result.append(entry)
         return result
+
+
+async def get_store_name(db, tenant_id: str = "automate-accounts") -> str:
+    """
+    Resolve store_name for a tenant.
+    Priority: flat app_settings doc (branding) → website_settings → SettingsService key-value.
+    The flat app_settings document (no 'key' field) is the authoritative branding store.
+    """
+    flat = await db.app_settings.find_one(
+        {"tenant_id": tenant_id, "key": {"$exists": False}},
+        {"_id": 0, "store_name": 1},
+    )
+    name = (flat or {}).get("store_name")
+    if name:
+        return str(name)
+    ws = await db.website_settings.find_one(
+        {"tenant_id": tenant_id}, {"_id": 0, "store_name": 1}
+    )
+    name = (ws or {}).get("store_name")
+    if name:
+        return str(name)
+    return await SettingsService.get("store_name", "") or ""

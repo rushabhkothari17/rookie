@@ -286,8 +286,9 @@ async def download_article(
     safe_name = _re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60]
 
     # Fetch store branding from website settings
-    ws = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
-    store_name = str(ws.get("store_name") or "")
+    from services.settings_service import get_store_name
+    ws = await db.website_settings.find_one({"tenant_id": tid}, {"_id": 0, "accent_color": 1}) or {}
+    store_name = await get_store_name(db, tid)
     accent_color = str(ws.get("accent_color") or "#0f172a")
 
     if format == "docx":
@@ -578,8 +579,9 @@ async def send_article_email(
         raise HTTPException(status_code=400, detail="At least one recipient (To) is required")
 
     # Fetch branding
-    ws = await db.website_settings.find_one({"tenant_id": tenant_id_of(admin)}, {"_id": 0, "store_name": 1, "accent_color": 1}) or {}
-    store_name = str(ws.get("store_name") or "")
+    from services.settings_service import get_store_name
+    ws = await db.website_settings.find_one({"tenant_id": tenant_id_of(admin)}, {"_id": 0, "accent_color": 1}) or {}
+    store_name = await get_store_name(db, tenant_id_of(admin))
     accent_color = str(ws.get("accent_color") or "#0f172a")
 
     provider_enabled = await SettingsService.get("email_provider_enabled", False)
