@@ -35,7 +35,7 @@ RATE_LIMITS: Dict[str, Tuple[int, int]] = {
 }
 
 # Global public read endpoints — generous limits for high-volume access
-PUBLIC_RATE_LIMIT: Tuple[int, int] = (120, 60)  # 120 per minute per IP
+PUBLIC_RATE_LIMIT: Tuple[int, int] = (300, 60)  # 300 per minute per IP per path-prefix
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -82,9 +82,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             max_req, window = RATE_LIMITS[matched_prefix]
             key = f"{ip}:{matched_prefix}"
         else:
-            # Apply generous default limit to all other /api routes
+            # Apply generous default limit keyed by (ip, top-level path segment)
+            # so each endpoint group has its own counter rather than sharing one bucket.
             max_req, window = PUBLIC_RATE_LIMIT
-            key = f"{ip}:public"
+            parts = path.strip("/").split("/")
+            # Use up to the first 3 path segments: e.g. /api/admin/customers → api:admin:customers
+            key = f"{ip}:" + ":".join(parts[:3])
 
         if not self._check(key, max_req, window):
             return Response(
