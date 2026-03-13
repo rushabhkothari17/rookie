@@ -21,7 +21,7 @@ const HARDCODED_CATEGORIES = [
 
 interface Template { id: string; name: string; description: string; category: string; content: string; is_default: boolean; created_at: string; }
 
-export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
+export function ResourceTemplatesTab({ categories }: { categories?: any[] }) {
   const categoryNames = categories && categories.length > 0
     ? categories.map(c => c.name)
     : HARDCODED_CATEGORIES;

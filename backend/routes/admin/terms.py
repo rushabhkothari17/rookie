@@ -44,29 +44,6 @@ def _sanitize_html(html: str) -> str:
 
 router = APIRouter(prefix="/api", tags=["admin-terms"])
 
-
-@router.get("/terms/default")
-async def get_default_terms(
-    partner_code: Optional[str] = None,
-    user: Optional[Dict[str, Any]] = Depends(get_current_user),
-):
-    from core.tenant import resolve_tenant, DEFAULT_TENANT_ID
-    if user:
-        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
-    elif partner_code:
-        try:
-            tenant = await resolve_tenant(partner_code)
-            tid = tenant["id"]
-        except Exception:
-            tid = DEFAULT_TENANT_ID
-    else:
-        tid = DEFAULT_TENANT_ID
-    default = await db.terms_and_conditions.find_one({"tenant_id": tid, "is_default": True, "status": "active"}, {"_id": 0})
-    if not default:
-        raise HTTPException(status_code=404, detail="No default terms found")
-    return default
-
-
 @router.get("/terms/for-product/{product_id}")
 async def get_terms_for_product(product_id: str, user: Dict[str, Any] = Depends(get_current_user)):
     from core.tenant import DEFAULT_TENANT_ID

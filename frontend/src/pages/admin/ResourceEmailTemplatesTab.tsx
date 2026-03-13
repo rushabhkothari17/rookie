@@ -20,7 +20,7 @@ function EmailBodyEditor({ value, onChange }: { value: string; onChange: (v: str
 
 interface EmailTemplate { id: string; name: string; subject: string; html_body: string; description: string; created_at: string; }
 
-export function ArticleEmailTemplatesTab() {
+export function ResourceEmailTemplatesTab() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [colSort, setColSort] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
   const [nameFilter, setNameFilter] = useState<string[]>([]);

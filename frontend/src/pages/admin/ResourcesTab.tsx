@@ -15,9 +15,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { AdminPagination } from "./shared/AdminPagination";
 import { AuditLogDialog } from "@/components/AuditLogDialog";
-import { ArticleTemplatesTab } from "./ResourceTemplatesTab";
-import { ArticleEmailTemplatesTab } from "./ResourceEmailTemplatesTab";
-import { ArticleCategoriesTab } from "./ResourceCategoriesTab";
+import { ResourceTemplatesTab } from "./ResourceTemplatesTab";
+import { ResourceEmailTemplatesTab } from "./ResourceEmailTemplatesTab";
+import { ResourceCategoriesTab } from "./ResourceCategoriesTab";
 import { RichHtmlEditor } from "@/components/ui/RichHtmlEditor";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
 
@@ -462,15 +462,15 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
         </TabsList>
 
         <TabsContent value="templates">
-          <ArticleTemplatesTab categories={dynamicCategories} />
+          <ResourceTemplatesTab categories={dynamicCategories} />
         </TabsContent>
 
         <TabsContent value="email-templates">
-          <ArticleEmailTemplatesTab />
+          <ResourceEmailTemplatesTab />
         </TabsContent>
 
         <TabsContent value="categories">
-          <ArticleCategoriesTab />
+          <ResourceCategoriesTab />
         </TabsContent>
 
         <TabsContent value="resources">

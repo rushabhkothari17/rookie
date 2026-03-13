@@ -29,7 +29,7 @@ interface Category {
 
 const EMPTY_FORM = { name: "", description: "", color: "", is_scope_final: false };
 
-export function ArticleCategoriesTab() {
+export function ResourceCategoriesTab() {
   const [showImport, setShowImport] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
