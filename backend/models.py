@@ -153,14 +153,6 @@ class IntakeOption(BaseModel):
     price_value: float = 0.0
 
 
-class PricingTier(BaseModel):
-    from_: float = Field(0.0, alias="from")
-    to: Optional[float] = None
-    price_per_unit: float = 0.0
-
-    model_config = {"populate_by_name": True, "serialize_by_alias": True}
-
-
 class VisibilityRule(BaseModel):
     depends_on: str = ""
     operator: str = "equals"
@@ -270,11 +262,6 @@ class AdminProductUpdate(BaseModel):
     default_term_months: Optional[int] = Field(None, ge=0, le=300)
     billing_type: Optional[str] = None  # "prorata" | "fixed"
     tags: Optional[List[str]] = None
-
-
-class AdminCustomerPaymentUpdate(BaseModel):
-    allow_bank_transfer: bool
-    allow_card_payment: bool
 
 
 class AdminOrderUpdate(BaseModel):
@@ -695,36 +682,6 @@ class QuoteRequest(BaseModel):
     phone: Optional[str] = None
     message: Optional[str] = None
     extra_fields: Optional[Dict[str, Any]] = None
-
-
-class BankTransactionCreate(BaseModel):
-    date: str
-    source: str
-    transaction_id: Optional[str] = None
-    type: str
-    amount: float
-    fees: Optional[float] = 0.0
-    net_amount: Optional[float] = None
-    currency: Optional[str] = "USD"
-    status: str
-    description: Optional[str] = None
-    linked_order_id: Optional[str] = None
-    internal_notes: Optional[str] = None
-
-
-class BankTransactionUpdate(BaseModel):
-    date: Optional[str] = None
-    source: Optional[str] = None
-    transaction_id: Optional[str] = None
-    type: Optional[str] = None
-    amount: Optional[float] = None
-    fees: Optional[float] = None
-    net_amount: Optional[float] = None
-    currency: Optional[str] = None
-    status: Optional[str] = None
-    description: Optional[str] = None
-    linked_order_id: Optional[str] = None
-    internal_notes: Optional[str] = None
 
 
 class ArticleCreate(BaseModel):

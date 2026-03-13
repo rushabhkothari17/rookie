@@ -148,7 +148,6 @@ from routes.admin.finance import router as finance_admin_router
 from routes.admin.permissions import router as permissions_admin_router
 from routes.admin.presets import router as presets_admin_router
 from routes.gdpr import router as gdpr_router
-from routes.downloads import router as downloads_router
 from routes.oauth import router as oauth_router
 from routes.taxes import router as taxes_router
 from routes.utils import router as utils_router
@@ -205,7 +204,6 @@ app.include_router(finance_admin_router)
 app.include_router(permissions_admin_router)
 app.include_router(presets_admin_router)
 app.include_router(gdpr_router)
-app.include_router(downloads_router)
 app.include_router(taxes_router)
 app.include_router(utils_router)
 app.include_router(documents_router)
