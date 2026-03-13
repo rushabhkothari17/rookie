@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
@@ -398,6 +399,21 @@ export function PartnerOrdersTab() {
 
   return (
     <div className="space-y-5" data-testid="partner-orders-tab">
+      <AdminPageHeader
+        title="Partner Orders"
+        subtitle={`${total} order${total !== 1 ? "s" : ""}`}
+        actions={
+          <>
+            <Button size="sm" variant="outline" onClick={load} data-testid="refresh-partner-orders-btn">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-partner-order-btn">
+              <Plus size={14} className="mr-1" />New Order
+            </Button>
+          </>
+        }
+      />
+
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -417,16 +433,6 @@ export function PartnerOrdersTab() {
           ))}
         </div>
       )}
-
-      {/* Create */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button size="sm" variant="outline" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
-        <div className="ml-auto">
-          <Button onClick={() => setShowCreate(true)} data-testid="create-partner-order-btn">
-            <Plus className="h-4 w-4 mr-1" /> New Order
-          </Button>
-        </div>
-      </div>
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">

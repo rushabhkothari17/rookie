@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import React from "react";
 import api from "@/lib/api";
+import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -451,13 +452,15 @@ function PlansSection() {
   if (loading) return <div className="p-4 text-slate-500 text-sm">Loading plans…</div>;
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">License Plans</h2>
-          <p className="text-sm text-slate-500">Define reusable resource limit templates for partner organisations.</p>
-        </div>
-        <Button onClick={() => setShowCreate(true)} data-testid="create-plan-btn"><Plus className="h-4 w-4 mr-1" />New Plan</Button>
-      </div>
+      <AdminPageHeader
+        title="License Plans"
+        subtitle="Define reusable resource limit templates for partner organisations."
+        actions={
+          <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-plan-btn">
+            <Plus size={14} className="mr-1" />New Plan
+          </Button>
+        }
+      />
 
       {plans.length === 0 ? (
         <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center text-slate-400 text-sm">
@@ -634,17 +637,17 @@ function OneTimeRatesSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">One-Time Limit Rate Table</h2>
-          <p className="text-sm text-slate-500">Set the price per unit for each module. Partners buy extra capacity for the current billing cycle only.</p>
-        </div>
-        {availableModules.length > 0 && (
-          <Button onClick={() => setShowCreate(true)} data-testid="create-rate-btn">
-            <Plus className="h-4 w-4 mr-1" />Add Rate
-          </Button>
-        )}
-      </div>
+      <AdminPageHeader
+        title="One-Time Limit Rate Table"
+        subtitle="Set the price per unit for each module. Partners buy extra capacity for the current billing cycle only."
+        actions={
+          availableModules.length > 0 ? (
+            <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-rate-btn">
+              <Plus size={14} className="mr-1" />Add Rate
+            </Button>
+          ) : undefined
+        }
+      />
 
       {rates.length === 0 ? (
         <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center text-slate-400 text-sm">
@@ -851,15 +854,15 @@ function CouponsSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Coupons</h2>
-          <p className="text-sm text-slate-500">Manage discount codes partners can apply before upgrading their plan.</p>
-        </div>
-        <Button onClick={() => setShowCreate(true)} data-testid="create-coupon-btn">
-          <Plus className="h-4 w-4 mr-1" />New Coupon
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Coupons"
+        subtitle="Manage discount codes partners can apply before upgrading their plan."
+        actions={
+          <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-coupon-btn">
+            <Plus size={14} className="mr-1" />New Coupon
+          </Button>
+        }
+      />
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <table className="w-full text-sm" data-testid="coupons-table">

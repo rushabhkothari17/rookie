@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { AdminPageHeader } from "./shared/AdminPageHeader";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
@@ -514,6 +515,21 @@ export function PartnerSubscriptionsTab() {
 
   return (
     <div className="space-y-5" data-testid="partner-subscriptions-tab">
+      <AdminPageHeader
+        title="Partner Subscriptions"
+        subtitle={`${total} subscription${total !== 1 ? "s" : ""}`}
+        actions={
+          <>
+            <Button size="sm" variant="outline" onClick={load} data-testid="refresh-partner-subs-btn">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button size="sm" onClick={() => setShowCreate(true)} data-testid="create-partner-sub-btn">
+              <Plus size={14} className="mr-1" />New Subscription
+            </Button>
+          </>
+        }
+      />
+
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -541,16 +557,6 @@ export function PartnerSubscriptionsTab() {
           ))}
         </div>
       )}
-
-      {/* Create */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button size="sm" variant="outline" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
-        <div className="ml-auto">
-          <Button onClick={() => setShowCreate(true)} data-testid="create-partner-sub-btn">
-            <Plus className="h-4 w-4 mr-1" /> New Subscription
-          </Button>
-        </div>
-      </div>
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
