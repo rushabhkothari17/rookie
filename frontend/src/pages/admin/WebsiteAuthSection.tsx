@@ -6,11 +6,13 @@ import { Section } from "./websiteTabShared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SIGNUP_DEFAULT_SCHEMA = JSON.stringify([
-  { id: "sf_full_name",    key: "full_name",    label: "Full Name",    type: "text", required: true,  placeholder: "", options: [], locked: true,  enabled: true,  order: 0 },
-  { id: "sf_company_name", key: "company_name", label: "Company Name", type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 1 },
-  { id: "sf_job_title",    key: "job_title",    label: "Job Title",    type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 2 },
-  { id: "sf_phone",        key: "phone",        label: "Phone",        type: "tel",  required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 3 },
-  { id: "sf_address",      key: "address",      label: "Address",      type: "address", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 4,
+  { id: "sf_email",        key: "email",        label: "Email Address", type: "email",    required: true,  placeholder: "", options: [], locked: true,  enabled: true,  order: 0 },
+  { id: "sf_password",     key: "password",     label: "Password",      type: "password", required: true,  placeholder: "", options: [], locked: true,  enabled: true,  order: 1 },
+  { id: "sf_full_name",    key: "full_name",    label: "Full Name",    type: "text", required: true,  placeholder: "", options: [], locked: true,  enabled: true,  order: 2 },
+  { id: "sf_company_name", key: "company_name", label: "Company Name", type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 3 },
+  { id: "sf_job_title",    key: "job_title",    label: "Job Title",    type: "text", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 4 },
+  { id: "sf_phone",        key: "phone",        label: "Phone",        type: "tel",  required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 5 },
+  { id: "sf_address",      key: "address",      label: "Address",      type: "address", required: false, placeholder: "", options: [], locked: true,  enabled: true,  order: 6,
     address_config: { line1: {enabled:true,required:true}, line2: {enabled:true,required:false}, city: {enabled:true,required:true}, state: {enabled:true,required:false}, postal: {enabled:true,required:true}, country: {enabled:true,required:true} } },
 ]);
 
@@ -69,9 +71,11 @@ interface Props {
   saveSection: (onDone?: () => void) => void;
   slideSaving: boolean;
   setActiveSection: (section: Section) => void;
+  isPlatformAdmin?: boolean;
+  setBool?: (key: keyof WebsiteData, v: boolean) => void;
 }
 
-export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, slideSaving, setActiveSection }: Props) {
+export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, slideSaving, setActiveSection, isPlatformAdmin, setBool }: Props) {
   return (
     <>
       <div className="mb-4">
@@ -93,7 +97,9 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
             <AuthTile title="Login Page" description="Login title, subtitle, portal label" preview={ws.login_title || undefined} onEdit={() => setAuthSlide("login")} testId="auth-tile-login" />
             <AuthTile title="Sign Up Page" description={`Register page + ${getFieldCount(ws.signup_form_schema)} form fields`} preview={ws.register_title || undefined} onEdit={() => setAuthSlide("signup")} testId="auth-tile-signup" />
             <AuthTile title="Verify Email" description="Verification page content" preview={ws.verify_email_title || undefined} onEdit={() => setAuthSlide("verify_email")} testId="auth-tile-verify-email" />
-            <AuthTile title="Partner Sign-Up Page" description={`Partner registration form · ${getFieldCount(ws.partner_signup_form_schema)} fields`} onEdit={() => setAuthSlide("partner_signup")} testId="auth-tile-partner-signup" />
+            {isPlatformAdmin && (
+              <AuthTile title="Partner Sign-Up Page" description={`Partner registration form · ${getFieldCount(ws.partner_signup_form_schema)} fields`} onEdit={() => setAuthSlide("partner_signup")} testId="auth-tile-partner-signup" />
+            )}
             <AuthTile title="404 Not Found" preview={ws.page_404_title || undefined} description="Error page content" onEdit={() => setAuthSlide("not_found")} testId="auth-tile-404" />
           </div>
         </TabsContent>
@@ -194,6 +200,24 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
           <div className="space-y-4">
             <Field label="Page title" value={ws.portal_title} onChange={s("portal_title")} testId="ws-portal-title" />
             <Field label="Page subtitle" value={ws.portal_subtitle} onChange={s("portal_subtitle")} multiline testId="ws-portal-subtitle" />
+            {/* Stats toggle */}
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3" style={{ borderColor: "var(--aa-border)", backgroundColor: "var(--aa-surface)" }}>
+              <div>
+                <p className="text-sm font-medium" style={{ color: "var(--aa-text)" }}>Show stats on portal</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--aa-muted)" }}>Displays Orders, Subscriptions and Total Spend summary cards on the customer-facing /portal page.</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={ws.portal_show_stats !== false}
+                onClick={() => setBool?.("portal_show_stats", ws.portal_show_stats === false ? true : false)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${ws.portal_show_stats !== false ? "bg-blue-600" : "bg-slate-200"}`}
+                data-testid="portal-show-stats-toggle"
+                style={ws.portal_show_stats !== false ? { backgroundColor: "var(--aa-primary)" } : {}}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${ws.portal_show_stats !== false ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
           </div>
         )}
         {authSlide === "profile" && (

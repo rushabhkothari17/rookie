@@ -54,6 +54,10 @@ export interface FormField {
   enabled: boolean;
   order: number;
   max_length?: number;
+  max_file_size_mb?: number;   // file type
+  date_format?: string;        // date type: "YYYY-MM-DD" | "DD/MM/YYYY" | "MM/DD/YYYY"
+  min_value?: number;          // number type
+  max_value?: number;          // number type
   address_config?: AddressConfig;
 }
 
@@ -334,6 +338,67 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                           placeholder="No limit"
                           className="mt-0.5 h-7 text-xs"
                           data-testid={`field-maxlength-${field.id}`}
+                        />
+                      </div>
+                    )}
+                    {/* Number min/max */}
+                    {field.type === "number" && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[11px] text-slate-500 font-medium">Min value</label>
+                          <Input
+                            type="number"
+                            value={field.min_value ?? ""}
+                            onChange={e => updateField(field.id, { min_value: e.target.value ? Number(e.target.value) : undefined })}
+                            placeholder="None"
+                            className="mt-0.5 h-7 text-xs"
+                            data-testid={`field-minvalue-${field.id}`}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-slate-500 font-medium">Max value</label>
+                          <Input
+                            type="number"
+                            value={field.max_value ?? ""}
+                            onChange={e => updateField(field.id, { max_value: e.target.value ? Number(e.target.value) : undefined })}
+                            placeholder="None"
+                            className="mt-0.5 h-7 text-xs"
+                            data-testid={`field-maxvalue-${field.id}`}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {/* Date format */}
+                    {field.type === "date" && (
+                      <div>
+                        <label className="text-[11px] text-slate-500 font-medium">Date format</label>
+                        <select
+                          value={field.date_format || "YYYY-MM-DD"}
+                          onChange={e => updateField(field.id, { date_format: e.target.value })}
+                          className="mt-0.5 h-7 text-xs w-full rounded-md border border-input bg-background px-2"
+                          data-testid={`field-dateformat-${field.id}`}
+                        >
+                          <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
+                          <option value="DD/MM/YYYY">DD/MM/YYYY (UK / EU)</option>
+                          <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
+                          <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                          <option value="MM-DD-YYYY">MM-DD-YYYY</option>
+                        </select>
+                      </div>
+                    )}
+                    {/* File upload — max size */}
+                    {field.type === "file" && (
+                      <div>
+                        <label className="text-[11px] text-slate-500 font-medium">Max file size <span className="text-slate-400">(MB, optional)</span></label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={500}
+                          value={field.max_file_size_mb ?? ""}
+                          onChange={e => updateField(field.id, { max_file_size_mb: e.target.value ? Number(e.target.value) : undefined })}
+                          placeholder="No limit"
+                          className="mt-0.5 h-7 text-xs"
+                          data-testid={`field-maxfilesize-${field.id}`}
                         />
                       </div>
                     )}

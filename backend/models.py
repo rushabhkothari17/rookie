@@ -633,6 +633,7 @@ class WebsiteSettingsUpdate(BaseModel):
     # Portal page
     portal_title: Optional[str] = None
     portal_subtitle: Optional[str] = None
+    portal_show_stats: Optional[bool] = None
     # Profile page
     profile_label: Optional[str] = None
     profile_title: Optional[str] = None

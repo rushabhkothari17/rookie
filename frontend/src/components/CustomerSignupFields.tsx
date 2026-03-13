@@ -36,18 +36,29 @@ const PASSWORD_FIELD: FormField = {
   required: true, placeholder: "", locked: true, enabled: true, options: [], order: -1,
 };
 
-/** Inject email (and optionally password) just after full_name / company_name in the schema */
+/** Inject email (and optionally password) if they're not already in the schema */
 function buildFields(schema: FormField[], showPassword: boolean): FormField[] {
   const sorted = [...schema]
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .filter(f => f.enabled !== false);
+
+  // If schema already includes email & password (from FormSchemaBuilder), don't inject
+  const hasEmail    = sorted.some(f => f.key === "email");
+  const hasPassword = sorted.some(f => f.key === "password");
+
+  if (hasEmail && (!showPassword || hasPassword)) {
+    return sorted; // Schema is fully self-contained
+  }
 
   const fnIdx = sorted.findIndex(f => f.key === "full_name");
   const cnIdx = sorted.findIndex(f => f.key === "company_name");
   const insertAfterIdx = (cnIdx >= 0 && fnIdx >= 0 && cnIdx === fnIdx + 1) ? cnIdx : fnIdx;
   const insertAt = insertAfterIdx >= 0 ? insertAfterIdx + 1 : 0;
 
-  const injected: FormField[] = showPassword ? [EMAIL_FIELD, PASSWORD_FIELD] : [EMAIL_FIELD];
+  const injected: FormField[] = [
+    ...(!hasEmail ? [EMAIL_FIELD] : []),
+    ...(showPassword && !hasPassword ? [PASSWORD_FIELD] : []),
+  ];
   return [...sorted.slice(0, insertAt), ...injected, ...sorted.slice(insertAt)];
 }
 

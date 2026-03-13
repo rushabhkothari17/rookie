@@ -8,6 +8,7 @@ import { AuthPagesSection } from "./WebsiteAuthSection";
 import { FormsSection } from "./WebsiteFormsSection";
 import { SysConfigSection } from "./WebsiteSysSection";
 import { applyBrandingFromSettings, useWebsiteUpdate, useWebsiteRefresh } from "@/contexts/WebsiteContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,8 @@ const SIDEBAR: { group: string; items: { key: Section; label: string }[] }[] = [
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function WebsiteTab({ defaultSection, forcedSection }: { defaultSection?: Section; forcedSection?: Section }) {
+  const { user } = useAuth();
+  const isPlatformAdmin = user?.role === "platform_admin" || user?.role === "platform_super_admin";
   const [activeSection, setActiveSection] = useState<Section>(defaultSection ?? "branding");
   const displaySection = forcedSection ?? activeSection;
   const [ws, setWs] = useState<WebsiteData>(WEB_DEFAULTS);
@@ -83,6 +86,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
   useEffect(() => { load(); }, []);
 
   const s = (key: keyof WebsiteData) => (v: string) => setWs(prev => ({ ...prev, [key]: v }));
+  const setBool = (key: keyof WebsiteData, v: boolean) => setWs(prev => ({ ...prev, [key]: v }));
   const b = (key: keyof BrandingData) => (v: string) => {
     setBranding(prev => {
       const next = { ...prev, [key]: v };
@@ -234,6 +238,8 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
               authSlide={authSlide} setAuthSlide={setAuthSlide}
               saveSection={saveSection} slideSaving={slideSaving}
               setActiveSection={setActiveSection}
+              isPlatformAdmin={isPlatformAdmin}
+              setBool={setBool}
             />
           )}
 

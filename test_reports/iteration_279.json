@@ -1,0 +1,57 @@
+{
+  "summary": "Tested all 8 features. 7/8 pass. TEST 4 (Sign Up form shows email+password locked at top) FAILS due to backend _SIGNUP_FORM_SCHEMA not including email/password. Two bugs fixed during testing: (1) TypeScript compile error in UniversalFormRenderer.tsx, (2) portal_show_stats missing from backend WebsiteSettingsUpdate model (now fixed).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "backend/routes/admin/website.py + backend/models.py",
+        "issue": "_SIGNUP_FORM_SCHEMA in website.py does not include email/password locked fields at the top (only full_name, company_name, job_title, phone, address). WebsiteSettingsUpdate model was missing portal_show_stats field (FIXED during test). _SIGNUP_FORM_SCHEMA also needs updating and _migrate_signup_schema needs to inject email/password into existing schemas.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/test_iter279.py"
+  ],
+  "action_items": [
+    "BACKEND FIX NEEDED: Update _SIGNUP_FORM_SCHEMA in /app/backend/routes/admin/website.py to include email (order 0) and password (order 1) as locked fields at the top of the schema. Update _migrate_signup_schema() to inject email+password locked fields into existing saved schemas that don't already have them.",
+    "The frontend SIGNUP_DEFAULT_SCHEMA in WebsiteAuthSection.tsx already has email+password correct but is only used when ws.signup_form_schema is empty. Since the backend saves _SIGNUP_FORM_SCHEMA (without email/password) as the default, the frontend default is never used."
+  ],
+  "critical_code_review_comments": [
+    "TEST 4 BUG ROOT CAUSE: backend _SIGNUP_FORM_SCHEMA (website.py) starts at full_name (order 0). Frontend SIGNUP_DEFAULT_SCHEMA starts at email (order 0), password (order 1). Backend default takes precedence via DB, so email/password never shown at top for any tenant with an existing saved schema.",
+    "portal_show_stats bug was: missing from WebsiteSettingsUpdate Pydantic model - frontend was saving ws including portal_show_stats:false but backend ignored it (Pydantic discards extra fields). FIXED: Added portal_show_stats: Optional[bool] = None to models.py WebsiteSettingsUpdate.",
+    "TypeScript error in UniversalFormRenderer.tsx: val declared as string|File caused type errors in address block (JSON.parse) and form input value props. FIXED: cast val as string with (values[key] as string) and address sub-fields with (values.xxx as string)."
+  ],
+  "updated_files": [
+    "/app/frontend/src/components/UniversalFormRenderer.tsx",
+    "/app/backend/models.py"
+  ],
+  "success_rate": {
+    "backend": "N/A (frontend-only test)",
+    "frontend": "87% (7/8 features pass)"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "7/8 features verified: (1) Form builder number type shows Min/Max value inputs PASS; (2) Form builder date type shows Date format dropdown (YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, DD-MM-YYYY, MM-DD-YYYY) PASS; (3) Form builder file type shows Max file size (MB) input PASS; (4) Sign Up Page locked fields FAIL - existing DB schema from backend default doesn't have email/password at top, needs backend fix in _SIGNUP_FORM_SCHEMA; (5) Partner Sign-Up tile visible for platform_super_admin PASS; (6) Customer Portal tile opens with Show stats toggle PASS; (7) Portal page hides stats when toggle disabled PASS (needed backend fix in models.py); (8) UniversalFormRenderer file upload renders as styled label+hidden-input+'Choose file' PASS (code verified). Fixes applied this iteration: UniversalFormRenderer.tsx type cast fix, models.py portal_show_stats field added. Admin URL: /admin, Auth & Pages in sidebar. Platform admin login: code=automate-accounts, email=admin@automateaccounts.local, pwd=ChangeMe123!",
+  "test_results": {
+    "test1_number_minmax": "PASS - Min value and Max value inputs shown for number type field",
+    "test2_date_format_dropdown": "PASS - Date format select shown with 5 options (YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, DD-MM-YYYY, MM-DD-YYYY)",
+    "test3_file_maxsize": "PASS - Max file size (MB, optional) input shown for file upload type",
+    "test4_signup_email_password_locked": "FAIL - Existing saved schema shows Full Name as first field. Backend _SIGNUP_FORM_SCHEMA doesn't include email/password.",
+    "test5_partner_signup_tile_visible": "PASS - Partner Sign-Up Page tile visible in Authentication tab for platform_super_admin",
+    "test6_portal_stats_toggle": "PASS - Customer Portal slide shows 'Show stats on portal' toggle with aria-checked and description",
+    "test7_portal_stats_hidden": "PASS - After fixing backend models.py (adding portal_show_stats field), portal-stats not rendered when toggle disabled",
+    "test8_file_upload_styled": "PASS - Code verified: UniversalFormRenderer renders file as label wrapper + hidden input + 'Choose file' span, not raw text input"
+  },
+  "rca_of_issues": {
+    "test7_portal_show_stats_bug": "Root cause: portal_show_stats field missing from WebsiteSettingsUpdate Pydantic model in backend/models.py. FastAPI/Pydantic discards extra fields not in model. Frontend was sending {portal_show_stats: false} which was silently ignored. Fix: added portal_show_stats: Optional[bool] = None to WebsiteSettingsUpdate.",
+    "test4_signup_email_password": "Root cause: Backend _SIGNUP_FORM_SCHEMA constant in website.py starts with full_name (not email/password). Frontend SIGNUP_DEFAULT_SCHEMA (in WebsiteAuthSection.tsx) has correct email/password at top but is only used when ws.signup_form_schema is falsy. Since backend always returns saved schema (from _SIGNUP_FORM_SCHEMA default), email/password never appear at top. Fix needed: update backend _SIGNUP_FORM_SCHEMA to start with email+password, update _migrate_signup_schema to inject them into existing schemas.",
+    "typescript_compile_error": "Root cause: values prop type is Record<string, string|File|null>. val = values[key] resolved to string|File type. Used in string-only contexts (JSON.parse, input value prop). Fix: cast (values[key] as string)."
+  }
+}

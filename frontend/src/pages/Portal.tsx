@@ -427,12 +427,14 @@ export default function Portal() {
       </motion.div>
 
       {/* ── Stats Row ──────────────────────────────────────── */}
-      <PortalStats
-        orderCount={filteredOrders.length}
-        subCount={subscriptions.length}
-        totalSpend={totalSpend}
-        currency={orderCurrency}
-      />
+      {ws.portal_show_stats !== false && (
+        <PortalStats
+          orderCount={filteredOrders.length}
+          subCount={subscriptions.length}
+          totalSpend={totalSpend}
+          currency={orderCurrency}
+        />
+      )}
 
       {/* ── One-time orders ──────────────────────────────── */}
       <motion.section

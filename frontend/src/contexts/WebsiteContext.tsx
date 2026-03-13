@@ -149,6 +149,7 @@ export interface WebsiteSettings {
   // Portal page
   portal_title: string;
   portal_subtitle: string;
+  portal_show_stats?: boolean;
   // Profile page
   profile_label: string;
   profile_title: string;

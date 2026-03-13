@@ -68,7 +68,7 @@ export interface WebsiteData {
   gocardless_error_title: string; gocardless_error_message: string;
   gocardless_return_btn_text: string;
   verify_email_label: string; verify_email_title: string; verify_email_subtitle: string;
-  portal_title: string; portal_subtitle: string;
+  portal_title: string; portal_subtitle: string; portal_show_stats?: boolean;
   profile_label: string; profile_title: string; profile_subtitle: string;
   cart_title: string; cart_clear_btn_text: string;
   admin_page_badge: string; admin_page_title: string; admin_page_subtitle: string;

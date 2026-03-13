@@ -74,7 +74,7 @@ const pillTextarea = (hasError: boolean) =>
 
 interface Props {
   fields: FormField[];
-  values: Record<string, string>;
+  values: Record<string, string | File | null>;
   onChange: (key: string, value: string) => void;
   compact?: boolean;
   partnerCode?: string;
@@ -127,7 +127,7 @@ export function UniversalFormRenderer({
 
   const renderOne = (field: FormField, index = 0, isCompact = compact) => {
     const key = field.key;
-    const val = values[key] || "";
+    const val = (values[key] as string) || "";
     const tid = `ufr-field-${key}`;
     const err = fieldErrors[key] || "";
 
@@ -140,12 +140,12 @@ export function UniversalFormRenderer({
     if (field.type === "address") {
       let addrValue: AddressValue;
       if (addressMode === "json") {
-        addrValue = (() => { try { return JSON.parse(val || "{}"); } catch { return {}; } })();
+        addrValue = (() => { try { return JSON.parse((val as string) || "{}"); } catch { return {}; } })();
       } else {
         addrValue = {
-          line1: values.line1 || "", line2: values.line2 || "",
-          city: values.city || "", region: values.region || "",
-          postal: values.postal || "", country: values.country || "",
+          line1: (values.line1 as string) || "", line2: (values.line2 as string) || "",
+          city: (values.city as string) || "", region: (values.region as string) || "",
+          postal: (values.postal as string) || "", country: (values.country as string) || "",
         };
       }
       const handleAddrChange = (v: AddressValue) => {
@@ -238,10 +238,61 @@ export function UniversalFormRenderer({
       );
     }
 
+    // ── File Upload ────────────────────────────────────────────────────────
+    if (field.type === "file") {
+      const fileVal = values[key] as File | null | undefined;
+      const fileSizeErr = fileVal && field.max_file_size_mb
+        ? (fileVal.size > field.max_file_size_mb * 1024 * 1024 ? `File must be under ${field.max_file_size_mb} MB` : null)
+        : null;
+      const displayErr = fileSizeErr || err;
+      return (
+        <div key={field.id} style={animStyle}>
+          <FieldLabel label={field.label || key} required={field.required} />
+          <label
+            className={`flex items-center gap-3 cursor-pointer rounded-xl border px-4 py-3 text-sm transition-all ${displayErr ? "border-red-300 bg-red-50" : "border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50"}`}
+            style={{ backgroundColor: "var(--aa-card)", borderColor: displayErr ? undefined : "var(--aa-border)" }}
+            data-testid={tid}
+          >
+            <input
+              type="file"
+              className="hidden"
+              required={field.required}
+              onChange={e => {
+                const file = e.target.files?.[0] ?? null;
+                onChange(key, file as any);
+                if (file && field.max_file_size_mb && file.size > field.max_file_size_mb * 1024 * 1024) {
+                  // trigger validation error handled above
+                }
+              }}
+            />
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: "color-mix(in srgb, var(--aa-primary) 10%, transparent)", color: "var(--aa-primary)" }}>
+              Choose file
+            </span>
+            <span className="text-slate-400 text-xs truncate">
+              {fileVal ? fileVal.name : (field.placeholder || "No file chosen")}
+            </span>
+          </label>
+          {field.max_file_size_mb && (
+            <p className="mt-0.5 px-4 text-[10px] text-slate-400">Max size: {field.max_file_size_mb} MB</p>
+          )}
+          {displayErr && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{displayErr}</p>}
+        </div>
+      );
+    }
+
     // ── Default: text / email / tel / number / date / password ────────────
-    const htmlType = (["email", "tel", "number", "date", "password"].includes(field.type))
-      ? field.type as React.HTMLInputTypeAttribute
-      : "text";
+    // For date fields with non-ISO format, use text input with pattern
+    const isCustomDateFormat = field.type === "date" && field.date_format && field.date_format !== "YYYY-MM-DD";
+    const htmlType = isCustomDateFormat
+      ? "text"
+      : (["email", "tel", "number", "date", "password"].includes(field.type))
+        ? field.type as React.HTMLInputTypeAttribute
+        : "text";
+
+    const datePattern = isCustomDateFormat
+      ? field.date_format!.replace("YYYY", "\\d{4}").replace("MM", "\\d{2}").replace("DD", "\\d{2}")
+      : undefined;
+    const datePlaceholder = isCustomDateFormat ? field.date_format : samplePh(key, field);
 
     return (
       <div key={field.id} style={animStyle}>
@@ -251,9 +302,12 @@ export function UniversalFormRenderer({
           className={pillInput(!!err, isCompact)}
           value={val}
           onChange={e => handleChange(key, e.target.value, field.required)}
-          placeholder={samplePh(key, field)}
+          placeholder={datePlaceholder || samplePh(key, field)}
           required={field.required}
           maxLength={field.max_length || undefined}
+          min={field.min_value !== undefined ? String(field.min_value) : undefined}
+          max={field.max_value !== undefined ? String(field.max_value) : undefined}
+          pattern={datePattern}
           aria-label={field.label}
           data-testid={tid}
           autoComplete={
@@ -265,6 +319,17 @@ export function UniversalFormRenderer({
         />
         {field.max_length && !["number","date"].includes(field.type) && (
           <p className="mt-0.5 px-4 text-[10px] text-slate-400 text-right">{(val as string).length}/{field.max_length}</p>
+        )}
+        {field.type === "number" && (field.min_value !== undefined || field.max_value !== undefined) && (
+          <p className="mt-0.5 px-4 text-[10px] text-slate-400">
+            {field.min_value !== undefined && field.max_value !== undefined
+              ? `Range: ${field.min_value} – ${field.max_value}`
+              : field.min_value !== undefined ? `Min: ${field.min_value}`
+              : `Max: ${field.max_value}`}
+          </p>
+        )}
+        {isCustomDateFormat && (
+          <p className="mt-0.5 px-4 text-[10px] text-slate-400">Format: {field.date_format}</p>
         )}
         {err && (
           <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>
