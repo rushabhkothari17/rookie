@@ -7,14 +7,20 @@
 :root {
   --aa-primary: #0f172a;
   --aa-primary-hover: #1e293b;
+  --aa-primary-fg: #ffffff;
   --aa-accent: #1e40af;
   --aa-accent-hover: #1d4ed8;
   --aa-bg: #f8fafc;
   --aa-card: #ffffff;
+  --aa-surface: #f1f5f9;
+  --aa-card-border: #e2e8f0;
   --aa-border: #e2e8f0;
+  --aa-text: #0f172a;
+  --aa-muted: #64748b;
   --aa-danger: #dc2626;
   --aa-success: #16a34a;
   --aa-warning: #d97706;
+  --aa-glow: rgba(30, 64, 175, 0.25);
   /* Footer auto-contrast defaults (dark primary) */
   --aa-footer-text:       #f1f5f9;
   --aa-footer-text-muted: #94a3b8;
@@ -364,3 +370,146 @@ input[class*="rounded-full"]:focus {
     position: static;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN SYSTEM — CSS Variable Utility Classes
+   All colors use --aa-* variables. Zero hardcoded hex values.
+───────────────────────────────────────────────────────────── */
+
+/* ── Card / Surface ────────────────────────────────────────── */
+.aa-card {
+  background-color: var(--aa-card);
+  border: 1px solid var(--aa-card-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+.aa-card:hover {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 0 0 1px var(--aa-card-border);
+}
+.aa-card-glow:hover {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 0 20px var(--aa-glow);
+  border-color: color-mix(in srgb, var(--aa-accent) 35%, var(--aa-card-border));
+}
+.aa-surface {
+  background-color: var(--aa-surface);
+  border: 1px solid var(--aa-border);
+  border-radius: 0.5rem;
+}
+
+/* ── Status Badges — semantic glow pills ──────────────────── */
+.aa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  transition: box-shadow 0.2s ease;
+}
+.aa-badge-success {
+  background-color: color-mix(in srgb, var(--aa-success) 12%, transparent);
+  color: var(--aa-success);
+  border-color: color-mix(in srgb, var(--aa-success) 25%, transparent);
+}
+.aa-badge-danger {
+  background-color: color-mix(in srgb, var(--aa-danger) 10%, transparent);
+  color: var(--aa-danger);
+  border-color: color-mix(in srgb, var(--aa-danger) 22%, transparent);
+}
+.aa-badge-warning {
+  background-color: color-mix(in srgb, var(--aa-warning) 12%, transparent);
+  color: var(--aa-warning);
+  border-color: color-mix(in srgb, var(--aa-warning) 25%, transparent);
+}
+.aa-badge-muted {
+  background-color: color-mix(in srgb, var(--aa-muted) 10%, transparent);
+  color: var(--aa-muted);
+  border-color: color-mix(in srgb, var(--aa-muted) 20%, transparent);
+}
+.aa-badge-accent {
+  background-color: color-mix(in srgb, var(--aa-accent) 12%, transparent);
+  color: var(--aa-accent);
+  border-color: color-mix(in srgb, var(--aa-accent) 25%, transparent);
+}
+
+/* ── Monospace data / numbers ──────────────────────────────── */
+.aa-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Grid texture overlay ──────────────────────────────────── */
+.aa-grid-texture {
+  position: relative;
+}
+.aa-grid-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--aa-card-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--aa-card-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.35;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Glow utilities ────────────────────────────────────────── */
+.aa-glow-sm {
+  box-shadow: 0 0 12px var(--aa-glow);
+}
+.aa-glow-md {
+  box-shadow: 0 0 24px var(--aa-glow);
+}
+
+/* ── Active accent glow (sidebar tabs, active states) ─────── */
+.aa-active-accent {
+  background-color: color-mix(in srgb, var(--aa-accent) 12%, transparent);
+  color: var(--aa-accent);
+  border-left: 2px solid var(--aa-accent);
+  box-shadow: inset 4px 0 12px color-mix(in srgb, var(--aa-accent) 8%, transparent);
+}
+
+/* ── Skeleton shimmer (dark-theme aware) ──────────────────── */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--aa-surface) 100%, transparent) 25%,
+    color-mix(in srgb, var(--aa-border) 80%, var(--aa-surface)) 50%,
+    color-mix(in srgb, var(--aa-surface) 100%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Input with CSS variable focus ring ────────────────────── */
+.aa-input {
+  background-color: color-mix(in srgb, var(--aa-card) 80%, transparent);
+  border: 1px solid var(--aa-border);
+  color: var(--aa-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.aa-input:focus {
+  border-color: var(--aa-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--aa-accent) 15%, transparent);
+  outline: none;
+}
+.aa-input::placeholder { color: var(--aa-muted); }
+
+/* ── Scrollbar styling (theme-aware) ──────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--aa-surface); }
+::-webkit-scrollbar-thumb {
+  background: var(--aa-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--aa-muted); }

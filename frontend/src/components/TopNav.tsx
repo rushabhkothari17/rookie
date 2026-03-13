@@ -43,9 +43,13 @@ export default function TopNav() {
 
   return (
     <header
-      className="sticky top-0 z-40 border-b border-slate-100/80 bg-white/92 backdrop-blur-xl"
+      className="sticky top-0 z-40 backdrop-blur-xl"
       data-testid="top-nav"
-      style={{ WebkitBackdropFilter: "blur(20px)" }}
+      style={{
+        borderBottom: "1px solid var(--aa-border)",
+        backgroundColor: "color-mix(in srgb, var(--aa-card) 92%, transparent)",
+        WebkitBackdropFilter: "blur(20px)",
+      }}
     >
       <div className="aa-container flex items-center justify-between py-3">
 
@@ -70,17 +74,18 @@ export default function TopNav() {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`relative px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors duration-150 ${
-                  active
-                    ? "font-semibold text-slate-900"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
-                }`}
+                className={`relative px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors duration-150`}
+                style={{
+                  fontWeight: active ? 600 : 400,
+                  color: active ? "var(--aa-text)" : "var(--aa-muted)",
+                }}
                 data-testid={item.testId}
               >
                 {active && (
                   <motion.span
                     layoutId="nav-active-pill"
-                    className="absolute inset-0 rounded-full bg-slate-100"
+                    className="absolute inset-0 rounded-full"
+                    style={{ backgroundColor: "var(--aa-surface)" }}
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 35 }}
                   />
@@ -94,7 +99,7 @@ export default function TopNav() {
         {/* Right side: switchers, cart, user, hamburger */}
         <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-4">
           {user?.full_name?.trim() && (
-            <span className="text-sm text-slate-400 hidden lg:inline mr-1" data-testid="nav-welcome">
+            <span className="text-sm hidden lg:inline mr-1" style={{ color: "var(--aa-muted)" }} data-testid="nav-welcome">
               Hi, {user.full_name.trim().split(" ")[0]}
             </span>
           )}
@@ -214,7 +219,8 @@ export default function TopNav() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden border-t border-slate-100 bg-white overflow-hidden"
+            className="md:hidden overflow-hidden"
+            style={{ borderTop: "1px solid var(--aa-border)", backgroundColor: "var(--aa-card)" }}
             data-testid="nav-mobile-menu"
           >
             <nav className="flex flex-col px-4 py-3 gap-1">

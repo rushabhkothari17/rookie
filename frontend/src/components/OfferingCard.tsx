@@ -90,36 +90,37 @@ export default function OfferingCard({ product, index = 0 }: { product: any; ind
     <>
       <div className="flex items-center justify-between">
         <span
-          className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 transition-colors group-hover:bg-slate-200"
+          className="aa-badge aa-badge-muted transition-colors"
           data-testid={`offering-tag-${product.id}`}
         >
           {formatTag(product)}
         </span>
         {isExternal
-          ? <ExternalLink className="text-slate-300 group-hover:text-slate-600 transition-colors" size={16} />
+          ? <ExternalLink className="transition-colors" size={16} style={{ color: "var(--aa-muted)" }} />
           : <ArrowUpRight
-              className="text-slate-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-700"
+              className="transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               size={16}
+              style={{ color: "var(--aa-muted)" }}
             />
         }
       </div>
 
       <div className="mt-4 flex-1">
-        <div className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400" data-testid={`offering-category-${product.id}`}>
+        <div className="text-xs font-medium uppercase tracking-[0.2em] aa-mono" style={{ color: "var(--aa-muted)" }} data-testid={`offering-category-${product.id}`}>
           {displayCategory(product.category)}
         </div>
-        <h3 className="mt-2 text-lg font-bold text-slate-900 line-clamp-2 break-words" data-testid={`offering-name-${product.id}`}>
+        <h3 className="mt-2 text-lg font-bold line-clamp-2 break-words" style={{ color: "var(--aa-text)" }} data-testid={`offering-name-${product.id}`}>
           {product.name}
         </h3>
         {description && (
-          <p className="mt-1 text-sm leading-relaxed text-slate-500" data-testid={`offering-description-${product.id}`}>
+          <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--aa-muted)" }} data-testid={`offering-description-${product.id}`}>
             {description}
           </p>
         )}
       </div>
 
       {bullets.length > 0 && (
-        <ul className="mt-4 space-y-1.5 text-sm text-slate-500" data-testid={`offering-bullets-${product.id}`}>
+        <ul className="mt-4 space-y-1.5 text-sm" style={{ color: "var(--aa-muted)" }} data-testid={`offering-bullets-${product.id}`}>
           {bullets.map((item: string, idx: number) => (
             <li key={idx} className="flex items-start gap-2">
               <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
@@ -129,12 +130,12 @@ export default function OfferingCard({ product, index = 0 }: { product: any; ind
         </ul>
       )}
 
-      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+      <div className="mt-5 flex items-center justify-between pt-4" style={{ borderTop: "1px solid var(--aa-border)" }}>
         <div data-testid={`offering-price-${product.id}`}>
-          {priceInfo.prefix && <span className="text-xs font-medium text-slate-400 mr-1">{priceInfo.prefix} </span>}
-          <span className="text-lg font-bold text-slate-900">{priceInfo.label}</span>
+          {priceInfo.prefix && <span className="text-xs font-medium mr-1 aa-mono" style={{ color: "var(--aa-muted)" }}>{priceInfo.prefix} </span>}
+          <span className="text-lg font-bold aa-mono" style={{ color: "var(--aa-text)" }}>{priceInfo.label}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 group-hover:text-slate-900 transition-colors" data-testid={`offering-cta-${product.id}`}>
+        <div className="flex items-center gap-1.5 text-sm font-semibold transition-colors" style={{ color: "var(--aa-muted)" }} data-testid={`offering-cta-${product.id}`}>
           {isExternal ? "Visit site" : "View details"}
           {isExternal ? <ExternalLink size={14} /> : <ArrowUpRight size={14} />}
         </div>
@@ -142,7 +143,7 @@ export default function OfferingCard({ product, index = 0 }: { product: any; ind
     </>
   );
 
-  const cardClass = "flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-xl hover:border-slate-200 h-full";
+  const cardClass = "flex flex-col rounded-2xl p-6 h-full transition-all duration-300 aa-card aa-card-glow";
 
   return (
     <motion.div

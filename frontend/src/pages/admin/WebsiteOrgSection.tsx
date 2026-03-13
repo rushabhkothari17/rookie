@@ -1,13 +1,15 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, RotateCcw } from "lucide-react";
+import { Upload, RotateCcw, Zap } from "lucide-react";
 import { BrandingData, WebsiteData, BaseCurrencyWidget, ColorInput, Field, OrgAddressSection } from "./websiteTabShared";
 
 export const DEFAULT_BRAND_COLORS: Partial<BrandingData> = {
   primary_color:    "#0f172a",
   accent_color:     "#1e40af",
   background_color: "#f8fafc",
+  card_color:       "#ffffff",
+  surface_color:    "#f1f5f9",
   text_color:       "#0f172a",
   border_color:     "#e2e8f0",
   danger_color:     "#dc2626",
@@ -16,12 +18,59 @@ export const DEFAULT_BRAND_COLORS: Partial<BrandingData> = {
   muted_color:      "#64748b",
 };
 
+// ── Theme Presets ─────────────────────────────────────────────
+const THEME_PRESETS: { name: string; desc: string; swatches: string[]; colors: Partial<BrandingData> }[] = [
+  {
+    name: "Midnight Tech",
+    desc: "Dark · Electric blue · Futuristic",
+    swatches: ["#0a0e1a", "#3b82f6", "#111827", "#05070a"],
+    colors: {
+      primary_color:    "#0a0e1a",
+      accent_color:     "#3b82f6",
+      background_color: "#05070a",
+      card_color:       "#111827",
+      surface_color:    "#1e293b",
+      text_color:       "#e2e8f0",
+      border_color:     "#1e293b",
+      danger_color:     "#ef4444",
+      success_color:    "#10b981",
+      warning_color:    "#f59e0b",
+      muted_color:      "#94a3b8",
+    },
+  },
+  {
+    name: "Slate Pro",
+    desc: "Light · Navy · Professional",
+    swatches: ["#0f172a", "#2563eb", "#ffffff", "#f8fafc"],
+    colors: { ...DEFAULT_BRAND_COLORS, accent_color: "#2563eb" },
+  },
+  {
+    name: "Ocean Deep",
+    desc: "Dark · Teal · Modern",
+    swatches: ["#042f2e", "#06b6d4", "#0f172a", "#020617"],
+    colors: {
+      primary_color:    "#042f2e",
+      accent_color:     "#06b6d4",
+      background_color: "#020617",
+      card_color:       "#0f172a",
+      surface_color:    "#134e4a",
+      text_color:       "#ccfbf1",
+      border_color:     "#115e59",
+      danger_color:     "#fb7185",
+      success_color:    "#34d399",
+      warning_color:    "#fbbf24",
+      muted_color:      "#5eead4",
+    },
+  },
+];
+
 interface Props {
   ws: WebsiteData;
   branding: BrandingData;
   s: (key: keyof WebsiteData) => (v: string) => void;
   b: (key: keyof BrandingData) => (v: string) => void;
   onResetColors: () => void;
+  onApplyPreset: (colors: Partial<BrandingData>) => void;
   save: () => void;
   saving: boolean;
   forcedSection?: boolean;
@@ -31,7 +80,7 @@ interface Props {
   fileRef: React.RefObject<HTMLInputElement>;
 }
 
-export function OrgInfoSection({ ws, branding, b, onResetColors, save, saving, forcedSection, uploadingLogo, handleLogoUpload, handleRemoveLogo, fileRef }: Props) {
+export function OrgInfoSection({ ws, branding, b, onResetColors, onApplyPreset, save, saving, forcedSection, uploadingLogo, handleLogoUpload, handleRemoveLogo, fileRef }: Props) {
   return (
     <>
       <h3 className="text-sm font-semibold text-slate-700">Store Information</h3>
@@ -71,11 +120,46 @@ export function OrgInfoSection({ ws, branding, b, onResetColors, save, saving, f
             Reset to default
           </Button>
         </div>
-        <p className="text-xs text-slate-400 mb-3">Changes apply live as you edit. Click Save to persist.</p>
+        <p className="text-xs text-slate-400 mb-4">Changes apply live as you edit. Click Save to persist.</p>
+
+        {/* ── Theme Presets ── */}
+        <div className="mb-4">
+          <p className="text-[11px] text-slate-400 mb-2 font-medium uppercase tracking-wide flex items-center gap-1.5">
+            <Zap size={10} />
+            Quick Themes
+          </p>
+          <div className="grid grid-cols-3 gap-2" data-testid="theme-presets">
+            {THEME_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => onApplyPreset(preset.colors)}
+                className="group relative flex flex-col gap-1.5 p-2.5 rounded-lg border border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50 transition-all text-left"
+                data-testid={`theme-preset-${preset.name.toLowerCase().replace(/\s+/g, "-")}`}
+              >
+                {/* Color swatches */}
+                <div className="flex gap-1">
+                  {preset.swatches.map((color, i) => (
+                    <div
+                      key={i}
+                      className="h-3.5 w-3.5 rounded-full border border-white shadow-sm flex-shrink-0"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <div>
+                  <div className="text-[11px] font-semibold text-slate-700 leading-tight">{preset.name}</div>
+                  <div className="text-[10px] text-slate-400 leading-tight mt-0.5">{preset.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-4">
             <ColorInput label="Primary — Hero banners, sidebar, buttons" value={branding.primary_color} onChange={b("primary_color")} testId="ws-primary-color" />
-            <ColorInput label="Accent — Bullet dots, card accents, hover line" value={branding.accent_color} onChange={b("accent_color")} testId="ws-accent-color" />
+            <ColorInput label="Accent — Bullets, active states, links" value={branding.accent_color} onChange={b("accent_color")} testId="ws-accent-color" />
           </div>
           <div className="border-t border-slate-50 pt-2">
             <p className="text-[11px] text-slate-400 mb-2 font-medium uppercase tracking-wide">System / State Colors</p>
@@ -88,7 +172,9 @@ export function OrgInfoSection({ ws, branding, b, onResetColors, save, saving, f
           <div className="border-t border-slate-50 pt-2">
             <p className="text-[11px] text-slate-400 mb-2 font-medium uppercase tracking-wide">Surface Colors</p>
             <div className="grid grid-cols-2 gap-3">
-              <ColorInput label="Background — Page background" value={branding.background_color} onChange={b("background_color")} testId="ws-background-color" />
+              <ColorInput label="Page Background" value={branding.background_color} onChange={b("background_color")} testId="ws-background-color" />
+              <ColorInput label="Card Background" value={branding.card_color} onChange={b("card_color")} testId="ws-card-color" />
+              <ColorInput label="Surface — Elevated panels, rows" value={branding.surface_color} onChange={b("surface_color")} testId="ws-surface-color" />
               <ColorInput label="Text — Body text, headings" value={branding.text_color} onChange={b("text_color")} testId="ws-text-color" />
               <ColorInput label="Border — Dividers, input borders" value={branding.border_color} onChange={b("border_color")} testId="ws-border-color" />
               <ColorInput label="Muted — Placeholder, subtle text" value={branding.muted_color} onChange={b("muted_color")} testId="ws-muted-color" />

@@ -52,7 +52,7 @@ export default function Articles() {
       {/* Hero Banner — same style as Store page */}
       <div className="max-w-7xl mx-auto w-full px-6 pt-8">
         <section
-          className="relative overflow-hidden rounded-3xl px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+          className="relative overflow-hidden rounded-3xl px-6 py-8 md:px-10 md:py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)] aa-grid-texture"
           style={{ backgroundColor: "var(--aa-primary)" }}
           data-testid="articles-hero"
         >

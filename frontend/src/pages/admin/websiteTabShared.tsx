@@ -85,7 +85,8 @@ export interface WebsiteData {
 export interface BrandingData {
   store_name: string; primary_color: string; accent_color: string;
   danger_color: string; success_color: string; warning_color: string;
-  background_color: string; text_color: string; border_color: string; muted_color: string;
+  background_color: string; card_color: string; surface_color: string;
+  text_color: string; border_color: string; muted_color: string;
   logo_url: string;
 }
 

@@ -37,11 +37,20 @@ async def get_public_settings(
     for k in branding_keys:
         extra[k] = settings.get(k, "")
     return {"settings": {
-        "primary_color": settings.get("primary_color"),
-        "secondary_color": settings.get("secondary_color"),
-        "accent_color": settings.get("accent_color"),
-        "logo_url": settings.get("logo_url"),
-        "store_name": settings.get("store_name"),
+        "primary_color":    settings.get("primary_color"),
+        "secondary_color":  settings.get("secondary_color"),
+        "accent_color":     settings.get("accent_color"),
+        "background_color": settings.get("background_color"),
+        "card_color":       settings.get("card_color"),
+        "surface_color":    settings.get("surface_color"),
+        "text_color":       settings.get("text_color"),
+        "border_color":     settings.get("border_color"),
+        "muted_color":      settings.get("muted_color"),
+        "danger_color":     settings.get("danger_color"),
+        "success_color":    settings.get("success_color"),
+        "warning_color":    settings.get("warning_color"),
+        "logo_url":         settings.get("logo_url"),
+        "store_name":       settings.get("store_name"),
         **extra,
     }}
 

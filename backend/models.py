@@ -526,6 +526,8 @@ class AppSettingsUpdate(BaseModel):
     success_color: Optional[str] = None
     warning_color: Optional[str] = None
     background_color: Optional[str] = None
+    card_color: Optional[str] = None
+    surface_color: Optional[str] = None
     text_color: Optional[str] = None
     border_color: Optional[str] = None
     muted_color: Optional[str] = None

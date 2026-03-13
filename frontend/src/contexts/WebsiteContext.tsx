@@ -34,6 +34,8 @@ export interface WebsiteSettings {
   success_color: string;
   warning_color: string;
   background_color: string;
+  card_color: string;
+  surface_color: string;
   text_color: string;
   border_color: string;
   muted_color: string;
@@ -194,6 +196,8 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   success_color: "",
   warning_color: "",
   background_color: "",
+  card_color: "",
+  surface_color: "",
   text_color: "",
   border_color: "",
   muted_color: "",
@@ -386,25 +390,48 @@ function _applyBrandingToDOM(s: Record<string, any>) {
     const lum = _luminance(s.primary_color);
     if (lum < 0.35) {
       // Dark primary — use white-based text
+      set("--aa-primary-fg",    "#ffffff");
       set("--aa-footer-text",       "#f1f5f9");  // slate-100
       set("--aa-footer-text-muted", "#94a3b8");  // slate-400
       set("--aa-footer-text-dim",   "#475569");  // slate-600
       set("--aa-footer-border",     "rgba(255,255,255,0.08)");
     } else {
       // Light primary — use dark text
+      set("--aa-primary-fg",    "#0f172a");
       set("--aa-footer-text",       "#0f172a");  // slate-900
       set("--aa-footer-text-muted", "#475569");  // slate-600
       set("--aa-footer-text-dim",   "#94a3b8");  // slate-400
       set("--aa-footer-border",     "rgba(0,0,0,0.1)");
     }
   }
-  if (s.accent_color) { set("--aa-accent", s.accent_color); set("--aa-accent-hover", s.accent_color); setHsl("--ring", s.accent_color); }
+  if (s.accent_color) {
+    set("--aa-accent", s.accent_color);
+    set("--aa-accent-hover", s.accent_color);
+    setHsl("--ring", s.accent_color);
+    // Auto-derive glow from accent
+    const accentHex = s.accent_color.trim().replace("#","");
+    if (/^[0-9a-f]{6}$/i.test(accentHex)) {
+      const r = parseInt(accentHex.slice(0,2),16);
+      const g = parseInt(accentHex.slice(2,4),16);
+      const b = parseInt(accentHex.slice(4,6),16);
+      set("--aa-glow", `rgba(${r},${g},${b},0.28)`);
+    }
+  }
   if (s.danger_color) { set("--aa-danger", s.danger_color); setHsl("--destructive", s.danger_color); }
   if (s.success_color) set("--aa-success", s.success_color);
   if (s.warning_color) set("--aa-warning", s.warning_color);
   if (s.background_color) { set("--aa-bg", s.background_color); setHsl("--background", s.background_color); }
+  if (s.card_color) { set("--aa-card", s.card_color); setHsl("--card", s.card_color); }
+  if (s.surface_color) set("--aa-surface", s.surface_color);
   if (s.text_color) { set("--aa-text", s.text_color); setHsl("--foreground", s.text_color); setHsl("--card-foreground", s.text_color); }
-  if (s.border_color) { set("--aa-border", s.border_color); setHsl("--border", s.border_color); setHsl("--input", s.border_color); }
+  if (s.border_color) {
+    set("--aa-border", s.border_color);
+    setHsl("--border", s.border_color);
+    setHsl("--input", s.border_color);
+    // card border falls back to border_color if card_color not set
+    if (!s.card_color) set("--aa-card-border", s.border_color);
+  }
+  if (s.card_color && s.border_color) set("--aa-card-border", s.border_color);
   if (s.muted_color) { set("--aa-muted", s.muted_color); setHsl("--muted-foreground", s.muted_color); }
 }
 

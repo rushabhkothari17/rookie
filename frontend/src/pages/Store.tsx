@@ -327,7 +327,7 @@ export default function Store() {
 
         {/* Hero Banner */}
         <section
-          className="relative overflow-hidden rounded-3xl px-6 py-8 md:px-10 md:py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+          className="relative overflow-hidden rounded-3xl px-6 py-8 md:px-10 md:py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)] aa-grid-texture"
           style={{ backgroundColor: "var(--aa-primary)" }}
           data-testid="store-hero"
         >
@@ -384,11 +384,12 @@ export default function Store() {
                     type="button"
                     onClick={() => handleCategoryChange(null)}
                     data-testid="category-btn-all"
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all duration-150 text-left group ${
-                      activeCategory === null
-                        ? "font-semibold text-slate-900 bg-slate-100"
-                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                    }`}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all duration-150 text-left group`}
+                    style={{
+                      fontWeight: activeCategory === null ? 600 : 400,
+                      color: activeCategory === null ? "var(--aa-text)" : "var(--aa-muted)",
+                      backgroundColor: activeCategory === null ? "var(--aa-surface)" : "transparent",
+                    }}
                   >
                     <span className="flex items-center gap-2">
                       {activeCategory === null && (

@@ -33,7 +33,8 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
   const [branding, setBranding] = useState<BrandingData>({
     store_name: "", primary_color: "", accent_color: "",
     danger_color: "", success_color: "", warning_color: "",
-    background_color: "", text_color: "", border_color: "", muted_color: "",
+    background_color: "", card_color: "", surface_color: "",
+    text_color: "", border_color: "", muted_color: "",
     logo_url: "",
   });
   const [structured, setStructured] = useState<Record<string, any[]>>({});
@@ -67,6 +68,8 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
         success_color:    app_.success_color    || DEFAULT_BRAND_COLORS.success_color!,
         warning_color:    app_.warning_color    || DEFAULT_BRAND_COLORS.warning_color!,
         background_color: app_.background_color || DEFAULT_BRAND_COLORS.background_color!,
+        card_color:       app_.card_color       || DEFAULT_BRAND_COLORS.card_color!,
+        surface_color:    app_.surface_color    || DEFAULT_BRAND_COLORS.surface_color!,
         text_color:       app_.text_color       || DEFAULT_BRAND_COLORS.text_color!,
         border_color:     app_.border_color     || DEFAULT_BRAND_COLORS.border_color!,
         muted_color:      app_.muted_color      || DEFAULT_BRAND_COLORS.muted_color!,
@@ -83,6 +86,14 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
   const b = (key: keyof BrandingData) => (v: string) => {
     setBranding(prev => {
       const next = { ...prev, [key]: v };
+      applyBrandingFromSettings(next);
+      return next;
+    });
+  };
+
+  const handleApplyPreset = (colors: Partial<BrandingData>) => {
+    setBranding(prev => {
+      const next = { ...prev, ...colors };
       applyBrandingFromSettings(next);
       return next;
     });
@@ -205,6 +216,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
             <OrgInfoSection
               ws={ws} branding={branding} s={s} b={b}
               onResetColors={handleResetColors}
+              onApplyPreset={handleApplyPreset}
               save={save} saving={saving} forcedSection={!!forcedSection}
               uploadingLogo={uploadingLogo} handleLogoUpload={handleLogoUpload}
               handleRemoveLogo={handleRemoveLogo} fileRef={fileRef}

@@ -13,7 +13,7 @@ export default function AppShell({
   showCategoryTabs?: boolean;
 }) {
   return (
-    <div className="min-h-screen aa-bg flex flex-col" data-testid="app-shell">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--aa-bg)" }} data-testid="app-shell">
       <TopNav />
       {showCategoryTabs && (
         <div

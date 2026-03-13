@@ -310,6 +310,8 @@ async def get_website_settings_public(
         "success_color": app_s.get("success_color") or "",
         "warning_color": app_s.get("warning_color") or "",
         "background_color": app_s.get("background_color") or "",
+        "card_color": app_s.get("card_color") or "",
+        "surface_color": app_s.get("surface_color") or "",
         "text_color": app_s.get("text_color") or "",
         "border_color": app_s.get("border_color") or "",
         "muted_color": app_s.get("muted_color") or "",
@@ -318,7 +320,8 @@ async def get_website_settings_public(
             "_id", "tenant_id",
             "store_name", "logo_url",
             "primary_color", "accent_color", "danger_color", "success_color",
-            "warning_color", "background_color", "text_color", "border_color", "muted_color",
+            "warning_color", "background_color", "card_color", "surface_color",
+            "text_color", "border_color", "muted_color",
         )},
         # Payment flags (from oauth_connections)
         "stripe_enabled": bool(stripe_enabled),
