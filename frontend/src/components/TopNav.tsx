@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, ShoppingCart, User, ChevronDown } from "lucide-react";
+import { LogOut, ShoppingCart, User, ChevronDown, Menu, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,12 +14,17 @@ import { useCart } from "@/contexts/CartContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { TenantSwitcher } from "@/components/TenantSwitcher";
 import { CustomerSwitcher } from "@/components/CustomerSwitcher";
+import { useState, useEffect } from "react";
 
 export default function TopNav() {
   const { user, logout } = useAuth();
   const { items } = useCart();
   const location = useLocation();
   const ws = useWebsite();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   const storeName = ws.store_name || "Store";
   const logoUrl = ws.logo_url || null;
@@ -57,8 +62,8 @@ export default function TopNav() {
           )}
         </Link>
 
-        {/* Pill Nav Links */}
-        <nav className="flex items-center gap-0.5 text-sm flex-1 min-w-0 overflow-hidden" data-testid="nav-links">
+        {/* Desktop Pill Nav Links */}
+        <nav className="hidden md:flex items-center gap-0.5 text-sm flex-1 min-w-0 overflow-hidden" data-testid="nav-links">
           {navItems.map((item) => {
             const active = item.matchPaths.some(p => location.pathname.startsWith(p));
             return (
@@ -86,8 +91,8 @@ export default function TopNav() {
           })}
         </nav>
 
-        {/* Right side: switchers, cart, user */}
-        <div className="flex items-center gap-2 shrink-0 ml-4">
+        {/* Right side: switchers, cart, user, hamburger */}
+        <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-4">
           {user?.full_name?.trim() && (
             <span className="text-sm text-slate-400 hidden lg:inline mr-1" data-testid="nav-welcome">
               Hi, {user.full_name.trim().split(" ")[0]}
@@ -95,10 +100,10 @@ export default function TopNav() {
           )}
 
           {user?.role === "platform_admin" && (
-            <>
+            <div className="hidden md:flex items-center gap-2">
               <TenantSwitcher />
               <CustomerSwitcher />
-            </>
+            </div>
           )}
 
           {/* Cart */}
@@ -133,60 +138,128 @@ export default function TopNav() {
             </AnimatePresence>
           </Link>
 
-          {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="gap-1.5 text-slate-700 rounded-full px-2 h-9 hover:bg-slate-100 no-press"
-                data-testid="nav-user-trigger"
-              >
-                <div
-                  className="h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-                  style={{ backgroundColor: "var(--aa-primary)" }}
+          {/* User Menu — desktop */}
+          <div className="hidden md:block">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="gap-1.5 text-slate-700 rounded-full px-2 h-9 hover:bg-slate-100 no-press"
+                  data-testid="nav-user-trigger"
                 >
-                  {firstInitial}
-                </div>
-                <span className="text-sm font-medium text-slate-700 hidden sm:inline max-w-[100px] truncate">
-                  {user?.full_name?.trim().split(" ")[0] || "Account"}
-                </span>
-                <ChevronDown size={13} className="text-slate-400 shrink-0" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-56 rounded-xl shadow-xl border-slate-100 p-1"
-              data-testid="nav-user-menu"
-            >
-              <div className="px-3 py-2.5 mb-1 border-b border-slate-50" data-testid="nav-user-info">
-                <div className="text-sm font-semibold text-slate-900 truncate" data-testid="nav-user-name">
-                  {user?.full_name}
-                </div>
-                <div className="text-xs text-slate-400 truncate" data-testid="nav-user-email">
-                  {user?.email}
-                </div>
-              </div>
-              {/* My Profile — only shown to customers, not to any admin role */}
-              {!user?.is_admin && user?.role === "customer" && (
-                <DropdownMenuItem asChild data-testid="nav-user-profile" className="rounded-lg cursor-pointer">
-                  <Link to="/profile">
-                    <User size={13} className="mr-2 text-slate-400" />
-                    My Profile
-                  </Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem
-                className="text-red-500 rounded-lg cursor-pointer focus:text-red-600 focus:bg-red-50"
-                onClick={logout}
-                data-testid="nav-logout-button"
+                  <div
+                    className="h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                    style={{ backgroundColor: "var(--aa-primary)" }}
+                  >
+                    {firstInitial}
+                  </div>
+                  <span className="text-sm font-medium text-slate-700 hidden sm:inline max-w-[100px] truncate">
+                    {user?.full_name?.trim().split(" ")[0] || "Account"}
+                  </span>
+                  <ChevronDown size={13} className="text-slate-400 shrink-0" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-56 rounded-xl shadow-xl border-slate-100 p-1"
+                data-testid="nav-user-menu"
               >
-                <LogOut size={13} className="mr-2" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <div className="px-3 py-2.5 mb-1 border-b border-slate-50" data-testid="nav-user-info">
+                  <div className="text-sm font-semibold text-slate-900 truncate" data-testid="nav-user-name">
+                    {user?.full_name}
+                  </div>
+                  <div className="text-xs text-slate-400 truncate" data-testid="nav-user-email">
+                    {user?.email}
+                  </div>
+                </div>
+                {!user?.is_admin && user?.role === "customer" && (
+                  <DropdownMenuItem asChild data-testid="nav-user-profile" className="rounded-lg cursor-pointer">
+                    <Link to="/profile">
+                      <User size={13} className="mr-2 text-slate-400" />
+                      My Profile
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  className="text-red-500 rounded-lg cursor-pointer focus:text-red-600 focus:bg-red-50"
+                  onClick={logout}
+                  data-testid="nav-logout-button"
+                >
+                  <LogOut size={13} className="mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Hamburger — mobile only */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden h-9 w-9 rounded-full hover:bg-slate-100"
+            onClick={() => setMobileOpen(v => !v)}
+            data-testid="nav-hamburger"
+            aria-label="Open menu"
+          >
+            {mobileOpen ? <X size={18} className="text-slate-700" /> : <Menu size={18} className="text-slate-700" />}
+          </Button>
         </div>
       </div>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t border-slate-100 bg-white overflow-hidden"
+            data-testid="nav-mobile-menu"
+          >
+            <nav className="flex flex-col px-4 py-3 gap-1">
+              {navItems.map((item) => {
+                const active = item.matchPaths.some(p => location.pathname.startsWith(p));
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                      active
+                        ? "text-slate-900 font-semibold"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    }`}
+                    style={active ? { backgroundColor: "color-mix(in srgb, var(--aa-primary) 8%, white)" } : {}}
+                    data-testid={`mobile-${item.testId}`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <div className="mt-2 pt-2 border-t border-slate-100">
+                <div className="px-4 py-2">
+                  <div className="text-sm font-semibold text-slate-900 truncate">{user?.full_name}</div>
+                  <div className="text-xs text-slate-400 truncate">{user?.email}</div>
+                </div>
+                {!user?.is_admin && user?.role === "customer" && (
+                  <Link to="/profile" className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50">
+                    <User size={14} />
+                    My Profile
+                  </Link>
+                )}
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 text-left"
+                  onClick={logout}
+                >
+                  <LogOut size={14} />
+                  Logout
+                </button>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
+

@@ -108,6 +108,7 @@ export default function Store() {
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [fxRates, setFxRates] = useState<Record<string, number>>({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const ws = useWebsite();
   const partnerCode = usePartnerCode();
 
@@ -326,7 +327,7 @@ export default function Store() {
 
         {/* Hero Banner */}
         <section
-          className="relative overflow-hidden rounded-3xl px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
+          className="relative overflow-hidden rounded-3xl px-6 py-8 md:px-10 md:py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
           style={{ backgroundColor: "var(--aa-primary)" }}
           data-testid="store-hero"
         >
@@ -351,10 +352,27 @@ export default function Store() {
         </section>
 
         {/* Sidebar + Products */}
-        <div className="flex gap-8" data-testid="store-layout">
+        <div className="flex flex-col md:flex-row gap-8" data-testid="store-layout">
+
+          {/* Mobile filters toggle button */}
+          <div className="md:hidden w-full -mt-2 mb-2" style={{ gridColumn: "1/-1" }}>
+            <button
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+              onClick={() => setMobileFiltersOpen(v => !v)}
+              data-testid="mobile-filters-toggle"
+            >
+              <X size={14} className={`transition-transform ${mobileFiltersOpen ? "" : "rotate-45"}`} />
+              {mobileFiltersOpen ? "Hide Filters" : "Filters"}
+              {Object.values(activeFilters).filter(Boolean).length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs text-white" style={{ backgroundColor: "var(--aa-primary)" }}>
+                  {Object.values(activeFilters).filter(Boolean).length}
+                </span>
+              )}
+            </button>
+          </div>
 
           {/* ── Left Sidebar ── */}
-          <aside className="w-64 shrink-0" data-testid="category-sidebar">
+          <aside className={`shrink-0 w-full md:w-64 ${mobileFiltersOpen ? "block" : "hidden"} md:block`} data-testid="category-sidebar">
             <div className="sticky top-28 space-y-7">
 
               {/* Browse / Categories */}
@@ -566,7 +584,7 @@ export default function Store() {
 
             {/* Header row: title + active pills + sort */}
             <div className="mb-6 space-y-3">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900" data-testid="active-category-title">
                     {displayTitle}
@@ -582,7 +600,7 @@ export default function Store() {
                 </div>
 
                 {/* Search + Sort row */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   {/* Search pill */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
@@ -591,7 +609,7 @@ export default function Store() {
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       placeholder="Search products…"
-                      className="h-9 w-48 rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
+                      className="h-9 w-40 sm:w-48 rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
                       data-testid="store-search-input"
                     />
                     {searchQuery && (
@@ -609,7 +627,7 @@ export default function Store() {
                   {/* Sort dropdown */}
                   <Select value={sortBy} onValueChange={val => setSortBy(val as SortOption)}>
                     <SelectTrigger
-                      className="h-9 min-w-[175px] bg-white border-slate-200 hover:bg-slate-50 text-slate-700 text-sm"
+                      className="h-9 min-w-[150px] sm:min-w-[175px] bg-white border-slate-200 hover:bg-slate-50 text-slate-700 text-sm"
                       data-testid="sort-select"
                     >
                       <span className="flex items-center gap-1.5">

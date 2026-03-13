@@ -332,3 +332,35 @@ input[class*="rounded-full"]:focus {
 .delay-3   { animation-delay: 180ms; }
 .partner-pill { transition: background-color 0.15s, color 0.15s, transform 0.15s; }
 .partner-pill:hover { background-color: #e2e8f0; transform: scale(1.02); }
+
+/* ── Mobile: horizontal scroll for all admin tables ── */
+@media (max-width: 767px) {
+  /* Wrap every <table> inside admin content with a scroll container */
+  [data-testid="admin-tabs"] table,
+  .aa-admin-table-wrap table {
+    min-width: 640px;
+  }
+  [data-testid="admin-tabs"] .overflow-hidden:has(table),
+  [data-testid="admin-tabs"] [class*="rounded"]:has(table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Ensure admin content doesn't clip children */
+  [data-testid="admin-tabs"] > div:last-child {
+    overflow-x: auto;
+  }
+}
+
+/* ── Mobile: store layout stacks vertically ── */
+@media (max-width: 767px) {
+  [data-testid="store-layout"] {
+    flex-direction: column;
+  }
+  [data-testid="category-sidebar"] {
+    width: 100%;
+    position: static;
+  }
+  [data-testid="category-sidebar"] .sticky {
+    position: static;
+  }
+}

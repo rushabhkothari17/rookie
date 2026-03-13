@@ -2,6 +2,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { useState, useEffect, useRef } from "react";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantSwitcher";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
@@ -88,29 +90,29 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState(() => {
     const urlTab = searchParams.get("tab");
     if (urlTab) return urlTab;
-    // If editing a resource via URL param, switch to resources tab
     if (searchParams.get("editArticle") || searchParams.get("editResource")) return "resources";
     try { return localStorage.getItem("admin_active_tab") || "customers"; } catch { return "customers"; }
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     try { localStorage.setItem("admin_active_tab", activeTab); } catch {}
   }, [activeTab]);
 
   const handleChecklistNavigate = (tab: string, section?: string) => {
-    // Redirect old "website" tab references to the new split tabs
     if (tab === "website") {
       setActiveTab(section === "auth" ? "auth-pages" : section === "forms" ? "forms-tab" : "org-info");
       return;
     }
     setActiveTab(tab);
+    setSidebarOpen(false);
   };
 
   return (
     <>
     <div className="space-y-6" data-testid="admin-page">
       {/* Hero Banner */}
-      <section className="relative overflow-hidden rounded-3xl px-10 py-10 shadow-[0_30px_70px_rgba(15,23,42,0.15)]" style={{ backgroundColor: "var(--aa-primary)" }}>
+      <section className="relative overflow-hidden rounded-3xl px-6 md:px-10 py-8 md:py-10 shadow-[0_30px_70px_rgba(15,23,42,0.15)]" style={{ backgroundColor: "var(--aa-primary)" }}>
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
         <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
         <div className="relative space-y-3">
@@ -118,14 +120,55 @@ export default function Admin() {
             <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{adminBadge}</p>
           </div>
-          <h1 className="text-3xl font-bold text-white">{adminTitle}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">{adminTitle}</h1>
           <p className="max-w-xl text-sm text-slate-300">{adminSubtitle}</p>
         </div>
       </section>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex gap-0" data-testid="admin-tabs" ref={tabsRef}>
+      <Tabs value={activeTab} onValueChange={(t) => { setActiveTab(t); setSidebarOpen(false); }} className="flex gap-0 relative" data-testid="admin-tabs" ref={tabsRef}>
+
+        {/* Mobile sidebar overlay backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Mobile sidebar toggle button */}
+        <div className="md:hidden flex items-center gap-2 mb-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 text-slate-700 border-slate-200"
+            onClick={() => setSidebarOpen(v => !v)}
+            data-testid="admin-sidebar-toggle"
+          >
+            <Menu size={15} />
+            <span className="capitalize">{activeTab.replace(/-/g, " ")}</span>
+          </Button>
+        </div>
+
         {/* Left Sidebar Navigation */}
-        <div className="w-52 shrink-0 border-r border-slate-200 pr-0 mr-6 min-h-[60vh]">
+        <div className={`
+          fixed md:relative inset-y-0 left-0 z-40 md:z-auto
+          w-64 md:w-52 shrink-0
+          bg-white md:bg-transparent
+          border-r border-slate-200
+          shadow-xl md:shadow-none
+          transform transition-transform duration-200 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0 md:block
+          overflow-y-auto md:overflow-visible
+          pr-0 mr-0 md:mr-6 min-h-screen md:min-h-[60vh]
+        `}>
+          {/* Mobile close button */}
+          <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-slate-100">
+            <span className="text-sm font-semibold text-slate-700">Navigation</span>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(false)}>
+              <X size={16} />
+            </Button>
+          </div>
           <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
             {/* Platform — only for platform_admin when NOT viewing as a tenant */}
             {showPartnerOrgs && (
@@ -212,7 +255,7 @@ export default function Admin() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-x-hidden">
           {showChecklist && (
             <SetupChecklistWidget onNavigate={handleChecklistNavigate} />
           )}
