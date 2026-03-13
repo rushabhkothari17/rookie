@@ -18,6 +18,15 @@ window.addEventListener(
   true, // capture phase — runs before CRA's overlay handler
 );
 
+// Also suppress via window.onerror to fully prevent CRA dev overlay from catching it
+const _origOnError = window.onerror;
+window.onerror = (msg, source, line, col, err) => {
+  if (typeof msg === "string" && msg.includes("ResizeObserver")) {
+    return true; // returning true suppresses the error
+  }
+  return _origOnError ? _origOnError(msg, source, line, col, err) : false;
+};
+
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
 );
