@@ -16,7 +16,13 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
-### Session: Mar 2026 - CRITICAL SSRF Fix in Webhook Delivery
+### Session: Mar 2026 - OTP Hashing + Bearer Token Security Hardening
+- **OTP Hashing**: All 7 OTP generation points now store HMAC-SHA256 hash (keyed with `JWT_SECRET`) instead of 6-digit plaintext in MongoDB. All 3 verification points use `_verify_otp()` with constant-time comparison. Server/dev logs still receive the raw OTP for testing without email.
+- **Refresh token body fallback removed**: `/auth/refresh` now accepts token from HttpOnly cookie only — body injection path removed.
+- **Checkout status IDOR fixed**: `/checkout/status/{session_id}` now verifies the session belongs to the requesting customer before processing.
+- All three changes are in `backend/routes/auth.py` and `backend/routes/checkout.py`.
+
+
 - **CRITICAL fixed**: Added `_validate_webhook_url()` to `backend/services/webhook_service.py` — resolves hostnames via DNS and blocks all private/reserved IP ranges before any outbound HTTP request.
 - **Blocked ranges**: 127.0.0.0/8 (loopback), 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 (private), 169.254.0.0/16 (AWS metadata/link-local), 100.64.0.0/10 (CGN), documentation ranges, IPv6 equivalents.
 - **Defense-in-depth**: Validation applied at 3 layers: (1) webhook create/update, (2) test delivery, (3) async retry delivery — defends against DNS rebinding attacks.

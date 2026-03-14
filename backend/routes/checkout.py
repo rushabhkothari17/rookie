@@ -745,6 +745,9 @@ async def checkout_status(
             raise HTTPException(status_code=404, detail="Session not found")
         raise HTTPException(status_code=404, detail="Session not found")
     transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
+    # IDOR guard — verify this session belongs to the requesting customer
+    if transaction and customer and transaction.get("customer_id") != customer.get("id"):
+        raise HTTPException(status_code=404, detail="Session not found")
     if transaction:
         await db.payment_transactions.update_one(
             {"session_id": session_id},

@@ -5,6 +5,8 @@ JWT refresh token support for seamless session management.
 """
 from __future__ import annotations
 
+import hashlib
+import hmac as _hmac
 import re
 import secrets
 from datetime import datetime, timezone, timedelta
@@ -28,6 +30,24 @@ from services.audit_service import AuditService, create_audit_log
 import os
 
 router = APIRouter(prefix="/api", tags=["auth"])
+
+
+# ---------------------------------------------------------------------------
+# OTP security helpers — HMAC-SHA256 keyed with server JWT_SECRET
+# Prevents DB-breach rainbow table attacks on 6-digit codes
+# ---------------------------------------------------------------------------
+
+def _hash_otp(code: str) -> str:
+    """HMAC-SHA256 of a raw OTP string, keyed with the server JWT secret."""
+    from core.config import JWT_SECRET
+    return _hmac.new(JWT_SECRET.encode(), code.encode(), hashlib.sha256).hexdigest()
+
+
+def _verify_otp(submitted: str, stored_hash: str) -> bool:
+    """Constant-time compare: hash of submitted OTP vs stored hash."""
+    if not stored_hash:
+        return False
+    return _hmac.compare_digest(_hash_otp(submitted), stored_hash)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -466,11 +486,8 @@ async def refresh_token(request: Request, response: Response):
     """Get a new access token using the refresh token.
     Refresh token can be in HttpOnly cookie or request body.
     """
-    # Get refresh token from cookie or body
+    # Get refresh token from HttpOnly cookie only (never from request body)
     refresh_token_value = request.cookies.get("aa_refresh_token")
-    if not refresh_token_value:
-        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
-        refresh_token_value = body.get("refresh_token")
     
     if not refresh_token_value:
         raise HTTPException(status_code=401, detail="Refresh token required")
@@ -893,7 +910,7 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
         verification_code = f"{secrets.randbelow(999999):06d}"
         await db.pending_partner_registrations.update_one(
             {"email": admin_email},
-            {"$set": {**pending_clean, "verification_code": verification_code,
+            {"$set": {**pending_clean, "verification_code": _hash_otp(verification_code),
                       "verification_attempts": 0, "locked_until": None}},
         )
     else:
@@ -902,7 +919,7 @@ async def register_partner(payload: Dict[str, Any] = Body(...)):
             "id": make_id(),
             "email": admin_email,
             **pending_clean,
-            "verification_code": verification_code,
+            "verification_code": _hash_otp(verification_code),
             "verification_attempts": 0,
             "locked_until": None,
             "created_at": now_iso(),
@@ -950,7 +967,7 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
         except (ValueError, TypeError):
             pass
 
-    if pending.get("verification_code") != code:
+    if not _verify_otp(code, pending.get("verification_code", "")):
         attempts = pending.get("verification_attempts", 0) + 1
         update: Dict[str, Any] = {"verification_attempts": attempts}
         if attempts >= 5:
@@ -1152,7 +1169,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
                 "job_title": payload.job_title,
                 "company_name": payload.company_name,
                 "phone": payload.phone,
-                "verification_code": verification_code,
+                "verification_code": _hash_otp(verification_code),
                 "verification_attempts": 0,
                 "verification_locked_until": None,
                 "pending_address": {
@@ -1201,7 +1218,7 @@ async def register(payload: RegisterRequest, partner_code: Optional[str] = None)
         "is_admin": False,
         "role": "customer",
         "tenant_id": tenant_id,
-        "verification_code": verification_code,
+        "verification_code": _hash_otp(verification_code),
         "created_at": now_iso(),
         # Store address + profile_meta until email is verified; moved to customers/addresses on verify
         "pending_address": {
@@ -1259,7 +1276,7 @@ async def resend_verification_email(payload: ResendVerificationRequest):
         verification_code = f"{secrets.randbelow(999999):06d}"
         await db.pending_partner_registrations.update_one(
             {"email": email},
-            {"$set": {"verification_code": verification_code, "verification_attempts": 0, "locked_until": None}},
+            {"$set": {"verification_code": _hash_otp(verification_code), "verification_attempts": 0, "locked_until": None}},
         )
         from services.email_service import EmailService
         email_result = await EmailService.send(
@@ -1289,7 +1306,7 @@ async def resend_verification_email(payload: ResendVerificationRequest):
     verification_code = f"{secrets.randbelow(999999):06d}"
     await db.users.update_one(
         {"id": user["id"]},
-        {"$set": {"verification_code": verification_code}},
+        {"$set": {"verification_code": _hash_otp(verification_code)}},
     )
     from services.email_service import EmailService
     email_result = await EmailService.send(
@@ -1368,7 +1385,7 @@ async def verify_email(payload: VerifyEmailRequest):
         except (ValueError, TypeError):
             pass  # Invalid date format, continue
     
-    if user.get("verification_code") != resolve_code:
+    if not _verify_otp(resolve_code, user.get("verification_code", "")):
         # Increment attempt counter
         new_attempts = verification_attempts + 1
         update = {"$set": {"verification_attempts": new_attempts}}
@@ -1498,7 +1515,7 @@ async def forgot_password(payload: ForgotPasswordRequest):
             expiry = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
             await db.users.update_one(
                 {"id": user["id"]},
-                {"$set": {"password_reset_code": reset_code, "password_reset_expires": expiry}},
+                {"$set": {"password_reset_code": _hash_otp(reset_code), "password_reset_expires": expiry}},
             )
             # Ensure password_reset template is enabled
             await db.email_templates.update_many(
@@ -1555,7 +1572,7 @@ async def reset_password(payload: ResetPasswordRequest):
         except (ValueError, TypeError):
             pass
 
-    if not stored_code or stored_code != payload.code.strip():
+    if not stored_code or not _verify_otp(payload.code.strip(), stored_code):
         # Increment per-user attempt counter
         new_attempts = user.get("password_reset_attempts", 0) + 1
         attempt_update: Dict[str, Any] = {"password_reset_attempts": new_attempts}
