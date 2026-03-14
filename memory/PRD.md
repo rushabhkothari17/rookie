@@ -512,6 +512,13 @@ Build a white-label service commerce platform with:
 - Includes fade-in + slide-in animation for opening items, `data-testid` attributes for all FAQ triggers and content panels.
 - No Radix dependency needed — implemented natively with `useState` to avoid TypeScript/JSX interop issues.
 
+### Phase 22: Dark Mode Gap & Button Blending Fix (Mar 2026)
+- **Root cause 1 fixed**: `--aa-primary: #161b22` = same as `--aa-card: #161b22` → buttons (Create Order, Clear Cart), hero banners, Order Summary headers ALL invisible (same bg as surrounding cards). Fixed: `--aa-primary: #4f8ef7` (accent blue), `--aa-primary-hover: #6ba4ff`, `--aa-primary-fg: #ffffff` in `.aa-dark`.
+- **Root cause 2 fixed**: Section cards had no box-shadow in dark mode; the subtle contrast between page bg (`#0d1117`) and card bg (`#161b22`) was imperceptible on most displays, making adjacent cards appear to touch. Fixed by: `.aa-dark .rounded-2xl.border, .aa-dark .rounded-xl.border { box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04) !important }`.
+- **Root cause 3 fixed**: Opacity-modifier Tailwind classes (`bg-slate-50/50`, `bg-slate-50/60`, `bg-white/50`, `bg-white/40`) bypass standard `.aa-dark .bg-slate-50` CSS rules (different class names). Added explicit overrides for all these in `index.css`.
+- **Additional fixes**: `divide-slate-100`, `border-slate-100` now use `--aa-border` in dark mode. Added `border border-slate-200` to Cart Order Summary card (was borderless, excluded from shadow rule). Fixed FiltersTab inactive item bg, IntegrationsOverview badge.
+- **Tested**: 7/7 assertions PASS (100%) — hero blue, cards elevated, buttons blue, cart page correct, light mode clean.
+
 ### Phase 21: Comprehensive Dark Mode UI Fix (Mar 2026)
 - **Root cause 1 fixed**: `--primary: 210 40% 90%` (very light/white) in `.aa-dark` CSS vars was making all default-variant Shadcn buttons (Create Customer, New Product, etc.) appear as white pills on dark backgrounds. Fixed to `--primary: 217 91% 64%` (accent blue `#4f8ef7`) with `--primary-foreground: 0 0% 100%` (white text).
 - **Root cause 2 fixed**: `bg-white/90` Tailwind opacity modifier class (used on SelectTrigger `<button>` elements in `UniversalFormRenderer.tsx` and `AddressFieldRenderer.tsx`) was not caught by the `.aa-dark .bg-white` CSS override. Fixed by: (a) Rewriting `pillInput`, `pillSelect`, `pillTextarea` helper functions in both files to use CSS variables (`--aa-card`, `--aa-text`, `--aa-border`, `--aa-muted`, `--aa-accent`, `--aa-surface`) instead of hardcoded `bg-white/90 text-slate-900 border-slate-200`, (b) Adding a CSS override `.aa-dark .bg-white\/90` in `index.css`.
