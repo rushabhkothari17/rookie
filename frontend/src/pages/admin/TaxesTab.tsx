@@ -1073,7 +1073,7 @@ function TaxSummaryPanel() {
 
 export function TaxesTab() {
   return (
-    <div className="space-y-6" data-testid="taxes-tab">
+    <div className="flex flex-col gap-6" data-testid="taxes-tab">
       <div>
         <h2 className="text-xl font-bold text-slate-900">Tax Management</h2>
         <p className="text-sm text-slate-500 mt-1">

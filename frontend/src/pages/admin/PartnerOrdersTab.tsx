@@ -398,7 +398,7 @@ export function PartnerOrdersTab() {
     new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(amount);
 
   return (
-    <div className="space-y-5" data-testid="partner-orders-tab">
+    <div className="flex flex-col gap-5" data-testid="partner-orders-tab">
       <AdminPageHeader
         title="Partner Orders"
         subtitle={`${total} order${total !== 1 ? "s" : ""}`}

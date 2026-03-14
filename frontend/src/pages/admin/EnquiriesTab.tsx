@@ -252,7 +252,7 @@ export function EnquiriesTab() {
   };
 
   return (
-    <div className="space-y-4" data-testid="enquiries-tab">
+    <div className="flex flex-col gap-4" data-testid="enquiries-tab">
       <AdminPageHeader
         title="Enquiries"
         subtitle={`${total} records`}

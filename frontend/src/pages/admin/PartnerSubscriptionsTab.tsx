@@ -520,7 +520,7 @@ export function PartnerSubscriptionsTab() {
     new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(amount);
 
   return (
-    <div className="space-y-5" data-testid="partner-subscriptions-tab">
+    <div className="flex flex-col gap-5" data-testid="partner-subscriptions-tab">
       <AdminPageHeader
         title="Partner Subscriptions"
         subtitle={`${total} subscription${total !== 1 ? "s" : ""}`}

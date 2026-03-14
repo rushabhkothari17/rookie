@@ -392,7 +392,7 @@ export function FiltersTab() {
   const typeLabel = (t: string) => FILTER_TYPES.find(f => f.value === t)?.label || t;
 
   return (
-    <div className="space-y-4" data-testid="filters-tab">
+    <div className="flex flex-col gap-4" data-testid="filters-tab">
       <AdminPageHeader
         title="Customer Filters"
         subtitle="Configure the filters shown to customers in your storefront product listing."

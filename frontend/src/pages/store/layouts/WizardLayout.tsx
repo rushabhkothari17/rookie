@@ -174,7 +174,7 @@ export default function WizardLayout({
         style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
       >
         {isReviewStep ? (
-          <div className="space-y-8" data-testid="wizard-review-step">
+          <div className="flex flex-col gap-8" data-testid="wizard-review-step">
             <div>
               <h2 className="text-lg font-semibold mb-1" style={{ color: "var(--aa-text)" }}>
                 {ws.sdp_wizard_review_title || "Review Your Selections"}
@@ -258,7 +258,7 @@ export default function WizardLayout({
             )}
           </div>
         ) : (
-          <div className="space-y-8" data-testid={`wizard-step-${currentStep}-content`}>
+          <div className="flex flex-col gap-8" data-testid={`wizard-step-${currentStep}-content`}>
             <div>
               <h2 className="text-lg font-semibold mb-1" style={{ color: "var(--aa-text)" }}>
                 {currentStep === 0

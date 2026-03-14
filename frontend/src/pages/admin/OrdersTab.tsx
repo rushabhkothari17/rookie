@@ -276,7 +276,7 @@ export function OrdersTab() {
   };
 
   return (
-    <div className="space-y-4" data-testid="orders-tab">
+    <div className="flex flex-col gap-4" data-testid="orders-tab">
       <AdminPageHeader
         title="Orders"
         subtitle={`${total} records`}

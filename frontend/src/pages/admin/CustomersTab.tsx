@@ -341,7 +341,7 @@ export function CustomersTab() {
   }, [customers, users, colSort]);
 
   return (
-    <div className="space-y-4" data-testid="customers-tab">
+    <div className="flex flex-col gap-4" data-testid="customers-tab">
       <AdminPageHeader
         title="Customers"
         subtitle={`${total} customers`}

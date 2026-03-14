@@ -1074,7 +1074,7 @@ function ApiKeyManager({ onKeyResolved }: { onKeyResolved: (key: string) => void
   const activeKey = keys.find(k => k.is_active);
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5">
       {/* Revealed new key banner */}
       {revealedKey && (
         <div className="rounded-xl bg-amber-50 border border-amber-300 p-4 space-y-2">

@@ -103,7 +103,7 @@ export function IntegrationRequestsTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Integration Requests</h2>
         <p className="text-sm text-slate-500 mt-1">

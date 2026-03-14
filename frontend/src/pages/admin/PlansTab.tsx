@@ -458,7 +458,7 @@ function PlansSection() {
 
   if (loading) return <div className="p-4 text-slate-500 text-sm">Loading plans…</div>;
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <AdminPageHeader
         title="License Plans"
         subtitle="Define reusable resource limit templates for partner organisations."

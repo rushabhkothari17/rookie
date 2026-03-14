@@ -109,7 +109,7 @@ export function ResourceEmailTemplatesTab() {
   };
 
   return (
-    <div className="space-y-4" data-testid="resource-email-templates-tab">
+    <div className="flex flex-col gap-4" data-testid="resource-email-templates-tab">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Email Templates</h3>

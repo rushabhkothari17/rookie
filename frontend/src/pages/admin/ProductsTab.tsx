@@ -149,7 +149,7 @@ export function ProductsTab() {
   const totalPages = Math.max(1, Math.ceil(displayFiltered.length / PER_PAGE));
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
         <TabsList className="bg-slate-100 p-1 rounded-lg w-fit flex-wrap">
           <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 text-sm font-medium gap-2" data-testid="products-subtab-products">
@@ -171,7 +171,7 @@ export function ProductsTab() {
         </TabsList>
 
         <TabsContent value="products" className="mt-4">
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             <AdminPageHeader title="Products" subtitle={`${filtered.length} products`} actions={
               <>
                 <Button variant="outline" size="sm" onClick={downloadCsv} data-testid="admin-catalog-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>

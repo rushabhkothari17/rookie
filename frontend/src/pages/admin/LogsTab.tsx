@@ -278,7 +278,7 @@ export function LogsTab() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-5" data-testid="admin-logs-tab">
+    <div className="flex flex-col gap-5" data-testid="admin-logs-tab">
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between">

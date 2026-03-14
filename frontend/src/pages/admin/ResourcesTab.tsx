@@ -434,7 +434,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
   const frontendUrl = typeof window !== "undefined" ? window.location.origin : appUrl.replace("/api", "").replace(":8001", ":3000");
 
   return (
-    <div className="space-y-4" data-testid="admin-resources-tab">
+    <div className="flex flex-col gap-4" data-testid="admin-resources-tab">
       <AdminPageHeader title="Resources" subtitle={subTab === "resources" ? `${total} resources` : "Manage reusable templates"} actions={
         <>
           {subTab === "resources" && (

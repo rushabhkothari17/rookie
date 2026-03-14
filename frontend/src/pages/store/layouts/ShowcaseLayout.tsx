@@ -89,7 +89,7 @@ export default function ShowcaseLayout({
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-8">
         {/* Left: Product details */}
-        <div className="space-y-8">
+        <div className="flex flex-col gap-8">
           {/* Description */}
           {product.description_long && (
             <div className="rounded-2xl border p-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>

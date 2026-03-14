@@ -338,7 +338,7 @@ export default function Store() {
 
   return (
     <AppShell showCategoryTabs={false}>
-      <div className="space-y-8" data-testid="store-page">
+    <div className="flex flex-col gap-8" data-testid="store-page">
 
         {/* Hero Banner */}
         <section

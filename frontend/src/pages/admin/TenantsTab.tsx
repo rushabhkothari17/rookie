@@ -259,7 +259,7 @@ export function TenantsTab() {
 
   return (
     <div data-testid="tenants-tab">
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4" data-testid="tenants-tab-inner">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Partner Organizations</h2>

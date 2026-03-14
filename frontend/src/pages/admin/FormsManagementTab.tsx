@@ -145,7 +145,7 @@ export function FormsManagementTab() {
   };
 
   return (
-    <div className="space-y-6" data-testid="forms-management-tab">
+    <div className="flex flex-col gap-6" data-testid="forms-management-tab">
       <AdminPageHeader
         title="Forms"
         subtitle="Manage enquiry forms used across your product catalogue."

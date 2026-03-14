@@ -795,11 +795,22 @@ html.aa-dark .aa-skel {
 .aa-dark .text-slate-700    { color: color-mix(in srgb, var(--aa-text) 90%, var(--aa-muted)) !important; }
 .aa-dark .text-slate-600    { color: var(--aa-muted) !important; }
 .aa-dark .text-slate-500    { color: var(--aa-muted) !important; }
-.aa-dark .text-slate-400    { color: color-mix(in srgb, var(--aa-muted) 75%, transparent) !important; }
-.aa-dark .text-slate-300    { color: color-mix(in srgb, var(--aa-muted) 55%, transparent) !important; }
+.aa-dark .text-slate-400    { color: color-mix(in srgb, var(--aa-muted) 80%, var(--aa-text)) !important; }
+.aa-dark .text-slate-300    { color: var(--aa-muted) !important; }
 .aa-dark .text-gray-900, .aa-dark .text-gray-800  { color: var(--aa-text) !important; }
 .aa-dark .text-gray-700, .aa-dark .text-gray-600  { color: var(--aa-muted) !important; }
-.aa-dark .text-gray-500, .aa-dark .text-gray-400  { color: color-mix(in srgb, var(--aa-muted) 75%, transparent) !important; }
+.aa-dark .text-gray-500, .aa-dark .text-gray-400  { color: color-mix(in srgb, var(--aa-muted) 80%, var(--aa-text)) !important; }
+
+/* ── Hero section text — override grey text on coloured backgrounds ── */
+/* Hero labels and counts sit on var(--aa-primary) background; use white-based colours */
+.aa-dark [data-testid="store-hero"] .text-slate-400,
+.aa-dark [data-testid="cart-hero"] .text-slate-400 {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+.aa-dark [data-testid="store-hero"] .text-slate-300,
+.aa-dark [data-testid="cart-hero"] .text-slate-300 {
+  color: rgba(255, 255, 255, 0.70) !important;
+}
 
 /* ── Tinted text → vibrant hue in dark ──────────────────── */
 .aa-dark .text-indigo-800, .aa-dark .text-indigo-700 { color: #818cf8 !important; }

@@ -56,7 +56,7 @@ export function MySubmissionsTab() {
   }
 
   return (
-    <div className="space-y-4" data-testid="my-submissions-tab">
+    <div className="flex flex-col gap-4" data-testid="my-submissions-tab">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-slate-900">My Submissions</h2>
         <Button variant="outline" size="sm" onClick={load} data-testid="submissions-refresh-btn">

@@ -375,7 +375,7 @@ export function SubscriptionsTab() {
   const statusColor = (s: string) => s === "active" ? "aa-badge aa-badge-success" : s === "unpaid" ? "aa-badge aa-badge-danger" : s.includes("cancel") ? "aa-badge aa-badge-muted" : "aa-badge aa-badge-warning";
 
   return (
-    <div className="space-y-4" data-testid="subscriptions-tab">
+    <div className="flex flex-col gap-4" data-testid="subscriptions-tab">
       <AdminPageHeader
         title="Subscriptions"
         subtitle={`${total} records`}

@@ -123,7 +123,7 @@ export function PartnerSubmissionsTab() {
   };
 
   return (
-    <div className="space-y-4" data-testid="partner-submissions-tab">
+    <div className="flex flex-col gap-4" data-testid="partner-submissions-tab">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>

@@ -95,7 +95,7 @@ export function MySubscriptionsTab() {
     new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(amount);
 
   return (
-    <div className="space-y-4" data-testid="my-subscriptions-tab">
+    <div className="flex flex-col gap-4" data-testid="my-subscriptions-tab">
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">My Subscriptions</h2>

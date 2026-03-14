@@ -1000,7 +1000,7 @@ export function AdminIntakeFormsTab() {
   const isPlatformAdmin = user?.role === "platform_admin" || user?.role === "platform_super_admin";
 
   return (
-    <div className="space-y-4" data-testid="admin-intake-forms-tab">
+    <div className="flex flex-col gap-4" data-testid="admin-intake-forms-tab">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Intake Forms</h2>
         <p className="text-sm text-slate-500 mt-0.5">Manage intake questionnaires that customers must complete before checkout.</p>

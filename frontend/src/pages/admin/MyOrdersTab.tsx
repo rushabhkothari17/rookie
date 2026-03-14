@@ -83,7 +83,7 @@ export function MyOrdersTab() {
     new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(amount);
 
   return (
-    <div className="space-y-4" data-testid="my-orders-tab">
+    <div className="flex flex-col gap-4" data-testid="my-orders-tab">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">My Orders</h2>
         <p className="text-sm text-slate-500">Invoices raised by the platform for your organisation.</p>

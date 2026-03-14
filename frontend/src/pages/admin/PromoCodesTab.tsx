@@ -280,7 +280,7 @@ export function PromoCodesTab() {
   };
 
   return (
-    <div className="space-y-4" data-testid="promo-codes-tab">
+    <div className="flex flex-col gap-4" data-testid="promo-codes-tab">
       <AdminPageHeader title="Promo Codes" subtitle={`${total} codes`} actions={
         <>
           <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-promo-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>

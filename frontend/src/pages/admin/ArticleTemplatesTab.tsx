@@ -97,7 +97,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
   };
 
   return (
-    <div className="space-y-4" data-testid="article-templates-tab">
+    <div className="flex flex-col gap-4" data-testid="article-templates-tab">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Article Templates</h3>

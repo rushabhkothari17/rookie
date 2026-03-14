@@ -125,7 +125,7 @@ export function CategoriesTab() {
   };
 
   return (
-    <div className="space-y-4" data-testid="categories-tab">
+    <div className="flex flex-col gap-4" data-testid="categories-tab">
       <AdminPageHeader title="Product Categories" subtitle={`${total} categories`} actions={
         <>
           <Button size="sm" variant="outline" onClick={downloadCsv} data-testid="admin-categories-export-csv"><Download size={14} className="mr-1" />Export CSV</Button>

@@ -246,7 +246,7 @@ export default function WebsiteTab({ defaultSection, forcedSection }: { defaultS
         )}
 
         {/* Content panel */}
-        <div className="flex-1 min-w-0 rounded-xl p-6 space-y-5" style={{ background: "var(--aa-card)", border: "1px solid var(--aa-border)" }}>
+        <div className="flex-1 min-w-0 rounded-xl p-6 flex flex-col gap-5" style={{ background: "var(--aa-card)", border: "1px solid var(--aa-border)" }}>
           {displaySection === "branding" && (
             <OrgInfoSection
               ws={ws} branding={branding} s={s} b={b}

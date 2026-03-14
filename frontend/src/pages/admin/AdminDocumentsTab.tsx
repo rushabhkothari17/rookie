@@ -232,7 +232,7 @@ export function AdminDocumentsTab({ onNavigateToTab }: { onNavigateToTab?: (tab:
   }
 
   return (
-    <div className="space-y-4" data-testid="admin-documents-tab">
+    <div className="flex flex-col gap-4" data-testid="admin-documents-tab">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">

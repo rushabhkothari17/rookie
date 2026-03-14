@@ -5,7 +5,7 @@ import { CustomDomainsSection } from "@/components/admin/CustomDomainsSection";
 
 export function CustomDomainsTab() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Custom Domains</h2>

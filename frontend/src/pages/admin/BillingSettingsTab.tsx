@@ -47,7 +47,7 @@ export function BillingSettingsTab() {
   }
 
   return (
-    <div className="space-y-6 max-w-lg" data-testid="billing-settings-tab">
+    <div className="flex flex-col gap-6 max-w-lg" data-testid="billing-settings-tab">
       <div>
         <h2 className="text-base font-semibold text-slate-900">Billing Settings</h2>
         <p className="text-sm text-slate-500 mt-1">Configure automatic overdue subscription cancellation for partner organisations.</p>

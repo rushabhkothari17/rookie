@@ -382,7 +382,7 @@ export default function Portal() {
 
   if (loading) {
     return (
-      <div className="space-y-10 max-w-6xl mx-auto" data-testid="portal-loading">
+    <div className="flex flex-col gap-10 max-w-6xl mx-auto" data-testid="portal-loading">
         {/* Skeleton stats */}
         <div className="grid grid-cols-3 gap-4">
           <SkeletonStat /><SkeletonStat /><SkeletonStat />
@@ -414,7 +414,7 @@ export default function Portal() {
   const orderCurrency = orders[0]?.currency || "";
 
   return (
-    <div className="space-y-10 max-w-6xl mx-auto" data-testid="portal-page">
+    <div className="flex flex-col gap-10 max-w-6xl mx-auto" data-testid="portal-page">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -438,7 +438,7 @@ export default function Portal() {
 
       {/* ── One-time orders ──────────────────────────────── */}
       <motion.section
-        className="space-y-3"
+        className="flex flex-col gap-3"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -585,7 +585,7 @@ export default function Portal() {
 
       {/* ── Subscriptions ────────────────────────────────── */}
       <motion.section
-        className="space-y-3"
+        className="flex flex-col gap-3"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}

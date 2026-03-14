@@ -135,7 +135,7 @@ export function UsageDashboard() {
   const anyBlocked = Object.values(snapshot.usage || {}).some(e => e.blocked);
 
   return (
-    <div className="space-y-6" data-testid="usage-dashboard">
+    <div className="flex flex-col gap-6" data-testid="usage-dashboard">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Usage & Limits</h2>
