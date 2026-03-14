@@ -67,7 +67,7 @@ async def admin_list_users(
     tenant_ids = list({u.get("tenant_id") for u in users if u.get("tenant_id")})
     tenant_map: Dict[str, Dict] = {}
     if tenant_ids:
-        tenants = await db.tenants.find({"id": {"$in": tenant_ids}}, {"_id": 0, "id": 1, "name": 1, "code": 1}).to_list(None)
+        tenants = await db.tenants.find({"id": {"$in": tenant_ids}}, {"_id": 0, "id": 1, "name": 1, "code": 1}).to_list(500)
         tenant_map = {t["id"]: t for t in tenants}
     for u in users:
         t = tenant_map.get(u.get("tenant_id", ""), {})

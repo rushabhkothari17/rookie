@@ -37,6 +37,9 @@ RATE_LIMITS: Dict[str, Tuple[int, int]] = {
 # Global public read endpoints — generous limits for high-volume access
 PUBLIC_RATE_LIMIT: Tuple[int, int] = (300, 60)  # 300 per minute per IP per path-prefix
 
+# Prune the in-memory store every N requests to prevent unbounded growth
+_PRUNE_INTERVAL = 5000
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Simple sliding-window rate limiter, keyed by (client_ip, path_prefix)."""
@@ -44,6 +47,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app) -> None:
         super().__init__(app)
         self._store: Dict[str, List[float]] = defaultdict(list)
+        self._request_count: int = 0
 
     def _get_client_ip(self, request: Request) -> str:
         # In Kubernetes, the ingress controller appends the real client IP as the
@@ -57,6 +61,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if ip and len(ip) <= 45:  # max IPv6 length
                 return ip
         return request.client.host if request.client else "unknown"
+
+    def _prune_store(self) -> None:
+        """Remove entries whose buckets are fully expired to prevent memory growth."""
+        now = time()
+        max_window = max(w for _, w in RATE_LIMITS.values())
+        stale_keys = [k for k, v in self._store.items() if not v or (now - max(v)) > max_window]
+        for k in stale_keys:
+            del self._store[k]
 
     def _check(self, key: str, max_req: int, window: int) -> bool:
         """Returns True if the request is ALLOWED; False if rate-limited."""
@@ -76,6 +88,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         ip = self._get_client_ip(request)
+
+        # Periodic cleanup to prevent unbounded memory growth from unique IPs
+        self._request_count += 1
+        if self._request_count % _PRUNE_INTERVAL == 0:
+            self._prune_store()
 
         # Find the most-specific (longest) matching prefix
         matched_prefix = None

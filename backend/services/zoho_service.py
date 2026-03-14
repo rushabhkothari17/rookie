@@ -456,7 +456,7 @@ async def auto_sync_to_zoho_crm(
             "webapp_module": webapp_module,
             "is_active": True,
             "$or": [{"provider": "zoho_crm"}, {"provider": {"$exists": False}}],
-        }, {"_id": 0}).to_list(None)
+        }, {"_id": 0}).to_list(200)
 
         if not mappings:
             return {"success": True, "skipped": True, "reason": "no_mapping"}

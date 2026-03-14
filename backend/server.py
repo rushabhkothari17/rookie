@@ -32,6 +32,7 @@ from services.settings_service import SettingsService
 from middleware.request_id import RequestIDMiddleware
 from middleware.rate_limit import RateLimitMiddleware
 from middleware.security_headers import SecurityHeadersMiddleware
+from middleware.request_limits import RequestBodySizeLimitMiddleware, PaginationCapMiddleware
 
 # Seed data and pricing helpers
 from data.seed_products import build_seed_products
@@ -51,6 +52,8 @@ app = FastAPI(
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIDMiddleware)
+app.add_middleware(RequestBodySizeLimitMiddleware)   # Block oversized request bodies
+app.add_middleware(PaginationCapMiddleware)          # Cap per_page/limit query params
 
 # CORS — restrict to known frontend in production, allow all in dev
 cors_origins = [FRONTEND_URL] if (ENVIRONMENT == "production" and FRONTEND_URL) else ["*"]
