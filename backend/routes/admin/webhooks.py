@@ -224,15 +224,6 @@ async def update_webhook(
             ]
         _validate_subscriptions(subs)
         updates["subscriptions"] = subs
-    elif "events" in payload:
-        from services.webhook_service import _DEFAULT_FIELDS
-        subs = [
-            {"event": e, "fields": _DEFAULT_FIELDS.get(e, [])}
-            for e in (payload["events"] or [])
-            if isinstance(e, str)
-        ]
-        _validate_subscriptions(subs)
-        updates["subscriptions"] = subs
 
     await db.webhooks.update_one({"id": webhook_id}, {"$set": updates})
     await create_audit_log(

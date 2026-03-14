@@ -43,7 +43,7 @@ Build a white-label service commerce platform with:
 - `backend/models.py` — CustomerUpdate, AddressUpdate, SubscriptionUpdate, ManualOrderCreate, ManualSubscriptionCreate, CancelSubscriptionBody, OrderDelete, QuoteRequest, IntakeQuestion, CustomSection, ScopeRequestFormData
 - `backend/routes/admin/plans.py` — PlanCreate model added with Field(max_length=...)
 - `backend/routes/article_templates.py` — ArticleTemplateCreate + ArticleTemplateUpdate Pydantic models added (was Dict[str,Any] — HIGH priority vulnerability)
-- `backend/routes/admin/webhooks.py` — Removed legacy [:120] name truncation
+- `backend/routes/admin/webhooks.py` — WebhookCreate/WebhookUpdate Pydantic models (was Dict[str,Any]); dead elif removed; 422 validation confirmed via curl
 
 **Files modified (frontend):**
 - `frontend/src/lib/fieldLimits.tsx` — NEW: shared LIMIT_* constants + CharCount component
