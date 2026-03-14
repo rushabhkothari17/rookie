@@ -1,0 +1,77 @@
+{
+  "summary": "Tested Clone Product feature (backend + frontend) and ProductForm spacing fix in Pricing tab. All 8 backend tests passed. All frontend UI tests passed. Clone button visible in products table, clone creates product with '_cloned' suffix and Inactive status. ProductForm spacing (gap-6 = 24px) working correctly across all pricing types and dark mode.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "ProductForm / Pricing tab",
+        "issues": [
+          "PricingTypeSelector component has mb-5 (20px) inside its grid div AND the parent flex container uses gap-6 (24px), resulting in 44px combined gap between the checkout type buttons and the next card. This is visually acceptable but slightly over-spaced. Not a blocker."
+        ]
+      },
+      {
+        "screen": "ProductForm / Pricing tab - initial state",
+        "issues": [
+          "For 'Test FAQ Service', none of the three pricing type buttons (Internal/External/Enquiry) appeared highlighted on initial page load. This is a pre-existing data issue where the product's pricing_type field has an unexpected stored value (not null, empty, 'internal', 'external', or 'enquiry'). After clicking 'Internal Checkout' it works correctly."
+        ]
+      }
+    ]
+  },
+  "clone_feature_verification": {
+    "clone_button_in_table": "✅ Clone button appears next to Edit button in every product row (data-testid='admin-clone-{id}')",
+    "clone_name_suffix": "✅ Cloned product name appends '_cloned' (e.g. 'Accounting Service' → 'Accounting Service_cloned')",
+    "clone_is_inactive": "✅ Cloned product has Inactive status with red badge",
+    "clone_new_id": "✅ Cloned product has a new unique ID",
+    "original_unchanged": "✅ Original product remains unchanged after cloning",
+    "toast_notification": "✅ Success toast: 'Cloned as \"Accounting Service_cloned\"'",
+    "list_refresh": "✅ Products list automatically refreshes after clone (count: 11 → 12)"
+  },
+  "spacing_verification": {
+    "section_container": "flex flex-col gap-6 = 24px gap between sections ✅",
+    "card_container": "flex flex-col gap-5 = 20px gap within cards ✅",
+    "checkout_type_to_billing_card": "44px total gap (24px flex gap + 20px PricingTypeSelector internal mb-5) - visually good ✅",
+    "billing_card_to_intake_section": "Visible gap between billing card and intake questions section ✅",
+    "external_pricing_type": "Clean gaps between checkout selector → External URL card → T&C card ✅",
+    "enquiry_pricing_type": "Clean gaps between checkout selector → Enquiry section → T&C card ✅"
+  },
+  "dark_mode_verification": {
+    "body_bg": "rgb(13, 17, 23) - correct dark background",
+    "billing_card_bg": "rgb(28, 33, 40) - dark card background",
+    "billing_card_border": "rgb(48, 54, 61) - subtle dark border",
+    "label_color": "rgb(139, 148, 158) - readable in dark mode",
+    "all_sections_readable": "✅ All pricing form sections readable in dark mode",
+    "gaps_visible_in_dark_mode": "✅ Spacing between sections clearly visible in dark mode"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_clone_product.py",
+    "/app/test_reports/pytest/pytest_iter302_clone.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "PricingTypeSelector grid has mb-5 which adds extra bottom margin on top of the parent gap-6 = total 44px. Minor double-spacing but visually acceptable.",
+    "Test FAQ Service product may have an unexpected pricing_type value in DB (not internal/external/enquiry), causing no pricing type button to be pre-selected. May need data migration or a fallback in the UI to handle unknown pricing_type values."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_clone_product.py"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": {
+    "platform_super_admin": {
+      "email": "admin@automateaccounts.local",
+      "password": "ChangeMe123!",
+      "note": "Login without partner_code (platform super admin)"
+    }
+  },
+  "seed_data_creation": "Multiple 'Test FAQ Service_cloned' and 'Accounting Service_cloned' products created during testing (all Inactive)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Clone product feature fully working: POST /api/admin/products/{id}/clone creates product with '_cloned' suffix and is_active=False. Clone button (data-testid='admin-clone-{id}') appears in every product row next to Edit. ProductForm Pricing tab spacing uses flex flex-col gap-6 (24px) on section container and flex flex-col gap-5 (20px) on cards. Dark mode works correctly. Admin login: admin@automateaccounts.local/ChangeMe123! (no partner code needed for platform_super_admin). COMMERCE section in sidebar → Products."
+}

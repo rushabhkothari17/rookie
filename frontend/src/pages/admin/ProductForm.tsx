@@ -93,9 +93,9 @@ export const EMPTY_FORM: ProductFormData = {
 // ── Style tokens (light theme — matches admin panel) ───────────────────────────
 
 const labelCls = "text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide";
-const sectionCls = "space-y-6";
+const sectionCls = "flex flex-col gap-6";
 const dividerCls = "border-t border-slate-100 pt-5 mt-1";
-const cardCls = "rounded-lg border border-slate-200 bg-white p-5 space-y-5";
+const cardCls = "rounded-lg border border-slate-200 bg-white p-5 flex flex-col gap-5";
 const MAX_BULLETS = 8;
 
 // ── Toggle ─────────────────────────────────────────────────────────────────────
@@ -809,7 +809,7 @@ export function ProductForm({
             <>
               <div className={cardCls}>
                 {/* Billing type + Stripe Price ID — shown first */}
-                <div className="space-y-3 pb-5 border-b border-slate-100 mb-6">
+                <div className="flex flex-col gap-3 pb-5 border-b border-slate-100 mb-6">
                   <RequiredLabel className={labelCls} trailing={<FieldTip tip="One-time: customer pays once at checkout. Subscription: recurring charge at a set interval — requires a Stripe Price ID." />}>Billing type</RequiredLabel>
                   <BillingTypeSelector value={form.is_subscription} onChange={s("is_subscription")} />
                   {form.is_subscription && (

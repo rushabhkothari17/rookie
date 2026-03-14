@@ -463,6 +463,30 @@ async def admin_delete_category(
     return {"message": "Category deleted"}
 
 
+@router.post("/admin/products/{product_id}/clone")
+async def admin_clone_product(product_id: str, admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    tf = get_tenant_filter(admin)
+    original = await db.products.find_one({**tf, "id": product_id}, {"_id": 0})
+    if not original:
+        raise HTTPException(status_code=404, detail="Product not found")
+    new_id = make_id()
+    clone: Dict[str, Any] = {**original, "id": new_id}
+    clone["name"] = original["name"] + "_cloned"
+    clone["is_active"] = False
+    clone["created_at"] = now_iso()
+    clone.pop("_id", None)
+    await db.products.insert_one(clone)
+    clone.pop("_id", None)
+    await create_audit_log(
+        entity_type="product",
+        entity_id=new_id,
+        action="cloned",
+        actor=f"admin:{admin.get('email', admin['id'])}",
+        details={"name": clone["name"], "cloned_from": product_id},
+    )
+    return {"product": clone}
+
+
 @router.get("/admin/products/{product_id}/logs")
 async def get_product_logs(product_id: str, page: int = 1, limit: int = 20, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)

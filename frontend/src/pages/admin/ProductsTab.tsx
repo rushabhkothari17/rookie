@@ -14,7 +14,7 @@ import { AuditLogDialog } from "@/components/AuditLogDialog";
 import { CategoriesTab } from "./CategoriesTab";
 import { PromoCodesTab } from "./PromoCodesTab";
 import { TermsTab } from "./TermsTab";
-import { Download, Upload, ExternalLink, Package, FolderTree, Tag, FileText } from "lucide-react";
+import { Download, Upload, ExternalLink, Package, FolderTree, Tag, FileText, Copy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ColHeader } from "@/components/shared/ColHeader";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
@@ -61,6 +61,21 @@ export function ProductsTab() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const [cloningId, setCloningId] = useState<string | null>(null);
+
+  const handleClone = async (product: any) => {
+    setCloningId(product.id);
+    try {
+      const res = await api.post(`/admin/products/${product.id}/clone`);
+      toast.success(`Cloned as "${res.data.product.name}"`);
+      load();
+    } catch {
+      toast.error("Failed to clone product");
+    } finally {
+      setCloningId(null);
+    }
+  };
 
   const openCreate = () => navigate("/admin/products/new");
   const openEdit = (p: any) => navigate(`/admin/products/${p.id}/edit`);
@@ -238,6 +253,9 @@ export function ProductsTab() {
                         <div className="flex gap-2 items-center">
                           <Button variant="outline" size="sm" onClick={() => openEdit(product)} className="gap-1" data-testid={`admin-edit-${product.id}`}>
                             <ExternalLink size={14} />Edit
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleClone(product)} disabled={cloningId === product.id} className="gap-1" data-testid={`admin-clone-${product.id}`}>
+                            <Copy size={14} />{cloningId === product.id ? "Cloning…" : "Clone"}
                           </Button>
                           <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setLogsUrl(`/admin/products/${product.id}/logs`); setShowAuditLogs(true); }} data-testid={`admin-product-logs-${product.id}`}>Logs</Button>
                           <Button variant={product.is_active ? "destructive" : "outline"} size="sm" onClick={() => setConfirmToggleProduct(product)} data-testid={`admin-toggle-${product.id}`}>
