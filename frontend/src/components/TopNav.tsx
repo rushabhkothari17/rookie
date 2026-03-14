@@ -35,6 +35,7 @@ export default function TopNav() {
     ...(ws.workdrive_enabled
       ? [{ to: "/documents", label: ws.nav_documents_label || "Documents", testId: "nav-documents", matchPaths: ["/documents"] }]
       : []),
+    ...(((ws.nav_intake_enabled as unknown) !== false && (ws.nav_intake_enabled as unknown) !== "false") ? [{ to: "/intake-form", label: ws.nav_intake_label || "Intake Form", testId: "nav-intake-form", matchPaths: ["/intake-form"] }] : []),
     { to: "/portal", label: ws.nav_portal_label || "Customer Portal", testId: "nav-portal", matchPaths: ["/portal"] },
     ...(user?.is_admin ? [{ to: "/admin", label: "Admin", testId: "nav-admin", matchPaths: ["/admin"] }] : []),
   ];

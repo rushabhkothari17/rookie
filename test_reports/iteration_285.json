@@ -1,0 +1,64 @@
+{
+  "summary": "Intake Forms P0 Fixes Testing — 20 backend tests all pass. All 4 P0 fixes verified: 1) Email notification on status change (approved/rejected) is working — email_logs confirms trigger=intake_form_status_changed fired via Zoho Mail; 2) Admin nav link for Intake Forms shows in TopNav with TypeScript string/boolean fix applied; 3) Locked fields (signature auto-added by T&C field type) correctly have no delete/hide/reorder buttons; 4) Admin records sub-tab shows search, filter, status dropdown all functional. One minor HTML structural issue noted in AdminIntakeFormsTab.tsx.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/admin/intake-form-records (create)", "issue": "Requires X-View-As-Tenant header when platform admin tests against tenant-scoped customer data — expected behavior but requires documentation"}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "AdminIntakeFormsTab.tsx - IntakeFormRecords table",
+        "issue": "Invalid HTML: <span> wrapper elements placed inside <table>/<tbody>/<tr>/<td>/<th> elements causing React hydration errors in console. Multiple errors: '<th> cannot be child of <span>', '<span> cannot be child of <tr>', etc.",
+        "selector": "table > tbody",
+        "priority": "MEDIUM — UI renders correctly but will cause issues in strict browser environments and breaks accessibility"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin Intake Forms Records table",
+        "issues": ["Minor: Hydration error warnings about invalid HTML nesting (<span> inside <table> elements) - visual rendering is fine but code structure is technically incorrect"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_intake_forms_p0_fixes.py",
+    "/app/test_reports/pytest/pytest_iter285_p0_fixes.xml",
+    "/app/test_reports/pytest/pytest_iter285_intake_p0.xml"
+  ],
+  "action_items": [
+    "Fix invalid HTML structure in AdminIntakeFormsTab.tsx: Remove <span> wrappers that are placed inside <table>/<tbody>/<tr>/<td>/<th> elements — these cause React hydration errors. The pattern `<span data-ve-dynamic>` is being inserted as a child of table elements which is invalid HTML.",
+    "Customer portal /intake-form testing requires customer login — customer password for camayankjain96@gmail.com not known to testing agent. Consider adding test customer credentials in future testing context."
+  ],
+  "critical_code_review_comments": [
+    "AdminIntakeFormsTab.tsx line 445-479: <span data-ve-dynamic> wrapper elements are being injected inside <table>/<thead>/<tbody>/<tr>/<th>/<td> elements, which is invalid HTML. While React renders it anyway, this violates HTML spec and causes hydration errors. Fix by removing wrapper spans or restructuring the table logic.",
+    "TopNav.tsx line 38: nav_intake_enabled check logic `(ws.nav_intake_enabled as unknown) !== false && (ws.nav_intake_enabled as unknown) !== 'false'` will show the Intake Form link when the value is undefined/null (not set). If the intent is to show only when explicitly enabled, change to: `ws.nav_intake_enabled === true || ws.nav_intake_enabled === 'true'`",
+    "intake_forms.py update_record_status: Email notification uses asyncio.create_task() which is correct for async FastAPI context. Email was verified to fire correctly via email_logs."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_intake_forms_p0_fixes.py"
+  ],
+  "success_rate": {
+    "backend": "100% (20/20 tests pass)",
+    "frontend": "90% (all core P0 features working; HTML structural issue in table; customer portal flow untested due to missing customer credentials)"
+  },
+  "test_credentials": {
+    "admin": "admin@automateaccounts.local / ChangeMe123! (platform code: automate-accounts)",
+    "customer": "camayankjain96@gmail.com (partner code: aa, password unknown)"
+  },
+  "seed_data_creation": "Created test records during testing: TEST_P0_Email Notification Form and TEST_P0_VAS Form for tenant 6cb9c3e5-1e17-4e57-b443-564af4f5fa70. These should be cleaned up by the cleanup fixture in the test file.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "P0 fixes for Intake Forms verified. Backend 20/20 pass. Email notification working (Zoho Mail configured in test env). TopNav fix applied. Locked field behavior verified. To test customer portal (/intake-form), need customer credentials for camayankjain96@gmail.com (tenant: aa). The HTML structural issue in AdminIntakeFormsTab.tsx table is an open bug where <span> wrappers are injected inside table elements causing hydration errors. Previous test reports: iteration_3.json (partner onboarding), iteration_4.json (initial intake form validation).",
+  "rca_of_issues": {
+    "HTML_structural_issue": {
+      "description": "AdminIntakeFormsTab.tsx renders <span data-ve-dynamic> wrapper elements inside <table>/<tbody>/<tr>/<td>/<th> elements",
+      "reproduction": "Navigate to Admin > Content > Intake Forms, open browser console",
+      "root_cause": "The table rendering uses conditional rendering wrapped in <span> elements which is technically invalid HTML when placed inside table elements. React renders it anyway but the browser DOM validation catches it.",
+      "mitigation": "Replace <span> wrapper conditionals with React fragments (<>) or move the conditional logic to wrap entire rows/cells rather than wrapping inside table structure elements",
+      "files_affected": "AdminIntakeFormsTab.tsx lines 444-480"
+    }
+  }
+}

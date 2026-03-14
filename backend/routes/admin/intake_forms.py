@@ -3,6 +3,8 @@ Intake Forms — admin and portal routes.
 Collections: intake_forms, intake_form_records
 """
 from __future__ import annotations
+import asyncio
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -421,6 +423,40 @@ async def update_record_status(
         action=f"status_changed_to_{payload.status}", actor=admin.get("email", "admin"),
         details={"reason": payload.rejection_reason or ""},
     )
+
+    # ── Send email notification for approved/rejected status changes ───────────
+    if payload.status in {"approved", "rejected"}:
+        try:
+            from services.email_service import EmailService
+            customer_email = record.get("customer_email", "")
+            if customer_email:
+                frontend_url = os.environ.get("FRONTEND_URL", os.environ.get("REACT_APP_BACKEND_URL", "")).replace("/api", "")
+                intake_url = f"{frontend_url}/intake-form" if frontend_url else "/intake-form"
+                rejection_block = ""
+                if payload.status == "rejected" and payload.rejection_reason:
+                    rejection_block = (
+                        f'<div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 6px 6px 0;padding:12px 16px;margin:16px 0">'
+                        f'<p style="color:#991b1b;font-size:13px;font-weight:600;margin:0 0 4px">Reason for rejection</p>'
+                        f'<p style="color:#b91c1c;font-size:13px;margin:0">{payload.rejection_reason}</p>'
+                        f'</div>'
+                    )
+                asyncio.create_task(EmailService.send(
+                    trigger="intake_form_status_changed",
+                    recipient=customer_email,
+                    variables={
+                        "customer_name": record.get("customer_name", ""),
+                        "customer_email": customer_email,
+                        "intake_form_name": record.get("intake_form_name", ""),
+                        "intake_form_status": payload.status,
+                        "intake_form_url": intake_url,
+                        "rejection_reason_block": rejection_block,
+                    },
+                    db=db,
+                    tenant_id=record.get("tenant_id"),
+                ))
+        except Exception:
+            pass  # Email failure should not block the status update response
+
     return {"message": "Status updated"}
 
 

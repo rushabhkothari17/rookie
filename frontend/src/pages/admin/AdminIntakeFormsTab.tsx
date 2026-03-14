@@ -133,7 +133,8 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
         </Button>
       </div>
 
-      {loading ? (
+      <div className="mt-4">
+        {loading ? (
         <div className="text-sm text-slate-400 py-8 text-center">Loading...</div>
       ) : forms.length === 0 ? (
         <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
@@ -189,6 +190,8 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
           ))}
         </div>
       )}
+
+      </div>
 
       {/* Editor Dialog */}
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
@@ -429,9 +432,9 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
         </div>
       </div>
 
-      {/* Table */}
-      {loading ? <div className="text-sm text-slate-400 py-8 text-center">Loading...</div> : records.length === 0 ? (
-        <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+      {/* Table — gap from filters */}
+      <div className="mt-4">
+      {loading ? <div className="text-sm text-slate-400 py-8 text-center">Loading...</div> : records.length === 0 ? (        <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
           <FileText size={28} className="mx-auto text-slate-300 mb-3" />
           <p className="text-sm text-slate-400">No intake form records yet.</p>
         </div>
@@ -498,6 +501,7 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
           <Button variant="outline" size="sm" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>Next</Button>
         </div>
       )}
+      </div>
 
       {/* View Record Modal */}
       <Dialog open={!!viewRecord} onOpenChange={() => setViewRecord(null)}>

@@ -243,8 +243,8 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                 <p className="text-[11px] text-slate-400 font-mono">{field.key}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                {/* Hide/Show for locked fields that aren't always-visible */}
-                {field.locked && !ALWAYS_VISIBLE_KEYS.has(field.key) && (
+                {/* Hide/Show only for non-locked fields — locked fields are always shown */}
+                {!field.locked && !ALWAYS_VISIBLE_KEYS.has(field.key) && (
                   <button
                     type="button"
                     onClick={() => toggle(field.id, "enabled", !field.enabled)}
@@ -254,12 +254,17 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                     {field.enabled ? "Hide" : "Show"}
                   </button>
                 )}
-                <button type="button" onClick={() => move(field.id, -1)} disabled={idx === 0} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30">
-                  <ChevronUp size={14} />
-                </button>
-                <button type="button" onClick={() => move(field.id, 1)} disabled={idx === fields.length - 1} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30">
-                  <ChevronDown size={14} />
-                </button>
+                {/* Move up/down — locked fields cannot be reordered */}
+                {!field.locked && (
+                  <>
+                    <button type="button" onClick={() => move(field.id, -1)} disabled={idx === 0} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30">
+                      <ChevronUp size={14} />
+                    </button>
+                    <button type="button" onClick={() => move(field.id, 1)} disabled={idx === fields.length - 1} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30">
+                      <ChevronDown size={14} />
+                    </button>
+                  </>
+                )}
                 <button type="button" onClick={() => setEditingId(editingId === field.id ? null : field.id)} className={`p-1 rounded transition-colors ${editingId === field.id ? "text-blue-600 bg-blue-50" : "text-slate-400 hover:text-slate-600"}`}>
                   <Settings2 size={14} />
                 </button>
@@ -289,12 +294,19 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                 </div>
                 <div>
                   <label className="text-[11px] text-slate-500 font-medium">Field type</label>
-                  <Select value={field.type} onValueChange={v => handleTypeChange(field.id, v as FieldType)}>
-                    <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {FIELD_TYPES.filter(t => t.value !== "signature").map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  {field.locked ? (
+                    <div className="mt-0.5 h-7 text-xs px-2 flex items-center bg-slate-100 border border-slate-200 rounded-md text-slate-400 cursor-not-allowed">
+                      {FIELD_TYPES.find(t => t.value === field.type)?.label || field.type}
+                      <Lock size={10} className="ml-1.5 text-amber-400" />
+                    </div>
+                  ) : (
+                    <Select value={field.type} onValueChange={v => handleTypeChange(field.id, v as FieldType)}>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {FIELD_TYPES.filter(t => t.value !== "signature").map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  )}
                   {(field.type === "email" || field.type === "tel") && (
                     <p className="mt-1 text-[10px] text-blue-600 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5">
                       Auto-validates format on submit
@@ -374,7 +386,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                         <input type="checkbox" checked={field.required} onChange={e => updateField(field.id, { required: e.target.checked })} className="w-3.5 h-3.5" data-testid={`field-required-${field.id}`} />
                         <span className="text-xs text-slate-600">Required</span>
                       </label>
-                      {!ALWAYS_VISIBLE_KEYS.has(field.key) && (
+                      {!ALWAYS_VISIBLE_KEYS.has(field.key) && !field.locked && (
                         <label className="flex items-center gap-1.5 cursor-pointer">
                           <input type="checkbox" checked={field.enabled !== false} onChange={e => updateField(field.id, { enabled: e.target.checked })} className="w-3.5 h-3.5" data-testid={`field-enabled-${field.id}`} />
                           <span className="text-xs text-slate-600">Visible</span>

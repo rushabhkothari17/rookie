@@ -204,6 +204,26 @@ _TEMPLATES: list[Dict[str, Any]] = [
         "is_system": True,
     },
     {
+        "trigger": "intake_form_status_changed",
+        "label": "Intake Form — Status Update",
+        "description": "Sent to the customer when their intake form submission is approved or rejected.",
+        "subject": "Your intake form has been {{intake_form_status}} — {{store_name}}",
+        "html_body": """<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f8fafc;margin:0;padding:20px">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;padding:32px;border:1px solid #e2e8f0">
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 8px">{{store_name}}</p>
+  <h2 style="color:#1e293b;margin:0 0 16px">Intake Form Update</h2>
+  <p style="color:#475569;">Hi {{customer_name}},</p>
+  <p style="color:#475569;">Your submission for <strong>{{intake_form_name}}</strong> has been <strong>{{intake_form_status}}</strong>.</p>
+  {{rejection_reason_block}}
+  <p style="color:#475569;margin-top:16px;">You can view your intake forms and take action at any time by visiting:</p>
+  <p style="margin:16px 0"><a href="{{intake_form_url}}" style="background:#1e293b;color:white;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:14px">View Intake Forms</a></p>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px;border-top:1px solid #f1f5f9;padding-top:16px">© {{store_name}}</p>
+</div></body></html>""",
+        "is_enabled": True,
+        "available_variables": ["{{store_name}}", "{{customer_name}}", "{{customer_email}}", "{{intake_form_name}}", "{{intake_form_status}}", "{{intake_form_url}}", "{{rejection_reason_block}}"],
+        "is_system": True,
+    },
+    {
         "trigger": "invoice_email",
         "label": "Invoice (Customer)",
         "description": "Sent to the customer when an invoice is emailed from the invoice viewer.",
