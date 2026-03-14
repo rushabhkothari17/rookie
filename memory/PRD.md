@@ -16,6 +16,12 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Feb 2026 - Refactor: Migrate db.integrations → db.oauth_connections
+- **Goal**: Consolidate two overlapping storage collections into one source of truth for all integration records.
+- **Changes**: Updated `ZohoOAuthService.get_credentials()` + `store_credentials()` in `zoho_service.py`; updated all 30+ `db.integrations` reads/writes in `routes/admin/integrations.py` and `routes/admin/finance.py` to use `db.oauth_connections`.
+- **Migration**: Wrote and ran `migrate_integrations.py` (0 existing docs migrated in this env); `db.integrations` collection **dropped**.
+- **Testing**: 47/47 backend + frontend tests passed (iteration_289).
+
 ### Session: Mar 2026 - P2 Fix: Encryption at Rest for Integration Secrets
 - Created `services/encryption_service.py` (Fernet AES-128-CBC + HMAC-SHA256, `enc:` prefix for migration safety).
 - Added `ENCRYPTION_KEY` to `backend/.env`.
