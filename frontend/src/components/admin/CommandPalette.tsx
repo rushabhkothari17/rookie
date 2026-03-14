@@ -59,6 +59,7 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const filtered = query.trim()
     ? NAV_ITEMS.filter(i =>
@@ -67,6 +68,12 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
       )
     : NAV_ITEMS;
 
+  // Always-current refs — handler reads from these, never stale
+  const filteredRef = useRef(filtered);
+  filteredRef.current = filtered;
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+
   const handleSelect = useCallback((value: string) => {
     onNavigate(value);
     onClose();
@@ -74,7 +81,7 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
     setActiveIndex(0);
   }, [onNavigate, onClose]);
 
-  // Reset active index when query changes
+  // Reset active index to 0 when query changes
   useEffect(() => { setActiveIndex(0); }, [query]);
 
   // Scroll active item into view
@@ -84,14 +91,17 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
     if (active) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [activeIndex]);
 
-  // Keyboard handler
+  // Stable keyboard handler — uses refs so it never needs to be re-registered on query/index changes
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") { onClose(); return; }
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setActiveIndex(i => Math.min(i + 1, filtered.length - 1));
+        setActiveIndex(i => {
+          const next = Math.min(i + 1, filteredRef.current.length - 1);
+          return next;
+        });
         return;
       }
       if (e.key === "ArrowUp") {
@@ -101,18 +111,24 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
       }
       if (e.key === "Enter") {
         e.preventDefault();
-        if (filtered[activeIndex]) handleSelect(filtered[activeIndex].value);
+        const item = filteredRef.current[activeIndexRef.current];
+        if (item) handleSelect(item.value);
         return;
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose, filtered, activeIndex, handleSelect]);
+    window.addEventListener("keydown", handler, true); // capture phase — fires before input handles it
+    return () => window.removeEventListener("keydown", handler, true);
+  }, [open, onClose, handleSelect]); // NO filtered/activeIndex in deps
 
-  // Reset when closed
+  // Reset when palette closes
   useEffect(() => {
     if (!open) { setQuery(""); setActiveIndex(0); }
   }, [open]);
+
+  // Re-focus input after arrow key navigation
+  useEffect(() => {
+    if (open && inputRef.current) inputRef.current.focus();
+  }, [activeIndex, open]);
 
   if (!open) return null;
 
@@ -126,6 +142,7 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
         <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "color-mix(in srgb, var(--aa-border) 60%, transparent)" }}>
           <Search size={16} style={{ color: "var(--aa-muted)", flexShrink: 0 }} />
           <input
+            ref={inputRef}
             autoFocus
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -136,7 +153,7 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
           />
           <div className="flex items-center gap-1">
             {query && (
-              <button onClick={() => setQuery("")} className="p-1 rounded hover:opacity-70 transition-opacity">
+              <button onClick={() => { setQuery(""); inputRef.current?.focus(); }} className="p-1 rounded hover:opacity-70 transition-opacity">
                 <X size={12} style={{ color: "var(--aa-muted)" }} />
               </button>
             )}

@@ -617,16 +617,22 @@ export default function Store() {
 
                 {/* Search + Sort row — always inline, never wraps */}
                 <div className="flex items-center gap-2 shrink-0 flex-nowrap">
-                  {/* Search pill */}
-                  <div className="relative flex-1 min-w-[120px] max-w-[200px]">
+                  {/* Search pill — expands when focused or has value */}
+                  <div
+                    className="relative flex-shrink-0 transition-all duration-300"
+                    style={{ width: searchQuery ? "220px" : "132px" }}
+                  >
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       placeholder="Search…"
-                      className="h-9 w-full rounded-full border border-slate-200 bg-white pl-8 pr-8 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 placeholder:text-slate-400 transition-all"
+                      className="h-8 w-full rounded-full border border-slate-200 bg-white pl-8 pr-7 text-sm outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 focus:w-full placeholder:text-slate-400 transition-all duration-300 [&:focus]:!w-full"
+                      style={{ width: "100%" }}
                       data-testid="store-search-input"
+                      onFocus={e => { (e.target.closest("div") as HTMLElement).style.width = "220px"; }}
+                      onBlur={e => { if (!searchQuery) (e.target.closest("div") as HTMLElement).style.width = "132px"; }}
                     />
                     {searchQuery && (
                       <button
@@ -640,14 +646,14 @@ export default function Store() {
                     )}
                   </div>
 
-                  {/* Sort dropdown */}
+                  {/* Sort dropdown — compact */}
                   <Select value={sortBy} onValueChange={val => setSortBy(val as SortOption)}>
                     <SelectTrigger
-                      className="h-9 min-w-[140px] bg-white border-slate-200 hover:bg-slate-50 text-slate-700 text-sm flex-shrink-0"
+                      className="h-8 w-auto gap-1 px-3 bg-white border-slate-200 hover:bg-slate-50 text-slate-600 text-xs flex-shrink-0"
                       data-testid="sort-select"
                     >
-                      <span className="flex items-center gap-1.5">
-                        <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <span className="flex items-center gap-1">
+                        <ArrowUpDown className="h-3 w-3 text-slate-400 shrink-0" />
                         <SelectValue />
                       </span>
                     </SelectTrigger>
