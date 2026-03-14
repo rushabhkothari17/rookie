@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from core.helpers import make_id, now_iso
 from core.tenant import require_platform_admin, require_platform_super_admin, get_tenant_admin, tenant_id_of
 from db.session import db
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["coupons"])
 
@@ -75,6 +76,8 @@ async def create_coupon(body: CouponCreate, admin: Dict[str, Any] = Depends(requ
     await db.coupons.insert_one(doc)
     doc.pop("_id", None)
     doc.pop("used_by_orgs", None)
+    await create_audit_log(entity_type="coupon", entity_id=doc["id"], action="created",
+                           actor=admin.get("email", "admin"), details={"code": code})
     return doc
 
 
@@ -88,6 +91,8 @@ async def update_coupon(coupon_id: str, body: CouponUpdate, admin: Dict[str, Any
         updates["code"] = updates["code"].upper().strip()
     updates["updated_at"] = now_iso()
     await db.coupons.update_one({"id": coupon_id}, {"$set": updates})
+    await create_audit_log(entity_type="coupon", entity_id=coupon_id, action="updated",
+                           actor=admin.get("email", "admin"), details=updates)
     return {**{k: v for k, v in coupon.items() if k != "used_by_orgs"}, **updates}
 
 
@@ -95,8 +100,20 @@ async def update_coupon(coupon_id: str, body: CouponUpdate, admin: Dict[str, Any
 async def delete_coupon(coupon_id: str, admin: Dict[str, Any] = Depends(require_platform_super_admin)):
     if not await db.coupons.find_one({"id": coupon_id}):
         raise HTTPException(404, "Coupon not found")
+    coupon_doc = await db.coupons.find_one({"id": coupon_id}, {"_id": 0, "code": 1})
     await db.coupons.delete_one({"id": coupon_id})
+    await create_audit_log(entity_type="coupon", entity_id=coupon_id, action="deleted",
+                           actor=admin.get("email", "admin"), details={"code": (coupon_doc or {}).get("code", "")})
     return {"message": "Deleted"}
+
+
+@router.get("/admin/coupons/{coupon_id}/logs")
+async def get_coupon_logs(coupon_id: str, page: int = 1, limit: int = 20,
+                          admin: Dict[str, Any] = Depends(require_platform_admin)):
+    flt = {"entity_type": "coupon", "entity_id": coupon_id}
+    total = await db.audit_logs.count_documents(flt)
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("timestamp", -1).skip((page - 1) * limit).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total}
 
 
 # ── Admin Usage Report ───────────────────────────────────────────────────────

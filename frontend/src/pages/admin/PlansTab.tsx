@@ -22,6 +22,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ColHeader } from "@/components/shared/ColHeader";
 import { ISO_CURRENCIES } from "@/lib/constants";
 import { useSupportedCurrencies } from "@/hooks/useSupportedCurrencies";
+import { AuditLogDialog } from "@/components/AuditLogDialog";
 
 // ─── Plan types ───────────────────────────────────────────────────────────────
 type Plan = {
@@ -794,6 +795,7 @@ function CouponsSection() {
   const [showCreate, setShowCreate] = useState(false);
   const [editCoupon, setEditCoupon] = useState<Coupon | null>(null);
   const [deleteCoupon, setDeleteCoupon] = useState<Coupon | null>(null);
+  const [logCoupon, setLogCoupon] = useState<Coupon | null>(null);
 
   // ── Sort & filter ──
   const [sortCoupons, setSortCoupons] = useState<{ col: string; dir: "asc" | "desc" } | null>(null);
@@ -912,6 +914,7 @@ function CouponsSection() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => setLogCoupon(c)} data-testid={`logs-coupon-${c.id}`} title="Audit logs"><ScrollText className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => setEditCoupon(c)} data-testid={`edit-coupon-${c.id}`} title="Edit"><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => setDeleteCoupon(c)} data-testid={`delete-coupon-${c.id}`} title="Delete" className="text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></Button>
                     </div>
@@ -924,6 +927,7 @@ function CouponsSection() {
 
       {showCreate && <CouponFormDialog coupon={null} onClose={() => setShowCreate(false)} onSaved={() => { setShowCreate(false); load(); }} />}
       {editCoupon && <CouponFormDialog coupon={editCoupon} onClose={() => setEditCoupon(null)} onSaved={() => { setEditCoupon(null); load(); }} />}
+      {logCoupon && <AuditLogDialog open title={`Audit Logs — ${logCoupon.code}`} logsUrl={`/admin/coupons/${logCoupon.id}/logs`} onOpenChange={() => setLogCoupon(null)} />}
       {deleteCoupon && (
         <AlertDialog open onOpenChange={() => setDeleteCoupon(null)}>
           <AlertDialogContent>

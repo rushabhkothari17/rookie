@@ -342,6 +342,19 @@ async def test_webhook(
 
 # ── Delivery logs ─────────────────────────────────────────────────────────────
 
+@router.get("/admin/webhooks/{webhook_id}/logs")
+async def get_webhook_audit_logs(webhook_id: str, page: int = 1, limit: int = 20,
+                                  admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    """Audit trail for webhook config changes (create/update/delete/rotate-secret)."""
+    tf = get_tenant_filter(admin)
+    wh = await db.webhooks.find_one({**tf, "id": webhook_id}, {"_id": 0, "id": 1})
+    if not wh:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    flt = {"entity_type": "webhook", "entity_id": webhook_id}
+    total = await db.audit_logs.count_documents(flt)
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("timestamp", -1).skip((page - 1) * limit).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total}
+
 @router.get("/admin/webhooks/{webhook_id}/deliveries")
 async def get_deliveries(
     webhook_id: str,

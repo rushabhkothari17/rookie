@@ -17,19 +17,25 @@ const SOURCES = ["admin_ui", "customer_ui", "api", "webhook", "cron", "system"];
 
 const ENTITY_TYPES = [
   // Commerce
-  "Order", "Subscription", "Customer", "Product", "PromoCode",
+  "order", "subscription", "customer", "product", "promo_code",
+  // Plans & Coupons
+  "plan", "coupon",
   // Finance / Tax
-  "TaxSettings", "TaxOverrideRule", "TaxTable", "InvoiceSettings", "InvoiceTemplate",
+  "tax_settings", "tax_override_rule", "tax_table", "invoice_settings", "invoice_template",
   // Users / Auth
-  "User", "Tenant",
+  "user", "tenant",
   // Files / Documents
-  "Document", "FileUpload",
-  // Integrations
-  "IntegrationRequest", "SyncLog",
-  // Zoho (lowercase as stored)
+  "document", "file_upload",
+  // Integrations & Webhooks
+  "integration_request", "sync_log", "webhook",
+  // Intake Forms
+  "intake_form", "intake_form_record",
+  // Content & Settings
+  "article", "category", "terms", "setting", "quote_request", "form",
+  // Platform
+  "currency", "platform_billing_settings", "website_settings",
+  // Legacy / Zoho (stored lowercase)
   "customers", "orders", "subscriptions",
-  // Content
-  "Article", "Category", "Terms", "Setting", "QuoteRequest",
 ];
 
 const ACTOR_TYPES = [
@@ -42,17 +48,30 @@ const ACTOR_TYPES = [
 const PER_PAGE_OPTIONS = [25, 50, 100];
 
 const ENTITY_COLORS: Record<string, string> = {
-  Order: "bg-blue-50 text-blue-700",
-  Subscription: "bg-teal-50 text-teal-700",
-  Customer: "bg-orange-50 text-orange-700", customers: "bg-orange-50 text-orange-700",
-  Product: "bg-cyan-50 text-cyan-700",
-  User: "bg-indigo-50 text-indigo-700",
-  TaxSettings: "bg-amber-50 text-amber-700", TaxOverrideRule: "bg-amber-50 text-amber-700",
-  TaxTable: "bg-amber-50 text-amber-700", InvoiceSettings: "bg-amber-50 text-amber-700",
-  InvoiceTemplate: "bg-amber-50 text-amber-700",
-  Document: "bg-rose-50 text-rose-700", FileUpload: "bg-rose-50 text-rose-700",
-  IntegrationRequest: "bg-violet-50 text-violet-700",
-  Tenant: "bg-sky-50 text-sky-700",
+  order: "bg-blue-50 text-blue-700", orders: "bg-blue-50 text-blue-700",
+  subscription: "bg-teal-50 text-teal-700", subscriptions: "bg-teal-50 text-teal-700",
+  customer: "bg-orange-50 text-orange-700", customers: "bg-orange-50 text-orange-700",
+  product: "bg-cyan-50 text-cyan-700",
+  user: "bg-indigo-50 text-indigo-700",
+  plan: "bg-purple-50 text-purple-700",
+  coupon: "bg-pink-50 text-pink-700",
+  promo_code: "bg-pink-50 text-pink-700",
+  tax_settings: "bg-amber-50 text-amber-700",
+  tax_override_rule: "bg-amber-50 text-amber-700",
+  tax_table: "bg-amber-50 text-amber-700",
+  invoice_settings: "bg-amber-50 text-amber-700",
+  invoice_template: "bg-amber-50 text-amber-700",
+  document: "bg-rose-50 text-rose-700",
+  file_upload: "bg-rose-50 text-rose-700",
+  integration_request: "bg-violet-50 text-violet-700",
+  webhook: "bg-violet-50 text-violet-700",
+  intake_form: "bg-emerald-50 text-emerald-700",
+  intake_form_record: "bg-emerald-50 text-emerald-700",
+  tenant: "bg-sky-50 text-sky-700",
+  form: "bg-lime-50 text-lime-700",
+  currency: "bg-yellow-50 text-yellow-700",
+  website_settings: "bg-slate-100 text-slate-600",
+  platform_billing_settings: "bg-slate-100 text-slate-600",
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

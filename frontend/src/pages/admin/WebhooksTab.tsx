@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronRight, Plus, Trash2, RefreshCw, Send, Eye, Copy, RotateCcw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Trash2, RefreshCw, Send, Eye, Copy, RotateCcw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle, ScrollText } from "lucide-react";
 import { FieldTip } from "./shared/FieldTip";
+import { AuditLogDialog } from "@/components/AuditLogDialog";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -557,9 +558,9 @@ function DeliveryLogs({ webhook, onClose }: { webhook: Webhook; onClose: () => v
 
 // ─── Webhook Card ──────────────────────────────────────────────────────────────
 
-function WebhookCard({ webhook, catalog, onEdit, onDelete, onViewLogs, onRefresh }: {
+function WebhookCard({ webhook, catalog, onEdit, onDelete, onViewLogs, onViewAuditLogs, onRefresh }: {
   webhook: Webhook; catalog: EventCatalog;
-  onEdit: () => void; onDelete: () => void; onViewLogs: () => void; onRefresh: () => void;
+  onEdit: () => void; onDelete: () => void; onViewLogs: () => void; onViewAuditLogs: () => void; onRefresh: () => void;
 }) {
   const [testing, setTesting] = useState(false);
   const [toggling, setToggling] = useState(false);
@@ -671,7 +672,10 @@ function WebhookCard({ webhook, catalog, onEdit, onDelete, onViewLogs, onRefresh
           <Send className={`h-3 w-3 ${testing ? "animate-pulse" : ""}`} /> Test
         </Button>
         <Button variant="outline" size="sm" onClick={onViewLogs} className="text-xs gap-1" data-testid="webhook-logs-btn">
-          <Eye className="h-3 w-3" /> Logs
+          <Eye className="h-3 w-3" /> Delivery Logs
+        </Button>
+        <Button variant="outline" size="sm" onClick={onViewAuditLogs} className="text-xs gap-1" data-testid="webhook-audit-logs-btn">
+          <ScrollText className="h-3 w-3" /> Audit Trail
         </Button>
         <Button variant="ghost" size="sm" onClick={rotateSecret} disabled={rotatingSecret} className="text-xs gap-1 text-slate-400 hover:text-slate-700">
           <RotateCcw className={`h-3 w-3 ${rotatingSecret ? "animate-spin" : ""}`} />
@@ -693,6 +697,7 @@ export function WebhooksTab() {
   const [showCreate, setShowCreate] = useState(false);
   const [editWebhook, setEditWebhook] = useState<Webhook | null>(null);
   const [logsWebhook, setLogsWebhook] = useState<Webhook | null>(null);
+  const [auditWebhook, setAuditWebhook] = useState<Webhook | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -780,6 +785,7 @@ export function WebhooksTab() {
               onEdit={() => setEditWebhook(wh)}
               onDelete={() => deleteWebhook(wh.id)}
               onViewLogs={() => setLogsWebhook(wh)}
+              onViewAuditLogs={() => setAuditWebhook(wh)}
               onRefresh={load}
             />
           ))}
@@ -809,6 +815,7 @@ export function WebhooksTab() {
       {logsWebhook && (
         <DeliveryLogs webhook={logsWebhook} onClose={() => setLogsWebhook(null)} />
       )}
+      {auditWebhook && <AuditLogDialog open title={`Audit Trail — ${auditWebhook.name}`} logsUrl={`/admin/webhooks/${auditWebhook.id}/logs`} onOpenChange={() => setAuditWebhook(null)} />}
     </div>
   );
 }

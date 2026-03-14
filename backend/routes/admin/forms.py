@@ -133,6 +133,15 @@ async def delete_form(
     return {"message": "Form deleted"}
 
 
+@router.get("/admin/forms/{form_id}/logs")
+async def get_form_logs(form_id: str, page: int = 1, limit: int = 20,
+                        admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    flt = {"entity_type": "form", "entity_id": form_id}
+    total = await db.audit_logs.count_documents(flt)
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("timestamp", -1).skip((page - 1) * limit).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total}
+
+
 @router.get("/admin/enquiries/{order_id}/pdf")
 async def download_enquiry_pdf(
     order_id: str,

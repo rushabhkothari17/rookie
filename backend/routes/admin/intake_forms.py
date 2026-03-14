@@ -215,6 +215,8 @@ async def delete_intake_form(form_id: str, admin: Dict[str, Any] = Depends(get_t
     res = await db.intake_forms.delete_one({**tf, "id": form_id})
     if res.deleted_count == 0:
         raise HTTPException(404, "Intake form not found")
+    await create_audit_log(entity_type="intake_form", entity_id=form_id, action="deleted",
+                           actor=admin.get("email", "admin"), details={})
     return {"message": "Deleted"}
 
 
@@ -330,6 +332,9 @@ async def admin_create_record(
     }
     await db.intake_form_records.insert_one(doc)
     del doc["_id"]
+    await create_audit_log(entity_type="intake_form_record", entity_id=doc["id"],
+                           action="admin_created", actor=admin.get("email", "admin"),
+                           details={"customer_id": payload.customer_id, "form_id": payload.intake_form_id})
     return {"record": doc}
 
 
@@ -395,6 +400,9 @@ async def admin_update_record(
         {"id": record_id},
         {"$set": updates, "$push": {"versions": current_version}},
     )
+    await create_audit_log(entity_type="intake_form_record", entity_id=record_id,
+                           action="admin_updated", actor=admin.get("email", "admin"),
+                           details={"version": updates.get("version")})
     return {"message": "Updated"}
 
 
@@ -496,6 +504,9 @@ async def add_record_note(
         "updated_at": now_iso(),
     }
     await db.intake_form_records.update_one({"id": record_id}, {"$push": {"notes": note}})
+    await create_audit_log(entity_type="intake_form_record", entity_id=record_id,
+                           action="note_added", actor=admin.get("email", "admin"),
+                           details={"note_id": note["id"]})
     return {"note": note}
 
 
@@ -514,6 +525,9 @@ async def update_record_note(
         {"id": record_id, "notes.id": note_id},
         {"$set": {"notes.$.text": payload.text, "notes.$.updated_at": now_iso()}},
     )
+    await create_audit_log(entity_type="intake_form_record", entity_id=record_id,
+                           action="note_updated", actor=admin.get("email", "admin"),
+                           details={"note_id": note_id})
     return {"message": "Note updated"}
 
 
@@ -531,7 +545,19 @@ async def delete_record_note(
         {"id": record_id},
         {"$pull": {"notes": {"id": note_id}}},
     )
+    await create_audit_log(entity_type="intake_form_record", entity_id=record_id,
+                           action="note_deleted", actor=admin.get("email", "admin"),
+                           details={"note_id": note_id})
     return {"message": "Note deleted"}
+
+
+@router.get("/admin/intake-forms/{form_id}/logs")
+async def get_intake_form_def_logs(form_id: str, page: int = 1, limit: int = 20,
+                                    admin: Dict[str, Any] = Depends(get_tenant_admin)):
+    flt = {"entity_type": "intake_form", "entity_id": form_id}
+    total = await db.audit_logs.count_documents(flt)
+    logs = await db.audit_logs.find(flt, {"_id": 0}).sort("timestamp", -1).skip((page - 1) * limit).limit(limit).to_list(limit)
+    return {"logs": logs, "total": total}
 
 
 # ── Logs ───────────────────────────────────────────────────────────────────────
@@ -685,6 +711,10 @@ async def portal_submit_form(
                 "$push": {"versions": current_version},
             },
         )
+        await create_audit_log(entity_type="intake_form_record", entity_id=existing["id"],
+                               action="customer_resubmitted", actor=customer_id,
+                               details={"version": existing.get("version", 1) + 1, "status": status},
+                               tenant_id=tid)
         return {"message": "Form updated", "status": status}
     else:
         doc = {
@@ -714,4 +744,8 @@ async def portal_submit_form(
         }
         await db.intake_form_records.insert_one(doc)
         del doc["_id"]
+        await create_audit_log(entity_type="intake_form_record", entity_id=doc["id"],
+                               action="customer_submitted", actor=customer_id,
+                               details={"form_id": form_id, "status": status},
+                               tenant_id=tid)
         return {"message": "Form submitted", "status": status, "record": doc}

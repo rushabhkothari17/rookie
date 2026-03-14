@@ -17,8 +17,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
 import { ProductConditionBuilder, ProductVisRuleSet } from "@/pages/admin/ProductForm";
 import {
-  Plus, Pencil, Trash2, Eye, Download, FileText, StickyNote, History, ChevronDown, ChevronUp, Settings2, ToggleLeft, ToggleRight, X, Check, Clock, AlertCircle
+  Plus, Pencil, Trash2, Eye, Download, FileText, StickyNote, History, ChevronDown, ChevronUp, Settings2, ToggleLeft, ToggleRight, X, Check, Clock, AlertCircle, ScrollText
 } from "lucide-react";
+import { AuditLogDialog } from "@/components/AuditLogDialog";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,7 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [editingForm, setEditingForm] = useState<IntakeForm | null>(null);
+  const [logIntakeForm, setLogIntakeForm] = useState<IntakeForm | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [allCustomers, setAllCustomers] = useState<any[]>([]);
   const [customerSearch, setCustSearch] = useState("");
@@ -199,6 +201,7 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                     <span className="text-[10px] text-slate-400">{f.is_enabled ? "On" : "Off"}</span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => openEdit(f)} data-testid={`intake-form-edit-${f.id}`}><Pencil size={13} /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => setLogIntakeForm(f)} data-testid={`intake-form-logs-${f.id}`} title="Audit logs"><ScrollText size={13} /></Button>
                   <Button variant="ghost" size="sm" className="text-red-400" onClick={() => del(f.id)} data-testid={`intake-form-delete-${f.id}`}><Trash2 size={13} /></Button>
                   <Button variant="ghost" size="sm" onClick={() => setExpandedId(expandedId === f.id ? null : f.id)}>
                     {expandedId === f.id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -369,11 +372,10 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
           </div>
         </DialogContent>
       </Dialog>
+      {logIntakeForm && <AuditLogDialog open title={`Audit Logs — ${logIntakeForm.name}`} logsUrl={`/admin/intake-forms/${logIntakeForm.id}/logs`} onOpenChange={() => setLogIntakeForm(null)} />}
     </div>
   );
 }
-
-// ── Records sub-tab ───────────────────────────────────────────────────────────
 
 function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   const ws = useWebsite();

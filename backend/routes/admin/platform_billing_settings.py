@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from core.helpers import now_iso
 from core.tenant import get_tenant_admin, is_platform_admin, require_platform_super_admin
 from db.session import db
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["admin-platform-billing"])
 
@@ -58,4 +59,7 @@ async def update_billing_settings(
         {"id": SETTINGS_ID}, current, upsert=True
     )
     current.pop("_id", None)
+    await create_audit_log(entity_type="platform_billing_settings", entity_id=SETTINGS_ID,
+                           action="updated", actor=admin.get("email", "admin"),
+                           details={k: v for k, v in payload.dict(exclude_unset=True).items()})
     return current

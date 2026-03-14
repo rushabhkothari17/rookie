@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, FileText, Pencil, Trash2, Star } from "lucide-react";
+import { Plus, FileText, Pencil, Trash2, Star, ScrollText } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 import { AdminPageHeader } from "./shared/AdminPageHeader";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
 import SlideOver from "@/components/admin/SlideOver";
 import { useWebsite } from "@/contexts/WebsiteContext";
+import { AuditLogDialog } from "@/components/AuditLogDialog";
 
 interface CustomForm {
   id: string;
@@ -50,6 +51,7 @@ export function FormsManagementTab() {
 
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<CustomForm | null>(null);
+  const [logForm, setLogForm] = useState<CustomForm | null>(null);
 
   const loadForms = useCallback(async () => {
     setLoading(true);
@@ -215,6 +217,9 @@ export function FormsManagementTab() {
                   <p className="text-xs text-slate-400">{fieldCount(form.schema)} field(s)</p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setLogForm(form)} data-testid={`logs-form-${form.id}`} title="Audit logs">
+                    <ScrollText size={12} className="mr-1" /> Logs
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -331,6 +336,7 @@ export function FormsManagementTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {logForm && <AuditLogDialog open title={`Audit Logs — ${logForm.name}`} logsUrl={`/admin/forms/${logForm.id}/logs`} onOpenChange={() => setLogForm(null)} />}
     </div>
   );
 }

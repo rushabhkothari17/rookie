@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from core.helpers import now_iso
 from core.tenant import require_platform_super_admin, get_tenant_admin
 from db.session import db
+from services.audit_service import create_audit_log
 
 router = APIRouter(prefix="/api", tags=["platform-currencies"])
 
@@ -73,6 +74,8 @@ async def add_currency(payload: AddCurrencyPayload, admin: Dict[str, Any] = Depe
         {"$set": {"currencies": currencies, "updated_at": now_iso()}},
         upsert=True,
     )
+    await create_audit_log(entity_type="currency", entity_id=code, action="added",
+                           actor=admin.get("email", "admin"), details={"code": code})
     return {"currencies": currencies}
 
 
@@ -87,6 +90,8 @@ async def remove_currency(code: str, admin: Dict[str, Any] = Depends(require_pla
         {"type": _DOC_KEY},
         {"$set": {"currencies": currencies, "updated_at": now_iso()}},
     )
+    await create_audit_log(entity_type="currency", entity_id=code, action="removed",
+                           actor=admin.get("email", "admin"), details={"code": code})
     return {"currencies": currencies}
 
 
