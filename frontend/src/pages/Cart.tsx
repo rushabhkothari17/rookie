@@ -5,11 +5,12 @@ import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import api from "@/lib/api";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
-import { ShoppingCart, Trash2, Tag, CreditCard, Building2, ChevronDown, ChevronUp, X, Check, AlertCircle, FileText, Clock, ExternalLink, HelpCircle } from "lucide-react";
+import { ShoppingCart, Trash2, Tag, CreditCard, Building2, ChevronDown, ChevronUp, X, Check, AlertCircle, FileText, Clock, ExternalLink, HelpCircle, ClipboardList } from "lucide-react";
 
 const fmtMoney = (amount: number, currency = "USD") =>
   new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
@@ -31,7 +32,11 @@ export default function Cart() {
   const [subscriptionStartDate, setSubscriptionStartDate] = useState("");
   const [futureStartEnabled, setFutureStartEnabled] = useState(false);
   const [extraFields, setExtraFields] = useState<Record<string, string>>({});
-  
+
+  // Intake form gate
+  const [intakeGateModal, setIntakeGateModal] = useState(false);
+  const [blockingForms, setBlockingForms] = useState<{ form_id: string; form_name: string; status: string; rejection_reason?: string }[]>([]);
+
   // Scope ID state
   const [cartScopeId, setCartScopeId] = useState("");
   const [cartScopeValidating, setCartScopeValidating] = useState(false);
@@ -311,6 +316,18 @@ export default function Cart() {
     if (checkoutSections && sectionRequiredFieldsMissing) {
       toast.error("Please complete all required fields");
       return;
+    }
+
+    // ── Intake form gate ────────────────────────────────────────────────────
+    try {
+      const intakeCheck = await api.get("/portal/intake-forms/pending-check");
+      if (!intakeCheck.data.all_clear) {
+        setBlockingForms(intakeCheck.data.blocking);
+        setIntakeGateModal(true);
+        return;
+      }
+    } catch {
+      // If the check fails (e.g. not authenticated), continue — auth errors will surface below
     }
 
     const groupSubtotal = groupItems.reduce((sum: number, item: any) => sum + item.pricing.subtotal, 0);
@@ -960,6 +977,37 @@ export default function Cart() {
           </div>
         </div>
       )}
+
+      {/* Intake Form Gate Modal */}
+      <Dialog open={intakeGateModal} onOpenChange={setIntakeGateModal}>
+        <DialogContent className="max-w-md" data-testid="intake-gate-modal">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><ClipboardList size={18} /> Complete Your Intake Forms</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-1">
+            <p className="text-sm text-slate-600">You must complete the following intake form(s) before you can checkout:</p>
+            <div className="space-y-2">
+              {blockingForms.map(f => (
+                <div key={f.form_id} className={`flex items-start gap-3 rounded-xl border p-3 ${f.status === "rejected" ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50"}`}>
+                  {f.status === "rejected" ? <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" /> : <Clock size={14} className="text-amber-500 shrink-0 mt-0.5" />}
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{f.form_name}</p>
+                    {f.status === "rejected" && f.rejection_reason && <p className="text-xs text-red-600 mt-0.5">{f.rejection_reason}</p>}
+                    {f.status !== "rejected" && f.status !== "pending" && <p className="text-xs text-amber-600 mt-0.5">Awaiting admin approval</p>}
+                    {(f.status === "pending" || f.status === "rejected") && <p className="text-xs text-slate-500 mt-0.5">{f.status === "rejected" ? "Please re-submit" : "Not yet completed"}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setIntakeGateModal(false)}>Cancel</Button>
+              <Button className="flex-1" onClick={() => { setIntakeGateModal(false); navigate("/intake-form"); }} data-testid="intake-gate-go-btn">
+                Complete Now <ExternalLink size={13} className="ml-1.5" />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

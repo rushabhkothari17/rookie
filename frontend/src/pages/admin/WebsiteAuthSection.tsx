@@ -36,6 +36,7 @@ function getSlideTitle(key: AuthSlide | null): string {
     store_hero: "Services Page",
     articles_hero: "Resources Page",
     service_detail: "Service Detail Page",
+    intake_form_page: "Intake Form Page",
   };
   return map[key];
 }
@@ -61,6 +62,7 @@ function getSlideDesc(key: AuthSlide | null): string {
     store_hero: "Services page hero label, title, and subtitle.",
     articles_hero: "Resources page hero label, title, and subtitle.",
     service_detail: "Section headers, CTA labels, and navigation text across all product page layouts.",
+    intake_form_page: "Customize the Intake Form page title and subtitle.",
   };
   return map[key];
 }
@@ -114,6 +116,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
             <AuthTile title="Services Page" description="Hero label, title, subtitle on the main store page" preview={ws.hero_title || undefined} onEdit={() => setAuthSlide("store_hero")} testId="auth-tile-store-hero" />
             <AuthTile title="Resources Page" description="Hero label, title, subtitle on the resources page" preview={ws.articles_hero_title || undefined} onEdit={() => setAuthSlide("articles_hero")} testId="auth-tile-articles-hero" />
             <AuthTile title="Service Detail Page" description="Section headers, CTA labels, and layout text" onEdit={() => setAuthSlide("service_detail")} testId="auth-tile-service-detail" />
+            <AuthTile title="Intake Form Page" description="Intake form page title and subtitle" preview={ws.intake_form_page_title || undefined} onEdit={() => setAuthSlide("intake_form_page")} testId="auth-tile-intake-form" />
             <AuthTile title="Documents Page" description="Page heading, subtitle, nav label, upload text" preview={ws.documents_page_title || undefined} onEdit={() => setAuthSlide("documents_page")} testId="auth-tile-documents" />
             <AuthTile title="Profile Page" preview={ws.profile_title || undefined} description="Profile heading & subtitle" onEdit={() => setAuthSlide("profile")} testId="auth-tile-profile" />
             <AuthTile title="Admin Panel" preview={ws.admin_page_title || "Admin Control Centre"} description="Admin panel heading, subtitle, and badge text" onEdit={() => setAuthSlide("admin_panel")} testId="auth-tile-admin-panel" />
@@ -328,8 +331,16 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
             <Field label="Navigation section title" value={ws.footer_nav_title} onChange={s("footer_nav_title")} placeholder="Navigation" testId="ws-footer-nav-title" />
             <div className="grid grid-cols-3 gap-3">
               <Field label="Store label" value={ws.nav_store_label} onChange={s("nav_store_label")} testId="ws-nav-store" />
-              <Field label="Articles label" value={ws.nav_articles_label} onChange={s("nav_articles_label")} testId="ws-nav-articles" />
-              <Field label="Portal label" value={ws.nav_portal_label} onChange={s("nav_portal_label")} testId="ws-nav-portal" />
+              <Field label="Articles / Resources label" value={ws.nav_articles_label} onChange={s("nav_articles_label")} testId="ws-nav-articles" />
+              <Field label="My Account / Portal label" value={ws.nav_portal_label} onChange={s("nav_portal_label")} testId="ws-nav-portal" />
+              <Field label="Intake Form link label" value={ws.nav_intake_label} onChange={s("nav_intake_label")} testId="ws-nav-intake" />
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 p-3 mt-1">
+                <div>
+                  <p className="text-sm font-medium text-slate-700">Show Intake Form link in footer</p>
+                  <p className="text-xs text-slate-400">Toggle visibility of the intake form link in the footer navigation</p>
+                </div>
+                <input type="checkbox" checked={ws.nav_intake_enabled !== "false"} onChange={e => s("nav_intake_enabled")(e.target.checked ? "true" : "false")} className="w-4 h-4 accent-slate-900" data-testid="ws-nav-intake-enabled" />
+              </div>
             </div>
           </div>
         )}
@@ -351,6 +362,12 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
               <Field label="Instagram URL" value={ws.social_instagram} onChange={s("social_instagram")} placeholder="https://instagram.com/..." testId="ws-social-instagram" />
               <Field label="YouTube URL" value={ws.social_youtube} onChange={s("social_youtube")} placeholder="https://youtube.com/@..." testId="ws-social-youtube" />
             </div>
+          </div>
+        )}
+        {authSlide === "intake_form_page" && (
+          <div className="space-y-4">
+            <Field label="Page title" hint='Main heading on the Intake Form page' value={ws.intake_form_page_title} onChange={s("intake_form_page_title")} testId="ws-intake-page-title" />
+            <Field label="Page subtitle" hint="Description shown below the title" value={ws.intake_form_page_subtitle} onChange={s("intake_form_page_subtitle")} multiline testId="ws-intake-page-subtitle" />
           </div>
         )}
         {authSlide === "documents_page" && (

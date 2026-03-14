@@ -15,6 +15,7 @@ import { CategoriesTab } from "./admin/CategoriesTab";
 import { EnquiriesTab } from "./admin/EnquiriesTab";
 import { ResourcesTab } from "./admin/ResourcesTab";
 import { AdminDocumentsTab } from "./admin/AdminDocumentsTab";
+import { AdminIntakeFormsTab } from "./admin/AdminIntakeFormsTab";
 import WebsiteTab from "./admin/WebsiteTab";
 import { LogsTab } from "./admin/LogsTab";
 import { TenantsTab } from "./admin/TenantsTab";
@@ -80,7 +81,7 @@ const TAB_SECTIONS: Record<string, string> = {
   users: "people", customers: "people",
   catalog: "commerce", filters: "commerce", subscriptions: "commerce",
   orders: "commerce", enquiries: "commerce",
-  resources: "content", documents: "content",
+  resources: "content", documents: "content", "intake-forms": "content",
   "org-info": "settings", taxes: "settings", "auth-pages": "settings",
   "forms-tab": "settings", "email-templates": "settings",
   references: "settings", domains: "settings",
@@ -315,6 +316,7 @@ export default function Admin() {
                   <>
                     <SideTab value="resources" testId="admin-tab-resources" label="Resources" />
                     <SideTab value="documents" testId="admin-tab-documents" label="Documents" />
+                    <SideTab value="intake-forms" testId="admin-tab-intake-forms" label="Intake Forms" />
                   </>
                 )}
               </>
@@ -390,6 +392,9 @@ export default function Admin() {
           </TabsContent>
           <TabsContent value="documents" className="space-y-4">
             <AdminDocumentsTab onNavigateToTab={setActiveTab} />
+          </TabsContent>
+          <TabsContent value="intake-forms" className="space-y-4">
+            <AdminIntakeFormsTab />
           </TabsContent>
           <TabsContent value="categories" className="space-y-4">
             <CategoriesTab />

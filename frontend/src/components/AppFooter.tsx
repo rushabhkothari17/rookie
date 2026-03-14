@@ -8,7 +8,8 @@ export default function AppFooter() {
   const navLinks = [
     { label: ws.nav_store_label || "Store", to: "/store" },
     { label: ws.nav_articles_label || "Articles", to: "/articles" },
-    { label: ws.nav_portal_label || "Portal", to: "/portal" },
+    { label: ws.nav_portal_label || "My Account", to: "/portal" },
+    ...((ws.nav_intake_enabled as unknown as string) !== "false" && ws.nav_intake_enabled !== false ? [{ label: ws.nav_intake_label || "Intake Form", to: "/intake-form" }] : []),
   ];
 
   const socialLinks = [

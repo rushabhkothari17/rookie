@@ -25,7 +25,8 @@ export type AuthSlide =
   | "footer_basics" | "footer_about" | "footer_nav" | "footer_contact" | "footer_social"
   | "documents_page"
   | "store_hero" | "articles_hero"
-  | "service_detail";
+  | "service_detail"
+  | "intake_form_page";
 
 export interface WebsiteData {
   hero_label: string; hero_title: string; hero_subtitle: string;
@@ -39,6 +40,8 @@ export interface WebsiteData {
   social_twitter: string; social_linkedin: string; social_facebook: string;
   social_instagram: string; social_youtube: string;
   nav_store_label: string; nav_articles_label: string; nav_portal_label: string;
+  nav_intake_label: string; nav_intake_enabled: string;
+  intake_form_page_title: string; intake_form_page_subtitle: string;
   scope_form_title: string; scope_form_subtitle: string;
   signup_form_title: string; signup_form_subtitle: string;
   scope_form_schema: string; signup_form_schema: string; partner_signup_form_schema: string;
@@ -126,6 +129,8 @@ export const WEB_DEFAULTS: WebsiteData = {
   footer_nav_title: "", footer_contact_title: "", footer_social_title: "",
   social_twitter: "", social_linkedin: "", social_facebook: "", social_instagram: "", social_youtube: "",
   nav_store_label: "", nav_articles_label: "", nav_portal_label: "",
+  nav_intake_label: "Intake Form", nav_intake_enabled: "true",
+  intake_form_page_title: "Intake Form", intake_form_page_subtitle: "",
   scope_form_title: "", scope_form_subtitle: "",
   signup_form_title: "", signup_form_subtitle: "",
   scope_form_schema: "", signup_form_schema: "", partner_signup_form_schema: "",

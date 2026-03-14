@@ -774,6 +774,54 @@ async def _seed_new_tenant(tenant_id: str, tenant_name: str, now: str, base_curr
     from services.email_service import EmailService
     await EmailService.ensure_seeded(db, tenant_id)
 
+    # 8. Default intake form with T&C
+    intake_schema = [
+        {
+            "id": "if_full_name", "key": "full_name", "label": "Full Name",
+            "type": "text", "required": True, "placeholder": "e.g. Jane Smith",
+            "options": [], "locked": True, "enabled": True, "order": 0,
+        },
+        {
+            "id": "if_company", "key": "company_name", "label": "Company / Organisation",
+            "type": "text", "required": False, "placeholder": "e.g. Acme Corp",
+            "options": [], "locked": True, "enabled": True, "order": 1,
+        },
+        {
+            "id": "if_heard", "key": "how_did_you_hear", "label": "How did you hear about us?",
+            "type": "select", "required": False, "placeholder": "",
+            "options": ["Google / Search", "Social Media", "Referral", "Other"],
+            "locked": False, "enabled": True, "order": 2,
+        },
+        {
+            "id": "if_tc", "key": "terms_conditions", "label": "Terms & Conditions",
+            "type": "terms_conditions",
+            "terms_text": f"By signing below, you confirm that you have read and agree to {tenant_name}'s terms of service and privacy policy. You acknowledge that all information provided is accurate and complete.",
+            "required": True, "placeholder": "",
+            "options": [], "locked": False, "enabled": True, "order": 3,
+        },
+        {
+            "id": "if_sig", "key": "signature", "label": "Signature",
+            "type": "signature", "required": True, "placeholder": "",
+            "options": [], "locked": True, "enabled": True, "order": 4,
+        },
+    ]
+    import json as _json
+    await db.intake_forms.insert_one({
+        "id": make_id(),
+        "tenant_id": tenant_id,
+        "name": "Client Intake Questionnaire",
+        "description": "Complete this form before your first purchase. This helps us understand your needs.",
+        "schema": _json.dumps(intake_schema),
+        "is_enabled": True,
+        "auto_approve": False,
+        "allow_skip_signature": False,
+        "visibility_rules": [],
+        "customer_ids": [],
+        "created_by": "system",
+        "created_at": now,
+        "updated_at": now,
+    })
+
 
 @router.post("/auth/register-partner")
 async def register_partner(payload: Dict[str, Any] = Body(...)):
@@ -963,7 +1011,7 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
                 "plan_name": free_trial["name"],
                 "description": f"Initial plan — {free_trial['name']}",
                 "amount": 0.0,
-                "currency": "USD",
+                "currency": pending.get("base_currency", "USD"),
                 "billing_interval": "monthly",
                 "status": "active",
                 "payment_method": "manual",
@@ -994,7 +1042,7 @@ async def verify_partner_email(payload: Dict[str, Any] = Body(...)):
                 "plan_name": free_trial["name"],
                 "description": f"Initial setup — {free_trial['name']}",
                 "amount": 0.0,
-                "currency": "USD",
+                "currency": pending.get("base_currency", "USD"),
                 "status": "paid",
                 "payment_method": "manual",
                 "processor_id": None,

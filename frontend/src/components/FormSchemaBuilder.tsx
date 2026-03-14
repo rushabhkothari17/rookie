@@ -59,25 +59,27 @@ export interface FormField {
   min_value?: number;          // number type
   max_value?: number;          // number type
   address_config?: AddressConfig;
+  terms_text?: string;         // terms_conditions type: the terms body text
 }
 
-export type FieldType = "text" | "email" | "tel" | "number" | "date" | "textarea" | "select" | "checkbox" | "file" | "password" | "address";
+export type FieldType = "text" | "email" | "tel" | "number" | "date" | "textarea" | "select" | "checkbox" | "file" | "password" | "address" | "terms_conditions" | "signature";
 
 // Fields that must always be visible — hide/show toggle is suppressed for these
 const ALWAYS_VISIBLE_KEYS = new Set(["org_name", "email", "admin_email", "password", "admin_password", "full_name", "admin_name"]);
 
 const FIELD_TYPES: { value: FieldType; label: string }[] = [
-  { value: "text",     label: "Text" },
-  { value: "email",    label: "Email" },
-  { value: "tel",      label: "Phone" },
-  { value: "number",   label: "Number" },
-  { value: "date",     label: "Date" },
-  { value: "textarea", label: "Textarea" },
-  { value: "select",   label: "Dropdown" },
-  { value: "checkbox", label: "Checkbox" },
-  { value: "file",     label: "File Upload" },
-  { value: "password", label: "Password" },
-  { value: "address",  label: "Address Block" },
+  { value: "text",            label: "Text" },
+  { value: "email",           label: "Email" },
+  { value: "tel",             label: "Phone" },
+  { value: "number",          label: "Number" },
+  { value: "date",            label: "Date" },
+  { value: "textarea",        label: "Textarea" },
+  { value: "select",          label: "Dropdown" },
+  { value: "checkbox",        label: "Checkbox" },
+  { value: "file",            label: "File Upload" },
+  { value: "password",        label: "Password" },
+  { value: "address",         label: "Address Block" },
+  { value: "terms_conditions", label: "Terms & Conditions" },
 ];
 
 const ADDRESS_SUB_LABELS: { key: keyof AddressConfig; label: string }[] = [
@@ -139,7 +141,13 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
   };
 
   const remove = (id: string) => {
-    commit(fields.filter(f => f.id !== id));
+    let updated = fields.filter(f => f.id !== id);
+    // If removing a TC field, also remove the companion signature
+    const removed = fields.find(f => f.id === id);
+    if (removed?.type === "terms_conditions") {
+      updated = updated.filter(f => f.type !== "signature");
+    }
+    commit(updated);
     if (editingId === id) setEditingId(null);
   };
 
@@ -167,6 +175,34 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
       }
       return updated;
     }));
+  };
+
+  // When a terms_conditions field is added, auto-add a locked signature field after it
+  const addTCWithSignature = (tcId: string, currentFields: FormField[]) => {
+    const hasSig = currentFields.some(f => f.type === "signature");
+    if (hasSig) return currentFields;
+    const sigField: FormField = {
+      id: makeId(), key: "signature", label: "Signature",
+      type: "signature", required: true, placeholder: "",
+      options: [], locked: true, enabled: true, order: currentFields.length,
+    };
+    const idx = currentFields.findIndex(f => f.id === tcId);
+    const arr = [...currentFields];
+    arr.splice(idx + 1, 0, sigField);
+    return arr;
+  };
+
+  const handleTypeChange = (id: string, newType: FieldType) => {
+    let updated = fields.map(f => {
+      if (f.id !== id) return f;
+      return { ...f, type: newType, options: [], key: newType === "terms_conditions" ? "terms_conditions" : f.key };
+    });
+    if (newType === "terms_conditions") {
+      // Remove any existing signature field first, then re-add after TC
+      updated = updated.filter(f => f.type !== "signature" || f.id === id);
+      updated = addTCWithSignature(id, updated);
+    }
+    commit(updated);
   };
 
   const updateAddressSubField = (id: string, subKey: keyof AddressConfig, patch: Partial<AddressSubField>) => {
@@ -253,10 +289,10 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                 </div>
                 <div>
                   <label className="text-[11px] text-slate-500 font-medium">Field type</label>
-                  <Select value={field.type} onValueChange={v => updateField(field.id, { type: v as FieldType, options: [] })}>
+                  <Select value={field.type} onValueChange={v => handleTypeChange(field.id, v as FieldType)}>
                     <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {FIELD_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                      {FIELD_TYPES.filter(t => t.value !== "signature").map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   {(field.type === "email" || field.type === "tel") && (
@@ -267,8 +303,28 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                 </div>
 
                 {/* Address sub-field config (only for address type) */}
-                {field.type === "address" ? (
+                {field.type === "terms_conditions" ? (
                   <div className="col-span-2">
+                    <label className="text-[11px] text-slate-500 font-medium block mb-1">Terms & Conditions Text</label>
+                    <Textarea
+                      value={field.terms_text || ""}
+                      onChange={e => updateField(field.id, { terms_text: e.target.value })}
+                      rows={6}
+                      className="mt-0.5 text-xs"
+                      placeholder="Enter the full terms and conditions text here. The customer must read and sign below."
+                      data-testid={`field-terms-text-${field.id}`}
+                    />
+                    <p className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 mt-1.5">
+                      A signature field is automatically appended below this field and cannot be removed separately.
+                    </p>
+                  </div>
+                ) : field.type === "signature" ? (
+                  <div className="col-span-2">
+                    <p className="text-[11px] text-slate-500 bg-amber-50 border border-amber-100 rounded px-2 py-1.5">
+                      This signature field is automatically managed by the Terms &amp; Conditions field above. It requires a drawn signature and typed name.
+                    </p>
+                  </div>
+                ) : field.type === "address" ? (                  <div className="col-span-2">
                     <label className="text-[11px] text-slate-500 font-medium block mb-2">Sub-field Configuration</label>
                     <div className="rounded border border-slate-200 overflow-hidden">
                       <div className="grid grid-cols-3 gap-0 bg-slate-100 px-3 py-1.5">

@@ -10,7 +10,7 @@
  *   "json"           — address stored as JSON string at values[field.key]
  */
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -108,6 +108,135 @@ function FieldLabel({ label, required }: { label: string; required?: boolean }) 
     <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">
       {label}{required && <span className="text-red-400 ml-0.5"> *</span>}
     </label>
+  );
+}
+
+// ── Signature Field Component ─────────────────────────────────────────────────
+interface SigProps {
+  field: FormField;
+  values: Record<string, any>;
+  onChange: (key: string, value: string) => void;
+  animStyle: React.CSSProperties;
+  compact?: boolean;
+}
+
+function SignatureField({ field, values, onChange, animStyle, compact }: SigProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [drawing, setDrawing] = useState(false);
+  const [hasDrawing, setHasDrawing] = useState(false);
+  const lastPos = useRef<{ x: number; y: number } | null>(null);
+  const typedName = (values["signature_name"] as string) || "";
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  }, []);
+
+  const getPos = (e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) => {
+    const rect = canvas.getBoundingClientRect();
+    if ("touches" in e) {
+      return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+    }
+    return { x: (e as React.MouseEvent).clientX - rect.left, y: (e as React.MouseEvent).clientY - rect.top };
+  };
+
+  const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    e.preventDefault();
+    setDrawing(true);
+    lastPos.current = getPos(e, canvas);
+  };
+
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!drawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    e.preventDefault();
+    const ctx = canvas.getContext("2d");
+    if (!ctx || !lastPos.current) return;
+    const pos = getPos(e, canvas);
+    ctx.beginPath();
+    ctx.moveTo(lastPos.current.x, lastPos.current.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastPos.current = pos;
+  };
+
+  const stopDraw = () => {
+    if (drawing) {
+      setDrawing(false);
+      setHasDrawing(true);
+      const canvas = canvasRef.current;
+      if (canvas) onChange("signature_data_url", canvas.toDataURL());
+    }
+    lastPos.current = null;
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasDrawing(false);
+    onChange("signature_data_url", "");
+  };
+
+  return (
+    <div style={animStyle} className="sm:col-span-2 space-y-3" data-testid="ufr-field-signature">
+      <FieldLabel label={field.label || "Signature"} required={field.required} />
+      {/* Canvas draw area */}
+      <div className="relative rounded-2xl border-2 border-dashed border-slate-300 bg-white overflow-hidden" style={{ height: compact ? 100 : 140 }}>
+        <canvas
+          ref={canvasRef}
+          width={600}
+          height={compact ? 100 : 140}
+          className="w-full h-full cursor-crosshair touch-none"
+          onMouseDown={startDraw}
+          onMouseMove={draw}
+          onMouseUp={stopDraw}
+          onMouseLeave={stopDraw}
+          onTouchStart={startDraw}
+          onTouchMove={draw}
+          onTouchEnd={stopDraw}
+          data-testid="signature-canvas"
+        />
+        {!hasDrawing && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="text-sm text-slate-300 italic select-none">Draw your signature here</span>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={clearCanvas}
+          className="absolute top-2 right-2 text-[10px] text-slate-400 hover:text-red-500 bg-white border border-slate-200 rounded-lg px-2 py-0.5 transition-colors"
+          data-testid="signature-clear-btn"
+        >
+          Clear
+        </button>
+      </div>
+      {/* Typed name */}
+      <div>
+        <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">
+          Full Name (typed) <span className="text-red-400">*</span>
+        </label>
+        <input
+          type="text"
+          className="w-full rounded-full border border-slate-200 bg-white/90 px-5 h-10 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-800 transition-all"
+          value={typedName}
+          onChange={e => onChange("signature_name", e.target.value)}
+          placeholder="Type your full name to confirm"
+          data-testid="signature-name-input"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -282,9 +411,35 @@ export function UniversalFormRenderer({
       );
     }
 
-    // ── Read-only field (e.g. password in admin edit forms) ──────────────────
-    if ((readonlyKeys as string[]).includes(key)) {
+    // ── Terms & Conditions ─────────────────────────────────────────────────
+    if (field.type === "terms_conditions") {
       return (
+        <div key={field.id} style={animStyle} className="sm:col-span-2">
+          <FieldLabel label={field.label || "Terms & Conditions"} required={field.required} />
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 max-h-48 overflow-y-auto text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+            {(field as any).terms_text || "Please read the terms and conditions carefully before signing."}
+          </div>
+          {field.required && <p className="mt-1.5 text-[11px] text-slate-500 px-1">You must sign below to agree to these terms.</p>}
+        </div>
+      );
+    }
+
+    // ── Signature ─────────────────────────────────────────────────────────
+    if (field.type === "signature") {
+      return (
+        <SignatureField
+          key={field.id}
+          field={field}
+          values={values}
+          onChange={onChange}
+          animStyle={animStyle}
+          compact={compact}
+        />
+      );
+    }
+
+    // ── Read-only field (e.g. password in admin edit forms) ──────────────────
+    if ((readonlyKeys as string[]).includes(key)) {      return (
         <div key={field.id} style={animStyle}>
           <FieldLabel label={field.label || key} required={false} />
           <div className="relative">
@@ -388,8 +543,9 @@ export function UniversalFormRenderer({
       <div className="grid gap-4 sm:grid-cols-2">
         {flds.map(f => {
           const i = idx++;
+          const fullWidth = f.type === "textarea" || f.type === "terms_conditions" || f.type === "signature";
           return (
-            <div key={f.id} className={f.type === "textarea" ? "sm:col-span-2" : ""}>
+            <div key={f.id} className={fullWidth ? "sm:col-span-2" : ""}>
               {renderOne(f, i)}
             </div>
           );

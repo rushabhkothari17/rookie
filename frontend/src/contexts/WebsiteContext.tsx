@@ -60,6 +60,11 @@ export interface WebsiteSettings {
   nav_store_label: string;
   nav_articles_label: string;
   nav_portal_label: string;
+  nav_intake_label: string;
+  nav_intake_enabled: boolean;
+  // Intake form page
+  intake_form_page_title: string;
+  intake_form_page_subtitle: string;
   // Forms text
   quote_form_title: string;
   quote_form_subtitle: string;
@@ -243,6 +248,10 @@ const DEFAULT_SETTINGS: WebsiteSettings = {
   nav_store_label: "Store",
   nav_articles_label: "Articles",
   nav_portal_label: "Portal",
+  nav_intake_label: "Intake Form",
+  nav_intake_enabled: true,
+  intake_form_page_title: "Intake Form",
+  intake_form_page_subtitle: "Please complete the following forms before making a purchase.",
   quote_form_title: "Request a Quote",
   quote_form_subtitle: "Fill in your details and we'll get back to you with a custom quote.",
   quote_form_response_time: "We'll respond within 1-2 business days.",

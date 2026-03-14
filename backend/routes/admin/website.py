@@ -207,6 +207,8 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "nav_store_label": "Services",
     "nav_articles_label": "Resources",
     "nav_portal_label": "My Account",
+    "nav_intake_label": "Intake Form",
+    "nav_intake_enabled": True,
     "social_twitter": "",
     "social_linkedin": "",
     "social_facebook": "",
@@ -230,6 +232,9 @@ DEFAULT_WEBSITE_SETTINGS: Dict[str, Any] = {
     "email_article_footer_text": "Your consultant has shared this document with you.",
     "email_verification_subject": "Verify your email address",
     "email_verification_body": "Your verification code is: {{code}}. This code expires in 24 hours.",
+    # Intake form page
+    "intake_form_page_title": "Intake Form",
+    "intake_form_page_subtitle": "Please complete the following forms before making a purchase.",
     # Error / UI messages
     "msg_partner_tagging_prompt": "Please confirm whether you have tagged us as your partner before continuing.",
     "msg_override_required": "An override code is required to proceed.",

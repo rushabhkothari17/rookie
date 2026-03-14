@@ -557,6 +557,11 @@ class WebsiteSettingsUpdate(BaseModel):
     nav_store_label: Optional[str] = None
     nav_articles_label: Optional[str] = None
     nav_portal_label: Optional[str] = None
+    nav_intake_label: Optional[str] = None
+    nav_intake_enabled: Optional[bool] = None
+    # Intake form page
+    intake_form_page_title: Optional[str] = None
+    intake_form_page_subtitle: Optional[str] = None
     # Forms (text labels)
     scope_form_title: Optional[str] = None
     scope_form_subtitle: Optional[str] = None

@@ -23,6 +23,7 @@ import GoCardlessCallback from "@/pages/GoCardlessCallback";
 import Articles from "@/pages/Resources";
 import Documents from "@/pages/Documents";
 import ArticleView from "@/pages/ResourceView";
+import IntakeFormPage from "@/pages/IntakeFormPage";
 
 import Portal from "@/pages/Portal";
 import Admin from "@/pages/Admin";
@@ -141,6 +142,7 @@ export default function App() {
                 <Route path="/profile" element={<Profile />} />
 
                 <Route path="/portal" element={<Portal />} />
+                <Route path="/intake-form" element={<IntakeFormPage />} />
                 <Route path="/invoice/:orderId" element={<InvoiceViewer />} />
                 <Route
                   path="/admin"
