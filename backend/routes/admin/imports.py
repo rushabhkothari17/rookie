@@ -74,7 +74,6 @@ ENTITY_COLLECTIONS: Dict[str, str] = {
     "subscriptions": "subscriptions",
     "orders": "orders",
     "promo-codes": "promo_codes",
-    "bank-transactions": "bank_transactions",
     "articles": "articles",
     "article-templates": "article_templates",
     "article-categories": "article_categories",

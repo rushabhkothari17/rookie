@@ -147,16 +147,16 @@ async def _seed_defaults(tid: str = DEFAULT_TENANT_ID) -> None:
 
 
 class ArticleTemplateCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=500)
+    name: str = Field(min_length=1, max_length=100)
     description: Optional[str] = Field("", max_length=5_000)
-    category: Optional[str] = Field("", max_length=200)
+    category: Optional[str] = Field("", max_length=100)
     content: Optional[str] = Field("", max_length=500_000)
 
 
 class ArticleTemplateUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=500)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=5_000)
-    category: Optional[str] = Field(None, max_length=200)
+    category: Optional[str] = Field(None, max_length=100)
     content: Optional[str] = Field(None, max_length=500_000)
 
 

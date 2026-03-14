@@ -335,7 +335,7 @@ function SubFormModal({
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-600">Processor ID (Stripe/GC reference)</label>
-            <Input value={form.processor_id} onChange={e => set("processor_id", e.target.value)} maxLength={200} placeholder="sub_xxx or PM-xxx" />
+            <Input value={form.processor_id} onChange={e => set("processor_id", e.target.value)} maxLength={100} placeholder="sub_xxx or PM-xxx" />
           </div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">

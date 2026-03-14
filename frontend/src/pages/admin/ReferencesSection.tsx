@@ -241,7 +241,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
       <div>
         <RequiredLabel className="text-slate-600">Value</RequiredLabel>
         <Input value={draft.value || ""} onChange={(e) => set("value", e.target.value)}
-          maxLength={1000}
+          maxLength={500}
           placeholder={draft.type === "email" ? "support@co.com" : draft.type === "url" ? "https://..." : draft.type === "phone" ? "+1 555 000 0000" : "Value"}
           type={draft.type === "email" ? "email" : draft.type === "url" ? "url" : "text"}
           className="mt-0.5 h-8 text-sm" data-testid="ref-value-input" />

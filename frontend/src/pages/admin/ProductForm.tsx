@@ -163,7 +163,7 @@ function BulletsList({ bullets, onChange, placeholder = "Feature or detail", lab
           <Input
             value={b}
             onChange={e => update(i, e.target.value)}
-            maxLength={200}
+            maxLength={500}
             placeholder={placeholder}
             className="flex-1 h-9 text-sm"
             data-testid={`pf-bullet-${i}`}
@@ -211,7 +211,7 @@ function FAQList({ faqs, onChange }: { faqs: FAQ[]; onChange: (v: FAQ[]) => void
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Q{i + 1}</span>
             <button type="button" onClick={() => remove(i)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={12} /></button>
           </div>
-          <Input value={faq.question} onChange={e => update(i, "question", e.target.value)} maxLength={100} placeholder="Question" className="h-9 text-sm" data-testid={`faq-q-${i}`} />
+          <Input value={faq.question} onChange={e => update(i, "question", e.target.value)} maxLength={500} placeholder="Question" className="h-9 text-sm" data-testid={`faq-q-${i}`} />
           <Textarea value={faq.answer} onChange={e => update(i, "answer", e.target.value)} maxLength={5000} placeholder="Answer" rows={2} className="text-sm resize-none" data-testid={`faq-a-${i}`} />
         </div>
       ))}

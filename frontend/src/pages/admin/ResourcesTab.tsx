@@ -594,7 +594,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
                 <Input
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  maxLength={200}
+                  maxLength={100}
                   placeholder="auto-generated"
                   className="font-mono text-sm"
                   data-testid="resource-slug-input"
@@ -811,7 +811,7 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
               <Input
                 value={emailForm.subject}
                 onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
-                maxLength={200}
+                maxLength={500}
                 data-testid="email-subject-input"
               />
             </div>

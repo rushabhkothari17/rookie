@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_filter, tenant_id_of, get_tenant_admin, is_platform_admin, enrich_partner_codes
-from core.constants import ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHODS, ALLOWED_ORDER_STATUSES, ALLOWED_BANK_TRANSACTION_STATUSES
+from core.constants import ALLOWED_SUBSCRIPTION_STATUSES, ALLOWED_PAYMENT_METHODS, ALLOWED_ORDER_STATUSES
 from db.session import db
 from models import SubscriptionUpdate, ManualSubscriptionCreate
 from services.audit_service import create_audit_log
@@ -106,7 +106,6 @@ async def get_filter_options(admin: Dict[str, Any] = Depends(get_tenant_admin)):
         "order_statuses": ALLOWED_ORDER_STATUSES,
         "subscription_statuses": ALLOWED_SUBSCRIPTION_STATUSES,
         "payment_methods": ALLOWED_PAYMENT_METHODS,
-        "bank_transaction_statuses": ALLOWED_BANK_TRANSACTION_STATUSES,
     }
 
 

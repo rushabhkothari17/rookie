@@ -8,11 +8,12 @@ from typing import Any, Dict, List, Optional
 # ---------------------------------------------------------------------------
 # Shared length constants — keep in sync with frontend/src/lib/fieldLimits.tsx
 # ---------------------------------------------------------------------------
-_NAME    = {"min_length": 1, "max_length": 100}   # titles, names, headings
-_CODE    = {"min_length": 1, "max_length": 100}   # codes, keys, slugs
+_NAME    = {"min_length": 1, "max_length": 100}   # entity names, titles, headings
+_CODE    = {"min_length": 1, "max_length": 100}   # codes, keys, slugs, enum-like
 _DESC    = {"max_length": 10_000}                 # long descriptions
 _NOTE    = {"max_length": 5_000}                  # notes, FAQ answers
-_SHORT   = {"max_length": 100}                    # labels, button text
+_SHORT   = {"max_length": 100}                    # enum-like / system codes only
+_SUBJECT = {"max_length": 500}                    # email subjects and single-line text
 _CONTENT = {"max_length": 500_000}                # rich HTML bodies
 
 
@@ -28,11 +29,11 @@ class AddressInput(BaseModel):
 class RegisterRequest(BaseModel):
     email: str = Field(max_length=320)
     password: str = Field(max_length=128)
-    full_name: Optional[str] = Field(None, max_length=200)
+    full_name: Optional[str] = Field(None, max_length=100)
     first_name: Optional[str] = Field(None, max_length=100)
     last_name: Optional[str] = Field(None, max_length=100)
-    company_name: str = Field("", max_length=200)
-    job_title: str = Field("", max_length=200)
+    company_name: str = Field("", max_length=100)
+    job_title: str = Field("", max_length=100)
     phone: str = Field("", max_length=50)
     address: AddressInput
     profile_meta: Optional[Dict[str, Any]] = None
@@ -92,9 +93,9 @@ class CreatePartnerAdminRequest(BaseModel):
 
 
 class VerifyEmailRequest(BaseModel):
-    email: Optional[str] = None
-    code: Optional[str] = None
-    partner_code: Optional[str] = None
+    email: Optional[str] = Field(None, max_length=320)
+    code: Optional[str] = Field(None, max_length=6)
+    partner_code: Optional[str] = Field(None, max_length=100)
     token: Optional[str] = None  # JWT verification token (alternative to email+code)
 
 
@@ -104,9 +105,9 @@ class ResendVerificationRequest(BaseModel):
 
 
 class UpdateProfileRequest(BaseModel):
-    full_name: Optional[str] = Field(None, max_length=200)
-    company_name: Optional[str] = Field(None, max_length=200)
-    job_title: Optional[str] = Field(None, max_length=200)
+    full_name: Optional[str] = Field(None, max_length=100)
+    company_name: Optional[str] = Field(None, max_length=100)
+    job_title: Optional[str] = Field(None, max_length=100)
     phone: Optional[str] = Field(None, max_length=50)
     email: Optional[str] = Field(None, max_length=320)
     address: Optional[AddressInput] = None
@@ -236,7 +237,7 @@ class IntakeSchemaJson(BaseModel):
 
 class CustomSection(BaseModel):
     id: str = Field("", max_length=100)
-    name: str = Field(max_length=500)
+    name: str = Field(max_length=100)
     content: str = Field("", max_length=500_000)
     icon: Optional[str] = Field(None, max_length=50)
     icon_color: Optional[str] = Field(None, max_length=50)
@@ -251,12 +252,12 @@ class AdminProductUpdate(BaseModel):
     card_bullets: Optional[List[str]] = None
     description_long: str = Field("", **_CONTENT)
     bullets: Optional[List[str]] = None
-    category: Optional[str] = Field(None, max_length=200)
+    category: Optional[str] = Field(None, max_length=100)
     faqs: Optional[List[Any]] = None
     terms_id: Optional[str] = None
     base_price: Optional[float] = Field(None, ge=0)
     is_subscription: Optional[bool] = None
-    stripe_price_id: Optional[str] = None
+    stripe_price_id: Optional[str] = Field(None, max_length=100)
     pricing_type: Optional[str] = "internal"
     external_url: Optional[str] = Field(None, max_length=2048)
     is_active: bool = True
@@ -276,8 +277,8 @@ class AdminProductUpdate(BaseModel):
 
 
 class AdminOrderUpdate(BaseModel):
-    manual_status: Optional[str] = None
-    internal_note: Optional[str] = None
+    manual_status: Optional[str] = Field(None, max_length=100)
+    internal_note: Optional[str] = Field(None, max_length=5_000)
 
 
 class PromoCodeCreate(BaseModel):
@@ -402,9 +403,9 @@ class ManualSubscriptionCreate(BaseModel):
 
 class AdminCreateUserRequest(BaseModel):
     email: str = Field(max_length=320)
-    full_name: str = Field(max_length=200)
-    company_name: Optional[str] = Field("", max_length=200)
-    job_title: Optional[str] = Field("", max_length=200)
+    full_name: str = Field(max_length=100)
+    company_name: Optional[str] = Field("", max_length=100)
+    job_title: Optional[str] = Field("", max_length=100)
     phone: Optional[str] = Field("", max_length=50)
     password: str = Field(max_length=128)
     role: str = Field("partner_admin", max_length=100)
@@ -416,14 +417,14 @@ class AdminCreateUserRequest(BaseModel):
 
 
 class AdminCreateCustomerRequest(BaseModel):
-    full_name: str = Field(max_length=200)
-    company_name: Optional[str] = Field("", max_length=200)
-    job_title: Optional[str] = Field("", max_length=200)
+    full_name: str = Field(max_length=100)
+    company_name: Optional[str] = Field("", max_length=100)
+    job_title: Optional[str] = Field("", max_length=100)
     email: str = Field(max_length=320)
     phone: Optional[str] = Field("", max_length=50)
     password: str = Field(max_length=128)
-    line1: Optional[str] = Field("", max_length=200)
-    line2: Optional[str] = Field("", max_length=200)
+    line1: Optional[str] = Field("", max_length=100)
+    line2: Optional[str] = Field("", max_length=100)
     city: Optional[str] = Field("", max_length=100)
     region: Optional[str] = Field("", max_length=100)
     postal: Optional[str] = Field("", max_length=20)
@@ -510,8 +511,8 @@ class ScopeRequestFormData(BaseModel):
     project_summary: Optional[str] = Field("", **_NOTE)
     desired_outcomes: Optional[str] = Field("", **_NOTE)
     apps_involved: Optional[str] = Field("", **_NOTE)
-    timeline_urgency: Optional[str] = Field("", **_SHORT)
-    budget_range: Optional[str] = Field("", **_SHORT)
+    timeline_urgency: Optional[str] = Field("", max_length=500)
+    budget_range: Optional[str] = Field("", max_length=500)
     additional_notes: Optional[str] = Field("", **_NOTE)
     name: Optional[str] = Field("", max_length=100)
     email: Optional[str] = Field("", max_length=320)
@@ -545,12 +546,12 @@ class AdminProductCreate(BaseModel):
     card_bullets: Optional[List[str]] = None
     description_long: str = Field("", **_CONTENT)
     bullets: List[str] = Field(default_factory=list)
-    category: str = Field("", max_length=200)
+    category: str = Field("", max_length=100)
     faqs: List[Dict[str, str]] = Field(default_factory=list)
     terms_id: Optional[str] = None
     base_price: float = Field(0.0, ge=0)
     is_subscription: bool = False
-    stripe_price_id: Optional[str] = None
+    stripe_price_id: Optional[str] = Field(None, max_length=100)
     pricing_type: str = "internal"
     external_url: Optional[str] = Field(None, max_length=2048)
     is_active: bool = True
@@ -569,10 +570,10 @@ class AdminProductCreate(BaseModel):
 
 
 class AppSettingsUpdate(BaseModel):
-    stripe_public_key: Optional[str] = Field(None, max_length=200)
-    stripe_secret_key: Optional[str] = Field(None, max_length=200)
+    stripe_public_key: Optional[str] = Field(None, max_length=500)
+    stripe_secret_key: Optional[str] = Field(None, max_length=500)
     gocardless_token: Optional[str] = Field(None, max_length=500)
-    resend_api_key: Optional[str] = Field(None, max_length=200)
+    resend_api_key: Optional[str] = Field(None, max_length=500)
     primary_color: Optional[str] = Field(None, max_length=30)
     secondary_color: Optional[str] = Field(None, max_length=30)
     accent_color: Optional[str] = Field(None, max_length=30)
@@ -587,7 +588,7 @@ class AppSettingsUpdate(BaseModel):
     muted_color: Optional[str] = Field(None, max_length=30)
     logo_url: Optional[str] = Field(None, max_length=2048)
     favicon_url: Optional[str] = Field(None, max_length=2048)
-    store_name: Optional[str] = Field(None, max_length=200)
+    store_name: Optional[str] = Field(None, max_length=100)
 
 
 class WebsiteSettingsUpdate(BaseModel):
@@ -718,10 +719,6 @@ class WebsiteSettingsUpdate(BaseModel):
     admin_page_badge: Optional[str] = None
     admin_page_title: Optional[str] = None
     admin_page_subtitle: Optional[str] = None
-    # Bank transaction form
-    bank_transaction_sources: Optional[str] = None
-    bank_transaction_types: Optional[str] = None
-    bank_transaction_statuses: Optional[str] = None
     # Documents page customization
     nav_documents_label: Optional[str] = None
     documents_page_title: Optional[str] = None
@@ -735,11 +732,10 @@ class WebsiteSettingsUpdate(BaseModel):
     signup_bullet_3: Optional[str] = None
     signup_cta: Optional[str] = None
 
-    # JSON schema fields that need a larger budget; body text ≤ 1000; other str fields ≤ 100
+    # JSON schema fields that need a larger budget; body text ≤ 500; title fields ≤ 100
     _JSON_FIELDS = frozenset({
         "scope_form_schema", "signup_form_schema", "partner_signup_form_schema",
         "checkout_extra_schema", "checkout_sections", "email_verification_body",
-        "bank_transaction_sources", "bank_transaction_types", "bank_transaction_statuses",
     })
 
     from pydantic import model_validator
@@ -752,7 +748,6 @@ class WebsiteSettingsUpdate(BaseModel):
         json_fields = {
             "scope_form_schema", "signup_form_schema", "partner_signup_form_schema",
             "checkout_extra_schema", "checkout_sections", "email_verification_body",
-            "bank_transaction_sources", "bank_transaction_types", "bank_transaction_statuses",
         }
         body_fields = {
             "hero_subtitle", "articles_hero_subtitle",
@@ -776,6 +771,7 @@ class WebsiteSettingsUpdate(BaseModel):
             "signup_bullet_1", "signup_bullet_2", "signup_bullet_3",
             "documents_page_upload_hint", "documents_page_empty_text",
             "email_article_subject_template", "email_verification_subject",
+            "sdp_configure_price_subtitle", "sdp_wizard_review_subtitle",
         }
         # Social/external URL fields — allow up to 2,048 chars
         url_fields = {
@@ -788,7 +784,7 @@ class WebsiteSettingsUpdate(BaseModel):
             if key in json_fields:
                 limit = 100_000
             elif key in body_fields:
-                limit = 1_000
+                limit = 500
             elif key in url_fields:
                 limit = 2_048
             else:
@@ -814,7 +810,7 @@ class QuoteRequest(BaseModel):
 
 class ArticleCreate(BaseModel):
     title: str = Field(**_NAME)
-    slug: Optional[str] = Field(None, max_length=200)
+    slug: Optional[str] = Field(None, max_length=100)
     category: str = Field(**_SHORT)
     price: Optional[float] = Field(None, ge=0)
     currency: Optional[str] = Field(None, max_length=10)
@@ -825,7 +821,7 @@ class ArticleCreate(BaseModel):
 
 class ArticleUpdate(BaseModel):
     title: Optional[str] = Field(None, **_NAME)
-    slug: Optional[str] = Field(None, max_length=200)
+    slug: Optional[str] = Field(None, max_length=100)
     category: Optional[str] = Field(None, **_SHORT)
     price: Optional[float] = Field(None, ge=0)
     currency: Optional[str] = Field(None, max_length=10)
@@ -836,7 +832,7 @@ class ArticleUpdate(BaseModel):
 
 class ArticleEmailRequest(BaseModel):
     customer_ids: List[str] = Field(max_length=1000)
-    subject: Optional[str] = Field(None, **_SHORT)
+    subject: Optional[str] = Field(None, max_length=500)
     message: Optional[str] = Field(None, **_NOTE)
 
 
@@ -844,21 +840,21 @@ class ArticleSendEmailRequest(BaseModel):
     to: List[str] = Field(max_length=200)
     cc: Optional[List[str]] = Field(None, max_length=50)
     bcc: Optional[List[str]] = Field(None, max_length=50)
-    subject: str = Field(**_SHORT)
+    subject: str = Field(max_length=500)
     html_body: str = Field(**_CONTENT)
     attach_pdf: bool = False
 
 
 class ArticleEmailTemplateCreate(BaseModel):
     name: str = Field(**_NAME)
-    subject: str = Field(**_SHORT)
+    subject: str = Field(max_length=500)
     html_body: str = Field(**_CONTENT)
     description: Optional[str] = Field("", **_NOTE)
 
 
 class ArticleEmailTemplateUpdate(BaseModel):
     name: Optional[str] = Field(None, **_NAME)
-    subject: Optional[str] = Field(None, **_SHORT)
+    subject: Optional[str] = Field(None, max_length=500)
     html_body: Optional[str] = Field(None, **_CONTENT)
     description: Optional[str] = None
 

@@ -161,7 +161,7 @@ export function ArticleEmailTemplatesTab() {
                 <RequiredLabel>Subject</RequiredLabel>
                 {form.subject.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.subject.length > 190 ? "text-red-500" : form.subject.length > 160 ? "text-amber-500" : "text-slate-400"}`}>{form.subject.length}/200</span>}
               </div>
-              <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} maxLength={200} placeholder="Email subject line" data-testid="email-template-subject-input" />
+              <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} maxLength={500} placeholder="Email subject line" data-testid="email-template-subject-input" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700">Email Body</label>

@@ -517,7 +517,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                       value={field.terms_text || ""}
                       onChange={e => updateField(field.id, { terms_text: e.target.value })}
                       rows={6}
-                      maxLength={10000}
+                      maxLength={500000}
                       className="mt-0.5 text-xs"
                       placeholder="Enter the full terms and conditions text here. The customer must read and sign below."
                       data-testid={`field-terms-text-${field.id}`}
@@ -578,7 +578,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                     {/* Standard placeholder + required for non-address types */}
                     <div>
                       <label className="text-[11px] text-slate-500 font-medium">Placeholder</label>
-                      <Input value={field.placeholder} onChange={e => updateField(field.id, { placeholder: e.target.value })} maxLength={200} className="mt-0.5 h-7 text-xs" />
+                      <Input value={field.placeholder} onChange={e => updateField(field.id, { placeholder: e.target.value })} maxLength={500} className="mt-0.5 h-7 text-xs" />
                     </div>
                     <div className="flex items-end gap-4 pb-1">
                       <label className="flex items-center gap-1.5 cursor-pointer">

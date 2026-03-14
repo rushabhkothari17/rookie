@@ -202,7 +202,7 @@ export function Field({ label, hint, value, onChange, multiline = false, testId,
   multiline?: boolean; testId?: string; placeholder?: string; disabled?: boolean; maxLength?: number;
 }) {
   // Smart default: body-copy (multiline) → 1 000, labels/titles/names → 100
-  const effectiveMax = maxLength ?? (multiline ? 1_000 : 100);
+  const effectiveMax = maxLength ?? (multiline ? 500 : 100);
   const pct = value.length / effectiveMax;
   const cntCls = pct > 0.95 ? "text-red-500" : pct > 0.8 ? "text-amber-500" : "text-slate-400";
   return (
