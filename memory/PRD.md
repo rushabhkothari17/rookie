@@ -16,6 +16,12 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - Full Audit Logging Coverage
+- **P0** — Added missing `create_audit_log` calls to `coupons.py` (create/update/delete), `currencies.py` (add/remove), `platform_billing_settings.py` (update), `intake_forms.py` (delete form, admin create/update record, add/update/delete note, portal submit).
+- **P1** — Added `/logs` GET endpoints for: coupon, form (forms management), intake_form definition, webhook (audit trail). Added `AuditLogDialog` log buttons to: Coupons (PlansTab), Forms Management, Intake Forms builder, Webhooks (separate from delivery logs).
+- **P2** — Fixed `LogsTab` `ENTITY_TYPES` filter: 34 entries, all lowercase, added `coupon`, `webhook`, `intake_form`, `intake_form_record`, `form`, `currency`, `platform_billing_settings`, etc. Fixed case-mismatch (stored lowercase vs capitalized filter).
+- **Testing:** 100% frontend pass (iteration 288).
+
 ### Session: Mar 2026 - P1 Fix: Backend Mandatory Rejection Reason Enforcement
 - **Fix**: Added a 400-guard in `backend/routes/admin/intake_forms.py` → `update_record_status` endpoint. If `status == "rejected"` and `rejection_reason` is empty/missing, the API now returns `HTTP 400` with a clear message.
 - **Tested**: curl confirmed — reject without reason → 400, reject with reason → 200.
