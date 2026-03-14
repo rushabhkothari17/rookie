@@ -568,8 +568,8 @@ html.aa-dark {
   --card-foreground: 210 40% 90%;
   --popover: 215 28% 10%;
   --popover-foreground: 210 40% 90%;
-  --primary: 210 40% 90%;
-  --primary-foreground: 216 28% 7%;
+  --primary: 217 91% 64%;
+  --primary-foreground: 0 0% 100%;
   --secondary: 215 25% 15%;
   --secondary-foreground: 210 40% 90%;
   --muted: 215 25% 15%;
@@ -587,6 +587,86 @@ html.aa-dark {
 html.aa-dark body {
   background-color: var(--aa-bg);
   color: var(--aa-text);
+}
+
+/* ── bg-white/90 override (Tailwind opacity modifier — not caught by .bg-white) ── */
+.aa-dark .bg-white\/90,
+.aa-dark .bg-white\/60,
+.aa-dark .bg-white\/80 {
+  background-color: var(--aa-surface) !important;
+  color: var(--aa-text) !important;
+}
+
+/* ── focus:bg-white → surface in dark mode ── */
+.aa-dark .focus\:bg-white:focus {
+  background-color: var(--aa-surface) !important;
+}
+
+/* ── focus:border-slate-800 → accent in dark mode ── */
+.aa-dark .focus\:border-slate-800:focus {
+  border-color: var(--aa-accent) !important;
+}
+
+/* ── hover:border-slate-300 → border in dark mode ── */
+.aa-dark .hover\:border-slate-300:hover {
+  border-color: color-mix(in srgb, var(--aa-border) 140%, transparent) !important;
+}
+
+/* ── data-[state=open]:border-slate-800 → accent ── */
+.aa-dark [data-state="open"].data-\[state\=open\]\:border-slate-800 {
+  border-color: var(--aa-accent) !important;
+}
+
+/* ── Checked checkbox/radio — use accent in dark mode ── */
+.aa-dark [data-state="checked"].data-\[state\=checked\]\:bg-slate-900 {
+  background-color: var(--aa-accent) !important;
+  border-color: var(--aa-accent) !important;
+}
+
+/* ── Signature canvas area ── */
+.aa-dark .border-dashed.border-slate-300.bg-white {
+  background-color: var(--aa-surface) !important;
+  border-color: var(--aa-border) !important;
+}
+
+/* ── Signature clear button ── */
+.aa-dark .bg-white.border.border-slate-200.rounded-lg {
+  background-color: var(--aa-surface) !important;
+  border-color: var(--aa-border) !important;
+  color: var(--aa-muted) !important;
+}
+
+/* ── SelectTrigger buttons with bg-white class (Portal, Store filters) ── */
+/* The existing .aa-dark .bg-white already covers these for standard button/div.
+   The button[class*="bg-white"] is intentionally omitted to avoid interfering
+   with special cases — all critical bg-white/90 issues are fixed in components. */
+
+/* ── Reset border on those bg-white buttons so they use aa-border ── */
+.aa-dark button.border-slate-200 {
+  border-color: var(--aa-border) !important;
+}
+
+/* ── ProductEditor sticky header ── */
+.aa-dark .sticky.top-0.bg-white {
+  background-color: var(--aa-card) !important;
+}
+.aa-dark .border-b.border-slate-200.bg-white {
+  background-color: var(--aa-card) !important;
+  border-color: var(--aa-border) !important;
+}
+
+/* ── Radio option with bg-white hover:bg-slate-50 ── */
+.aa-dark .border-slate-200.bg-white.hover\:bg-slate-50 {
+  background-color: var(--aa-surface) !important;
+}
+
+/* ── Terms / T&C content block ── */
+.aa-dark .bg-slate-50.border-slate-200 {
+  background-color: var(--aa-surface) !important;
+  border-color: var(--aa-border) !important;
+}
+.aa-dark .text-slate-600.bg-slate-50 {
+  color: var(--aa-muted) !important;
 }
 
 /* Dark mode scrollbar */

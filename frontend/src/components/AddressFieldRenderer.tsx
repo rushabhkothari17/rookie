@@ -28,17 +28,19 @@ type Option = { value: string; label: string };
 const pillInput = (hasError = false, compact = false) =>
   cn(
     compact ? "h-9" : "h-10",
-    "w-full rounded-full border bg-white/90 px-5 text-sm text-slate-900",
-    "placeholder:text-slate-400 transition-all duration-200 focus:outline-none focus:ring-0",
+    "w-full rounded-full border px-5 text-sm transition-all duration-200",
+    "bg-[var(--aa-card)] text-[var(--aa-text)] placeholder:text-[var(--aa-muted)]",
+    "focus:outline-none focus:ring-0",
     hasError
       ? "border-red-400 focus:border-red-500"
-      : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+      : "border-[var(--aa-border)] hover:border-[var(--aa-muted)] focus:border-[var(--aa-accent)] focus:bg-[var(--aa-surface)] focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
   );
 
 const pillSelect = (compact = false) => cn(
   compact ? "h-9" : "h-10",
-  "w-full rounded-full border border-slate-200 bg-white/90 px-5 text-sm",
-  "hover:border-slate-300 focus:border-slate-800 focus:ring-0 focus:outline-none",
+  "w-full rounded-full border px-5 text-sm",
+  "bg-[var(--aa-card)] text-[var(--aa-text)] border-[var(--aa-border)]",
+  "hover:border-[var(--aa-muted)] focus:border-[var(--aa-accent)] focus:ring-0 focus:outline-none",
   "transition-all duration-200 [&>span]:line-clamp-1"
 );
 

@@ -50,7 +50,7 @@
     },
     "issue_9_resource_view_url": {
       "status": "PASS",
-      "evidence": "View link href: 'https://ui-phase-2.preview.emergentagent.com/resources/testresourceissue9254'. Uses window.location.origin correctly (not localhost:3000)."
+      "evidence": "View link href: 'https://theme-consistency-8.preview.emergentagent.com/resources/testresourceissue9254'. Uses window.location.origin correctly (not localhost:3000)."
     },
     "issue_10_email_dialog_overflow": {
       "status": "PASS",

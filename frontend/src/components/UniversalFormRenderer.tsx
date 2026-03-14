@@ -75,30 +75,31 @@ function ph(label: string, required: boolean): string {
 const pillInput = (hasError: boolean, compact?: boolean) =>
   cn(
     compact ? "h-9" : "h-10",
-    "w-full rounded-full border bg-white/90 px-5 text-sm text-slate-900",
-    "placeholder:text-slate-400 transition-all duration-200",
+    "w-full rounded-full border px-5 text-sm transition-all duration-200",
+    "bg-[var(--aa-card)] text-[var(--aa-text)] placeholder:text-[var(--aa-muted)]",
     "focus:outline-none focus:ring-0",
     hasError
       ? "border-red-400 focus:border-red-500 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.08)]"
-      : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white [&:focus]:[animation:focusGlow_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]"
+      : "border-[var(--aa-border)] hover:border-[var(--aa-muted)] focus:border-[var(--aa-accent)] focus:bg-[var(--aa-surface)] [&:focus]:[animation:focusGlow_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]"
   );
 
 const pillSelect = (compact?: boolean) => cn(
   compact ? "h-9" : "h-10",
-  "w-full rounded-full border border-slate-200 bg-white/90 px-5 text-sm",
-  "hover:border-slate-300 data-[state=open]:border-slate-800",
+  "w-full rounded-full border px-5 text-sm",
+  "bg-[var(--aa-card)] text-[var(--aa-text)] border-[var(--aa-border)]",
+  "hover:border-[var(--aa-muted)] data-[state=open]:border-[var(--aa-accent)]",
   "focus:ring-0 focus:outline-none transition-all duration-200 [&>span]:line-clamp-1",
   "shadow-none"
 );
 
 const pillTextarea = (hasError: boolean) =>
   cn(
-    "w-full rounded-3xl border bg-white/90 px-5 py-3 text-sm text-slate-900 resize-none",
-    "placeholder:text-slate-400 transition-all duration-200",
+    "w-full rounded-3xl border px-5 py-3 text-sm resize-none transition-all duration-200",
+    "bg-[var(--aa-card)] text-[var(--aa-text)] placeholder:text-[var(--aa-muted)]",
     "focus:outline-none focus:ring-0",
     hasError
       ? "border-red-400 focus:border-red-500"
-      : "border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
+      : "border-[var(--aa-border)] hover:border-[var(--aa-muted)] focus:border-[var(--aa-accent)] focus:bg-[var(--aa-surface)] focus:shadow-[0_0_0_4px_rgba(15,23,42,0.06)]"
   );
 
 interface Props {
@@ -240,7 +241,7 @@ function SignatureField({ field, values, onChange, animStyle, compact }: SigProp
     <div style={animStyle} className="sm:col-span-2 space-y-3" data-testid="ufr-field-signature">
       <FieldLabel label={field.label || "Signature"} required={field.required} />
       {/* Canvas draw area */}
-      <div className="relative rounded-2xl border-2 border-dashed border-slate-300 bg-white overflow-hidden" style={{ height: compact ? 100 : 140 }}>
+      <div className="relative rounded-2xl border-2 border-dashed overflow-hidden" style={{ height: compact ? 100 : 140, borderColor: "var(--aa-border)", backgroundColor: "var(--aa-surface)" }}>
         <canvas
           ref={canvasRef}
           width={600}
@@ -263,7 +264,8 @@ function SignatureField({ field, values, onChange, animStyle, compact }: SigProp
         <button
           type="button"
           onClick={clearCanvas}
-          className="absolute top-2 right-2 text-[10px] text-slate-400 hover:text-red-500 bg-white border border-slate-200 rounded-lg px-2 py-0.5 transition-colors"
+          className="absolute top-2 right-2 text-[10px] hover:text-red-500 rounded-lg px-2 py-0.5 transition-colors border"
+          style={{ background: "var(--aa-surface)", borderColor: "var(--aa-border)", color: "var(--aa-muted)" }}
           data-testid="signature-clear-btn"
         >
           Clear
@@ -276,7 +278,8 @@ function SignatureField({ field, values, onChange, animStyle, compact }: SigProp
         </label>
         <input
           type="text"
-          className="w-full rounded-full border border-slate-200 bg-white/90 px-5 h-10 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-800 transition-all"
+          className="w-full rounded-full border px-5 h-10 text-sm transition-all"
+          style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)", color: "var(--aa-text)" }}
           value={typedName}
           onChange={e => onChange("signature_name", e.target.value)}
           placeholder="Type your full name to confirm"
@@ -445,7 +448,7 @@ export function UniversalFormRenderer({
         <div key={field.id} style={animStyle}>
           <FieldLabel label={field.label || key} required={field.required} tooltip={field.tooltip_text} />
           <label
-            className={`flex items-center gap-3 cursor-pointer rounded-xl border px-4 py-3 text-sm transition-all ${displayErr ? "border-red-300 bg-red-50" : "border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50"}`}
+            className={`flex items-center gap-3 cursor-pointer rounded-xl border px-4 py-3 text-sm transition-all ${displayErr ? "border-red-300 bg-red-50" : "hover:border-[var(--aa-muted)]"}`}
             style={{ backgroundColor: "var(--aa-card)", borderColor: displayErr ? undefined : "var(--aa-border)" }}
             data-testid={tid}
           >
@@ -482,7 +485,7 @@ export function UniversalFormRenderer({
       return (
         <div key={field.id} style={animStyle} className="sm:col-span-2">
           <FieldLabel label={field.label || "Terms & Conditions"} required={field.required} />
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 max-h-48 overflow-y-auto text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+          <div className="rounded-2xl border p-4 max-h-48 overflow-y-auto text-sm leading-relaxed whitespace-pre-wrap" style={{ backgroundColor: "var(--aa-surface)", borderColor: "var(--aa-border)", color: "var(--aa-muted)" }}>
             {(field as any).terms_text || "Please read the terms and conditions carefully before signing."}
           </div>
           {field.required && <p className="mt-1.5 text-[11px] text-slate-500 px-1">You must sign below to agree to these terms.</p>}

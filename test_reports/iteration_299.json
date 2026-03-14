@@ -1,0 +1,85 @@
+{
+  "summary": "Frontend-only dark mode visual testing. Verified all 8 dark mode fixes requested. All tests PASS - primary buttons are blue in dark mode, form inputs are dark, Products sub-tabs active state is dark (not white), dark mode persistence works, light mode regression is clean.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Create Customer modal - Partner Organization select",
+        "issues": ["'Select partner org...' dropdown trigger computed bg=rgba(0,0,0,0) transparent, but visually appears dark due to parent dark background. This is acceptable/not a real bug."]
+      }
+    ]
+  },
+  "test_results": {
+    "test_1_dark_mode_primary_buttons_blue": {
+      "result": "PASS",
+      "details": "Create Customer button bg=rgb(80, 144, 247) = blue in dark mode. --primary CSS var = '217 91% 64%' resolves to rgb(80, 144, 247). New Product button also blue (visible in screenshot). Previously was white (210 40% 90%)."
+    },
+    "test_2_form_inputs_dark_in_modal": {
+      "result": "PASS",
+      "details": "All modal inputs: bg=rgb(28, 33, 40) (--aa-card dark). Country select: bg=rgb(22, 27, 34). All text=rgb(230, 237, 243) (--aa-text light). No white backgrounds in any input field."
+    },
+    "test_3_admin_panel_overall_dark": {
+      "result": "PASS",
+      "details": "Body bg=rgb(13, 17, 23), sidebar dark, table backgrounds dark, stat cards dark, badges semantic colors (green=active, red=danger). Screenshots confirm full dark theme."
+    },
+    "test_4_products_subtabs_active_not_white": {
+      "result": "PASS",
+      "details": "Active 'Products' tab bg=rgb(22, 27, 34) (dark card color, NOT white). Inactive tabs: rgba(0,0,0,0) transparent. TabsList background is dark."
+    },
+    "test_5_dark_mode_persistence": {
+      "result": "PASS",
+      "details": "localStorage key 'aa_dark_mode'='true' persists. After page.reload(), html.aa-dark class is still present. Dark mode survives full page reload."
+    },
+    "test_6_light_mode_regression": {
+      "result": "PASS",
+      "details": "--primary in light='222 47% 11%' (dark navy). Create Customer btn bg=rgb(15,23,41) dark navy. Modal inputs bg=rgb(255,255,255) white. Body bg=rgb(248,250,252) light grey. All correct."
+    },
+    "test_7_export_import_csv_dark_visible": {
+      "result": "PASS",
+      "details": "Export CSV: bg=transparent, color=rgb(230,237,243) light text, border=rgb(40,49,62) dark border. Buttons clearly visible in dark mode with proper outline style."
+    },
+    "test_8_sidebar_navigation_contrast": {
+      "result": "PASS",
+      "details": "Sidebar nav items visible with proper contrast. Active items have blue accent (--aa-accent). Section headers (PLATFORM, PEOPLE, COMMERCE, CONTENT, SETTINGS, INTEGRATIONS) visible."
+    }
+  },
+  "test_report_links": [
+    "/app/test_reports/dark_mode_03_admin_light.jpeg",
+    "/app/test_reports/dark_mode_04_admin_dark.jpeg",
+    "/app/test_reports/dark_mode_05_full.jpeg",
+    "/app/test_reports/dark_mode_06_modal.jpeg",
+    "/app/test_reports/dark_mode_07_products.jpeg",
+    "/app/test_reports/dark_mode_08_persist.jpeg",
+    "/app/test_reports/dark_mode_09_light_regression.jpeg",
+    "/app/test_reports/dark_mode_10_light_modal.jpeg"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "index.css dark mode: --primary changed from '210 40% 90%' (very light) to '217 91% 64%' (accent blue) - fix confirmed working",
+    "UniversalFormRenderer.tsx pillInput/pillSelect/pillTextarea: now use CSS vars (--aa-card, --aa-text, --aa-border, --aa-muted, --aa-accent, --aa-surface) instead of hardcoded bg-white/90 - fix confirmed working",
+    "AddressFieldRenderer.tsx: same CSS var approach - fix confirmed working",
+    "bg-white/90, bg-white/60, bg-white/80 opacity modifier classes now overridden in .aa-dark - fix confirmed working",
+    "Minor: ProductEditor sticky header (.aa-dark .sticky.top-0.bg-white and .aa-dark .border-b.border-slate-200.bg-white) have CSS overrides in index.css - not tested in this iteration but code review shows it's in place"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - Frontend only",
+    "frontend": "100% (8/8 dark mode tests passed)"
+  },
+  "test_credentials": {
+    "email": "admin@automateaccounts.local",
+    "password": "ChangeMe123!",
+    "partner_code": "automate-accounts",
+    "login_url": "/login?partner=automate-accounts"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All dark mode fixes verified working: (1) --primary in dark mode = '217 91% 64%' = rgb(80,144,247) blue, buttons are blue not white; (2) Form inputs in Create Customer modal all have dark bg=rgb(28,33,40) in dark mode; (3) Products sub-tabs active state = dark rgb(22,27,34), not white; (4) Dark mode persists via localStorage 'aa_dark_mode'='true'; (5) Light mode regression clean - dark navy buttons, white inputs. CSS vars working correctly via bg-[var(--aa-card)] in UniversalFormRenderer.tsx and AddressFieldRenderer.tsx. bg-white/90 Tailwind opacity modifier override added in index.css lines 592-598.",
+  "mocked_apis": ["Resend Email - email sending is mocked/not actually sending"]
+}
