@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FormSchemaBuilder from "@/components/FormSchemaBuilder";
 import type { FormField } from "@/components/FormSchemaBuilder";
+import { ColHeader } from "@/components/shared/ColHeader";
+import type { SortDirection } from "@/components/shared/ColHeader";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -279,10 +281,12 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
 
-  // Filters
-  const [statusFilter, setStatusFilter] = useState("");
-  const [formFilter, setFormFilter] = useState("");
-  const [search, setSearch] = useState("");
+  // Column filters & sort
+  const [colSort, setColSort] = useState<{ col: string; dir: SortDirection } | null>(null);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [formFilter, setFormFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState<{ from?: string; to?: string }>({});
 
   // Modals
   const [viewRecord, setViewRecord] = useState<IntakeRecord | null>(null);
@@ -308,14 +312,17 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
     setLoading(true);
     try {
       const params: Record<string, any> = { page, limit: LIMIT };
-      if (statusFilter) params.status = statusFilter;
-      if (formFilter) params.form_id = formFilter;
-      if (search) params.search = search;
+      if (statusFilter && statusFilter !== "all") params.status = statusFilter;
+      if (formFilter && formFilter !== "all") params.form_id = formFilter;
+      if (customerSearch) params.search = customerSearch;
+      if (dateFilter.from) params.date_from = dateFilter.from;
+      if (dateFilter.to) params.date_to = dateFilter.to;
+      if (colSort) { params.sort_by = colSort.col; params.sort_dir = colSort.dir; }
       const r = await api.get("/admin/intake-form-records", { params });
       setRecords(r.data.records); setTotal(r.data.total);
     } catch { toast.error("Failed to load records"); }
     finally { setLoading(false); }
-  }, [page, statusFilter, formFilter, search]);
+  }, [page, statusFilter, formFilter, customerSearch, dateFilter, colSort]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
@@ -408,32 +415,15 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <Input className="w-48 h-8 text-sm" placeholder="Search customer / form..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} data-testid="intake-records-search" />
-        <Select value={statusFilter} onValueChange={v => { setStatusFilter(v === "all" ? "" : v); setPage(1); }}>
-          <SelectTrigger className="w-36 h-8 text-sm"><SelectValue placeholder="All statuses" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {Object.entries(STATUS_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={formFilter} onValueChange={v => { setFormFilter(v === "all" ? "" : v); setPage(1); }}>
-          <SelectTrigger className="w-44 h-8 text-sm"><SelectValue placeholder="All forms" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All forms</SelectItem>
-            {forms.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <div className="ml-auto">
-          <Button size="sm" onClick={() => setShowAddRecord(true)} data-testid="intake-add-record-btn">
-            <Plus size={13} className="mr-1.5" /> Add New
-          </Button>
-        </div>
+      {/* Action bar — just the Add New button */}
+      <div className="flex justify-end">
+        <Button size="sm" onClick={() => setShowAddRecord(true)} data-testid="intake-add-record-btn">
+          <Plus size={13} className="mr-1.5" /> Add New
+        </Button>
       </div>
 
-      {/* Table — gap from filters */}
-      <div className="mt-4">
+      {/* Table */}
+      <div>
       {loading ? <div className="text-sm text-slate-400 py-8 text-center">Loading...</div> : records.length === 0 ? (        <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
           <FileText size={28} className="mx-auto text-slate-300 mb-3" />
           <p className="text-sm text-slate-400">No intake form records yet.</p>
@@ -442,14 +432,60 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
-                <th className="text-left py-2 px-3 font-medium">Customer</th>
-                <th className="text-left py-2 px-3 font-medium">Form</th>
-                <th className="text-left py-2 px-3 font-medium">Status</th>
-                <th className="text-left py-2 px-3 font-medium">Submitted</th>
-                <th className="text-left py-2 px-3 font-medium">Ver.</th>
-                {isPlatformAdmin && <th className="text-left py-2 px-3 font-medium">Partner</th>}
-                <th className="text-right py-2 px-3 font-medium">Actions</th>
+              <tr className="border-b border-slate-100">
+                <ColHeader label="Customer" colKey="customer_name"
+                  sortCol={colSort?.col} sortDir={colSort?.dir}
+                  onSort={(c, d) => { setColSort({ col: c, dir: d }); setPage(1); }}
+                  onClearSort={() => setColSort(null)}
+                  filterType="text"
+                  filterValue={customerSearch}
+                  onFilter={v => { setCustomerSearch(v); setPage(1); }}
+                  onClearFilter={() => { setCustomerSearch(""); setPage(1); }}
+                />
+                <ColHeader label="Form" colKey="intake_form_name"
+                  sortCol={colSort?.col} sortDir={colSort?.dir}
+                  onSort={(c, d) => { setColSort({ col: c, dir: d }); setPage(1); }}
+                  onClearSort={() => setColSort(null)}
+                  filterType="status"
+                  filterValue={formFilter}
+                  onFilter={v => { setFormFilter(v); setPage(1); }}
+                  onClearFilter={() => { setFormFilter("all"); setPage(1); }}
+                  statusOptions={[["all", "All forms"], ...forms.map(f => [f.id, f.name] as [string, string])]}
+                />
+                <ColHeader label="Status" colKey="status"
+                  sortCol={colSort?.col} sortDir={colSort?.dir}
+                  onSort={(c, d) => { setColSort({ col: c, dir: d }); setPage(1); }}
+                  onClearSort={() => setColSort(null)}
+                  filterType="status"
+                  filterValue={statusFilter}
+                  onFilter={v => { setStatusFilter(v); setPage(1); }}
+                  onClearFilter={() => { setStatusFilter("all"); setPage(1); }}
+                  statusOptions={[["all", "All"], ...Object.entries(STATUS_LABELS) as [string, string][]]}
+                />
+                <ColHeader label="Submitted" colKey="submitted_at"
+                  sortCol={colSort?.col} sortDir={colSort?.dir}
+                  onSort={(c, d) => { setColSort({ col: c, dir: d }); setPage(1); }}
+                  onClearSort={() => setColSort(null)}
+                  filterType="date-range"
+                  filterValue={dateFilter}
+                  onFilter={v => { setDateFilter(v); setPage(1); }}
+                  onClearFilter={() => { setDateFilter({}); setPage(1); }}
+                />
+                <ColHeader label="Ver." colKey="version"
+                  sortCol={colSort?.col} sortDir={colSort?.dir}
+                  onSort={(c, d) => { setColSort({ col: c, dir: d }); setPage(1); }}
+                  onClearSort={() => setColSort(null)}
+                  filterType="none"
+                />
+                {isPlatformAdmin && (
+                  <ColHeader label="Partner" colKey="partner_code"
+                    sortCol={colSort?.col} sortDir={colSort?.dir}
+                    onSort={(c, d) => { setColSort({ col: c, dir: d }); setPage(1); }}
+                    onClearSort={() => setColSort(null)}
+                    filterType="none"
+                  />
+                )}
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase text-slate-500">Actions</th>
               </tr>
             </thead>
             <tbody>

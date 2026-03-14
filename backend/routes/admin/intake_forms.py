@@ -215,6 +215,8 @@ async def delete_intake_form(form_id: str, admin: Dict[str, Any] = Depends(get_t
 # ADMIN — Intake Form Records
 # ══════════════════════════════════════════════════════════════════════════════
 
+_SORTABLE_COLS = {"customer_name", "intake_form_name", "status", "submitted_at", "version", "created_at"}
+
 @router.get("/admin/intake-form-records")
 async def list_intake_form_records(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
@@ -226,6 +228,8 @@ async def list_intake_form_records(
     search: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None),
     date_to: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query(None),
+    sort_dir: Optional[str] = Query("desc"),
 ):
     tf = get_tenant_filter(admin)
     query: Dict[str, Any] = {**tf}
@@ -249,10 +253,13 @@ async def list_intake_form_records(
             df["$lte"] = date_to + "T23:59:59Z"
         query["submitted_at"] = df
 
+    sort_field = sort_by if sort_by in _SORTABLE_COLS else "created_at"
+    sort_order = 1 if sort_dir == "asc" else -1
+
     total = await db.intake_form_records.count_documents(query)
     records = await db.intake_form_records.find(
         query, {"_id": 0, "versions": 0}
-    ).sort("created_at", -1).skip((page - 1) * limit).limit(limit).to_list(limit)
+    ).sort(sort_field, sort_order).skip((page - 1) * limit).limit(limit).to_list(limit)
 
     if is_platform_admin(admin):
         records = await enrich_partner_codes(records, True)
