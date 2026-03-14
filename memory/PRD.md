@@ -283,6 +283,9 @@ Build a white-label service commerce platform with:
 - **Partner Signup Migration**: Added `_migrate_partner_signup_schema` function to inject `admin_email`/`admin_password` locked fields into old partner signup schemas. Called in both GET /website-settings endpoints
 - Tested via iteration_280 — **6/6 frontend + 11/11 backend PASS (100%)**
 
+- **Gap Fix 4 — Branded PDF**: Both admin and customer PDFs now include: colored header band (brand `primary_color`), logo image (if `logo_url` set), store name in white, form title + customer meta, brand-colored divider, question/answer pairs with label hierarchy, signature box, and timestamped footer. Async logo fetch using FileReader → base64.
+- **Mandatory Rejection Reason**: Admin selecting "Rejected" from status dropdown now opens a Dialog requiring a reason before confirming. Reason is sent to backend and included in the rejection email notification.
+
 - **Gap Fixes (Gap 1, 2, 5)**: (1) Signature cleared on re-edit — `openForm()` in `IntakeFormPage.tsx` now strips `signature_data_url`/`signature_name` from pre-fill so customer must always re-sign. (2) Customer assignment UI added to `IntakeFormBuilder` — admin can choose "All customers" (default) or "Specific customers only" with searchable multi-select; `customer_ids` saved to backend. (3) Re-edit approved form warning — Dialog explains versioning impact and blocks accidental editing.
 
 - **ColHeader Column Filters on Intake Form Records**: Replaced separate filter bar (search input + status dropdown + form dropdown) with `ColHeader` inline column filters matching the Products table UX. Columns now support: Customer (text search), Form (radio select), Status (radio select), Submitted (date range + sort), Version (sort only), Partner (sort only). Backend updated with `sort_by`/`sort_dir` params (whitelisted via `_SORTABLE_COLS`).

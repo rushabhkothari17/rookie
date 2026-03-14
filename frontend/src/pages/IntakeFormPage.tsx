@@ -109,26 +109,82 @@ export default function IntakeFormPage() {
   const downloadPDF = (entry: IntakeEntry) => {
     const rec = entry.record;
     if (!rec) { toast.error("No record to download"); return; }
-    import("jspdf").then(({ jsPDF }) => {
+    import("jspdf").then(async ({ jsPDF }) => {
       const doc = new jsPDF();
-      doc.setFontSize(20); doc.text(ws.store_name || "Intake Form", 14, 18);
-      doc.setFontSize(14); doc.text(entry.form.name, 14, 28);
-      doc.setFontSize(10); doc.setTextColor(100);
-      doc.text(`Customer: ${user?.full_name || ""}`, 14, 38);
-      doc.text(`Status: ${STATUS_META[rec.status]?.label || rec.status}`, 14, 46);
-      doc.text(`Submitted: ${rec.submitted_at ? new Date(rec.submitted_at).toLocaleDateString() : "—"}`, 14, 54);
-      doc.text(`Version: v${rec.version}`, 14, 62);
-      let y = 74;
-      doc.setTextColor(0); doc.setFontSize(12); doc.text("Responses", 14, y); y += 8;
-      doc.setFontSize(9);
-      Object.entries(rec.responses || {}).filter(([k]) => k !== "signature_data_url" && k !== "signature_name").forEach(([k, v]) => {
-        const lines = doc.splitTextToSize(`${k}: ${String(v)}`, 180);
-        lines.forEach((l: string) => { doc.text(l, 14, y); y += 6; if (y > 270) { doc.addPage(); y = 20; } });
-      });
-      if (rec.signature_name) { y += 6; doc.setFontSize(10); doc.text(`Digitally signed by: ${rec.signature_name}`, 14, y); y += 8; }
-      if (rec.signature_data_url) {
-        try { doc.addImage(rec.signature_data_url, "PNG", 14, y, 60, 25); } catch (_) {}
+      const PW = doc.internal.pageSize.getWidth();
+      const PH = doc.internal.pageSize.getHeight();
+      const M = 14;
+
+      const hexToRgb = (hex: string): [number, number, number] => {
+        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
+        return r ? [parseInt(r[1], 16), parseInt(r[2], 16), parseInt(r[3], 16)] : [30, 41, 59];
+      };
+      const [pr, pg, pb] = hexToRgb(ws.primary_color || "#1e293b");
+
+      // Load logo
+      let logoB64: string | null = null;
+      if (ws.logo_url) {
+        try {
+          const res = await fetch(ws.logo_url);
+          const blob = await res.blob();
+          logoB64 = await new Promise<string>(resolve => { const rd = new FileReader(); rd.onload = () => resolve(rd.result as string); rd.readAsDataURL(blob); });
+        } catch (_) {}
       }
+
+      // ── Header band ──
+      doc.setFillColor(pr, pg, pb);
+      doc.rect(0, 0, PW, 30, "F");
+      let hx = M;
+      if (logoB64) { try { doc.addImage(logoB64, "JPEG", M, 5, 20, 20); hx = M + 24; } catch (_) {} }
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(13); doc.setFont("helvetica", "bold");
+      doc.text(ws.store_name || "Intake Form", hx, 19);
+
+      // ── Form title ──
+      doc.setTextColor(30, 41, 59); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+      doc.text(entry.form.name, M, 44);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      doc.text(`Customer: ${user?.full_name || ""}`, M, 53);
+      doc.text(`Status: ${STATUS_META[rec.status]?.label || rec.status}   ·   Version: v${rec.version}   ·   Submitted: ${rec.submitted_at ? new Date(rec.submitted_at).toLocaleDateString() : "—"}`, M, 60);
+
+      // Divider
+      doc.setDrawColor(pr, pg, pb); doc.setLineWidth(0.5);
+      doc.line(M, 65, PW - M, 65);
+
+      // ── Responses ──
+      let y = 74;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
+      doc.text("Responses", M, y); y += 8;
+      const responses = Object.entries(rec.responses || {}).filter(([k]) => k !== "signature_data_url" && k !== "signature_name");
+      for (const [k, v] of responses) {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+        const qLines = doc.splitTextToSize(k, PW - M * 2);
+        qLines.forEach((l: string) => { doc.text(l, M, y); y += 5.5; if (y > 265) { doc.addPage(); y = 16; } });
+        doc.setFont("helvetica", "normal"); doc.setTextColor(30, 41, 59);
+        const aLines = doc.splitTextToSize(String(v ?? "—"), PW - M * 2 - 4);
+        aLines.forEach((l: string) => { doc.text(l, M + 4, y); y += 5.5; if (y > 265) { doc.addPage(); y = 16; } });
+        y += 2;
+      }
+
+      // ── Signature box ──
+      if (rec.signature_name || rec.signature_data_url) {
+        if (y > 240) { doc.addPage(); y = 16; }
+        const boxH = rec.signature_data_url ? 46 : 20;
+        doc.setDrawColor(226, 232, 240); doc.setFillColor(248, 250, 252);
+        doc.roundedRect(M, y, PW - M * 2, boxH, 2, 2, "FD");
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(100, 116, 139);
+        doc.text("SIGNATURE", M + 4, y + 7);
+        if (rec.signature_data_url) { try { doc.addImage(rec.signature_data_url, "PNG", M + 4, y + 10, 60, 25); } catch (_) {} }
+        if (rec.signature_name) {
+          doc.setFont("helvetica", "italic"); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+          doc.text(`Digitally signed by: ${rec.signature_name}`, M + 4, rec.signature_data_url ? y + 40 : y + 14);
+        }
+      }
+
+      // ── Footer ──
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(148, 163, 184);
+      doc.text(`Generated ${new Date().toLocaleString()} · ${ws.store_name || ""}`, M, PH - 10);
+
       doc.save(`intake-form-${entry.form.name.replace(/\s/g, "_")}.pdf`);
     }).catch(() => toast.error("PDF generation failed"));
   };

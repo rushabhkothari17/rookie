@@ -14,6 +14,7 @@ import type { SortDirection } from "@/components/shared/ColHeader";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWebsite } from "@/contexts/WebsiteContext";
 import {
   Plus, Pencil, Trash2, Eye, Download, FileText, StickyNote, History, ChevronDown, ChevronUp, Settings2, ToggleLeft, ToggleRight, X, Check, Clock, AlertCircle
 } from "lucide-react";
@@ -362,6 +363,7 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
 // ── Records sub-tab ───────────────────────────────────────────────────────────
 
 function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
+  const ws = useWebsite();
   const [records, setRecords] = useState<IntakeRecord[]>([]);
   const [forms, setForms] = useState<IntakeForm[]>([]);
   const [loading, setLoading] = useState(true);
@@ -385,6 +387,10 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   const [addNoteText, setAddNoteText] = useState("");
   const [editNoteId, setEditNoteId] = useState<string | null>(null);
   const [editNoteText, setEditNoteText] = useState("");
+
+  // Rejection reason modal
+  const [rejecting, setRejecting] = useState<IntakeRecord | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   // Add New Record
   const [showAddRecord, setShowAddRecord] = useState(false);
@@ -418,8 +424,14 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   }, []);
 
   const updateStatus = async (record: IntakeRecord, newStatus: string, reason?: string) => {
+    // Mandatory rejection reason
+    if (newStatus === "rejected" && !reason) {
+      setRejecting(record);
+      setRejectionReason("");
+      return;
+    }
     try {
-      await api.put(`/admin/intake-form-records/${record.id}/status`, { status: newStatus, rejection_reason: reason });
+      await api.put(`/admin/intake-form-records/${record.id}/status`, { status: newStatus, rejection_reason: reason || null });
       toast.success(`Status updated to ${STATUS_LABELS[newStatus]}`); load();
     } catch { toast.error("Failed to update status"); }
   };
@@ -476,26 +488,82 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   };
 
   const downloadPDF = (record: IntakeRecord) => {
-    // Import and use jsPDF dynamically
-    import("jspdf").then(({ jsPDF }) => {
+    import("jspdf").then(async ({ jsPDF }) => {
       const doc = new jsPDF();
-      doc.setFontSize(18); doc.text(record.intake_form_name, 14, 20);
-      doc.setFontSize(11); doc.text(`Customer: ${record.customer_name} (${record.customer_email})`, 14, 32);
-      doc.text(`Status: ${STATUS_LABELS[record.status] || record.status}`, 14, 40);
-      doc.text(`Version: ${record.version}`, 14, 48);
-      doc.text(`Submitted: ${record.submitted_at ? new Date(record.submitted_at).toLocaleDateString() : "Pending"}`, 14, 56);
-      let y = 68;
-      doc.setFontSize(13); doc.text("Responses", 14, y); y += 8;
-      doc.setFontSize(10);
-      Object.entries(record.responses || {}).forEach(([k, v]) => {
-        const line = `${k}: ${String(v)}`;
-        const lines = doc.splitTextToSize(line, 180);
-        lines.forEach((l: string) => { doc.text(l, 14, y); y += 7; if (y > 270) { doc.addPage(); y = 20; } });
-      });
-      if (record.signature_name) { y += 6; doc.text(`Signed by: ${record.signature_name}`, 14, y); y += 7; }
-      if (record.signature_data_url) {
-        try { doc.addImage(record.signature_data_url, "PNG", 14, y, 60, 25); } catch (_) {}
+      const PW = doc.internal.pageSize.getWidth();
+      const PH = doc.internal.pageSize.getHeight();
+      const M = 14;
+
+      const hexToRgb = (hex: string): [number, number, number] => {
+        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
+        return r ? [parseInt(r[1], 16), parseInt(r[2], 16), parseInt(r[3], 16)] : [30, 41, 59];
+      };
+      const [pr, pg, pb] = hexToRgb(ws.primary_color || "#1e293b");
+
+      // Load logo
+      let logoB64: string | null = null;
+      if (ws.logo_url) {
+        try {
+          const res = await fetch(ws.logo_url);
+          const blob = await res.blob();
+          logoB64 = await new Promise<string>(resolve => { const rd = new FileReader(); rd.onload = () => resolve(rd.result as string); rd.readAsDataURL(blob); });
+        } catch (_) {}
       }
+
+      // ── Header band ──
+      doc.setFillColor(pr, pg, pb);
+      doc.rect(0, 0, PW, 30, "F");
+      let hx = M;
+      if (logoB64) { try { doc.addImage(logoB64, "JPEG", M, 5, 20, 20); hx = M + 24; } catch (_) {} }
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(13); doc.setFont("helvetica", "bold");
+      doc.text(ws.store_name || "Intake Form", hx, 19);
+
+      // ── Form title ──
+      doc.setTextColor(30, 41, 59); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+      doc.text(record.intake_form_name, M, 44);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      doc.text(`Customer: ${record.customer_name} (${record.customer_email})`, M, 53);
+      doc.text(`Status: ${STATUS_LABELS[record.status] || record.status}   ·   Version: v${record.version}   ·   Submitted: ${record.submitted_at ? new Date(record.submitted_at).toLocaleDateString() : "Pending"}`, M, 60);
+
+      // Divider
+      doc.setDrawColor(pr, pg, pb); doc.setLineWidth(0.5);
+      doc.line(M, 65, PW - M, 65);
+
+      // ── Responses ──
+      let y = 74;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
+      doc.text("Responses", M, y); y += 8;
+      const responses = Object.entries(record.responses || {}).filter(([k]) => k !== "signature_data_url" && k !== "signature_name");
+      for (const [k, v] of responses) {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+        const qLines = doc.splitTextToSize(k, PW - M * 2);
+        qLines.forEach((l: string) => { doc.text(l, M, y); y += 5.5; if (y > 265) { doc.addPage(); y = 16; } });
+        doc.setFont("helvetica", "normal"); doc.setTextColor(30, 41, 59);
+        const aLines = doc.splitTextToSize(String(v ?? "—"), PW - M * 2 - 4);
+        aLines.forEach((l: string) => { doc.text(l, M + 4, y); y += 5.5; if (y > 265) { doc.addPage(); y = 16; } });
+        y += 2;
+      }
+
+      // ── Signature box ──
+      if (record.signature_name || record.signature_data_url) {
+        if (y > 240) { doc.addPage(); y = 16; }
+        const boxH = record.signature_data_url ? 46 : 20;
+        doc.setDrawColor(226, 232, 240); doc.setFillColor(248, 250, 252);
+        doc.roundedRect(M, y, PW - M * 2, boxH, 2, 2, "FD");
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(100, 116, 139);
+        doc.text("SIGNATURE", M + 4, y + 7);
+        if (record.signature_data_url) { try { doc.addImage(record.signature_data_url, "PNG", M + 4, y + 10, 60, 25); } catch (_) {} }
+        if (record.signature_name) {
+          doc.setFont("helvetica", "italic"); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+          doc.text(`Digitally signed by: ${record.signature_name}`, M + 4, record.signature_data_url ? y + 40 : y + 14);
+        }
+      }
+
+      // ── Footer ──
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(148, 163, 184);
+      doc.text(`Generated ${new Date().toLocaleString()} · ${ws.store_name || ""}`, M, PH - 10);
+
       doc.save(`intake-${record.customer_name.replace(/\s/g, "_")}-${record.intake_form_name.replace(/\s/g, "_")}.pdf`);
     }).catch(() => toast.error("PDF generation failed"));
   };
@@ -774,6 +842,54 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
               <Button variant="outline" onClick={() => setShowAddRecord(false)}>Cancel</Button>
               <Button onClick={createRecord} data-testid="intake-create-record-btn">Create Record</Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rejection Reason Dialog */}
+      <Dialog open={rejecting !== null} onOpenChange={open => { if (!open) { setRejecting(null); setRejectionReason(""); } }}>
+        <DialogContent className="max-w-sm" data-testid="intake-reject-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle size={16} className="text-red-500" /> Reject Submission
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-1">
+            <p className="text-sm text-slate-600">
+              Provide a reason for rejection. This will be included in the email notification sent to <strong>{rejecting?.customer_name}</strong>.
+            </p>
+            <div>
+              <label className="text-xs font-medium text-slate-600 block mb-1.5">Reason *</label>
+              <Textarea
+                value={rejectionReason}
+                onChange={e => setRejectionReason(e.target.value)}
+                rows={3}
+                placeholder="e.g. Missing supporting documents, please re-submit with ID proof..."
+                className="text-sm"
+                data-testid="intake-rejection-reason-input"
+              />
+              {rejectionReason.trim() === "" && (
+                <p className="text-[11px] text-red-500 mt-1">A reason is required before rejecting.</p>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" size="sm" onClick={() => { setRejecting(null); setRejectionReason(""); }}>Cancel</Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={!rejectionReason.trim()}
+              onClick={async () => {
+                if (rejecting) {
+                  const rec = rejecting; const reason = rejectionReason;
+                  setRejecting(null); setRejectionReason("");
+                  await updateStatus(rec, "rejected", reason);
+                }
+              }}
+              data-testid="intake-reject-confirm-btn"
+            >
+              Reject Submission
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
