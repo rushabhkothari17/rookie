@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Trash2, ChevronUp, ChevronDown, Plus, Settings2, GripVertical, Eye, X, ChevronRight } from "lucide-react";
+import { Lock, Trash2, ChevronUp, ChevronDown, Plus, Settings2, GripVertical, Eye, X, ChevronRight, Info } from "lucide-react";
+export { Info };
 
 // ── Visibility rule types ─────────────────────────────────────────────────────
 export interface VisibilityConditionRow {
@@ -251,6 +252,8 @@ export interface FormField {
   max_value?: number;          // number type
   address_config?: AddressConfig;
   terms_text?: string;         // terms_conditions type: the terms body text
+  helper_text?: string;        // hint shown below the input
+  tooltip_text?: string;       // ⓘ icon tooltip on hover
   show_when?: VisibilityRuleSet | null; // field-level dynamic visibility
 }
 
@@ -687,6 +690,17 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                         <p className="text-[10px] text-slate-400 mt-1">Press Enter to add a new option. Use Label|value format to set separate display labels and values.</p>
                       </div>
                     )}
+                    {/* Helper text + Tooltip */}
+                    <div className="col-span-2 grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] text-slate-500 font-medium">Helper text <span className="text-slate-400 font-normal">(shown below field)</span></label>
+                        <Input value={field.helper_text || ""} onChange={e => updateField(field.id, { helper_text: e.target.value })} className="mt-0.5 h-7 text-xs" placeholder="e.g. Enter your date of birth" data-testid={`field-helper-${field.id}`} />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-slate-500 font-medium flex items-center gap-1"><Info size={10} /> Tooltip <span className="text-slate-400 font-normal">(hover ⓘ)</span></label>
+                        <Input value={field.tooltip_text || ""} onChange={e => updateField(field.id, { tooltip_text: e.target.value })} className="mt-0.5 h-7 text-xs" placeholder="e.g. Must match your government ID" data-testid={`field-tooltip-${field.id}`} />
+                      </div>
+                    </div>
                     {/* Visibility rule — not for locked/signature fields */}
                     {!field.locked && (field.type as string) !== "signature" && (
                       <VisibilityRuleEditor

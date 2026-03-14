@@ -3,8 +3,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent as _TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info, Key, Check } from "lucide-react";
+const TooltipContent = _TooltipContent as any;
 import api from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import type { IntakeQuestion } from "./types";
@@ -213,12 +214,16 @@ export function QuestionLabel({ q }: { q: IntakeQuestion }) {
         {q.required && <span className="text-red-500 ml-1">*</span>}
       </span>
       {q.tooltip_text && (
-        <span 
-          className="text-slate-400 hover:text-slate-600 cursor-help" 
-          title={q.tooltip_text}
-        >
-          <Info size={14} />
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-slate-400 hover:text-slate-600 cursor-help inline-flex items-center">
+                <Info size={14} />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-56 text-xs">{q.tooltip_text}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </div>
   );

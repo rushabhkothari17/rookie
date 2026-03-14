@@ -16,6 +16,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent as _TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+const TooltipContent = _TooltipContent as any;
 import { AddressFieldRenderer } from "@/components/AddressFieldRenderer";
 import { FormField } from "@/components/FormSchemaBuilder";
 import type { VisibilityRuleSet } from "@/components/FormSchemaBuilder";
@@ -129,12 +132,30 @@ function samplePh(key: string, field: FormField): string {
 }
 
 /** Small uppercase label above a field */
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+function FieldLabel({ label, required, tooltip }: { label: string; required?: boolean; tooltip?: string }) {
   return (
-    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] block mb-2">
+    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em] flex items-center gap-1 mb-2">
       {label}{required && <span className="text-red-400 ml-0.5"> *</span>}
+      {tooltip && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center text-slate-300 hover:text-slate-500 cursor-help ml-0.5">
+                <Info size={11} />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-56 text-xs">{tooltip}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
     </label>
   );
+}
+
+/** Muted hint text shown below a field */
+function HelperText({ text }: { text?: string }) {
+  if (!text) return null;
+  return <p className="mt-1 px-4 text-[11px] text-slate-400">{text}</p>;
 }
 
 // ── Signature Field Component ─────────────────────────────────────────────────
@@ -333,7 +354,7 @@ export function UniversalFormRenderer({
     if (field.type === "textarea") {
       return (
         <div key={field.id} style={animStyle}>
-          <FieldLabel label={field.label || key} required={field.required} />
+          <FieldLabel label={field.label || key} required={field.required} tooltip={field.tooltip_text} />
           <textarea
             className={pillTextarea(!!err)}
             value={val}
@@ -347,6 +368,7 @@ export function UniversalFormRenderer({
           {field.max_length && (
             <p className="mt-0.5 px-4 text-[10px] text-slate-400 text-right">{(val as string).length}/{field.max_length}</p>
           )}
+          <HelperText text={field.helper_text} />
           {err && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>}
         </div>
       );
@@ -356,7 +378,7 @@ export function UniversalFormRenderer({
     if (field.type === "select") {
       return (
         <div key={field.id} style={animStyle}>
-          <FieldLabel label={field.label || key} required={field.required} />
+          <FieldLabel label={field.label || key} required={field.required} tooltip={field.tooltip_text} />
           <Select value={val} onValueChange={v => onChange(key, v)}>
             <SelectTrigger className={pillSelect(isCompact)} data-testid={tid} aria-label={field.label}>
               <SelectValue placeholder={field.placeholder || `Select ${field.label || key}…`} />
@@ -368,6 +390,7 @@ export function UniversalFormRenderer({
               })}
             </SelectContent>
           </Select>
+          <HelperText text={field.helper_text} />
           {err && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>}
         </div>
       );
@@ -404,7 +427,7 @@ export function UniversalFormRenderer({
       const displayErr = fileSizeErr || err;
       return (
         <div key={field.id} style={animStyle}>
-          <FieldLabel label={field.label || key} required={field.required} />
+          <FieldLabel label={field.label || key} required={field.required} tooltip={field.tooltip_text} />
           <label
             className={`flex items-center gap-3 cursor-pointer rounded-xl border px-4 py-3 text-sm transition-all ${displayErr ? "border-red-300 bg-red-50" : "border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50"}`}
             style={{ backgroundColor: "var(--aa-card)", borderColor: displayErr ? undefined : "var(--aa-border)" }}
@@ -432,6 +455,7 @@ export function UniversalFormRenderer({
           {field.max_file_size_mb && (
             <p className="mt-0.5 px-4 text-[10px] text-slate-400">Max size: {field.max_file_size_mb} MB</p>
           )}
+          <HelperText text={field.helper_text} />
           {displayErr && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{displayErr}</p>}
         </div>
       );
@@ -501,7 +525,7 @@ export function UniversalFormRenderer({
 
     return (
       <div key={field.id} style={animStyle}>
-        <FieldLabel label={field.label || key} required={field.required} />
+        <FieldLabel label={field.label || key} required={field.required} tooltip={field.tooltip_text} />
         <input
           type={htmlType}
           className={pillInput(!!err, isCompact)}
@@ -536,6 +560,7 @@ export function UniversalFormRenderer({
         {isCustomDateFormat && (
           <p className="mt-0.5 px-4 text-[10px] text-slate-400">Format: {field.date_format}</p>
         )}
+        <HelperText text={field.helper_text} />
         {err && (
           <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>
         )}
