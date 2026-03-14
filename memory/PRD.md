@@ -283,6 +283,11 @@ Build a white-label service commerce platform with:
 - **Partner Signup Migration**: Added `_migrate_partner_signup_schema` function to inject `admin_email`/`admin_password` locked fields into old partner signup schemas. Called in both GET /website-settings endpoints
 - Tested via iteration_280 — **6/6 frontend + 11/11 backend PASS (100%)**
 
+### Phase 16: Intake Form System — P0 Bug Fixes (Mar 2026)
+- **Email Notifications**: Added `EmailService.send` call in `update_record_status` endpoint (`intake_forms.py`) for `approved` and `rejected` status changes. Uses `intake_form_status_changed` email template with rejection reason HTML block. Non-blocking via `asyncio.create_task`.
+- **TypeScript Fix**: Fixed `nav_intake_enabled` boolean/string type comparison in `TopNav.tsx` using `as unknown` cast to handle both string `"false"` (stored by admin settings API) and boolean `false` (WebsiteContext default). Fixed `WebsiteAuthSection.tsx` to use `setBool` pattern for the checkbox.
+- Tested via iteration_285 — **20/20 backend tests PASS (100%)**
+
 ### Phase 16: Intake Form System (Mar 2026)
 - **Universal Form Builder**: Added `terms_conditions` + `signature` field types to `FormSchemaBuilder.tsx` and `UniversalFormRenderer.tsx`. T&C auto-appends a locked canvas+typed-name signature field. Available across all forms in the system.
 - **Backend**: New `intake_forms` + `intake_form_records` collections with full CRUD, status transitions (pending→submitted→under_review→approved/rejected), versioning, notes, logs, and portal endpoints.
