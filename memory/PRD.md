@@ -16,7 +16,20 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
-### Session: Mar 2026 - OTP Hashing + Bearer Token Security Hardening
+### Session: Mar 2026 - Government-Grade Security Audit (Pass 3) — 10 Vulnerabilities Fixed
+**Vulnerabilities found and fixed (22/22 tests passing):**
+1. **Promo code >100% discount** — Pydantic validator blocks >100% percentage in PromoCodeCreate and PromoCodeUpdate
+2. **Promo code negative discount** — Rejects negative `discount_value` for both create and update
+3. **Checkout negative total** — All 3 discount paths now cap `discount_amount` at `subtotal` + `max(0, total)` floor
+4. **Unbounded field lengths (DoS)** — `max_length` added to all text fields in models.py (name=500, description/notes=5000-10000, content=500000)
+5. **CSV formula injection** — `_sanitize_cell()` in imports.py prefixes `=+-@|` formula cells with single quote
+6. **API key plaintext fallback** — Removed legacy plaintext lookup path from `tenant.py`; SHA-256 hash only
+7. **Timing attack (user enumeration)** — Dummy bcrypt on unknown-email paths in all 3 login routes
+8. **OTP stored plaintext (previous)** — HMAC-SHA256 keyed with JWT_SECRET
+9. **SSRF in webhook delivery (previous)** — IP blocklist with DNS resolution
+10. **Checkout status IDOR (previous)** — Ownership check on session_id
+
+
 - **OTP Hashing**: All 7 OTP generation points now store HMAC-SHA256 hash (keyed with `JWT_SECRET`) instead of 6-digit plaintext in MongoDB. All 3 verification points use `_verify_otp()` with constant-time comparison. Server/dev logs still receive the raw OTP for testing without email.
 - **Refresh token body fallback removed**: `/auth/refresh` now accepts token from HttpOnly cookie only — body injection path removed.
 - **Checkout status IDOR fixed**: `/checkout/status/{session_id}` now verifies the session belongs to the requesting customer before processing.

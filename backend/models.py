@@ -346,6 +346,16 @@ class PromoCodeUpdate(BaseModel):
             raise ValueError("discount_value must be non-negative")
         return v
 
+    @field_validator("discount_value", mode="after")
+    @classmethod
+    def cap_percentage_update(cls, v: Optional[float], info: Any) -> Optional[float]:
+        if v is None:
+            return v
+        dt = (info.data or {}).get("discount_type", "")
+        if dt == "percentage" and v > 100:
+            raise ValueError("Percentage discount cannot exceed 100%")
+        return v
+
 
 class TermsCreate(BaseModel):
     title: str = Field(**_NAME)

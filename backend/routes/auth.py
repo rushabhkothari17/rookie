@@ -297,6 +297,8 @@ async def customer_login(payload: CustomerLoginRequest, response: Response):
     query: Dict[str, Any] = {"email": payload.email.lower(), "tenant_id": tenant["id"]}
     user = await db.users.find_one(query, {"_id": 0})
     if not user:
+        # Dummy bcrypt to prevent user enumeration via timing
+        pwd_context.verify(payload.password, "$2b$12$HD6oFykfYX7sflN.pCNEQuuCdiRfLuMpnBEP4YZCHrN9emTFJgCMO")
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Lockout check
@@ -388,6 +390,8 @@ async def domain_login(
     query: Dict[str, Any] = {"email": payload.email.lower(), "tenant_id": tenant["id"]}
     user = await db.users.find_one(query, {"_id": 0})
     if not user:
+        # Dummy bcrypt to prevent user enumeration via timing
+        pwd_context.verify(payload.password, "$2b$12$HD6oFykfYX7sflN.pCNEQuuCdiRfLuMpnBEP4YZCHrN9emTFJgCMO")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     await _check_lockout(user)
