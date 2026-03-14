@@ -34,7 +34,7 @@ class VisibilityRule(BaseModel):
 
 
 class PlanCreate(BaseModel):
-    name: str = Field(max_length=500)
+    name: str = Field(max_length=100)
     description: Optional[str] = Field(None, max_length=5_000)
     warning_threshold_pct: int = 80
     is_public: bool = False  # visible to partners for self-service upgrade

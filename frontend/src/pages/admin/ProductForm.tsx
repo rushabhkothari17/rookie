@@ -211,7 +211,7 @@ function FAQList({ faqs, onChange }: { faqs: FAQ[]; onChange: (v: FAQ[]) => void
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Q{i + 1}</span>
             <button type="button" onClick={() => remove(i)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={12} /></button>
           </div>
-          <Input value={faq.question} onChange={e => update(i, "question", e.target.value)} maxLength={500} placeholder="Question" className="h-9 text-sm" data-testid={`faq-q-${i}`} />
+          <Input value={faq.question} onChange={e => update(i, "question", e.target.value)} maxLength={100} placeholder="Question" className="h-9 text-sm" data-testid={`faq-q-${i}`} />
           <Textarea value={faq.answer} onChange={e => update(i, "answer", e.target.value)} maxLength={5000} placeholder="Answer" rows={2} className="text-sm resize-none" data-testid={`faq-a-${i}`} />
         </div>
       ))}
@@ -647,13 +647,13 @@ export function ProductForm({
               <RequiredLabel className={labelCls}>Product Name</RequiredLabel>
               <Input
                 value={form.name}
-                onChange={e => s("name")(e.target.value.slice(0, 500))}
+                onChange={e => s("name")(e.target.value.slice(0, 100))}
                 placeholder="Product name"
-                maxLength={500}
+                maxLength={100}
                 data-testid="pf-name"
               />
-              <p className={`text-xs mt-0.5 text-right ${form.name.length >= 480 ? "text-amber-500 font-medium" : "text-slate-400"}`}>
-                {form.name.length}/500
+              <p className={`text-xs mt-0.5 text-right ${form.name.length >= 95 ? "text-red-500 font-medium" : form.name.length >= 80 ? "text-amber-500" : "text-slate-400"}`}>
+                {form.name.length}/100
               </p>
             </div>
 
@@ -816,7 +816,7 @@ export function ProductForm({
                     <>
                     <div>
                       <label className={labelCls}>Stripe Price ID <FieldTip tip="Found in Stripe Dashboard → Products → your product → Price ID. Format: price_… Required for subscription billing so Stripe knows what to charge on renewal." /></label>
-                      <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} maxLength={200} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
+                      <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} maxLength={100} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
                     </div>
                     <div>
                       <label className={labelCls}>Default Contract Term (months) <FieldTip tip="Pre-fills the contract term when creating a manual subscription from this product. 0 or empty = cancel anytime. E.g. 12 = 12-month lock-in." /></label>

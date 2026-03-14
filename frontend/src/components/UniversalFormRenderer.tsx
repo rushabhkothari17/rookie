@@ -366,9 +366,13 @@ export function UniversalFormRenderer({
             data-testid={tid}
           />
           {field.max_length && (() => {
-            const pct = (val as string).length / field.max_length;
+            const str = val as string;
+            if (!str.length) {
+              return <p className="mt-0.5 px-4 text-[10px] text-slate-400">Max {field.max_length.toLocaleString()} chars</p>;
+            }
+            const pct = str.length / field.max_length;
             const cls = pct > 0.95 ? "text-red-500" : pct > 0.8 ? "text-amber-500" : "text-slate-400";
-            return <p className={`mt-0.5 px-4 text-[10px] text-right ${cls}`}>{(val as string).length.toLocaleString()}/{field.max_length.toLocaleString()}</p>;
+            return <p className={`mt-0.5 px-4 text-[10px] text-right ${cls}`}>{str.length.toLocaleString()}/{field.max_length.toLocaleString()}</p>;
           })()}
           <HelperText text={field.helper_text} />
           {err && <p className="mt-1.5 px-4 text-[11px] text-red-500" data-testid={`${tid}-error`}>{err}</p>}
@@ -559,9 +563,13 @@ export function UniversalFormRenderer({
           }
         />
         {field.max_length && !["number","date"].includes(field.type) && (() => {
-          const pct = (val as string).length / field.max_length;
+          const str = val as string;
+          if (!str.length) {
+            return <p className="mt-0.5 px-4 text-[10px] text-slate-400">Max {field.max_length.toLocaleString()} chars</p>;
+          }
+          const pct = str.length / field.max_length;
           const cls = pct > 0.95 ? "text-red-500" : pct > 0.8 ? "text-amber-500" : "text-slate-400";
-          return <p className={`mt-0.5 px-4 text-[10px] text-right ${cls}`}>{(val as string).length.toLocaleString()}/{field.max_length.toLocaleString()}</p>;
+          return <p className={`mt-0.5 px-4 text-[10px] text-right ${cls}`}>{str.length.toLocaleString()}/{field.max_length.toLocaleString()}</p>;
         })()}
         {field.type === "number" && (field.min_value !== undefined || field.max_value !== undefined) && (
           <p className="mt-0.5 px-4 text-[10px] text-slate-400">

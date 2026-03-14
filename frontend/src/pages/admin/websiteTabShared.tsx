@@ -197,26 +197,28 @@ export const WEB_DEFAULTS: WebsiteData = {
 
 // ─── Atom components ──────────────────────────────────────────────────────────
 
-export function Field({ label, hint, value, onChange, multiline = false, testId, placeholder, disabled, maxLength = 1000 }: {
+export function Field({ label, hint, value, onChange, multiline = false, testId, placeholder, disabled, maxLength }: {
   label: string; hint?: string; value: string; onChange: (v: string) => void;
   multiline?: boolean; testId?: string; placeholder?: string; disabled?: boolean; maxLength?: number;
 }) {
-  const pct = value.length / maxLength;
+  // Smart default: body-copy (multiline) → 1 000, labels/titles/names → 100
+  const effectiveMax = maxLength ?? (multiline ? 1_000 : 100);
+  const pct = value.length / effectiveMax;
   const cntCls = pct > 0.95 ? "text-red-500" : pct > 0.8 ? "text-amber-500" : "text-slate-400";
   return (
     <div>
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium" style={{ color: "var(--aa-text)" }}>{label}</label>
         {value.length > 0 && (
-          <span className={`text-[11px] font-mono tabular-nums ${cntCls}`}>{value.length.toLocaleString()}/{maxLength.toLocaleString()}</span>
+          <span className={`text-[11px] font-mono tabular-nums ${cntCls}`}>{value.length.toLocaleString()}/{effectiveMax.toLocaleString()}</span>
         )}
       </div>
       {hint && <p className="text-[11px] mt-0.5 mb-1" style={{ color: "var(--aa-muted)" }}>{hint}</p>}
       {multiline ? (
-        <Textarea value={value} onChange={e => onChange(e.target.value)} rows={2} maxLength={maxLength}
+        <Textarea value={value} onChange={e => onChange(e.target.value)} rows={2} maxLength={effectiveMax}
           className="mt-0.5 text-sm" data-testid={testId} placeholder={placeholder} disabled={disabled} />
       ) : (
-        <Input value={value} onChange={e => onChange(e.target.value)} maxLength={maxLength}
+        <Input value={value} onChange={e => onChange(e.target.value)} maxLength={effectiveMax}
           className="mt-0.5" data-testid={testId} placeholder={placeholder} disabled={disabled} />
       )}
     </div>
@@ -489,11 +491,11 @@ export function OrgAddressSection() {
       <div className="space-y-2" data-testid="org-address-section">
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Line 1 <span className="text-red-500">*</span></label>
-          <Input placeholder="Street address" maxLength={200} value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} data-testid="org-addr-line1" />
+          <Input placeholder="Street address" maxLength={100} value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} data-testid="org-addr-line1" />
         </div>
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Line 2</label>
-          <Input placeholder="Apartment, suite, unit…" maxLength={200} value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
+          <Input placeholder="Apartment, suite, unit…" maxLength={100} value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
         </div>
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">City <span className="text-red-500">*</span></label>

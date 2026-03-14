@@ -825,12 +825,16 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                   <div>
                     <label className="label-xs">Max characters <span className="text-slate-400 font-normal normal-case tracking-normal">(optional)</span></label>
                     <Input
-                      type="number" min={1} max={500000}
+                      type="number" min={1}
+                      max={q.type === "single_line" ? 500 : 10000}
                       value={q.max_length ?? ""}
-                      onChange={e => onChange({ ...q, max_length: e.target.value ? Number(e.target.value) : undefined })}
-                      placeholder={q.type === "multi_line" ? "5000 (default)" : "500 (default)"}
+                      onChange={e => onChange({ ...q, max_length: e.target.value ? Math.min(Number(e.target.value), q.type === "single_line" ? 500 : 10000) : undefined })}
+                      placeholder={q.type === "multi_line" ? "default 5,000" : "default 500"}
                       className="h-8 text-xs w-36 font-mono"
                     />
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      System max: {q.type === "single_line" ? "500" : "10,000"} chars
+                    </p>
                   </div>
                 )}
 

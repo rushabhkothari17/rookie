@@ -1,0 +1,85 @@
+{
+  "summary": "Tested iteration 294 — SHORT+NAME→100 limit changes, website settings recategorization, UniversalFormRenderer 'Max N chars' hint, admin form builder max caps. Found and fixed 3 backend bugs. All 29 backend tests now pass.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/admin/webhooks",
+        "issue": "Webhook creation uses Dict[str,Any] instead of Pydantic model — server-side name length is NOT validated by Pydantic (known from iteration 293). Frontend enforces maxLength=100 but backend does not reject. This is a pre-existing known issue.",
+        "priority": "MEDIUM"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "bugs_found_and_fixed": [
+    {
+      "file": "/app/backend/routes/admin/plans.py",
+      "issue": "PlanCreate.name used max_length=500 instead of 100. Plan names >100 chars were accepted by backend while spec requires max 100.",
+      "fix": "Changed Field(max_length=500) → Field(max_length=100)",
+      "severity": "CRITICAL"
+    },
+    {
+      "file": "/app/backend/models.py — WebsiteSettingsUpdate._cap_string_lengths",
+      "issue": "Social URL fields (social_twitter, social_linkedin, social_facebook, social_instagram, social_youtube) were capped at 100 chars (fell through to 'else: limit=100'). Per spec, social URL fields should allow up to 2,048 chars. Backend was rejecting URLs >100 chars (422).",
+      "fix": "Added url_fields = {'social_twitter', 'social_linkedin', 'social_facebook', 'social_instagram', 'social_youtube'} set with limit=2_048 in the validator",
+      "severity": "CRITICAL"
+    },
+    {
+      "file": "/app/backend/models.py — ScopeRequestFormData",
+      "issue": "ScopeRequestFormData.name had max_length=200 (was old value). Cart quote form sends to /api/orders/scope-request-form. Per spec name should be max 100 (same as all name fields). Frontend already had maxLength=100.",
+      "fix": "Changed Field('', max_length=200) → Field('', max_length=100)",
+      "severity": "MEDIUM"
+    }
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_char_limits_v294.py",
+    "/app/test_reports/pytest/pytest_iter294_char_limits.xml"
+  ],
+  "action_items": [
+    "Webhook endpoint should use a Pydantic model for name validation (max_length=100) instead of Dict — server-side validation is bypassed (pre-existing known issue from iteration 293)."
+  ],
+  "critical_code_review_comments": [
+    "plans.py has its own local PlanCreate model instead of importing _NAME from models.py — consider centralizing into models.py to prevent future divergence.",
+    "Webhook route (/api/admin/webhooks) uses Dict[str,Any] for request body instead of Pydantic — no server-side validation on name/URL fields. Should have a WebhookCreate pydantic model.",
+    "ScopeRequestFormData is defined in models.py but was not updated when _SHORT/_NAME changed to 100 — synchronization issue when updating limits."
+  ],
+  "updated_files": [
+    "/app/backend/routes/admin/plans.py",
+    "/app/backend/models.py",
+    "/app/backend/tests/test_char_limits_v294.py"
+  ],
+  "success_rate": {
+    "backend": "100% (29/29 tests pass after 3 fixes)",
+    "frontend": "90% (confirmed via code review + UI screenshots; FormSchemaBuilder max caps confirmed in code; browser crash prevented completing one IntakeSchemaBuilder UI test)"
+  },
+  "confirmed_correct_via_code_review": [
+    "fieldLimits.tsx: LIMIT_NAME=100, LIMIT_FULL_NAME=100, LIMIT_COMPANY=100, LIMIT_SUBJECT=100, LIMIT_WEB_BODY=1000, LIMIT_URL=2048, LIMIT_FORM_SINGLE_LINE=500, LIMIT_FORM_MULTI_LINE=10000 all correct",
+    "CategoriesTab.tsx: maxLength=100, counter X/100 shown when typing",
+    "TermsTab.tsx: maxLength=100, counter X/100 shown when typing",
+    "PlansTab.tsx: maxLength=100, counter X/100 shown when typing",
+    "WebhooksTab.tsx: name maxLength=100, URL maxLength=2048",
+    "WebsiteAuthSection.tsx: social URL fields maxLength=2048, body text fields maxLength=1000",
+    "websiteTabShared.tsx Field component: effectiveMax = maxLength ?? (multiline ? 1_000 : 100)",
+    "UniversalFormRenderer.tsx: shows 'Max N chars' when empty+max_length set; transitions to X/N counter when typing",
+    "FormSchemaBuilder.tsx: text max=500, textarea max=10000",
+    "AdminIntakeFormsTab.tsx: uses FormSchemaBuilder (inherits max=500/10000 caps)",
+    "Cart.tsx: name maxLength=100, company maxLength=100 for cart quote form"
+  ],
+  "confirmed_via_ui_screenshots": [
+    "Product create form: name shows '15/100' counter with maxLength=100 input",
+    "Webhook create form: name shows '17/100' counter",
+    "Organization Info: store name shows '2/100' counter"
+  ],
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iteration 294 fixed 3 backend bugs: (1) plans.py PlanCreate.name 500→100, (2) WebsiteSettingsUpdate validator social URL cap 100→2048, (3) ScopeRequestFormData.name 200→100. All 29 backend tests pass. Frontend limits are correctly implemented (verified via code + UI). Remaining known issue: webhooks route uses Dict not Pydantic — no server-side name validation. Test file: /app/backend/tests/test_char_limits_v294.py",
+  "rca_of_issues": {
+    "plans_500_not_100": "plans.py defines its own local PlanCreate model with max_length=500 rather than importing/using the global _NAME constant from models.py. When _NAME was updated to 100, plans.py was missed because it's a standalone local class.",
+    "social_url_capped_at_100": "WebsiteSettingsUpdate._cap_string_lengths validator in models.py categorizes fields into json_fields (100K), body_fields (1K), and 'everything else' (100). Social URL fields (social_twitter etc.) were not categorized into a special url_fields group and fell through to the 'else: limit=100' branch.",
+    "scope_form_name_200": "ScopeRequestFormData.name had an explicit max_length=200 (from an older version predating the _SHORT/_NAME=100 standardization). It wasn't updated when _NAME was changed to 100 because it used a hard-coded value rather than **_NAME."
+  }
+}

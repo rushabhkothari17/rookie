@@ -220,7 +220,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
           if (!lockKey && (!draft.key || draft.key === slugify((draft.label || "").slice(0, -1)))) {
             setDraft({ ...draft, key: slugify(e.target.value) });
           }
-        }} maxLength={500} placeholder="Contact Email" className="mt-0.5 h-8 text-sm" data-testid="ref-label-input" />
+        }} maxLength={100} placeholder="Contact Email" className="mt-0.5 h-8 text-sm" data-testid="ref-label-input" />
       </div>
       <div>
         <RequiredLabel className="text-slate-600" trailing={lockKey ? <span className="text-amber-500">(locked)</span> : undefined}>Key</RequiredLabel>
@@ -249,7 +249,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
       <div className="col-span-2">
         <label className="text-xs text-slate-600 font-medium">Description (optional)</label>
         <Input value={draft.description || ""} onChange={(e) => set("description", e.target.value)}
-          maxLength={500}
+          maxLength={100}
           placeholder="Short description" className="mt-0.5 h-8 text-sm" data-testid="ref-description-input" />
       </div>
     </div>

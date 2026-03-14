@@ -244,11 +244,11 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-semibold text-slate-600">Name</label>
-                {name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${name.length > 475 ? "text-red-500" : name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{name.length}/500</span>}
+                {name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${name.length > 95 ? "text-red-500" : name.length > 80 ? "text-amber-500" : "text-slate-400"}`}>{name.length}/100</span>}
               </div>
               <Input
                 value={name} onChange={e => setName(e.target.value)}
-                maxLength={500}
+                maxLength={100}
                 placeholder="e.g. CRM Sync" data-testid="webhook-name-input"
               />
             </div>
@@ -275,7 +275,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
               <Input
                 type={showSecret ? "text" : "password"}
                 value={secret} onChange={e => setSecret(e.target.value)}
-                maxLength={500}
+                maxLength={100}
                 placeholder={isEdit ? "Leave blank to keep current" : "Auto-generated whsec_..."}
                 className="font-mono text-xs" data-testid="webhook-secret-input"
               />

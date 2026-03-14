@@ -221,3 +221,4 @@ source.zip
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+frontend/node_modules/.cache/default-development/20.pack

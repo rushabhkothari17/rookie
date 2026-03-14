@@ -153,10 +153,10 @@ function TemplateEditor({ template, onSave, onClose }: {
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-medium text-slate-700">Subject line</label>
               {subject.length > 0 && (
-                <span className={`text-[11px] font-mono tabular-nums ${subject.length > 190 ? "text-red-500" : subject.length > 160 ? "text-amber-500" : "text-slate-400"}`}>{subject.length}/200</span>
+                <span className={`text-[11px] font-mono tabular-nums ${subject.length > 95 ? "text-red-500" : subject.length > 80 ? "text-amber-500" : "text-slate-400"}`}>{subject.length}/100</span>
               )}
             </div>
-            <Input value={subject} onChange={e => setSubject(e.target.value)} maxLength={200} className="mt-1" data-testid="template-subject-input" />
+            <Input value={subject} onChange={e => setSubject(e.target.value)} maxLength={100} className="mt-1" data-testid="template-subject-input" />
           </div>
 
           {/* Available variables */}

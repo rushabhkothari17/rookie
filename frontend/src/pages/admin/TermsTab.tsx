@@ -224,10 +224,10 @@ export function TermsTab() {
               <div className="flex items-center justify-between">
                 <RequiredLabel className="text-slate-500 font-normal">Title</RequiredLabel>
                 {createForm.title.length > 0 && (
-                  <span className={`text-[11px] font-mono tabular-nums ${createForm.title.length > 475 ? "text-red-500" : createForm.title.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{createForm.title.length}/500</span>
+                  <span className={`text-[11px] font-mono tabular-nums ${createForm.title.length > 95 ? "text-red-500" : createForm.title.length > 80 ? "text-amber-500" : "text-slate-400"}`}>{createForm.title.length}/100</span>
                 )}
               </div>
-              <Input value={createForm.title} onChange={e => setCreateForm({ ...createForm, title: e.target.value })} maxLength={500} data-testid="admin-terms-title-input" />
+              <Input value={createForm.title} onChange={e => setCreateForm({ ...createForm, title: e.target.value })} maxLength={100} data-testid="admin-terms-title-input" />
             </div>
             <div className="space-y-1">
               <RequiredLabel className="text-slate-500 font-normal">Content (supports tags)</RequiredLabel>
@@ -249,10 +249,10 @@ export function TermsTab() {
               <div className="flex items-center justify-between">
                 <RequiredLabel className="text-slate-500 font-normal">Title</RequiredLabel>
                 {editForm.title.length > 0 && (
-                  <span className={`text-[11px] font-mono tabular-nums ${editForm.title.length > 475 ? "text-red-500" : editForm.title.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{editForm.title.length}/500</span>
+                  <span className={`text-[11px] font-mono tabular-nums ${editForm.title.length > 95 ? "text-red-500" : editForm.title.length > 80 ? "text-amber-500" : "text-slate-400"}`}>{editForm.title.length}/100</span>
                 )}
               </div>
-              <Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} maxLength={500} data-testid="admin-terms-edit-title" />
+              <Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} maxLength={100} data-testid="admin-terms-edit-title" />
             </div>
             <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Content</RequiredLabel><RichHtmlEditor value={editForm.content} onChange={(v) => setEditForm({ ...editForm, content: v })} minHeight="200px" placeholder="Enter terms content…" /></div>
             <div className="space-y-1">

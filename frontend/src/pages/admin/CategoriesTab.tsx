@@ -199,9 +199,9 @@ export function CategoriesTab() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <RequiredLabel className="text-sm">Name</RequiredLabel>
-                {form.name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.name.length > 475 ? "text-red-500" : form.name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{form.name.length}/500</span>}
+                {form.name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.name.length > 95 ? "text-red-500" : form.name.length > 80 ? "text-amber-500" : "text-slate-400"}`}>{form.name.length}/100</span>}
               </div>
-              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} maxLength={500} data-testid="admin-category-name-input" />
+              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} maxLength={100} data-testid="admin-category-name-input" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">

@@ -255,8 +255,8 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-slate-600 block mb-1.5">Form Name *</label>
-                <Input value={name} onChange={e => setName(e.target.value)} maxLength={500} placeholder="e.g. Client Intake Questionnaire" data-testid="intake-form-name-input" />
-                {name.length > 0 && <p className={`text-[11px] font-mono tabular-nums text-right mt-0.5 ${name.length > 475 ? "text-red-500" : name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{name.length}/500</p>}
+                <Input value={name} onChange={e => setName(e.target.value)} maxLength={100} placeholder="e.g. Client Intake Questionnaire" data-testid="intake-form-name-input" />
+                {name.length > 0 && <p className={`text-[11px] font-mono tabular-nums text-right mt-0.5 ${name.length > 95 ? "text-red-500" : name.length > 80 ? "text-amber-500" : "text-slate-400"}`}>{name.length}/100</p>}
               </div>
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-slate-600 block mb-1.5">Description</label>

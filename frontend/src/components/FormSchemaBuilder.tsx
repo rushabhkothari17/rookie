@@ -599,13 +599,20 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                         <Input
                           type="number"
                           min={1}
-                          max={10000}
+                          max={field.type === "textarea" ? 10000 : 500}
                           value={field.max_length ?? ""}
-                          onChange={e => updateField(field.id, { max_length: e.target.value ? Number(e.target.value) : undefined })}
-                          placeholder="No limit"
+                          onChange={e => {
+                            const v = e.target.value ? Number(e.target.value) : undefined;
+                            const cap = field.type === "textarea" ? 10000 : 500;
+                            updateField(field.id, { max_length: v ? Math.min(v, cap) : undefined });
+                          }}
+                          placeholder={field.type === "textarea" ? "default 10,000" : "default 500"}
                           className="mt-0.5 h-7 text-xs"
                           data-testid={`field-maxlength-${field.id}`}
                         />
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          System max: {field.type === "textarea" ? "10,000" : "500"} chars
+                        </p>
                       </div>
                     )}
                     {/* Number min/max */}

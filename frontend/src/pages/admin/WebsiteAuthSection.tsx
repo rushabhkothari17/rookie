@@ -157,7 +157,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
           <div className="space-y-4">
             <Field label="Portal label" hint='Small label above title (e.g. "Customer Portal")' value={ws.login_portal_label} onChange={s("login_portal_label")} testId="ws-login-portal" />
             <Field label="Title" value={ws.login_title} onChange={s("login_title")} testId="ws-login-title" />
-            <Field label="Subtitle" value={ws.login_subtitle} onChange={s("login_subtitle")} testId="ws-login-subtitle" />
+            <Field label="Subtitle" value={ws.login_subtitle} onChange={s("login_subtitle")} maxLength={1000} testId="ws-login-subtitle" />
           </div>
         )}
         {authSlide === "signup" && (
@@ -170,9 +170,9 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Feature Bullets (shown on left side of signup page)</p>
               <p className="text-xs text-slate-400 mb-3">Leave blank to use defaults.</p>
               <div className="space-y-2">
-                <Field label="Bullet 1" value={ws.signup_bullet_1} onChange={s("signup_bullet_1")} placeholder="Access your orders and subscriptions" testId="ws-signup-bullet-1" />
-                <Field label="Bullet 2" value={ws.signup_bullet_2} onChange={s("signup_bullet_2")} placeholder="Download invoices and documents" testId="ws-signup-bullet-2" />
-                <Field label="Bullet 3" value={ws.signup_bullet_3} onChange={s("signup_bullet_3")} placeholder="Track project progress in real time" testId="ws-signup-bullet-3" />
+                <Field label="Bullet 1" value={ws.signup_bullet_1} onChange={s("signup_bullet_1")} maxLength={1000} placeholder="Access your orders and subscriptions" testId="ws-signup-bullet-1" />
+                <Field label="Bullet 2" value={ws.signup_bullet_2} onChange={s("signup_bullet_2")} maxLength={1000} placeholder="Download invoices and documents" testId="ws-signup-bullet-2" />
+                <Field label="Bullet 3" value={ws.signup_bullet_3} onChange={s("signup_bullet_3")} maxLength={1000} placeholder="Track project progress in real time" testId="ws-signup-bullet-3" />
                 <Field label="CTA / Closing statement" hint='Bold callout line shown below bullets (e.g. "Get started in minutes")' value={ws.signup_cta} onChange={s("signup_cta")} placeholder="Get started in minutes" testId="ws-signup-cta" />
               </div>
             </div>
@@ -266,16 +266,16 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
         {authSlide === "checkout_success" && (
           <div className="space-y-4">
             <Field label="Page heading" value={ws.checkout_success_title} onChange={s("checkout_success_title")} testId="ws-cs-title" />
-            <Field label="Payment successful message" value={ws.checkout_success_paid_msg} onChange={s("checkout_success_paid_msg")} testId="ws-cs-paid" />
-            <Field label="Checking status message" value={ws.checkout_success_pending_msg} onChange={s("checkout_success_pending_msg")} testId="ws-cs-pending" />
-            <Field label="Expired / not found message" value={ws.checkout_success_expired_msg} onChange={s("checkout_success_expired_msg")} testId="ws-cs-expired" />
+            <Field label="Payment successful message" value={ws.checkout_success_paid_msg} onChange={s("checkout_success_paid_msg")} maxLength={1000} testId="ws-cs-paid" />
+            <Field label="Checking status message" value={ws.checkout_success_pending_msg} onChange={s("checkout_success_pending_msg")} maxLength={1000} testId="ws-cs-pending" />
+            <Field label="Expired / not found message" value={ws.checkout_success_expired_msg} onChange={s("checkout_success_expired_msg")} maxLength={1000} testId="ws-cs-expired" />
             <div className="border-t border-slate-100 pt-3">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Next Steps Section</p>
               <div className="space-y-3">
                 <Field label="Section title" value={ws.checkout_success_next_steps_title} onChange={s("checkout_success_next_steps_title")} testId="ws-cs-next-title" />
-                <Field label="Step 1" value={ws.checkout_success_step_1} onChange={s("checkout_success_step_1")} testId="ws-cs-step-1" />
-                <Field label="Step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} testId="ws-cs-step-2" />
-                <Field label="Step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} testId="ws-cs-step-3" />
+                <Field label="Step 1" value={ws.checkout_success_step_1} onChange={s("checkout_success_step_1")} maxLength={1000} testId="ws-cs-step-1" />
+                <Field label="Step 2" value={ws.checkout_success_step_2} onChange={s("checkout_success_step_2")} maxLength={1000} testId="ws-cs-step-2" />
+                <Field label="Step 3" value={ws.checkout_success_step_3} onChange={s("checkout_success_step_3")} maxLength={1000} testId="ws-cs-step-3" />
                 <Field label="Portal link text" value={ws.checkout_portal_link_text} onChange={s("checkout_portal_link_text")} testId="ws-cs-portal-link" />
               </div>
             </div>
@@ -285,13 +285,13 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
                 <Field label="Success title" value={ws.bank_success_title} onChange={s("bank_success_title")} testId="ws-bank-success-title" />
                 <Field label="Success message" value={ws.bank_success_message} onChange={s("bank_success_message")} multiline testId="ws-bank-success-msg" />
                 <Field label="Instructions title" value={ws.bank_instructions_title} onChange={s("bank_instructions_title")} testId="ws-bank-inst-title" />
-                <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} testId="ws-bank-inst-1" />
-                <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} testId="ws-bank-inst-2" />
-                <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} testId="ws-bank-inst-3" />
+                <Field label="Instruction 1" value={ws.bank_instruction_1} onChange={s("bank_instruction_1")} maxLength={1000} testId="ws-bank-inst-1" />
+                <Field label="Instruction 2" value={ws.bank_instruction_2} onChange={s("bank_instruction_2")} maxLength={1000} testId="ws-bank-inst-2" />
+                <Field label="Instruction 3" value={ws.bank_instruction_3} onChange={s("bank_instruction_3")} maxLength={1000} testId="ws-bank-inst-3" />
                 <Field label="Next steps title" value={ws.bank_next_steps_title} onChange={s("bank_next_steps_title")} testId="ws-bank-next-title" />
-                <Field label="Next step 1" value={ws.bank_next_step_1} onChange={s("bank_next_step_1")} testId="ws-bank-next-1" />
-                <Field label="Next step 2" value={ws.bank_next_step_2} onChange={s("bank_next_step_2")} testId="ws-bank-next-2" />
-                <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} testId="ws-bank-next-3" />
+                <Field label="Next step 1" value={ws.bank_next_step_1} onChange={s("bank_next_step_1")} maxLength={1000} testId="ws-bank-next-1" />
+                <Field label="Next step 2" value={ws.bank_next_step_2} onChange={s("bank_next_step_2")} maxLength={1000} testId="ws-bank-next-2" />
+                <Field label="Next step 3" value={ws.bank_next_step_3} onChange={s("bank_next_step_3")} maxLength={1000} testId="ws-bank-next-3" />
               </div>
             </div>
           </div>
@@ -299,7 +299,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
         {authSlide === "gocardless_callback" && (
           <div className="space-y-4">
             <Field label="Processing title" value={ws.gocardless_processing_title} onChange={s("gocardless_processing_title")} testId="ws-gc-proc-title" />
-            <Field label="Processing subtitle" value={ws.gocardless_processing_subtitle} onChange={s("gocardless_processing_subtitle")} testId="ws-gc-proc-sub" />
+            <Field label="Processing subtitle" value={ws.gocardless_processing_subtitle} onChange={s("gocardless_processing_subtitle")} maxLength={1000} testId="ws-gc-proc-sub" />
             <Field label="Success title" value={ws.gocardless_success_title} onChange={s("gocardless_success_title")} testId="ws-gc-succ-title" />
             <Field label="Success message" value={ws.gocardless_success_message} onChange={s("gocardless_success_message")} multiline testId="ws-gc-succ-msg" />
             <Field label="Error title" value={ws.gocardless_error_title} onChange={s("gocardless_error_title")} testId="ws-gc-err-title" />
@@ -309,7 +309,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
         )}
         {authSlide === "checkout_messages" && (
           <div className="space-y-4">
-            <Field label="Cart empty message" value={ws.msg_cart_empty} onChange={s("msg_cart_empty")} testId="ws-msg-cart-empty" />
+            <Field label="Cart empty message" value={ws.msg_cart_empty} onChange={s("msg_cart_empty")} maxLength={1000} testId="ws-msg-cart-empty" />
             <Field label="Currency unsupported message" value={ws.msg_currency_unsupported} onChange={s("msg_currency_unsupported")} multiline testId="ws-msg-currency" />
             <Field label="No payment methods message" value={ws.msg_no_payment_methods} onChange={s("msg_no_payment_methods")} multiline testId="ws-msg-no-payment" />
           </div>
@@ -347,8 +347,8 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
         {authSlide === "footer_contact" && (
           <div className="space-y-4">
             <Field label="Contact section title" value={ws.footer_contact_title} onChange={s("footer_contact_title")} placeholder="Contact" testId="ws-footer-contact-title" />
-            <Field label="Email" value={ws.contact_email} onChange={s("contact_email")} testId="ws-contact-email" />
-            <Field label="Phone" value={ws.contact_phone} onChange={s("contact_phone")} testId="ws-contact-phone" />
+            <Field label="Email" value={ws.contact_email} onChange={s("contact_email")} maxLength={320} testId="ws-contact-email" />
+            <Field label="Phone" value={ws.contact_phone} onChange={s("contact_phone")} maxLength={50} testId="ws-contact-phone" />
             <Field label="Address" value={ws.contact_address} onChange={s("contact_address")} multiline testId="ws-contact-address" />
           </div>
         )}
@@ -356,11 +356,11 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
           <div className="space-y-4">
             <Field label="Section title" value={ws.footer_social_title} onChange={s("footer_social_title")} placeholder="Follow Us" testId="ws-footer-social-title" />
             <div className="space-y-3">
-              <Field label="X / Twitter URL" value={ws.social_twitter} onChange={s("social_twitter")} placeholder="https://x.com/yourhandle" testId="ws-social-twitter" />
-              <Field label="LinkedIn URL" value={ws.social_linkedin} onChange={s("social_linkedin")} placeholder="https://linkedin.com/company/..." testId="ws-social-linkedin" />
-              <Field label="Facebook URL" value={ws.social_facebook} onChange={s("social_facebook")} placeholder="https://facebook.com/..." testId="ws-social-facebook" />
-              <Field label="Instagram URL" value={ws.social_instagram} onChange={s("social_instagram")} placeholder="https://instagram.com/..." testId="ws-social-instagram" />
-              <Field label="YouTube URL" value={ws.social_youtube} onChange={s("social_youtube")} placeholder="https://youtube.com/@..." testId="ws-social-youtube" />
+              <Field label="X / Twitter URL" value={ws.social_twitter} onChange={s("social_twitter")} maxLength={2048} placeholder="https://x.com/yourhandle" testId="ws-social-twitter" />
+              <Field label="LinkedIn URL" value={ws.social_linkedin} onChange={s("social_linkedin")} maxLength={2048} placeholder="https://linkedin.com/company/..." testId="ws-social-linkedin" />
+              <Field label="Facebook URL" value={ws.social_facebook} onChange={s("social_facebook")} maxLength={2048} placeholder="https://facebook.com/..." testId="ws-social-facebook" />
+              <Field label="Instagram URL" value={ws.social_instagram} onChange={s("social_instagram")} maxLength={2048} placeholder="https://instagram.com/..." testId="ws-social-instagram" />
+              <Field label="YouTube URL" value={ws.social_youtube} onChange={s("social_youtube")} maxLength={2048} placeholder="https://youtube.com/@..." testId="ws-social-youtube" />
             </div>
           </div>
         )}
@@ -431,7 +431,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
               <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--aa-muted)" }}>Showcase Layout — Configure & Price</p>
               <div className="space-y-3">
                 <Field label="Panel title" hint='Default: "Configure & Price"' value={ws.sdp_configure_price_title} onChange={s("sdp_configure_price_title")} placeholder="Configure & Price" testId="ws-sdp-configure-title" />
-                <Field label="Panel subtitle" hint='Default: "Adjust options to see live pricing"' value={ws.sdp_configure_price_subtitle} onChange={s("sdp_configure_price_subtitle")} placeholder="Adjust options to see live pricing" testId="ws-sdp-configure-subtitle" />
+                <Field label="Panel subtitle" hint='Default: "Adjust options to see live pricing"' value={ws.sdp_configure_price_subtitle} onChange={s("sdp_configure_price_subtitle")} maxLength={1000} placeholder="Adjust options to see live pricing" testId="ws-sdp-configure-subtitle" />
               </div>
             </div>
 
@@ -452,7 +452,7 @@ export function AuthPagesSection({ ws, s, authSlide, setAuthSlide, saveSection, 
               <div className="space-y-3">
                 <Field label="First step title" hint={"Default: \"Let's get started\""} value={ws.sdp_wizard_step_title} onChange={s("sdp_wizard_step_title")} placeholder="Let's get started" testId="ws-sdp-wizard-step-title" />
                 <Field label="Review step title" hint='Default: "Review Your Selections"' value={ws.sdp_wizard_review_title} onChange={s("sdp_wizard_review_title")} placeholder="Review Your Selections" testId="ws-sdp-wizard-review-title" />
-                <Field label="Review step subtitle" hint='Default: "Please confirm your choices before proceeding"' value={ws.sdp_wizard_review_subtitle} onChange={s("sdp_wizard_review_subtitle")} placeholder="Please confirm your choices before proceeding" testId="ws-sdp-wizard-review-subtitle" />
+                <Field label="Review step subtitle" hint='Default: "Please confirm your choices before proceeding"' value={ws.sdp_wizard_review_subtitle} onChange={s("sdp_wizard_review_subtitle")} maxLength={1000} placeholder="Please confirm your choices before proceeding" testId="ws-sdp-wizard-review-subtitle" />
                 <Field label="Submit / Checkout button text" hint='Default: "Proceed to Checkout"' value={ws.sdp_wizard_submit_btn} onChange={s("sdp_wizard_submit_btn")} placeholder="Proceed to Checkout" testId="ws-sdp-wizard-submit-btn" />
               </div>
             </div>

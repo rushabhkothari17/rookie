@@ -583,11 +583,11 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   onBlur={(e) => { if (!form.slug || form.slug === slugify(form.title.slice(0, -1))) setForm(f => ({ ...f, slug: slugify(e.target.value) })); }}
-                  maxLength={500}
+                  maxLength={100}
                   placeholder="Resource title"
                   data-testid="resource-title-input"
                 />
-                {form.title.length > 0 && <p className={`text-[11px] font-mono tabular-nums text-right mt-0.5 ${form.title.length > 475 ? "text-red-500" : form.title.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{form.title.length}/500</p>}
+                {form.title.length > 0 && <p className={`text-[11px] font-mono tabular-nums text-right mt-0.5 ${form.title.length > 95 ? "text-red-500" : form.title.length > 80 ? "text-amber-500" : "text-slate-400"}`}>{form.title.length}/100</p>}
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700">Slug / URL</label>

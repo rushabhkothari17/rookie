@@ -6,19 +6,19 @@ from typing import Any, Dict, List, Optional
 
 
 # ---------------------------------------------------------------------------
-# Shared length constants — keep short strings short, long content bounded
+# Shared length constants — keep in sync with frontend/src/lib/fieldLimits.tsx
 # ---------------------------------------------------------------------------
-_NAME    = {"min_length": 1, "max_length": 500}
-_CODE    = {"min_length": 1, "max_length": 100}
-_DESC    = {"max_length": 10_000}
-_NOTE    = {"max_length": 5_000}
-_SHORT   = {"max_length": 200}
-_CONTENT = {"max_length": 500_000}   # articles / HTML bodies
+_NAME    = {"min_length": 1, "max_length": 100}   # titles, names, headings
+_CODE    = {"min_length": 1, "max_length": 100}   # codes, keys, slugs
+_DESC    = {"max_length": 10_000}                 # long descriptions
+_NOTE    = {"max_length": 5_000}                  # notes, FAQ answers
+_SHORT   = {"max_length": 100}                    # labels, button text
+_CONTENT = {"max_length": 500_000}                # rich HTML bodies
 
 
 class AddressInput(BaseModel):
-    line1: str = Field("", max_length=200)
-    line2: str = Field("", max_length=200)
+    line1: str = Field("", max_length=100)
+    line2: str = Field("", max_length=100)
     city: str = Field("", max_length=100)
     region: str = Field("", max_length=100)
     postal: str = Field("", max_length=20)
@@ -395,9 +395,9 @@ class ManualSubscriptionCreate(BaseModel):
     start_date: Optional[str] = None
     status: str = Field("active", max_length=100)
     internal_note: Optional[str] = Field("", max_length=5_000)
-    term_months: Optional[int] = Field(None, ge=0, le=300)  # None/0 = cancel anytime; 1-300 = locked term
+    term_months: Optional[int] = Field(None, ge=0, le=300)
     auto_cancel_on_termination: bool = False
-    reminder_days: Optional[int] = None  # None = use org default; explicit value overrides
+    reminder_days: Optional[int] = None
 
 
 class AdminCreateUserRequest(BaseModel):
@@ -439,11 +439,11 @@ class SubscriptionUpdate(BaseModel):
     contract_end_date: Optional[str] = None
     amount: Optional[float] = None
     status: Optional[str] = Field(None, max_length=100)
-    plan_name: Optional[str] = Field(None, max_length=500)
+    plan_name: Optional[str] = Field(None, max_length=100)
     product_id: Optional[str] = None
     customer_id: Optional[str] = None
     payment_method: Optional[str] = Field(None, max_length=100)
-    processor_id: Optional[str] = Field(None, max_length=200)
+    processor_id: Optional[str] = Field(None, max_length=100)
     new_note: Optional[str] = Field(None, max_length=5_000)
     term_months: Optional[int] = Field(None, ge=-1, le=300)  # -1 sentinel to clear term
     auto_cancel_on_termination: Optional[bool] = None
@@ -451,15 +451,15 @@ class SubscriptionUpdate(BaseModel):
 
 
 class CustomerUpdate(BaseModel):
-    full_name: Optional[str] = Field(None, max_length=200)
-    company_name: Optional[str] = Field(None, max_length=200)
-    job_title: Optional[str] = Field(None, max_length=200)
+    full_name: Optional[str] = Field(None, max_length=100)
+    company_name: Optional[str] = Field(None, max_length=100)
+    job_title: Optional[str] = Field(None, max_length=100)
     phone: Optional[str] = Field(None, max_length=50)
 
 
 class AddressUpdate(BaseModel):
-    line1: Optional[str] = Field(None, max_length=200)
-    line2: Optional[str] = Field(None, max_length=200)
+    line1: Optional[str] = Field(None, max_length=100)
+    line2: Optional[str] = Field(None, max_length=100)
     city: Optional[str] = Field(None, max_length=100)
     region: Optional[str] = Field(None, max_length=100)
     postal: Optional[str] = Field(None, max_length=20)
@@ -479,7 +479,7 @@ class OrderUpdate(BaseModel):
     new_note: Optional[str] = Field(None, max_length=5_000)
     subscription_id: Optional[str] = None
     product_id: Optional[str] = None
-    processor_id: Optional[str] = Field(None, max_length=200)
+    processor_id: Optional[str] = Field(None, max_length=100)
 
 
 class OrderDelete(BaseModel):
@@ -513,7 +513,7 @@ class ScopeRequestFormData(BaseModel):
     timeline_urgency: Optional[str] = Field("", **_SHORT)
     budget_range: Optional[str] = Field("", **_SHORT)
     additional_notes: Optional[str] = Field("", **_NOTE)
-    name: Optional[str] = Field("", max_length=200)
+    name: Optional[str] = Field("", max_length=100)
     email: Optional[str] = Field("", max_length=320)
     company: Optional[str] = Field("", **_SHORT)
     phone: Optional[str] = Field("", max_length=50)
@@ -735,7 +735,7 @@ class WebsiteSettingsUpdate(BaseModel):
     signup_bullet_3: Optional[str] = None
     signup_cta: Optional[str] = None
 
-    # JSON schema fields that need a larger budget; all other str fields ≤ 500 chars
+    # JSON schema fields that need a larger budget; body text ≤ 1000; other str fields ≤ 100
     _JSON_FIELDS = frozenset({
         "scope_form_schema", "signup_form_schema", "partner_signup_form_schema",
         "checkout_extra_schema", "checkout_sections", "email_verification_body",
@@ -754,10 +754,45 @@ class WebsiteSettingsUpdate(BaseModel):
             "checkout_extra_schema", "checkout_sections", "email_verification_body",
             "bank_transaction_sources", "bank_transaction_types", "bank_transaction_statuses",
         }
+        body_fields = {
+            "hero_subtitle", "articles_hero_subtitle",
+            "login_subtitle", "register_subtitle",
+            "signup_form_subtitle", "scope_form_subtitle", "intake_form_page_subtitle",
+            "verify_email_subtitle", "portal_subtitle", "profile_subtitle",
+            "admin_page_subtitle", "documents_page_subtitle",
+            "gocardless_processing_subtitle",
+            "msg_cart_empty", "msg_quote_success", "msg_scope_success",
+            "msg_currency_unsupported", "msg_no_payment_methods",
+            "checkout_success_paid_msg", "checkout_success_pending_msg",
+            "checkout_success_expired_msg",
+            "checkout_success_step_1", "checkout_success_step_2", "checkout_success_step_3",
+            "checkout_partner_description", "checkout_partner_misrep_warning",
+            "bank_success_message", "bank_instruction_1", "bank_instruction_2", "bank_instruction_3",
+            "bank_next_step_1", "bank_next_step_2", "bank_next_step_3",
+            "gocardless_success_message", "gocardless_error_message",
+            "footer_about_text", "contact_address",
+            "payment_gocardless_description", "payment_stripe_description",
+            "email_article_footer_text",
+            "signup_bullet_1", "signup_bullet_2", "signup_bullet_3",
+            "documents_page_upload_hint", "documents_page_empty_text",
+            "email_article_subject_template", "email_verification_subject",
+        }
+        # Social/external URL fields — allow up to 2,048 chars
+        url_fields = {
+            "social_twitter", "social_linkedin", "social_facebook",
+            "social_instagram", "social_youtube",
+        }
         for key, val in values.items():
             if not isinstance(val, str) or not val:
                 continue
-            limit = 100_000 if key in json_fields else 1_000
+            if key in json_fields:
+                limit = 100_000
+            elif key in body_fields:
+                limit = 1_000
+            elif key in url_fields:
+                limit = 2_048
+            else:
+                limit = 100
             if len(val) > limit:
                 raise ValueError(
                     f"'{key}' exceeds the maximum allowed length of {limit:,} characters "
@@ -768,10 +803,10 @@ class WebsiteSettingsUpdate(BaseModel):
 
 class QuoteRequest(BaseModel):
     product_id: str = Field(max_length=100)
-    product_name: str = Field(max_length=500)
-    name: str = Field(max_length=200)
+    product_name: str = Field(max_length=100)
+    name: str = Field(max_length=100)
     email: str = Field(max_length=320)
-    company: Optional[str] = Field(None, max_length=200)
+    company: Optional[str] = Field(None, max_length=100)
     phone: Optional[str] = Field(None, max_length=50)
     message: Optional[str] = Field(None, max_length=5_000)
     extra_fields: Optional[Dict[str, Any]] = None
