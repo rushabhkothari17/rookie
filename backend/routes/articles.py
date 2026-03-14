@@ -436,8 +436,9 @@ async def update_article(
         )
         await db.audit_logs.insert_one({"id": make_id(), "entity_type": "article", "entity_id": article_id, "action": "updated", "actor": admin.get("email", "admin"), "details": changes, "created_at": now_iso()})
 
-    updated = await db.articles.find_one({"id": article_id}, {"_id": 0})
-    updated.pop("_id", None)
+    updated = await db.articles.find_one({**tf, "id": article_id}, {"_id": 0})
+    if updated:
+        updated.pop("_id", None)
     return {"article": updated}
 
 
@@ -486,12 +487,18 @@ async def email_article(
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
-    customers = await db.customers.find({"id": {"$in": payload.customer_ids}}, {"_id": 0}).to_list(50)
+    customers = await db.customers.find(
+        {"id": {"$in": payload.customer_ids}, "tenant_id": tenant_id_of(admin)},
+        {"_id": 0}
+    ).to_list(50)
     if not customers:
         raise HTTPException(status_code=404, detail="No customers found")
 
     user_ids = [c["user_id"] for c in customers if c.get("user_id")]
-    users = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0}).to_list(50)
+    users = await db.users.find(
+        {"id": {"$in": user_ids}, "tenant_id": tenant_id_of(admin)},
+        {"_id": 0}
+    ).to_list(50)
     user_email_map = {u["id"]: u["email"] for u in users}
 
     app_url = os.environ.get("REACT_APP_BACKEND_URL", "").replace("/api", "").rstrip("/")

@@ -16,7 +16,11 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
-### Session: Feb 2026 - Refactor: Migrate db.integrations → db.oauth_connections
+### Session: Feb 2026 - Full Security Audit (3 passes)
+- **Pass 1**: ReDoS (5 files), GoCardless webhook bypass, SVG XSS via logo upload
+- **Pass 2**: No body size limit (DoS), unbounded pagination, to_list(None), rate limiter memory leak
+- **Pass 3 (auth/tenant isolation)**: IDOR on uploads, password reset brute force, plaintext API key fallback, store cross-tenant data leakage (tf={}), logs IDOR, promo code cross-tenant, articles customer lookup cross-tenant
+- All 13 vulnerabilities fixed and regression tested (iteration_289, iteration_290)
 - **Goal**: Consolidate two overlapping storage collections into one source of truth for all integration records.
 - **Changes**: Updated `ZohoOAuthService.get_credentials()` + `store_credentials()` in `zoho_service.py`; updated all 30+ `db.integrations` reads/writes in `routes/admin/integrations.py` and `routes/admin/finance.py` to use `db.oauth_connections`.
 - **Migration**: Wrote and ran `migrate_integrations.py` (0 existing docs migrated in this env); `db.integrations` collection **dropped**.
