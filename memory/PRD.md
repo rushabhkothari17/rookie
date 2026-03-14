@@ -16,6 +16,13 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - CRITICAL SSRF Fix in Webhook Delivery
+- **CRITICAL fixed**: Added `_validate_webhook_url()` to `backend/services/webhook_service.py` — resolves hostnames via DNS and blocks all private/reserved IP ranges before any outbound HTTP request.
+- **Blocked ranges**: 127.0.0.0/8 (loopback), 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 (private), 169.254.0.0/16 (AWS metadata/link-local), 100.64.0.0/10 (CGN), documentation ranges, IPv6 equivalents.
+- **Defense-in-depth**: Validation applied at 3 layers: (1) webhook create/update, (2) test delivery, (3) async retry delivery — defends against DNS rebinding attacks.
+- **scheme blocking**: Only `http://` and `https://` allowed; `file://`, `ftp://`, etc. are rejected.
+- **Testing**: 21/21 backend tests passed (iteration_291). Test file: `/app/backend/tests/test_ssrf_webhook_protection.py`.
+
 ### Session: Feb 2026 - Full Security Audit (3 passes)
 - **Pass 1**: ReDoS (5 files), GoCardless webhook bypass, SVG XSS via logo upload
 - **Pass 2**: No body size limit (DoS), unbounded pagination, to_list(None), rate limiter memory leak
