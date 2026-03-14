@@ -283,6 +283,18 @@ Build a white-label service commerce platform with:
 - **Partner Signup Migration**: Added `_migrate_partner_signup_schema` function to inject `admin_email`/`admin_password` locked fields into old partner signup schemas. Called in both GET /website-settings endpoints
 - Tested via iteration_280 — **6/6 frontend + 11/11 backend PASS (100%)**
 
+### Phase 16: Intake Form System (Mar 2026)
+- **Universal Form Builder**: Added `terms_conditions` + `signature` field types to `FormSchemaBuilder.tsx` and `UniversalFormRenderer.tsx`. T&C auto-appends a locked canvas+typed-name signature field. Available across all forms in the system.
+- **Backend**: New `intake_forms` + `intake_form_records` collections with full CRUD, status transitions (pending→submitted→under_review→approved/rejected), versioning, notes, logs, and portal endpoints.
+- **Admin Tab**: New "Intake Forms" tab under Content section with sub-tabs: "Intake Form Records" (table with filters, actions: view, versions, logs, notes, PDF download) and "Intake Form Builder" (FormSchemaBuilder + system locked fields + per-form settings: enabled/disabled, auto-approve, allow-skip-signature).
+- **Storefront Page**: `/intake-form` — login required, shows all assigned forms with status, allows submit/re-submit, customer PDF download.
+- **Checkout Gate**: Cart.tsx blocks checkout (all types incl. free) if any intake form is not "approved". Shows modal with link to `/intake-form` and per-form reason.
+- **Footer Nav Management**: All 4 nav links (Store, Articles, Portal, Intake Form) now managed from Admin → Auth & Pages → Footer → Navigation. Nav intake link label + toggle configurable.
+- **Seeding**: New tenants receive a default "Client Intake Questionnaire" with sample questions + T&C + signature field.
+- **Currency Fix**: Partner subscription/order now uses partner's `base_currency` not hardcoded "USD".
+- **Bug Fix** (by testing agent): Added missing `/api` prefix to intake_forms router, fixed TypeScript issues, fixed boolean comparison in AppFooter.
+- Tested via iteration_285 — **21/21 backend tests PASS (100%)**
+
 ### Phase 15: New Partner Onboarding Overhaul (Mar 2026)
 - **Address Validation**: `address.region` is now mandatory if any other primary address field is provided during partner registration
 - **Auto-create Partner Subscription + Order**: `verify-partner-email` now creates `partner_subscription` + `partner_order` for the free/default plan on partner signup
