@@ -500,6 +500,78 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
     } catch (e: any) { toast.error(e?.response?.data?.detail || "Failed to create record"); }
   };
 
+  const downloadVersionPDF = (v: VersionEntry, parent: IntakeRecord) => {
+    import("jspdf").then(async ({ jsPDF }) => {
+      const doc = new jsPDF();
+      const PW = doc.internal.pageSize.getWidth();
+      const PH = doc.internal.pageSize.getHeight();
+      const M = 14;
+      const hexToRgb = (hex: string): [number, number, number] => {
+        const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
+        return r ? [parseInt(r[1], 16), parseInt(r[2], 16), parseInt(r[3], 16)] : [30, 41, 59];
+      };
+      const [pr, pg, pb] = hexToRgb(ws.primary_color || "#1e293b");
+      let logoB64: string | null = null;
+      if (ws.logo_url) {
+        try {
+          const res = await fetch(ws.logo_url); const blob = await res.blob();
+          logoB64 = await new Promise<string>(resolve => { const rd = new FileReader(); rd.onload = () => resolve(rd.result as string); rd.readAsDataURL(blob); });
+        } catch (_) {}
+      }
+      // Header
+      doc.setFillColor(pr, pg, pb); doc.rect(0, 0, PW, 30, "F");
+      let hx = M;
+      if (logoB64) { try { doc.addImage(logoB64, "JPEG", M, 5, 20, 20); hx = M + 24; } catch (_) {} }
+      doc.setTextColor(255, 255, 255); doc.setFontSize(13); doc.setFont("helvetica", "bold");
+      doc.text(ws.store_name || "Intake Form", hx, 19);
+      // Title + version label
+      doc.setTextColor(30, 41, 59); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+      doc.text(parent.intake_form_name, M, 44);
+      doc.setFillColor(241, 245, 249); doc.roundedRect(PW - M - 26, 37, 26, 10, 2, 2, "F");
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(71, 85, 105);
+      doc.text(`Version ${v.version}`, PW - M - 23, 43.5);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      doc.text(`Customer: ${parent.customer_name} (${parent.customer_email})`, M, 53);
+      doc.text(`Status: ${STATUS_LABELS[v.status] || v.status}   ·   Submitted: ${v.submitted_at ? new Date(v.submitted_at).toLocaleDateString() : "—"}`, M, 60);
+      if (v.status === "rejected" && (v as any).rejection_reason) {
+        doc.setTextColor(185, 28, 28); doc.text(`Rejection reason: ${(v as any).rejection_reason}`, M, 67);
+      }
+      doc.setDrawColor(pr, pg, pb); doc.setLineWidth(0.5); doc.line(M, 70, PW - M, 70);
+      // Responses
+      let y = 79;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(30, 41, 59);
+      doc.text("Responses", M, y); y += 8;
+      const responses = Object.entries(v.responses || {}).filter(([k]) => k !== "signature_data_url" && k !== "signature_name");
+      for (const [k, val] of responses) {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+        const qLines = doc.splitTextToSize(k, PW - M * 2);
+        qLines.forEach((l: string) => { doc.text(l, M, y); y += 5.5; if (y > 265) { doc.addPage(); y = 16; } });
+        doc.setFont("helvetica", "normal"); doc.setTextColor(30, 41, 59);
+        const aLines = doc.splitTextToSize(String(val ?? "—"), PW - M * 2 - 4);
+        aLines.forEach((l: string) => { doc.text(l, M + 4, y); y += 5.5; if (y > 265) { doc.addPage(); y = 16; } });
+        y += 2;
+      }
+      // Signature
+      if (v.signature_name || v.signature_data_url) {
+        if (y > 240) { doc.addPage(); y = 16; }
+        const boxH = v.signature_data_url ? 46 : 20;
+        doc.setDrawColor(226, 232, 240); doc.setFillColor(248, 250, 252);
+        doc.roundedRect(M, y, PW - M * 2, boxH, 2, 2, "FD");
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(100, 116, 139);
+        doc.text("SIGNATURE", M + 4, y + 7);
+        if (v.signature_data_url) { try { doc.addImage(v.signature_data_url, "PNG", M + 4, y + 10, 60, 25); } catch (_) {} }
+        if (v.signature_name) {
+          doc.setFont("helvetica", "italic"); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+          doc.text(`Digitally signed by: ${v.signature_name}`, M + 4, v.signature_data_url ? y + 40 : y + 14);
+        }
+      }
+      // Footer
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(148, 163, 184);
+      doc.text(`Archived version ${v.version}  ·  Generated ${new Date().toLocaleString()}  ·  ${ws.store_name || ""}`, M, PH - 10);
+      doc.save(`intake-v${v.version}-${parent.customer_name.replace(/\s/g, "_")}-${parent.intake_form_name.replace(/\s/g, "_")}.pdf`);
+    }).catch(() => toast.error("PDF generation failed"));
+  };
+
   const downloadPDF = (record: IntakeRecord) => {
     import("jspdf").then(async ({ jsPDF }) => {
       const doc = new jsPDF();
@@ -746,10 +818,23 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
             <div className="space-y-3">
               {versions.map((v, i) => (
                 <div key={i} className="border border-slate-200 rounded-xl p-3 space-y-2">
-                  <div className="flex justify-between text-xs"><span className="font-semibold">Version {v.version}</span><span className="text-slate-400">{new Date(v.archived_at).toLocaleString()}</span></div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold">Version {v.version}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-400">{new Date(v.archived_at).toLocaleString()}</span>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title={`Download v${v.version} PDF`}
+                        onClick={() => versionsRecord && downloadVersionPDF(v, versionsRecord)}
+                        data-testid={`intake-version-pdf-btn-${v.version}`}>
+                        <Download size={12} />
+                      </Button>
+                    </div>
+                  </div>
                   <Badge className={`text-[10px] ${STATUS_COLORS[v.status] || ""}`}>{STATUS_LABELS[v.status] || v.status}</Badge>
+                  {(v as any).rejection_reason && (
+                    <p className="text-[11px] text-red-600 bg-red-50 rounded px-2 py-1">Rejected: {(v as any).rejection_reason}</p>
+                  )}
                   <div className="space-y-1">
-                    {Object.entries(v.responses || {}).map(([k, val]) => (
+                    {Object.entries(v.responses || {}).filter(([k]) => k !== "signature_data_url" && k !== "signature_name").map(([k, val]) => (
                       <div key={k} className="flex gap-2 text-xs"><span className="text-slate-400 w-24 shrink-0">{k}</span><span className="text-slate-600 break-all">{String(val)}</span></div>
                     ))}
                   </div>
