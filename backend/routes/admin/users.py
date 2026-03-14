@@ -199,6 +199,10 @@ async def admin_create_admin_user(
         actor=f"admin:{admin['id']}",
         details={"email": payload.email, "role": payload.role, "full_name": payload.full_name},
     )
+    from services.zoho_service import auto_sync_to_zoho_crm
+    import asyncio as _asyncio
+    sync_doc = {k: v for k, v in user_doc.items() if k not in {"password_hash", "_id"}}
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tid, "users", sync_doc, "create"))
     return {"message": "Admin user created", "user_id": user_id, "email": payload.email}
 
 
@@ -295,6 +299,10 @@ async def admin_update_user(
         )
 
     updated_user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "password_hash": 0})
+    from services.zoho_service import auto_sync_to_zoho_crm
+    import asyncio as _asyncio
+    if updated_user:
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(updated_user.get("tenant_id", ""), "users", updated_user, "update"))
     return {"message": "User updated", "user": updated_user}
 
 
@@ -329,6 +337,11 @@ async def admin_set_user_active(
         actor=f"admin:{admin['id']}",
         details={"is_active": {"old": old_state, "new": active}, "email": user.get("email")},
     )
+    from services.zoho_service import auto_sync_to_zoho_crm
+    import asyncio as _asyncio
+    updated_user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "password_hash": 0})
+    if updated_user:
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(updated_user.get("tenant_id", ""), "users", updated_user, "update"))
     return {"message": f"User {'activated' if active else 'deactivated'}", "is_active": active}
 
 

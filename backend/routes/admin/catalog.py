@@ -431,6 +431,9 @@ async def admin_update_category(
         actor=f"admin:{admin.get('email', admin['id'])}",
         details={"changes": update},
     )
+    import asyncio as _asyncio
+    from services.zoho_service import auto_sync_to_zoho_crm
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tf.get("tenant_id", ""), "categories", cat, "update"))
     return {"category": cat}
 
 

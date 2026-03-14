@@ -583,6 +583,9 @@ async def update_customer(
             changes["country"] = {"old": address.get("country"), "new": address_data.country}
         if address_updates:
             await db.addresses.update_one({"customer_id": customer_id}, {"$set": address_updates})
+            updated_addr = await db.addresses.find_one({"customer_id": customer_id}, {"_id": 0})
+            if updated_addr:
+                asyncio.create_task(auto_sync_to_zoho_crm(tf.get("tenant_id", ""), "addresses", updated_addr, "update"))
 
     await create_audit_log(
         entity_type="customer",

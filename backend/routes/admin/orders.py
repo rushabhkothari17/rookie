@@ -937,6 +937,9 @@ async def update_enquiry_status(
         actor=admin.get("email", "admin"),
         details={"new_status": new_status, "order_number": order.get("order_number")},
     )
+    updated_enq = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if updated_enq:
+        asyncio.ensure_future(auto_sync_to_zoho_crm(order.get("tenant_id", ""), "enquiries", updated_enq, "update"))
     return {"message": "Status updated", "status": new_status}
 
 

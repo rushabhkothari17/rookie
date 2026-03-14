@@ -337,6 +337,9 @@ async def admin_create_record(
     await create_audit_log(entity_type="intake_form_record", entity_id=doc["id"],
                            action="admin_created", actor=admin.get("email", "admin"),
                            details={"customer_id": payload.customer_id, "form_id": payload.intake_form_id})
+    import asyncio as _asyncio
+    from services.zoho_service import auto_sync_to_zoho_crm
+    _asyncio.ensure_future(auto_sync_to_zoho_crm(tid, "intake_submissions", doc, "create"))
     return {"record": doc}
 
 
@@ -405,6 +408,11 @@ async def admin_update_record(
     await create_audit_log(entity_type="intake_form_record", entity_id=record_id,
                            action="admin_updated", actor=admin.get("email", "admin"),
                            details={"version": updates.get("version")})
+    import asyncio as _asyncio
+    from services.zoho_service import auto_sync_to_zoho_crm
+    updated_rec = await db.intake_form_records.find_one({"id": record_id}, {"_id": 0})
+    if updated_rec:
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(record.get("tenant_id", ""), "intake_submissions", updated_rec, "update"))
     return {"message": "Updated"}
 
 
@@ -449,6 +457,11 @@ async def update_record_status(
         action=f"status_changed_to_{payload.status}", actor=admin.get("email", "admin"),
         details={"reason": payload.rejection_reason or ""},
     )
+    import asyncio as _asyncio
+    from services.zoho_service import auto_sync_to_zoho_crm
+    updated_rec = await db.intake_form_records.find_one({"id": record_id}, {"_id": 0})
+    if updated_rec:
+        _asyncio.ensure_future(auto_sync_to_zoho_crm(record.get("tenant_id", ""), "intake_submissions", updated_rec, "update"))
 
     # ── Send email notification for approved/rejected status changes ───────────
     if payload.status in {"approved", "rejected"}:

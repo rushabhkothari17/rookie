@@ -632,6 +632,14 @@ async def get_crm_mappings(
             "line1", "line2", "city", "region", "postal", "country", "customer_id",
             "is_primary", "created_at"
         ]},
+        {"name": "intake_submissions", "label": "Intake Form Submissions", "fields": [
+            "id", "customer_id", "form_id", "form_name", "status", "submitted_at",
+            "reviewed_at", "rejection_reason", "tenant_id", "created_at", "updated_at"
+        ]},
+        {"name": "users", "label": "Users (Admin)", "fields": [
+            "id", "email", "full_name", "role", "is_active", "tenant_id",
+            "module_permissions", "created_at", "updated_at"
+        ]},
     ]
     
     return {

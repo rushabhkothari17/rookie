@@ -429,6 +429,24 @@ def _enrich_record_for_module(webapp_module: str, record: Dict[str, Any], user: 
     elif webapp_module == "addresses":
         enriched["is_primary"] = "Yes" if record.get("is_primary") else "No"
 
+    elif webapp_module == "intake_submissions":
+        # Flatten answers dict to a readable JSON string for CRM
+        import json as _json2
+        answers = record.get("answers") or record.get("responses") or {}
+        enriched["answers_json"] = _json2.dumps(answers, ensure_ascii=False) if answers else ""
+        enriched["status"] = record.get("status", "pending")
+        # Human-readable submitted_at fallback
+        enriched["submitted_at"] = record.get("submitted_at") or record.get("created_at", "")
+
+    elif webapp_module == "users":
+        enriched["is_active"] = "Yes" if record.get("is_active") else "No"
+        # Flatten module_permissions dict
+        import json as _json3
+        mp = record.get("module_permissions") or {}
+        enriched["module_permissions"] = _json3.dumps(mp, ensure_ascii=False) if mp else ""
+        # Exclude sensitive fields
+        enriched.pop("password_hash", None)
+
     # Flatten any list fields to comma-separated strings
     for k, v in list(enriched.items()):
         if isinstance(v, list):

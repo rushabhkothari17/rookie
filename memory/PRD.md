@@ -487,6 +487,18 @@ Build a white-label service commerce platform with:
 - Radio filters for Role & Status columns in Users table
 - Resend API Key UI (allow tenants to enter/save Resend API key when provider = Resend)
 
+### Phase 20: Zoho CRM Sync Expansion (Mar 2026)
+- **New: Intake Form Submissions** (create + update) — synced on admin create, admin update, status change
+- **New: Users (Admin)** (create + update) — synced on create, edit, activate/deactivate; `password_hash` excluded
+- **Updated: Enquiries** — now syncs on status update in addition to create
+- **Updated: Addresses** — now syncs on update in addition to create
+- **Updated: Product Categories** — now syncs on update in addition to create
+- **Updated: Plans (platform)** — now syncs on update in addition to create
+- `zoho_service._enrich_record_for_module` extended with `intake_submissions` (answers_json, status) and `users` (is_active string, module_permissions JSON, password_hash stripped)
+- `webapp_modules` list in `integrations.py` now has 15 modules (up from 13); both new modules appear in CRM mapping UI
+- **Note:** Invoices and Refunds are immutable records — no `update_one` exists in the codebase; update sync would be a no-op. Skipped intentionally.
+- Verified via API: all 15 modules return correctly from `/api/admin/integrations/crm-mappings`
+
 ### Phase 19: 4 UX Fixes (Mar 2026)
 - **Ctrl+K keyboard nav bug fixed**: Root cause was keyboard handler being removed/re-added on every keystroke (stale closure). Fix: stable refs (`filteredRef`, `activeIndexRef`) + capture phase (`addEventListener(..., true)`) + deps=[open, onClose, handleSelect] only. Tested: type 'users' → Enter navigates immediately.
 - **FAQ search bar**: Search input visible when product has ≥4 FAQs, real-time filtering, keyword highlighting with `<mark>` styled with `--aa-accent`, "No FAQs match" empty state, clear button.
