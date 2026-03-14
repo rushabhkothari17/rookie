@@ -487,6 +487,13 @@ Build a white-label service commerce platform with:
 - Radio filters for Role & Status columns in Users table
 - Resend API Key UI (allow tenants to enter/save Resend API key when provider = Resend)
 
+### Phase 19: 4 UX Fixes (Mar 2026)
+- **Ctrl+K keyboard nav bug fixed**: Root cause was keyboard handler being removed/re-added on every keystroke (stale closure). Fix: stable refs (`filteredRef`, `activeIndexRef`) + capture phase (`addEventListener(..., true)`) + deps=[open, onClose, handleSelect] only. Tested: type 'users' → Enter navigates immediately.
+- **FAQ search bar**: Search input visible when product has ≥4 FAQs, real-time filtering, keyword highlighting with `<mark>` styled with `--aa-accent`, "No FAQs match" empty state, clear button.
+- **Store search bar expand**: Starts at 132px compact → expands to 220px on focus/typing via `onFocus`/`onBlur` JS style manipulation with CSS `transition-all duration-300`.
+- **Store sort button compact**: Reduced from `h-9 min-w-[140px]` to `h-8 text-xs w-auto px-3` (89px wide, 32px tall). Sorting still works correctly.
+- Tested via iteration_298 — **22/22 assertions PASS (100%)**
+
 ### Phase 18: FAQ Accordion — All Product Layouts (Mar 2026)
 - Created shared `FaqAccordion.tsx` component with click-to-expand/collapse behavior, chevron rotation animation, and CSS-variable-based theming (light + dark mode compatible).
 - Applied to all 5 product layouts: `ClassicLayout`, `ShowcaseLayout`, `WizardLayout`, `QuickBuyLayout`, `ApplicationLayout` — replacing static Q&A blocks and `<details>/<summary>` HTML.
