@@ -833,13 +833,6 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                   {(v as any).rejection_reason && (
                     <p className="text-[11px] text-red-600 bg-red-50 rounded px-2 py-1">Rejected: {(v as any).rejection_reason}</p>
                   )}
-                  <div className="space-y-1">
-                    {Object.entries(v.responses || {}).filter(([k]) => k !== "signature_data_url" && k !== "signature_name").map(([k, val]) => (
-                      <div key={k} className="flex gap-2 text-xs"><span className="text-slate-400 w-24 shrink-0">{k}</span><span className="text-slate-600 break-all">{String(val)}</span></div>
-                    ))}
-                  </div>
-                  {v.signature_name && <p className="text-xs italic text-slate-500">Signed by: {v.signature_name}</p>}
-                  {v.signature_data_url && <img src={v.signature_data_url} alt="Signature" className="max-h-16 border rounded-lg bg-white" />}
                 </div>
               ))}
             </div>
