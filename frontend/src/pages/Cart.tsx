@@ -647,7 +647,7 @@ export default function Cart() {
                                 <span className="text-sm text-slate-600">{field.placeholder}</span>
                               </label>
                             ) : (
-                              <Input type={field.type === "email" ? "email" : "text"} placeholder={field.placeholder || ""} value={extraFields[fKey] || ""} onChange={e => setExtraFields(p => ({ ...p, [fKey]: e.target.value }))} data-testid={`section-field-${fKey}`} />
+                              <Input type={field.type === "email" ? "email" : "text"} placeholder={field.placeholder || ""} value={extraFields[fKey] || ""} onChange={e => setExtraFields(p => ({ ...p, [fKey]: e.target.value }))} maxLength={500} data-testid={`section-field-${fKey}`} />
                             )}
                           </div>
                         );
@@ -695,7 +695,7 @@ export default function Cart() {
                   </div>
                   <p className="text-xs text-slate-500 mb-3">Enter your Scope ID to unlock pricing and proceed directly to checkout.</p>
                   <div className="flex gap-2">
-                    <Input value={cartScopeId} onChange={(e) => { setCartScopeId(e.target.value); setCartScopeUnlock(null); setCartScopeError(""); }} placeholder="Enter Scope ID (e.g., SCOPE-ABC123)" className="flex-1 font-mono text-sm" data-testid="cart-scope-id-input" />
+                    <Input value={cartScopeId} onChange={(e) => { setCartScopeId(e.target.value); setCartScopeUnlock(null); setCartScopeError(""); }} maxLength={50} placeholder="Enter Scope ID (e.g., SCOPE-ABC123)" className="flex-1 font-mono text-sm" data-testid="cart-scope-id-input" />
                     <Button variant="outline" onClick={handleValidateCartScopeId} disabled={cartScopeValidating || !cartScopeId.trim()} data-testid="cart-scope-id-validate-btn">
                       {cartScopeValidating ? "Checking..." : "Validate"}
                     </Button>
@@ -806,7 +806,7 @@ export default function Cart() {
                     </div>
                   ) : (
                     <div className="flex gap-2">
-                      <Input placeholder="Enter code" value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} className="flex-1" data-testid="cart-promo-input" />
+                      <Input placeholder="Enter code" value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} maxLength={100} className="flex-1" data-testid="cart-promo-input" />
                       <Button onClick={handleApplyPromo} variant="outline" data-testid="cart-promo-apply">Apply</Button>
                     </div>
                   )}
@@ -926,11 +926,11 @@ export default function Cart() {
               <button onClick={() => setShowCartQuoteModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
             </div>
             <div className="p-6 space-y-4">
-              <div><RequiredLabel className="text-sm mb-1.5 block">Your Name</RequiredLabel><Input value={cartQuoteForm.name} onChange={e => setCartQuoteForm(f => ({ ...f, name: e.target.value }))} placeholder="John Smith" data-testid="cart-quote-name" /></div>
-              <div><RequiredLabel className="text-sm mb-1.5 block">Email</RequiredLabel><Input type="email" value={cartQuoteForm.email} onChange={e => setCartQuoteForm(f => ({ ...f, email: e.target.value }))} placeholder="john@company.com" data-testid="cart-quote-email" /></div>
-              <div><label className="text-sm font-medium text-slate-700 block mb-1.5">Company</label><Input value={cartQuoteForm.company} onChange={e => setCartQuoteForm(f => ({ ...f, company: e.target.value }))} placeholder="Your Company" data-testid="cart-quote-company" /></div>
-              <div><label className="text-sm font-medium text-slate-700 block mb-1.5">Phone</label><Input value={cartQuoteForm.phone} onChange={e => setCartQuoteForm(f => ({ ...f, phone: e.target.value }))} placeholder="+1 555 000 0000" data-testid="cart-quote-phone" /></div>
-              <div><label className="text-sm font-medium text-slate-700 block mb-1.5">Message</label><textarea value={cartQuoteForm.message} onChange={e => setCartQuoteForm(f => ({ ...f, message: e.target.value }))} placeholder="Describe your requirements..." rows={4} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-slate-900" data-testid="cart-quote-message" /></div>
+              <div><RequiredLabel className="text-sm mb-1.5 block">Your Name</RequiredLabel><Input value={cartQuoteForm.name} onChange={e => setCartQuoteForm(f => ({ ...f, name: e.target.value }))} maxLength={200} placeholder="John Smith" data-testid="cart-quote-name" /></div>
+              <div><RequiredLabel className="text-sm mb-1.5 block">Email</RequiredLabel><Input type="email" value={cartQuoteForm.email} onChange={e => setCartQuoteForm(f => ({ ...f, email: e.target.value }))} maxLength={320} placeholder="john@company.com" data-testid="cart-quote-email" /></div>
+              <div><label className="text-sm font-medium text-slate-700 block mb-1.5">Company</label><Input value={cartQuoteForm.company} onChange={e => setCartQuoteForm(f => ({ ...f, company: e.target.value }))} maxLength={200} placeholder="Your Company" data-testid="cart-quote-company" /></div>
+              <div><label className="text-sm font-medium text-slate-700 block mb-1.5">Phone</label><Input value={cartQuoteForm.phone} onChange={e => setCartQuoteForm(f => ({ ...f, phone: e.target.value }))} maxLength={50} placeholder="+1 555 000 0000" data-testid="cart-quote-phone" /></div>
+              <div><label className="text-sm font-medium text-slate-700 block mb-1.5">Message</label><textarea value={cartQuoteForm.message} onChange={e => setCartQuoteForm(f => ({ ...f, message: e.target.value }))} maxLength={5000} placeholder="Describe your requirements..." rows={4} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-slate-900" data-testid="cart-quote-message" /></div>
             </div>
             <div className="p-6 border-t border-slate-200 flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setShowCartQuoteModal(false)}>Cancel</Button>

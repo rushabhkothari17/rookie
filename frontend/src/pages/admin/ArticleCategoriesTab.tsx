@@ -182,19 +182,27 @@ export function ArticleCategoriesTab() {
           </DialogHeader>
           <div className="space-y-4 py-1">
             <div className="space-y-1">
-              <RequiredLabel>Name</RequiredLabel>
+              <div className="flex items-center justify-between">
+                <RequiredLabel>Name</RequiredLabel>
+                {form.name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.name.length > 475 ? "text-red-500" : form.name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{form.name.length}/500</span>}
+              </div>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                maxLength={500}
                 placeholder="e.g. Setup Guides"
                 data-testid="category-name-input"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Description</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-slate-700">Description</label>
+                {form.description.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.description.length > 4750 ? "text-red-500" : form.description.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{form.description.length}/5000</span>}
+              </div>
               <Input
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
+                maxLength={5000}
                 placeholder="Brief description of this category"
                 data-testid="category-desc-input"
               />

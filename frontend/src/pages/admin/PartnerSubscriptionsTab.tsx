@@ -283,8 +283,11 @@ function SubFormModal({
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Description</label>
-            <Input value={form.description} onChange={e => set("description", e.target.value)} placeholder="Monthly platform access" data-testid="sub-description-input" />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-slate-600">Description</label>
+              {form.description.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.description.length > 4750 ? "text-red-500" : form.description.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{form.description.length}/5000</span>}
+            </div>
+            <Input value={form.description} onChange={e => set("description", e.target.value)} maxLength={5000} placeholder="Monthly platform access" data-testid="sub-description-input" />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2">
@@ -332,11 +335,14 @@ function SubFormModal({
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-600">Processor ID (Stripe/GC reference)</label>
-            <Input value={form.processor_id} onChange={e => set("processor_id", e.target.value)} placeholder="sub_xxx or PM-xxx" />
+            <Input value={form.processor_id} onChange={e => set("processor_id", e.target.value)} maxLength={200} placeholder="sub_xxx or PM-xxx" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Internal Note</label>
-            <Textarea rows={2} value={form.internal_note} onChange={e => set("internal_note", e.target.value)} />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-slate-600">Internal Note</label>
+              {form.internal_note.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.internal_note.length > 4750 ? "text-red-500" : form.internal_note.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{form.internal_note.length}/5000</span>}
+            </div>
+            <Textarea rows={2} value={form.internal_note} onChange={e => set("internal_note", e.target.value)} maxLength={5000} />
           </div>
           {/* Contract term */}
           <div className="grid grid-cols-2 gap-3">

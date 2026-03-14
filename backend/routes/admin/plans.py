@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from core.helpers import make_id, now_iso
 from core.tenant import require_platform_admin, require_platform_super_admin
@@ -34,8 +34,8 @@ class VisibilityRule(BaseModel):
 
 
 class PlanCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
+    name: str = Field(max_length=500)
+    description: Optional[str] = Field(None, max_length=5_000)
     warning_threshold_pct: int = 80
     is_public: bool = False  # visible to partners for self-service upgrade
     visibility_rules: Optional[List[VisibilityRule]] = None  # evaluated when is_public=False

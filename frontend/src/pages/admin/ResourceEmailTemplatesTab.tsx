@@ -166,17 +166,26 @@ export function ResourceEmailTemplatesTab() {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <RequiredLabel>Template Name</RequiredLabel>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Scope Delivery" data-testid="email-template-name-input" />
+                <div className="flex items-center justify-between">
+                  <RequiredLabel>Template Name</RequiredLabel>
+                  {form.name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.name.length > 475 ? "text-red-500" : form.name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{form.name.length}/500</span>}
+                </div>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={500} placeholder="e.g. Scope Delivery" data-testid="email-template-name-input" />
               </div>
               <div className="space-y-1">
-                <RequiredLabel>Description</RequiredLabel>
-                <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description" data-testid="email-template-desc-input" />
+                <div className="flex items-center justify-between">
+                  <RequiredLabel>Description</RequiredLabel>
+                  {form.description.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.description.length > 4750 ? "text-red-500" : form.description.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{form.description.length}/5000</span>}
+                </div>
+                <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={5000} placeholder="Brief description" data-testid="email-template-desc-input" />
               </div>
             </div>
             <div className="space-y-1">
-              <RequiredLabel>Subject</RequiredLabel>
-              <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Email subject line" data-testid="email-template-subject-input" />
+              <div className="flex items-center justify-between">
+                <RequiredLabel>Subject</RequiredLabel>
+                {form.subject.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.subject.length > 190 ? "text-red-500" : form.subject.length > 160 ? "text-amber-500" : "text-slate-400"}`}>{form.subject.length}/200</span>}
+              </div>
+              <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} maxLength={200} placeholder="Email subject line" data-testid="email-template-subject-input" />
             </div>
             <div className="space-y-1">
               <RequiredLabel>Email Body</RequiredLabel>

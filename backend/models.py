@@ -17,26 +17,26 @@ _CONTENT = {"max_length": 500_000}   # articles / HTML bodies
 
 
 class AddressInput(BaseModel):
-    line1: str
-    line2: str = ""
-    city: str
-    region: str
-    postal: str
-    country: str
+    line1: str = Field("", max_length=200)
+    line2: str = Field("", max_length=200)
+    city: str = Field("", max_length=100)
+    region: str = Field("", max_length=100)
+    postal: str = Field("", max_length=20)
+    country: str = Field("", max_length=10)
 
 
 class RegisterRequest(BaseModel):
-    email: str
-    password: str
-    full_name: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    company_name: str = ""
-    job_title: str = ""
-    phone: str = ""
+    email: str = Field(max_length=320)
+    password: str = Field(max_length=128)
+    full_name: Optional[str] = Field(None, max_length=200)
+    first_name: Optional[str] = Field(None, max_length=100)
+    last_name: Optional[str] = Field(None, max_length=100)
+    company_name: str = Field("", max_length=200)
+    job_title: str = Field("", max_length=200)
+    phone: str = Field("", max_length=50)
     address: AddressInput
     profile_meta: Optional[Dict[str, Any]] = None
-    partner_code: Optional[str] = None
+    partner_code: Optional[str] = Field(None, max_length=100)
 
     def get_full_name(self) -> str:
         if self.full_name:
@@ -46,22 +46,22 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: str
-    password: str
-    partner_code: Optional[str] = None   # required for partner/customer login
-    login_type: Optional[str] = "partner"  # "partner" | "customer"
+    email: str = Field(max_length=320)
+    password: str = Field(max_length=128)
+    partner_code: Optional[str] = Field(None, max_length=100)
+    login_type: Optional[str] = "partner"
 
 
 class PartnerLoginRequest(BaseModel):
-    partner_code: str
-    email: str
-    password: str
+    partner_code: str = Field(max_length=100)
+    email: str = Field(max_length=320)
+    password: str = Field(max_length=128)
 
 
 class CustomerLoginRequest(BaseModel):
-    partner_code: str
-    email: str
-    password: str
+    partner_code: str = Field(max_length=100)
+    email: str = Field(max_length=320)
+    password: str = Field(max_length=128)
 
 
 class TenantCreate(BaseModel):
@@ -104,11 +104,11 @@ class ResendVerificationRequest(BaseModel):
 
 
 class UpdateProfileRequest(BaseModel):
-    full_name: Optional[str] = None
-    company_name: Optional[str] = None
-    job_title: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
+    full_name: Optional[str] = Field(None, max_length=200)
+    company_name: Optional[str] = Field(None, max_length=200)
+    job_title: Optional[str] = Field(None, max_length=200)
+    phone: Optional[str] = Field(None, max_length=50)
+    email: Optional[str] = Field(None, max_length=320)
     address: Optional[AddressInput] = None
 
 
@@ -155,7 +155,7 @@ class ScopeRequestBody(BaseModel):
 
 
 class CancelSubscriptionBody(BaseModel):
-    reason: Optional[str] = ""
+    reason: Optional[str] = Field("", max_length=1_000)
 
 
 class IntakeOption(BaseModel):
@@ -188,10 +188,10 @@ class ProductVisRuleSet(BaseModel):
 
 
 class IntakeQuestion(BaseModel):
-    key: str = ""
-    label: str = ""
-    helper_text: Optional[str] = ""
-    tooltip_text: Optional[str] = ""
+    key: str = Field("", max_length=100)
+    label: str = Field("", max_length=500)
+    helper_text: Optional[str] = Field("", max_length=500)
+    tooltip_text: Optional[str] = Field("", max_length=500)
     required: bool = False
     enabled: bool = True
     order: int = 0
@@ -213,14 +213,14 @@ class IntakeQuestion(BaseModel):
     price_for_yes: Optional[float] = None
     price_for_no: Optional[float] = None
     # Formula type
-    formula_expression: Optional[str] = None
+    formula_expression: Optional[str] = Field(None, max_length=5_000)
     # Date type
     date_format: str = "date"
     # File type
     accept: Optional[str] = None
     max_size_mb: float = 10.0
     # HTML block (no key/pricing — pure content)
-    content: Optional[str] = None
+    content: Optional[str] = Field(None, max_length=500_000)
     # Conditional visibility — accepts both legacy VisibilityRule and new VisibilityRuleSet {logic, conditions}
     visibility_rule: Optional[Any] = None
 
@@ -235,11 +235,11 @@ class IntakeSchemaJson(BaseModel):
 
 
 class CustomSection(BaseModel):
-    id: str = ""
-    name: str
-    content: str = ""
-    icon: Optional[str] = None
-    icon_color: Optional[str] = None
+    id: str = Field("", max_length=100)
+    name: str = Field(max_length=500)
+    content: str = Field("", max_length=500_000)
+    icon: Optional[str] = Field(None, max_length=50)
+    icon_color: Optional[str] = Field(None, max_length=50)
     tags: List[str] = Field(default_factory=list)
     order: int = 0
 
@@ -372,68 +372,65 @@ class TermsUpdate(BaseModel):
 
 
 class ManualOrderCreate(BaseModel):
-    customer_email: str
+    customer_email: str = Field(max_length=320)
     product_id: str
     quantity: int = 1
     inputs: Dict[str, Any] = Field(default_factory=dict)
     subtotal: float
     discount: float = 0.0
     fee: float = 0.0
-    status: str = "paid"
-    currency: str = "USD"
-    internal_note: Optional[str] = ""
+    status: str = Field("paid", max_length=100)
+    currency: str = Field("USD", max_length=10)
+    internal_note: Optional[str] = Field("", max_length=5_000)
 
 
 class ManualSubscriptionCreate(BaseModel):
-    customer_email: str
+    customer_email: str = Field(max_length=320)
     product_id: str
     quantity: int = 1
     inputs: Dict[str, Any] = Field(default_factory=dict)
     amount: float
-    currency: str = "USD"
+    currency: str = Field("USD", max_length=10)
     renewal_date: str
     start_date: Optional[str] = None
-    status: str = "active"
-    internal_note: Optional[str] = ""
+    status: str = Field("active", max_length=100)
+    internal_note: Optional[str] = Field("", max_length=5_000)
     term_months: Optional[int] = Field(None, ge=0, le=300)  # None/0 = cancel anytime; 1-300 = locked term
     auto_cancel_on_termination: bool = False
     reminder_days: Optional[int] = None  # None = use org default; explicit value overrides
 
 
 class AdminCreateUserRequest(BaseModel):
-    email: str
-    full_name: str
-    company_name: Optional[str] = ""
-    job_title: Optional[str] = ""
-    phone: Optional[str] = ""
-    password: str
-    role: str = "partner_admin"
-    # When platform admin creates a partner org user, specify the target partner org
+    email: str = Field(max_length=320)
+    full_name: str = Field(max_length=200)
+    company_name: Optional[str] = Field("", max_length=200)
+    job_title: Optional[str] = Field("", max_length=200)
+    phone: Optional[str] = Field("", max_length=50)
+    password: str = Field(max_length=128)
+    role: str = Field("partner_admin", max_length=100)
     target_tenant_id: Optional[str] = None
-    # New per-module permissions format
-    module_permissions: Optional[Dict[str, str]] = None  # {module_key: "read"|"write"}
-    # Legacy fields (kept for backwards compatibility)
-    access_level: Optional[str] = "read_only"
+    module_permissions: Optional[Dict[str, str]] = None
+    access_level: Optional[str] = Field(None, max_length=100)
     modules: Optional[List[str]] = None
     preset_role: Optional[str] = None
 
 
 class AdminCreateCustomerRequest(BaseModel):
-    full_name: str
-    company_name: Optional[str] = ""
-    job_title: Optional[str] = ""
-    email: str
-    phone: Optional[str] = ""
-    password: str
-    line1: Optional[str] = ""
-    line2: Optional[str] = ""
-    city: Optional[str] = ""
-    region: Optional[str] = ""
-    postal: Optional[str] = ""
-    country: Optional[str] = ""
+    full_name: str = Field(max_length=200)
+    company_name: Optional[str] = Field("", max_length=200)
+    job_title: Optional[str] = Field("", max_length=200)
+    email: str = Field(max_length=320)
+    phone: Optional[str] = Field("", max_length=50)
+    password: str = Field(max_length=128)
+    line1: Optional[str] = Field("", max_length=200)
+    line2: Optional[str] = Field("", max_length=200)
+    city: Optional[str] = Field("", max_length=100)
+    region: Optional[str] = Field("", max_length=100)
+    postal: Optional[str] = Field("", max_length=20)
+    country: Optional[str] = Field("", max_length=10)
     mark_verified: bool = True
     profile_meta: Optional[Dict[str, Any]] = None
-    tenant_id: Optional[str] = None  # Platform admin only: override tenant
+    tenant_id: Optional[str] = None
 
 
 class SubscriptionUpdate(BaseModel):
@@ -441,52 +438,52 @@ class SubscriptionUpdate(BaseModel):
     start_date: Optional[str] = None
     contract_end_date: Optional[str] = None
     amount: Optional[float] = None
-    status: Optional[str] = None
-    plan_name: Optional[str] = None
+    status: Optional[str] = Field(None, max_length=100)
+    plan_name: Optional[str] = Field(None, max_length=500)
     product_id: Optional[str] = None
     customer_id: Optional[str] = None
-    payment_method: Optional[str] = None
-    processor_id: Optional[str] = None
-    new_note: Optional[str] = None
+    payment_method: Optional[str] = Field(None, max_length=100)
+    processor_id: Optional[str] = Field(None, max_length=200)
+    new_note: Optional[str] = Field(None, max_length=5_000)
     term_months: Optional[int] = Field(None, ge=-1, le=300)  # -1 sentinel to clear term
     auto_cancel_on_termination: Optional[bool] = None
     reminder_days: Optional[int] = None  # -1 sentinel to clear (set to null)
 
 
 class CustomerUpdate(BaseModel):
-    full_name: Optional[str] = None
-    company_name: Optional[str] = None
-    job_title: Optional[str] = None
-    phone: Optional[str] = None
+    full_name: Optional[str] = Field(None, max_length=200)
+    company_name: Optional[str] = Field(None, max_length=200)
+    job_title: Optional[str] = Field(None, max_length=200)
+    phone: Optional[str] = Field(None, max_length=50)
 
 
 class AddressUpdate(BaseModel):
-    line1: Optional[str] = None
-    line2: Optional[str] = None
-    city: Optional[str] = None
-    region: Optional[str] = None
-    postal: Optional[str] = None
-    country: Optional[str] = None
+    line1: Optional[str] = Field(None, max_length=200)
+    line2: Optional[str] = Field(None, max_length=200)
+    city: Optional[str] = Field(None, max_length=100)
+    region: Optional[str] = Field(None, max_length=100)
+    postal: Optional[str] = Field(None, max_length=20)
+    country: Optional[str] = Field(None, max_length=10)
 
 
 class OrderUpdate(BaseModel):
     customer_id: Optional[str] = None
-    status: Optional[str] = None
-    payment_method: Optional[str] = None
+    status: Optional[str] = Field(None, max_length=100)
+    payment_method: Optional[str] = Field(None, max_length=100)
     order_date: Optional[str] = None
     payment_date: Optional[str] = None
     subtotal: Optional[float] = None
     fee: Optional[float] = None
     total: Optional[float] = None
-    internal_note: Optional[str] = None
-    new_note: Optional[str] = None
+    internal_note: Optional[str] = Field(None, max_length=5_000)
+    new_note: Optional[str] = Field(None, max_length=5_000)
     subscription_id: Optional[str] = None
     product_id: Optional[str] = None
-    processor_id: Optional[str] = None
+    processor_id: Optional[str] = Field(None, max_length=200)
 
 
 class OrderDelete(BaseModel):
-    reason: Optional[str] = ""
+    reason: Optional[str] = Field("", max_length=1_000)
 
 
 class CompleteGoCardlessRedirect(BaseModel):
@@ -572,25 +569,25 @@ class AdminProductCreate(BaseModel):
 
 
 class AppSettingsUpdate(BaseModel):
-    stripe_public_key: Optional[str] = None
-    stripe_secret_key: Optional[str] = None
-    gocardless_token: Optional[str] = None
-    resend_api_key: Optional[str] = None
-    primary_color: Optional[str] = None
-    secondary_color: Optional[str] = None
-    accent_color: Optional[str] = None
-    danger_color: Optional[str] = None
-    success_color: Optional[str] = None
-    warning_color: Optional[str] = None
-    background_color: Optional[str] = None
-    card_color: Optional[str] = None
-    surface_color: Optional[str] = None
-    text_color: Optional[str] = None
-    border_color: Optional[str] = None
-    muted_color: Optional[str] = None
-    logo_url: Optional[str] = None
-    favicon_url: Optional[str] = None
-    store_name: Optional[str] = None
+    stripe_public_key: Optional[str] = Field(None, max_length=200)
+    stripe_secret_key: Optional[str] = Field(None, max_length=200)
+    gocardless_token: Optional[str] = Field(None, max_length=500)
+    resend_api_key: Optional[str] = Field(None, max_length=200)
+    primary_color: Optional[str] = Field(None, max_length=30)
+    secondary_color: Optional[str] = Field(None, max_length=30)
+    accent_color: Optional[str] = Field(None, max_length=30)
+    danger_color: Optional[str] = Field(None, max_length=30)
+    success_color: Optional[str] = Field(None, max_length=30)
+    warning_color: Optional[str] = Field(None, max_length=30)
+    background_color: Optional[str] = Field(None, max_length=30)
+    card_color: Optional[str] = Field(None, max_length=30)
+    surface_color: Optional[str] = Field(None, max_length=30)
+    text_color: Optional[str] = Field(None, max_length=30)
+    border_color: Optional[str] = Field(None, max_length=30)
+    muted_color: Optional[str] = Field(None, max_length=30)
+    logo_url: Optional[str] = Field(None, max_length=2048)
+    favicon_url: Optional[str] = Field(None, max_length=2048)
+    store_name: Optional[str] = Field(None, max_length=200)
 
 
 class WebsiteSettingsUpdate(BaseModel):
@@ -624,7 +621,7 @@ class WebsiteSettingsUpdate(BaseModel):
     scope_form_subtitle: Optional[str] = None
     signup_form_title: Optional[str] = None
     signup_form_subtitle: Optional[str] = None
-    # Form schemas (JSON strings)
+    # Form schemas (JSON strings — larger limit)
     scope_form_schema: Optional[str] = None
     signup_form_schema: Optional[str] = None
     partner_signup_form_schema: Optional[str] = None
@@ -738,15 +735,45 @@ class WebsiteSettingsUpdate(BaseModel):
     signup_bullet_3: Optional[str] = None
     signup_cta: Optional[str] = None
 
+    # JSON schema fields that need a larger budget; all other str fields ≤ 500 chars
+    _JSON_FIELDS = frozenset({
+        "scope_form_schema", "signup_form_schema", "partner_signup_form_schema",
+        "checkout_extra_schema", "checkout_sections", "email_verification_body",
+        "bank_transaction_sources", "bank_transaction_types", "bank_transaction_statuses",
+    })
+
+    from pydantic import model_validator
+
+    @model_validator(mode="before")
+    @classmethod
+    def _cap_string_lengths(cls, values: Any) -> Any:
+        if not isinstance(values, dict):
+            return values
+        json_fields = {
+            "scope_form_schema", "signup_form_schema", "partner_signup_form_schema",
+            "checkout_extra_schema", "checkout_sections", "email_verification_body",
+            "bank_transaction_sources", "bank_transaction_types", "bank_transaction_statuses",
+        }
+        for key, val in values.items():
+            if not isinstance(val, str) or not val:
+                continue
+            limit = 100_000 if key in json_fields else 1_000
+            if len(val) > limit:
+                raise ValueError(
+                    f"'{key}' exceeds the maximum allowed length of {limit:,} characters "
+                    f"(got {len(val):,})"
+                )
+        return values
+
 
 class QuoteRequest(BaseModel):
-    product_id: str
-    product_name: str
-    name: str
-    email: str
-    company: Optional[str] = None
-    phone: Optional[str] = None
-    message: Optional[str] = None
+    product_id: str = Field(max_length=100)
+    product_name: str = Field(max_length=500)
+    name: str = Field(max_length=200)
+    email: str = Field(max_length=320)
+    company: Optional[str] = Field(None, max_length=200)
+    phone: Optional[str] = Field(None, max_length=50)
+    message: Optional[str] = Field(None, max_length=5_000)
     extra_fields: Optional[Dict[str, Any]] = None
 
 

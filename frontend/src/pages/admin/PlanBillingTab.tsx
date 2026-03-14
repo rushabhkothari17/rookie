@@ -116,6 +116,7 @@ function CouponBlock({
           placeholder="Enter coupon code"
           value={couponCode}
           onChange={e => onCouponChange(e.target.value.toUpperCase())}
+          maxLength={100}
           className="h-8 text-sm font-mono"
           data-testid="coupon-code-input"
         />
@@ -878,6 +879,7 @@ export function PlanBillingTab() {
                 placeholder="Tell us why you'd like to downgrade…"
                 value={downgradeMessage}
                 onChange={e => setDowngradeMessage(e.target.value)}
+                maxLength={5000}
                 data-testid="downgrade-message-input"
               />
             </div>

@@ -4,7 +4,7 @@ Test sort and filter functionality with actual data
 import asyncio
 from playwright.async_api import async_playwright
 
-BASE_URL = "https://security-hardened-6.preview.emergentagent.com"
+BASE_URL = "https://input-validation-5.preview.emergentagent.com"
 PARTNER_CODE = "automate-accounts"
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"

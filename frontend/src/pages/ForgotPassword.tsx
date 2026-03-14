@@ -263,6 +263,7 @@ export default function ForgotPassword() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
+                maxLength={128}
                 className="h-11"
                 data-testid="new-password-input"
               />
@@ -276,6 +277,7 @@ export default function ForgotPassword() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                maxLength={128}
                 className="h-11"
                 data-testid="confirm-password-input"
               />

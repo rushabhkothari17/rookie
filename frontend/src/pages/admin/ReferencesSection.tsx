@@ -220,11 +220,12 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
           if (!lockKey && (!draft.key || draft.key === slugify((draft.label || "").slice(0, -1)))) {
             setDraft({ ...draft, key: slugify(e.target.value) });
           }
-        }} placeholder="Contact Email" className="mt-0.5 h-8 text-sm" data-testid="ref-label-input" />
+        }} maxLength={500} placeholder="Contact Email" className="mt-0.5 h-8 text-sm" data-testid="ref-label-input" />
       </div>
       <div>
         <RequiredLabel className="text-slate-600" trailing={lockKey ? <span className="text-amber-500">(locked)</span> : undefined}>Key</RequiredLabel>
         <Input value={draft.key || ""} onChange={(e) => set("key", e.target.value)}
+          maxLength={100}
           placeholder="contact_email" disabled={lockKey}
           className="mt-0.5 h-8 text-sm font-mono" data-testid="ref-key-input" />
       </div>
@@ -240,6 +241,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
       <div>
         <RequiredLabel className="text-slate-600">Value</RequiredLabel>
         <Input value={draft.value || ""} onChange={(e) => set("value", e.target.value)}
+          maxLength={1000}
           placeholder={draft.type === "email" ? "support@co.com" : draft.type === "url" ? "https://..." : draft.type === "phone" ? "+1 555 000 0000" : "Value"}
           type={draft.type === "email" ? "email" : draft.type === "url" ? "url" : "text"}
           className="mt-0.5 h-8 text-sm" data-testid="ref-value-input" />
@@ -247,6 +249,7 @@ function ReferenceForm({ draft, setDraft, lockKey }: {
       <div className="col-span-2">
         <label className="text-xs text-slate-600 font-medium">Description (optional)</label>
         <Input value={draft.description || ""} onChange={(e) => set("description", e.target.value)}
+          maxLength={500}
           placeholder="Short description" className="mt-0.5 h-8 text-sm" data-testid="ref-description-input" />
       </div>
     </div>

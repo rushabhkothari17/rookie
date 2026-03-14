@@ -163,8 +163,11 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <RequiredLabel>Template Name</RequiredLabel>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Weekly Update" data-testid="template-name-input" />
+                <div className="flex items-center justify-between">
+                  <RequiredLabel>Template Name</RequiredLabel>
+                  {form.name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.name.length > 475 ? "text-red-500" : form.name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{form.name.length}/500</span>}
+                </div>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={500} placeholder="e.g. Weekly Update" data-testid="template-name-input" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-slate-700">Default Category</label>
@@ -178,7 +181,7 @@ export function ArticleTemplatesTab({ categories }: { categories?: any[] }) {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700">Description</label>
-              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief description of this template's purpose" data-testid="template-desc-input" />
+              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={5000} placeholder="Brief description of this template's purpose" data-testid="template-desc-input" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700">Content</label>

@@ -239,7 +239,7 @@ export default function Profile() {
                     </div>
                     <div className="mb-3">
                       <label className="text-xs font-medium text-slate-600">Reason (optional)</label>
-                      <Input value={deleteReason} onChange={e => setDeleteReason(e.target.value)} placeholder="Why are you leaving?" className="mt-1" data-testid="gdpr-delete-reason" />
+                      <Input value={deleteReason} onChange={e => setDeleteReason(e.target.value)} maxLength={1000} placeholder="Why are you leaving?" className="mt-1" data-testid="gdpr-delete-reason" />
                     </div>
                     <div className="flex gap-2">
                       <Button variant="destructive" size="sm" onClick={handleDeleteAccount} disabled={deleting} data-testid="gdpr-delete-confirm-btn">

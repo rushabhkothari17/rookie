@@ -245,6 +245,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
               <label className="text-xs font-semibold text-slate-600 mb-1 block">Name</label>
               <Input
                 value={name} onChange={e => setName(e.target.value)}
+                maxLength={500}
                 placeholder="e.g. CRM Sync" data-testid="webhook-name-input"
               />
             </div>
@@ -252,6 +253,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
               <RequiredLabel className="font-semibold text-slate-600 mb-1 block">Endpoint URL</RequiredLabel>
               <Input
                 value={url} onChange={e => setUrl(e.target.value)}
+                maxLength={2048}
                 placeholder="https://your-server.com/webhook" data-testid="webhook-url-input"
               />
             </div>
@@ -267,6 +269,7 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
               <Input
                 type={showSecret ? "text" : "password"}
                 value={secret} onChange={e => setSecret(e.target.value)}
+                maxLength={500}
                 placeholder={isEdit ? "Leave blank to keep current" : "Auto-generated whsec_..."}
                 className="font-mono text-xs" data-testid="webhook-secret-input"
               />

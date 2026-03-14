@@ -262,6 +262,7 @@ export function CustomDomainsSection() {
         <Input
           value={newDomain}
           onChange={(e) => setNewDomain(e.target.value)}
+          maxLength={253}
           placeholder="billing.yourcompany.com"
           className="flex-1"
           onKeyDown={(e) => e.key === "Enter" && addDomain()}

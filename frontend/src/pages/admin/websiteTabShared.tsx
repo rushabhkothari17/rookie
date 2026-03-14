@@ -197,19 +197,26 @@ export const WEB_DEFAULTS: WebsiteData = {
 
 // ─── Atom components ──────────────────────────────────────────────────────────
 
-export function Field({ label, hint, value, onChange, multiline = false, testId, placeholder, disabled }: {
+export function Field({ label, hint, value, onChange, multiline = false, testId, placeholder, disabled, maxLength = 1000 }: {
   label: string; hint?: string; value: string; onChange: (v: string) => void;
-  multiline?: boolean; testId?: string; placeholder?: string; disabled?: boolean;
+  multiline?: boolean; testId?: string; placeholder?: string; disabled?: boolean; maxLength?: number;
 }) {
+  const pct = value.length / maxLength;
+  const cntCls = pct > 0.95 ? "text-red-500" : pct > 0.8 ? "text-amber-500" : "text-slate-400";
   return (
     <div>
-      <label className="text-xs font-medium" style={{ color: "var(--aa-text)" }}>{label}</label>
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium" style={{ color: "var(--aa-text)" }}>{label}</label>
+        {value.length > 0 && (
+          <span className={`text-[11px] font-mono tabular-nums ${cntCls}`}>{value.length.toLocaleString()}/{maxLength.toLocaleString()}</span>
+        )}
+      </div>
       {hint && <p className="text-[11px] mt-0.5 mb-1" style={{ color: "var(--aa-muted)" }}>{hint}</p>}
       {multiline ? (
-        <Textarea value={value} onChange={e => onChange(e.target.value)} rows={2}
+        <Textarea value={value} onChange={e => onChange(e.target.value)} rows={2} maxLength={maxLength}
           className="mt-0.5 text-sm" data-testid={testId} placeholder={placeholder} disabled={disabled} />
       ) : (
-        <Input value={value} onChange={e => onChange(e.target.value)}
+        <Input value={value} onChange={e => onChange(e.target.value)} maxLength={maxLength}
           className="mt-0.5" data-testid={testId} placeholder={placeholder} disabled={disabled} />
       )}
     </div>
@@ -226,6 +233,7 @@ export function ColorInput({ label, value, onChange, testId }: {
         <input type="color" value={value || "#000000"} onChange={e => onChange(e.target.value)}
           className="w-10 h-10 rounded cursor-pointer border border-slate-200" data-testid={testId} />
         <Input value={value} onChange={e => onChange(e.target.value)}
+          maxLength={30}
           placeholder="#000000" className="w-32 font-mono text-sm" />
       </div>
     </div>
@@ -360,6 +368,7 @@ export function SettingRow({ item, onSaved }: { item: any; onSaved: (key: string
             <div className="relative">
               <Input type={isSecret && !showSecret ? "password" : isNumber ? "number" : "text"}
                 value={editVal} onChange={e => setEditVal(e.target.value)}
+                maxLength={isNumber ? undefined : 1000}
                 className="h-7 text-xs font-mono w-72 pr-7" autoFocus data-testid={`setting-input-${item.key}`} />
               {isSecret && (
                 <button type="button" onClick={() => setShowSecret(!showSecret)} className="absolute right-2 top-1.5 text-slate-400 hover:text-slate-600">
@@ -480,15 +489,15 @@ export function OrgAddressSection() {
       <div className="space-y-2" data-testid="org-address-section">
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Line 1 <span className="text-red-500">*</span></label>
-          <Input placeholder="Street address" value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} data-testid="org-addr-line1" />
+          <Input placeholder="Street address" maxLength={200} value={addr.line1} onChange={e => setAddr(p=>({...p,line1:e.target.value}))} data-testid="org-addr-line1" />
         </div>
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Line 2</label>
-          <Input placeholder="Apartment, suite, unit…" value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
+          <Input placeholder="Apartment, suite, unit…" maxLength={200} value={addr.line2} onChange={e => setAddr(p=>({...p,line2:e.target.value}))} data-testid="org-addr-line2" />
         </div>
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">City <span className="text-red-500">*</span></label>
-          <Input placeholder="City" value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} data-testid="org-addr-city" />
+          <Input placeholder="City" maxLength={100} value={addr.city} onChange={e => setAddr(p=>({...p,city:e.target.value}))} data-testid="org-addr-city" />
         </div>
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Country <span className="text-red-500">*</span></label>
@@ -498,7 +507,7 @@ export function OrgAddressSection() {
               <SelectContent>{countries.map(c=><SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
             </Select>
           ) : (
-            <Input placeholder="Country" value={addr.country} onChange={e => setAddr(p=>({...p,country:e.target.value,region:""}))} data-testid="org-addr-country" />
+            <Input placeholder="Country" maxLength={100} value={addr.country} onChange={e => setAddr(p=>({...p,country:e.target.value,region:""}))} data-testid="org-addr-country" />
           )}
         </div>
         <div>
@@ -509,12 +518,12 @@ export function OrgAddressSection() {
               <SelectContent>{provinces.map(p=><SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
             </Select>
           ) : (
-            <Input placeholder="State / Province" value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} data-testid="org-addr-region-input" />
+            <Input placeholder="State / Province" maxLength={100} value={addr.region} onChange={e => setAddr(p=>({...p,region:e.target.value}))} data-testid="org-addr-region-input" />
           )}
         </div>
         <div>
           <label className="text-[11px] text-slate-500 font-medium block mb-0.5">Postal / ZIP <span className="text-red-500">*</span></label>
-          <Input placeholder="Postal code" value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} data-testid="org-addr-postal" />
+          <Input placeholder="Postal code" maxLength={20} value={addr.postal} onChange={e => setAddr(p=>({...p,postal:e.target.value}))} data-testid="org-addr-postal" />
         </div>
       </div>
       <Button onClick={save} disabled={saving || (!isPlatformAdmin && !tenantId)} size="sm" className="mt-3" data-testid="org-addr-save-btn">

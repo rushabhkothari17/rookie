@@ -163,6 +163,7 @@ function BulletsList({ bullets, onChange, placeholder = "Feature or detail", lab
           <Input
             value={b}
             onChange={e => update(i, e.target.value)}
+            maxLength={200}
             placeholder={placeholder}
             className="flex-1 h-9 text-sm"
             data-testid={`pf-bullet-${i}`}
@@ -210,8 +211,8 @@ function FAQList({ faqs, onChange }: { faqs: FAQ[]; onChange: (v: FAQ[]) => void
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Q{i + 1}</span>
             <button type="button" onClick={() => remove(i)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={12} /></button>
           </div>
-          <Input value={faq.question} onChange={e => update(i, "question", e.target.value)} placeholder="Question" className="h-9 text-sm" data-testid={`faq-q-${i}`} />
-          <Textarea value={faq.answer} onChange={e => update(i, "answer", e.target.value)} placeholder="Answer" rows={2} className="text-sm resize-none" data-testid={`faq-a-${i}`} />
+          <Input value={faq.question} onChange={e => update(i, "question", e.target.value)} maxLength={500} placeholder="Question" className="h-9 text-sm" data-testid={`faq-q-${i}`} />
+          <Textarea value={faq.answer} onChange={e => update(i, "answer", e.target.value)} maxLength={5000} placeholder="Answer" rows={2} className="text-sm resize-none" data-testid={`faq-a-${i}`} />
         </div>
       ))}
     </div>
@@ -754,7 +755,8 @@ export function ProductForm({
           <div className={cardCls}>
             <div>
               <label className={labelCls}>Detail page description</label>
-              <Textarea value={form.description_long} onChange={e => s("description_long")(e.target.value)} placeholder="Full description for the product page" rows={3} className="resize-none text-sm" data-testid="pf-long-desc" />
+              <Textarea value={form.description_long} onChange={e => s("description_long")(e.target.value)} maxLength={500000} placeholder="Full description for the product page" rows={3} className="resize-none text-sm" data-testid="pf-long-desc" />
+              {form.description_long.length > 0 && <p className={`text-[11px] font-mono tabular-nums text-right mt-0.5 ${form.description_long.length > 475000 ? "text-red-500" : form.description_long.length > 400000 ? "text-amber-500" : "text-slate-400"}`}>{form.description_long.length.toLocaleString()}/500,000</p>}
             </div>
             <BulletsList bullets={form.bullets} onChange={s("bullets")} label="Bullet points (what's included)" />
           </div>
@@ -772,11 +774,14 @@ export function ProductForm({
           <div className={cardCls}>
             <div>
               <label className={labelCls}>Card tag <span className="text-slate-400 normal-case font-normal tracking-normal text-xs">(badge, e.g. Popular)</span></label>
-              <Input value={form.card_tag} onChange={e => s("card_tag")(e.target.value)} placeholder="e.g. Popular" data-testid="pf-card-tag" />
+              <Input value={form.card_tag} onChange={e => s("card_tag")(e.target.value)} maxLength={100} placeholder="e.g. Popular" data-testid="pf-card-tag" />
             </div>
             <div>
-              <label className={labelCls}>Card description</label>
-              <Input value={form.card_description} onChange={e => s("card_description")(e.target.value)} placeholder="Short description shown on the card" data-testid="pf-card-desc" />
+              <div className="flex items-center justify-between">
+                <label className={labelCls}>Card description</label>
+                {form.card_description.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.card_description.length > 4750 ? "text-red-500" : form.card_description.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{form.card_description.length}/5000</span>}
+              </div>
+              <Input value={form.card_description} onChange={e => s("card_description")(e.target.value)} maxLength={5000} placeholder="Short description shown on the card" data-testid="pf-card-desc" />
             </div>
             <BulletsList
               bullets={form.card_bullets}
@@ -811,7 +816,7 @@ export function ProductForm({
                     <>
                     <div>
                       <label className={labelCls}>Stripe Price ID <FieldTip tip="Found in Stripe Dashboard → Products → your product → Price ID. Format: price_… Required for subscription billing so Stripe knows what to charge on renewal." /></label>
-                      <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
+                      <Input value={form.stripe_price_id} onChange={e => s("stripe_price_id")(e.target.value)} maxLength={200} placeholder="price_…" className="font-mono" data-testid="pf-stripe-price-id" />
                     </div>
                     <div>
                       <label className={labelCls}>Default Contract Term (months) <FieldTip tip="Pre-fills the contract term when creating a manual subscription from this product. 0 or empty = cancel anytime. E.g. 12 = 12-month lock-in." /></label>

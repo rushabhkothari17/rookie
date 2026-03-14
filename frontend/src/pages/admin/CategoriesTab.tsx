@@ -196,8 +196,20 @@ export function CategoriesTab() {
         <DialogContent data-testid="admin-category-dialog">
           <DialogHeader><DialogTitle>{editCat ? "Edit Category" : "New Category"}</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
-            <div><RequiredLabel className="text-sm">Name</RequiredLabel><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1" data-testid="admin-category-name-input" /></div>
-            <div><label className="text-sm font-medium text-slate-700">Description</label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="mt-1" data-testid="admin-category-desc-input" /></div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <RequiredLabel className="text-sm">Name</RequiredLabel>
+                {form.name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.name.length > 475 ? "text-red-500" : form.name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{form.name.length}/500</span>}
+              </div>
+              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} maxLength={500} data-testid="admin-category-name-input" />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-medium text-slate-700">Description</label>
+                {form.description.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.description.length > 4750 ? "text-red-500" : form.description.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{form.description.length}/5000</span>}
+              </div>
+              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} maxLength={5000} rows={2} data-testid="admin-category-desc-input" />
+            </div>
             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4" data-testid="admin-category-active-switch" /><span className="text-sm">Active (visible on storefront)</span></label>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>

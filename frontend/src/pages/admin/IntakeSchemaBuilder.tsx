@@ -56,6 +56,8 @@ export interface IntakeQuestion {
   order: number;
   step_group: number;
   type: QType;
+  // Text length limit — enforced in store intake form
+  max_length?: number;
   // Dropdown / Multiselect
   affects_price?: boolean;
   price_mode?: "add" | "multiply";
@@ -592,11 +594,13 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 <div>
                   <label className="label-xs">Block title <span className="text-slate-400 font-normal normal-case tracking-normal">(optional heading)</span></label>
                   <Input value={q.label} onChange={e => onChange({ ...q, label: e.target.value })}
+                    maxLength={500}
                     placeholder="Section heading" className="h-9 text-sm" />
                 </div>
                 <div>
                   <label className="label-xs">Content (HTML)</label>
                   <Textarea value={q.content || ""} onChange={e => onChange({ ...q, content: e.target.value })}
+                    maxLength={500000}
                     placeholder="<p>Instructions for this section...</p>"
                     rows={4} className="text-xs font-mono resize-y" />
                   <p className="text-[10px] text-slate-400 mt-1">HTML is rendered on the product page. In Wizard mode, this block starts a new step.</p>
@@ -613,9 +617,9 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 {/* Label */}
                 <div>
                   <RequiredLabel className="label-xs" trailing={<FieldTip tip="The question text shown to the customer. Changing the label auto-updates the Key field." side="right" />}>Label</RequiredLabel>
-                  <Input value={q.label}
-                    onChange={e => onChange({ ...q, label: e.target.value })}
+                  <Input value={q.label} onChange={e => onChange({ ...q, label: e.target.value })}
                     onBlur={e => { if (!q.key || q.key === labelToKey(q.label.slice(0, -1))) onChange({ ...q, key: labelToKey(e.target.value) }); }}
+                    maxLength={500}
                     placeholder="Question label" className="h-9 text-sm" />
                 </div>
 
@@ -623,6 +627,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 <div>
                   <label className="label-xs">Helper text <FieldTip tip="Shown as a hint below the input field. Use to guide the customer on what to enter." side="right" /></label>
                   <Input value={q.helper_text} onChange={e => onChange({ ...q, helper_text: e.target.value })}
+                    maxLength={500}
                     placeholder="Hint shown below the field" className="h-9 text-sm" />
                 </div>
 
@@ -630,6 +635,7 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                 <div>
                   <label className="label-xs flex items-center gap-1"><Info size={10} /> Tooltip <span className="text-slate-400 font-normal normal-case tracking-normal">(shown on hover ⓘ)</span> <FieldTip tip="Adds a ⓘ icon next to the question. When the customer hovers it, this text appears. Good for legal disclaimers or technical clarifications." side="right" /></label>
                   <Input value={q.tooltip_text || ""} onChange={e => onChange({ ...q, tooltip_text: e.target.value })}
+                    maxLength={500}
                     placeholder="Info shown on hover" className="h-9 text-sm" />
                 </div>
 
@@ -811,6 +817,20 @@ function QuestionCard({ q, idx, total, allKeys, allQuestions, onChange, onRemove
                         onChange={e => onChange({ ...q, max_size_mb: parseFloat(e.target.value) || 10 })}
                         className="h-9 text-sm font-mono" />
                     </div>
+                  </div>
+                )}
+
+                {/* Max length for text fields */}
+                {(q.type === "single_line" || q.type === "multi_line") && (
+                  <div>
+                    <label className="label-xs">Max characters <span className="text-slate-400 font-normal normal-case tracking-normal">(optional)</span></label>
+                    <Input
+                      type="number" min={1} max={500000}
+                      value={q.max_length ?? ""}
+                      onChange={e => onChange({ ...q, max_length: e.target.value ? Number(e.target.value) : undefined })}
+                      placeholder={q.type === "multi_line" ? "5000 (default)" : "500 (default)"}
+                      className="h-8 text-xs w-36 font-mono"
+                    />
                   </div>
                 )}
 

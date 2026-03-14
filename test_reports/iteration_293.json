@@ -1,0 +1,73 @@
+{
+  "summary": "Comprehensive input validation sweep. Tested maxLength enforcement on all admin form fields (frontend & backend), character counter X/Y display with amber/red color thresholds, Pydantic model constraints, and Cart form limits. Backend: 21/21 tests pass. Frontend: all key form fields have correct maxLength attributes; character counters visible and color-coded (amber at >80%, red at >95%) for categories, terms, plans, website settings Field component. 3 notable gaps identified.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/article-templates",
+        "issue": "Uses Dict[str,Any] instead of Pydantic model — NO backend max_length validation for name (500) and description (5000). Frontend enforces maxLength but API can be called directly with 10,000-char names with no rejection. Confirmed: 501-char name returns 201 OK.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "POST /api/admin/webhooks",
+        "issue": "Uses Dict[str,Any] payload. Name is silently truncated to 120 chars (routes/admin/webhooks.py line 130: [:120]) instead of validated against 500-char limit. Frontend has maxLength=500 but backend silently truncates to 120."
+      },
+      {
+        "endpoint": "ScopeRequestFormData.name (POST /api/orders/scope-request-form)",
+        "issue": "Backend model uses _NAME (max_length=500) but Cart.tsx frontend restricts to maxLength=200. Requirements say Cart quote name should be 200 but backend allows 500 — mismatch."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin Webhooks form (Create/Edit Webhook modal)",
+        "issues": ["maxLength attributes present (name:500, url:2048, secret:500) but NO character counter X/Y displayed. Other admin forms (terms, categories, plans) show X/Y counters. Webhooks form is missing counters."]
+      },
+      {
+        "screen": "UniversalFormRenderer (store intake form fields)",
+        "issues": ["Counter always shows X/max_length in static text-slate-400 color. Does NOT turn amber at 80% or red at 95% unlike all other admin form counters. Missing color threshold behavior."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_input_validation.py",
+    "/app/test_reports/pytest/pytest_input_validation.xml"
+  ],
+  "action_items": [
+    "HIGH: Add Pydantic model ArticleTemplateCreate(BaseModel) with name: str = Field(**_NAME), description: Optional[str] = Field('', **_NOTE) to POST /api/article-templates in routes/article_templates.py",
+    "MODERATE: Fix webhook create/update route to use Pydantic model (remove [:120] truncation from routes/admin/webhooks.py line 130)",
+    "MINOR: Add X/Y character counters with amber/red thresholds to WebhooksTab.tsx webhook form fields",
+    "MINOR: Add amber/red color thresholds to UniversalFormRenderer counter (components/UniversalFormRenderer.tsx lines 368-370, 559-561)",
+    "MINOR: Change ScopeRequestFormData.name in models.py to max_length=200 to match Cart.tsx frontend limit"
+  ],
+  "critical_code_review_comments": [
+    "routes/article_templates.py: create_template uses Dict[str,Any] — no Pydantic validation. Fix: ArticleTemplateCreate(BaseModel) with Field(**_NAME) and Field(**_NOTE)",
+    "routes/admin/webhooks.py line 130: name[:120] silently truncates — should use Pydantic WebhookCreate with max_length=500",
+    "models.py ScopeRequestFormData.name: max_length=500 but Cart.tsx uses maxLength=200 — mismatch with stated requirement",
+    "components/UniversalFormRenderer.tsx: counter lacks amber/red color thresholds unlike other form components"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_input_validation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21 tests pass)",
+    "frontend": "90% (all key maxLength attributes verified, counters with amber/red for categories/terms/plans/website settings; missing counters in webhooks + UniversalFormRenderer lacks color thresholds)"
+  },
+  "test_credentials": {
+    "tenant_admin": "mayank@automateaccounts.com / ChangeMe123! (partner code: aa)",
+    "super_admin": "admin@automateaccounts.local / ChangeMe123! (via /api/auth/login only, not via partner code portal)"
+  },
+  "seed_data_creation": "Backend tests created and deleted test categories/plans. No permanent data left.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Partner code for tenant is 'aa'. Tenant admin: mayank@automateaccounts.com. Super admin: admin@automateaccounts.local (cannot login via tenant UI). Plans tab requires platform_super_admin — not visually testable via partner code portal. Categories counter confirmed: amber at 401/500, red at 476/500. Terms title counter confirmed: 16/500 showing. Article templates backend HIGH priority — no Pydantic validation.",
+  "rca_of_issues": {
+    "article_templates_no_validation": "routes/article_templates.py create_template payload: Dict[str,Any] at line 158. Fix: Add ArticleTemplateCreate(BaseModel) with name: str = Field(**_NAME), description: Optional[str] = Field('', **_NOTE).",
+    "webhook_name_truncation": "routes/admin/webhooks.py line 130: [:120] is a legacy safety truncation. Frontend maxLength=500. Fix: Pydantic WebhookCreate model with max_length=500 for name.",
+    "scope_request_name_mismatch": "models.py ScopeRequestFormData.name uses **_NAME (generic max_length=500). Cart.tsx uses maxLength=200. Fix: ScopeRequestFormData.name = Field('', max_length=200)."
+  }
+}

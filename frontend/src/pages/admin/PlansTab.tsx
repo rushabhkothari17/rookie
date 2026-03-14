@@ -234,8 +234,11 @@ function PlanFormModal({ plan, onClose, onSaved }: { plan: Plan | null; onClose:
           )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <RequiredLabel className="text-slate-600">Plan Name</RequiredLabel>
-              <Input value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Starter, Growth" data-testid="plan-name-input" />
+              <div className="flex items-center justify-between">
+                <RequiredLabel className="text-slate-600">Plan Name</RequiredLabel>
+                {form.name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${form.name.length > 475 ? "text-red-500" : form.name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{form.name.length}/500</span>}
+              </div>
+              <Input value={form.name} onChange={e => set("name", e.target.value)} maxLength={500} placeholder="e.g. Starter, Growth" data-testid="plan-name-input" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Warning threshold (%)</label>
@@ -243,8 +246,11 @@ function PlanFormModal({ plan, onClose, onSaved }: { plan: Plan | null; onClose:
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Description</label>
-            <Textarea rows={2} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Short description…" data-testid="plan-description-input" />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-slate-600">Description</label>
+              {(form.description || "").length > 0 && <span className={`text-[11px] font-mono tabular-nums ${(form.description || "").length > 4750 ? "text-red-500" : (form.description || "").length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{(form.description || "").length}/5000</span>}
+            </div>
+            <Textarea rows={2} value={form.description} onChange={e => set("description", e.target.value)} maxLength={5000} placeholder="Short description…" data-testid="plan-description-input" />
           </div>
           <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
             <input id="plan-is-public" type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={form.is_public === "true"} onChange={e => set("is_public", e.target.checked ? "true" : "false")} data-testid="plan-is-public-checkbox" />
@@ -1008,11 +1014,14 @@ function CouponFormDialog({ coupon, onClose, onSaved }: { coupon: Coupon | null;
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <RequiredLabel className="text-slate-600">Coupon Code</RequiredLabel>
-              <Input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="SAVE20" className="font-mono" data-testid="coupon-code-field" />
+              <Input value={code} onChange={e => setCode(e.target.value.toUpperCase())} maxLength={100} placeholder="SAVE20" className="font-mono" data-testid="coupon-code-field" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Internal Note</label>
-              <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Optional note…" data-testid="coupon-note-field" />
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-slate-600">Internal Note</label>
+                {note.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${note.length > 4750 ? "text-red-500" : note.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{note.length}/5000</span>}
+              </div>
+              <Input value={note} onChange={e => setNote(e.target.value)} maxLength={5000} placeholder="Optional note…" data-testid="coupon-note-field" />
             </div>
           </div>
 

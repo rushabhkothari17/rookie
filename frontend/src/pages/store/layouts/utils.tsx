@@ -409,6 +409,7 @@ export function renderIntakeField(
       <Textarea
         value={value || ""}
         onChange={e => onChange(e.target.value)}
+        maxLength={q.max_length || 5000}
         placeholder={q.helper_text || ""}
         rows={3}
         data-testid={`intake-${q.key}`}
@@ -421,6 +422,7 @@ export function renderIntakeField(
     <Input
       value={value || ""}
       onChange={e => onChange(e.target.value)}
+      maxLength={q.max_length || 500}
       placeholder={q.helper_text || ""}
       data-testid={`intake-${q.key}`}
     />
@@ -459,6 +461,7 @@ export function ScopeIdBlock({
           value={scopeId}
           onChange={e => setScopeId(e.target.value)}
           onKeyDown={e => e.key === "Enter" && scopeId.trim() && handleValidateScopeId()}
+          maxLength={50}
           placeholder="e.g. SCOPE-ABC123"
           className={`flex-1 ${inputCls}`}
           data-testid="product-scope-id-input"

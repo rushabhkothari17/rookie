@@ -517,10 +517,14 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                       value={field.terms_text || ""}
                       onChange={e => updateField(field.id, { terms_text: e.target.value })}
                       rows={6}
+                      maxLength={10000}
                       className="mt-0.5 text-xs"
                       placeholder="Enter the full terms and conditions text here. The customer must read and sign below."
                       data-testid={`field-terms-text-${field.id}`}
                     />
+                    <p className={`text-[10px] mt-0.5 text-right ${(field.terms_text || "").length > 9500 ? "text-red-500" : (field.terms_text || "").length > 8000 ? "text-amber-500" : "text-slate-400"}`}>
+                      {(field.terms_text || "").length.toLocaleString()}/10,000
+                    </p>
                     <p className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 mt-1.5">
                       A signature field is automatically appended below this field and cannot be removed separately.
                     </p>
@@ -574,7 +578,7 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                     {/* Standard placeholder + required for non-address types */}
                     <div>
                       <label className="text-[11px] text-slate-500 font-medium">Placeholder</label>
-                      <Input value={field.placeholder} onChange={e => updateField(field.id, { placeholder: e.target.value })} className="mt-0.5 h-7 text-xs" />
+                      <Input value={field.placeholder} onChange={e => updateField(field.id, { placeholder: e.target.value })} maxLength={200} className="mt-0.5 h-7 text-xs" />
                     </div>
                     <div className="flex items-end gap-4 pb-1">
                       <label className="flex items-center gap-1.5 cursor-pointer">
@@ -693,11 +697,11 @@ export default function FormSchemaBuilder({ value, onChange, title, disableAddDe
                     <div className="col-span-2 grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-[11px] text-slate-500 font-medium">Helper text <span className="text-slate-400 font-normal">(shown below field)</span></label>
-                        <Input value={field.helper_text || ""} onChange={e => updateField(field.id, { helper_text: e.target.value })} className="mt-0.5 h-7 text-xs" placeholder="e.g. Enter your date of birth" data-testid={`field-helper-${field.id}`} />
+                        <Input value={field.helper_text || ""} onChange={e => updateField(field.id, { helper_text: e.target.value })} maxLength={500} className="mt-0.5 h-7 text-xs" placeholder="e.g. Enter your date of birth" data-testid={`field-helper-${field.id}`} />
                       </div>
                       <div>
                         <label className="text-[11px] text-slate-500 font-medium flex items-center gap-1"><Info size={10} /> Tooltip <span className="text-slate-400 font-normal">(hover ⓘ)</span></label>
-                        <Input value={field.tooltip_text || ""} onChange={e => updateField(field.id, { tooltip_text: e.target.value })} className="mt-0.5 h-7 text-xs" placeholder="e.g. Must match your government ID" data-testid={`field-tooltip-${field.id}`} />
+                        <Input value={field.tooltip_text || ""} onChange={e => updateField(field.id, { tooltip_text: e.target.value })} maxLength={500} className="mt-0.5 h-7 text-xs" placeholder="e.g. Must match your government ID" data-testid={`field-tooltip-${field.id}`} />
                       </div>
                     </div>
                     {/* Visibility rule — not for locked/signature fields */}

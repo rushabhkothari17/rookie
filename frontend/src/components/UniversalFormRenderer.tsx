@@ -59,11 +59,11 @@ const ADDR_KEYS = ["line1", "line2", "city", "region", "postal", "country"] as c
 const PHONE_RE = /^[+\d][\d\s\-(). ]{3,49}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-function validateField(key: string, val: string, required: boolean): string {
+function validateField(key: string, val: string, required: boolean, maxLength?: number): string {
   if (!val) return required ? "This field is required" : "";
   if (key === "email" && !EMAIL_RE.test(val)) return "Enter a valid email address";
   if (key === "phone" && !PHONE_RE.test(val)) return "Enter a valid phone number";
-  if (val.length > 100) return "Maximum 100 characters";
+  if (maxLength && val.length > maxLength) return `Maximum ${maxLength.toLocaleString()} characters`;
   return "";
 }
 
@@ -293,9 +293,9 @@ export function UniversalFormRenderer({
   const enabled = fields.filter(f => f.enabled !== false && evalVisibility(f.show_when, values));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const handleChange = (key: string, newVal: string, required: boolean) => {
+  const handleChange = (key: string, newVal: string, required: boolean, maxLength?: number) => {
     if (["email", "phone", "full_name", "company_name", "job_title"].includes(key)) {
-      const err = validateField(key, newVal, required);
+      const err = validateField(key, newVal, required, maxLength);
       setFieldErrors(prev =>
         err ? { ...prev, [key]: err } : (() => { const n = { ...prev }; delete n[key]; return n; })()
       );
@@ -540,7 +540,7 @@ export function UniversalFormRenderer({
           type={htmlType}
           className={pillInput(!!err, isCompact)}
           value={val}
-          onChange={e => handleChange(key, e.target.value, field.required)}
+          onChange={e => handleChange(key, e.target.value, field.required, field.max_length)}
           placeholder={datePlaceholder || samplePh(key, field)}
           required={field.required}
           maxLength={field.max_length || undefined}

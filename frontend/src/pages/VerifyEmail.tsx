@@ -57,11 +57,11 @@ export default function VerifyEmail() {
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label className="text-sm text-slate-600">Email</label>
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} data-testid="verify-email-input" required />
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} maxLength={320} data-testid="verify-email-input" required />
           </div>
           <div className="space-y-2">
             <label className="text-sm text-slate-600">Verification code</label>
-            <Input value={code} onChange={(e) => setCode(e.target.value)} data-testid="verify-code-input" required />
+            <Input value={code} onChange={(e) => setCode(e.target.value)} maxLength={6} data-testid="verify-code-input" required />
           </div>
           <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800" disabled={loading} data-testid="verify-submit-button">
             {loading ? "Verifying..." : "Verify"}

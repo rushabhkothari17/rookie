@@ -9,6 +9,8 @@ export interface IntakeQuestion {
   enabled?: boolean;
   order?: number;
   step_group?: number;
+  // Text length limit
+  max_length?: number;
   // Dropdown/Multiselect
   affects_price?: boolean;
   price_mode?: "add" | "multiply";

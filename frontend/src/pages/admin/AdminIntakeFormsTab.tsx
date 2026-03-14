@@ -255,11 +255,13 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-slate-600 block mb-1.5">Form Name *</label>
-                <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Client Intake Questionnaire" data-testid="intake-form-name-input" />
+                <Input value={name} onChange={e => setName(e.target.value)} maxLength={500} placeholder="e.g. Client Intake Questionnaire" data-testid="intake-form-name-input" />
+                {name.length > 0 && <p className={`text-[11px] font-mono tabular-nums text-right mt-0.5 ${name.length > 475 ? "text-red-500" : name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{name.length}/500</p>}
               </div>
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-slate-600 block mb-1.5">Description</label>
-                <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} placeholder="Brief description shown to customers" data-testid="intake-form-desc-input" />
+                <Textarea value={description} onChange={e => setDescription(e.target.value)} maxLength={5000} rows={2} placeholder="Brief description shown to customers" data-testid="intake-form-desc-input" />
+                {description.length > 0 && <p className={`text-[11px] font-mono tabular-nums text-right mt-0.5 ${description.length > 4750 ? "text-red-500" : description.length > 4000 ? "text-amber-500" : "text-slate-400"}`}>{description.length}/5000</p>}
               </div>
             </div>
 
@@ -871,7 +873,7 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                   <div key={note.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3">
                     {editNoteId === note.id ? (
                       <div className="space-y-2">
-                        <Textarea value={editNoteText} onChange={e => setEditNoteText(e.target.value)} rows={2} className="text-sm" />
+                        <Textarea value={editNoteText} onChange={e => setEditNoteText(e.target.value)} maxLength={5000} rows={2} className="text-sm" />
                         <div className="flex gap-2">
                           <Button size="sm" onClick={saveEditNote}><Check size={12} className="mr-1" />Save</Button>
                           <Button size="sm" variant="ghost" onClick={() => setEditNoteId(null)}><X size={12} /></Button>
@@ -893,7 +895,7 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                 ))}
               </div>
               <div className="border-t border-slate-100 pt-3 space-y-2">
-                <Textarea value={addNoteText} onChange={e => setAddNoteText(e.target.value)} rows={2} placeholder="Add a note..." className="text-sm" data-testid="intake-add-note-input" />
+                <Textarea value={addNoteText} onChange={e => setAddNoteText(e.target.value)} maxLength={5000} rows={2} placeholder="Add a note..." className="text-sm" data-testid="intake-add-note-input" />
                 <Button size="sm" onClick={addNote} disabled={!addNoteText.trim()} data-testid="intake-add-note-btn">
                   <Plus size={12} className="mr-1" /> Add Note
                 </Button>
@@ -956,6 +958,7 @@ function IntakeFormRecords({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
               <Textarea
                 value={rejectionReason}
                 onChange={e => setRejectionReason(e.target.value)}
+                maxLength={5000}
                 rows={3}
                 placeholder="e.g. Missing supporting documents, please re-submit with ID proof..."
                 className="text-sm"

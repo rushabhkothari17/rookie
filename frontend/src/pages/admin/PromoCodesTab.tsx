@@ -89,6 +89,7 @@ function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) 
         <Textarea
           value={form.promo_note}
           onChange={e => setF({ ...form, promo_note: e.target.value })}
+          maxLength={5000}
           placeholder="e.g. This code is part of the Zoho Partner Sponsorship Programme."
           className="text-xs resize-none"
           rows={2}
