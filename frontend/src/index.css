@@ -541,9 +541,9 @@ input[class*="rounded-full"]:focus {
 ───────────────────────────────────────────────────────────── */
 html.aa-dark {
   /* ── aa-* design tokens ── */
-  --aa-primary: #161b22;
-  --aa-primary-hover: #1c2128;
-  --aa-primary-fg: #e6edf3;
+  --aa-primary: #4f8ef7;
+  --aa-primary-hover: #6ba4ff;
+  --aa-primary-fg: #ffffff;
   --aa-accent: #4f8ef7;
   --aa-accent-hover: #6ba4ff;
   --aa-bg: #0d1117;
@@ -587,6 +587,66 @@ html.aa-dark {
 html.aa-dark body {
   background-color: var(--aa-bg);
   color: var(--aa-text);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   DARK MODE SECTION CARD ELEVATION
+   Adds visible box-shadow to rounded bordered cards so sections are clearly
+   separated even when background/card colour contrast is subtle.
+───────────────────────────────────────────────────────────────────────── */
+.aa-dark .rounded-2xl.border,
+.aa-dark .rounded-xl.border {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OPACITY-MODIFIER TAILWIND CLASSES  (bg-slate-50/50, bg-white/10 etc.)
+   These generate a different class name from bg-slate-50 / bg-white, so
+   they bypass the standard .aa-dark .bg-white and .aa-dark .bg-slate-50 rules.
+───────────────────────────────────────────────────────────────────────── */
+.aa-dark .bg-slate-50\/50,
+.aa-dark .bg-slate-100\/50,
+.aa-dark .bg-slate-50\/60,
+.aa-dark .bg-slate-100\/60 {
+  background-color: var(--aa-surface) !important;
+}
+.aa-dark .bg-white\/50,
+.aa-dark .bg-white\/40 {
+  background-color: color-mix(in srgb, var(--aa-surface) 70%, transparent) !important;
+}
+/* bg-white/10 and bg-white/5 are used on colored (primary/accent) backgrounds
+   and should remain semi-transparent — do NOT override them globally. */
+
+/* Section sub-headers (e.g. Cart Items header bar) */
+.aa-dark .bg-slate-50\/50.border-b,
+.aa-dark .bg-slate-50\/50.border-b.border-slate-100 {
+  background-color: var(--aa-surface) !important;
+  border-color: var(--aa-border) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   DIVIDE COLORS (divide-slate-100, divide-slate-200)
+   These generate very-light (#f1f5f9) divider lines between list items
+   in dark mode — they should use aa-border instead.
+───────────────────────────────────────────────────────────────────────── */
+.aa-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.aa-dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--aa-border) !important;
+}
+.aa-dark .divide-y.divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.aa-dark .divide-y.divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-top-color: var(--aa-border) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   BORDER-SLATE-100 (very light border — invisible on dark backgrounds)
+───────────────────────────────────────────────────────────────────────── */
+.aa-dark .border-slate-100,
+.aa-dark .border-b.border-slate-100 {
+  border-color: var(--aa-border) !important;
+}
+.aa-dark .border-t.border-slate-100 {
+  border-color: var(--aa-border) !important;
 }
 
 /* ── bg-white/90 override (Tailwind opacity modifier — not caught by .bg-white) ── */

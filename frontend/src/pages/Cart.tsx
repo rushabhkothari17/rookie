@@ -816,7 +816,7 @@ export default function Cart() {
             </div>
 
             {/* Order Summary */}
-            <div className="rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(15,23,42,0.1)]" data-testid="cart-price-summary">
+            <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-[0_10px_40px_rgba(15,23,42,0.1)]" data-testid="cart-price-summary">
               <div className="p-4" style={{ backgroundColor: "var(--aa-primary)" }}>
                 <h3 className="font-semibold text-white">Order Summary</h3>
               </div>
