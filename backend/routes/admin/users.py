@@ -294,7 +294,7 @@ async def admin_update_user(
             details={k: v for k, v in updates.items() if k != "updated_at"},
         )
 
-    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    updated_user = await db.users.find_one({**tf, "id": user_id}, {"_id": 0, "password_hash": 0})
     return {"message": "User updated", "user": updated_user}
 
 

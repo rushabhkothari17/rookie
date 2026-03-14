@@ -93,7 +93,9 @@ async def get_categories(
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
     tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid)
-    tf: Dict[str, Any] = {"tenant_id": tid} if tid else {}
+    if not tid:
+        return {"categories": [], "products_by_category": {}}
+    tf: Dict[str, Any] = {"tenant_id": tid}
     inactive_cats = await db.categories.find({**tf, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
     all_cats = await db.categories.find({**tf, "is_active": True}, {"_id": 0, "name": 1, "description": 1}).to_list(500)
@@ -172,7 +174,9 @@ async def get_products(
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
     tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid)
-    tf: Dict[str, Any] = {"tenant_id": tid} if tid else {}
+    if not tid:
+        return {"products": []}
+    tf: Dict[str, Any] = {"tenant_id": tid}
     inactive_cats = await db.categories.find({**tf, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_cat_names = {c["name"] for c in inactive_cats}
     query: Dict[str, Any] = {**tf, "is_active": True}
@@ -226,7 +230,9 @@ async def get_product(
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
     tid = await _resolve_store_tenant_id(user, None)
-    tf: Dict[str, Any] = {"tenant_id": tid} if tid else {}
+    if not tid:
+        raise HTTPException(status_code=404, detail="Product not found")
+    tf: Dict[str, Any] = {"tenant_id": tid}
     product = await db.products.find_one({**tf, "id": product_id, "is_active": True}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -281,7 +287,9 @@ async def pricing_calc(
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
     tid = await _resolve_store_tenant_id(user, payload.partner_code, api_key_tid)
-    tf: Dict[str, Any] = {"tenant_id": tid} if tid else {}
+    if not tid:
+        raise HTTPException(status_code=404, detail="Product not found")
+    tf: Dict[str, Any] = {"tenant_id": tid}
     product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")

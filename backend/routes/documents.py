@@ -267,8 +267,8 @@ async def update_document(
     if "file_name" in payload:
         update["file_name"] = str(payload["file_name"])
 
-    await db.workdrive_documents.update_one({"id": doc_id}, {"$set": update})
-    updated = await db.workdrive_documents.find_one({"id": doc_id}, {"_id": 0})
+    await db.workdrive_documents.update_one({"id": doc_id, "tenant_id": tid}, {"$set": update})
+    updated = await db.workdrive_documents.find_one({"id": doc_id, "tenant_id": tid}, {"_id": 0})
     await create_audit_log(
         entity_type="document", entity_id=doc_id, action="updated",
         actor=admin.get("email", "admin"),

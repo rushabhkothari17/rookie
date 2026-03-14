@@ -160,7 +160,13 @@ async def get_audit_log(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     from db.session import db
-    log = await db.audit_trail.find_one({"id": log_id}, {"_id": 0})
+    from core.tenant import get_tenant_filter, is_platform_admin
+    tf = get_tenant_filter(admin)
+    query = {"id": log_id}
+    if not is_platform_admin(admin):
+        # Tenant admins can only access logs scoped to their own organisation
+        query["tenant_id"] = tf.get("tenant_id", "")
+    log = await db.audit_trail.find_one(query, {"_id": 0})
     if not log:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Log entry not found")

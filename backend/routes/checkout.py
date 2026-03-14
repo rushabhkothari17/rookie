@@ -312,7 +312,7 @@ async def checkout_bank_transfer(
     promo_code_data = None
     discount_amount = 0.0
     if payload.promo_code:
-        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper()}, {"_id": 0})
+        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper(), "tenant_id": tenant_id}, {"_id": 0})
         if promo and promo.get("enabled"):
             now_str = datetime.now(timezone.utc).isoformat()
             is_expired = promo.get("expiry_date") and promo["expiry_date"] < now_str
@@ -550,7 +550,7 @@ async def create_checkout_session(
     promo_code_data = None
     discount_amount = 0.0
     if payload.promo_code:
-        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper()}, {"_id": 0})
+        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper(), "tenant_id": tenant_id}, {"_id": 0})
         if promo and promo.get("enabled"):
             now_str = datetime.now(timezone.utc).isoformat()
             is_expired = promo.get("expiry_date") and promo["expiry_date"] < now_str
@@ -972,7 +972,7 @@ async def checkout_free(
     promo_code_data = None
     discount_amount = 0.0
     if payload.promo_code:
-        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper()}, {"_id": 0})
+        promo = await db.promo_codes.find_one({"code": payload.promo_code.upper(), "tenant_id": tenant_id}, {"_id": 0})
         if promo and promo.get("enabled"):
             now_str = datetime.now(timezone.utc).isoformat()
             is_expired = promo.get("expiry_date") and promo["expiry_date"] < now_str
