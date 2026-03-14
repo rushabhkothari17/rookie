@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from core.constants import ARTICLE_CATEGORIES, SCOPE_FINAL_CATEGORIES
 from core.helpers import make_id, now_iso, _slugify
 from core.security import get_current_user, optional_get_current_user
-from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin, resolve_api_key_tenant
+from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin, resolve_api_key_tenant, is_platform_admin
 from db.session import db
 from models import ArticleCreate, ArticleEmailRequest, ArticleUpdate, ArticleSendEmailRequest
 from services.audit_service import AuditService, create_audit_log
@@ -129,7 +129,9 @@ async def list_articles_public(
 ):
     # Public articles listing: intentionally ignores X-View-As-Tenant so admin
     # impersonation does not bleed into the public-facing page.
-    if user and user.get("tenant_id"):
+    if user and is_platform_admin(user) and x_view_as_tenant:
+        tid = x_view_as_tenant
+    elif user and user.get("tenant_id"):
         tid = user["tenant_id"]
     elif api_key_tid:
         tid = api_key_tid

@@ -84,10 +84,12 @@ export function TenantSwitcher() {
   const [search, setSearch] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const isPlatformAdminRole = user?.role === "platform_admin" || user?.role === "platform_super_admin";
+
   useEffect(() => {
-    if (user?.role !== "platform_admin") return;
+    if (!isPlatformAdminRole) return;
     api.get("/admin/tenants").then(res => setTenants(res.data.tenants || [])).catch(() => {});
-  }, [user]);
+  }, [isPlatformAdminRole]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const update = () => setCurrentName(_viewAsTenantName);
@@ -108,7 +110,7 @@ export function TenantSwitcher() {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  if (user?.role !== "platform_admin") return null;
+  if (!isPlatformAdminRole) return null;
 
   const activeTenants = tenants.filter(t => t.status === "active");
   const filtered = search

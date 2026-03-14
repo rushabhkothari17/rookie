@@ -67,13 +67,18 @@ async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code
     return DEFAULT_TENANT_ID
 
 
-async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None) -> Optional[str]:
+async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None, x_view_as_tenant: Optional[str] = None) -> str:
     """Resolve tenant_id for public store listing pages.
-    Returns None for platform admins (no tenant filter = show all).
-    Intentionally ignores X-View-As-Tenant so the admin impersonation header does not
-    bleed into public-facing store queries."""
+    Platform admins: use X-View-As-Tenant > partner_code > DEFAULT_TENANT_ID (their own store).
+    All other users: use their own tenant_id > api_key > partner_code > default."""
     if user and is_platform_admin(user):
-        return None  # platform admin sees all data across all tenants
+        if x_view_as_tenant:
+            return x_view_as_tenant
+        if partner_code:
+            tenant = await db.tenants.find_one({"code": partner_code.lower()}, {"_id": 0, "id": 1})
+            if tenant:
+                return tenant["id"]
+        return DEFAULT_TENANT_ID
     if user and user.get("tenant_id"):
         return user["tenant_id"]
     if api_key_tid:
@@ -92,9 +97,7 @@ async def get_categories(
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid)
-    if not tid:
-        return {"categories": [], "products_by_category": {}}
+    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid, x_view_as_tenant)
     tf: Dict[str, Any] = {"tenant_id": tid}
     inactive_cats = await db.categories.find({**tf, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
@@ -173,9 +176,7 @@ async def get_products(
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid)
-    if not tid:
-        return {"products": []}
+    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid, x_view_as_tenant)
     tf: Dict[str, Any] = {"tenant_id": tid}
     inactive_cats = await db.categories.find({**tf, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_cat_names = {c["name"] for c in inactive_cats}
@@ -229,9 +230,7 @@ async def get_product(
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = await _resolve_store_tenant_id(user, None)
-    if not tid:
-        raise HTTPException(status_code=404, detail="Product not found")
+    tid = await _resolve_store_tenant_id(user, None, None, x_view_as_tenant)
     tf: Dict[str, Any] = {"tenant_id": tid}
     product = await db.products.find_one({**tf, "id": product_id, "is_active": True}, {"_id": 0})
     if not product:
@@ -286,9 +285,7 @@ async def pricing_calc(
     x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_store_tenant_id(user, payload.partner_code, api_key_tid)
-    if not tid:
-        raise HTTPException(status_code=404, detail="Product not found")
+    tid = await _resolve_store_tenant_id(user, payload.partner_code, api_key_tid, x_view_as_tenant)
     tf: Dict[str, Any] = {"tenant_id": tid}
     product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0})
     if not product:

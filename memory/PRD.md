@@ -16,6 +16,21 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - Platform Admin Permission Fixes
+**Goal**: Fix platform super admin not being able to see all products/resources/intake forms in certain contexts.
+
+**Root causes identified & fixed:**
+1. `_resolve_store_tenant_id` in `store.py` returned `None` for platform admins → store returned empty products/categories. Fixed to use `partner_code` or `X-View-As-Tenant` or `DEFAULT_TENANT_ID` instead.
+2. `IntakeFormPage.tsx` (customer portal page) called `/portal/intake-forms` which returns 403 for admin users. Fixed: admin users now see a redirect to the admin panel instead of the 403 error.
+3. `TenantSwitcher.tsx` only showed for `platform_admin` role, not `platform_super_admin`. Fixed: both roles now see the TenantSwitcher.
+4. `articles.py` public listing now uses `X-View-As-Tenant` for platform admins.
+
+**Permission model documented:**
+- `platform_super_admin` vs `platform_admin`: Super admin can deactivate tenants, manage currencies, delete plans, manage coupons/OTP rates, platform billing settings. Platform admin has view/read-only for these.
+- `partner_super_admin` vs `platform_admin`: Fundamentally different scopes. Platform admin is cross-tenant, partner super admin is tenant-scoped with My Billing section.
+- `partner_super_admin` vs `partner_admin`: Super admin has all modules; partner admin only has explicitly assigned modules. Super admin can use get_tenant_super_admin gated actions (bulk user/customer ops, logs).
+
+
 ### Session: Mar 2026 - Comprehensive Input Validation Sweep (Issue: "Does it stop typing for all fields?")
 **Goal**: Hard-enforce character limits on every writable form field across the entire app (frontend maxLength + backend Pydantic max_length), with live character counters on the UI.
 

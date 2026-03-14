@@ -31,6 +31,7 @@ interface IntakeEntry {
 export default function IntakeFormPage() {
   const { user } = useAuth();
   const isAuthenticated = user !== null;
+  const isAdmin = user?.is_admin || ["platform_admin", "platform_super_admin", "partner_admin", "partner_super_admin"].includes(user?.role ?? "");
   const ws = useWebsite();
   const navigate = useNavigate();
 
@@ -44,8 +45,9 @@ export default function IntakeFormPage() {
 
   useEffect(() => {
     if (!isAuthenticated) { navigate("/login", { state: { from: "/intake-form" } }); return; }
+    if (isAdmin) return; // admins don't load customer intake forms
     load();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -188,6 +190,25 @@ export default function IntakeFormPage() {
       doc.save(`intake-form-${entry.form.name.replace(/\s/g, "_")}.pdf`);
     }).catch(() => toast.error("PDF generation failed"));
   };
+
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--aa-bg)" }}>
+        <div className="max-w-md w-full mx-auto px-6 text-center">
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">Admin Account Detected</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              This page is for customer use only. To manage intake forms, visit the Admin Panel.
+            </p>
+            <Button onClick={() => navigate("/admin?tab=intake-forms")} className="w-full">
+              Go to Admin Panel
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
