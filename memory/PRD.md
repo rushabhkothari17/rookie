@@ -512,6 +512,11 @@ Build a white-label service commerce platform with:
 - Includes fade-in + slide-in animation for opening items, `data-testid` attributes for all FAQ triggers and content panels.
 - No Radix dependency needed — implemented natively with `useState` to avoid TypeScript/JSX interop issues.
 
+### Phase 24: Codebase-Wide Spacing Fix + Dark Mode Text Contrast (Feb 2026)
+- **P0 — Spacing Bug**: `space-y-*` fails on containers with conditional children wrapped in `display:contents` spans. Fixed by replacing ALL top-level `space-y-*` containers with `flex flex-col gap-*` across the entire app (30+ admin tabs, Portal, Store, store layouts). Files changed: all `*Tab.tsx` files in `/pages/admin/`, `Portal.tsx`, `Store.tsx`, `store/layouts/ShowcaseLayout.tsx`, `WizardLayout.tsx`. 
+- **P1 — Hero Text Contrast**: `text-slate-300/400` overrides in dark mode used semi-transparent colors that became near-invisible on the `--aa-primary` blue hero backgrounds. Fixed by: (1) Changing `text-slate-400` override from `color-mix(... transparent)` to a solid `color-mix(... var(--aa-text))`, (2) Adding hero-section-specific overrides in `index.css` giving white-based colors (`rgba(255,255,255,0.55/0.70)`) to text inside `[data-testid="store-hero"]` and `[data-testid="cart-hero"]`.
+- **Tested**: 100% pass rate (iteration_301). All spacing gaps confirmed 16-40px. Dark mode text readable on all hero sections.
+
 ### Phase 23: Cart Page Section Gap Fix (Mar 2026)
 - **Root cause**: `space-y-*` uses `> :not([hidden]) ~ :not([hidden])` CSS selector (direct child combinator). All conditional JSX renders (`{condition && <div>}`) are wrapped in `<span style="display:contents">` elements in the DOM. CSS applies `margin-top` to these spans, but `display:contents` discards the element's own box model — margins have zero visual effect. Actual section divs inside are grandchildren, never receiving the gap.
 - **Fix**: Replaced all `space-y-8` → `flex flex-col gap-8` and `space-y-4` → `flex flex-col gap-4` in Cart.tsx. In CSS Flexbox, `display:contents` children are promoted as direct flex items, so `gap` correctly applies between Cart Items, Payment Method, Subscription date, etc.
