@@ -44,3 +44,24 @@
 - Customer-facing Documents portal (/documents)
 - Partner mandatory address on signup
 - WorkDrive folder auto-creation per customer
+
+## 2026-03-14 — Next-Gen UI Overhaul
+
+### Typography
+- Global font: Space Grotesk (300-700) replacing Inter/Manrope
+- Applied to body, headings, buttons, inputs, textareas
+
+### Sidebar
+- Glassmorphism (backdrop-blur 24px), icons on all 32 tabs (lucide-react)
+- Collapsible: 210px ↔ 64px icon-only (localStorage persisted)
+- ⌘K search trigger, animated active indicator, collapse toggle button
+
+### Command Palette (⌘K)
+- New: frontend/src/components/admin/CommandPalette.tsx
+- Opens via ⌘K / Ctrl+K, hero Quick search button, sidebar trigger
+- All 32 tabs indexed, live search, blurred backdrop, keyboard hints
+
+### EmptyState + CSS
+- EmptyState: geometric layered shapes, accent icons, spring animation
+- 15+ new CSS utility classes: aa-sidebar, aa-nav-item, aa-cmd-backdrop, aa-stat-glass, aa-status-dot, aa-skel, aa-gradient-title, aa-table-row, etc.
+- Custom scrollbar, button press scale, enhanced focus ring glow
