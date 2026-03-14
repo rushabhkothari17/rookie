@@ -512,6 +512,12 @@ Build a white-label service commerce platform with:
 - Includes fade-in + slide-in animation for opening items, `data-testid` attributes for all FAQ triggers and content panels.
 - No Radix dependency needed — implemented natively with `useState` to avoid TypeScript/JSX interop issues.
 
+### Phase 21: Comprehensive Dark Mode UI Fix (Mar 2026)
+- **Root cause 1 fixed**: `--primary: 210 40% 90%` (very light/white) in `.aa-dark` CSS vars was making all default-variant Shadcn buttons (Create Customer, New Product, etc.) appear as white pills on dark backgrounds. Fixed to `--primary: 217 91% 64%` (accent blue `#4f8ef7`) with `--primary-foreground: 0 0% 100%` (white text).
+- **Root cause 2 fixed**: `bg-white/90` Tailwind opacity modifier class (used on SelectTrigger `<button>` elements in `UniversalFormRenderer.tsx` and `AddressFieldRenderer.tsx`) was not caught by the `.aa-dark .bg-white` CSS override. Fixed by: (a) Rewriting `pillInput`, `pillSelect`, `pillTextarea` helper functions in both files to use CSS variables (`--aa-card`, `--aa-text`, `--aa-border`, `--aa-muted`, `--aa-accent`, `--aa-surface`) instead of hardcoded `bg-white/90 text-slate-900 border-slate-200`, (b) Adding a CSS override `.aa-dark .bg-white\/90` in `index.css`.
+- **Additional CSS overrides added** in `index.css`: `focus:bg-white`, `focus:border-slate-800`, `hover:border-slate-300`, `data-[state=open]:border-slate-800`, `data-[state=checked]:bg-slate-900` (checkbox/radio), signature canvas bg, sticky ProductEditor header, terms/T&C content block.
+- **Tested**: 8/8 assertions PASS (100%) — buttons blue, inputs dark, sub-tabs dark-active, persistence works, light mode regression clean.
+
 ### Phase 17: UI/UX Phase 2 + Dark Mode (Mar 2026)
 - **Phase 2**: Keyboard navigation fixed for Ctrl+K command palette (ArrowUp/Down/Enter/Escape). Table row hover accent bars (aa-table-row), semantic status badges (aa-badge-*), skeleton loaders (aa-skel), and empty states (aa-empty-geo) across all admin tabs (Products, Users, Enquiries, Resources, Orders, Subscriptions, Customers). Input focus glow ring. Tested: 13/13 PASS.
 - **Dark Mode**: Moon/Sun toggle in sidebar, `html.aa-dark` CSS variable overrides (GitHub Dark palette), localStorage persistence, FOUC prevention inline script. Tested: 17/17 PASS.
