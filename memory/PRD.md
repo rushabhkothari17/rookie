@@ -16,6 +16,13 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - P0 Bug Fix: Version History PDF Downloads
+- **Root Cause**: `const downloadPDF = (record: IntakeRecord) => {` declaration was missing from `AdminIntakeFormsTab.tsx`, causing the `IntakeFormRecords` component to be typed as returning `void` instead of `ReactNode`.
+- **Fix**: Added the missing function declaration wrapper at line 575 in `AdminIntakeFormsTab.tsx`.
+- **Result**: Both `downloadPDF` (current record) and `downloadVersionPDF` (historical versions) work correctly. Version history modal now shows each archived version with a working Download PDF button.
+- **Seed data**: Fixed missing `archived_at` timestamps in test version entries in MongoDB.
+- **Testing**: 100% frontend pass rate (testing agent iteration 286).
+
 ### Session: Feb 2026 - Password Reset Link + Product Page Audit
 - **Password Reset Link Expiry Timer**:
   - `ForgotPassword.tsx`: live countdown timer from `?expires=ISO_TIMESTAMP` URL param — grey badge counting down `Xm Ys`, turns amber in last minute, turns red with "Link Expired" message when past expiry; submit button disabled + shows "Link Expired" text
