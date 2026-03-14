@@ -1,13 +1,17 @@
 import { motion } from "framer-motion";
-import { PackageOpen, FileSearch, BookOpen, ShoppingBag, Inbox } from "lucide-react";
+import { PackageOpen, FileSearch, BookOpen, ShoppingBag, Inbox, Users, FolderOpen, ClipboardList, Zap } from "lucide-react";
 import { ReactNode } from "react";
 
 const ICON_MAP: Record<string, ReactNode> = {
-  orders:    <PackageOpen size={32} />,
-  search:    <FileSearch size={32} />,
-  articles:  <BookOpen size={32} />,
-  products:  <ShoppingBag size={32} />,
-  default:   <Inbox size={32} />,
+  orders:        <PackageOpen size={26} />,
+  search:        <FileSearch size={26} />,
+  articles:      <BookOpen size={26} />,
+  products:      <ShoppingBag size={26} />,
+  users:         <Users size={26} />,
+  documents:     <FolderOpen size={26} />,
+  forms:         <ClipboardList size={26} />,
+  webhooks:      <Zap size={26} />,
+  default:       <Inbox size={26} />,
 };
 
 interface EmptyStateProps {
@@ -27,20 +31,20 @@ export function EmptyState({ icon = "default", title, description, action, "data
       className="flex flex-col items-center justify-center py-16 text-center"
       data-testid={testId}
     >
-      <div
-        className="h-16 w-16 rounded-2xl flex items-center justify-center mb-4 shadow-sm"
-        style={{ backgroundColor: "color-mix(in srgb, var(--aa-primary) 10%, transparent)", color: "var(--aa-primary)" }}
-      >
-        {ICON_MAP[icon]}
+      <div className="aa-empty-geo mb-3">
+        <div className="absolute inset-0 flex items-center justify-center z-10"
+          style={{ color: "var(--aa-accent)" }}>
+          {ICON_MAP[icon]}
+        </div>
       </div>
-      <p className="text-[15px] font-semibold mb-1" style={{ color: "var(--aa-text)" }}>{title}</p>
+      <p className="text-[15px] font-semibold mb-1.5 mt-4 tracking-tight" style={{ color: "var(--aa-text)" }}>{title}</p>
       {description && (
-        <p className="text-sm max-w-xs" style={{ color: "var(--aa-muted)" }}>{description}</p>
+        <p className="text-sm max-w-xs leading-relaxed" style={{ color: "var(--aa-muted)" }}>{description}</p>
       )}
       {action && (
         <button
           onClick={action.onClick}
-          className="mt-5 btn-primary px-5 py-2 text-sm rounded-full aa-btn-ripple"
+          className="mt-5 btn-primary px-5 py-2 text-sm rounded-full aa-btn-ripple font-medium"
           data-testid="empty-state-action"
         >
           {action.label}

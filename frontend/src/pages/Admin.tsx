@@ -1,11 +1,17 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import { useWebsite } from "@/contexts/WebsiteContext";
-import React, { useState, useEffect, useRef } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, Search,
+  Users, UserRound, ShoppingBag, Package, RefreshCw, MessageSquare,
+  BookOpen, FolderOpen, ClipboardList, Building, Percent, Lock,
+  LayoutTemplate, Mail, Link2, Globe, Puzzle, Code2, Zap, Activity,
+  Store, SlidersHorizontal, Wallet, CreditCard, Building2, LayoutGrid,
+  Receipt, Coins, ArrowRightLeft, Repeat2, FileText, Server,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantSwitcher";
+import { CommandPalette } from "@/components/admin/CommandPalette";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
 import { OrdersTab } from "./admin/OrdersTab";
@@ -43,35 +49,103 @@ import { BillingSettingsTab } from "./admin/BillingSettingsTab";
 import { CurrenciesTab } from "./admin/CurrenciesTab";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
+/** Icon map for every tab value */
+const TAB_ICONS: Record<string, React.ElementType> = {
+  tenants: Building2, plans: LayoutGrid,
+  "partner-subscriptions": RefreshCw, "partner-orders": Package,
+  "partner-submissions": FileText, "billing-settings": Receipt,
+  currencies: Coins, "plan-billing": Wallet,
+  "my-subscriptions": Repeat2, "my-orders": Package,
+  "my-submissions": ClipboardList,
+  users: Users, customers: UserRound,
+  catalog: Store, filters: SlidersHorizontal,
+  subscriptions: Repeat2, orders: ShoppingBag,
+  enquiries: MessageSquare,
+  resources: BookOpen, documents: FolderOpen,
+  "intake-forms": ClipboardList,
+  "org-info": Building, taxes: Percent,
+  "auth-pages": Lock, "forms-tab": LayoutTemplate,
+  "email-templates": Mail, references: Link2,
+  domains: Globe, integrations: Puzzle,
+  "integration-requests": ArrowRightLeft,
+  api: Code2, webhooks: Zap, sync: Activity,
+};
+
+/** Icon map for each section */
+const SECTION_ICONS: Record<string, React.ElementType> = {
+  platform: Server, "my-billing": CreditCard,
+  people: Users, commerce: ShoppingBag,
+  content: BookOpen, settings: LayoutTemplate,
+  integrations: Puzzle,
+};
+
 const TAB_CLASS =
   "w-full justify-start text-left text-sm px-3 py-2 h-auto rounded-none rounded-l-lg aa-tab-trigger " +
   "data-[state=inactive]:text-[var(--aa-muted)] hover:text-[var(--aa-text)] hover:translate-x-0.5 hover:bg-[var(--aa-surface)] " +
   "transition-all duration-150 data-[state=active]:shadow-none";
 
-/** Context to share active tab with SideTab without prop-drilling through 32 usages */
+/** Context to share active tab + sidebar collapsed state */
 const ActiveTabCtx = React.createContext<string>("");
+const CollapsedCtx = React.createContext<boolean>(false);
 
-/** Sidebar tab — no tooltip (label always visible) */
+/** Sidebar tab — with icon, tooltip when collapsed */
 const SideTab = ({ value, label, testId }: { value: string; label: string; testId?: string }) => {
   const activeTab = React.useContext(ActiveTabCtx);
+  const collapsed = React.useContext(CollapsedCtx);
   const isActive = activeTab === value;
-  return (
+  const Icon = TAB_ICONS[value] || LayoutGrid;
+
+  const item = (
     <TabsTrigger
       value={value}
-      className={TAB_CLASS}
+      className={`aa-nav-item w-full text-left ${isActive ? "active" : ""} ${collapsed ? "justify-center px-0" : ""}`}
       data-testid={testId || `tab-${value}`}
-      style={
-        isActive
-          ? { backgroundColor: "var(--aa-primary)", color: "var(--aa-primary-fg, #ffffff)", boxShadow: "inset 3px 0 0 var(--aa-accent)" }
-          : undefined
-      }
+      style={{ borderRadius: 8, height: "auto", boxShadow: "none", background: "transparent", border: "none" }}
     >
-      {label}
+      <Icon size={15} className="aa-nav-icon flex-shrink-0" />
+      {!collapsed && <span className="truncate">{label}</span>}
     </TabsTrigger>
   );
+
+  if (collapsed) {
+    return (
+      <div title={label}>
+        {item}
+      </div>
+    );
+  }
+  return item;
 };
 
-/** Map every tab value → the section it belongs to */
+/** Accordion section header with section icon */
+const SectionHeader = ({
+  label, sectionId, expanded, onToggle,
+}: { label: string; sectionId: string; expanded: boolean; onToggle: (id: string) => void }) => {
+  const collapsed = React.useContext(CollapsedCtx);
+  const SectionIcon = SECTION_ICONS[sectionId] || LayoutGrid;
+
+  if (collapsed) {
+    return (
+      <div className="px-2 pt-3 pb-1 flex justify-center">
+        <div className="w-full h-px" style={{ background: "color-mix(in srgb, var(--aa-border) 50%, transparent)" }} />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(sectionId)}
+      className="aa-section-header w-full"
+      aria-expanded={expanded}
+      data-testid={`admin-section-${sectionId}`}
+    >
+      <SectionIcon size={11} style={{ opacity: 0.5, flexShrink: 0 }} />
+      <span className="flex-1 text-left">{label}</span>
+      <ChevronDown size={11} className={`transition-transform duration-200 ${expanded ? "" : "-rotate-90"}`} style={{ opacity: 0.5 }} />
+    </button>
+  );
+};
 const TAB_SECTIONS: Record<string, string> = {
   tenants: "platform", plans: "platform", "partner-subscriptions": "platform",
   "partner-orders": "platform", "partner-submissions": "platform",
@@ -89,21 +163,7 @@ const TAB_SECTIONS: Record<string, string> = {
   api: "integrations", webhooks: "integrations", sync: "integrations",
 };
 
-/** Accordion section header for the admin sidebar */
-const SectionHeader = ({
-  label, sectionId, expanded, onToggle,
-}: { label: string; sectionId: string; expanded: boolean; onToggle: (id: string) => void }) => (
-  <button
-    type="button"
-    onClick={() => onToggle(sectionId)}
-    className="w-full flex items-center justify-between px-3 pt-4 pb-1.5 group select-none"
-    aria-expanded={expanded}
-    data-testid={`admin-section-${sectionId}`}
-  >
-    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider group-hover:text-slate-500 transition-colors">{label}</span>
-    <ChevronDown size={12} className={`text-slate-400 transition-transform duration-200 group-hover:text-slate-500 ${expanded ? "" : "-rotate-90"}`} />
-  </button>
-);
+/** Accordion section header for the admin sidebar — new version defined above */
 
 export default function Admin() {
   const { user: authUser, permissions } = useAuth();
@@ -154,6 +214,17 @@ export default function Admin() {
     try { return localStorage.getItem("admin_active_tab") || "customers"; } catch { return "customers"; }
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem("admin_sidebar_collapsed") === "true"; } catch { return false; }
+  });
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const toggleCollapsed = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      try { localStorage.setItem("admin_sidebar_collapsed", String(next)); } catch {}
+      return next;
+    });
+  };
 
   // Accordion: expand the section that contains the active tab; only one open at a time
   const [expandedSection, setExpandedSection] = useState<string>(() => {
@@ -179,20 +250,46 @@ export default function Admin() {
     setSidebarOpen(false);
   };
 
+  // ⌘K / Ctrl+K global shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCmdOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
     <>
+    <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} onNavigate={(tab) => { setActiveTab(tab); setSidebarOpen(false); }} />
     <div className="space-y-6" data-testid="admin-page">
       {/* Hero Banner */}
       <section className="relative overflow-hidden rounded-3xl px-6 md:px-10 py-8 md:py-10 shadow-[0_30px_70px_rgba(15,23,42,0.15)] aa-grid-texture" style={{ backgroundColor: "var(--aa-primary)" }}>
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 10%, transparent)" }} />
         <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-56 rounded-full blur-2xl" style={{ backgroundColor: "color-mix(in srgb, var(--aa-accent) 5%, transparent)" }} />
-        <div className="relative space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
-            <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: "var(--aa-primary-fg)", opacity: 0.6 }}>{adminBadge}</p>
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-0.5 w-8 rounded-full" style={{ backgroundColor: "var(--aa-accent)" }} />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: "var(--aa-primary-fg)", opacity: 0.6 }}>{adminBadge}</p>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ color: "var(--aa-primary-fg)" }}>{adminTitle}</h1>
+            <p className="max-w-xl text-sm" style={{ color: "var(--aa-primary-fg)", opacity: 0.7 }}>{adminSubtitle}</p>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--aa-primary-fg)" }}>{adminTitle}</h1>
-          <p className="max-w-xl text-sm" style={{ color: "var(--aa-primary-fg)", opacity: 0.7 }}>{adminSubtitle}</p>
+          {/* ⌘K hint */}
+          <button
+            onClick={() => setCmdOpen(true)}
+            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all duration-150 hover:scale-105"
+            style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--aa-primary-fg)", backdropFilter: "blur(8px)" }}
+            data-testid="cmd-open-btn"
+          >
+            <Search size={14} />
+            <span style={{ opacity: 0.8 }}>Quick search</span>
+            <span className="aa-kbd" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "var(--aa-primary-fg)" }}>⌘K</span>
+          </button>
         </div>
       </section>
 
@@ -224,15 +321,20 @@ export default function Admin() {
         {/* Left Sidebar Navigation */}
         <div className={`
           fixed md:relative inset-y-0 left-0 z-40 md:z-auto
-          w-64 md:w-52 shrink-0
-          border-r
+          shrink-0 aa-sidebar
           shadow-xl md:shadow-none
-          transform transition-transform duration-200 ease-in-out
+          transform transition-all duration-200 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0 md:block
-          overflow-y-auto md:overflow-visible
-          pr-0 mr-0 md:mr-6 min-h-screen md:min-h-[60vh]
-        `} style={{ backgroundColor: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
+          overflow-y-auto overflow-x-hidden
+          min-h-screen md:min-h-[60vh]
+          flex flex-col mr-4
+        `}
+        style={{
+          width: sidebarCollapsed ? "64px" : "210px",
+          transition: "width 0.2s cubic-bezier(0.16,1,0.3,1)",
+          borderColor: "color-mix(in srgb, var(--aa-border) 70%, transparent)",
+        }}>
           {/* Mobile close button */}
           <div className="md:hidden flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid var(--aa-border)" }}>
             <span className="text-sm font-semibold" style={{ color: "var(--aa-text)" }}>Navigation</span>
@@ -240,8 +342,32 @@ export default function Admin() {
               <X size={16} />
             </Button>
           </div>
+
+          {/* ⌘K search trigger (expanded only) */}
+          {!sidebarCollapsed && (
+            <button
+              className="aa-search-trigger mx-1 mt-2"
+              onClick={() => setCmdOpen(true)}
+              data-testid="sidebar-search-trigger"
+            >
+              <Search size={12} />
+              <span className="flex-1 text-left text-xs truncate">Search…</span>
+              <span className="aa-kbd">⌘K</span>
+            </button>
+          )}
+          {sidebarCollapsed && (
+            <button
+              className="flex items-center justify-center py-3 w-full hover:opacity-80 transition-opacity"
+              onClick={() => setCmdOpen(true)}
+              data-testid="sidebar-search-icon"
+            >
+              <Search size={14} style={{ color: "var(--aa-muted)" }} />
+            </button>
+          )}
+
           <ActiveTabCtx.Provider value={activeTab}>
-          <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full">
+          <CollapsedCtx.Provider value={sidebarCollapsed}>
+          <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full flex-1 px-1 pb-1">
             {/* ── PLATFORM section (platform_admin only, not viewing as tenant) ── */}
             {showPartnerOrgs && (
               <>
@@ -359,7 +485,22 @@ export default function Admin() {
             )}
 
           </TabsList>
+          </CollapsedCtx.Provider>
           </ActiveTabCtx.Provider>
+
+          {/* Collapse toggle */}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="aa-collapse-btn hidden md:flex"
+            data-testid="sidebar-collapse-btn"
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed
+              ? <ChevronRight size={14} />
+              : <><ChevronLeft size={14} /><span>Collapse</span></>
+            }
+          </button>
         </div>
 
         {/* Content Area */}
