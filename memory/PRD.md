@@ -512,6 +512,12 @@ Build a white-label service commerce platform with:
 - Includes fade-in + slide-in animation for opening items, `data-testid` attributes for all FAQ triggers and content panels.
 - No Radix dependency needed — implemented natively with `useState` to avoid TypeScript/JSX interop issues.
 
+### Phase 23: Cart Page Section Gap Fix (Mar 2026)
+- **Root cause**: `space-y-*` uses `> :not([hidden]) ~ :not([hidden])` CSS selector (direct child combinator). All conditional JSX renders (`{condition && <div>}`) are wrapped in `<span style="display:contents">` elements in the DOM. CSS applies `margin-top` to these spans, but `display:contents` discards the element's own box model — margins have zero visual effect. Actual section divs inside are grandchildren, never receiving the gap.
+- **Fix**: Replaced all `space-y-8` → `flex flex-col gap-8` and `space-y-4` → `flex flex-col gap-4` in Cart.tsx. In CSS Flexbox, `display:contents` children are promoted as direct flex items, so `gap` correctly applies between Cart Items, Payment Method, Subscription date, etc.
+- **Specifically fixed**: (1) Outer `cart-page` wrapper: hero → content grid gap, (2) Left column: Cart Items → Payment Method gap, (3) Right column: Promo Code → Order Summary → Terms gap, (4) Terms section: checkbox → Create Order button gap (was 0px, now 16px).
+- **Tested**: All gaps verified via JS measurements (hero→content: 32px, section→section: 32px, checkbox→button: 16px). Light mode regression clean.
+
 ### Phase 22: Dark Mode Gap & Button Blending Fix (Mar 2026)
 - **Root cause 1 fixed**: `--aa-primary: #161b22` = same as `--aa-card: #161b22` → buttons (Create Order, Clear Cart), hero banners, Order Summary headers ALL invisible (same bg as surrounding cards). Fixed: `--aa-primary: #4f8ef7` (accent blue), `--aa-primary-hover: #6ba4ff`, `--aa-primary-fg: #ffffff` in `.aa-dark`.
 - **Root cause 2 fixed**: Section cards had no box-shadow in dark mode; the subtle contrast between page bg (`#0d1117`) and card bg (`#161b22`) was imperceptible on most displays, making adjacent cards appear to touch. Fixed by: `.aa-dark .rounded-2xl.border, .aa-dark .rounded-xl.border { box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04) !important }`.

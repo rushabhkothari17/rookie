@@ -437,7 +437,7 @@ export default function Cart() {
   }
 
   return (
-    <div className="space-y-8" data-testid="cart-page">
+    <div className="flex flex-col gap-8" data-testid="cart-page">
       {/* Hero Banner - matches Store */}
       <section
         className="relative overflow-hidden rounded-3xl px-10 py-12 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
@@ -858,7 +858,7 @@ export default function Cart() {
             </div>
 
             {/* Terms & Checkout */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col gap-4 shadow-sm">
               {ws.checkout_terms_enabled !== false && (
                 <label className="flex items-start gap-3 cursor-pointer" data-testid="cart-terms-section">
                   <input 
