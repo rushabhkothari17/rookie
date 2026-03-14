@@ -1,21 +1,22 @@
 """Admin: Webhook endpoint management and delivery logs."""
 from __future__ import annotations
 
-import re
+import hashlib
+import hmac
+import json
 import secrets
 from typing import Any, Dict, List, Optional
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_admin, get_tenant_filter, tenant_id_of
 from db.session import db
 from services.audit_service import create_audit_log
-from services.webhook_service import EVENT_CATALOG
+from services.webhook_service import EVENT_CATALOG, _validate_webhook_url
 
 router = APIRouter(prefix="/api", tags=["admin-webhooks"])
-
-_URL_RE = re.compile(r"^https?://", re.IGNORECASE)
 
 
 def _gen_secret() -> str:
@@ -23,8 +24,11 @@ def _gen_secret() -> str:
 
 
 def _validate_url(url: str) -> None:
-    if not _URL_RE.match(url.strip()):
-        raise HTTPException(status_code=400, detail="Webhook URL must start with http:// or https://")
+    """Validate webhook URL — rejects private/internal IPs (SSRF protection)."""
+    try:
+        _validate_webhook_url(url.strip())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 def _validate_subscriptions(subs: List[Dict[str, Any]]) -> None:
@@ -274,10 +278,6 @@ async def test_webhook(
         raise HTTPException(status_code=404, detail="Webhook not found")
 
     event = payload.get("event", "order.created")
-    import json
-    import hmac as _hmac
-    import hashlib
-    import httpx
     test_payload = {
         "event": event,
         "webhook_id": webhook_id,
@@ -287,7 +287,7 @@ async def test_webhook(
         "data": {"message": f"This is a test delivery for event '{event}'", "id": "test_001"},
     }
     body = json.dumps(test_payload, default=str).encode()
-    sig = _hmac.new(wh["secret"].encode(), body, hashlib.sha256).hexdigest()
+    sig = hmac.new(wh["secret"].encode(), body, hashlib.sha256).hexdigest()
     delivery_id = make_id()
 
     # Pre-create delivery record so it always appears in logs
@@ -307,6 +307,16 @@ async def test_webhook(
         "last_attempt_at": now_iso(),
         "delivered_at": None,
     })
+
+    # SSRF guard — re-validate URL at delivery time to catch DNS rebinding
+    try:
+        _validate_webhook_url(wh["url"])
+    except ValueError as exc:
+        await db.webhook_deliveries.update_one(
+            {"id": delivery_id},
+            {"$set": {"status": "failed", "error": f"SSRF_BLOCKED: {exc}"[:300]}}
+        )
+        raise HTTPException(status_code=400, detail=f"Webhook URL blocked: {exc}")
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -416,11 +426,6 @@ async def replay_delivery(
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     """Replay a failed webhook delivery with the original payload."""
-    import json
-    import hmac as _hmac
-    import hashlib
-    import httpx
-    
     tf = get_tenant_filter(admin)
     wh = await db.webhooks.find_one({**tf, "id": webhook_id}, {"_id": 0})
     if not wh:
@@ -442,10 +447,20 @@ async def replay_delivery(
         {"id": delivery_id},
         {"$set": {"status": "pending", "last_attempt_at": now_iso()}}
     )
-    
+
+    # SSRF guard — re-validate URL at delivery time to catch DNS rebinding
+    try:
+        _validate_webhook_url(wh["url"])
+    except ValueError as exc:
+        await db.webhook_deliveries.update_one(
+            {"id": delivery_id},
+            {"$set": {"status": "failed", "error": f"SSRF_BLOCKED: {exc}"[:300]}}
+        )
+        return {"success": False, "status_code": 0, "body": str(exc)[:300], "message": "Webhook URL blocked (SSRF protection)"}
+
     # Re-send the webhook
     body = json.dumps(payload, default=str).encode()
-    sig = _hmac.new(wh["secret"].encode(), body, hashlib.sha256).hexdigest()
+    sig = hmac.new(wh["secret"].encode(), body, hashlib.sha256).hexdigest()
     
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:

@@ -4,9 +4,12 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import hmac
+import ipaddress
 import json
 import logging
+import socket
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 import httpx
 
@@ -14,6 +17,79 @@ from core.helpers import make_id, now_iso
 from db.session import db
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# SSRF Protection — blocked IP ranges
+# ---------------------------------------------------------------------------
+
+_BLOCKED_NETWORKS = [
+    # IPv4 private / reserved
+    ipaddress.ip_network("127.0.0.0/8"),       # Loopback
+    ipaddress.ip_network("10.0.0.0/8"),         # Private class A
+    ipaddress.ip_network("172.16.0.0/12"),      # Private class B
+    ipaddress.ip_network("192.168.0.0/16"),     # Private class C
+    ipaddress.ip_network("169.254.0.0/16"),     # Link-local (AWS metadata: 169.254.169.254)
+    ipaddress.ip_network("0.0.0.0/8"),          # Unspecified
+    ipaddress.ip_network("100.64.0.0/10"),      # Shared address space (CGN)
+    ipaddress.ip_network("192.0.0.0/24"),       # IETF protocol assignments
+    ipaddress.ip_network("192.0.2.0/24"),       # Documentation TEST-NET-1
+    ipaddress.ip_network("198.18.0.0/15"),      # Network benchmarking
+    ipaddress.ip_network("198.51.100.0/24"),    # Documentation TEST-NET-2
+    ipaddress.ip_network("203.0.113.0/24"),     # Documentation TEST-NET-3
+    ipaddress.ip_network("240.0.0.0/4"),        # Reserved
+    ipaddress.ip_network("255.255.255.255/32"), # Broadcast
+    # IPv6 private / reserved
+    ipaddress.ip_network("::1/128"),            # IPv6 loopback
+    ipaddress.ip_network("fc00::/7"),           # IPv6 unique local
+    ipaddress.ip_network("fe80::/10"),          # IPv6 link-local
+    ipaddress.ip_network("::/128"),             # IPv6 unspecified
+]
+
+
+def _validate_webhook_url(url: str) -> None:
+    """
+    Guard against Server-Side Request Forgery (SSRF) by validating the
+    webhook URL before any outbound HTTP request is made.
+
+    Checks:
+      1. URL scheme must be http or https.
+      2. Hostname must be present and resolvable.
+      3. Every resolved IP must be a publicly routable address — all
+         private, loopback, link-local, and reserved ranges are blocked.
+
+    Raises ValueError if validation fails.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(
+            f"Webhook URL must use http:// or https:// scheme, got: '{parsed.scheme}'"
+        )
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("Webhook URL has no hostname")
+
+    try:
+        addr_infos = socket.getaddrinfo(hostname, None, proto=socket.IPPROTO_TCP)
+    except socket.gaierror as exc:
+        raise ValueError(f"Cannot resolve webhook hostname '{hostname}': {exc}")
+
+    if not addr_infos:
+        raise ValueError(f"Webhook hostname '{hostname}' did not resolve to any address")
+
+    for addr_info in addr_infos:
+        ip_str = addr_info[4][0]
+        try:
+            ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+        for network in _BLOCKED_NETWORKS:
+            if ip in network:
+                raise ValueError(
+                    f"Webhook URL resolves to a blocked IP address ({ip}) in reserved "
+                    f"range {network}. Internal/private network access is not permitted."
+                )
+
 
 # ---------------------------------------------------------------------------
 # Event + Field Catalog (single source of truth for frontend field picker)
@@ -248,6 +324,27 @@ async def _dispatch_with_retries(
     payload: Dict[str, Any],
 ):
     """Fire webhook with exponential backoff retries. Updates delivery log."""
+    # SSRF check — validate URL once before any retry attempts
+    try:
+        _validate_webhook_url(url)
+    except ValueError as exc:
+        err_msg = f"SSRF_BLOCKED: {exc}"
+        logger.warning("Security: blocked webhook delivery to '%s': %s", url, exc)
+        await db.webhook_deliveries.update_one(
+            {"id": delivery_id},
+            {
+                "$set": {
+                    "attempts": 1,
+                    "last_attempt_at": now_iso(),
+                    "status": "failed",
+                    "response_status": 0,
+                    "response_body": "",
+                    "error": err_msg[:300],
+                }
+            },
+        )
+        return
+
     payload_bytes = json.dumps(payload, ensure_ascii=False, default=str).encode()
     sig = _sign_payload(secret, payload_bytes)
     headers = {
