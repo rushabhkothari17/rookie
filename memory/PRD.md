@@ -16,7 +16,57 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
-### Session: Mar 2026 - Government-Grade Security Audit (Pass 3) — 10 Vulnerabilities Fixed
+### Session: Mar 2026 - Comprehensive Input Validation Sweep (Issue: "Does it stop typing for all fields?")
+**Goal**: Hard-enforce character limits on every writable form field across the entire app (frontend maxLength + backend Pydantic max_length), with live character counters on the UI.
+
+**All enforced limits — by category:**
+
+| Category | Limit | Fields |
+|---|---|---|
+| MICRO (auth) | 6 | OTP verification code |
+| MICRO (identity) | 10 | Country code, currency code |
+| MICRO (identity) | 20 | Postal code |
+| MICRO (identity) | 30 | Colour hex/name |
+| MICRO (identity) | 50 | Phone number, domain |
+| AUTH | 100 | Promo/coupon codes, field keys, city |
+| AUTH | 128 | Password |
+| SHORT | 200 | Full name, company, job title, address lines, slug, email subject, Stripe price ID, article template category, scope ID |
+| SHORT | 253 | Custom domain hostname |
+| SHORT | 320 | Email address |
+| NAME | 500 | Product/category/form/terms title, article name, webhook name, intake question label, plan name, bullet point limit N/A (200), article/resource template name |
+| WEBSITE | 1,000 | All website settings text fields (backend validator), reference value, GDPR reason |
+| NOTE | 5,000 | Notes, short descriptions, FAQ answers, promo notes, coupon notes, intake form descriptions, rejection reasons, downgrade messages, cancel reasons, order delete reasons, subscription notes, order notes, quote messages |
+| CONTENT | 10,000 | FormSchemaBuilder terms_text blocks |
+| CONTENT | 500,000 | Rich HTML: terms content, email HTML body, articles, resources, product long description, intake HTML blocks |
+
+**Files modified (backend):**
+- `backend/models.py` — CustomerUpdate, AddressUpdate, SubscriptionUpdate, ManualOrderCreate, ManualSubscriptionCreate, CancelSubscriptionBody, OrderDelete, QuoteRequest, IntakeQuestion, CustomSection, ScopeRequestFormData
+- `backend/routes/admin/plans.py` — PlanCreate model added with Field(max_length=...)
+- `backend/routes/article_templates.py` — ArticleTemplateCreate + ArticleTemplateUpdate Pydantic models added (was Dict[str,Any] — HIGH priority vulnerability)
+- `backend/routes/admin/webhooks.py` — Removed legacy [:120] name truncation
+
+**Files modified (frontend):**
+- `frontend/src/lib/fieldLimits.tsx` — NEW: shared LIMIT_* constants + CharCount component
+- All admin form pages (TermsTab, EmailSection, ArticleEmailTemplatesTab, ResourceEmailTemplatesTab, AdminIntakeFormsTab, PlansTab, ProductForm, CategoriesTab, ArticleCategoriesTab, ResourceCategoriesTab, ResourcesTab, PartnerSubscriptionsTab, WebhooksTab, ReferencesSection, websiteTabShared, PlanBillingTab, ArticleTemplatesTab, PromoCodesTab, CustomDomainsSection)
+- `frontend/src/components/FormSchemaBuilder.tsx` — placeholder (200), helper_text (500), tooltip_text (500), terms_text (10,000)
+- `frontend/src/components/UniversalFormRenderer.tsx` — Fixed hardcoded 100-char limit bug, added amber/red color thresholds
+- `frontend/src/pages/admin/IntakeSchemaBuilder.tsx` — Added max_length field to IntakeQuestion interface + UI config option for single_line/multi_line fields
+- `frontend/src/pages/store/layouts/types.ts` — Added max_length to IntakeQuestion interface
+- `frontend/src/pages/store/layouts/utils.tsx` — single_line max 500, multi_line max 5000 (configurable via field.max_length)
+- `frontend/src/pages/Cart.tsx` — Quote form name (200), email (320), company (200), phone (50), message (5000), promo (100)
+- `frontend/src/pages/Profile.tsx` — GDPR delete reason (1000)
+- `frontend/src/pages/ForgotPassword.tsx` — password (128)
+- `frontend/src/pages/VerifyEmail.tsx` — email (320), code (6)
+
+**Character counter UX:**
+- Appears when user starts typing (hidden on empty fields)
+- `text-slate-400` when < 80% of limit
+- `text-amber-500` when 80–95% of limit
+- `text-red-500` when > 95% of limit
+- `maxLength` HTML attribute prevents typing past limit at browser level
+- Backend Pydantic validation rejects API calls even if browser limit is bypassed
+
+
 **Vulnerabilities found and fixed (22/22 tests passing):**
 1. **Promo code >100% discount** — Pydantic validator blocks >100% percentage in PromoCodeCreate and PromoCodeUpdate
 2. **Promo code negative discount** — Rejects negative `discount_value` for both create and update

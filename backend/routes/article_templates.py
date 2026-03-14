@@ -1,9 +1,10 @@
 """Article Templates routes: CRUD for reusable article templates."""
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from core.helpers import make_id, now_iso
 from core.tenant import get_tenant_filter, tenant_id_of, DEFAULT_TENANT_ID, get_tenant_admin
@@ -145,6 +146,20 @@ async def _seed_defaults(tid: str = DEFAULT_TENANT_ID) -> None:
         })
 
 
+class ArticleTemplateCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=500)
+    description: Optional[str] = Field("", max_length=5_000)
+    category: Optional[str] = Field("", max_length=200)
+    content: Optional[str] = Field("", max_length=500_000)
+
+
+class ArticleTemplateUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=500)
+    description: Optional[str] = Field(None, max_length=5_000)
+    category: Optional[str] = Field(None, max_length=200)
+    content: Optional[str] = Field(None, max_length=500_000)
+
+
 @router.get("/article-templates")
 async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
@@ -155,19 +170,17 @@ async def list_templates(admin: Dict[str, Any] = Depends(get_tenant_admin)):
 
 
 @router.post("/article-templates")
-async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
+async def create_template(payload: ArticleTemplateCreate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tid = tenant_id_of(admin)
-    name = (payload.get("name") or "").strip()
-    if not name:
-        raise HTTPException(status_code=400, detail="name is required")
+    name = payload.name.strip()
     now = now_iso()
     doc = {
         "id": make_id(),
         "tenant_id": tid,
         "name": name,
-        "description": (payload.get("description") or "").strip(),
-        "category": (payload.get("category") or "").strip(),
-        "content": payload.get("content") or "",
+        "description": (payload.description or "").strip(),
+        "category": (payload.category or "").strip(),
+        "content": payload.content or "",
         "is_default": False,
         "created_at": now,
         "updated_at": now,
@@ -178,15 +191,16 @@ async def create_template(payload: Dict[str, Any], admin: Dict[str, Any] = Depen
 
 
 @router.put("/article-templates/{template_id}")
-async def update_template(template_id: str, payload: Dict[str, Any], admin: Dict[str, Any] = Depends(get_tenant_admin)):
+async def update_template(template_id: str, payload: ArticleTemplateUpdate, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tf = get_tenant_filter(admin)
     tpl = await db.article_templates.find_one({**tf, "id": template_id}, {"_id": 0})
     if not tpl:
         raise HTTPException(status_code=404, detail="Template not found")
     update: Dict[str, Any] = {"updated_at": now_iso()}
     for field in ["name", "description", "category", "content"]:
-        if field in payload:
-            update[field] = payload[field]
+        val = getattr(payload, field)
+        if val is not None:
+            update[field] = val
     await db.article_templates.update_one({"id": template_id}, {"$set": update})
     updated = await db.article_templates.find_one({"id": template_id}, {"_id": 0})
     await create_audit_log(entity_type="article_template", entity_id=template_id, action="updated", actor=admin.get("email", "admin"), details={"fields": list(update.keys())})

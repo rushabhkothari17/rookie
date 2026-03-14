@@ -127,7 +127,7 @@ async def create_webhook(
     url = (payload.get("url") or "").strip()
     _validate_url(url)
 
-    name = (payload.get("name") or "My Webhook").strip()[:120]
+    name = (payload.get("name") or "My Webhook").strip()[:500]
     secret = (payload.get("secret") or _gen_secret()).strip()
     # Accept both full subscriptions format and shorthand events list
     subscriptions = payload.get("subscriptions") or []
@@ -188,7 +188,7 @@ async def update_webhook(
     updates: Dict[str, Any] = {"updated_at": now_iso()}
 
     if "name" in payload:
-        updates["name"] = (payload["name"] or "").strip()[:120]
+        updates["name"] = (payload["name"] or "").strip()[:500]
     if "url" in payload:
         _validate_url(payload["url"])
         updates["url"] = payload["url"].strip()

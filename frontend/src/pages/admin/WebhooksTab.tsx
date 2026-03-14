@@ -242,7 +242,10 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
           {/* Name + URL */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-600 mb-1 block">Name</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-slate-600">Name</label>
+                {name.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${name.length > 475 ? "text-red-500" : name.length > 400 ? "text-amber-500" : "text-slate-400"}`}>{name.length}/500</span>}
+              </div>
               <Input
                 value={name} onChange={e => setName(e.target.value)}
                 maxLength={500}
@@ -250,7 +253,10 @@ function WebhookModal({ open, onClose, catalog, existing, onSaved }: {
               />
             </div>
             <div>
-              <RequiredLabel className="font-semibold text-slate-600 mb-1 block">Endpoint URL</RequiredLabel>
+              <div className="flex items-center justify-between mb-1">
+                <RequiredLabel className="font-semibold text-slate-600">Endpoint URL</RequiredLabel>
+                {url.length > 0 && <span className={`text-[11px] font-mono tabular-nums ${url.length > 1946 ? "text-red-500" : url.length > 1638 ? "text-amber-500" : "text-slate-400"}`}>{url.length}/2048</span>}
+              </div>
               <Input
                 value={url} onChange={e => setUrl(e.target.value)}
                 maxLength={2048}

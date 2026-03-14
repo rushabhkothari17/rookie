@@ -513,7 +513,7 @@ class ScopeRequestFormData(BaseModel):
     timeline_urgency: Optional[str] = Field("", **_SHORT)
     budget_range: Optional[str] = Field("", **_SHORT)
     additional_notes: Optional[str] = Field("", **_NOTE)
-    name: Optional[str] = Field("", **_NAME)
+    name: Optional[str] = Field("", max_length=200)
     email: Optional[str] = Field("", max_length=320)
     company: Optional[str] = Field("", **_SHORT)
     phone: Optional[str] = Field("", max_length=50)
