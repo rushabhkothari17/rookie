@@ -24,6 +24,8 @@
         <title>Emergent | Fullstack App</title>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script>window.addEventListener("error",function(e){if(e.message&&(e.message.indexOf("ResizeObserver loop")!==-1)){e.stopImmediatePropagation();e.preventDefault();return false;}},true);window.onerror=function(m){if(typeof m==="string"&&m.indexOf("ResizeObserver loop")!==-1){return true;}return false;};</script>
+        <!-- Prevent FOUC for dark mode: apply class before React mounts -->
+        <script>try{if(localStorage.getItem("aa_dark_mode")==="true"){document.documentElement.classList.add("aa-dark");}}catch(e){}</script>
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
         <!--
         These two scripts have been added for the Visual Edits, please do not edit or remove them

@@ -35,6 +35,7 @@ body {
   color: var(--aa-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.2s ease;
 }
 
 * {
@@ -534,11 +535,78 @@ input[class*="rounded-full"]:focus {
 ::-webkit-scrollbar-thumb:hover { background: var(--aa-muted); }
 
 /* ─────────────────────────────────────────────────────────────
-   DARK MODE — Auto override hardcoded Tailwind slate colors
-   Applied via .aa-dark class on <html> when background is dark
-   These selectors (0,2,0 specificity) beat Tailwind (0,1,0)
-   NO !important needed — placement after @tailwind utilities wins
+   DARK MODE — CSS custom property overrides
+   Applied via html.aa-dark class toggle
+   All aa-* and Tailwind base variables update automatically
 ───────────────────────────────────────────────────────────── */
+html.aa-dark {
+  /* ── aa-* design tokens ── */
+  --aa-primary: #161b22;
+  --aa-primary-hover: #1c2128;
+  --aa-primary-fg: #e6edf3;
+  --aa-accent: #4f8ef7;
+  --aa-accent-hover: #6ba4ff;
+  --aa-bg: #0d1117;
+  --aa-card: #161b22;
+  --aa-surface: #1c2128;
+  --aa-card-border: #30363d;
+  --aa-border: #30363d;
+  --aa-text: #e6edf3;
+  --aa-muted: #8b949e;
+  --aa-danger: #f85149;
+  --aa-success: #3fb950;
+  --aa-warning: #d29922;
+  --aa-glow: rgba(79, 142, 247, 0.3);
+  /* Footer stays dark in dark mode */
+  --aa-footer-text:       #e6edf3;
+  --aa-footer-text-muted: #8b949e;
+  --aa-footer-border:     rgba(255,255,255,0.08);
+  /* ── Tailwind/shadcn base vars ── */
+  --background: 216 28% 7%;
+  --foreground: 210 40% 90%;
+  --card: 215 28% 10%;
+  --card-foreground: 210 40% 90%;
+  --popover: 215 28% 10%;
+  --popover-foreground: 210 40% 90%;
+  --primary: 210 40% 90%;
+  --primary-foreground: 216 28% 7%;
+  --secondary: 215 25% 15%;
+  --secondary-foreground: 210 40% 90%;
+  --muted: 215 25% 15%;
+  --muted-foreground: 215 20% 55%;
+  --accent: 215 25% 15%;
+  --accent-foreground: 210 40% 90%;
+  --destructive: 0 62% 63%;
+  --destructive-foreground: 210 40% 90%;
+  --border: 215 22% 20%;
+  --input: 215 22% 20%;
+  --ring: 215 20% 65%;
+}
+
+/* Dark body background */
+html.aa-dark body {
+  background-color: var(--aa-bg);
+  color: var(--aa-text);
+}
+
+/* Dark mode scrollbar */
+html.aa-dark ::-webkit-scrollbar-track { background: var(--aa-surface); }
+html.aa-dark ::-webkit-scrollbar-thumb { background: var(--aa-border); }
+html.aa-dark ::-webkit-scrollbar-thumb:hover { background: var(--aa-muted); }
+
+/* Dark shimmer update */
+html.aa-dark .shimmer-bg,
+html.aa-dark .aa-skel {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--aa-surface) 90%, transparent) 25%,
+    color-mix(in srgb, var(--aa-border) 80%, var(--aa-surface)) 50%,
+    color-mix(in srgb, var(--aa-surface) 90%, transparent) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
 
 /* ── Backgrounds ─────────────────────────────────────────── */
 .aa-dark .bg-white          { background-color: var(--aa-card) !important; }
