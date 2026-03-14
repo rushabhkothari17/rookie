@@ -46,7 +46,25 @@ def _validate_subscriptions(subs: List[Dict[str, Any]]) -> None:
             )
 
 
-# ── Event catalog ────────────────────────────────────────────────────────────
+from pydantic import BaseModel, Field as PydanticField
+
+# ── Pydantic models for webhook CRUD ─────────────────────────────────────────
+
+class WebhookCreate(BaseModel):
+    url: str = PydanticField(max_length=2_048)
+    name: str = PydanticField("My Webhook", max_length=100)
+    secret: Optional[str] = PydanticField(None, max_length=500)
+    subscriptions: Optional[List[Any]] = None
+    events: Optional[List[str]] = None
+
+
+class WebhookUpdate(BaseModel):
+    url: Optional[str] = PydanticField(None, max_length=2_048)
+    name: Optional[str] = PydanticField(None, max_length=100)
+    secret: Optional[str] = PydanticField(None, max_length=500)
+    is_active: Optional[bool] = None
+    subscriptions: Optional[List[Any]] = None
+    events: Optional[List[str]] = None
 
 @router.get("/admin/webhooks/events")
 async def get_event_catalog(admin: Dict[str, Any] = Depends(get_tenant_admin)):
@@ -121,21 +139,20 @@ async def list_webhooks(admin: Dict[str, Any] = Depends(get_tenant_admin)):
 
 @router.post("/admin/webhooks")
 async def create_webhook(
-    payload: Dict[str, Any],
+    payload: WebhookCreate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
-    url = (payload.get("url") or "").strip()
+    url = payload.url.strip()
     _validate_url(url)
 
-    name = (payload.get("name") or "My Webhook").strip()[:500]
-    secret = (payload.get("secret") or _gen_secret()).strip()
-    # Accept both full subscriptions format and shorthand events list
-    subscriptions = payload.get("subscriptions") or []
-    if not subscriptions and payload.get("events"):
+    name = payload.name.strip() or "My Webhook"
+    secret = (payload.secret or "").strip() or _gen_secret()
+    subscriptions = payload.subscriptions or []
+    if not subscriptions and payload.events:
         from services.webhook_service import _DEFAULT_FIELDS
         subscriptions = [
             {"event": e, "fields": _DEFAULT_FIELDS.get(e, [])}
-            for e in payload["events"]
+            for e in payload.events
             if isinstance(e, str)
         ]
     _validate_subscriptions(subscriptions)
@@ -177,7 +194,7 @@ async def get_webhook(webhook_id: str, admin: Dict[str, Any] = Depends(get_tenan
 @router.put("/admin/webhooks/{webhook_id}")
 async def update_webhook(
     webhook_id: str,
-    payload: Dict[str, Any],
+    payload: WebhookUpdate,
     admin: Dict[str, Any] = Depends(get_tenant_admin),
 ):
     tf = get_tenant_filter(admin)
@@ -187,23 +204,22 @@ async def update_webhook(
 
     updates: Dict[str, Any] = {"updated_at": now_iso()}
 
-    if "name" in payload:
-        updates["name"] = (payload["name"] or "").strip()[:500]
-    if "url" in payload:
-        _validate_url(payload["url"])
-        updates["url"] = payload["url"].strip()
-    if "is_active" in payload:
-        updates["is_active"] = bool(payload["is_active"])
-    if "secret" in payload and payload["secret"]:
-        updates["secret"] = payload["secret"].strip()
-    if "subscriptions" in payload:
-        subs = payload["subscriptions"] or []
-        # Accept shorthand events list too
-        if not subs and payload.get("events"):
+    if payload.name is not None:
+        updates["name"] = payload.name.strip()[:100]
+    if payload.url is not None:
+        _validate_url(payload.url)
+        updates["url"] = payload.url.strip()
+    if payload.is_active is not None:
+        updates["is_active"] = payload.is_active
+    if payload.secret:
+        updates["secret"] = payload.secret.strip()
+    if payload.subscriptions is not None or payload.events is not None:
+        subs = payload.subscriptions or []
+        if not subs and payload.events:
             from services.webhook_service import _DEFAULT_FIELDS
             subs = [
                 {"event": e, "fields": _DEFAULT_FIELDS.get(e, [])}
-                for e in payload["events"]
+                for e in payload.events
                 if isinstance(e, str)
             ]
         _validate_subscriptions(subs)

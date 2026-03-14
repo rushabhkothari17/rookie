@@ -14,7 +14,7 @@ Tests 8 features:
 import asyncio
 import sys
 
-BASE_URL = "https://input-validation-5.preview.emergentagent.com"
+BASE_URL = "https://pydantic-lockdown.preview.emergentagent.com"
 results = {}
 
 async def login(page):
