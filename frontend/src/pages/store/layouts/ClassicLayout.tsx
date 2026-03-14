@@ -8,6 +8,7 @@ import { RefreshCcw, FileText } from "lucide-react";
 import ProductHero from "@/components/ProductHero";
 import StickyPurchaseSummary from "@/components/StickyPurchaseSummary";
 import SectionCard from "@/components/SectionCard";
+import FaqAccordion from "@/components/FaqAccordion";
 import type { LayoutProps } from "./types";
 import { QuestionLabel, renderIntakeField, ScopeIdBlock, formatCurrency } from "./utils";
 import { useWebsite } from "@/contexts/WebsiteContext";
@@ -107,18 +108,11 @@ export default function ClassicLayout({
         ))}
 
         {/* FAQs */}
-        {(product.faqs || []).length > 0 && (
-          <SectionCard title={ws.sdp_faqs_title || "FAQs"} testId="product-faqs">
-            <div className="space-y-5" data-testid="product-faqs-list">
-              {(product.faqs || []).map((item, i) => (
-                <div key={i} className="space-y-1">
-                  <p className="font-semibold text-slate-800">{item.question}</p>
-                  <p className="text-slate-500 leading-relaxed">{item.answer}</p>
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-        )}
+        <FaqAccordion
+          faqs={product.faqs || []}
+          title={ws.sdp_faqs_title || "FAQs"}
+          testId="product-faqs"
+        />
       </div>
 
       {/* Right Column - Sticky Summary */}

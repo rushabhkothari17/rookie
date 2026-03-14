@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, FileText, Star, ArrowRight } from "lucide-react";
+import FaqAccordion from "@/components/FaqAccordion";
 import type { LayoutProps } from "./types";
 import { QuestionLabel, renderIntakeField, ScopeIdBlock, formatCurrency } from "./utils";
 import { useWebsite } from "@/contexts/WebsiteContext";
@@ -165,27 +166,11 @@ export default function ShowcaseLayout({
           ))}
 
           {/* FAQs */}
-          {(product.faqs || []).length > 0 && (
-            <div className="rounded-2xl border p-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}>
-              <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--aa-text)" }}>
-                {ws.sdp_faqs_title || "FAQs"}
-              </h2>
-              <div className="space-y-4">
-                {(product.faqs || []).map((faq, i) => (
-                  <details key={i} className="group">
-                    <summary
-                      className="flex items-center justify-between cursor-pointer list-none py-3"
-                      style={{ borderBottom: "1px solid var(--aa-border)" }}
-                    >
-                      <span className="font-medium" style={{ color: "var(--aa-text)" }}>{faq.question}</span>
-                      <ArrowRight size={16} className="transition-transform group-open:rotate-90" style={{ color: "var(--aa-muted)" }} />
-                    </summary>
-                    <p className="py-3" style={{ color: "var(--aa-muted)" }}>{faq.answer}</p>
-                  </details>
-                ))}
-              </div>
-            </div>
-          )}
+          <FaqAccordion
+            faqs={product.faqs || []}
+            title={ws.sdp_faqs_title || "FAQs"}
+            testId="product-faqs"
+          />
         </div>
 
         {/* Right: Sticky Calculator */}

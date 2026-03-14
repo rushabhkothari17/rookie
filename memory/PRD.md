@@ -487,6 +487,12 @@ Build a white-label service commerce platform with:
 - Radio filters for Role & Status columns in Users table
 - Resend API Key UI (allow tenants to enter/save Resend API key when provider = Resend)
 
+### Phase 18: FAQ Accordion — All Product Layouts (Mar 2026)
+- Created shared `FaqAccordion.tsx` component with click-to-expand/collapse behavior, chevron rotation animation, and CSS-variable-based theming (light + dark mode compatible).
+- Applied to all 5 product layouts: `ClassicLayout`, `ShowcaseLayout`, `WizardLayout`, `QuickBuyLayout`, `ApplicationLayout` — replacing static Q&A blocks and `<details>/<summary>` HTML.
+- Includes fade-in + slide-in animation for opening items, `data-testid` attributes for all FAQ triggers and content panels.
+- No Radix dependency needed — implemented natively with `useState` to avoid TypeScript/JSX interop issues.
+
 ### Phase 17: UI/UX Phase 2 + Dark Mode (Mar 2026)
 - **Phase 2**: Keyboard navigation fixed for Ctrl+K command palette (ArrowUp/Down/Enter/Escape). Table row hover accent bars (aa-table-row), semantic status badges (aa-badge-*), skeleton loaders (aa-skel), and empty states (aa-empty-geo) across all admin tabs (Products, Users, Enquiries, Resources, Orders, Subscriptions, Customers). Input focus glow ring. Tested: 13/13 PASS.
 - **Dark Mode**: Moon/Sun toggle in sidebar, `html.aa-dark` CSS variable overrides (GitHub Dark palette), localStorage persistence, FOUC prevention inline script. Tested: 17/17 PASS.

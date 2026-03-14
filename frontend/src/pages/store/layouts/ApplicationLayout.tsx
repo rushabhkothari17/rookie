@@ -14,6 +14,7 @@ import {
   ChevronRight,
   CheckCircle2,
 } from "lucide-react";
+import FaqAccordion from "@/components/FaqAccordion";
 import type { LayoutProps } from "./types";
 import { QuestionLabel, renderIntakeField, ScopeIdBlock, formatCurrency } from "./utils";
 import { useWebsite } from "@/contexts/WebsiteContext";
@@ -329,21 +330,14 @@ export default function ApplicationLayout({
         {/* FAQs Section */}
         {activeSection === "faqs" && (
           <div className="rounded-2xl border p-6" style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }} data-testid="section-faqs">
-            <h2 className="text-xl font-bold mb-6" style={{ color: "var(--aa-text)" }}>
-              {ws.sdp_faqs_title || "Frequently Asked Questions"}
-            </h2>
-
-            {(product.faqs || []).length > 0 ? (
-              <div className="space-y-6">
-                {(product.faqs || []).map((faq, i) => (
-                  <div key={i} className="pb-6 last:pb-0" style={{ borderBottom: "1px solid var(--aa-border)" }}>
-                    <h4 className="font-semibold mb-2" style={{ color: "var(--aa-text)" }}>{faq.question}</h4>
-                    <p style={{ color: "var(--aa-muted)" }}>{faq.answer}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center py-8" style={{ color: "var(--aa-muted)" }}>
+            <FaqAccordion
+              faqs={product.faqs || []}
+              title={ws.sdp_faqs_title || "Frequently Asked Questions"}
+              testId="product-faqs"
+              card={false}
+            />
+            {(product.faqs || []).length === 0 && (
+              <p className="text-center py-8 text-sm" style={{ color: "var(--aa-muted)" }}>
                 No FAQs available for this product.
               </p>
             )}

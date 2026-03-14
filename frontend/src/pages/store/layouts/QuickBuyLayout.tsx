@@ -5,6 +5,7 @@
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, RefreshCcw, FileText, Check } from "lucide-react";
+import FaqAccordion from "@/components/FaqAccordion";
 import type { LayoutProps } from "./types";
 import { QuestionLabel, renderIntakeField, ScopeIdBlock, formatCurrency } from "./utils";
 import { useWebsite } from "@/contexts/WebsiteContext";
@@ -253,24 +254,11 @@ export default function QuickBuyLayout({
       ))}
 
       {/* FAQs */}
-      {(product.faqs || []).length > 0 && (
-        <div
-          className="rounded-2xl border p-6 mt-4 text-left"
-          style={{ background: "var(--aa-card)", borderColor: "var(--aa-border)" }}
-        >
-          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--aa-text)" }}>
-            {ws.sdp_faqs_title || "FAQs"}
-          </h3>
-          <div className="space-y-4">
-            {(product.faqs || []).map((faq: any, i: number) => (
-              <div key={i} className="pb-4 last:pb-0" style={{ borderBottom: "1px solid var(--aa-border)" }}>
-                <p className="text-sm font-medium mb-1" style={{ color: "var(--aa-text)" }}>{faq.question}</p>
-                <p className="text-sm" style={{ color: "var(--aa-muted)" }}>{faq.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <FaqAccordion
+        faqs={product.faqs || []}
+        title={ws.sdp_faqs_title || "FAQs"}
+        testId="product-faqs"
+      />
     </div>
   );
 }
