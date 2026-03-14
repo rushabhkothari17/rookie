@@ -224,7 +224,7 @@ export function EnquiriesTab() {
         form_id: newEnquiry.form_id || null,
         form_data: Object.keys(formData).length > 0 ? formData : null,
         notes: newEnquiry.notes || null,
-      }, cfg);
+      });
       toast.success(`Enquiry ${res.data.order_number} created`);
       setShowCreate(false);
       resetCreate();
