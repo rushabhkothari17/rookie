@@ -41,18 +41,19 @@ async def get_finance_status(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Get status of all finance integrations."""
     tid = tenant_id_of(admin)
     
-    # Check Zoho Books status
-    zoho_books_creds = await db.integrations.find_one(
+    # Check Zoho Books status from oauth_connections
+    zoho_books_conn = await db.oauth_connections.find_one(
         {"tenant_id": tid, "provider": "zoho_books"},
-        {"_id": 0}
+        {"_id": 0, "credentials": 0}
     )
+    settings = (zoho_books_conn or {}).get("settings", {})
     
     zoho_books_status = {
-        "is_configured": bool(zoho_books_creds and zoho_books_creds.get("client_id")),
-        "is_validated": bool(zoho_books_creds and zoho_books_creds.get("is_validated")),
-        "datacenter": zoho_books_creds.get("datacenter") if zoho_books_creds else None,
-        "organization_id": zoho_books_creds.get("organization_id") if zoho_books_creds else None,
-        "validated_at": zoho_books_creds.get("validated_at") if zoho_books_creds else None
+        "is_configured": bool(zoho_books_conn),
+        "is_validated": bool(zoho_books_conn and zoho_books_conn.get("is_validated")),
+        "datacenter": (zoho_books_conn.get("data_center") or "us").upper() if zoho_books_conn else None,
+        "organization_id": settings.get("organization_id"),
+        "validated_at": zoho_books_conn.get("validated_at") if zoho_books_conn else None
     }
     
     return {
@@ -72,15 +73,23 @@ async def save_zoho_books_credentials(
 ):
     """Save Zoho Books OAuth credentials."""
     tid = tenant_id_of(admin)
-    
-    await db.integrations.update_one(
+    from services.encryption_service import encrypt_credentials, decrypt_credentials
+    # Merge with existing credentials
+    existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_books"}, {"_id": 0, "credentials": 1})
+    existing_creds = decrypt_credentials(existing["credentials"]) if existing and existing.get("credentials") else {}
+    merged = {
+        **existing_creds,
+        "client_id": payload.client_id,
+        "client_secret": payload.client_secret,
+    }
+    await db.oauth_connections.update_one(
         {"tenant_id": tid, "provider": "zoho_books"},
         {"$set": {
             "tenant_id": tid,
             "provider": "zoho_books",
-            "client_id": payload.client_id,
-            "client_secret": payload.client_secret,
-            "datacenter": payload.datacenter,
+            "data_center": payload.datacenter.lower(),
+            "credentials": encrypt_credentials(merged),
+            "is_validated": False,
             "updated_at": now_iso()
         }},
         upsert=True
@@ -144,17 +153,30 @@ async def validate_zoho_books(
             # Use first organization (most accounts have one)
             org = organizations[0]
             
-            # Save validation status
-            await db.integrations.update_one(
+            # Save validation status to oauth_connections
+            from services.encryption_service import encrypt_credentials, decrypt_credentials
+            existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_books"}, {"_id": 0, "credentials": 1})
+            existing_creds = decrypt_credentials(existing["credentials"]) if existing and existing.get("credentials") else {}
+            merged = {
+                **existing_creds,
+                "access_token": payload.access_token,
+                "organization_id": org.get("organization_id"),
+                "organization_name": org.get("name"),
+            }
+            await db.oauth_connections.update_one(
                 {"tenant_id": tid, "provider": "zoho_books"},
                 {"$set": {
                     "is_validated": True,
                     "validated_at": now_iso(),
-                    "access_token": payload.access_token,
-                    "organization_id": org.get("organization_id"),
-                    "organization_name": org.get("name"),
-                    "datacenter": payload.datacenter
-                }}
+                    "data_center": payload.datacenter.lower(),
+                    "credentials": encrypt_credentials(merged),
+                    "settings": {
+                        "organization_id": org.get("organization_id"),
+                        "organization_name": org.get("name"),
+                        "datacenter": payload.datacenter
+                    }
+                }},
+                upsert=True
             )
             
             await create_audit_log(
@@ -188,24 +210,24 @@ async def refresh_zoho_books(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Refresh Zoho Books connection status."""
     tid = tenant_id_of(admin)
     
-    creds = await db.integrations.find_one(
+    conn = await db.oauth_connections.find_one(
         {"tenant_id": tid, "provider": "zoho_books"},
         {"_id": 0}
     )
-    if creds and creds.get("credentials"):
+    if conn and conn.get("credentials"):
         from services.encryption_service import decrypt_credentials
-        creds = {**creds, "credentials": decrypt_credentials(creds["credentials"])}
+        creds = decrypt_credentials(conn["credentials"])
         # flatten for backward compat
-        creds = {**creds, **creds.get("credentials", {})}
+        conn = {**conn, **creds, "credentials": creds, "datacenter": (conn.get("data_center") or "us").upper()}
     
-    if not creds or not creds.get("access_token"):
+    if not conn or not conn.get("access_token"):
         return {"success": False, "message": "No access token configured"}
     
     # Re-validate using stored token
     return await validate_zoho_books(
         ZohoBooksValidation(
-            access_token=creds["access_token"],
-            datacenter=creds.get("datacenter", "US")
+            access_token=conn["access_token"],
+            datacenter=conn.get("datacenter", "US")
         ),
         admin
     )
@@ -312,8 +334,8 @@ async def trigger_zoho_books_sync(
     """Trigger a manual sync with Zoho Books."""
     tid = tenant_id_of(admin)
     
-    # Check if validated
-    creds = await db.integrations.find_one(
+    # Check if validated in oauth_connections
+    creds = await db.oauth_connections.find_one(
         {"tenant_id": tid, "provider": "zoho_books", "is_validated": True},
         {"_id": 0}
     )

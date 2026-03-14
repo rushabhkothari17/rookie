@@ -34,27 +34,39 @@ class ZohoOAuthService:
     async def get_credentials(self, service: str = "mail") -> Optional[Dict[str, Any]]:
         """Get stored OAuth credentials for a service (mail or crm), decrypting sensitive fields."""
         from services.encryption_service import decrypt_credentials
-        key = f"zoho_{service}"
-        doc = await db.integrations.find_one(
-            {"tenant_id": self.tenant_id, "service": key},
+        provider = f"zoho_{service}"
+        doc = await db.oauth_connections.find_one(
+            {"tenant_id": self.tenant_id, "provider": provider},
             {"_id": 0}
         )
         if doc and doc.get("credentials"):
-            doc = {**doc, "credentials": decrypt_credentials(doc["credentials"])}
+            decrypted = decrypt_credentials(doc["credentials"])
+            doc = {**doc, "credentials": decrypted, **decrypted,
+                   "datacenter": (doc.get("data_center") or "us").upper()}
         return doc
     
     async def store_credentials(self, service: str, credentials: Dict[str, Any]) -> None:
         """Store OAuth credentials for a service (sensitive fields encrypted at rest)."""
-        from services.encryption_service import encrypt_credentials
-        key = f"zoho_{service}"
-        await db.integrations.update_one(
-            {"tenant_id": self.tenant_id, "service": key},
+        from services.encryption_service import encrypt_credentials, decrypt_credentials
+        from core.helpers import now_iso
+        provider = f"zoho_{service}"
+        # Merge with existing credentials so we don't overwrite fields
+        existing = await db.oauth_connections.find_one(
+            {"tenant_id": self.tenant_id, "provider": provider},
+            {"_id": 0, "credentials": 1}
+        )
+        existing_creds = {}
+        if existing and existing.get("credentials"):
+            existing_creds = decrypt_credentials(existing["credentials"])
+        merged = {**existing_creds, **credentials}
+        await db.oauth_connections.update_one(
+            {"tenant_id": self.tenant_id, "provider": provider},
             {"$set": {
                 "tenant_id": self.tenant_id,
-                "service": key,
-                "datacenter": self.datacenter,
-                "credentials": encrypt_credentials(credentials),
-                "updated_at": datetime.utcnow().isoformat()
+                "provider": provider,
+                "data_center": self.datacenter.lower(),
+                "credentials": encrypt_credentials(merged),
+                "updated_at": now_iso()
             }},
             upsert=True
         )

@@ -66,44 +66,42 @@ async def get_email_providers(admin: Dict[str, Any] = Depends(get_tenant_admin))
     )
     active_provider = active_provider_setting.get("value") if active_provider_setting else None
     
-    # Get Resend settings
+    # Get Resend settings (from oauth_connections)
+    resend_conn = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": "resend"},
+        {"_id": 0, "credentials": 0}
+    )
+    # Also check app_settings for legacy api_key (for has_api_key indicator)
     resend_key = await db.app_settings.find_one(
         {"tenant_id": tid, "key": "resend_api_key"},
         {"_id": 0}
     )
-    resend_sender = await db.app_settings.find_one(
-        {"tenant_id": tid, "key": "resend_sender_email"},
-        {"_id": 0}
+
+    # Get Zoho Mail settings (from oauth_connections)
+    zoho_mail = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": "zoho_mail"},
+        {"_id": 0, "credentials": 0}
     )
-    resend_validated = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "resend_validated"},
-        {"_id": 0}
-    )
-    
-    # Get Zoho Mail settings
-    zoho_mail = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "zoho_mail"},
-        {"_id": 0}
-    )
-    
+    zoho_mail_settings = (zoho_mail or {}).get("settings", {})
+
     return {
         "active_provider": active_provider,
         "providers": {
             "resend": {
-                "has_api_key": bool(resend_key and resend_key.get("value")),
-                "has_sender_email": bool(resend_sender and resend_sender.get("value")),
-                "is_validated": bool(resend_validated and resend_validated.get("validated")),
-                "validated_at": resend_validated.get("validated_at") if resend_validated else None,
-                "domains": resend_validated.get("domains", []) if resend_validated else [],
+                "has_api_key": bool((resend_conn and resend_conn.get("is_validated")) or (resend_key and resend_key.get("value"))),
+                "has_sender_email": bool(resend_conn and resend_conn.get("settings", {}).get("from_email")),
+                "is_validated": bool(resend_conn and resend_conn.get("is_validated")),
+                "validated_at": resend_conn.get("validated_at") if resend_conn else None,
+                "domains": (resend_conn or {}).get("settings", {}).get("domains", []),
                 "is_active": active_provider == "resend"
             },
             "zoho_mail": {
-                "is_configured": bool(zoho_mail and zoho_mail.get("credentials")),
-                "datacenter": zoho_mail.get("datacenter") if zoho_mail else None,
-                "is_validated": bool(zoho_mail and zoho_mail.get("validated")),
+                "is_configured": bool(zoho_mail),
+                "datacenter": (zoho_mail or {}).get("data_center", "").upper() or None,
+                "is_validated": bool(zoho_mail and zoho_mail.get("is_validated")),
                 "validated_at": zoho_mail.get("validated_at") if zoho_mail else None,
-                "accounts": zoho_mail.get("accounts", []) if zoho_mail else [],
-                "selected_account_id": zoho_mail.get("selected_account_id") if zoho_mail else None,
+                "accounts": zoho_mail_settings.get("accounts", []),
+                "selected_account_id": zoho_mail_settings.get("selected_account_id"),
                 "is_active": active_provider == "zoho_mail"
             }
         }
@@ -124,19 +122,19 @@ async def set_active_email_provider(
     
     # Verify provider is validated before activating
     if payload.provider == "resend":
-        resend_validated = await db.integrations.find_one(
-            {"tenant_id": tid, "service": "resend_validated"},
+        resend_conn = await db.oauth_connections.find_one(
+            {"tenant_id": tid, "provider": "resend", "is_validated": True},
             {"_id": 0}
         )
-        if not resend_validated or not resend_validated.get("validated"):
+        if not resend_conn:
             raise HTTPException(status_code=400, detail="Resend must be validated before activation")
     
     elif payload.provider == "zoho_mail":
-        zoho_mail = await db.integrations.find_one(
-            {"tenant_id": tid, "service": "zoho_mail"},
+        zoho_mail = await db.oauth_connections.find_one(
+            {"tenant_id": tid, "provider": "zoho_mail", "is_validated": True},
             {"_id": 0}
         )
-        if not zoho_mail or not zoho_mail.get("validated"):
+        if not zoho_mail:
             raise HTTPException(status_code=400, detail="Zoho Mail must be validated before activation")
     
     # Set active provider
@@ -197,10 +195,10 @@ async def validate_resend(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             )
             
             if response.status_code != 200:
-                # Store validation failure
-                await db.integrations.update_one(
-                    {"tenant_id": tid, "service": "resend_validated"},
-                    {"$set": {"validated": False, "error": response.text}},
+                # Store validation failure in oauth_connections
+                await db.oauth_connections.update_one(
+                    {"tenant_id": tid, "provider": "resend"},
+                    {"$set": {"is_validated": False, "settings.validation_error": response.text}},
                     upsert=True
                 )
                 return {"success": False, "message": f"API key validation failed: {response.status_code}"}
@@ -213,16 +211,14 @@ async def validate_resend(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             domain_verified = sender_domain in domain_names
             
             from datetime import datetime
-            # Store validation success
-            await db.integrations.update_one(
-                {"tenant_id": tid, "service": "resend_validated"},
+            # Store validation success in oauth_connections
+            await db.oauth_connections.update_one(
+                {"tenant_id": tid, "provider": "resend"},
                 {"$set": {
-                    "tenant_id": tid,
-                    "service": "resend_validated",
-                    "validated": True,
+                    "is_validated": True,
                     "validated_at": datetime.utcnow().isoformat(),
-                    "domains": domain_names,
-                    "sender_domain_verified": domain_verified
+                    "settings.domains": domain_names,
+                    "settings.sender_domain_verified": domain_verified
                 }},
                 upsert=True
             )
@@ -241,9 +237,9 @@ async def validate_resend(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             }
             
     except Exception as e:
-        await db.integrations.update_one(
-            {"tenant_id": tid, "service": "resend_validated"},
-            {"$set": {"validated": False, "error": str(e)}},
+        await db.oauth_connections.update_one(
+            {"tenant_id": tid, "provider": "resend"},
+            {"$set": {"is_validated": False, "settings.validation_error": str(e)}},
             upsert=True
         )
         return {"success": False, "message": str(e)}
@@ -258,16 +254,26 @@ async def save_zoho_mail_credentials(
 ):
     """Save Zoho Mail OAuth credentials."""
     tid = tenant_id_of(admin)
-    
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_mail"},
+    from services.encryption_service import encrypt_credentials, decrypt_credentials
+    from core.helpers import now_iso as _now
+    # Merge with existing credentials
+    existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_mail"}, {"_id": 0, "credentials": 1})
+    existing_creds = decrypt_credentials(existing["credentials"]) if existing and existing.get("credentials") else {}
+    merged = {
+        **existing_creds,
+        "client_id": credentials.client_id,
+        "client_secret": credentials.client_secret,
+    }
+    if credentials.redirect_uri:
+        merged["redirect_uri"] = credentials.redirect_uri
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_mail"},
         {"$set": {
             "tenant_id": tid,
-            "service": "zoho_mail",
-            "datacenter": credentials.datacenter.upper(),
-            "client_id": credentials.client_id,
-            "client_secret": credentials.client_secret,
-            "redirect_uri": credentials.redirect_uri
+            "provider": "zoho_mail",
+            "data_center": credentials.datacenter.lower(),
+            "credentials": encrypt_credentials(merged),
+            "updated_at": _now()
         }},
         upsert=True
     )
@@ -328,20 +334,23 @@ async def validate_zoho_mail(
     # Store validation result and accounts
     from datetime import datetime
     if result.get("success"):
-        await db.integrations.update_one(
-            {"tenant_id": tid, "service": "zoho_mail"},
+        auto_account_id = payload.account_id or (result.get("accounts", [{}])[0].get("account_id") if result.get("accounts") else None)
+        await db.oauth_connections.update_one(
+            {"tenant_id": tid, "provider": "zoho_mail"},
             {"$set": {
-                "validated": True,
+                "is_validated": True,
                 "validated_at": datetime.utcnow().isoformat(),
-                "accounts": result.get("accounts", []),
-                "selected_account_id": payload.account_id or (result.get("accounts", [{}])[0].get("account_id") if result.get("accounts") else None)
-            }}
+                "settings.accounts": result.get("accounts", []),
+                "settings.selected_account_id": auto_account_id
+            }},
+            upsert=True
         )
         await create_audit_log(entity_type="integration", entity_id="zoho_mail", action="connection_validated", actor=admin.get("email", "admin"), details={"success": True})
     else:
-        await db.integrations.update_one(
-            {"tenant_id": tid, "service": "zoho_mail"},
-            {"$set": {"validated": False, "error": result.get("message")}}
+        await db.oauth_connections.update_one(
+            {"tenant_id": tid, "provider": "zoho_mail"},
+            {"$set": {"is_validated": False, "settings.validation_error": result.get("message")}},
+            upsert=True
         )
     
     return result
@@ -355,9 +364,10 @@ async def select_zoho_mail_account(
     """Select a shared mailbox account for sending emails."""
     tid = tenant_id_of(admin)
     
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_mail"},
-        {"$set": {"selected_account_id": account_id}}
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_mail"},
+        {"$set": {"settings.selected_account_id": account_id}},
+        upsert=True
     )
     
     await create_audit_log(entity_type="integration", entity_id="zoho_mail", action="account_selected", actor=admin.get("email", "admin"), details={"account_id": account_id})
@@ -369,8 +379,8 @@ async def refresh_zoho_mail_token(admin: Dict[str, Any] = Depends(get_tenant_adm
     """Refresh Zoho Mail access token."""
     tid = tenant_id_of(admin)
     
-    integration = await db.integrations.find_one(
-        {"tenant_id": tid, "service": "zoho_mail"},
+    integration = await db.oauth_connections.find_one(
+        {"tenant_id": tid, "provider": "zoho_mail"},
         {"_id": 0}
     )
     
@@ -378,19 +388,19 @@ async def refresh_zoho_mail_token(admin: Dict[str, Any] = Depends(get_tenant_adm
         raise HTTPException(status_code=400, detail="Zoho Mail not configured")
 
     from services.encryption_service import decrypt_credentials
-    integration = {**integration, "credentials": decrypt_credentials(integration.get("credentials", {}))}
-
-    oauth = ZohoOAuthService(tid, integration.get("datacenter", "US"))
+    creds = decrypt_credentials(integration.get("credentials", {}))
+    dc = (integration.get("data_center") or "us").upper()
+    oauth = ZohoOAuthService(tid, dc)
     
     try:
         new_tokens = await oauth.refresh_access_token(
-            integration["credentials"]["refresh_token"],
-            integration["client_id"],
-            integration["client_secret"]
+            creds.get("refresh_token", ""),
+            creds.get("client_id", ""),
+            creds.get("client_secret", "")
         )
         
         await oauth.store_credentials("mail", {
-            **integration["credentials"],
+            **creds,
             "access_token": new_tokens.get("access_token"),
             "expires_in": new_tokens.get("expires_in")
         })
@@ -410,16 +420,25 @@ async def save_zoho_crm_credentials(
 ):
     """Save Zoho CRM OAuth credentials."""
     tid = tenant_id_of(admin)
-    
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_crm"},
+    from services.encryption_service import encrypt_credentials, decrypt_credentials
+    from core.helpers import now_iso as _now
+    existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_crm"}, {"_id": 0, "credentials": 1})
+    existing_creds = decrypt_credentials(existing["credentials"]) if existing and existing.get("credentials") else {}
+    merged = {
+        **existing_creds,
+        "client_id": credentials.client_id,
+        "client_secret": credentials.client_secret,
+    }
+    if credentials.redirect_uri:
+        merged["redirect_uri"] = credentials.redirect_uri
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_crm"},
         {"$set": {
             "tenant_id": tid,
-            "service": "zoho_crm",
-            "datacenter": credentials.datacenter.upper(),
-            "client_id": credentials.client_id,
-            "client_secret": credentials.client_secret,
-            "redirect_uri": credentials.redirect_uri
+            "provider": "zoho_crm",
+            "data_center": credentials.datacenter.lower(),
+            "credentials": encrypt_credentials(merged),
+            "updated_at": _now()
         }},
         upsert=True
     )
@@ -764,14 +783,12 @@ async def validate_stripe(admin: Dict[str, Any] = Depends(get_tenant_admin)):
             from datetime import datetime
             if response.status_code == 200:
                 balance = response.json()
-                await db.integrations.update_one(
-                    {"tenant_id": tid, "service": "stripe_validated"},
+                await db.oauth_connections.update_one(
+                    {"tenant_id": tid, "provider": "stripe"},
                     {"$set": {
-                        "tenant_id": tid,
-                        "service": "stripe_validated",
-                        "validated": True,
+                        "is_validated": True,
                         "validated_at": datetime.utcnow().isoformat(),
-                        "currency": balance.get("available", [{}])[0].get("currency", "").upper()
+                        "settings.currency": balance.get("available", [{}])[0].get("currency", "").upper()
                     }},
                     upsert=True
                 )
@@ -782,9 +799,9 @@ async def validate_stripe(admin: Dict[str, Any] = Depends(get_tenant_admin)):
                     "balance": balance.get("available", [])
                 }
             else:
-                await db.integrations.update_one(
-                    {"tenant_id": tid, "service": "stripe_validated"},
-                    {"$set": {"validated": False, "error": response.text}},
+                await db.oauth_connections.update_one(
+                    {"tenant_id": tid, "provider": "stripe"},
+                    {"$set": {"is_validated": False, "settings.validation_error": response.text}},
                     upsert=True
                 )
                 return {"success": False, "message": f"Validation failed: {response.status_code}"}
@@ -829,15 +846,14 @@ async def validate_gocardless(admin: Dict[str, Any] = Depends(get_tenant_admin))
             if response.status_code == 200:
                 data = response.json()
                 creditors = data.get("creditors", [])
-                await db.integrations.update_one(
-                    {"tenant_id": tid, "service": "gocardless_validated"},
+                gc_provider = "gocardless" if environment == "live" else "gocardless_sandbox"
+                await db.oauth_connections.update_one(
+                    {"tenant_id": tid, "provider": gc_provider},
                     {"$set": {
-                        "tenant_id": tid,
-                        "service": "gocardless_validated",
-                        "validated": True,
+                        "is_validated": True,
                         "validated_at": datetime.utcnow().isoformat(),
-                        "environment": environment,
-                        "creditor_count": len(creditors)
+                        "settings.environment": environment,
+                        "settings.creditor_count": len(creditors)
                     }},
                     upsert=True
                 )
@@ -849,9 +865,9 @@ async def validate_gocardless(admin: Dict[str, Any] = Depends(get_tenant_admin))
                     "creditors": len(creditors)
                 }
             else:
-                await db.integrations.update_one(
-                    {"tenant_id": tid, "service": "gocardless_validated"},
-                    {"$set": {"validated": False, "error": response.text}},
+                await db.oauth_connections.update_one(
+                    {"tenant_id": tid, "provider": "gocardless"},
+                    {"$set": {"is_validated": False, "settings.validation_error": response.text}},
                     upsert=True
                 )
                 return {"success": False, "message": f"Validation failed: {response.status_code}"}
@@ -885,14 +901,15 @@ class WorkDriveParentFolder(BaseModel):
 async def get_workdrive_status(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Return current WorkDrive integration status for the tenant."""
     tid = tenant_id_of(admin)
-    doc = await db.integrations.find_one({"tenant_id": tid, "service": "zoho_workdrive"}, {"_id": 0})
+    doc = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_workdrive"}, {"_id": 0, "credentials": 0})
     if not doc:
         return {"status": "not_connected", "is_validated": False}
+    settings = doc.get("settings", {})
     return {
         "status": "connected" if doc.get("is_validated") else "pending",
         "is_validated": bool(doc.get("is_validated")),
-        "datacenter": doc.get("datacenter", "US"),
-        "parent_folder_url": doc.get("parent_folder_url", ""),
+        "datacenter": (doc.get("data_center") or "us").upper(),
+        "parent_folder_url": settings.get("parent_folder_url", ""),
         "connected_at": doc.get("connected_at"),
         "validated_at": doc.get("validated_at"),
     }
@@ -902,15 +919,18 @@ async def get_workdrive_status(admin: Dict[str, Any] = Depends(get_tenant_admin)
 async def workdrive_save_credentials(body: WorkDriveCredentials, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Save Client ID + Secret and return the OAuth auth URL."""
     from services.workdrive_service import build_auth_url
+    from services.encryption_service import encrypt_credentials, decrypt_credentials
     tid = tenant_id_of(admin)
     redirect_uri = "https://www.zoho.com/workdrive"
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_workdrive"},
+    existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_workdrive"}, {"_id": 0, "credentials": 1})
+    existing_creds = decrypt_credentials(existing["credentials"]) if existing and existing.get("credentials") else {}
+    merged = {**existing_creds, "client_id": body.client_id, "client_secret": body.client_secret}
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_workdrive"},
         {"$set": {
-            "tenant_id": tid, "service": "zoho_workdrive",
-            "client_id": body.client_id,
-            "client_secret": body.client_secret,
-            "datacenter": body.datacenter.upper(),
+            "tenant_id": tid, "provider": "zoho_workdrive",
+            "data_center": body.datacenter.lower(),
+            "credentials": encrypt_credentials(merged),
             "is_validated": False,
             "updated_at": __import__("core.helpers", fromlist=["now_iso"]).now_iso(),
         }},
@@ -925,6 +945,7 @@ async def workdrive_save_credentials(body: WorkDriveCredentials, admin: Dict[str
 async def workdrive_exchange_token(body: WorkDriveTokenExchange, admin: Dict[str, Any] = Depends(get_tenant_admin)):
     """Exchange OAuth auth code for tokens and mark integration as connected."""
     from services.workdrive_service import exchange_code_for_tokens
+    from services.encryption_service import encrypt_credentials, decrypt_credentials
     from core.helpers import now_iso as _now
     tid = tenant_id_of(admin)
     try:
@@ -939,16 +960,23 @@ async def workdrive_exchange_token(body: WorkDriveTokenExchange, admin: Dict[str
         raise HTTPException(status_code=400, detail=f"Token exchange failed: {exc}")
 
     now = _now()
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_workdrive"},
+    # Merge with existing credentials to preserve any previous data
+    existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_workdrive"}, {"_id": 0, "credentials": 1})
+    existing_creds = decrypt_credentials(existing["credentials"]) if existing and existing.get("credentials") else {}
+    merged = {
+        **existing_creds,
+        "client_id": body.client_id,
+        "client_secret": body.client_secret,
+        "access_token": tokens["access_token"],
+        "refresh_token": tokens["refresh_token"],
+        "api_domain": tokens["api_domain"],
+    }
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_workdrive"},
         {"$set": {
-            "tenant_id": tid, "service": "zoho_workdrive",
-            "client_id": body.client_id,
-            "client_secret": body.client_secret,
-            "datacenter": body.datacenter.upper(),
-            "access_token": tokens["access_token"],
-            "refresh_token": tokens["refresh_token"],
-            "api_domain": tokens["api_domain"],
+            "tenant_id": tid, "provider": "zoho_workdrive",
+            "data_center": body.datacenter.lower(),
+            "credentials": encrypt_credentials(merged),
             "is_validated": False,
             "connected_at": now,
             "updated_at": now,
@@ -967,8 +995,8 @@ async def workdrive_validate(admin: Dict[str, Any] = Depends(get_tenant_admin)):
     tid = tenant_id_of(admin)
     ok = await validate_connection(tid)
     now = _now()
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_workdrive"},
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_workdrive"},
         {"$set": {"is_validated": ok, "validated_at": now if ok else None, "updated_at": now}},
     )
     await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="validation_attempted", actor=admin.get("email", "admin"), details={"success": ok})
@@ -986,9 +1014,9 @@ async def workdrive_set_parent_folder(body: WorkDriveParentFolder, admin: Dict[s
     folder_id = extract_folder_id_from_url(body.parent_folder_url)
     if not folder_id:
         raise HTTPException(status_code=400, detail="Could not extract folder ID from URL. Ensure the URL is a valid WorkDrive folder link.")
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_workdrive"},
-        {"$set": {"parent_folder_url": body.parent_folder_url, "parent_folder_id": folder_id, "updated_at": _now()}},
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_workdrive"},
+        {"$set": {"settings.parent_folder_url": body.parent_folder_url, "settings.parent_folder_id": folder_id, "updated_at": _now()}},
     )
     await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="parent_folder_set", actor=admin.get("email", "admin"), details={"folder_id": folder_id})
     return {"folder_id": folder_id, "parent_folder_url": body.parent_folder_url}
@@ -999,9 +1027,9 @@ async def workdrive_disconnect(admin: Dict[str, Any] = Depends(get_tenant_admin)
     """Disconnect WorkDrive integration."""
     from core.helpers import now_iso as _now
     tid = tenant_id_of(admin)
-    await db.integrations.update_one(
-        {"tenant_id": tid, "service": "zoho_workdrive"},
-        {"$set": {"is_validated": False, "access_token": "", "refresh_token": "", "updated_at": _now()}},
+    await db.oauth_connections.update_one(
+        {"tenant_id": tid, "provider": "zoho_workdrive"},
+        {"$set": {"is_validated": False, "credentials.access_token": "", "credentials.refresh_token": "", "updated_at": _now()}},
     )
     await create_audit_log(entity_type="integration", entity_id="zoho_workdrive", action="disconnected", actor=admin.get("email", "admin"), details={})
     return {"message": "WorkDrive disconnected."}
