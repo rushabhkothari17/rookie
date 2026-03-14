@@ -194,6 +194,10 @@ async def _authenticate(email: str, password: str, tenant_id: Optional[str], exp
         if user and user.get("role") != PLATFORM_ROLE:
             user = None
     if not user:
+        # Perform a dummy bcrypt verification to prevent timing-based user enumeration.
+        # Without this, attackers can tell whether an email exists by measuring response time.
+        # The hash below is a pre-computed bcrypt hash of "__dummy__" at cost 12.
+        pwd_context.verify(password, "$2b$12$HD6oFykfYX7sflN.pCNEQuuCdiRfLuMpnBEP4YZCHrN9emTFJgCMO")
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Lockout check (before password verification to give consistent timing)

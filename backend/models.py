@@ -1,8 +1,19 @@
 """Pydantic request/response models for Automate Accounts API."""
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Any, Dict, List, Optional
+
+
+# ---------------------------------------------------------------------------
+# Shared length constants — keep short strings short, long content bounded
+# ---------------------------------------------------------------------------
+_NAME    = {"min_length": 1, "max_length": 500}
+_CODE    = {"min_length": 1, "max_length": 100}
+_DESC    = {"max_length": 10_000}
+_NOTE    = {"max_length": 5_000}
+_SHORT   = {"max_length": 200}
+_CONTENT = {"max_length": 500_000}   # articles / HTML bodies
 
 
 class AddressInput(BaseModel):
@@ -54,10 +65,10 @@ class CustomerLoginRequest(BaseModel):
 
 
 class TenantCreate(BaseModel):
-    name: str
-    code: str  # unique slug, used at login
+    name: str = Field(**_NAME)
+    code: str = Field(**_CODE)
     status: str = "active"
-    owner_email: Optional[str] = None  # email of initial partner_super_admin
+    owner_email: Optional[str] = None
 
 
 class TenantUpdate(BaseModel):
@@ -234,20 +245,20 @@ class CustomSection(BaseModel):
 
 
 class AdminProductUpdate(BaseModel):
-    name: str
-    card_tag: Optional[str] = None
-    card_description: Optional[str] = None
+    name: str = Field(**_NAME)
+    card_tag: Optional[str] = Field(None, max_length=100)
+    card_description: Optional[str] = Field(None, **_NOTE)
     card_bullets: Optional[List[str]] = None
-    description_long: str = ""
+    description_long: str = Field("", **_CONTENT)
     bullets: Optional[List[str]] = None
-    category: Optional[str] = None
+    category: Optional[str] = Field(None, max_length=200)
     faqs: Optional[List[Any]] = None
     terms_id: Optional[str] = None
     base_price: Optional[float] = Field(None, ge=0)
     is_subscription: Optional[bool] = None
     stripe_price_id: Optional[str] = None
     pricing_type: Optional[str] = "internal"
-    external_url: Optional[str] = None
+    external_url: Optional[str] = Field(None, max_length=2048)
     is_active: bool = True
     visible_to_customers: Optional[List[str]] = None
     restricted_to: Optional[List[str]] = None
@@ -257,10 +268,10 @@ class AdminProductUpdate(BaseModel):
     show_price_breakdown: Optional[bool] = False
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
-    currency: Optional[str] = None
+    currency: Optional[str] = Field(None, max_length=10)
     enquiry_form_id: Optional[str] = None
     default_term_months: Optional[int] = Field(None, ge=0, le=300)
-    billing_type: Optional[str] = None  # "prorata" | "fixed"
+    billing_type: Optional[str] = None
     tags: Optional[List[str]] = None
 
 
@@ -270,44 +281,82 @@ class AdminOrderUpdate(BaseModel):
 
 
 class PromoCodeCreate(BaseModel):
-    code: str
-    discount_type: str
+    code: str = Field(**_CODE)
+    discount_type: str = Field(**_SHORT)
     discount_value: float
-    applies_to: str
+    applies_to: str = Field(**_SHORT)
     applies_to_products: str = "all"
     product_ids: List[str] = Field(default_factory=list)
     expiry_date: Optional[str] = None
-    max_uses: Optional[int] = None
+    max_uses: Optional[int] = Field(None, ge=1)
     one_time_code: bool = False
     enabled: bool = True
-    promo_note: Optional[str] = None
-    currency: Optional[str] = None
+    promo_note: Optional[str] = Field(None, **_NOTE)
+    currency: Optional[str] = Field(None, max_length=10)
+
+    @field_validator("discount_type")
+    @classmethod
+    def validate_discount_type(cls, v: str) -> str:
+        if v not in ("percentage", "fixed"):
+            raise ValueError("discount_type must be 'percentage' or 'fixed'")
+        return v
+
+    @field_validator("discount_value")
+    @classmethod
+    def validate_discount_value(cls, v: float, info: Any) -> float:
+        if v < 0:
+            raise ValueError("discount_value must be non-negative")
+        # Validated against discount_type in a model_validator if needed;
+        # per-field we cap percentage at 100 using a separate validator below.
+        return v
+
+    @field_validator("discount_value", mode="after")
+    @classmethod
+    def cap_percentage(cls, v: float, info: Any) -> float:
+        dt = (info.data or {}).get("discount_type", "")
+        if dt == "percentage" and v > 100:
+            raise ValueError("Percentage discount cannot exceed 100%")
+        return v
 
 
 class PromoCodeUpdate(BaseModel):
-    discount_type: Optional[str] = None
+    discount_type: Optional[str] = Field(None, **_SHORT)
     discount_value: Optional[float] = None
-    applies_to: Optional[str] = None
+    applies_to: Optional[str] = Field(None, **_SHORT)
     applies_to_products: Optional[str] = None
     product_ids: Optional[List[str]] = None
     expiry_date: Optional[str] = None
-    max_uses: Optional[int] = None
+    max_uses: Optional[int] = Field(None, ge=1)
     one_time_code: Optional[bool] = None
     enabled: Optional[bool] = None
-    promo_note: Optional[str] = None
-    currency: Optional[str] = None
+    promo_note: Optional[str] = Field(None, **_NOTE)
+    currency: Optional[str] = Field(None, max_length=10)
+
+    @field_validator("discount_type")
+    @classmethod
+    def validate_discount_type(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ("percentage", "fixed"):
+            raise ValueError("discount_type must be 'percentage' or 'fixed'")
+        return v
+
+    @field_validator("discount_value")
+    @classmethod
+    def validate_discount_value(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None and v < 0:
+            raise ValueError("discount_value must be non-negative")
+        return v
 
 
 class TermsCreate(BaseModel):
-    title: str
-    content: str
+    title: str = Field(**_NAME)
+    content: str = Field(**_CONTENT)
     is_default: bool = False
     status: str = "active"
 
 
 class TermsUpdate(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
+    title: Optional[str] = Field(None, **_NAME)
+    content: Optional[str] = Field(None, **_CONTENT)
     status: Optional[str] = None
     is_default: Optional[bool] = None
 
@@ -444,26 +493,24 @@ class CompleteGoCardlessRedirect(BaseModel):
 
 
 class ApplyPromoRequest(BaseModel):
-    code: str
-    checkout_type: str
+    code: str = Field(**_CODE)
+    checkout_type: str = Field(**_SHORT)
     product_ids: List[str] = Field(default_factory=list)
-    currency: Optional[str] = None
+    currency: Optional[str] = Field(None, max_length=10)
 
 
 class ScopeRequestFormData(BaseModel):
-    # Scope-specific fields (optional to support simple enquiry forms too)
-    project_summary: Optional[str] = ""
-    desired_outcomes: Optional[str] = ""
-    apps_involved: Optional[str] = ""
-    timeline_urgency: Optional[str] = ""
-    budget_range: Optional[str] = ""
-    additional_notes: Optional[str] = ""
-    # Simple contact/enquiry fields
-    name: Optional[str] = ""
-    email: Optional[str] = ""
-    company: Optional[str] = ""
-    phone: Optional[str] = ""
-    message: Optional[str] = ""
+    project_summary: Optional[str] = Field("", **_NOTE)
+    desired_outcomes: Optional[str] = Field("", **_NOTE)
+    apps_involved: Optional[str] = Field("", **_NOTE)
+    timeline_urgency: Optional[str] = Field("", **_SHORT)
+    budget_range: Optional[str] = Field("", **_SHORT)
+    additional_notes: Optional[str] = Field("", **_NOTE)
+    name: Optional[str] = Field("", **_NAME)
+    email: Optional[str] = Field("", max_length=320)
+    company: Optional[str] = Field("", **_SHORT)
+    phone: Optional[str] = Field("", max_length=50)
+    message: Optional[str] = Field("", **_NOTE)
     extra_fields: Optional[Dict[str, Any]] = None
 
 
@@ -473,32 +520,32 @@ class ScopeRequestWithForm(BaseModel):
 
 
 class CategoryCreate(BaseModel):
-    name: str
-    description: str = ""
+    name: str = Field(**_NAME)
+    description: str = Field("", **_NOTE)
     is_active: bool = True
 
 
 class CategoryUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: Optional[str] = Field(None, **_NAME)
+    description: Optional[str] = Field(None, **_NOTE)
     is_active: Optional[bool] = None
 
 
 class AdminProductCreate(BaseModel):
-    name: str
-    card_tag: Optional[str] = None
-    card_description: Optional[str] = None
+    name: str = Field(**_NAME)
+    card_tag: Optional[str] = Field(None, max_length=100)
+    card_description: Optional[str] = Field(None, **_NOTE)
     card_bullets: Optional[List[str]] = None
-    description_long: str = ""
+    description_long: str = Field("", **_CONTENT)
     bullets: List[str] = Field(default_factory=list)
-    category: str = ""
+    category: str = Field("", max_length=200)
     faqs: List[Dict[str, str]] = Field(default_factory=list)
     terms_id: Optional[str] = None
     base_price: float = Field(0.0, ge=0)
     is_subscription: bool = False
     stripe_price_id: Optional[str] = None
     pricing_type: str = "internal"
-    external_url: Optional[str] = None
+    external_url: Optional[str] = Field(None, max_length=2048)
     is_active: bool = True
     visible_to_customers: List[str] = Field(default_factory=list)
     restricted_to: List[str] = Field(default_factory=list)
@@ -508,10 +555,10 @@ class AdminProductCreate(BaseModel):
     show_price_breakdown: Optional[bool] = False
     custom_sections: Optional[List[CustomSection]] = None
     display_layout: Optional[str] = "standard"
-    currency: str = "USD"
+    currency: str = Field("USD", max_length=10)
     enquiry_form_id: Optional[str] = None
     default_term_months: Optional[int] = Field(None, ge=0, le=300)
-    billing_type: Optional[str] = "prorata"  # "prorata" | "fixed"
+    billing_type: Optional[str] = "prorata"
 
 
 class AppSettingsUpdate(BaseModel):
@@ -694,67 +741,67 @@ class QuoteRequest(BaseModel):
 
 
 class ArticleCreate(BaseModel):
-    title: str
-    slug: Optional[str] = None
-    category: str
-    price: Optional[float] = None
-    currency: Optional[str] = None
-    content: str = ""
+    title: str = Field(**_NAME)
+    slug: Optional[str] = Field(None, max_length=200)
+    category: str = Field(**_SHORT)
+    price: Optional[float] = Field(None, ge=0)
+    currency: Optional[str] = Field(None, max_length=10)
+    content: str = Field("", **_CONTENT)
     visibility: str = "all"
     restricted_to: List[str] = []
 
 
 class ArticleUpdate(BaseModel):
-    title: Optional[str] = None
-    slug: Optional[str] = None
-    category: Optional[str] = None
-    price: Optional[float] = None
-    currency: Optional[str] = None
-    content: Optional[str] = None
+    title: Optional[str] = Field(None, **_NAME)
+    slug: Optional[str] = Field(None, max_length=200)
+    category: Optional[str] = Field(None, **_SHORT)
+    price: Optional[float] = Field(None, ge=0)
+    currency: Optional[str] = Field(None, max_length=10)
+    content: Optional[str] = Field(None, **_CONTENT)
     visibility: Optional[str] = None
     restricted_to: Optional[List[str]] = None
 
 
 class ArticleEmailRequest(BaseModel):
-    customer_ids: List[str]
-    subject: Optional[str] = None
-    message: Optional[str] = None
+    customer_ids: List[str] = Field(max_length=1000)
+    subject: Optional[str] = Field(None, **_SHORT)
+    message: Optional[str] = Field(None, **_NOTE)
 
 
 class ArticleSendEmailRequest(BaseModel):
-    to: List[str]
-    cc: Optional[List[str]] = None
-    bcc: Optional[List[str]] = None
-    subject: str
-    html_body: str
+    to: List[str] = Field(max_length=200)
+    cc: Optional[List[str]] = Field(None, max_length=50)
+    bcc: Optional[List[str]] = Field(None, max_length=50)
+    subject: str = Field(**_SHORT)
+    html_body: str = Field(**_CONTENT)
     attach_pdf: bool = False
 
 
 class ArticleEmailTemplateCreate(BaseModel):
-    name: str
-    subject: str
-    html_body: str
-    description: Optional[str] = ""
+    name: str = Field(**_NAME)
+    subject: str = Field(**_SHORT)
+    html_body: str = Field(**_CONTENT)
+    description: Optional[str] = Field("", **_NOTE)
 
 
 class ArticleEmailTemplateUpdate(BaseModel):
-    name: Optional[str] = None
-    subject: Optional[str] = None
-    html_body: Optional[str] = None
+    name: Optional[str] = Field(None, **_NAME)
+    subject: Optional[str] = Field(None, **_SHORT)
+    html_body: Optional[str] = Field(None, **_CONTENT)
     description: Optional[str] = None
 
 
 class ArticleCategoryCreate(BaseModel):
-    name: str
-    description: Optional[str] = ""
-    color: Optional[str] = ""
+    name: str = Field(**_NAME)
+    description: Optional[str] = Field("", **_NOTE)
+    color: Optional[str] = Field("", max_length=50)
     is_scope_final: Optional[bool] = False
 
 
 class ArticleCategoryUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    color: Optional[str] = None
+    name: Optional[str] = Field(None, **_NAME)
+    description: Optional[str] = Field(None, **_NOTE)
+    color: Optional[str] = Field(None, max_length=50)
     is_scope_final: Optional[bool] = None
 
 

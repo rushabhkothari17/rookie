@@ -179,24 +179,17 @@ async def resolve_api_key_tenant(
     x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
 ) -> Optional[str]:
     """FastAPI dependency: resolve tenant_id from X-API-Key header.
-    Looks up by SHA-256 hash first (new keys), falls back to plaintext (legacy keys).
-    Returns None if header missing or key invalid/inactive."""
+    Looks up by SHA-256 hash only. Plaintext fallback removed (security hardening).
+    Returns None if header missing; raises 401 if key invalid/inactive."""
     import hashlib
     if not x_api_key:
         return None
 
     key_hash = hashlib.sha256(x_api_key.encode()).hexdigest()
-    # Try hash lookup first (hashed keys)
     key_doc = await db.api_keys.find_one(
         {"key_hash": key_hash, "is_active": True}, {"_id": 0, "tenant_id": 1, "id": 1}
     )
     if not key_doc:
-        # Fall back to plaintext for legacy keys created before hashing was introduced
-        key_doc = await db.api_keys.find_one(
-            {"key": x_api_key, "is_active": True}, {"_id": 0, "tenant_id": 1, "id": 1}
-        )
-    if not key_doc:
-        # Key was provided but is invalid/inactive — raise 401 instead of returning None
         raise HTTPException(status_code=401, detail="Invalid or inactive API key")
     # Update last_used_at
     await db.api_keys.update_one(

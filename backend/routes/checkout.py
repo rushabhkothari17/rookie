@@ -327,17 +327,17 @@ async def checkout_bank_transfer(
                     product_eligible = False
             if not is_expired and not max_reached and type_matches and product_eligible:
                 if promo["discount_type"] == "percent":
-                    discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
+                    discount_amount = min(round_cents(subtotal * promo["discount_value"] / 100), subtotal)
                 else:
                     discount_amount = min(round_cents(promo["discount_value"]), subtotal)
                 promo_code_data = promo
 
-    total = round_cents(subtotal - discount_amount)
+    total = max(0.0, round_cents(subtotal - discount_amount))
 
     # ── Tax calculation ───────────────────────────────────────────────────────
-    _tax_result_bt = await calculate_tax(round_cents(subtotal - discount_amount), tenant_id, customer["id"])
+    _tax_result_bt = await calculate_tax(max(0.0, round_cents(subtotal - discount_amount)), tenant_id, customer["id"])
     _tax_amount_bt = _tax_result_bt.get("tax_amount", 0.0)
-    total = round_cents(subtotal - discount_amount + _tax_amount_bt)
+    total = max(0.0, round_cents(subtotal - discount_amount + _tax_amount_bt))
 
     primary_product = order_items[0]["product"]
     terms_id = payload.terms_id if payload.terms_id else primary_product.get("terms_id")
@@ -567,19 +567,19 @@ async def create_checkout_session(
                     product_eligible = False
             if not is_expired and not max_reached and type_matches and product_eligible:
                 if promo["discount_type"] == "percent":
-                    discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
+                    discount_amount = min(round_cents(subtotal * promo["discount_value"] / 100), subtotal)
                 else:
                     discount_amount = min(round_cents(promo["discount_value"]), subtotal)
                 promo_code_data = promo
 
     _stripe_api_key, _, _fee_rate = await get_stripe_creds(tenant_id)
-    discounted_subtotal = subtotal - discount_amount
+    discounted_subtotal = max(0.0, subtotal - discount_amount)
     fee = round_cents(discounted_subtotal * _fee_rate)
 
     # ── Tax calculation ───────────────────────────────────────────────────────
     _tax_result_st = await calculate_tax(round_cents(discounted_subtotal), tenant_id, customer["id"])
     _tax_amount_st = _tax_result_st.get("tax_amount", 0.0)
-    total = round_cents(discounted_subtotal + fee + _tax_amount_st)
+    total = max(0.0, round_cents(discounted_subtotal + fee + _tax_amount_st))
 
     primary_product = order_items[0]["product"]
     terms_id = payload.terms_id if payload.terms_id else primary_product.get("terms_id")
@@ -982,12 +982,12 @@ async def checkout_free(
             max_reached = promo.get("max_uses") and promo.get("usage_count", 0) >= promo["max_uses"]
             if not is_expired and not max_reached:
                 if promo["discount_type"] == "percent":
-                    discount_amount = round_cents(subtotal * promo["discount_value"] / 100)
+                    discount_amount = min(round_cents(subtotal * promo["discount_value"] / 100), subtotal)
                 else:
                     discount_amount = min(round_cents(promo["discount_value"]), subtotal)
                 promo_code_data = promo
     
-    total = round_cents(subtotal - discount_amount)
+    total = max(0.0, round_cents(subtotal - discount_amount))
     
     # Ensure total is 0 or very close (within rounding tolerance)
     if total > 0.01:

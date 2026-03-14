@@ -35,10 +35,30 @@ def _parse_val(v: str) -> Any:
     return stripped
 
 
+_FORMULA_PREFIXES = ("=", "+", "-", "@", "|", "\t", "\r")
+
+
+def _sanitize_cell(v: str) -> str:
+    """Strip CSV formula injection characters from the start of a cell value.
+
+    Spreadsheet applications (Excel, LibreOffice) treat cells starting with
+    '=', '+', '-', '@' etc. as formulas.  Prefixing with a single-quote is the
+    standard defence — but since we store data in MongoDB (not a spreadsheet),
+    the cleanest approach is to strip or refuse such values entirely.
+    """
+    if not isinstance(v, str):
+        return v
+    stripped = v.strip()
+    if stripped.startswith(_FORMULA_PREFIXES):
+        # Prepend a single quote to neutralise formula execution if ever exported
+        return "'" + stripped
+    return v
+
+
 def _parse_csv(content: bytes) -> List[Dict[str, str]]:
     text = content.decode("utf-8-sig", errors="replace")
     reader = csv.DictReader(io.StringIO(text))
-    return [dict(row) for row in reader]
+    return [{k: _sanitize_cell(v) for k, v in row.items()} for row in reader]
 
 
 def _clean(row: Dict[str, str], required_fields: List[str]) -> Optional[str]:
