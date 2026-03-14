@@ -512,6 +512,11 @@ Build a white-label service commerce platform with:
 - Includes fade-in + slide-in animation for opening items, `data-testid` attributes for all FAQ triggers and content panels.
 - No Radix dependency needed — implemented natively with `useState` to avoid TypeScript/JSX interop issues.
 
+### Phase 25: ProductForm Spacing Fix + Clone Product Feature (Feb 2026)
+- **ProductForm spacing**: Changed `sectionCls` from `"space-y-6"` → `"flex flex-col gap-6"` and `cardCls` from `"... space-y-5"` → `"... flex flex-col gap-5"`. Also fixed the billing type inner container from `space-y-3` → `flex flex-col gap-3`. All sections in the product form (General, Pricing, Visibility tabs) now have correct spacing when switching between conditional pricing types (Internal/External/Enquiry).
+- **Clone Product feature**: Added `POST /api/admin/products/{id}/clone` backend endpoint — copies all fields, generates new ID, appends `_cloned` to name, sets `is_active: False`, logs audit entry. Added Clone button (with Copy icon, loading state) in the Products table next to Edit. Toast notification on success. Table auto-refreshes after clone.
+- **Tested**: 100% pass rate (iteration_302). Backend: 8/8, Frontend: 100%. Clone creates correct `_cloned` suffix + Inactive status.
+
 ### Phase 24: Codebase-Wide Spacing Fix + Dark Mode Text Contrast (Feb 2026)
 - **P0 — Spacing Bug**: `space-y-*` fails on containers with conditional children wrapped in `display:contents` spans. Fixed by replacing ALL top-level `space-y-*` containers with `flex flex-col gap-*` across the entire app (30+ admin tabs, Portal, Store, store layouts). Files changed: all `*Tab.tsx` files in `/pages/admin/`, `Portal.tsx`, `Store.tsx`, `store/layouts/ShowcaseLayout.tsx`, `WizardLayout.tsx`. 
 - **P1 — Hero Text Contrast**: `text-slate-300/400` overrides in dark mode used semi-transparent colors that became near-invisible on the `--aa-primary` blue hero backgrounds. Fixed by: (1) Changing `text-slate-400` override from `color-mix(... transparent)` to a solid `color-mix(... var(--aa-text))`, (2) Adding hero-section-specific overrides in `index.css` giving white-based colors (`rgba(255,255,255,0.55/0.70)`) to text inside `[data-testid="store-hero"]` and `[data-testid="cart-hero"]`.
