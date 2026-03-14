@@ -920,6 +920,7 @@ async def workdrive_save_credentials(body: WorkDriveCredentials, admin: Dict[str
     """Save Client ID + Secret and return the OAuth auth URL."""
     from services.workdrive_service import build_auth_url
     from services.encryption_service import encrypt_credentials, decrypt_credentials
+    from core.helpers import now_iso
     tid = tenant_id_of(admin)
     redirect_uri = "https://www.zoho.com/workdrive"
     existing = await db.oauth_connections.find_one({"tenant_id": tid, "provider": "zoho_workdrive"}, {"_id": 0, "credentials": 1})
@@ -932,7 +933,7 @@ async def workdrive_save_credentials(body: WorkDriveCredentials, admin: Dict[str
             "data_center": body.datacenter.lower(),
             "credentials": encrypt_credentials(merged),
             "is_validated": False,
-            "updated_at": __import__("core.helpers", fromlist=["now_iso"]).now_iso(),
+            "updated_at": now_iso(),
         }},
         upsert=True,
     )

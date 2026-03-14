@@ -4,6 +4,7 @@ Collections: intake_forms, intake_form_records
 """
 from __future__ import annotations
 import asyncio
+import re
 import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -249,10 +250,11 @@ async def list_intake_form_records(
     if customer_id:
         query["customer_id"] = customer_id
     if search:
+        safe_search = re.escape(search)
         query["$or"] = [
-            {"customer_name": {"$regex": search, "$options": "i"}},
-            {"customer_email": {"$regex": search, "$options": "i"}},
-            {"intake_form_name": {"$regex": search, "$options": "i"}},
+            {"customer_name": {"$regex": safe_search, "$options": "i"}},
+            {"customer_email": {"$regex": safe_search, "$options": "i"}},
+            {"intake_form_name": {"$regex": safe_search, "$options": "i"}},
         ]
     if date_from or date_to:
         df: Dict[str, Any] = {}

@@ -11,6 +11,7 @@ Supports:
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
@@ -201,10 +202,11 @@ async def list_partner_orders(
     if plan_id:
         query["plan_id"] = plan_id
     if search:
+        safe_search = re.escape(search)
         query["$or"] = [
-            {"partner_name": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}},
-            {"order_number": {"$regex": search, "$options": "i"}},
+            {"partner_name": {"$regex": safe_search, "$options": "i"}},
+            {"description": {"$regex": safe_search, "$options": "i"}},
+            {"order_number": {"$regex": safe_search, "$options": "i"}},
         ]
 
     skip = (page - 1) * limit
@@ -419,10 +421,11 @@ async def list_partner_subscriptions(
     if billing_interval:
         query["billing_interval"] = _parse_multi_filter(billing_interval)
     if search:
+        safe_search = re.escape(search)
         query["$or"] = [
-            {"partner_name": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}},
-            {"subscription_number": {"$regex": search, "$options": "i"}},
+            {"partner_name": {"$regex": safe_search, "$options": "i"}},
+            {"description": {"$regex": safe_search, "$options": "i"}},
+            {"subscription_number": {"$regex": safe_search, "$options": "i"}},
         ]
 
     skip = (page - 1) * limit

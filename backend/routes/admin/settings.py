@@ -164,6 +164,12 @@ async def upload_logo(
     if len(contents) > MAX_LOGO_SIZE:
         raise HTTPException(status_code=413, detail="Logo file too large. Maximum allowed size is 2 MB.")
     
+    # Sanitize SVG: reject if it contains script tags or event handlers (XSS prevention)
+    if file.content_type == "image/svg+xml":
+        svg_text = contents.decode("utf-8", errors="ignore").lower()
+        if "<script" in svg_text or "javascript:" in svg_text or " on" in svg_text:
+            raise HTTPException(status_code=400, detail="SVG file contains disallowed content (scripts or event handlers)")
+    
     b64 = base64.b64encode(contents).decode()
     content_type = file.content_type or "image/png"
     data_url = f"data:{content_type};base64,{b64}"

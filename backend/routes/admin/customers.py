@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import secrets
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
@@ -218,7 +219,8 @@ async def admin_customers(
             match_filters.append({"tenant_id": {"$in": partner_list}})
     
     if search:
-        search_regex = {"$regex": search, "$options": "i"}
+        safe_search = re.escape(search)
+        search_regex = {"$regex": safe_search, "$options": "i"}
         match_filters.append({
             "$or": [
                 {"user_data.email": search_regex},

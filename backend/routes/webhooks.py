@@ -527,7 +527,10 @@ async def gocardless_webhook(request: Request):
 
     # Verify HMAC-SHA256 signature
     gc_webhook_secret = await SettingsService.get("gocardless_webhook_secret") or os.environ.get("GOCARDLESS_WEBHOOK_SECRET", "")
-    if gc_webhook_secret and signature:
+    if gc_webhook_secret:
+        # Secret is configured — signature is MANDATORY; reject if missing or invalid
+        if not signature:
+            raise HTTPException(status_code=401, detail="Missing webhook signature")
         expected = hmac.new(gc_webhook_secret.encode(), body, hashlib.sha256).hexdigest()
         if not hmac.compare_digest(expected, signature):
             raise HTTPException(status_code=498, detail="Invalid webhook signature")

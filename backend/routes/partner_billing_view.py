@@ -5,6 +5,7 @@ Read-only except for subscription cancellation (allowed only after term expires)
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
@@ -47,9 +48,10 @@ async def my_partner_orders(
     if status:
         query["status"] = status
     if search:
+        safe_search = re.escape(search)
         query["$or"] = [
-            {"order_number": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}},
+            {"order_number": {"$regex": safe_search, "$options": "i"}},
+            {"description": {"$regex": safe_search, "$options": "i"}},
         ]
     skip = (page - 1) * limit
     total = await db.partner_orders.count_documents(query)
@@ -76,10 +78,11 @@ async def my_partner_subscriptions(
     if status:
         query["status"] = status
     if search:
+        safe_search = re.escape(search)
         query["$or"] = [
-            {"subscription_number": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}},
-            {"plan_name": {"$regex": search, "$options": "i"}},
+            {"subscription_number": {"$regex": safe_search, "$options": "i"}},
+            {"description": {"$regex": safe_search, "$options": "i"}},
+            {"plan_name": {"$regex": safe_search, "$options": "i"}},
         ]
     skip = (page - 1) * limit
     total = await db.partner_subscriptions.count_documents(query)
