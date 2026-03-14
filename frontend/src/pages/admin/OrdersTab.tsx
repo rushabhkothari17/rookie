@@ -268,11 +268,11 @@ export function OrdersTab() {
   };
 
   const statusColor = (s: string) => {
-    if (s === "paid" || s === "completed") return "bg-green-100 text-green-700";
-    if (s === "unpaid") return "bg-red-100 text-red-700";
-    if (s === "awaiting_bank_transfer") return "bg-amber-100 text-amber-700";
-    if (s === "cancelled" || s === "refunded") return "bg-slate-100 text-slate-500";
-    return "bg-slate-100 text-slate-600";
+    if (s === "paid" || s === "completed") return "aa-badge aa-badge-success";
+    if (s === "unpaid") return "aa-badge aa-badge-danger";
+    if (s === "awaiting_bank_transfer" || s === "pending" || s === "pending_payment" || s === "pending_direct_debit_setup") return "aa-badge aa-badge-warning";
+    if (s === "cancelled" || s === "refunded" || s === "canceled_pending") return "aa-badge aa-badge-muted";
+    return "aa-badge aa-badge-muted";
   };
 
   return (
@@ -331,7 +331,7 @@ export function OrdersTab() {
               const items = orderItems.filter(i => i.order_id === order.id);
               const productNames = items.map(i => productMap[i.product_id] || i.product_id).join(", ") || "—";
               return (
-                <TableRow key={order.id} data-testid={`admin-order-row-${order.id}`}>
+                <TableRow key={order.id} data-testid={`admin-order-row-${order.id}`} className="aa-table-row">
                   <TableCell className="whitespace-nowrap">{order.created_at?.slice(0, 10)}</TableCell>
                   <TableCell className="font-mono">{order.order_number}</TableCell>
                   <TableCell className="max-w-[144px] truncate">{user?.full_name || "—"}</TableCell>
@@ -374,7 +374,7 @@ export function OrdersTab() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${statusColor(order.status)}`}>{order.status}</span>
+                    <span className={statusColor(order.status)}>{order.status}</span>
                   </TableCell>
                   {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-order-partner-${order.id}`}>{order.partner_code || "—"}</TableCell>}
                   <TableCell>

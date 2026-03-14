@@ -493,15 +493,28 @@ export function ResourcesTab({ editResourceId }: ResourcesTabProps) {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8 text-sm">Loading…</TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={`skel-${i}`}>
+                  <TableCell><div className="aa-skel h-3 w-16 rounded" /></TableCell>
+                  <TableCell><div className="aa-skel h-3 w-20" /></TableCell>
+                  <TableCell><div className="aa-skel h-3 w-20" /></TableCell>
+                  <TableCell><div className="aa-skel h-4 w-28 mb-1" /><div className="aa-skel h-4 w-16 rounded-full" /></TableCell>
+                  <TableCell><div className="aa-skel h-3 w-14" /></TableCell>
+                  <TableCell><div className="aa-skel h-3 w-10" /></TableCell>
+                  {isPlatformAdmin && <TableCell><div className="aa-skel h-3 w-16" /></TableCell>}
+                  <TableCell><div className="aa-skel h-6 w-32 rounded" /></TableCell>
+                </TableRow>
+              ))
             ) : displayResources.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8 text-sm">No resources yet.</TableCell>
+                <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-16">
+                  <div className="aa-empty-geo mx-auto mb-4" />
+                  <p className="text-sm font-medium text-slate-500">No resources yet</p>
+                  <p className="text-xs text-slate-400 mt-1">Create your first resource to get started</p>
+                </TableCell>
               </TableRow>
             ) : displayResources.map((a) => (
-              <TableRow key={a.id} data-testid={`resource-row-${a.id}`}>
+              <TableRow key={a.id} data-testid={`resource-row-${a.id}`} className="aa-table-row">
                 <TableCell className="font-mono text-xs text-slate-500">{a.id?.slice(0, 8)}</TableCell>
                 <TableCell className="text-xs text-slate-500 whitespace-nowrap">{a.created_at?.slice(0, 10)}</TableCell>
                 <TableCell className="text-xs text-slate-500 whitespace-nowrap">{a.updated_at?.slice(0, 10)}</TableCell>

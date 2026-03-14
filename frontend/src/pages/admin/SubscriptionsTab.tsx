@@ -372,7 +372,7 @@ export function SubscriptionsTab() {
       .catch(() => toast.error("Export failed"));
   };
 
-  const statusColor = (s: string) => s === "active" ? "bg-green-100 text-green-700" : s === "unpaid" ? "bg-red-100 text-red-700" : s.includes("cancel") ? "bg-slate-100 text-slate-500" : "bg-amber-100 text-amber-700";
+  const statusColor = (s: string) => s === "active" ? "aa-badge aa-badge-success" : s === "unpaid" ? "aa-badge aa-badge-danger" : s.includes("cancel") ? "aa-badge aa-badge-muted" : "aa-badge aa-badge-warning";
 
   return (
     <div className="space-y-4" data-testid="subscriptions-tab">
@@ -421,7 +421,7 @@ export function SubscriptionsTab() {
           </TableHeader>
           <TableBody>
             {subs.map((sub) => (
-              <TableRow key={sub.id} data-testid={`admin-sub-row-${sub.id}`}>
+              <TableRow key={sub.id} data-testid={`admin-sub-row-${sub.id}`} className="aa-table-row">
                 <TableCell className="whitespace-nowrap">{sub.created_at?.slice(0, 10)}</TableCell>
                 <TableCell className="font-mono">{sub.subscription_number || sub.id?.slice(0, 8)}</TableCell>
                 <TableCell className="font-mono text-[10px]" data-testid={`admin-sub-processor-${sub.id}`}>
@@ -453,7 +453,7 @@ export function SubscriptionsTab() {
                 <TableCell className="whitespace-nowrap">{sub.start_date?.slice(0, 10) || "—"}</TableCell>
                 <TableCell className="whitespace-nowrap">{sub.contract_end_date?.slice(0, 10) || "—"}</TableCell>
                 <TableCell><span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700">{sub.payment_method || "—"}</span></TableCell>
-                <TableCell><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${statusColor(sub.status)}`}>{sub.status}</span></TableCell>
+                <TableCell><span className={statusColor(sub.status)}>{sub.status}</span></TableCell>
                 {isPlatformAdmin && <TableCell className="text-xs text-slate-500" data-testid={`admin-sub-partner-${sub.id}`}>{sub.partner_code || "—"}</TableCell>}
                 <TableCell>
                   <div className="flex gap-1 flex-nowrap">

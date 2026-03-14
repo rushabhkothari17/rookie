@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Users, UserRound, ShoppingBag, Package, RefreshCw, MessageSquare,
   BookOpen, FolderOpen, ClipboardList, Building, Percent, Lock,
@@ -57,27 +57,8 @@ interface CommandPaletteProps {
 
 export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
-
-  const handleSelect = useCallback((value: string) => {
-    onNavigate(value);
-    onClose();
-    setQuery("");
-  }, [onNavigate, onClose]);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
-
-  // Reset query when closed
-  useEffect(() => { if (!open) setQuery(""); }, [open]);
-
-  if (!open) return null;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const filtered = query.trim()
     ? NAV_ITEMS.filter(i =>
@@ -86,7 +67,57 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
       )
     : NAV_ITEMS;
 
+  const handleSelect = useCallback((value: string) => {
+    onNavigate(value);
+    onClose();
+    setQuery("");
+    setActiveIndex(0);
+  }, [onNavigate, onClose]);
+
+  // Reset active index when query changes
+  useEffect(() => { setActiveIndex(0); }, [query]);
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (!listRef.current) return;
+    const active = listRef.current.querySelector('[data-cmd-active="true"]') as HTMLElement;
+    if (active) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [activeIndex]);
+
+  // Keyboard handler
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { onClose(); return; }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveIndex(i => Math.min(i + 1, filtered.length - 1));
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveIndex(i => Math.max(i - 1, 0));
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (filtered[activeIndex]) handleSelect(filtered[activeIndex].value);
+        return;
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, onClose, filtered, activeIndex, handleSelect]);
+
+  // Reset when closed
+  useEffect(() => {
+    if (!open) { setQuery(""); setActiveIndex(0); }
+  }, [open]);
+
+  if (!open) return null;
+
   const sections = Array.from(new Set(filtered.map(i => i.section)));
+  let globalItemIndex = 0;
 
   return (
     <div className="aa-cmd-backdrop" onClick={onClose} data-testid="command-palette-backdrop">
@@ -114,7 +145,7 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
         </div>
 
         {/* Results */}
-        <div className="overflow-y-auto" style={{ maxHeight: "380px" }}>
+        <div ref={listRef} className="overflow-y-auto" style={{ maxHeight: "380px" }}>
           {filtered.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-sm" style={{ color: "var(--aa-muted)" }}>No results for "{query}"</p>
@@ -129,20 +160,40 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
                   </p>
                   {items.map(item => {
                     const Icon = item.icon;
+                    const itemIdx = globalItemIndex++;
+                    const isActive = itemIdx === activeIndex;
                     return (
                       <button
                         key={item.value}
                         onClick={() => handleSelect(item.value)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left hover:bg-[var(--aa-surface)]"
-                        style={{ color: "var(--aa-text)" }}
+                        data-cmd-active={isActive ? "true" : "false"}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors"
+                        style={{
+                          color: "var(--aa-text)",
+                          backgroundColor: isActive
+                            ? "color-mix(in srgb, var(--aa-accent) 8%, var(--aa-surface))"
+                            : "transparent",
+                          borderLeft: isActive ? "2px solid var(--aa-accent)" : "2px solid transparent",
+                        }}
                         data-testid={`cmd-item-${item.value}`}
                       >
-                        <div className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0"
-                          style={{ background: "color-mix(in srgb, var(--aa-accent) 10%, transparent)", color: "var(--aa-accent)" }}>
+                        <div
+                          className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0 transition-all"
+                          style={{
+                            background: isActive
+                              ? `color-mix(in srgb, var(--aa-accent) 20%, transparent)`
+                              : `color-mix(in srgb, var(--aa-accent) 10%, transparent)`,
+                            color: "var(--aa-accent)",
+                          }}
+                        >
                           <Icon size={14} />
                         </div>
-                        <span className="font-medium">{item.label}</span>
-                        <span className="ml-auto text-xs" style={{ color: "var(--aa-muted)", opacity: 0.6 }}>{section}</span>
+                        <span className="font-medium flex-1">{item.label}</span>
+                        {isActive ? (
+                          <span className="aa-kbd shrink-0">↵</span>
+                        ) : (
+                          <span className="text-xs shrink-0" style={{ color: "var(--aa-muted)", opacity: 0.5 }}>{section}</span>
+                        )}
                       </button>
                     );
                   })}
@@ -157,8 +208,9 @@ export function CommandPalette({ onNavigate, open, onClose }: CommandPaletteProp
           <div className="flex items-center gap-3 text-[10px]" style={{ color: "var(--aa-muted)" }}>
             <span><span className="aa-kbd">↑↓</span> navigate</span>
             <span><span className="aa-kbd">↵</span> open</span>
+            <span><span className="aa-kbd">esc</span> close</span>
           </div>
-          <span className="text-[10px]" style={{ color: "var(--aa-muted)", opacity: 0.5 }}>{filtered.length} results</span>
+          <span className="text-[10px]" style={{ color: "var(--aa-muted)", opacity: 0.5 }}>{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
         </div>
       </div>
     </div>

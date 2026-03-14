@@ -21,11 +21,11 @@ import { ColHeader } from "@/components/shared/ColHeader";
 const STATUS_OPTIONS = ["scope_pending", "scope_requested", "responded", "closed"];
 
 const statusBadge = (s: string) => {
-  const map: Record<string, string> = {
-    scope_pending: "bg-yellow-100 text-yellow-700",
-    scope_requested: "bg-blue-100 text-blue-700",
-    responded: "bg-green-100 text-green-700",
-    closed: "bg-slate-100 text-slate-500",
+  const badgeClass: Record<string, string> = {
+    scope_pending: "aa-badge aa-badge-warning",
+    scope_requested: "aa-badge aa-badge-accent",
+    responded: "aa-badge aa-badge-success",
+    closed: "aa-badge aa-badge-muted",
   };
   const labels: Record<string, string> = {
     scope_pending: "Pending",
@@ -34,7 +34,7 @@ const statusBadge = (s: string) => {
     closed: "Closed",
   };
   return (
-    <span className={`text-xs px-2 py-0.5 rounded font-medium ${map[s] || "bg-slate-100 text-slate-500"}`}>
+    <span className={badgeClass[s] || "aa-badge aa-badge-muted"}>
       {labels[s] || s}
     </span>
   );
@@ -440,13 +440,15 @@ export function EnquiriesTab() {
           <TableBody>
             {displayEnquiries.length === 0 && (
               <TableRow>
-                <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-8">
-                  No enquiries found.
+                <TableCell colSpan={isPlatformAdmin ? 8 : 7} className="text-center text-slate-400 py-16">
+                  <div className="aa-empty-geo mx-auto mb-4" />
+                  <p className="text-sm font-medium text-slate-500">No enquiries found</p>
+                  <p className="text-xs text-slate-400 mt-1">Enquiries will appear here when customers submit scope requests</p>
                 </TableCell>
               </TableRow>
             )}
             {displayEnquiries.map((e) => (
-              <TableRow key={e.id} data-testid={`enquiry-row-${e.id}`}>
+              <TableRow key={e.id} data-testid={`enquiry-row-${e.id}`} className="aa-table-row">
                 <TableCell className="whitespace-nowrap text-xs">{e.created_at?.slice(0, 10)}</TableCell>
                 <TableCell className="font-mono text-xs">{e.order_number}</TableCell>
                 <TableCell>

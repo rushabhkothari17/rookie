@@ -1035,23 +1035,15 @@ select:focus-visible {
 
 /* ── Table enhancements ──────────────────────────────────────────────────── */
 .aa-table-row {
-  position: relative;
   transition: background-color 0.12s ease;
 }
-.aa-table-row::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--aa-accent);
-  transform: scaleY(0);
-  transform-origin: center;
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  border-radius: 0 1px 1px 0;
+.aa-table-row td:first-child {
+  box-shadow: inset 3px 0 0 transparent;
+  transition: box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.aa-table-row:hover::before { transform: scaleY(1); }
+.aa-table-row:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--aa-accent);
+}
 
 /* ── Status pulse dot ────────────────────────────────────────────────────── */
 @keyframes aa-pulse {

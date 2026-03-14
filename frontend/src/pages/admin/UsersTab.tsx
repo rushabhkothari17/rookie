@@ -552,6 +552,7 @@ export function UsersTab() {
   const isPlatformAdmin = authUser?.role === "platform_admin" || authUser?.role === "platform_super_admin";
 
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -649,6 +650,7 @@ export function UsersTab() {
   };
 
   const load = useCallback(async (p = 1) => {
+    setUsersLoading(true);
     try {
       const params: any = { page: p, per_page: PER_PAGE };
       if (searchFilter) params.search = searchFilter;
@@ -660,6 +662,8 @@ export function UsersTab() {
       setPage(p);
     } catch {
       toast.error("Failed to load users");
+    } finally {
+      setUsersLoading(false);
     }
   }, [searchFilter, partnerFilter]);
 
@@ -867,18 +871,31 @@ export function UsersTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayUsers.map(u => {
+                {usersLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={`skel-${i}`}>
+                      <TableCell><div className="aa-skel h-4 w-32 mb-1" /><div className="aa-skel h-3 w-40" /></TableCell>
+                      <TableCell><div className="aa-skel h-5 w-24 rounded-full" /></TableCell>
+                      {isPlatformAdmin && <TableCell><div className="aa-skel h-4 w-28" /></TableCell>}
+                      {isPlatformAdmin && <TableCell><div className="aa-skel h-5 w-16 rounded" /></TableCell>}
+                      <TableCell><div className="aa-skel h-4 w-16" /></TableCell>
+                      <TableCell><div className="aa-skel h-5 w-14 rounded-full" /></TableCell>
+                      <TableCell><div className="aa-skel h-7 w-20 rounded-md ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                displayUsers.map(u => {
                   const isImmutable = isPlatformSuperAdminUser(u);
                   const isSA = isSuperAdminUser(u);
                   const mpKeys = Object.keys(u.module_permissions || {}).filter(k => u.module_permissions[k] !== "none");
                   return (
-                    <TableRow key={u.id} data-testid={`user-row-${u.id}`} className={!u.is_active ? "opacity-50" : ""}>
+                    <TableRow key={u.id} data-testid={`user-row-${u.id}`} className={`aa-table-row ${!u.is_active ? "opacity-50" : ""}`}>
                       <TableCell>
                         <p className="text-sm font-medium">{u.full_name || "—"}</p>
                         <p className="text-xs text-slate-400">{u.email}</p>
                       </TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border ${roleBadgeColor(u.role)}`}>
+                        <span className={`aa-badge ${roleBadgeColor(u.role)}`}>
                           {isImmutable && <Lock size={9} />}
                           {roleLabel(u.role)}
                         </span>
@@ -907,7 +924,8 @@ export function UsersTab() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${u.is_active ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"}`}>
+                        <span className={`aa-badge ${u.is_active ? "aa-badge-success" : "aa-badge-danger"}`}>
+                          <span className={`aa-status-dot ${u.is_active ? "active" : "inactive"}`} />
                           {u.is_active ? "Active" : "Inactive"}
                         </span>
                       </TableCell>
@@ -927,9 +945,12 @@ export function UsersTab() {
                       </TableCell>
                     </TableRow>
                   );
-                })}
-                {adminUsers.length === 0 && (
-                  <TableRow><TableCell colSpan={isPlatformAdmin ? 6 : 5} className="text-center text-sm text-slate-400 py-8">No admin users found</TableCell></TableRow>
+                }))}
+                {!usersLoading && adminUsers.length === 0 && displayUsers.length === 0 && (
+                  <TableRow><TableCell colSpan={isPlatformAdmin ? 6 : 5} className="text-center text-sm text-slate-400 py-16">
+                    <div className="aa-empty-geo mx-auto mb-4" />
+                    <p className="font-medium">No admin users found</p>
+                  </TableCell></TableRow>
                 )}
               </TableBody>
             </Table>

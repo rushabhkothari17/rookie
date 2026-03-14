@@ -194,23 +194,42 @@ export function ProductsTab() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loading && <TableRow><TableCell colSpan={isPlatformAdmin ? 7 : 6} className="text-center text-slate-400">Loading...</TableCell></TableRow>}
-                  {!loading && displayFiltered.length === 0 && <TableRow><TableCell colSpan={isPlatformAdmin ? 7 : 6} className="text-center text-slate-400">No products found.</TableCell></TableRow>}
+                  {loading && Array.from({ length: 6 }).map((_, i) => (
+                    <TableRow key={`skel-${i}`}>
+                      <TableCell><div className="aa-skel h-4 w-36 mb-1" /><div className="aa-skel h-3 w-20" /></TableCell>
+                      <TableCell><div className="aa-skel h-4 w-20" /></TableCell>
+                      <TableCell><div className="aa-skel h-5 w-20 rounded-full" /></TableCell>
+                      <TableCell><div className="aa-skel h-4 w-16" /></TableCell>
+                      <TableCell><div className="aa-skel h-5 w-14 rounded-full" /></TableCell>
+                      {isPlatformAdmin && <TableCell><div className="aa-skel h-4 w-16" /></TableCell>}
+                      <TableCell><div className="aa-skel h-7 w-28 rounded-md" /></TableCell>
+                    </TableRow>
+                  ))}
+                  {!loading && displayFiltered.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={isPlatformAdmin ? 7 : 6} className="py-16 text-center">
+                        <div className="aa-empty-geo mx-auto mb-4" />
+                        <p className="text-sm font-medium text-slate-500">No products found</p>
+                        <p className="text-xs text-slate-400 mt-1">Try adjusting your filters or create a new product</p>
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {paged.map((product) => (
-                    <TableRow key={product.id} data-testid={`admin-product-row-${product.id}`}>
+                    <TableRow key={product.id} data-testid={`admin-product-row-${product.id}`} className="aa-table-row">
                       <TableCell>
                         <div className="font-medium text-sm">{product.name}</div>
                         {product.tag && <span className="text-xs text-slate-400">{product.tag}</span>}
                       </TableCell>
                       <TableCell className="text-xs text-slate-500">{product.category}</TableCell>
                       <TableCell>
-                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${product.is_subscription ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
+                        <span className={`aa-badge ${product.is_subscription ? "aa-badge-accent" : "aa-badge-muted"}`}>
                           {product.is_subscription ? "Subscription" : "One-time"}
                         </span>
                       </TableCell>
-                      <TableCell className="text-sm">{product.base_price ? new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(product.base_price) : product.pricing_type === "enquiry" ? <span className="text-slate-400 text-xs">RFQ</span> : <span className="text-slate-400 text-xs">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(0)}</span>}</TableCell>
+                      <TableCell className="text-sm aa-mono">{product.base_price ? new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(product.base_price) : product.pricing_type === "enquiry" ? <span className="text-slate-400 text-xs">RFQ</span> : <span className="text-slate-400 text-xs">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(0)}</span>}</TableCell>
                       <TableCell>
-                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${product.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                        <span className={`aa-badge ${product.is_active ? "aa-badge-success" : "aa-badge-danger"}`}>
+                          <span className={`aa-status-dot ${product.is_active ? "active" : "inactive"}`} />
                           {product.is_active ? "Active" : "Inactive"}
                         </span>
                       </TableCell>

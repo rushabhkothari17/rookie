@@ -383,7 +383,7 @@ export function CustomersTab() {
               const hasGC = modes ? modes.includes("gocardless") : (customer.allow_bank_transfer ?? true);
               const hasStripe = modes ? modes.includes("stripe") : (customer.allow_card_payment ?? false);
               return (
-                <TableRow key={customer.id} data-testid={`admin-customer-row-${customer.id}`}>
+                <TableRow key={customer.id} data-testid={`admin-customer-row-${customer.id}`} className="aa-table-row">
                   <TableCell data-testid={`admin-customer-name-${customer.id}`}>{user.full_name || customer.company_name}</TableCell>
                   <TableCell data-testid={`admin-customer-email-${customer.id}`}>{user.email || "—"}</TableCell>
                   <TableCell data-testid={`admin-customer-region-${customer.id}`}>{normaliseRegion(address.region || "") || "—"}</TableCell>
