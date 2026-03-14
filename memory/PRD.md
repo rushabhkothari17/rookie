@@ -471,7 +471,16 @@ Build a white-label service commerce platform with:
 - Bug Fix: `UnboundLocalError` in `verify-partner-email` — removed duplicate `from datetime import timezone` inside conditional blocks that shadowed the module-level import
 - Tested via iteration_284 — **19/19 tests PASS (100%)**
 
-### P0 — Critical (None currently)
+### Phase 17: UI/UX Overhaul Phase 2 (Mar 2026)
+- **Command Palette keyboard navigation**: Fixed Ctrl+K palette (was showing nav hints but not actually handling ArrowUp/ArrowDown/Enter). Added `activeIndex` state, keyboard event handler with ArrowUp/ArrowDown/Enter/Escape support, auto-scroll to active item, reset on query change.
+- **Table enhancements**: Applied `aa-table-row` class (left accent bar on hover via `box-shadow: inset 3px 0 0 var(--aa-accent)`) to all main admin tables: Products, Users, Enquiries, Resources, Orders, Subscriptions, Customers.
+- **Status badges**: Replaced hardcoded `bg-green-100 text-green-700` style badges with semantic CSS-variable-based `aa-badge-success/danger/warning/accent/muted` classes across all admin tabs. Role badges in UsersTab now use `aa-badge-accent/success/warning/muted`.
+- **Skeleton loaders**: Added `aa-skel` skeleton rows for Products tab (uses existing `loading` state) and Users tab (new `usersLoading` state added to properly handle loading vs empty states).
+- **Empty states**: Added `aa-empty-geo` visual + descriptive text to Products, Enquiries, Users, and Resources tabs when no data exists.
+- **Input focus ring**: Enhanced base `Input` component with `focus-visible:ring-2 ring-[var(--aa-accent)]/20 focus-visible:border-[var(--aa-accent)]` for a blue glow effect on focus.
+- Tested via iteration_296 — **13/13 Phase 2 features PASS (100%)**
+
+
 
 ### P1 — High Priority
 - New landing page (needs design prompt from user)

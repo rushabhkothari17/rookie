@@ -130,11 +130,11 @@ function roleLabel(role: string): string {
 }
 
 function roleBadgeColor(role: string) {
-  if (role === "platform_super_admin") return "bg-violet-100 text-violet-700 border-violet-200";
-  if (role === "platform_admin") return "bg-blue-100 text-blue-700 border-blue-200";
-  if (role === "partner_super_admin") return "bg-emerald-100 text-emerald-700 border-emerald-200";
-  if (role === "partner_admin") return "bg-amber-100 text-amber-700 border-amber-200";
-  return "bg-slate-100 text-slate-600 border-slate-200";
+  if (role === "platform_super_admin") return "aa-badge-accent";
+  if (role === "platform_admin") return "aa-badge-accent";
+  if (role === "partner_super_admin") return "aa-badge-success";
+  if (role === "partner_admin") return "aa-badge-warning";
+  return "aa-badge-muted";
 }
 
 // ── Presets Sub-tab ─────────────────────────────────────────────────────────
