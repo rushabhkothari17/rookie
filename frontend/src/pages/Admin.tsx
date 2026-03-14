@@ -10,7 +10,6 @@ import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, Search,
   Receipt, Coins, ArrowRightLeft, Repeat2, FileText, Server,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getViewAsTenantId, subscribeToTenantSwitch } from "@/components/TenantSwitcher";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { CustomersTab } from "./admin/CustomersTab";
 import { SubscriptionsTab } from "./admin/SubscriptionsTab";
@@ -182,16 +181,9 @@ export default function Admin() {
     return false;
   };
 
-  // Reactively track whether platform admin is viewing as another tenant
-  const [viewingAsTenant, setViewingAsTenant] = useState(() => !!getViewAsTenantId());
-  useEffect(() => {
-    return subscribeToTenantSwitch(() => setViewingAsTenant(!!getViewAsTenantId()));
-  }, []);
-
-  const showPartnerOrgs = isPlatformAdmin && !viewingAsTenant;
+  const showPartnerOrgs = isPlatformAdmin;
   const isPartnerAdmin = (authUser?.role === "partner_admin" || authUser?.role === "partner_super_admin") && !isPlatformAdmin;
-  // Show checklist for tenant admins OR platform admin viewing as a tenant
-  const showChecklist = !isPlatformAdmin || viewingAsTenant;
+  const showChecklist = !isPlatformAdmin;
 
   const [searchParams] = useSearchParams();
   const editResourceId = searchParams.get("editArticle") || searchParams.get("editResource");

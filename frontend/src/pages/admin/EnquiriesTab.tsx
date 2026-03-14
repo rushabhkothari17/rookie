@@ -163,14 +163,11 @@ export function EnquiriesTab() {
   const [products, setProducts] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [forms, setForms] = useState<any[]>([]);
-  const [tenants, setTenants] = useState<any[]>([]);
-  const [selectedTenantId, setSelectedTenantId] = useState("");
   const [newEnquiry, setNewEnquiry] = useState({ customer_id: "", product_id: "", form_id: "", notes: "" });
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [creating, setCreating] = useState(false);
   const [customerComboOpen, setCustomerComboOpen] = useState(false);
   const [productComboOpen, setProductComboOpen] = useState(false);
-  const [partnerComboOpen, setPartnerComboOpen] = useState(false);
 
   // Derived: selected form's schema fields
   const selectedFormFields = useMemo(() => {
@@ -184,10 +181,9 @@ export function EnquiriesTab() {
     return [];
   }, [newEnquiry.form_id, forms]);
 
-  const loadDropdownData = useCallback((tenantId?: string) => {
-    const cfg = tenantId ? { headers: { "X-View-As-Tenant": tenantId } } : {};
-    api.get("/admin/products-all?per_page=200", cfg).then(r => setProducts(r.data.products || [])).catch(() => {});
-    api.get("/admin/customers?per_page=200", cfg).then(r => {
+  const loadDropdownData = useCallback((_tenantId?: string) => {
+    api.get("/admin/products-all?per_page=200").then(r => setProducts(r.data.products || [])).catch(() => {});
+    api.get("/admin/customers?per_page=200").then(r => {
       const custs = r.data.customers || [];
       const users = r.data.users || [];
       const userMap: Record<string, any> = {};
@@ -199,21 +195,17 @@ export function EnquiriesTab() {
       }));
       setCustomers(merged);
     }).catch(() => {});
-    api.get("/admin/forms", cfg).then(r => setForms(r.data.forms || [])).catch(() => {});
+    api.get("/admin/forms").then(r => setForms(r.data.forms || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
     loadDropdownData();
-    if (isPlatformAdmin) {
-      api.get("/admin/tenants").then(r => setTenants(r.data.tenants || [])).catch(() => {});
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const resetCreate = () => {
     setNewEnquiry({ customer_id: "", product_id: "", form_id: "", notes: "" });
     setFormData({});
-    if (isPlatformAdmin) { setSelectedTenantId(""); setCustomers([]); setProducts([]); setForms([]); }
   };
 
   const handleCreateEnquiry = async () => {
@@ -226,7 +218,6 @@ export function EnquiriesTab() {
     }
     setCreating(true);
     try {
-      const cfg = (isPlatformAdmin && selectedTenantId) ? { headers: { "X-View-As-Tenant": selectedTenantId } } : {};
       const res = await api.post("/admin/enquiries/manual", {
         customer_id: newEnquiry.customer_id,
         product_id: newEnquiry.product_id || null,
@@ -278,55 +269,15 @@ export function EnquiriesTab() {
           <DialogHeader><DialogTitle>Create Manual Enquiry</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
 
-            {/* Partner select — platform admins only */}
-            {isPlatformAdmin && (
-              <div>
-                <RequiredLabel className="text-slate-600">Partner</RequiredLabel>
-                <Popover open={partnerComboOpen} onOpenChange={setPartnerComboOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-partner-select">
-                      {selectedTenantId
-                        ? (tenants.find(t => t.id === selectedTenantId)?.name || selectedTenantId)
-                        : <span className="text-slate-400">Select partner...</span>}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0 z-[200]" style={{ width: "var(--radix-popover-trigger-width)" }} align="start">
-                    <Command>
-                      <CommandInput placeholder="Search partners..." />
-                      <CommandList className="max-h-48">
-                        <CommandEmpty>No partner found.</CommandEmpty>
-                        <CommandGroup>
-                          {tenants.map((t: any) => (
-                            <CommandItem key={t.id} value={t.name || t.id} onSelect={() => {
-                              const tid = t.id;
-                              setSelectedTenantId(tid);
-                              setNewEnquiry(p => ({ ...p, customer_id: "", product_id: "", form_id: "" }));
-                              setFormData({});
-                              loadDropdownData(tid);
-                              setPartnerComboOpen(false);
-                            }}>
-                              <Check className={cn("mr-2 h-4 w-4", selectedTenantId === t.id ? "opacity-100" : "opacity-0")} />
-                              {t.name || t.id}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
-
             {/* Customer combobox with search */}
             <div>
               <RequiredLabel className="text-slate-600">Customer</RequiredLabel>
               <Popover open={customerComboOpen} onOpenChange={setCustomerComboOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-customer-select" disabled={isPlatformAdmin && !selectedTenantId}>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-customer-select">
                     {newEnquiry.customer_id
                       ? (() => { const c = customers.find(x => x.id === newEnquiry.customer_id); return c ? `${c.full_name || c.company_name}${c.email ? ` (${c.email})` : ""}` : "Select customer"; })()
-                      : <span className="text-slate-400">{isPlatformAdmin && !selectedTenantId ? "Select partner first" : "Select customer..."}</span>}
+                      : <span className="text-slate-400">Select customer...</span>}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -358,7 +309,7 @@ export function EnquiriesTab() {
               <label className="text-xs font-medium text-slate-600">Product <span className="text-slate-400">(optional)</span></label>
               <Popover open={productComboOpen} onOpenChange={setProductComboOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-product-select" disabled={isPlatformAdmin && !selectedTenantId}>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal mt-1 h-10 text-sm" data-testid="enquiry-product-select">
                     {newEnquiry.product_id
                       ? (products.find(p => p.id === newEnquiry.product_id)?.name || "Select product")
                       : <span className="text-slate-400">None (optional)</span>}

@@ -123,28 +123,18 @@ async def list_articles_admin(
 async def list_articles_public(
     category: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
-    x_view_as_customer: Optional[str] = Header(default=None, alias="X-View-As-Customer"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    # Public articles listing: intentionally ignores X-View-As-Tenant so admin
-    # impersonation does not bleed into the public-facing page.
-    if user and is_platform_admin(user) and x_view_as_tenant:
-        tid = x_view_as_tenant
-    elif user and user.get("tenant_id"):
+    if user and user.get("tenant_id"):
         tid = user["tenant_id"]
     elif api_key_tid:
         tid = api_key_tid
     else:
         tid = DEFAULT_TENANT_ID
-    # Platform admin can impersonate a customer for visibility filtering
-    if user and user.get("role") == "platform_admin" and x_view_as_customer:
-        customer_id = x_view_as_customer
-    elif user:
+    customer_id = None
+    if user:
         customer = await db.customers.find_one({"user_id": user["id"]}, {"_id": 0})
         customer_id = customer["id"] if customer else None
-    else:
-        customer_id = None
     query: Dict[str, Any] = {"tenant_id": tid, "deleted_at": {"$exists": False}}
     if category:
         query["category"] = category
@@ -162,12 +152,8 @@ async def list_articles_public(
 async def validate_scope_article(
     article_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    if user.get("role") == "platform_admin" and x_view_as_tenant:
-        tid = x_view_as_tenant
-    else:
-        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.articles.find_one(
         {
             "tenant_id": tid,
@@ -213,14 +199,9 @@ async def get_article_logs(
 async def get_article_by_id(
     article_id: str,
     user: Dict[str, Any] = Depends(get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    from core.tenant import is_platform_admin, DEFAULT_TENANT_ID as _DT
-    # Resolve tenant: platform admins respect X-View-As-Tenant; all others use their own tenant_id
-    if is_platform_admin(user) and x_view_as_tenant:
-        tid = x_view_as_tenant
-    else:
-        tid = user.get("tenant_id") or _DT
+    from core.tenant import DEFAULT_TENANT_ID as _DT
+    tid = user.get("tenant_id") or _DT
     article = await db.articles.find_one(
         {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},
@@ -256,16 +237,12 @@ async def download_article(
     article_id: str,
     format: str = "pdf",
     user: Dict[str, Any] = Depends(get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
     """Download an article as PDF or DOCX."""
     from fastapi.responses import Response
     from services.document_service import generate_pdf, generate_docx
 
-    if user.get("role") == "platform_admin" and x_view_as_tenant:
-        tid = x_view_as_tenant
-    else:
-        tid = user.get("tenant_id") or DEFAULT_TENANT_ID
+    tid = user.get("tenant_id") or DEFAULT_TENANT_ID
     article = await db.articles.find_one(
         {"tenant_id": tid, "$or": [{"id": article_id}, {"slug": article_id}], "deleted_at": {"$exists": False}},
         {"_id": 0},

@@ -51,29 +51,24 @@ async def get_stripe_fee_rate(tenant_id: str) -> float:
     return SERVICE_FEE_RATE
 
 
-async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, x_view_as_tenant: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
-    """Resolve tenant_id: X-View-As-Tenant (platform_admin) > user JWT > API key > partner_code lookup > default."""
-    if x_view_as_tenant and user and is_platform_admin(user):
-        return x_view_as_tenant
+async def _resolve_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
+    """Resolve tenant_id: user JWT > API key > partner_code lookup > default."""
     if user and user.get("tenant_id"):
         return user["tenant_id"]
     if api_key_tid:
         return api_key_tid
     if partner_code:
-        # Look up tenant by code to get actual tenant_id
         tenant = await db.tenants.find_one({"code": partner_code.lower()}, {"_id": 0, "id": 1})
         if tenant:
             return tenant["id"]
     return DEFAULT_TENANT_ID
 
 
-async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None, x_view_as_tenant: Optional[str] = None) -> str:
+async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partner_code: Optional[str] = None, api_key_tid: Optional[str] = None) -> str:
     """Resolve tenant_id for public store listing pages.
-    Platform admins: use X-View-As-Tenant > partner_code > DEFAULT_TENANT_ID (their own store).
+    Platform admins use partner_code if provided, else DEFAULT_TENANT_ID (their own store).
     All other users: use their own tenant_id > api_key > partner_code > default."""
     if user and is_platform_admin(user):
-        if x_view_as_tenant:
-            return x_view_as_tenant
         if partner_code:
             tenant = await db.tenants.find_one({"code": partner_code.lower()}, {"_id": 0, "id": 1})
             if tenant:
@@ -94,10 +89,9 @@ async def _resolve_store_tenant_id(user: Optional[Dict[str, Any]] = None, partne
 async def get_categories(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid, x_view_as_tenant)
+    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid)
     tf: Dict[str, Any] = {"tenant_id": tid}
     inactive_cats = await db.categories.find({**tf, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_names = {c["name"] for c in inactive_cats}
@@ -173,10 +167,9 @@ def _eval_product_conditions(rule_set: dict, customer: dict) -> bool:
 async def get_products(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid, x_view_as_tenant)
+    tid = await _resolve_store_tenant_id(user, partner_code, api_key_tid)
     tf: Dict[str, Any] = {"tenant_id": tid}
     inactive_cats = await db.categories.find({**tf, "is_active": False}, {"_id": 0, "name": 1}).to_list(500)
     inactive_cat_names = {c["name"] for c in inactive_cats}
@@ -228,9 +221,8 @@ async def get_products(
 async def get_product(
     product_id: str,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = await _resolve_store_tenant_id(user, None, None, x_view_as_tenant)
+    tid = await _resolve_store_tenant_id(user, None, None)
     tf: Dict[str, Any] = {"tenant_id": tid}
     product = await db.products.find_one({**tf, "id": product_id, "is_active": True}, {"_id": 0})
     if not product:
@@ -282,10 +274,9 @@ async def get_product(
 async def pricing_calc(
     payload: PricingCalcRequest,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_store_tenant_id(user, payload.partner_code, api_key_tid, x_view_as_tenant)
+    tid = await _resolve_store_tenant_id(user, payload.partner_code, api_key_tid)
     tf: Dict[str, Any] = {"tenant_id": tid}
     product = await db.products.find_one({**tf, "id": payload.product_id}, {"_id": 0})
     if not product:
@@ -300,10 +291,9 @@ async def pricing_calc(
 async def get_all_terms(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
-    tid = await _resolve_tenant_id(user, partner_code, x_view_as_tenant, api_key_tid)
+    tid = await _resolve_tenant_id(user, partner_code, api_key_tid)
     terms = await db.terms_and_conditions.find({"tenant_id": tid}, {"_id": 0}).to_list(100)
     return {"terms": terms}
 
@@ -312,11 +302,10 @@ async def get_all_terms(
 async def get_default_terms(
     partner_code: Optional[str] = None,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
     api_key_tid: Optional[str] = Depends(resolve_api_key_tenant),
 ):
     """Get the default terms and conditions for the current tenant."""
-    tid = await _resolve_tenant_id(user, partner_code, x_view_as_tenant, api_key_tid)
+    tid = await _resolve_tenant_id(user, partner_code, api_key_tid)
     terms = await db.terms_and_conditions.find_one(
         {"tenant_id": tid, "is_default": True, "status": "active"}, 
         {"_id": 0}
@@ -330,9 +319,8 @@ async def get_default_terms(
 async def get_single_terms(
     terms_id: str,
     user: Optional[Dict[str, Any]] = Depends(optional_get_current_user),
-    x_view_as_tenant: Optional[str] = Header(default=None, alias="X-View-As-Tenant"),
 ):
-    tid = await _resolve_tenant_id(user, None, x_view_as_tenant)
+    tid = await _resolve_tenant_id(user, None)
     terms = await db.terms_and_conditions.find_one({"tenant_id": tid, "id": terms_id}, {"_id": 0})
     if not terms:
         raise HTTPException(status_code=404, detail="Terms not found")
@@ -400,9 +388,8 @@ async def validate_promo_code(
 async def orders_preview(
     payload: OrderPreviewRequest,
     user: Dict[str, Any] = Depends(get_current_user),
-    x_view_as_tenant: Optional[str] = Header(None),
 ):
-    tid = await _resolve_tenant_id(user, None, x_view_as_tenant)
+    tid = await _resolve_tenant_id(user, None)
     # Use stripe_fee_rate from oauth_connections for card payment preview
     fee_rate = await get_stripe_fee_rate(tid)
     _ = await db.customers.find_one({"tenant_id": tid, "user_id": user["id"]}, {"_id": 0})

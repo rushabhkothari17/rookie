@@ -16,7 +16,22 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - TenantSwitcher Removed + DB Reset
+**Changes:**
+- Deleted `TenantSwitcher.tsx` and `CustomerSwitcher.tsx` (frontend components)
+- Removed all X-View-As-Tenant and X-View-As-Customer header logic from:
+  - `api.ts` request interceptor
+  - `TopNav.tsx`, `Admin.tsx`, `EnquiriesTab.tsx` (frontend)
+  - `core/tenant.py` (get_tenant_admin, get_tenant_super_admin, get_tenant_filter, tenant_id_of)
+  - `articles.py`, `resources.py`, `store.py`, `admin/website.py` (backend)
+- Simplified EnquiriesTab: removed partner selection step (now loads all customers/products directly)
+- Database fully reset (all 46 collections dropped + reseeded via backend startup)
+- Seeded data: platform_super_admin user, automate-accounts tenant, Free Trial plan
+
 ### Session: Mar 2026 - Platform Admin Permission Fixes
+- Fixed store empty products for platform admin (uses DEFAULT_TENANT_ID not None)
+- Fixed IntakeFormPage 403 for admin users (redirect to admin panel)
+- Documented permission differences between all admin roles
 **Goal**: Fix platform super admin not being able to see all products/resources/intake forms in certain contexts.
 
 **Root causes identified & fixed:**

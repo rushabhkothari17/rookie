@@ -12,8 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useWebsite } from "@/contexts/WebsiteContext";
-import { TenantSwitcher } from "@/components/TenantSwitcher";
-import { CustomerSwitcher } from "@/components/CustomerSwitcher";
 import { useState, useEffect } from "react";
 
 export default function TopNav() {
@@ -103,13 +101,6 @@ export default function TopNav() {
             <span className="text-sm hidden lg:inline mr-1" style={{ color: "var(--aa-muted)" }} data-testid="nav-welcome">
               Hi, {user.full_name.trim().split(" ")[0]}
             </span>
-          )}
-
-          {user?.role === "platform_admin" && (
-            <div className="hidden md:flex items-center gap-2">
-              <TenantSwitcher />
-              <CustomerSwitcher />
-            </div>
           )}
 
           {/* Cart */}
