@@ -3,7 +3,7 @@
  * Fetches its own data on mount; renders compact KPI cards + a dynamic
  * "by …" breakdown bar (payment method, status, mode).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import api from "@/lib/api";
 
@@ -12,7 +12,32 @@ import api from "@/lib/api";
 const currencyFmt = (value: number, currency: string) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
 
-const numFmt = (n: number) => n.toLocaleString();
+/** Animate a number from 0 to `target` over `duration` ms */
+function useCountUp(target: number, duration = 900): number {
+  const [display, setDisplay] = useState(0);
+  const rafRef = useRef<number>(0);
+  useEffect(() => {
+    if (!target) { setDisplay(0); return; }
+    const start = performance.now();
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(target * eased));
+      if (progress < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target, duration]);
+  return display;
+}
+
+/** Animated number — counts up then formats */
+function AnimNum({ value, fmt = (n: number) => n.toLocaleString() }: { value: number; fmt?: (n: number) => string }) {
+  const animated = useCountUp(value);
+  return <>{fmt(animated)}</>;
+}
 
 function Trend({ current, previous }: { current: number; previous: number }) {
   if (previous === 0 && current === 0) return null;
@@ -28,12 +53,16 @@ function Trend({ current, previous }: { current: number; previous: number }) {
 }
 
 function KpiCard({ label, value, sub, color, testid }: {
-  label: string; value: string; sub?: React.ReactNode; color: string; testid?: string;
+  label: string; value: string | React.ReactNode; sub?: React.ReactNode; color: string; testid?: string;
 }) {
   return (
-    <div className={`rounded-xl border px-4 py-3 ${color}`} data-testid={testid}>
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-slate-800 leading-none">{value}</p>
+    <div
+      className="aa-stat-glass rounded-xl px-4 py-4 flex flex-col gap-1"
+      data-testid={testid}
+      style={{ animation: "aa-countUp 0.5s ease both" }}
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-widest mb-0.5" style={{ color: "var(--aa-muted)" }}>{label}</p>
+      <p className="text-2xl font-bold leading-none tracking-tight" style={{ color: "var(--aa-text)" }}>{value}</p>
       {sub && <div className="mt-1">{sub}</div>}
     </div>
   );
@@ -101,26 +130,26 @@ export function OrdersStats() {
   return (
     <div className="space-y-3" data-testid="orders-stats-dashboard">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Total Orders" value={numFmt(total)} color="border-slate-200 bg-slate-50/40" testid="orders-stat-total" />
+        <KpiCard label="Total Orders" value={<AnimNum value={total} />} color="" testid="orders-stat-total" />
         <KpiCard
           label="This Month"
-          value={numFmt(this_month)}
+          value={<AnimNum value={this_month} />}
           sub={<Trend current={this_month} previous={last_month} />}
-          color="border-blue-100 bg-blue-50/40"
+          color=""
           testid="orders-stat-this-month"
         />
         <KpiCard
           label="Total Revenue"
           value={currencyFmt(revenue_base, base_currency)}
-          sub={<span className="text-[10px] text-slate-400">in {base_currency}</span>}
-          color="border-emerald-100 bg-emerald-50/40"
+          sub={<span className="text-[10px]" style={{ color: "var(--aa-muted)" }}>in {base_currency}</span>}
+          color=""
           testid="orders-stat-revenue"
         />
         <KpiCard
           label="Revenue This Month"
           value={currencyFmt(this_month_revenue_base, base_currency)}
-          sub={<span className="text-[10px] text-slate-400">in {base_currency}</span>}
-          color="border-teal-100 bg-teal-50/40"
+          sub={<span className="text-[10px]" style={{ color: "var(--aa-muted)" }}>in {base_currency}</span>}
+          color=""
           testid="orders-stat-revenue-month"
         />
       </div>
@@ -150,17 +179,16 @@ export function SubscriptionsStats() {
   return (
     <div className="space-y-3" data-testid="subscriptions-stats-dashboard">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Active Subs" value={numFmt(active)}
-          sub={<span className="text-[10px] text-slate-400">{numFmt(total)} total</span>}
-          color="border-emerald-100 bg-emerald-50/40" testid="subs-stat-active" />
+        <KpiCard label="Active Subs" value={<AnimNum value={active} />}
+          sub={<span className="text-[10px]" style={{ color: "var(--aa-muted)" }}><AnimNum value={total} /> total</span>}
+          color="" testid="subs-stat-active" />
         <KpiCard label="MRR" value={currencyFmt(mrr_base, base_currency)}
-          sub={<span className="text-[10px] text-slate-400">in {base_currency}</span>}
-          color="border-indigo-100 bg-indigo-50/40" testid="subs-stat-mrr" />
-        <KpiCard label="New This Month" value={numFmt(new_this_month)}
-          color="border-blue-100 bg-blue-50/40" testid="subs-stat-new" />
-        <KpiCard label="Churned This Month" value={numFmt(churned_this_month)}
-          color={churned_this_month > 0 ? "border-red-100 bg-red-50/40" : "border-slate-200 bg-slate-50/40"}
-          testid="subs-stat-churned" />
+          sub={<span className="text-[10px]" style={{ color: "var(--aa-muted)" }}>in {base_currency}</span>}
+          color="" testid="subs-stat-mrr" />
+        <KpiCard label="New This Month" value={<AnimNum value={new_this_month} />}
+          color="" testid="subs-stat-new" />
+        <KpiCard label="Churned This Month" value={<AnimNum value={churned_this_month} />}
+          color="" testid="subs-stat-churned" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <BreakdownBar label="By Status" data={by_status} colors={statusColors} />
@@ -182,13 +210,13 @@ export function CustomersStats() {
   return (
     <div className="space-y-3" data-testid="customers-stats-dashboard">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <KpiCard label="Total Customers" value={numFmt(total)}
-          color="border-slate-200 bg-slate-50/40" testid="customers-stat-total" />
-        <KpiCard label="Active" value={numFmt(active)}
-          sub={total > 0 ? <span className="text-[10px] text-slate-400">{Math.round((active / total) * 100)}% of total</span> : undefined}
-          color="border-emerald-100 bg-emerald-50/40" testid="customers-stat-active" />
-        <KpiCard label="New This Month" value={numFmt(new_this_month)}
-          color="border-blue-100 bg-blue-50/40" testid="customers-stat-new" />
+        <KpiCard label="Total Customers" value={<AnimNum value={total} />}
+          color="" testid="customers-stat-total" />
+        <KpiCard label="Active" value={<AnimNum value={active} />}
+          sub={total > 0 ? <span className="text-[10px]" style={{ color: "var(--aa-muted)" }}>{Math.round((active / total) * 100)}% of total</span> : undefined}
+          color="" testid="customers-stat-active" />
+        <KpiCard label="New This Month" value={<AnimNum value={new_this_month} />}
+          color="" testid="customers-stat-new" />
       </div>
       {Object.keys(by_payment_mode).length > 0 && (
         <BreakdownBar label="By Payment Mode" data={by_payment_mode} />

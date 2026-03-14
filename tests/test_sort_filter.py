@@ -4,7 +4,7 @@ Test sort and filter functionality with actual data
 import asyncio
 from playwright.async_api import async_playwright
 
-BASE_URL = "https://pydantic-lockdown.preview.emergentagent.com"
+BASE_URL = "https://glass-morphism-ui.preview.emergentagent.com"
 PARTNER_CODE = "automate-accounts"
 ADMIN_EMAIL = "admin@automateaccounts.local"
 ADMIN_PASSWORD = "ChangeMe123!"

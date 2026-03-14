@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 load_dotenv("/app/frontend/.env")
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://pydantic-lockdown.preview.emergentagent.com")
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://glass-morphism-ui.preview.emergentagent.com")
 API_BASE = f"{BACKEND_URL}/api"
 
 class BackendTester:

@@ -84,37 +84,32 @@ const TAB_CLASS =
   "data-[state=inactive]:text-[var(--aa-muted)] hover:text-[var(--aa-text)] hover:translate-x-0.5 hover:bg-[var(--aa-surface)] " +
   "transition-all duration-150 data-[state=active]:shadow-none";
 
-/** Context to share active tab + sidebar collapsed state */
+/** Context to share active tab + setter — avoids prop drilling through 32 usages */
 const ActiveTabCtx = React.createContext<string>("");
+const SetTabCtx = React.createContext<(v: string) => void>(() => {});
 const CollapsedCtx = React.createContext<boolean>(false);
 
-/** Sidebar tab — with icon, tooltip when collapsed */
+/** Sidebar tab — plain button for full CSS control, no shadcn style conflicts */
 const SideTab = ({ value, label, testId }: { value: string; label: string; testId?: string }) => {
   const activeTab = React.useContext(ActiveTabCtx);
+  const setTab = React.useContext(SetTabCtx);
   const collapsed = React.useContext(CollapsedCtx);
   const isActive = activeTab === value;
   const Icon = TAB_ICONS[value] || LayoutGrid;
 
-  const item = (
-    <TabsTrigger
-      value={value}
-      className={`aa-nav-item w-full text-left ${isActive ? "active" : ""} ${collapsed ? "justify-center px-0" : ""}`}
+  return (
+    <button
+      type="button"
+      onClick={() => setTab(value)}
+      title={collapsed ? label : undefined}
+      className={`aa-nav-item ${isActive ? "active" : ""} ${collapsed ? "justify-center !px-0" : ""}`}
       data-testid={testId || `tab-${value}`}
-      style={{ borderRadius: 8, height: "auto", boxShadow: "none", background: "transparent", border: "none" }}
+      aria-selected={isActive}
     >
-      <Icon size={15} className="aa-nav-icon flex-shrink-0" />
+      <Icon size={15} className="aa-nav-icon" />
       {!collapsed && <span className="truncate">{label}</span>}
-    </TabsTrigger>
+    </button>
   );
-
-  if (collapsed) {
-    return (
-      <div title={label}>
-        {item}
-      </div>
-    );
-  }
-  return item;
 };
 
 /** Accordion section header with section icon */
@@ -174,14 +169,14 @@ export default function Admin() {
 
   // Permissions helpers
   const hasModule = (module: string): boolean => {
-    if (isSuperAdmin) return true;
+    if (isSuperAdmin || isPlatformAdmin) return true;
     const mp = permissions?.module_permissions;
     if (mp && Object.keys(mp).length > 0) return !!mp[module];
     return permissions?.modules?.includes(module) ?? false;
   };
 
   const hasWrite = (module: string): boolean => {
-    if (isSuperAdmin) return true;
+    if (isSuperAdmin || isPlatformAdmin) return true;
     const mp = permissions?.module_permissions;
     if (mp) return mp[module] === "write";
     return false;
@@ -367,7 +362,8 @@ export default function Admin() {
 
           <ActiveTabCtx.Provider value={activeTab}>
           <CollapsedCtx.Provider value={sidebarCollapsed}>
-          <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0 w-full flex-1 px-1 pb-1">
+          <SetTabCtx.Provider value={(v) => { setActiveTab(v); setSidebarOpen(false); try { localStorage.setItem("admin_active_tab", v); } catch {} }}>
+          <div className="flex flex-col gap-0.5 w-full px-1 pb-1 flex-1">
             {/* ── PLATFORM section (platform_admin only, not viewing as tenant) ── */}
             {showPartnerOrgs && (
               <>
@@ -484,7 +480,8 @@ export default function Admin() {
               </>
             )}
 
-          </TabsList>
+          </div>
+          </SetTabCtx.Provider>
           </CollapsedCtx.Provider>
           </ActiveTabCtx.Provider>
 
@@ -504,7 +501,7 @@ export default function Admin() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0 overflow-x-hidden">
+        <div className="flex-1 min-w-0 overflow-x-auto"  style={{ minWidth: 0 }}>
           {showChecklist && (
             <SetupChecklistWidget onNavigate={handleChecklistNavigate} />
           )}
