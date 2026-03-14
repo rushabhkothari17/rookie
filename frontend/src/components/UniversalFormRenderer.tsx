@@ -399,22 +399,32 @@ export function UniversalFormRenderer({
     // ── Checkbox ─────────────────────────────────────────────────────────
     if (field.type === "checkbox") {
       return (
-        <label
-          key={field.id}
-          style={animStyle}
-          className="flex items-center gap-3 cursor-pointer group"
-          data-testid={tid}
-        >
-          <Checkbox
-            checked={val === "true"}
-            onCheckedChange={c => onChange(key, c ? "true" : "false")}
-            className="rounded-full h-5 w-5 border-slate-300 data-[state=checked]:bg-slate-900 data-[state=checked]:border-slate-900"
-          />
-          <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
-            {field.placeholder || field.label}
-            {field.required && <span className="text-red-500 ml-0.5"> *</span>}
-          </span>
-        </label>
+        <div key={field.id} style={animStyle}>
+          <label className="flex items-center gap-3 cursor-pointer group" data-testid={tid}>
+            <Checkbox
+              checked={val === "true"}
+              onCheckedChange={c => onChange(key, c ? "true" : "false")}
+              className="rounded-full h-5 w-5 border-slate-300 data-[state=checked]:bg-slate-900 data-[state=checked]:border-slate-900"
+            />
+            <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors flex items-center gap-1">
+              {field.placeholder || field.label}
+              {field.required && <span className="text-red-500 ml-0.5"> *</span>}
+              {field.tooltip_text && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center text-slate-300 hover:text-slate-500 cursor-help ml-0.5">
+                        <Info size={11} />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-56 text-xs">{field.tooltip_text}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </span>
+          </label>
+          <HelperText text={field.helper_text} />
+        </div>
       );
     }
 
