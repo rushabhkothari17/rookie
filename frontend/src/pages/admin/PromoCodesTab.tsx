@@ -22,9 +22,16 @@ const INITIAL_PROMO = { code: "", discount_type: "percent", discount_value: 10, 
 
 // Defined OUTSIDE PromoCodesTab to prevent remount on every keystroke
 function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) => void, products: any[] }) {
+  const isPercent = form.discount_type === "percent" || form.discount_type === "percentage";
+  const valError = form.discount_value < 0
+    ? "Discount value cannot be negative"
+    : isPercent && form.discount_value > 100
+    ? "Percentage discount cannot exceed 100%"
+    : null;
+
   return (
     <div className="space-y-3">
-      <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Code</RequiredLabel><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase() })} /></div>
+      <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Code</RequiredLabel><Input value={form.code} onChange={e => setF({ ...form, code: e.target.value.toUpperCase().slice(0, 100) })} maxLength={100} /></div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Discount Type</RequiredLabel>
           <Select value={form.discount_type} onValueChange={v => setF({ ...form, discount_type: v })}>
@@ -32,7 +39,19 @@ function PromoForm({ form, setF, products: prods }: { form: any, setF: (v: any) 
             <SelectContent><SelectItem value="percent">Percent (%)</SelectItem><SelectItem value="fixed">Fixed ($)</SelectItem></SelectContent>
           </Select>
         </div>
-        <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Value</RequiredLabel><Input type="number" value={form.discount_value} onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })} /></div>
+        <div className="space-y-1">
+          <RequiredLabel className="text-slate-500 font-normal">Value {isPercent && <span className="text-slate-400 font-normal">(0–100)</span>}</RequiredLabel>
+          <Input
+            type="number"
+            value={form.discount_value}
+            onChange={e => setF({ ...form, discount_value: parseFloat(e.target.value) })}
+            min={0}
+            max={isPercent ? 100 : undefined}
+            step="0.01"
+            className={valError ? "border-red-400 focus-visible:ring-red-300" : ""}
+          />
+          {valError && <p className="text-xs text-red-500 mt-0.5">{valError}</p>}
+        </div>
       </div>
       <div className="space-y-1"><RequiredLabel className="text-slate-500 font-normal">Applies To</RequiredLabel>
         <Select value={form.applies_to} onValueChange={v => setF({ ...form, applies_to: v })}>
@@ -200,6 +219,9 @@ export function PromoCodesTab() {
     if (!newPromo.code.trim()) { toast.error("Promo code is required"); return; }
     if (!newPromo.discount_type) { toast.error("Discount type is required"); return; }
     if (newPromo.discount_value == null || newPromo.discount_value === undefined) { toast.error("Discount value is required"); return; }
+    if (newPromo.discount_value < 0) { toast.error("Discount value cannot be negative"); return; }
+    const isPercent = newPromo.discount_type === "percent" || newPromo.discount_type === "percentage";
+    if (isPercent && newPromo.discount_value > 100) { toast.error("Percentage discount cannot exceed 100%"); return; }
     if (!newPromo.applies_to) { toast.error("Applies to is required"); return; }
     if (!newPromo.applies_to_products) { toast.error("Product eligibility is required"); return; }
     if (!newPromo.expiry_date) { toast.error("Expiry date is required"); return; }
@@ -219,6 +241,9 @@ export function PromoCodesTab() {
   const handleEdit = async () => {
     if (!editPromo) return;
     if (!editForm.code?.trim()) { toast.error("Promo code is required"); return; }
+    if (editForm.discount_value < 0) { toast.error("Discount value cannot be negative"); return; }
+    const isEditPercent = editForm.discount_type === "percent" || editForm.discount_type === "percentage";
+    if (isEditPercent && editForm.discount_value > 100) { toast.error("Percentage discount cannot exceed 100%"); return; }
     if (!editForm.expiry_date) { toast.error("Expiry date is required"); return; }
     setSaving(true);
     try {

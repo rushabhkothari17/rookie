@@ -646,13 +646,13 @@ export function ProductForm({
               <RequiredLabel className={labelCls}>Product Name</RequiredLabel>
               <Input
                 value={form.name}
-                onChange={e => s("name")(e.target.value.slice(0, 100))}
+                onChange={e => s("name")(e.target.value.slice(0, 500))}
                 placeholder="Product name"
-                maxLength={100}
+                maxLength={500}
                 data-testid="pf-name"
               />
-              <p className={`text-xs mt-0.5 text-right ${form.name.length >= 90 ? "text-amber-500 font-medium" : "text-slate-400"}`}>
-                {form.name.length}/100
+              <p className={`text-xs mt-0.5 text-right ${form.name.length >= 480 ? "text-amber-500 font-medium" : "text-slate-400"}`}>
+                {form.name.length}/500
               </p>
             </div>
 
