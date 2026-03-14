@@ -416,6 +416,8 @@ async def update_record_status(
     valid = {"submitted", "under_review", "approved", "rejected"}
     if payload.status not in valid:
         raise HTTPException(400, f"Invalid status. Must be one of: {', '.join(valid)}")
+    if payload.status == "rejected" and not (payload.rejection_reason or "").strip():
+        raise HTTPException(400, "A rejection reason is required when rejecting a submission.")
     tf = get_tenant_filter(admin)
     record = await db.intake_form_records.find_one({**tf, "id": record_id})
     if not record:

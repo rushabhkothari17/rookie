@@ -16,6 +16,10 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - P1 Fix: Backend Mandatory Rejection Reason Enforcement
+- **Fix**: Added a 400-guard in `backend/routes/admin/intake_forms.py` → `update_record_status` endpoint. If `status == "rejected"` and `rejection_reason` is empty/missing, the API now returns `HTTP 400` with a clear message.
+- **Tested**: curl confirmed — reject without reason → 400, reject with reason → 200.
+
 ### Session: Mar 2026 - P0 Bug Fix: Version History PDF Downloads
 - **Root Cause**: `const downloadPDF = (record: IntakeRecord) => {` declaration was missing from `AdminIntakeFormsTab.tsx`, causing the `IntakeFormRecords` component to be typed as returning `void` instead of `ReactNode`.
 - **Fix**: Added the missing function declaration wrapper at line 575 in `AdminIntakeFormsTab.tsx`.
