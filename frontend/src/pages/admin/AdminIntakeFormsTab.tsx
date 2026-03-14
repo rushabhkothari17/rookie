@@ -70,6 +70,8 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   const [showEditor, setShowEditor] = useState(false);
   const [editingForm, setEditingForm] = useState<IntakeForm | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [allCustomers, setAllCustomers] = useState<any[]>([]);
+  const [customerSearch, setCustSearch] = useState("");
 
   // Editor state
   const [name, setName] = useState("");
@@ -78,6 +80,8 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   const [isEnabled, setIsEnabled] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
   const [allowSkipSig, setAllowSkipSig] = useState(false);
+  const [assignAll, setAssignAll] = useState(true);
+  const [customerIds, setCustomerIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -88,23 +92,36 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    api.get("/admin/customers?page=1&limit=500").then(r => setAllCustomers(r.data.customers || [])).catch(() => {});
+  }, []);
+
+  const resetEditor = () => {
+    setName(""); setDescription(""); setSchema([]); setIsEnabled(true);
+    setAutoApprove(false); setAllowSkipSig(false); setAssignAll(true); setCustomerIds([]); setCustSearch("");
+  };
 
   const openNew = () => {
-    setEditingForm(null); setName(""); setDescription(""); setSchema([]); setIsEnabled(true); setAutoApprove(false); setAllowSkipSig(false);
-    setShowEditor(true);
+    setEditingForm(null); resetEditor(); setShowEditor(true);
   };
 
   const openEdit = (f: IntakeForm) => {
     setEditingForm(f); setName(f.name); setDescription(f.description || "");
     try { setSchema(JSON.parse(f.schema || "[]")); } catch { setSchema([]); }
     setIsEnabled(f.is_enabled); setAutoApprove(f.auto_approve); setAllowSkipSig(f.allow_skip_signature);
+    const ids = f.customer_ids || [];
+    setAssignAll(ids.length === 0); setCustomerIds(ids); setCustSearch("");
     setShowEditor(true);
   };
 
   const save = async () => {
     if (!name.trim()) { toast.error("Form name is required"); return; }
     setSaving(true);
-    const payload = { name: name.trim(), description, form_schema: JSON.stringify(schema), is_enabled: isEnabled, auto_approve: autoApprove, allow_skip_signature: allowSkipSig };
+    const payload = {
+      name: name.trim(), description, form_schema: JSON.stringify(schema),
+      is_enabled: isEnabled, auto_approve: autoApprove, allow_skip_signature: allowSkipSig,
+      customer_ids: assignAll ? [] : customerIds,
+    };
     try {
       if (editingForm) { await api.put(`/admin/intake-forms/${editingForm.id}`, payload); toast.success("Form updated"); }
       else { await api.post("/admin/intake-forms", payload); toast.success("Form created"); }
@@ -112,6 +129,14 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
     } catch { toast.error("Failed to save form"); }
     finally { setSaving(false); }
   };
+
+  const toggleCustomerId = (id: string) => {
+    setCustomerIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const filteredCustomers = customerSearch
+    ? allCustomers.filter(c => `${c.full_name || ""} ${c.email || ""}`.toLowerCase().includes(customerSearch.toLowerCase()))
+    : allCustomers;
 
   const toggleEnabled = async (f: IntakeForm) => {
     try { await api.put(`/admin/intake-forms/${f.id}`, { is_enabled: !f.is_enabled }); load(); }
@@ -152,6 +177,9 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm text-slate-900 truncate" data-testid={`intake-form-name-${f.id}`}>{f.name}</span>
                     {f.auto_approve && <Badge className="bg-emerald-50 text-emerald-700 text-[10px] px-1.5">Auto-approve</Badge>}
+                    {(f.customer_ids?.length ?? 0) > 0 && (
+                      <Badge className="bg-blue-50 text-blue-700 text-[10px] px-1.5">{f.customer_ids!.length} customer{f.customer_ids!.length !== 1 ? "s" : ""}</Badge>
+                    )}
                     {isPlatformAdmin && f.partner_code && <Badge variant="outline" className="text-[10px]">{f.partner_code}</Badge>}
                   </div>
                   {f.description && <p className="text-xs text-slate-400 mt-0.5 truncate">{f.description}</p>}
@@ -257,6 +285,65 @@ function IntakeFormBuilder({ isPlatformAdmin }: { isPlatformAdmin: boolean }) {
                 value={JSON.stringify(schema)}
                 onChange={(json) => { try { setSchema(JSON.parse(json)); } catch { setSchema([]); } }}
               />
+            </div>
+
+            {/* Customer Assignment */}
+            <div className="border border-slate-200 rounded-xl p-4 space-y-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer Assignment</p>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input type="radio" checked={assignAll} onChange={() => { setAssignAll(true); setCustomerIds([]); }}
+                    className="h-3.5 w-3.5" data-testid="intake-assign-all-radio" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">All customers</p>
+                    <p className="text-xs text-slate-400">Every customer in your account must complete this form</p>
+                  </div>
+                </label>
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input type="radio" checked={!assignAll} onChange={() => setAssignAll(false)}
+                    className="h-3.5 w-3.5" data-testid="intake-assign-specific-radio" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Specific customers only</p>
+                    <p className="text-xs text-slate-400">Only selected customers will be required to complete this form</p>
+                  </div>
+                </label>
+              </div>
+              {!assignAll && (
+                <div className="mt-2 space-y-2">
+                  <Input
+                    className="h-7 text-xs" placeholder="Search customers…"
+                    value={customerSearch} onChange={e => setCustSearch(e.target.value)}
+                    data-testid="intake-customer-search"
+                  />
+                  {customerIds.length > 0 && (
+                    <p className="text-[11px] text-blue-600 font-medium">{customerIds.length} customer{customerIds.length !== 1 ? "s" : ""} selected</p>
+                  )}
+                  <div className="max-h-44 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+                    {filteredCustomers.length === 0 ? (
+                      <p className="text-xs text-slate-400 px-3 py-2">No customers found</p>
+                    ) : filteredCustomers.map((c: any) => {
+                      const selected = customerIds.includes(c.id);
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => toggleCustomerId(c.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors ${selected ? "bg-blue-50" : ""}`}
+                          data-testid={`intake-customer-${c.id}`}
+                        >
+                          <span className={`h-4 w-4 shrink-0 rounded border flex items-center justify-center ${selected ? "bg-blue-500 border-blue-500" : "border-slate-300"}`}>
+                            {selected && <Check size={9} className="text-white" strokeWidth={3} />}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-slate-700 truncate">{c.full_name || c.name || "—"}</p>
+                            <p className="text-[11px] text-slate-400 truncate">{c.email || ""}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-2">

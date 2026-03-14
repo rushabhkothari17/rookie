@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UniversalFormRenderer } from "@/components/UniversalFormRenderer";
 import type { FormField } from "@/components/FormSchemaBuilder";
-import { CheckCircle, Clock, AlertCircle, ChevronRight, Download, RefreshCw } from "lucide-react";
+import { CheckCircle, Clock, AlertCircle, ChevronRight, Download, RefreshCw, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const STATUS_META: Record<string, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
   pending:      { label: "Not Started",    icon: <AlertCircle size={16} />, color: "text-slate-400",  desc: "Please complete this form." },
@@ -38,6 +39,8 @@ export default function IntakeFormPage() {
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [submitting, setSubmitting] = useState(false);
+  // Gap 5: warn before re-editing an approved form
+  const [reEditConfirm, setReEditConfirm] = useState<IntakeEntry | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate("/login", { state: { from: "/intake-form" } }); return; }
@@ -53,8 +56,16 @@ export default function IntakeFormPage() {
     finally { setLoading(false); }
   }, []);
 
-  const openForm = (entry: IntakeEntry) => {
+  const openForm = (entry: IntakeEntry, confirmed = false) => {
+    // Gap 5: warn before re-editing an already-approved form
+    if (entry.record?.status === "approved" && !confirmed) {
+      setReEditConfirm(entry);
+      return;
+    }
     const pre: Record<string, any> = { ...(entry.record?.responses || {}) };
+    // Gap 1: always clear signature on re-edit so the customer must sign fresh
+    delete pre["signature_data_url"];
+    delete pre["signature_name"];
     setFormValues(pre);
     setActiveFormId(entry.form.id);
   };
@@ -178,6 +189,7 @@ export default function IntakeFormPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen" style={{ backgroundColor: "var(--aa-bg)" }}>
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-8">
@@ -263,5 +275,40 @@ export default function IntakeFormPage() {
         )}
       </div>
     </div>
+
+    {/* Gap 5: Re-edit approved form warning dialog */}
+    <Dialog open={reEditConfirm !== null} onOpenChange={open => { if (!open) setReEditConfirm(null); }}>
+      <DialogContent className="max-w-sm" data-testid="intake-reedit-confirm-dialog">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-amber-700">
+            <AlertTriangle size={18} className="text-amber-500" />
+            Edit Approved Form?
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-1">
+          <p className="text-sm text-slate-600">
+            This form has already been <strong>approved</strong>. Editing it will:
+          </p>
+          <ul className="text-sm text-slate-600 space-y-1 list-disc list-inside pl-1">
+            <li>Create a <strong>new version</strong> of your submission</li>
+            <li>Reset your approval status to <strong>pending review</strong></li>
+            <li>Require you to <strong>re-sign</strong> the form</li>
+          </ul>
+          <p className="text-sm text-slate-500">You will not be able to checkout until the new version is reviewed and approved.</p>
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" size="sm" onClick={() => setReEditConfirm(null)}>Cancel</Button>
+          <Button
+            size="sm"
+            className="bg-amber-500 hover:bg-amber-600 text-white"
+            onClick={() => { const e = reEditConfirm!; setReEditConfirm(null); openForm(e, true); }}
+            data-testid="intake-reedit-confirm-btn"
+          >
+            Yes, Edit Anyway
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
