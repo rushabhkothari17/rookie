@@ -68,10 +68,14 @@ async def _get_zoho_access_token_cached(
 # ---------------------------------------------------------------------------
 
 async def _sync_to_settings(key: str, value: Any) -> None:
-    """Write (or upsert) a value into the global app_settings collection."""
+    """Write (or upsert) a value into the global app_settings collection.
+    Sensitive keys (API keys, tokens) are encrypted at rest.
+    """
+    from services.encryption_service import encrypt_secret, is_sensitive_key
+    stored_value = encrypt_secret(str(value)) if is_sensitive_key(key) and value else value
     await db.app_settings.update_one(
         {"key": key},
-        {"$set": {"key": key, "value_json": value, "updated_at": now_iso()}},
+        {"$set": {"key": key, "value_json": stored_value, "updated_at": now_iso()}},
         upsert=True,
     )
 
@@ -468,6 +472,7 @@ async def save_credentials(
     if config.get("is_zoho") and not merged_creds.get("refresh_token") and not merged_creds.get("auth_code"):
         raise HTTPException(status_code=400, detail="Authorization Code is required to establish the connection")
     
+    from services.encryption_service import encrypt_credentials
     await db.oauth_connections.update_one(
         {"tenant_id": tid, "provider": provider},
         {"$set": {
@@ -475,7 +480,7 @@ async def save_credentials(
             "provider": provider,
             "status": "pending",
             "is_validated": False,
-            "credentials": merged_creds,
+            "credentials": encrypt_credentials(merged_creds),
             "data_center": payload.data_center if config.get("is_zoho") else None,
             "settings": payload.settings or (existing.get("settings", {}) if existing else {}),
             "connected_at": existing.get("connected_at", now_iso()) if existing else now_iso(),
@@ -506,6 +511,8 @@ async def validate_connection(
         raise HTTPException(status_code=400, detail="No credentials found. Please save credentials first.")
     
     creds = conn["credentials"]
+    from services.encryption_service import decrypt_credentials
+    creds = decrypt_credentials(creds)
     result = {"success": False, "message": "Validation failed"}
     
     try:
@@ -804,7 +811,8 @@ async def validate_connection(
     
     # Sync to legacy app_settings so checkout.py / email_service.py pick them up
     if result["success"]:
-        creds = conn.get("credentials", {})
+        from services.encryption_service import decrypt_credentials
+        creds = decrypt_credentials(conn.get("credentials", {}))
         if provider == "stripe":
             await _sync_to_settings("stripe_secret_key", creds.get("api_key", ""))
             if creds.get("publishable_key"):
@@ -889,7 +897,8 @@ async def activate_provider(
     )
     
     # Sync credentials to legacy app_settings so email_service.py sends live emails
-    creds = conn.get("credentials", {})
+    from services.encryption_service import decrypt_credentials
+    creds = decrypt_credentials(conn.get("credentials", {}))
     stored_settings = conn.get("settings", {})
     if provider == "resend":
         await _sync_to_settings("resend_api_key", creds.get("api_key", ""))
@@ -1308,6 +1317,8 @@ async def bulk_sync_zoho_books(admin: Dict[str, Any] = Depends(get_tenant_admin)
         raise HTTPException(status_code=400, detail="Zoho Books is not connected or validated")
     
     creds = conn.get("credentials", {})
+    from services.encryption_service import decrypt_credentials
+    creds = decrypt_credentials(creds)
     refresh_token = creds.get("refresh_token")
     client_id = creds.get("client_id")
     client_secret = creds.get("client_secret")

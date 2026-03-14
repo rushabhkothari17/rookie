@@ -229,16 +229,22 @@ class SettingsService:
 
     @staticmethod
     async def get(key: str, default: Any = None) -> Any:
+        from services.encryption_service import decrypt_secret, is_sensitive_key
         cache = await SettingsService._load_all()
-        return cache.get(key, default)
+        value = cache.get(key, default)
+        if is_sensitive_key(key) and isinstance(value, str):
+            return decrypt_secret(value)
+        return value
 
     @staticmethod
     async def set(key: str, value: Any, updated_by: str = "admin") -> None:
+        from services.encryption_service import encrypt_secret, is_sensitive_key
         global _cache_ts  # invalidate cache
         _cache_ts = 0.0
+        stored = encrypt_secret(str(value)) if is_sensitive_key(key) and value else value
         await db.app_settings.update_one(
             {"key": key},
-            {"$set": {"value_json": value, "updated_at": now_iso(), "updated_by": updated_by}},
+            {"$set": {"value_json": stored, "updated_at": now_iso(), "updated_by": updated_by}},
             upsert=True,
         )
 

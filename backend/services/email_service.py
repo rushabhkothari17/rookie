@@ -652,7 +652,8 @@ class EmailService:
         
         # Try Resend first if connected
         if resend_conn:
-            creds = resend_conn.get("credentials", {})
+            from services.encryption_service import decrypt_credentials
+            creds = decrypt_credentials(resend_conn.get("credentials", {}))
             resend_settings = resend_conn.get("settings", {})
             resend_key = creds.get("api_key", "")
             # from_email is stored in settings for Resend
@@ -704,7 +705,8 @@ class EmailService:
         elif zoho_mail_conn:
             from services.zoho_service import ZohoMailService, ZohoOAuthService
             from datetime import datetime, timezone, timedelta
-            creds = zoho_mail_conn.get("credentials", {})
+            from services.encryption_service import decrypt_credentials
+            creds = decrypt_credentials(zoho_mail_conn.get("credentials", {}))
             # from_email is stored in settings, not credentials
             settings = zoho_mail_conn.get("settings", {})
             from_email = settings.get("from_email", "") or settings.get("sender_email", "")

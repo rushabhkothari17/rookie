@@ -16,6 +16,15 @@ Build a white-label service commerce platform with:
 
 ## Completed Work Log
 
+### Session: Mar 2026 - P2 Fix: Encryption at Rest for Integration Secrets
+- Created `services/encryption_service.py` (Fernet AES-128-CBC + HMAC-SHA256, `enc:` prefix for migration safety).
+- Added `ENCRYPTION_KEY` to `backend/.env`.
+- **Write paths encrypted**: `_sync_to_settings` (oauth.py), `SettingsService.set()`, `oauth_connections.credentials` on validation save.
+- **Read paths decrypted**: `SettingsService.get()`, `email_service.py`, `refund_service.py`, `oauth.py` (validate, token refresh, Zoho Books).
+- **Bonus fix**: `refund_service.py` was reading Stripe key from wrong collection (`db.settings`) — fixed to read from `oauth_connections` with fallback to `app_settings`.
+- Sensitive fields encrypted: `api_key`, `access_token`, `client_secret`, `refresh_token`, `secret_key`, `password` in `oauth_connections.credentials`; `resend_api_key`, `stripe_secret_key`, `gocardless_access_token`, `stripe_publishable_key` in `app_settings`.
+- All fixes curl + unit test verified.
+
 ### Session: Mar 2026 - Security Audit & Hardening
 - **CRITICAL fixed**: `get_current_user` now explicitly rejects JWTs with `type: "refresh"` — refresh tokens can no longer impersonate access tokens.
 - **HIGH fixed**: `password_hash` now excluded from all 6 `find_one` calls in `users.py` and `security.py`.
